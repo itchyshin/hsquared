@@ -1,0 +1,5 @@
+^\.github$
+^\.gitignore$
+^\.Rproj\.user$
+^hsquared\.Rproj$
+^README\.Rmd$

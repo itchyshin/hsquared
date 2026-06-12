@@ -1,0 +1,17 @@
+Package: hsquared
+Title: Tools for H-Squared Analyses
+Version: 0.0.0.9000
+Authors@R: 
+    person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
+Description: Provides a development home for tools to estimate, report, and
+    work with h-squared quantities in R. The package is currently an early
+    scaffold, with public functions to be added as the API is designed.
+License: MIT + file LICENSE
+URL: https://github.com/itchyshin/hsquared
+BugReports: https://github.com/itchyshin/hsquared/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
