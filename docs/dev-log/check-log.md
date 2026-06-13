@@ -1375,6 +1375,14 @@ with private memory.
   - Public wording does not claim environmental model terms,
     multi-environment animal models, automatic environment joins, genomic/QTL
     fitting, GLLVM support, GPU execution, ASReml parity, or speedup.
+- Remote checks for commit `07c8145`:
+  - GitHub Actions R-CMD-check `27463896935`: passed in 1m37s.
+  - GitHub Actions pkgdown `27463896936`: passed in 1m34s.
+  - GitHub Pages build/deploy `27463935270`: passed; Node.js 20 deprecation
+    warning is from the Pages action stack, not this package code.
+- Issue ledger:
+  - Issue #8 updated:
+    <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698232188>.
 
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 

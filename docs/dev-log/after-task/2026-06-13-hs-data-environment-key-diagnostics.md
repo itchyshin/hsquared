@@ -63,7 +63,15 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- GitHub Actions R-CMD-check `27463896935`: passed in 1m37s.
+- GitHub Actions pkgdown `27463896936`: passed in 1m34s.
+- GitHub Pages build/deploy `27463935270`: passed; Node.js 20 deprecation
+  warning is from the Pages action stack, not this package code.
+
+Issue ledger:
+
+- Issue #8 updated:
+  <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698232188>.
 
 ## Rose Audit
 
