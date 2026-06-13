@@ -50,7 +50,11 @@ Local checks:
 
 Remote checks:
 
-- Pending first push for this slice.
+- R-CMD-check `27459051476`: passed on commit
+  `52d57dd Add formula grammar status diagnostic`.
+- pkgdown `27459051483`: passed on commit
+  `52d57dd Add formula grammar status diagnostic`.
+- GitHub Pages build and deployment `27459084347`: passed.
 
 ## Rose Audit
 

@@ -21,7 +21,7 @@
 | 2026-06-13 | R | Boole/Jason/Lovelace/Rose/Pat | main | planned genomic/QTL formula markers | pushed; CI/pkgdown/Pages passed | no genomic/QTL fitting yet | Julia twin can mirror vocabulary as planned model-spec terms |
 | 2026-06-13 | R | Boole/Jason/Darwin/Emmy/Rose/Pat | main | planned standard QG/inheritance formula markers | pushed; CI/pkgdown/Pages passed | no Phase 2+ fitting yet | Julia twin can mirror vocabulary as planned model-spec terms |
 | 2026-06-13 | R/docs | Pat/Boole/Rose/Grace | main | pkgdown formula grammar roadmap article | pushed; CI/pkgdown/Pages passed | no fitted grammar expansion | keep article synchronized with Julia model-spec vocabulary |
-| 2026-06-13 | R | Pat/Boole/Emmy/Rose/Grace | main | `formula_status()` grammar diagnostics | local checks passed | diagnostic only; no fitted grammar expansion | push diagnostic table and watch CI/pkgdown/Pages |
+| 2026-06-13 | R | Pat/Boole/Emmy/Rose/Grace | main | `formula_status()` grammar diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only; no fitted grammar expansion | Julia twin can mirror grammar status table in Documenter |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

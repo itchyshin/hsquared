@@ -773,4 +773,8 @@ with private memory.
   - Public wording does not say `formula_status()` expands the parser or
     enables fitting.
 - Remote checks:
-  - Pending first push for this slice.
+  - Commit: `52d57dd Add formula grammar status diagnostic`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27459051476` passed in GitHub Actions.
+  - Result: pkgdown `27459051483` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27459084347` passed.
