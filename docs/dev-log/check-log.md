@@ -1286,6 +1286,10 @@ with private memory.
     objects only.
   - Public wording does not claim general model fitting, production sparse
     fitting, ASReml parity, or speedup.
+- Remote checks for commit `09f3135`:
+  - GitHub Actions R-CMD-check `27463241417`: passed in 1m37s.
+  - GitHub Actions pkgdown `27463241406`: passed.
+  - GitHub Pages build/deploy `27463273446`: passed.
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
 - Rose wording sweep:
