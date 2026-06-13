@@ -14,6 +14,7 @@ public examples.
 | Mrode9 pedigree Ainv comparator | partial | optional local test compares Julia `pedigree_inverse()` with `nadiv::makeAinv()` for `nadiv::Mrode9` when `nadiv` and sibling `HSquared.jl` are available | Mrode9 pedigree-Ainv comparator only; not a fitted Mrode animal-model validation |
 | `hsquared` defines the first fitted-object/extractor contract | partial | local tests over internal `hsquared_fit` objects and mocked result fields, including PEV/reliability fields | extractor plumbing; PEV/reliability not yet returned by live bridge payload |
 | `hsquared` provides a data container for integrated inputs | partial | local tests for `hs_data()` ID maps and input validation | lightweight data container; no modelling or file-backed storage |
+| `hs_control()` stores planned backend names | partial | local control-validation tests for `threads`, `cuda`, `amdgpu`, `metal`, and `oneapi` | control vocabulary only; no CPU/GPU execution |
 | `hsquared` fits general animal models | planned | none | planned v0.1 target after validation and production bridge hardening |
 | `hsquared` supports genomic, QTL/eQTL, GLLVM, or GPU workflows | planned | none | roadmap only |
 | `HSquared.jl` is the Julia engine package identity | covered | public repo exists; Julia package scaffold and CI green | Julia engine scaffold |

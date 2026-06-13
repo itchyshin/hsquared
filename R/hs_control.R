@@ -7,10 +7,10 @@
 #'
 #' @param engine Execution engine. `"validate"` stops after parser and bridge
 #'   payload validation. `"julia"` uses the experimental local JuliaCall bridge.
-#' @param backend Planned compute backend. One of `"auto"`, `"cpu"`, or
-#'   `"cuda"`.
+#' @param backend Planned compute backend. One of `"auto"`, `"cpu"`,
+#'   `"threads"`, `"cuda"`, `"amdgpu"`, `"metal"`, or `"oneapi"`.
 #' @param accelerator Planned accelerator preference. One of `"auto"`,
-#'   `"none"`, or `"cuda"`.
+#'   `"none"`, `"gpu"`, `"cuda"`, `"amdgpu"`, `"metal"`, or `"oneapi"`.
 #' @param precision Planned numeric precision. One of `"float64"` or
 #'   `"float32"`.
 #' @param save Planned fitted-object storage mode. One of `"minimal"`,
@@ -22,8 +22,8 @@
 #' @export
 hs_control <- function(
   engine = c("validate", "julia"),
-  backend = c("auto", "cpu", "cuda"),
-  accelerator = c("auto", "none", "cuda"),
+  backend = c("auto", "cpu", "threads", "cuda", "amdgpu", "metal", "oneapi"),
+  accelerator = c("auto", "none", "gpu", "cuda", "amdgpu", "metal", "oneapi"),
   precision = c("float64", "float32"),
   save = c("minimal", "full", "tiny"),
   engine_control = list()

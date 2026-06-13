@@ -26,6 +26,21 @@ test_that("hs_control validates engine selection", {
   )
 })
 
+test_that("hs_control preserves planned backend vocabulary", {
+  expect_equal(hs_control(backend = "threads")$backend, "threads")
+  expect_equal(hs_control(backend = "cuda")$backend, "cuda")
+  expect_equal(hs_control(backend = "amdgpu")$backend, "amdgpu")
+  expect_equal(hs_control(backend = "metal")$backend, "metal")
+  expect_equal(hs_control(backend = "oneapi")$backend, "oneapi")
+  expect_equal(hs_control(accelerator = "gpu")$accelerator, "gpu")
+  expect_equal(hs_control(accelerator = "metal")$accelerator, "metal")
+  expect_equal(hs_control(accelerator = "amdgpu")$accelerator, "amdgpu")
+  expect_equal(hs_control(accelerator = "oneapi")$accelerator, "oneapi")
+
+  expect_error(hs_control(backend = "tpu"), "'arg' should be one of")
+  expect_error(hs_control(accelerator = "tpu"), "'arg' should be one of")
+})
+
 test_that("hs_control validates engine_control", {
   expect_error(
     hs_control(engine_control = "not-a-list"),

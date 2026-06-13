@@ -6,8 +6,8 @@
 \usage{
 hs_control(
   engine = c("validate", "julia"),
-  backend = c("auto", "cpu", "cuda"),
-  accelerator = c("auto", "none", "cuda"),
+  backend = c("auto", "cpu", "threads", "cuda", "amdgpu", "metal", "oneapi"),
+  accelerator = c("auto", "none", "gpu", "cuda", "amdgpu", "metal", "oneapi"),
   precision = c("float64", "float32"),
   save = c("minimal", "full", "tiny"),
   engine_control = list()
@@ -17,11 +17,11 @@ hs_control(
 \item{engine}{Execution engine. \code{"validate"} stops after parser and bridge
 payload validation. \code{"julia"} uses the experimental local JuliaCall bridge.}
 
-\item{backend}{Planned compute backend. One of \code{"auto"}, \code{"cpu"}, or
-\code{"cuda"}.}
+\item{backend}{Planned compute backend. One of \code{"auto"}, \code{"cpu"},
+\code{"threads"}, \code{"cuda"}, \code{"amdgpu"}, \code{"metal"}, or \code{"oneapi"}.}
 
 \item{accelerator}{Planned accelerator preference. One of \code{"auto"},
-\code{"none"}, or \code{"cuda"}.}
+\code{"none"}, \code{"gpu"}, \code{"cuda"}, \code{"amdgpu"}, \code{"metal"}, or \code{"oneapi"}.}
 
 \item{precision}{Planned numeric precision. One of \code{"float64"} or
 \code{"float32"}.}

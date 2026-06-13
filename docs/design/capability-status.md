@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | R package scaffold | covered | local and GitHub Actions R-CMD-check passed after Phase 0 edits | Package identity and operating memory exist. |
 | Team operating system | covered | Phase 0 docs, skills, agents, board, closeout report, issues, milestones, labels | Use this before Phase 1 work. |
-| `hs_control()` | covered | local tests | Default `engine = "validate"`; experimental `engine = "julia"` is tiny/local only. |
+| `hs_control()` | covered | local tests | Default `engine = "validate"`; experimental `engine = "julia"` is tiny/local only. Backend vocabulary includes planned CPU threads, CUDA, AMDGPU, Metal, and oneAPI controls but does not execute those backends. |
 | `animal()` formula marker | partial | local parser tests | Inert syntax marker; not a standalone modelling helper. |
 | `hsquared()` fit entry point | partial | local tests parse v0.1 animal contract, build bridge payload, stop by default, and fit tiny examples with opt-in Julia engine | General fitting remains planned. |
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Production bridge execution and general fitting remain planned. |
@@ -23,3 +23,4 @@
 | genomic/single-step models | planned | none | Phase 5. |
 | GLLVM-style models | planned | none | Phase 6. |
 | unusual inheritance | planned | none | Phase 7. |
+| CPU/GPU backend execution | planned | none | `hs_control()` stores planned backend names only; Julia execution backends remain future work. |

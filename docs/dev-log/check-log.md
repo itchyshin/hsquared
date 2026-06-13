@@ -511,3 +511,38 @@ with private memory.
   - Public wording does not claim fitted Mrode animal-model validation,
     ASReml/BLUPF90/DMU/WOMBAT comparison, production sparse fitting, or
     large-pedigree readiness.
+
+## 2026-06-13 Planned backend vocabulary controls
+
+- Goal: align `hs_control()` with the CPU/GPU backend vocabulary in the
+  genomics/QTL/GPU plan without claiming backend execution.
+- Active lenses: Lovelace, Karpinski, Grace, Rose, Pat.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Expanded `backend` values to `auto`, `cpu`, `threads`, `cuda`, `amdgpu`,
+    `metal`, and `oneapi`.
+  - Expanded `accelerator` values to `auto`, `none`, `gpu`, `cuda`,
+    `amdgpu`, `metal`, and `oneapi`.
+  - Added control-validation tests.
+  - Updated public claims, capability status, validation debt, NEWS, and the
+    model-status article.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `man/hs_control.Rd`.
+  - `Rscript -e "devtools::test(filter = 'phase0-api')"`
+  - Result: passed with `27 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `143 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says planned backend/control vocabulary only.
+  - Public wording does not claim CPU/GPU execution, Metal/CUDA/AMDGPU/oneAPI
+    availability, backend benchmarking, or CPU/GPU numerical agreement.

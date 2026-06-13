@@ -15,6 +15,8 @@ This page separates what exists from what is planned.
 - Team operating memory and claim registers.
 - `hs_control()` with default validation-only behavior and an experimental
   `engine = "julia"` option for tiny local bridge examples.
+- `hs_control()` stores planned CPU-thread, CUDA, AMDGPU, Metal, and oneAPI
+  backend names as control metadata.
 - `animal()` as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`, method,
