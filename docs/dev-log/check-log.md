@@ -2337,3 +2337,20 @@ with private memory.
   statement to `01-v0.1-contract.md` (predicate item 4 docs half; textbook-grounded
   proposal). Docs only.
   - Remote: R-CMD-check `27475739750`, Pages `27475776217`: passed.
+
+## 2026-06-13 Boundary/identifiability flag (predicate item 4 R-half)
+
+- Goal: implement the R-side surfacing half of promotion-predicate item 4 -
+  `fit_diagnostics()` + `summary()` flag a variance-component boundary so a
+  boundary h2 is not read as ordinary. Engine boundary-stability stays twin work.
+- Active lenses: Fisher, Emmy, Rose. Spawned subagents: none.
+- Files: `R/extractors.R` (`hs_fit_boundary_flag()` + `at_boundary` row),
+  `R/fit-object.R` (summary note), `test-fit-object.R` (metric set + detection
+  test), `01-v0.1-contract.md` (predicate item 4), `capability-status.md`.
+- Local checks: `devtools::test()` test-fit-object pass; `rcmdcheck(--as-cran)`
+  0/0/1 (benign); `air format .` clean.
+- Boundary: a diagnostic, not a fitting/default claim; capability stays partial.
+- Remote checks for commit `c53f927`:
+  - GitHub Actions R-CMD-check `27476005389`: passed.
+  - GitHub Actions pkgdown: passed.
+  - GitHub Pages build/deploy `27476045834`: passed.
