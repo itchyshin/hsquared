@@ -62,3 +62,9 @@ with private memory.
   - Added shared labels and Phase 0-8 milestones to both repos.
   - Opened `hsquared` issues #1-#7.
   - Opened `HSquared.jl` issues #1-#7.
+- Final evidence commit:
+  - `git commit -m "Record Phase 0 R closeout evidence"`
+  - `git push origin main`
+  - `gh run watch 27452446531 --repo itchyshin/hsquared --exit-status`
+- Result: final commit `2268ff4` is on `main`; R-CMD-check passed in GitHub
+  Actions in 1m12s.

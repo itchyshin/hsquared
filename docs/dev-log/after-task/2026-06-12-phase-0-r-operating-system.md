@@ -49,8 +49,8 @@ twin thread `019ebb88-ee69-7be2-850c-0e4840c34734`; the twin owns
   clean on `main`, latest commit `079dbf2`, and latest GitHub Actions CI
   passed.
 - R remote verification:
-  commit `d956a25` is pushed to `main`; GitHub Actions R-CMD-check run
-  `27452325194` passed in 1m33s.
+  final commit `2268ff4` is pushed to `main`; GitHub Actions R-CMD-check run
+  `27452446531` passed in 1m12s.
 - Public visibility:
   `https://github.com/itchyshin/hsquared` and
   `https://github.com/itchyshin/HSquared.jl` are both public.

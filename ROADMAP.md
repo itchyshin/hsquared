@@ -19,7 +19,7 @@ claims.
 
 Julia twin status: `HSquared.jl` is public and green on GitHub Actions as of
 the Phase 0 scaffold. R twin status: `hsquared` is public and green on
-GitHub Actions as of commit `d956a25`.
+GitHub Actions as of commit `2268ff4`.
 
 Issue ledger:
 
