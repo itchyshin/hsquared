@@ -1420,6 +1420,13 @@ with private memory.
   - Public wording does not claim eQTL fitting, omics models, automatic
     annotation joins, marker/QTL/GWAS fitting, GLLVM support, GPU execution,
     ASReml parity, or speedup.
+- Remote checks for commit `cc62dd2`:
+  - GitHub Actions R-CMD-check `27464161209`: passed.
+  - GitHub Actions pkgdown `27464161179`: passed.
+  - GitHub Pages build/deploy `27464191840`: passed.
+- Issue ledger:
+  - Updated issue #8:
+    <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698262135>.
 
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 

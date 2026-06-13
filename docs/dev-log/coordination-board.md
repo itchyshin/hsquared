@@ -32,7 +32,7 @@
 | 2026-06-13 | R | Emmy/Jason/Pat/Rose | main | `hs_data()` genotype-marker alignment | pushed; CI/pkgdown/Pages passed | alignment validation only | no Julia action required |
 | 2026-06-13 | R | Emmy/Jason/Pat/Rose/Grace | main | `summary.hs_data()` marker-status diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only | no Julia action required |
 | 2026-06-13 | R | Emmy/Pat/Rose/Grace | main | `data_status()` diagnostic helper | pushed; CI/pkgdown/Pages passed | diagnostic only | no Julia action required |
-| 2026-06-13 | R | Emmy/Jason/Pat/Rose/Grace | main | `hs_data()` annotation-feature diagnostics | local checks passed | diagnostic only; no eQTL/omics model terms | push, watch CI/pkgdown/Pages, notify issue #8 |
+| 2026-06-13 | R | Emmy/Jason/Pat/Rose/Grace | main | `hs_data()` annotation-feature diagnostics | complete; CI/pkgdown/Pages passed; issue #8 notified | diagnostic only; no eQTL/omics model terms | no Julia action required |
 | 2026-06-13 | R | Emmy/Darwin/Pat/Rose/Grace | main | `hs_data()` environment-key diagnostics | complete; CI/pkgdown/Pages passed; issue #8 notified | diagnostic only; no environment-effect model terms | choose next data, validation, or bridge slice |
 | 2026-06-13 | R | Emmy/Henderson/Pat/Rose/Grace | main | `summary.hs_data()` pedigree-status diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only | no Julia action required |
 | 2026-06-13 | R | Boole/Noether/Emmy/Hopper/Pat/Rose/Grace | main | `animal(1 \| id)` hs_data pedigree shorthand | pushed; CI/pkgdown/Pages passed | no new fitting; shorthand only when bundle has pedigree | update issues #4/#8 and notify Julia twin |

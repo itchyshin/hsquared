@@ -65,7 +65,9 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- GitHub Actions R-CMD-check `27464161209`: passed for commit `cc62dd2`.
+- GitHub Actions pkgdown `27464161179`: passed for commit `cc62dd2`.
+- GitHub Pages build/deploy `27464191840`: passed after the pkgdown publish.
 
 ## Rose Audit
 
@@ -97,6 +99,9 @@ The focused tests cover:
 ## Coordination Notes
 
 R-only slice. No Julia payload or engine API change is required.
+
+Issue #8 was updated:
+<https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698262135>.
 
 ## Known Limitations
 
