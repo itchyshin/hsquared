@@ -156,4 +156,8 @@ predictors as latent variables integrated over with a level-aware covariance
 (e.g. species → pedigree/relmat). Syntax surface: an `mi(x)` formula token plus a
 `miss_control()`-style control. The integration is Julia-engine work
 (`HSquared.jl`); the R lane surfaces the syntax and validation. Important for
-`HSquared.jl` too — coordinate via shared repo memory.
+`HSquared.jl` too — coordinate via shared repo memory. The planned design and
+the sister-repo reuse map are recorded in
+[`docs/design/08-missing-data-plan.md`](docs/design/08-missing-data-plan.md)
+(status: planned; every grammar/control choice is a proposal awaiting
+maintainer sign-off).
