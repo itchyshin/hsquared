@@ -28,7 +28,9 @@ maternal/paternal effects, dominance, epistasis, cytoplasmic inheritance,
 imprinting, and custom relationship or precision matrices. Those markers are
 syntax reservations only and currently abort as planned, not implemented.
 Use `formula_status()` to inspect the parsed, reserved, and planned formula
-grammar from R.
+grammar from R. Output extractor names such as `qtl_table()`, `gwas_table()`,
+`eqtl_table()`, `marker_effects()`, `marker_variance_explained()`, and
+`lod_scores()` are also reserved for future fitted marker/QTL/eQTL results.
 
 The intended two-package shape is:
 

@@ -26,6 +26,7 @@
 | sparse Ainv | partial | Julia lane has tiny `pedigree_inverse()` tests; R live validation fixtures check the three-animal bridge path and optional Mrode9/nadiv comparator when available | R-side construction and production sparse fitting remain planned. |
 | EBVs/BLUPs | partial | opt-in tiny Julia bridge returns breeding values | Experimental tiny/local only. |
 | PEV/reliability | partial | R extractor contract tests over mocked `hsquared_fit` fields and opt-in tiny Julia bridge enrichment when available | Dense validation-path only; production sparse PEV/reliability and comparator validation remain planned. |
+| marker/QTL/eQTL extractor names | partial | local tests over mocked `hsquared_fit` fields and default planned-not-implemented errors | Output vocabulary only; no marker, QTL, GWAS, or eQTL model fitting. |
 | multivariate G matrices | planned | none | Phase 3. |
 | factor-analytic G matrices | planned | none | Phase 4. |
 | genomic/single-step models | planned | none | Phase 5. |

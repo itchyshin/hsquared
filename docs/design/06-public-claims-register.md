@@ -30,6 +30,7 @@ public examples.
 | Gaussian animal model REML/ML | planned | none | planned |
 | EBVs/BLUPs and heritability extraction | partial | opt-in tiny Julia bridge tests plus internal extractor tests | experimental tiny/local only |
 | PEV and reliability extraction | partial | R extractor contract tests over mocked fields; opt-in tiny Julia bridge enrichment uses exported dense validation extractors when available | dense validation-path only; not production sparse PEV/reliability |
+| marker/QTL/eQTL extractor names | partial | local tests over mocked `hsquared_fit` fields and default planned-not-implemented errors | output extractor vocabulary only; no marker, QTL, GWAS, or eQTL fitting |
 | multivariate G matrices | planned | none | roadmap |
 | factor-analytic G matrices | planned | none | roadmap |
 | genomic and single-step models | planned | none | roadmap |

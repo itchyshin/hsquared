@@ -1333,3 +1333,41 @@ with private memory.
   - GitHub Actions pkgdown `27462165981`: passed in 1m42s.
   - GitHub Pages build/deploy `27462200373`: passed; Node.js 20 deprecation
     warning is from the Pages action stack, not this package code.
+
+## 2026-06-13 marker/QTL/eQTL extractor contract
+
+- Goal: reserve user-facing marker, QTL, GWAS, and eQTL output extractor names
+  without implying model fitting support.
+- Active lenses: Jason, Fisher, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `marker_effects()`, `marker_variance_explained()`, `qtl_table()`,
+    `gwas_table()`, `eqtl_table()`, and `lod_scores()`.
+  - Each extractor is an S3 generic.
+  - `hsquared_fit` methods return matching future result payload fields.
+  - Default methods error clearly that marker-scan, QTL, GWAS, and eQTL models
+    are not fitted yet.
+  - Added tests, roxygen docs, pkgdown reference entry, README/model-status
+    wording, capability status, validation debt, public claims, NEWS, and board
+    updates.
+- Local checks:
+  - `air format . && Rscript -e "devtools::test(filter = 'fit-object')"`
+  - Result: passed with `32 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `NAMESPACE` and `marker_extractors.Rd`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `306 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "qtl_table\\(\\).*fit|gwas_table\\(\\).*fit|eqtl_table\\(\\).*fit|marker_effects\\(\\).*fit|marker-scan.*implemented|GWAS.*implemented|eQTL.*implemented|QTL.*implemented|supports QTL|supports eQTL|supports genomic" README.md R man tests vignettes docs/design docs/dev-log NEWS.md _pkgdown.yml`.
+  - Result: hits were planned, blocked, or negated wording only.
+  - Public wording says output extractor vocabulary only.
+  - Public wording does not claim marker scanning, QTL, GWAS, eQTL, genomic
+    fitting, or generated result tables.

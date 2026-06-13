@@ -140,6 +140,131 @@ reliability.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "reliability", "reliability estimates")
 }
 
+#' Extract planned marker, QTL, GWAS, and eQTL results
+#'
+#' These extractor names are reserved for future genomic, QTL, GWAS, and eQTL
+#' fitted results. They return values only when an `hsquared_fit` object
+#' contains the corresponding result field. The current package does not fit
+#' marker-scan, QTL, GWAS, or eQTL models.
+#'
+#' @inheritParams variance_components
+#'
+#' @return The requested marker or scan result for `hsquared_fit` objects that
+#'   contain the corresponding field.
+#' @name marker_extractors
+NULL
+
+#' @rdname marker_extractors
+#' @export
+marker_effects <- function(object, ...) {
+  UseMethod("marker_effects")
+}
+
+#' @export
+marker_effects.default <- function(object, ...) {
+  hs_marker_extractor_default("marker_effects")
+}
+
+#' @export
+marker_effects.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "marker_effects", "marker effects")
+}
+
+#' @rdname marker_extractors
+#' @export
+marker_variance_explained <- function(object, ...) {
+  UseMethod("marker_variance_explained")
+}
+
+#' @export
+marker_variance_explained.default <- function(object, ...) {
+  hs_marker_extractor_default("marker_variance_explained")
+}
+
+#' @export
+marker_variance_explained.hsquared_fit <- function(object, ...) {
+  hs_fit_result(
+    object,
+    "marker_variance_explained",
+    "marker variance explained"
+  )
+}
+
+#' @rdname marker_extractors
+#' @export
+qtl_table <- function(object, ...) {
+  UseMethod("qtl_table")
+}
+
+#' @export
+qtl_table.default <- function(object, ...) {
+  hs_marker_extractor_default("qtl_table")
+}
+
+#' @export
+qtl_table.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "qtl_table", "QTL table")
+}
+
+#' @rdname marker_extractors
+#' @export
+gwas_table <- function(object, ...) {
+  UseMethod("gwas_table")
+}
+
+#' @export
+gwas_table.default <- function(object, ...) {
+  hs_marker_extractor_default("gwas_table")
+}
+
+#' @export
+gwas_table.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "gwas_table", "GWAS table")
+}
+
+#' @rdname marker_extractors
+#' @export
+eqtl_table <- function(object, ...) {
+  UseMethod("eqtl_table")
+}
+
+#' @export
+eqtl_table.default <- function(object, ...) {
+  hs_marker_extractor_default("eqtl_table")
+}
+
+#' @export
+eqtl_table.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "eqtl_table", "eQTL table")
+}
+
+#' @rdname marker_extractors
+#' @export
+lod_scores <- function(object, ...) {
+  UseMethod("lod_scores")
+}
+
+#' @export
+lod_scores.default <- function(object, ...) {
+  hs_marker_extractor_default("lod_scores")
+}
+
+#' @export
+lod_scores.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "lod_scores", "LOD scores")
+}
+
+hs_marker_extractor_default <- function(name) {
+  stop(
+    "`",
+    name,
+    "()` requires an `hsquared_fit` object with future marker/QTL/eQTL ",
+    "results. The current package reserves this extractor name but does not ",
+    "fit marker-scan, QTL, GWAS, or eQTL models yet.",
+    call. = FALSE
+  )
+}
+
 #' Extract fixed effects
 #'
 #' `fixef()` is part of the planned v0.1 fitted-object contract for

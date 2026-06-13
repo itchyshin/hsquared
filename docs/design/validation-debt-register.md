@@ -24,6 +24,7 @@
 | univariate Gaussian animal model | planned | none | Fisher/Henderson | Julia Phase 1. |
 | EBVs/BLUPs | partial | opt-in tiny Julia bridge returns breeding values | Fisher/Pat | Needs Mrode/comparator validation. |
 | PEV/reliability | partial | R extractor contract tests over mocked fields; opt-in tiny bridge enriches local Julia results from dense validation extractors when available | Fisher/Pat | Needs Mrode/comparator validation and production sparse strategy. |
+| marker/QTL/eQTL extractor names | partial | local tests over mocked `hsquared_fit` result fields and default planned-not-implemented errors | Jason/Fisher/Pat/Rose | Output vocabulary only; no marker scanning, QTL, GWAS, or eQTL fitting. |
 | Mrode simple animal example | planned | none | Mrode/Curie | Mrode9 pedigree-Ainv comparator exists; fitted model outputs and estimands remain planned. |
 | multivariate G matrix | planned | none | Noether/Kirkpatrick | Phase 3. |
 | factor-analytic G matrix | planned | none | Noether/Fisher/Kirkpatrick | Phase 4. |

@@ -11,6 +11,15 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
       value = c(0.2, 0.25)
     ),
     reliability = data.frame(id = c("a", "b"), value = c(0.8, 0.75)),
+    marker_effects = data.frame(marker = c("m1", "m2"), effect = c(0.2, -0.1)),
+    marker_variance_explained = data.frame(
+      marker = c("m1", "m2"),
+      proportion = c(0.05, 0.02)
+    ),
+    qtl_table = data.frame(marker = "m1", lod = 3.2),
+    gwas_table = data.frame(marker = "m1", p_value = 0.01),
+    eqtl_table = data.frame(gene = "g1", marker = "m1", p_value = 0.02),
+    lod_scores = data.frame(position = c(10, 20), lod = c(2.1, 3.2)),
     fixed_effects = c("(Intercept)" = 1.2, sexm = -0.3),
     random_effects = list(animal = c(a = 0.1, b = -0.1)),
     loglik = -12.5,
@@ -34,6 +43,15 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(breeding_values(fit), result$breeding_values)
   expect_equal(prediction_error_variance(fit), result$prediction_error_variance)
   expect_equal(reliability(fit), result$reliability)
+  expect_equal(marker_effects(fit), result$marker_effects)
+  expect_equal(
+    marker_variance_explained(fit),
+    result$marker_variance_explained
+  )
+  expect_equal(qtl_table(fit), result$qtl_table)
+  expect_equal(gwas_table(fit), result$gwas_table)
+  expect_equal(eqtl_table(fit), result$eqtl_table)
+  expect_equal(lod_scores(fit), result$lod_scores)
   expect_equal(fixef(fit), result$fixed_effects)
   expect_equal(ranef(fit), result$random_effects)
   expect_equal(predict(fit), result$predictions)
@@ -70,6 +88,26 @@ test_that("extractor defaults do not imply fitted model support", {
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
+  expect_error(
+    marker_effects(list()),
+    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    fixed = TRUE
+  )
+  expect_error(
+    qtl_table(list()),
+    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    fixed = TRUE
+  )
+  expect_error(
+    gwas_table(list()),
+    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    fixed = TRUE
+  )
+  expect_error(
+    eqtl_table(list()),
+    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    fixed = TRUE
+  )
 })
 
 test_that("hsquared_fit extractors fail loudly when a result field is absent", {
@@ -87,6 +125,11 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     reliability(fit),
     "does not contain reliability estimates",
+    fixed = TRUE
+  )
+  expect_error(
+    qtl_table(fit),
+    "does not contain QTL table",
     fixed = TRUE
   )
 })

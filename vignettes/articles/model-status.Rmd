@@ -62,6 +62,10 @@ This page separates what exists from what is planned.
   objects and mocked Julia result fields, including variance components,
   heritability, EBVs, PEV, reliability, fixed effects, random effects,
   log-likelihood, AIC, prediction, and summaries.
+- Reserved marker/QTL/eQTL extractor names: `marker_effects()`,
+  `marker_variance_explained()`, `qtl_table()`, `gwas_table()`, `eqtl_table()`,
+  and `lod_scores()`. These only return values for future `hsquared_fit`
+  objects that contain matching result fields.
 - `hs_data()` as a lightweight input container with ID maps for phenotype,
   pedigree, genotype, expression, marker, annotation, and environment inputs.
 - `summary(hs_data(...))` reports ID overlap and mismatch counts for
@@ -95,6 +99,7 @@ This page separates what exists from what is planned.
   or environment components in `hs_data()`.
 - Allele coding, marker imputation, PLINK/VCF parsing, or marker scanning from
   marker maps.
+- Marker, QTL, GWAS, or eQTL result generation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - Permanent environment, common environment, maternal/paternal, dominance,
