@@ -41,8 +41,14 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(variance_components(fit), result$variance_components)
   expect_equal(heritability(fit), result$heritability)
   expect_equal(breeding_values(fit), result$breeding_values)
+  expect_equal(EBV(fit), result$breeding_values)
+  expect_equal(BLUP(fit), result$breeding_values)
   expect_equal(prediction_error_variance(fit), result$prediction_error_variance)
   expect_equal(reliability(fit), result$reliability)
+  expect_equal(
+    accuracy(fit),
+    transform(result$reliability, value = sqrt(value))
+  )
   expect_equal(marker_effects(fit), result$marker_effects)
   expect_equal(
     marker_variance_explained(fit),
@@ -81,12 +87,27 @@ test_that("extractor defaults do not imply fitted model support", {
     fixed = TRUE
   )
   expect_error(
+    EBV(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    BLUP(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
     prediction_error_variance(list()),
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
   expect_error(
     reliability(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    accuracy(list()),
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
@@ -130,6 +151,11 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
     fixed = TRUE
   )
   expect_error(
+    accuracy(fit),
+    "does not contain reliability estimates",
+    fixed = TRUE
+  )
+  expect_error(
     qtl_table(fit),
     "does not contain QTL table",
     fixed = TRUE
@@ -142,6 +168,34 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     residuals(fit),
     "does not contain predictions",
+    fixed = TRUE
+  )
+})
+
+test_that("accuracy requires reliability values on [0, 1]", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:2),
+    result = list(
+      reliability = data.frame(id = c("a", "b"), value = c(0.5, 1.2))
+    )
+  )
+
+  expect_error(
+    accuracy(fit),
+    "between 0 and 1",
+    fixed = TRUE
+  )
+
+  malformed <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:2),
+    result = list(reliability = data.frame(id = c("a", "b"), se = c(0.1, 0.2)))
+  )
+
+  expect_error(
+    accuracy(malformed),
+    "with a `value` column",
     fixed = TRUE
   )
 })

@@ -2,9 +2,12 @@
 % Please edit documentation in R/extractors.R
 \name{reliability}
 \alias{reliability}
-\title{Extract reliability estimates}
+\alias{accuracy}
+\title{Extract reliability and accuracy estimates}
 \usage{
 reliability(object, ...)
+
+accuracy(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object.}
@@ -17,5 +20,6 @@ Reliability estimates for \code{hsquared_fit} objects.
 \description{
 \code{reliability()} is part of the planned v0.1 fitted-object contract. It
 returns values only when an \code{hsquared_fit} object contains a Julia result
-field for reliability estimates.
+field for reliability estimates. \code{accuracy()} returns the square root of
+reliability for \code{hsquared_fit} objects.
 }

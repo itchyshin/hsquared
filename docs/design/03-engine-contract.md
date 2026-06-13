@@ -79,7 +79,10 @@ before returning a fitted object. The R extractor contract also includes
 tiny opt-in Julia results by calling exported Julia dense validation extractors
 when those functions exist, while Julia's base `result_payload()` remains
 stable. R `fitted()` and `residuals()` methods use the normalized
-`predictions` field and stored response vector when both are available.
+`predictions` field and stored response vector when both are available. R
+`EBV()` and `BLUP()` are aliases for `breeding_values()`, and `accuracy()` is a
+derived square-root reliability extractor when reliability estimates are
+present.
 
 The supplied-variance Henderson MME bridge returns a smaller result shape:
 

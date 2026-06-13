@@ -3,6 +3,7 @@
 ## New features
 
 * `animal()` is now exported as an inert formula marker, and `hsquared()` now parses the narrow v0.1 formula contract `animal(1 | id, pedigree = ped)` before stopping at the planned Julia bridge boundary (#4, #6).
+* `EBV()` and `BLUP()` now alias `breeding_values()` for `hsquared_fit` objects, and `accuracy()` derives square-root reliability when reliability estimates are present (#5).
 * `fitted()` and `residuals()` now work for `hsquared_fit` objects that contain fitted-value predictions and response values (#5).
 * `hs_control()` now has an experimental `engine = "julia"` option that lets local developers run the tiny v0.1 animal-model payload through a sibling `HSquared.jl` checkout via JuliaCall. The default engine remains validation-only, and general fitted animal-model support is still planned (#6).
 * `prediction_error_variance()` and `reliability()` are now part of the R fitted-object extractor contract. They work for `hsquared_fit` objects containing those result fields (#5, #6).

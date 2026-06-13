@@ -1290,6 +1290,41 @@ with private memory.
   - GitHub Actions R-CMD-check `27463241417`: passed in 1m37s.
   - GitHub Actions pkgdown `27463241406`: passed.
   - GitHub Pages build/deploy `27463273446`: passed.
+
+## 2026-06-13 EBV/BLUP aliases and accuracy extractor
+
+- Goal: add applied-user extractor ergonomics for `hsquared_fit` objects:
+  `EBV()`, `BLUP()`, and `accuracy()`.
+- Active lenses: Emmy, Falconer, Fisher, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `EBV()` and `BLUP()` as S3 aliases for `breeding_values()`.
+  - Added `accuracy()` as a derived square-root reliability extractor.
+  - Added guardrails for malformed reliability payloads and values outside
+    `[0, 1]`.
+  - Updated NEWS, README, model-status article, v0.1 contract, engine
+    contract, capability status, validation debt, public claims, and board.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'fit-object')"`
+  - Result: documentation updated, formatting completed, and focused tests
+    passed with `48 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `349 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n 'accuracy\\(\\).*validated|accuracy\\(\\).*general|EBV\\(\\).*general|BLUP\\(\\).*general|production accuracy|production sparse|general animal-model support|ASReml parity|speedup|fast|faster' README.md NEWS.md R man tests vignettes docs/design docs/dev-log _pkgdown.yml`.
+  - Result: hits were planned, blocked, negated, or prior scan/report records.
+  - Public wording says alias and derived extractors for `hsquared_fit` objects
+    only.
+  - Public wording does not claim general model fitting, production accuracy,
+    production sparse fitting, ASReml parity, or speedup.
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
 - Rose wording sweep:

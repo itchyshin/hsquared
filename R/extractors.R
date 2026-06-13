@@ -56,7 +56,8 @@ heritability.hsquared_fit <- function(object, ...) {
 #' Extract breeding values
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It
-#' works for `hsquared_fit` objects that contain a Julia result.
+#' works for `hsquared_fit` objects that contain a Julia result. `EBV()` and
+#' `BLUP()` are aliases for applied quantitative-genetic workflows.
 #'
 #' @inheritParams variance_components
 #'
@@ -68,16 +69,54 @@ breeding_values <- function(object, ...) {
 
 #' @export
 breeding_values.default <- function(object, ...) {
-  stop(
-    "`breeding_values()` requires an `hsquared_fit` object. The current ",
-    "package only returns these from fitted `hsquared_fit` results.",
-    call. = FALSE
-  )
+  hs_breeding_values_default("breeding_values")
 }
 
 #' @export
 breeding_values.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "breeding_values", "breeding values")
+}
+
+#' @rdname breeding_values
+#' @export
+EBV <- function(object, ...) {
+  UseMethod("EBV")
+}
+
+#' @export
+EBV.default <- function(object, ...) {
+  hs_breeding_values_default("EBV")
+}
+
+#' @export
+EBV.hsquared_fit <- function(object, ...) {
+  breeding_values(object, ...)
+}
+
+#' @rdname breeding_values
+#' @export
+BLUP <- function(object, ...) {
+  UseMethod("BLUP")
+}
+
+#' @export
+BLUP.default <- function(object, ...) {
+  hs_breeding_values_default("BLUP")
+}
+
+#' @export
+BLUP.hsquared_fit <- function(object, ...) {
+  breeding_values(object, ...)
+}
+
+hs_breeding_values_default <- function(name) {
+  stop(
+    "`",
+    name,
+    "()` requires an `hsquared_fit` object. The current package only returns ",
+    "these from fitted `hsquared_fit` results.",
+    call. = FALSE
+  )
 }
 
 #' Extract prediction error variances
@@ -112,11 +151,12 @@ prediction_error_variance.hsquared_fit <- function(object, ...) {
   )
 }
 
-#' Extract reliability estimates
+#' Extract reliability and accuracy estimates
 #'
 #' `reliability()` is part of the planned v0.1 fitted-object contract. It
 #' returns values only when an `hsquared_fit` object contains a Julia result
-#' field for reliability estimates.
+#' field for reliability estimates. `accuracy()` returns the square root of
+#' reliability for `hsquared_fit` objects.
 #'
 #' @inheritParams variance_components
 #'
@@ -138,6 +178,42 @@ reliability.default <- function(object, ...) {
 #' @export
 reliability.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "reliability", "reliability estimates")
+}
+
+#' @rdname reliability
+#' @export
+accuracy <- function(object, ...) {
+  UseMethod("accuracy")
+}
+
+#' @export
+accuracy.default <- function(object, ...) {
+  stop(
+    "`accuracy()` requires an `hsquared_fit` object with reliability ",
+    "estimates.",
+    call. = FALSE
+  )
+}
+
+#' @export
+accuracy.hsquared_fit <- function(object, ...) {
+  rel <- reliability(object, ...)
+  if (!is.data.frame(rel) || !"value" %in% names(rel)) {
+    stop(
+      "Reliability results must be a data frame with a `value` column to ",
+      "compute accuracy.",
+      call. = FALSE
+    )
+  }
+  if (any(is.na(rel$value)) || any(rel$value < 0) || any(rel$value > 1)) {
+    stop(
+      "Reliability values must be between 0 and 1 to compute accuracy.",
+      call. = FALSE
+    )
+  }
+  out <- rel
+  out$value <- sqrt(out$value)
+  out
 }
 
 #' Extract planned marker, QTL, GWAS, and eQTL results

@@ -2,9 +2,15 @@
 % Please edit documentation in R/extractors.R
 \name{breeding_values}
 \alias{breeding_values}
+\alias{EBV}
+\alias{BLUP}
 \title{Extract breeding values}
 \usage{
 breeding_values(object, ...)
+
+EBV(object, ...)
+
+BLUP(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object.}
@@ -16,5 +22,6 @@ Breeding value results for \code{hsquared_fit} objects.
 }
 \description{
 \code{breeding_values()} is part of the planned v0.1 fitted-object contract. It
-works for \code{hsquared_fit} objects that contain a Julia result.
+works for \code{hsquared_fit} objects that contain a Julia result. \code{EBV()} and
+\code{BLUP()} are aliases for applied quantitative-genetic workflows.
 }
