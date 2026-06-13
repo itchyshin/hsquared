@@ -21,11 +21,11 @@ applicable dense validation extractors, the target also attaches PEV and
 reliability fields. The fitted-object extractor contract now includes variance
 components, heritability, EBVs/BLUPs, PEV, reliability, accuracy, fixed
 effects, random effects, log-likelihood, AIC, prediction, fitted values,
-residuals, summaries, and `fit_diagnostics()` for convergence and optimizer
-metadata. In the experimental local bridge, PEV/reliability are enriched from
-exported `HSquared.jl` dense validation extractors when available; this is
-still not production sparse reliability or general animal-model support. A
-lightweight
+residuals, summaries, `coef()`, `nobs()`, and `fit_diagnostics()` for
+convergence and optimizer metadata. In the experimental local bridge,
+PEV/reliability are enriched from exported `HSquared.jl` dense validation
+extractors when available; this is still not production sparse reliability or
+general animal-model support. A lightweight
 `hs_data()` container now records phenotype, pedigree, genotype, expression,
 marker, annotation, and environment inputs for future integrated workflows,
 including optional expression-feature annotation diagnostics through

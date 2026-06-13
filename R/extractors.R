@@ -470,6 +470,11 @@ fixef.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "fixed_effects", "fixed-effect estimates")
 }
 
+#' @export
+coef.hsquared_fit <- function(object, ...) {
+  fixef(object, ...)
+}
+
 #' Extract random effects
 #'
 #' `ranef()` is part of the planned v0.1 fitted-object contract for
@@ -510,6 +515,21 @@ logLik.hsquared_fit <- function(object, ...) {
 #' @export
 AIC.hsquared_fit <- function(object, ..., k = 2) {
   stats::AIC(stats::logLik(object), ..., k = k)
+}
+
+#' @importFrom stats nobs
+#' @export
+nobs.hsquared_fit <- function(object, ...) {
+  n <- object$result$nobs %||%
+    if (!is.null(object$payload$y)) length(object$payload$y) else NULL
+  if (is.null(n)) {
+    stop(
+      "This `hsquared_fit` object does not contain number-of-observations ",
+      "metadata.",
+      call. = FALSE
+    )
+  }
+  as.integer(n)
 }
 
 #' @export

@@ -62,11 +62,13 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(gwas_table(fit), result$gwas_table)
   expect_equal(eqtl_table(fit), result$eqtl_table)
   expect_equal(lod_scores(fit), result$lod_scores)
+  expect_equal(stats::coef(fit), result$fixed_effects)
   expect_equal(fixef(fit), result$fixed_effects)
   expect_equal(ranef(fit), result$random_effects)
   expect_equal(predict(fit), result$predictions)
   expect_equal(fitted(fit), result$predictions$.fitted)
   expect_equal(residuals(fit), seq_len(10) - result$predictions$.fitted)
+  expect_equal(stats::nobs(fit), 10L)
   expect_equal(as.numeric(logLik(fit)), -12.5)
   expect_equal(attr(logLik(fit), "df"), 4L)
   expect_equal(attr(logLik(fit), "nobs"), 10L)
@@ -200,6 +202,27 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     residuals(fit),
     "does not contain predictions",
+    fixed = TRUE
+  )
+})
+
+test_that("hsquared_fit nobs falls back to response payload", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:4),
+    result = list(converged = TRUE)
+  )
+
+  expect_equal(stats::nobs(fit), 4L)
+
+  missing <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(),
+    result = list(converged = TRUE)
+  )
+  expect_error(
+    stats::nobs(missing),
+    "does not contain number-of-observations metadata",
     fixed = TRUE
   )
 })

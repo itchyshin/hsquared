@@ -1778,6 +1778,43 @@ with private memory.
     `actions/checkout@v4` and `actions/upload-artifact@v4`; package checks and
     deployment succeeded.
 
+## 2026-06-13 coef/nobs S3 fit methods
+
+- Goal: make `hsquared_fit` objects behave a little more like ordinary R fit
+  objects by adding `coef()` as a fixed-effect alias and `nobs()` as an
+  observation-count extractor.
+- Active lenses: Emmy, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `coef.hsquared_fit()` delegating to `fixef()`.
+  - Added `nobs.hsquared_fit()` using `result$nobs` with a response-payload
+    fallback.
+  - Added tests for `coef()`, `nobs()`, fallback behavior, and missing
+    observation metadata.
+  - Added `importFrom(stats, nobs)` through roxygen after `R CMD check` caught
+    the missing namespace generic during clean namespace loading.
+  - Updated README, NEWS, model-status article, capability status, and public
+    claims register.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'fit-object')"`
+  - Result: docs updated, formatting completed, focused tests passed with
+    `58 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()" && Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()" && Rscript -e "devtools::check()"`
+  - Result before import fix: full tests passed with `412 pass`; pkgdown had
+    `No problems found`; `devtools::check()` failed with `3 warnings` and
+    `2 notes` because `nobs` was not imported for namespace S3 registration.
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'fit-object')" && Rscript -e "devtools::check()"`
+  - Result after import fix: focused tests passed with `58 pass`; package check
+    passed with `0 errors`, `0 warnings`, and `0 notes`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `git diff --check`
+  - Result: clean.
+- Rose wording boundary:
+  - `coef()` and `nobs()` are S3 ergonomics over existing payload fields.
+  - No public wording claims new fitting, variance-component estimation,
+    production sparse PEV/reliability, or comparator parity.
+
 ## 2026-06-13 Henderson MME bridge PEV/reliability parity
 
 - Goal: let the supplied-variance Henderson MME bridge target attach dense
