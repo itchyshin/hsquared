@@ -17,6 +17,23 @@ fit <- hsquared(
 )
 ```
 
+When users pass an
+[`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+bundle with a pedigree component, the same contract can be written
+without repeating the pedigree argument:
+
+``` r
+
+bundle <- hs_data(phenotypes = dat, pedigree = ped)
+
+fit <- hsquared(
+  y ~ sex + age + animal(1 | id),
+  data = bundle,
+  family = gaussian(),
+  REML = TRUE
+)
+```
+
 The R side validates the formula, data, response, pedigree columns, and
 animal IDs. It builds the internal bridge payload for `HSquared.jl`. The
 default call still stops at the planned bridge boundary, so this is not

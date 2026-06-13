@@ -53,7 +53,10 @@ This page separates what exists from what is planned.
   vocabulary and currently error as not implemented.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   as an inert formula marker.
-- A v0.1 parser for `animal(1 | id, pedigree = ped)`.
+- A v0.1 parser for `animal(1 | id, pedigree = ped)`, and for
+  `animal(1 | id)` when `data` is an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  bundle with a pedigree component.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`,
   method, family, encoded IDs, normalized pedigree metadata, and Julia
   target metadata.
@@ -96,8 +99,8 @@ This page separates what exists from what is planned.
   can use an
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   object for the v0.1 animal-model parser, reading model variables from
-  `phenotypes` and formula components such as `pedigree = pedigree` from
-  the bundle.
+  `phenotypes` and using the bundle pedigree by default when
+  `animal(1 | id)` omits `pedigree =`.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 

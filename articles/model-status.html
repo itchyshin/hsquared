@@ -114,7 +114,9 @@ quantitative-genetic and inheritance-kernel vocabulary and currently
 error as not implemented.</li>
 <li>
 <code><a href="../reference/animal.html">animal()</a></code> as an inert formula marker.</li>
-<li>A v0.1 parser for <code>animal(1 | id, pedigree = ped)</code>.</li>
+<li>A v0.1 parser for <code>animal(1 | id, pedigree = ped)</code>, and
+for <code>animal(1 | id)</code> when <code>data</code> is an
+<code><a href="../reference/hs_data.html">hs_data()</a></code> bundle with a pedigree component.</li>
 <li>A tested internal R-to-Julia payload shape with <code>y</code>,
 <code>X</code>, sparse <code>Z</code>, method, family, encoded IDs,
 normalized pedigree metadata, and Julia target metadata.</li>
@@ -164,8 +166,9 @@ match marker-map IDs exactly.</li>
 <li>
 <code><a href="../reference/model_spec.html">model_spec()</a></code> and <code><a href="../reference/hsquared.html">hsquared()</a></code> can use an
 <code><a href="../reference/hs_data.html">hs_data()</a></code> object for the v0.1 animal-model parser, reading
-model variables from <code>phenotypes</code> and formula components such
-as <code>pedigree = pedigree</code> from the bundle.</li>
+model variables from <code>phenotypes</code> and using the bundle
+pedigree by default when <code>animal(1 | id)</code> omits
+<code>pedigree =</code>.</li>
 <li>Local tests for accepted syntax, rejected future syntax, and
 pedigree/data ID checks.</li>
 </ul>

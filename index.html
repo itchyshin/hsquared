@@ -88,7 +88,7 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <span><span class="fu"><a href="reference/data_status.html">data_status</a></span><span class="op">(</span><span class="va">bundle</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
-<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">pedigree</span><span class="op">)</span>,</span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">bundle</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Marker maps can also be checked in the same container:</p>
@@ -103,7 +103,7 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <span>    pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>The marker-map check is metadata validation only. Genomic and QTL/eQTL models remain planned. <code>summary(bundle)</code> and <code>data_status(bundle)</code> report pedigree coverage, founder and parent-link counts, marker-map size, genotype marker-column count, chromosome count, coordinate range, and whether the genotype-marker alignment was checked. When both <code>genotypes</code> and <code>markers</code> are supplied, genotype marker column names must match marker-map IDs exactly.</p>
+<p>The marker-map check is metadata validation only. Genomic and QTL/eQTL models remain planned. <code>summary(bundle)</code> and <code>data_status(bundle)</code> report pedigree coverage, founder and parent-link counts, marker-map size, genotype marker-column count, chromosome count, coordinate range, and whether the genotype-marker alignment was checked. When both <code>genotypes</code> and <code>markers</code> are supplied, genotype marker column names must match marker-map IDs exactly. The animal-model parser uses the bundle pedigree by default, so <code>animal(1 | id)</code> is equivalent to spelling <code>animal(1 | id, pedigree = pedigree)</code> for <code>data = bundle</code>.</p>
 <p>The interface rule is deliberately simple: easy, easy, easy. Applied users are gold; the package should make the common quantitative-genetic model feel obvious before it exposes specialist machinery.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>

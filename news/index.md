@@ -164,6 +164,14 @@
   `phenotypes` and resolving formula components such as
   `pedigree = pedigree` from the bundle
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
+  and
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now allow `animal(1 | id)` to use the pedigree stored in
+  `data = hs_data(..., pedigree = ped)`, while ordinary data frames
+  still require explicit `pedigree = ped`
+  ([\#4](https://github.com/itchyshin/hsquared/issues/4),
+  [\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - Added Phase 0 project operating documentation, an honest placeholder
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   entry point, and

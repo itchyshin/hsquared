@@ -25,7 +25,10 @@ hsquared(
 - formula:
 
   A model formula. The first planned v0.1 syntax is
-  `y ~ fixed + animal(1 | id, pedigree = ped)`.
+  `y ~ fixed + animal(1 | id, pedigree = ped)`, with `animal(1 | id)`
+  also accepted when `data` is an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  object with a pedigree component.
 
 - data:
 
@@ -33,7 +36,8 @@ hsquared(
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   object whose `phenotypes` component contains the model variables. When
   `data` is an `hs_data` object, formula arguments such as
-  `pedigree = pedigree` can refer to named components in the bundle.
+  `pedigree = pedigree` can refer to named components in the bundle, and
+  `animal(1 | id)` uses the bundle pedigree by default.
 
 - family:
 

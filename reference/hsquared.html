@@ -75,14 +75,17 @@ bridge examples when a sibling <code>HSquared.jl</code> checkout is available.</
 
 <dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
 <dd><p>A model formula. The first planned v0.1 syntax is
-<code>y ~ fixed + animal(1 | id, pedigree = ped)</code>.</p></dd>
+<code>y ~ fixed + animal(1 | id, pedigree = ped)</code>, with
+<code>animal(1 | id)</code> also accepted when <code>data</code> is an <code><a href="hs_data.html">hs_data()</a></code> object with a
+pedigree component.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A data frame containing model variables, or an <code><a href="hs_data.html">hs_data()</a></code>
 object whose <code>phenotypes</code> component contains the model variables. When
 <code>data</code> is an <code>hs_data</code> object, formula arguments such as
-<code>pedigree = pedigree</code> can refer to named components in the bundle.</p></dd>
+<code>pedigree = pedigree</code> can refer to named components in the bundle, and
+<code>animal(1 | id)</code> uses the bundle pedigree by default.</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>

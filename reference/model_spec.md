@@ -16,7 +16,10 @@ model_spec(formula, data, family = stats::gaussian(), REML = TRUE, ...)
 - formula:
 
   A model formula. The current implemented grammar is
-  `y ~ fixed + animal(1 | id, pedigree = ped)`.
+  `y ~ fixed + animal(1 | id, pedigree = ped)`, or
+  `y ~ fixed + animal(1 | id)` when `data` is an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  object with a pedigree component.
 
 - data:
 
@@ -24,7 +27,8 @@ model_spec(formula, data, family = stats::gaussian(), REML = TRUE, ...)
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   object whose `phenotypes` component contains the model variables. When
   `data` is an `hs_data` object, formula arguments such as
-  `pedigree = pedigree` can refer to named components in the bundle.
+  `pedigree = pedigree` can refer to named components in the bundle, and
+  `animal(1 | id)` uses the bundle pedigree by default.
 
 - family:
 

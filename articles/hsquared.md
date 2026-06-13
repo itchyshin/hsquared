@@ -41,7 +41,9 @@ The parser currently accepts:
   [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   term;
 - random-intercept syntax: `1 | id`;
-- `pedigree = ped`;
+- `pedigree = ped`, or `animal(1 | id)` when `data` is an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  bundle with a pedigree component;
 - numeric Gaussian responses.
 
 Unsupported syntax is still important because it defines the roadmap.

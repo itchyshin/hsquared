@@ -82,6 +82,18 @@ that is parsed today from syntax that is reserved for later phases.</p>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  REML <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>When users pass an <code><a href="../reference/hs_data.html">hs_data()</a></code> bundle with a pedigree
+component, the same contract can be written without repeating the
+pedigree argument:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bundle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hs_data.html">hs_data</a></span><span class="op">(</span>phenotypes <span class="op">=</span> <span class="va">dat</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">bundle</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  REML <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The R side validates the formula, data, response, pedigree columns,
 and animal IDs. It builds the internal bridge payload for
 <code>HSquared.jl</code>. The default call still stops at the planned
@@ -92,7 +104,7 @@ bridge boundary, so this is not general fitted animal-model support.</p>
 </h2>
 <p>These names are reserved so future models read like the biological
 question:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/qg_effect_markers.html">permanent</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span><span class="op">)</span> <span class="op">+</span></span>
@@ -113,7 +125,7 @@ planned-not-implemented wording.</p>
 </h2>
 <p>Later phases should treat inheritance systems as relationship or
 precision kernels, not as one-off special cases:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/qg_effect_markers.html">dominance</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/qg_effect_markers.html">epistasis</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span></span>
@@ -132,7 +144,7 @@ these relationship or precision matrices yet.</p>
 </h2>
 <p>The genomic vocabulary follows the same rule: readable terms first,
 fitting only after the R-Julia contract and validation exist.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">batch</span> <span class="op">+</span></span>
@@ -150,7 +162,7 @@ QTL, or eQTL models yet.</p>
 </h2>
 <p>The multivariate ladder is planned to connect ordinary G matrices and
 GLLVM-style latent genetic structure:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="va">trait</span> <span class="op">+</span> <span class="va">trait</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span>, cov <span class="op">=</span> <span class="fu">us</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">residual</span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">unit</span>, cov <span class="op">=</span> <span class="fu">us</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -182,7 +194,7 @@ shape is:</p>
 <p>That error is part of the user interface. It tells users the idea is
 on the roadmap without pretending that the model has been fitted.</p>
 <p>For a compact table of the same status information from R, use:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/formula_status.html">formula_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
