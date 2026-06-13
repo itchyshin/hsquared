@@ -1,13 +1,19 @@
 # Genomics, QTL, GLLVM, And Accelerator Plan
 
-This document records the long-range technical plan for `hsquared` and
+This document is the long-range technical plan for `hsquared` and
 `HSquared.jl`. It is a roadmap and design contract, not a claim that these
 features are implemented today.
 
 ## 1. Executive Summary
 
-`hsquared` and `HSquared.jl` should become a coherent modelling language for
-quantitative genetics:
+Build this as a two-layer system with one scientific identity:
+
+```text
+hsquared    R package: applied-user interface, formula grammar, outputs
+HSquared.jl Julia package: sparse/dense engine, solvers, accelerators
+```
+
+The core modelling idea is:
 
 ```text
 phenotype =
@@ -21,9 +27,7 @@ phenotype =
   + residual variation
 ```
 
-`hsquared` owns the easy R interface. `HSquared.jl` owns the sparse, dense,
-low-rank, and accelerator-aware computation. The first user path should remain
-easy:
+The first public path must stay simple:
 
 ```r
 fit <- hsquared(
@@ -34,80 +38,75 @@ fit <- hsquared(
 )
 ```
 
-The larger target is open, Julia-powered software for ASReml-style
-pedigree/genomic models and then beyond: QTL/eQTL, high-dimensional G matrices,
-GLLVMs, unusual inheritance, and benchmarkable CPU/GPU backends.
+The long-range target is open, Julia-powered software for ASReml-style
+pedigree and genomic mixed models, then beyond: QTL/eQTL, high-dimensional G
+matrices, GLLVMs, unusual inheritance, and benchmarkable CPU/GPU backends.
 
 ## 2. Scientific Motivation
 
-Quantitative-genetic users want the same model to connect:
+Quantitative-genetic users need one workflow that can connect phenotypes,
+pedigrees, genotypes, environments, omics, inheritance systems, and selection
+targets. Most tools cover part of that space. The opportunity for `hsquared` is
+not merely "faster ASReml"; it is a coherent modelling language where all these
+sources enter as structured mixed-model components.
 
-- phenotypes;
-- pedigrees;
-- genotypes and markers;
-- genomic relationship matrices;
-- QTL/eQTL/GWAS evidence;
-- expression and multi-omics traits;
-- maternal, paternal, family, litter, plot, and block structure;
-- high-dimensional trait covariance;
-- non-standard inheritance systems.
+The package should serve animal breeding, plant breeding, evolutionary ecology,
+and genetics users who ask:
 
-Existing tools each cover important parts of this space. `hsquared` should not
-be a bundle of unrelated genetics utilities. It should express these pieces as
-structured mixed-model components with a friendly syntax and a high-performance
-engine.
+- What is h2?
+- What are the EBVs or BLUPs?
+- What is the G matrix?
+- Which markers or QTL matter?
+- How do pedigree, genomic, maternal, and environmental structure combine?
+- Can a high-dimensional trait matrix be read as latent genetic structure?
+- Can the same model run on CPU and, when appropriate, GPU?
 
-## 3. Software Architecture
+## 3. Software Architecture: `hsquared` Versus `HSquared.jl`
 
-### R Layer: `hsquared`
+`hsquared` owns:
 
-Responsibilities:
-
-- friendly formula grammar;
-- data validation and ID matching;
-- readable errors and status messages;
-- S3 fitted objects, extractors, plots, and reports;
+- easy R formula syntax;
+- `hs_data()` and input validation;
+- ID matching and user-facing error messages;
+- S3 fitted objects, extractors, summaries, plots, and diagnostics;
 - bridge payload construction;
-- pkgdown documentation and applied vignettes.
+- pkgdown articles and applied examples;
+- public capability status and claim boundaries.
 
-### Julia Layer: `HSquared.jl`
+`HSquared.jl` owns:
 
-Responsibilities:
-
-- sparse pedigree and relationship-matrix machinery;
+- sparse pedigree and relationship machinery;
+- direct sparse `Ainv` construction;
 - REML, ML, AI-REML, Laplace, and later variational methods;
 - sparse and dense linear algebra;
+- genomic relationship and marker computations;
 - factor-analytic and GLLVM-style engines;
-- genomic and marker computations;
 - CPU/GPU backend dispatch;
-- benchmarking, diagnostics, and numerical quality gates.
+- engine diagnostics, benchmarks, and numerical quality gates.
 
-Julia should cover every stable concept that R exposes. Julia may also carry
-experimental features ahead of R if they are clearly marked and do not leak into
-R as public promises.
+Every stable R concept should eventually have a Julia engine counterpart.
+Julia may carry experimental work first, but R public docs must not advertise it
+until validation exists.
 
 ## 4. Core Formula Grammar
 
-The grammar should stay easy and composable.
+The grammar should be readable before it is clever.
 
-### Phase 1
+Phase 1:
 
 ```r
 y ~ fixed + animal(1 | id, pedigree = ped)
 ```
 
-### Standard Quantitative Genetics
+Repeated records:
 
 ```r
 y ~ sex + age +
   animal(1 | id, pedigree = ped) +
-  permanent(1 | id) +
-  common_env(1 | litter)
+  permanent(1 | id)
 ```
 
-### Maternal And Paternal Effects
-
-Prefer explicit names when biology differs:
+Maternal, paternal, and common environment:
 
 ```r
 y ~ sex + age +
@@ -116,14 +115,42 @@ y ~ sex + age +
   maternal_env(1 | dam) +
   paternal_genetic(1 | sire, pedigree = ped) +
   paternal_env(1 | sire) +
-  cytoplasmic(1 | maternal_line) +
-  imprinting(1 | id, pedigree = ped, parent = "maternal")
+  common_env(1 | litter)
 ```
 
-Short aliases such as `maternal()` can be considered later, but the first public
-grammar should avoid hiding distinct biological effects behind one word.
+Use explicit names first. A short `maternal()` alias can wait until the package
+can disambiguate maternal genetic, maternal environmental, cytoplasmic,
+imprinting, and maternal identity effects without surprising users.
 
-## 5. Data Model
+Planned genomics and scan syntax:
+
+```r
+y ~ sex + batch + genomic(1 | id, Ginv = Ginv)
+y ~ sex + batch + markers(M, model = "random")
+y ~ sex + batch + marker_scan(M, map = marker_map)
+y ~ sex + batch + qtl_scan(chromosome, position, genotype_probs = probs)
+```
+
+Multivariate syntax:
+
+```r
+y ~ trait + trait:sex +
+  animal(trait | id, pedigree = ped, cov = us()) +
+  residual(trait | unit, cov = us())
+```
+
+Factor-analytic syntax:
+
+```r
+y ~ trait + trait:sex +
+  animal(trait | id, pedigree = ped, cov = fa(K = 2)) +
+  residual(trait | unit, cov = fa(K = 1))
+```
+
+Status rule: parsed, reserved, and planned terms must stay visibly separate in
+docs, errors, `formula_status()`, and the claims register.
+
+## 5. Data Model For Phenotypes, Pedigrees, Genotypes, And Omics
 
 R-side user object:
 
@@ -153,19 +180,19 @@ HSData(
 )
 ```
 
-Required capabilities:
+The data system must support:
 
 - integer ID encoding;
 - phenotype-pedigree-genotype ID matching;
 - marker-to-position matching;
 - expression-to-gene or transcript matching;
-- missing phenotype and genotype handling;
-- genotyped/no-phenotype and phenotyped/no-genotype individuals;
-- repeated measures;
-- long and wide multi-trait data;
-- multiple environments.
+- missing phenotypes and missing genotypes;
+- ungenotyped individuals with pedigree;
+- genotyped individuals without phenotype;
+- phenotyped individuals without genotype;
+- repeated measures, multiple traits, and multiple environments.
 
-Scalable formats:
+Scale path:
 
 - CSV/TSV for examples;
 - Arrow/Parquet for large phenotypes;
@@ -174,12 +201,15 @@ Scalable formats:
 - dosage matrices;
 - sparse genotype matrices;
 - HDF5/Zarr-like stores;
-- memory-mapped and chunked arrays;
-- streaming computations for marker scans.
+- memory-mapped arrays;
+- chunked loading and streaming marker scans.
+
+First implementation should keep `hs_data()` lightweight and in-memory. The
+file-backed and streaming interfaces should be designed before being promised.
 
 ## 6. Animal-Model And Inheritance Modules
 
-The engine abstraction is:
+Generic engine abstraction:
 
 ```text
 random effect = design matrix Z
@@ -215,23 +245,25 @@ animal(1 | id, pedigree = ped, inheritance = polyploid(ploidy = 4))
 animal(1 | id, pedigree = ped, inheritance = cytoplasmic())
 ```
 
-Phase 1 should implement only the simple diploid animal model. Later
-inheritance kernels should be separate, tested modules.
+Phase 1 should implement only the simple diploid animal model. Plant, clonal,
+polyploid, haplodiploid, cytoplasmic, dominance, and epistasis kernels belong
+in later modules with their own validation rows.
 
 ## 7. Genomic Prediction Modules
 
-First genomic targets:
+Core targets:
 
 - GBLUP;
-- Ginv input;
+- `G` and `Ginv` input;
 - SNP-BLUP;
-- Hinv input;
-- single-step GBLUP/HBLUP;
-- APY approximation;
-- genotype ID matching;
-- basic marker-effect output.
+- random marker effects;
+- fixed marker tests;
+- single-step GBLUP/HBLUP with `H` or `Hinv`;
+- blending and scaling of `G` with `A`;
+- APY approximation for large genomic relationship inverses;
+- genotype ID matching and missing genotype hooks.
 
-Example grammar:
+Example:
 
 ```r
 fit <- hsquared(
@@ -252,22 +284,25 @@ fit <- hsquared(
 )
 ```
 
-Mathematical relation:
+Mathematical relations:
 
-- GBLUP: breeding values have covariance `G * sigma_g^2`.
-- SNP-BLUP: marker effects are random and breeding values are `M * alpha`.
-- Single-step: pedigree and genomic relationships are combined into `H`.
-- Bayesian marker models are future or may remain better served by JWAS.jl.
+- GBLUP: `u ~ N(0, G * sigma_g^2)`.
+- SNP-BLUP: `alpha ~ N(0, I * sigma_alpha^2)` and breeding values are
+  `M * alpha`.
+- Single-step: pedigree and genomic relationships are combined into `H` or
+  `Hinv`.
+- Bayesian marker models can remain future work or be delegated to JWAS.jl
+  comparisons.
 
 ## 8. QTL, GWAS, And eQTL Modules
 
-Three analysis levels:
+Three levels:
 
 1. single-marker scan;
 2. multi-marker penalized or random-effect model;
 3. joint model with pedigree/genomic random effects.
 
-Single-marker or mixed-model GWAS:
+Mixed-model GWAS:
 
 ```r
 fit <- hsquared(
@@ -296,14 +331,15 @@ fit <- hsquared(
 )
 ```
 
-eQTL:
+High-dimensional eQTL:
 
 ```r
 fit <- hsquared(
-  expression ~ genotype_marker +
-    covariates(batch, sex, age) +
+  expr_matrix ~ batch + sex +
+    marker_scan(M, map = marker_map) +
+    sample_factors(K = 5) +
     genomic(1 | id, Ginv = Ginv),
-  data = expr_long,
+  data = expr_data,
   genotypes = geno,
   family = gaussian()
 )
@@ -315,55 +351,15 @@ Scale concerns:
 - hundreds of thousands to millions of markers;
 - kinship/genomic correction;
 - population structure;
+- batch, tissue, cell-type, and environment effects;
 - cis/trans windows;
-- multiple testing.
+- multiple-testing correction.
 
-Core outputs:
+Basic scans can live in `hsquared` after the engine exists. Heavy eQTL,
+fine-mapping, and very large scan infrastructure may become optional
+extensions such as `hsquaredQTL` and `HSquaredQTL.jl`.
 
-```r
-qtl_table(fit)
-eqtl_table(fit)
-gwas_table(fit)
-marker_effects(fit)
-marker_variance_explained(fit)
-fine_map(fit)
-```
-
-Basic scans can live in `hsquared` once the engine exists. Heavy eQTL and
-fine-mapping may become optional extensions such as `hsquaredQTL` and
-`HSquaredQTL.jl`.
-
-## 9. Multi-Omics And Gene-Level Models
-
-The first principle is not to create a separate modelling language for every
-omics type. Use a response-matrix interface plus family-specific likelihoods.
-
-```r
-fit <- hsquared(
-  Y ~ treatment + batch +
-    animal_fa(K = 3, id = id, pedigree = ped, psi = TRUE) +
-    sample_factors(K = 5),
-  data = omics_data,
-  family = gaussian()
-)
-```
-
-Count data:
-
-```r
-fit <- hsquared(
-  counts_matrix ~ treatment + batch +
-    animal_fa(K = 3, id = id, pedigree = ped, psi = TRUE) +
-    sample_factors(K = 5),
-  data = rnaseq_data,
-  family = negative_binomial()
-)
-```
-
-This connects GLLVMs, latent environmental axes, latent genetic axes, and
-multi-trait G matrices.
-
-## 10. Multivariate G Matrices And Factor Analysis
+## 9. Multivariate G-Matrix And Factor-Analytic Modules
 
 Classical multivariate animal model:
 
@@ -398,12 +394,13 @@ cov = lowrank(K)  G = Lambda Lambda'
 cov = fa(K)       G = Lambda Lambda' + Psi
 ```
 
-This makes G matrices biological latent structures, not just printed covariance
-tables.
+This is where `hsquared` goes beyond ordinary animal-model output: G matrices
+become biological latent structures, not only covariance tables.
 
-## 11. GLLVM Integration Strategy
+## 10. GLLVM Integration Strategy
 
-GLLVM-style models should sit on the same ladder as multivariate animal models:
+GLLVM-style models should sit on the same ladder as multivariate animal
+models:
 
 - low-rank latent factors;
 - GLM response families;
@@ -414,27 +411,52 @@ GLLVM-style models should sit on the same ladder as multivariate animal models:
 - ordination output;
 - missing response matrices.
 
-Likely engine methods:
+Example:
+
+```r
+fit <- hsquared(
+  Y ~ treatment + environment +
+    animal_fa(K = 3, id = id, pedigree = ped, psi = TRUE) +
+    site_fa(K = 2) +
+    common_env(1 | batch_id),
+  data = community_or_omics_data,
+  family = negative_binomial()
+)
+```
+
+Engine strategy:
 
 - Gaussian closed form where possible;
 - Woodbury identity for low-rank plus diagonal covariance;
+- matrix determinant lemma for repeated low-rank updates;
 - Laplace approximation for non-Gaussian random effects;
 - variational approximation as an optional high-dimensional path;
-- AD-backed gradients with finite-difference and simulation checks.
+- AD-backed gradients plus finite-difference and simulation checks.
 
-`GLLVM.jl` is the nearest computational reference. `HSquared.jl` should borrow
-the spirit of low-rank, multivariate, family-aware computation while rewriting
-the quantitative-genetic contract.
+Local lesson: `GLLVM.jl` already demonstrates low-rank Gaussian profiling,
+family dispatch, Laplace machinery, and structured Schur/Woodbury thinking.
+`HSquared.jl` should reuse the computational spirit while making the
+quantitative-genetic contract central.
 
-## 12. CPU/GPU Backend Architecture
+## 11. CPU/GPU Backend Architecture
 
 R controls:
 
 ```r
-hs_control(
-  backend = "auto",
-  accelerator = "gpu",
-  precision = "float64"
+fit_cpu <- hsquared(
+  y ~ trait + trait:sex +
+    animal(trait | id, pedigree = ped, cov = fa(K = 2)),
+  data = long_dat,
+  family = gaussian(),
+  control = hs_control(backend = "cpu")
+)
+
+fit_gpu <- hsquared(
+  y ~ trait + trait:sex +
+    animal(trait | id, pedigree = ped, cov = fa(K = 2)),
+  data = long_dat,
+  family = gaussian(),
+  control = hs_control(backend = "auto", accelerator = "gpu")
 )
 ```
 
@@ -451,9 +473,8 @@ AutoBackend()
 ```
 
 CPU is always the trusted default. GPU is an accelerator path, not a
-requirement.
-
-Optional Julia package extensions:
+requirement. GPU packages should be optional Julia extensions, not hard
+dependencies:
 
 ```text
 HSquaredCUDAExt
@@ -462,25 +483,19 @@ HSquaredMetalExt
 HSquaredOneAPIExt
 ```
 
-## 13. Backend Support Strategy
+## 12. Mac/Metal, CUDA, AMDGPU, oneAPI, And CPU Support Strategy
 
-Current ecosystem anchors:
-
-- CUDA.jl for NVIDIA GPUs and `CuArray`;
-- AMDGPU.jl for AMD/ROCm GPUs;
-- Metal.jl for macOS/Apple Silicon GPUs;
-- oneAPI.jl for Intel accelerators;
-- KernelAbstractions.jl for portable CPU/GPU kernels.
-
-Maturity plan:
+Backend plan:
 
 - CPU first and stable.
-- CUDA first for production HPC.
-- Metal early for Mac development and smoke testing.
-- AMDGPU important for ROCm-based supercomputers.
-- oneAPI useful but riskier; keep it behind explicit tests.
-- KernelAbstractions or a similar layer for kernels that can be written once
-  and dispatched across devices.
+- Threaded CPU second for safe parallel loops and BLAS-heavy workloads.
+- CUDA first for production HPC GPU work.
+- Metal early for Mac development and smoke tests.
+- AMDGPU for ROCm clusters after real hardware testing.
+- oneAPI for Intel accelerators, treated as experimental until a reliable
+  Linux/Intel test surface exists.
+- KernelAbstractions-style kernels for custom kernels that can be written once
+  and dispatched across device families.
 
 Array discipline:
 
@@ -501,52 +516,24 @@ Numerical policy:
 
 - Float64 default for REML and publication-quality variance components.
 - Float32 optional for exploratory huge GLLVM/genomic scans.
-- Mixed precision later, only after CPU/GPU agreement tests.
-- Reproducibility and GPU nondeterminism must be reported in diagnostics.
+- Mixed precision later, and only after CPU/GPU agreement tests.
+- Report random seeds, tolerance, device, precision, and nondeterminism
+  warnings.
+- Minimize host-device transfers; chunk marker scans and response matrices
+  when device memory is limiting.
 
-## 14. What Runs Where
+What runs where:
 
-CPU-first:
+- CPU-first: pedigree validation, sorting, ID recoding, sparse `Ainv`,
+  symbolic factorization, small univariate models.
+- GPU-friendly: dense genomic operations, marker multiplication, large
+  response matrices, factor-analytic/GLLVM likelihoods, simulation, bootstrap,
+  prediction batches.
+- Hybrid: sparse iterative solvers, PCG with GPU matrix-vector products, CPU
+  preconditioners, CPU sparse factorization plus GPU dense updates, single-step
+  models with sparse `A` and dense `G`.
 
-- pedigree validation;
-- topological sorting;
-- ID recoding;
-- sparse Ainv construction;
-- symbolic sparse factorization;
-- small univariate models.
-
-GPU-friendly:
-
-- dense genomic matrix operations;
-- marker matrix multiplication;
-- GLLVM likelihood evaluation;
-- large response-matrix operations;
-- factor-analytic models;
-- Woodbury repeated calculations;
-- bootstrap and cross-validation batches;
-- simulation;
-- prediction over many individuals.
-
-Hybrid:
-
-- sparse iterative solvers;
-- PCG with GPU matrix-vector products;
-- CPU preconditioning;
-- CPU sparse factorization plus GPU dense updates;
-- single-step models with sparse A and dense G.
-
-Advanced algorithm scout:
-
-- AI-REML and average-information updates;
-- EM or PX-EM warm starts for variance components;
-- Newton/trust-region refinement after stable starts;
-- PCG and block preconditioners;
-- Takahashi selected inversion for selected inverse entries and PEV-like
-  diagnostics;
-- Woodbury and matrix determinant lemma for low-rank G and GLLVM components;
-- APY for large genomic inverse approximations.
-
-## 15. Benchmarking And CPU/GPU Comparison
+## 13. Benchmarking And CPU/GPU Comparison Framework
 
 User-facing comparison:
 
@@ -565,8 +552,8 @@ compare_backends(fit_cpu, fit_gpu)
 Metrics:
 
 - wall-clock time;
-- CPU and device memory;
-- iterations;
+- CPU memory and device memory;
+- number of iterations;
 - log-likelihood difference;
 - parameter differences;
 - EBV differences;
@@ -585,20 +572,33 @@ huge     HPC scale
 extreme  national-computer scale
 ```
 
-## 16. HPC Cluster Workflow
+Benchmark categories:
+
+- pedigree animal model;
+- genomic GBLUP;
+- single-step HBLUP;
+- SNP-BLUP;
+- QTL/GWAS scan;
+- eQTL scan;
+- multivariate G matrix;
+- factor-analytic G matrix;
+- GLLVM animal model.
+
+Do not assume GPU is faster. Benchmark and decide.
+
+## 14. HPC Cluster Workflow
 
 HPC support should include:
 
 - SLURM templates;
-- Julia project activation;
-- package precompilation;
+- Julia project activation and precompilation;
 - thread control;
 - GPU selection;
-- memory logging;
+- memory and device-memory logging;
 - checkpointing and restartable fits;
 - batch benchmark scripts;
 - distributed simulation;
-- multi-node support later.
+- multi-node and multi-GPU experiments later.
 
 R workflow target:
 
@@ -616,24 +616,62 @@ fit <- hsquared(
 )
 ```
 
-## 17. Validation
+Julia target:
+
+```julia
+fit = hsquared(
+    model,
+    data;
+    backend = CUDABackend(),
+    checkpoint = "checkpoints/run1",
+    save = :minimal,
+)
+```
+
+Scripts to provide later:
+
+- CPU animal-model benchmark;
+- GPU dense/factor benchmark;
+- multi-trait G-matrix benchmark;
+- GLLVM benchmark;
+- genomic prediction benchmark;
+- QTL/eQTL scan benchmark;
+- ASReml/JWAS/GLLVM comparator benchmarks where licenses permit.
+
+## 15. Validation Against Mrode, ASReml, JWAS, XSim, And GLLVM
 
 Validation hierarchy:
 
-1. tiny deterministic tests;
-2. Mrode-style animal-model examples;
-3. sparse Ainv known examples;
+1. tiny deterministic hand checks;
+2. pedigree and `Ainv` known examples;
+3. Mrode-style animal-model examples;
 4. ASReml comparisons where available;
-5. BLUPF90/DMU/WOMBAT comparisons;
+5. BLUPF90/DMU/WOMBAT comparisons where reproducible;
 6. JWAS comparisons for genomic workflows;
 7. XSim simulation truth for selection, QTL, and genomic prediction;
 8. GLLVM.jl comparisons for latent-variable engines;
 9. CPU/GPU numerical agreement tests.
 
-No public page should claim "ASReml-level" or "faster" until comparator
-evidence exists.
+Promotion rule: public docs may advertise a capability as working only after
+implementation, tests, docs, and validation evidence exist. "Planned" and
+"partial" are not marketing synonyms for "implemented".
 
-## 18. Output And Extractor Functions
+Algorithm leads:
+
+- AI-REML and sparse mixed-model equations for Phase 1+ variance components.
+- EM or PX-EM warm starts when variance components are fragile.
+- Newton/trust-region refinement after stable starts.
+- PCG and block preconditioners for huge systems.
+- Takahashi selected inversion for selected inverse entries, PEV, and
+  reliability after sparse factorization exists.
+- Woodbury and determinant-lemma paths for low-rank G and GLLVM modules.
+- APY for large genomic relationship inverse approximations.
+
+Local lead: `DRM.jl` already carries a Takahashi selected-inverse module and
+`GLLVM.jl` carries low-rank/Woodbury and structured precision machinery. These
+are design references, not automatic copy sources.
+
+## 16. Output And Extractor Functions
 
 Animal/genomic outputs:
 
@@ -676,6 +714,7 @@ latent_breeding_values(fit)
 ordination(fit)
 trait_scores(fit)
 individual_scores(fit)
+species_scores(fit)
 eigen_G(fit)
 evolvability(fit)
 conditional_G(fit)
@@ -691,12 +730,16 @@ memory_profile(fit)
 compare_backends(fit_cpu, fit_gpu)
 ```
 
-## 19. Documentation And Vignettes
+The extractor mantra is simple: make it easy to ask what the user naturally
+wants to know.
+
+## 17. Documentation And Vignettes
 
 R pkgdown pages:
 
 - getting started;
 - model status;
+- formula grammar roadmap;
 - animal model;
 - genomic prediction;
 - QTL/GWAS/eQTL;
@@ -709,70 +752,115 @@ R pkgdown pages:
 Julia Documenter pages:
 
 - engine contract;
-- pedigree and Ainv;
+- pedigree and `Ainv`;
 - solver design;
 - backend architecture;
 - GPU extension policy;
 - benchmarks;
 - API reference.
 
-## 20. Development Roadmap
+Documentation rule: every page that shows planned syntax must say whether it is
+parsed, reserved, or fitted. Long-format and wide-format examples should be
+paired for high-dimensional trait workflows when both are intended.
 
-Phase 0: architecture and public memory.
+## 18. Development Roadmap
+
+Phase 0: operating system and public memory.
 
 Phase 1: simple Gaussian animal model.
 
-Phase 2: genomic relationship models.
+Phase 2: genomic relationship models: `G`, `Ginv`, GBLUP, SNP-BLUP, HBLUP, and
+first marker-effect outputs.
 
-Phase 3: maternal/paternal and inheritance modules.
+Phase 3: maternal, paternal, repeatability, common-environment, dominance,
+cytoplasmic, and inheritance kernels.
 
-Phase 4: multivariate G matrices.
+Phase 4: multivariate G matrices: `us()`, `diag()`, `lowrank(K)`, and
+`fa(K)`.
 
-Phase 5: QTL/GWAS/eQTL.
+Phase 5: QTL/GWAS/eQTL scans, LOCO option, multiple testing, and basic plots.
 
-Phase 6: GLLVM integration.
+Phase 6: GLLVM and multi-omics integration.
 
-Phase 7: CPU/GPU acceleration.
+Phase 7: CPU/GPU acceleration: CPU, threads, Metal, CUDA, AMDGPU, oneAPI, and
+portable kernels.
 
-Phase 8: HPC and production scaling.
+Phase 8: HPC and production scaling: checkpointing, disk-backed data,
+streaming marker scans, distributed computation, multi-GPU experiments, and
+national-computer benchmarks.
 
-## 21. Risks And Tradeoffs
+This roadmap is directional. Phase 1 validation quality is more important than
+rushing into Phase 7.
 
-- Scope creep: solve by keeping v0.1 tiny and evidence-gated.
-- User complexity: solve by keeping easy defaults and hiding specialist
-  machinery behind clear terms.
-- GPU overpromise: solve by benchmarking and defaulting to CPU.
-- Package bloat: keep heavy QTL/eQTL and GPU features optional or extension
-  based.
-- Numerical drift across backends: record tolerances, seeds, and diagnostics.
-- License/provenance risk: borrow patterns from sibling packages, but copy code
-  only when license and ownership are explicit.
+## 19. Risks And Tradeoffs
 
-## 22. First Minimal Viable Implementation
+- Scope creep: keep v0.1 tiny and evidence-gated.
+- User complexity: keep common paths easy and hide specialist machinery behind
+  clear optional terms.
+- GPU overpromise: benchmark, default to CPU, and report agreement.
+- Package bloat: make heavy QTL/eQTL and GPU components extension-based if the
+  core becomes crowded.
+- Numerical drift: record tolerances, precision, seeds, and diagnostics.
+- License/provenance: borrow patterns from local sibling packages, but copy code
+  only when license, authorship, tests, and provenance notes are explicit.
+- Comparator limits: ASReml and some breeding tools may not be freely
+  reproducible; record the limitation instead of pretending evidence exists.
 
-The next implementation path should be:
+## 20. First Minimal Viable Implementation
+
+The immediate implementation path remains:
 
 1. R parser and model spec for `animal(1 | id, pedigree = ped)`.
 2. Julia pedigree normalization and sparse `Ainv`.
-3. R-to-Julia payload contract for `y`, `X`, `Z`, `Ainv`, method, IDs, and
-   metadata.
+3. R-to-Julia payload contract for `y`, `X`, sparse `Z`, `Ainv`, method, IDs,
+   and metadata.
 4. Gaussian REML/ML objective for the univariate animal model.
-5. Variance components, EBVs/BLUPs, and heritability extraction.
+5. Variance components, EBVs/BLUPs, PEV/reliability, and heritability
+   extraction.
 6. Tiny and Mrode validation.
 7. pkgdown and Documenter pages that show implemented, partial, and planned
    status separately.
 
-Only after that should genomic, QTL/eQTL, GLLVM, and GPU lanes move from
-roadmap to implementation.
+Only after this path is validated should genomic, QTL/eQTL, GLLVM, unusual
+inheritance, and GPU lanes move from roadmap to implementation.
+
+## Positioning Against Related Tools
+
+`hsquared` should respect existing tools and define its own lane:
+
+- ASReml-R: mature commercial animal-model capability; `hsquared` aims for
+  open, Julia-backed, evidence-gated alternatives.
+- MCMCglmm: Bayesian biological flexibility; `hsquared` first emphasizes
+  REML/ML and scalable sparse/dense engines.
+- BLUPF90, DMU, WOMBAT: production breeding engines; `hsquared` should learn
+  validation targets and file-scale habits from them.
+- sommer: accessible R mixed-model genetics; `hsquared` should keep R ease but
+  move heavy computation into Julia.
+- JWAS.jl: Bayesian genomic prediction and GWAS; `hsquared` should interoperate
+  conceptually and compare, not pretend to replace every Bayesian marker model.
+- GCTA and GEMMA: efficient genomic association models; `hsquared` should learn
+  scan and kinship-correction discipline while staying broader in inheritance
+  and multivariate genetics.
+- BGLR: Bayesian genomic regression; useful comparator for marker models.
+- XSim.jl: simulation truth for breeding programs, QTL, and selection.
+- GLLVM.jl: computational sibling for low-rank, family-aware, multivariate
+  latent-variable engines.
+- drmTMB/DRM.jl: operating and bridge siblings; borrow formula discipline,
+  status honesty, sparse/Laplace/selected-inverse leads, and R-Julia parity
+  habits.
 
 ## Source Anchors
 
 - CUDA.jl documentation: <https://cuda.juliagpu.org/stable/>
 - Metal.jl documentation: <https://metal.juliagpu.org/stable/>
 - AMDGPU.jl documentation: <https://amdgpu.juliagpu.org/>
+- oneAPI.jl backend page: <https://juliagpu.org/backends/oneapi/>
 - oneAPI.jl repository: <https://github.com/JuliaGPU/oneAPI.jl>
 - KernelAbstractions.jl documentation:
   <https://juliagpu.github.io/KernelAbstractions.jl/>
+- KernelAbstractions.jl repository:
+  <https://github.com/JuliaGPU/KernelAbstractions.jl>
+- JuliaGPU learning page: <https://juliagpu.org/learn/>
 - JWAS.jl documentation: <https://reworkhow.github.io/JWAS.jl/latest/>
 - XSim.jl documentation: <https://reworkhow.github.io/XSim.jl/>
 - AGHmatrix CRAN page: <https://cran.r-project.org/package=AGHmatrix>

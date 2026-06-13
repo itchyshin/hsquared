@@ -800,4 +800,46 @@ with private memory.
   - It does not claim backend execution, selected-inverse, APY, or AI-REML is
     implemented.
 - Remote checks:
-  - Pending first push for this scout slice.
+  - Commit: `6d6f1f1 Add GPU and algorithm scout`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27459211479` passed in GitHub Actions.
+  - Result: pkgdown `27459211480` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27459245659` passed.
+
+## 2026-06-13 Expanded genomics/QTL/GLLVM/GPU plan
+
+- Goal: convert the maintainer's extended prompt into a durable 20-section
+  technical and strategic plan for `hsquared` and `HSquared.jl`.
+- Active lenses: Ada, Jason, Karpinski, Pat, Rose.
+- Spawned subagents: none.
+- Local sibling scout:
+  - `find /Users/z3437171/Dropbox/Github\ Local -maxdepth 2 -type d ...`
+  - Result: found local `drmTMB`, `gllvmTMB`, `DRM.jl`, `GLLVM.jl`, and many
+    GLLVM branch/worktree folders; no `PMTMB` folder was found by name.
+  - Read targeted local references:
+    `DRM.jl/src/takahashi_selinv.jl`, `DRM.jl/src/DRM.jl`,
+    `gllvmTMB/CLAUDE.md`, `GLLVM.jl/src/fit.jl`, and
+    `GLLVM.jl/src/structured_schur.jl`.
+- Implementation evidence:
+  - Expanded `docs/design/07-genomics-qtl-gpu-plan.md` into the requested
+    design plan covering architecture, grammar, data integration, genomics,
+    QTL/eQTL, GLLVMs, CPU/GPU backends, HPC, validation, outputs, roadmap,
+    risks, and the first minimal implementation.
+  - Updated `vignettes/articles/genomics-gpu-roadmap.Rmd` with user-facing
+    QTL/eQTL and multivariate/GLLVM roadmap examples.
+  - Updated `docs/design/00-ecosystem-lessons.md` with concrete local lessons
+    from `DRM.jl`, `GLLVM.jl`, and `gllvmTMB`.
+- Local checks:
+  - `git diff --check`
+  - Result: clean.
+  - `LC_ALL=C rg -n "[^\\x00-\\x7F]" docs/design/07-genomics-qtl-gpu-plan.md docs/design/00-ecosystem-lessons.md vignettes/articles/genomics-gpu-roadmap.Rmd docs/dev-log/after-task/2026-06-13-expanded-genomics-qtl-gpu-plan.md NEWS.md`
+  - Result: no non-ASCII matches in edited files.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - The plan and pkgdown article call genomic, QTL/eQTL, GLLVM, GPU, and HPC
+    examples planned targets only.
+  - Public wording does not claim those workflows are implemented, benchmarked,
+    or ASReml-level.

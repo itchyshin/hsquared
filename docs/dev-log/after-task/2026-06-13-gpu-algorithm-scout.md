@@ -38,7 +38,10 @@ Local checks:
 
 Remote checks:
 
-- Pending first push for this scout slice.
+- Commit: `6d6f1f1 Add GPU and algorithm scout`.
+- R-CMD-check `27459211479`: passed.
+- pkgdown `27459211480`: passed.
+- GitHub Pages build and deployment `27459245659`: passed.
 
 ## Rose Audit
 

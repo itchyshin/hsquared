@@ -13,6 +13,10 @@ This page is a roadmap, not an implemented-feature page.
 coherent modelling language for phenotypes, pedigrees, genotypes, QTL/eQTL,
 G matrices, inheritance systems, and high-dimensional traits.
 
+The full technical plan lives in
+`docs/design/07-genomics-qtl-gpu-plan.md`. This article is the user-facing
+map.
+
 ## Design principle
 
 ```text
@@ -66,6 +70,60 @@ Planned Julia backends:
 - AMDGPU for ROCm systems;
 - oneAPI for Intel accelerators;
 - portable kernels where appropriate.
+
+## Planned QTL and eQTL path
+
+The intended scan grammar is:
+
+```{r, eval = FALSE}
+fit <- hsquared(
+  y ~ sex + age +
+    genomic(1 | id, Ginv = Ginv) +
+    marker_scan(M, map = marker_map, leave_one_chr_out = TRUE),
+  data = pheno,
+  genotypes = geno,
+  family = gaussian()
+)
+
+gwas_table(fit)
+plot_manhattan(fit)
+plot_qq(fit)
+```
+
+For expression and high-dimensional omics, the long-run plan is to combine
+marker scans, sample factors, and genomic relatedness:
+
+```{r, eval = FALSE}
+fit <- hsquared(
+  expr_matrix ~ batch + sex +
+    marker_scan(M, map = marker_map) +
+    sample_factors(K = 5) +
+    genomic(1 | id, Ginv = Ginv),
+  data = expr_data,
+  genotypes = geno,
+  family = gaussian()
+)
+```
+
+These examples are syntax targets only. They do not fit models today.
+
+## Planned multivariate and GLLVM path
+
+Classical multivariate animal models and GLLVM-style models should sit on one
+ladder:
+
+```{r, eval = FALSE}
+fit <- hsquared(
+  y ~ trait + trait:sex +
+    animal(trait | id, pedigree = ped, cov = fa(K = 2)) +
+    residual(trait | unit, cov = fa(K = 1)),
+  data = long_dat,
+  family = gaussian()
+)
+```
+
+The same idea should later extend to response matrices, count families,
+ordination, latent breeding values, and high-dimensional G matrices.
 
 ## Evidence gate
 
