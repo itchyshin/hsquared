@@ -119,9 +119,11 @@ hs_validation_status_evidence <- function() {
       "variance components and h2 (Wilson et al. 2010) with hsquared's",
       "independent pure-R REML reference, and agrees with the external sommer",
       "package within the signed-off band (VC ~1-2%, h2 ~0.01-0.02), on the",
-      "gryphon dataset (CRAN package enhancer). Gryphon is the maintainer",
-      "(2026-06-13) signed-off V1-MRODE-FIT anchor and sommer the V1-COMPARATORS",
-      "comparator."
+      "gryphon dataset (CRAN package enhancer). The Julia engine (fit_sparse_reml",
+      "and fit_ai_reml) also recovers the published estimates exactly via supplied",
+      "A_gryphon (the engine correctly rejects the pathological raw pedigree).",
+      "Gryphon is the maintainer (2026-06-13) signed-off V1-MRODE-FIT anchor and",
+      "sommer the V1-COMPARATORS comparator."
     ),
     paste(
       "An ADEMP recovery study (data-raw/dgp-recovery-study.R) simulates from",

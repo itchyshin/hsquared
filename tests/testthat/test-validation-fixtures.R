@@ -908,3 +908,64 @@ test_that("REML recovers known variance components from a simulated DGP", {
   # EBVs track the true breeding values (correlation floor for h2 = 0.4).
   expect_gt(mean(out[, "acc"]), 0.5)
 })
+
+test_that("the Julia engine recovers the published gryphon estimates via supplied A", {
+  # V1-MRODE-FIT engine evidence: both REML optimizers must recover the published
+  # gryphon REML estimate (Wilson et al. 2010) when given the published
+  # relationship matrix directly. The raw gryphon pedigree is pathological
+  # (ancestral loops) and the engine correctly rejects it, so the signed-off
+  # V1-MRODE-FIT anchor uses supplied A_gryphon. Tolerance = the signed-off
+  # comparator band (~1-2% / h2 ~0.01-0.02).
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("enhancer")
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live engine gryphon recovery."
+  )
+
+  e <- new.env()
+  utils::data("DT_gryphon", package = "enhancer", envir = e)
+  DT <- get("DT_gryphon", e)
+  A <- get("A_gryphon", e)
+  ids <- rownames(A)
+  dat <- DT[!is.na(DT$BWT), ]
+  pub <- hsquared:::hs_gryphon_published_reml()
+
+  y <- dat$BWT
+  X <- matrix(1, length(y), 1L)
+  j <- match(as.character(dat$ANIMAL), ids)
+  Z <- methods::as(
+    Matrix::sparseMatrix(
+      i = seq_along(j),
+      j = j,
+      x = 1,
+      dims = c(length(y), length(ids))
+    ),
+    "CsparseMatrix"
+  )
+  Ainv <- solve(A)
+
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  JuliaCall::julia_assign("gy", y)
+  JuliaCall::julia_assign("gX", X)
+  hsquared:::hs_julia_assign_sparse_csc("gZ", Z)
+  JuliaCall::julia_assign("gAinv", as.matrix(Ainv))
+  JuliaCall::julia_assign("gids", ids)
+  JuliaCall::julia_command(paste(
+    "gspec = HSquared.animal_model_spec(gy, gX, gZ,",
+    "SparseArrays.sparse(gAinv); ids = string.(gids), method = :REML);"
+  ))
+
+  for (tg in c("fit_sparse_reml", "fit_ai_reml")) {
+    JuliaCall::julia_command(sprintf(
+      "gfit = HSquared.%s(gspec; initial = (sigma_a2 = 3.0, sigma_e2 = 4.0), iterations = 2000);",
+      tg
+    ))
+    vc <- JuliaCall::julia_eval(
+      "[gfit.variance_components.sigma_a2, gfit.variance_components.sigma_e2]"
+    )
+    expect_equal(vc[1], pub[["sigma_a2"]], tolerance = 0.02)
+    expect_equal(vc[2], pub[["sigma_e2"]], tolerance = 0.02)
+    expect_lt(abs(vc[1] / sum(vc) - pub[["h2"]]), 0.02)
+  }
+})
