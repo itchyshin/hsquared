@@ -107,12 +107,15 @@ fit_mme <- hsquared(
 
 This is a validation bridge target with supplied variances, not an
 optimizer. Current validation atoms include tiny deterministic `Ainv`
-checks, an optional Mrode9/nadiv pedigree-Ainv comparator, and a
+checks, an optional Mrode9/nadiv pedigree-Ainv comparator, a
 supplied-variance Henderson MME fixture that compares R reference fixed
 effects, EBVs, fitted values, h2, and optional dense validation-path
-PEV/reliability with Julia when available. Optional local tests also
-compare Julia dense REML and sparse REML likelihood evaluators on a tiny
-supplied-variance three-founder fixture. Use
+PEV/reliability with Julia when available, and a Mrode-style
+supplied-variance output fixture that pins Ainv, fixed effects, EBVs,
+fitted values, PEV, reliability, h2, ML log-likelihood, and dense/sparse
+REML log-likelihood. Optional local tests also compare Julia dense REML
+and sparse REML likelihood evaluators on a tiny supplied-variance
+three-founder fixture. Use
 [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
 to inspect validation evidence and planned comparator lanes from R.
 

@@ -86,7 +86,7 @@ backends, checkpoints, benchmarks.
 |----|----|----|
 | Formula parser | partial | `animal(1 | id, pedigree = ped)` and [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md) pedigree shorthand parse and validate. |
 | Bridge payload | partial | Tests pin `y`, `X`, sparse `Z`, IDs, method, family, pedigree metadata. |
-| Validation atoms | partial | Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, and sparse REML identity checks. |
+| Validation atoms | partial | Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, sparse REML identity, and Mrode-style supplied-variance output checks. |
 | Fit object | partial | Extractor contract exists for objects that contain matching result fields. |
 | Data container | partial | [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md) checks phenotype, pedigree, genotype, marker, expression, annotation, and environment metadata. |
 | Backends | planned | [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md) stores planned names; [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md) marks execution unavailable. |
@@ -96,7 +96,7 @@ backends, checkpoints, benchmarks.
 - No general fitted animal-model support from the default R call.
 - No variance-component estimation claim for supplied-variance Henderson
   MME.
-- No sparse optimizer, AI-REML, fitted Mrode output validation, or
+- No sparse optimizer, AI-REML, estimated-variance Mrode validation, or
   ASReml parity claim.
 - No genomic prediction, marker scan, QTL/eQTL, GLLVM, or
   unusual-inheritance fitting claim.

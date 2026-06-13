@@ -103,6 +103,13 @@
   [`nadiv::makeAinv()`](https://rdrr.io/pkg/nadiv/man/makeAinv.html) for
   the Mrode9 pedigree
   ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
+- Added a Mrode-style supplied-variance validation fixture that pins
+  Ainv, fixed effects, EBVs, fitted values, PEV, reliability, h², ML
+  log-likelihood, and dense/sparse REML log-likelihood against R
+  reference calculations and the sibling `HSquared.jl` checkout when
+  available, without claiming variance-component estimation or full
+  fitted Mrode validation
+  ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - Added an internal supplied-variance Henderson mixed-model-equation
   validation fixture that compares R reference fixed effects, EBVs,
   fitted values, and h2 with Julia `henderson_mme()` when a sibling

@@ -155,6 +155,10 @@ and optional dense validation-path PEV/reliability when a sibling
 <li>A tiny supplied-variance likelihood fixture that compares Julia
 dense REML and sparse REML evaluators, plus an ML hand-check target,
 when a sibling <code>HSquared.jl</code> checkout is available.</li>
+<li>A Mrode-style supplied-variance output fixture that pins Ainv, fixed
+effects, EBVs, fitted values, PEV, reliability, h2, ML log-likelihood,
+and dense/sparse REML log-likelihood against independent R references
+and the sibling Julia engine when available.</li>
 <li>The first fitted-object/extractor contract over internal
 <code>hsquared_fit</code> objects and mocked Julia result fields,
 including variance components, heritability, EBV/BLUP aliases, PEV,
@@ -225,7 +229,8 @@ from fitted models.</li>
 <li>Log-likelihood or information criteria for supplied-variance
 Henderson MME bridge results.</li>
 <li>Production sparse PEV or reliability.</li>
-<li>Full Mrode animal-model fit-output validation.</li>
+<li>Full Mrode animal-model fit-output validation with estimated
+variance components.</li>
 <li>ASReml, BLUPF90, DMU, or WOMBAT comparator validation.</li>
 <li>File-backed genotype/omics loading or streaming computation.</li>
 <li>Automatic model construction from genotype, marker, expression,
