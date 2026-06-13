@@ -64,8 +64,15 @@ Blocked wording:
 - GitHub Pages build/deploy `27466236586`: passed. Pages emitted the upstream
   Node 20 actions deprecation annotation for `actions/checkout@v4` and
   `actions/upload-artifact@v4`; deployment still succeeded.
+- `https://itchyshin.github.io/hsquared/articles/mission-control.html`:
+  HTTP 200 and contains the mission-control page title, Articles menu link, and
+  blocked-claims dashboard section.
+- `https://itchyshin.github.io/HSquared.jl/dev/mission-control.html`: HTTP 200
+  and contains the Julia mission-control page title and blocked-claims
+  dashboard section.
 
 ## Next Actions
 
-1. Use the dashboard as the R-side status entry point during future handoffs.
+1. Keep the R and Julia mission-control pages aligned when capability status
+   changes.
 2. Choose the next Phase 1 validation or bridge atom.
