@@ -40,7 +40,7 @@
 | 2026-06-13 | R | Hopper/Lovelace/Henderson/Fisher/Rose/Grace | main | supplied-variance Henderson MME bridge target | pushed; CI/pkgdown/Pages passed | supplied variances only; no optimizer/logLik | notify issues #6/#7 plus Julia twin |
 | 2026-06-13 | R | Hopper/Lovelace/Henderson/Fisher/Rose/Grace | main | Henderson MME bridge PEV/reliability parity | pushed; CI/pkgdown/Pages passed | dense validation-path only; no production sparse reliability | notify issues #6/#7 plus Julia twin |
 | 2026-06-13 | R | Emmy/Pat/Fisher/Rose/Grace | main | `fitted()` and `residuals()` for `hsquared_fit` | pushed; CI/pkgdown/Pages passed | extractor ergonomics only; no new fitting | notify issue #5 |
-| 2026-06-13 | R | Emmy/Falconer/Fisher/Pat/Rose/Grace | main | `EBV()`, `BLUP()`, and `accuracy()` extractors | local checks passed | aliases/derived extractor only; no new inference | push, watch CI/pkgdown/Pages, notify issue #5 |
+| 2026-06-13 | R | Emmy/Falconer/Fisher/Pat/Rose/Grace | main | `EBV()`, `BLUP()`, and `accuracy()` extractors | pushed; CI/pkgdown/Pages passed | aliases/derived extractor only; no new inference | notify issue #5 |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

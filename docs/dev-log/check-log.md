@@ -1325,17 +1325,11 @@ with private memory.
     only.
   - Public wording does not claim general model fitting, production accuracy,
     production sparse fitting, ASReml parity, or speedup.
-  - `Rscript -e "devtools::check()"`
-  - Result: `0 errors | 0 warnings | 0 notes`.
-- Rose wording sweep:
-  - Public wording says this is parser/data-container ergonomics only.
-  - Public wording does not claim new animal-model fitting, R-side Ainv
-    construction, genomic fitting, QTL/eQTL fitting, or GPU execution.
-- Remote checks for commit `74eef82`:
-  - `gh run list --limit 4`
-  - Result: R-CMD-check `27461541666` passed in 1m36s.
-  - Result: pkgdown `27461541639` passed in 1m41s.
-  - Result: Pages `27461576199` passed in 22s.
+- Remote checks for commit `046a8e6`:
+  - GitHub Actions R-CMD-check `27463477466`: passed in 1m33s.
+  - GitHub Actions pkgdown `27463477467`: passed in 1m49s.
+  - GitHub Pages build/deploy `27463517699`: passed; Node.js 20 deprecation
+    warning is from the Pages action stack, not this package code.
 
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 

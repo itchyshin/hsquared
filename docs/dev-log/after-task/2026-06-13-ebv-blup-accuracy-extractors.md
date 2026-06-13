@@ -72,7 +72,10 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- GitHub Actions R-CMD-check `27463477466`: passed in 1m33s.
+- GitHub Actions pkgdown `27463477467`: passed in 1m49s.
+- GitHub Pages build/deploy `27463517699`: passed; Node.js 20 deprecation
+  warning is from the Pages action stack, not this package code.
 
 ## Rose Audit
 
