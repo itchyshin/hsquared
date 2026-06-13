@@ -61,6 +61,12 @@
   [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   so users and developers can inspect parsed, reserved, and planned
   formula grammar without reading the full roadmap.
+- Added
+  [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
+  so users and developers can preview the parsed v0.1 animal-model
+  contract, fixed-effect design columns, sparse animal-effect design
+  dimensions, normalized pedigree ordering, and Julia targets without
+  fitting a model.
 - Added inert planned formula markers for
   [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),

@@ -14,6 +14,8 @@ Current parser entry points and planned fitting controls.
   : Inspect planned compute backends
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   : Inspect formula grammar status
+- [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
+  : Inspect a parsed hsquared model specification
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   : Animal-model formula marker
 - [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
