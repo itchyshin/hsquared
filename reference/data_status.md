@@ -5,10 +5,11 @@ an
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 object. It reports component presence, ID overlap diagnostics, pedigree
 diagnostics, and marker-map/genotype-marker alignment diagnostics when
-those inputs are supplied. When `environment_id` is supplied, it also
-reports environment metadata coverage diagnostics. It does not fit
-models, build genomic relationship matrices, or add environment-effect
-terms.
+those inputs are supplied. When `annotation_id` is supplied, it reports
+expression-feature annotation coverage diagnostics. When
+`environment_id` is supplied, it also reports environment metadata
+coverage diagnostics. It does not fit models, build genomic relationship
+matrices, add eQTL terms, or add environment-effect terms.
 
 ## Usage
 

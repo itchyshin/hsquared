@@ -18,6 +18,7 @@ hs_data(
   markers = NULL,
   expression = NULL,
   annotation = NULL,
+  annotation_id = NULL,
   environment = NULL,
   environment_id = NULL,
   id = "id"
@@ -55,6 +56,11 @@ hs_data(
 
   Optional annotation data frame.
 
+- annotation_id:
+
+  Optional column name used to match `annotation` rows to expression
+  feature columns. When supplied, the column must exist in `annotation`.
+
 - environment:
 
   Optional environment/covariate data frame.
@@ -78,5 +84,6 @@ An `hs_data` object.
 `summary(hs_data(...))` reports ID overlap diagnostics, pedigree
 diagnostics, and, when genotype or marker components are supplied,
 marker-map and genotype-column alignment diagnostics. When
-`environment_id` is supplied, it also reports environment metadata
-coverage diagnostics.
+`annotation_id` is supplied, it reports expression-feature annotation
+coverage diagnostics. When `environment_id` is supplied, it also reports
+environment metadata coverage diagnostics.

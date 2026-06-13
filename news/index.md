@@ -190,6 +190,12 @@
   maps for future integrated genomic/QTL/eQTL workflows, but does not
   fit models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  now accepts `annotation_id` to check expression feature columns
+  against annotation rows, and
+  [`summary()`](https://rdrr.io/r/base/summary.html)/[`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
+  report annotation-feature diagnostics without fitting eQTL or omics
+  models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   now accepts `environment_id` to check environment/covariate metadata
   coverage against phenotype records, and
   [`summary()`](https://rdrr.io/r/base/summary.html)/[`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)

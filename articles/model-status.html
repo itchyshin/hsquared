@@ -96,8 +96,8 @@ support.</li>
 <li>
 <code><a href="../reference/data_status.html">data_status()</a></code> reports <code><a href="../reference/hs_data.html">hs_data()</a></code> component
 presence, ID overlap, and pedigree, marker-map/genotype-marker
-alignment, and environment-key diagnostics without implying fitted
-support.</li>
+alignment, annotation-feature, and environment-key diagnostics without
+implying fitted support.</li>
 <li>
 <code><a href="../reference/model_spec.html">model_spec()</a></code> previews the parsed v0.1 animal-model
 contract, including fixed-effect design columns, sparse animal-effect
@@ -186,6 +186,11 @@ validation only.</li>
 supplied, <code><a href="../reference/hs_data.html">hs_data()</a></code> checks that genotype marker columns
 match marker-map IDs exactly.</li>
 <li>
+<code>hs_data(expression = ..., annotation = ..., annotation_id = ...)</code>
+checks expression feature columns against annotation rows and reports
+duplicate or unmatched annotation keys. This is metadata validation
+only.</li>
+<li>
 <code>hs_data(environment = ..., environment_id = ...)</code> checks
 environment metadata coverage against phenotype records and reports
 duplicate or unmatched environment keys. This is metadata validation
@@ -220,6 +225,8 @@ Henderson MME bridge results.</li>
 annotation, or environment components in <code><a href="../reference/hs_data.html">hs_data()</a></code>.</li>
 <li>Environmental random effects or multi-environment model terms from
 <code>environment</code> metadata.</li>
+<li>Automatic feature annotation joins, eQTL scans, or omics models from
+<code>expression</code> and <code>annotation</code> metadata.</li>
 <li>Allele coding, marker imputation, PLINK/VCF parsing, or marker
 scanning from marker maps.</li>
 <li>Marker, QTL, GWAS, or eQTL result generation.</li>
