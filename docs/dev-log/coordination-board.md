@@ -37,7 +37,7 @@
 | 2026-06-13 | R | Curie/Henderson/Fisher/Hopper/Rose/Grace | main | supplied-variance Henderson MME validation fixture | pushed; CI/pkgdown/Pages passed | not variance-component estimation or production fitting | notify issue #7 and Julia twin |
 | 2026-06-13 | R | Curie/Fisher/Pat/Rose/Grace | main | `validation_status()` evidence diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only; does not run checks | notify issue #7 |
 | 2026-06-13 | R | Jason/Fisher/Pat/Rose/Grace | main | marker/QTL/eQTL extractor contract | pushed; CI/pkgdown/Pages passed | output vocabulary only; no marker fitting | notify issues #5/#9 |
-| 2026-06-13 | R | Hopper/Lovelace/Henderson/Fisher/Rose/Grace | main | supplied-variance Henderson MME bridge target | local checks passed | supplied variances only; no optimizer/logLik | push, watch CI/pkgdown/Pages, and notify issues #6/#7 plus Julia twin |
+| 2026-06-13 | R | Hopper/Lovelace/Henderson/Fisher/Rose/Grace | main | supplied-variance Henderson MME bridge target | pushed; CI/pkgdown/Pages passed | supplied variances only; no optimizer/logLik | notify issues #6/#7 plus Julia twin |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

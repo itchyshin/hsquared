@@ -82,7 +82,10 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- GitHub Actions R-CMD-check `27462704120`: passed in 1m51s for commit
+  `99d974a`.
+- GitHub Actions pkgdown `27462704121`: passed for commit `99d974a`.
+- GitHub Pages build/deploy `27462736392`: passed after pkgdown.
 
 ## Rose Audit
 

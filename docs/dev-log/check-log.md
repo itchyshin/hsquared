@@ -1426,3 +1426,7 @@ with private memory.
   - Public wording does not claim variance-component estimation, log-likelihood
     support, AI-REML, Mrode fitted-output validation, ASReml parity, or
     production sparse fitting.
+- Remote checks for commit `99d974a`:
+  - GitHub Actions R-CMD-check `27462704120`: passed in 1m51s.
+  - GitHub Actions pkgdown `27462704121`: passed.
+  - GitHub Pages build/deploy `27462736392`: passed.
