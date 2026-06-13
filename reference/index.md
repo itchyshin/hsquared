@@ -24,6 +24,10 @@ not fit models yet.
   : Extract heritability estimates
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   : Extract breeding values
+- [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
+  : Extract prediction error variances
+- [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  : Extract reliability estimates
 - [`fixef()`](https://itchyshin.github.io/hsquared/reference/fixef.md) :
   Extract fixed effects
 - [`ranef()`](https://itchyshin.github.io/hsquared/reference/ranef.md) :

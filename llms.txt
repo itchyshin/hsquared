@@ -13,8 +13,10 @@ default call validates and stops, while an experimental opt-in
 `control = hs_control(engine = "julia")` path can send a tiny v0.1
 payload to a sibling `HSquared.jl` checkout through JuliaCall. This is
 still a narrow local validation path, not general animal-model support.
-The first fitted-object and extractor methods are defined over the
-returned `hsquared_fit` contract. A lightweight
+The fitted-object extractor contract now includes variance components,
+heritability, EBVs, PEV, reliability, fixed effects, random effects,
+log-likelihood, AIC, prediction, and summaries, with PEV/reliability
+waiting on Julia result-payload fields. A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows.
@@ -105,6 +107,10 @@ not fit models yet.
   : Extract heritability estimates
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   : Extract breeding values
+- [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
+  : Extract prediction error variances
+- [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  : Extract reliability estimates
 - [`fixef()`](https://itchyshin.github.io/hsquared/reference/fixef.md) :
   Extract fixed effects
 - [`ranef()`](https://itchyshin.github.io/hsquared/reference/ranef.md) :

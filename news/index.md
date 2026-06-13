@@ -18,6 +18,14 @@
   `HSquared.jl` checkout via JuliaCall. The default engine remains
   validation-only, and general fitted animal-model support is still
   planned ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
+  and
+  [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  are now part of the R fitted-object extractor contract. They work for
+  `hsquared_fit` objects containing those result fields; the current
+  Julia bridge payload does not return them yet
+  ([\#5](https://github.com/itchyshin/hsquared/issues/5),
+  [\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`

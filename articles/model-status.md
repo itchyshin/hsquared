@@ -20,7 +20,10 @@ This page separates what exists from what is planned.
   and normalize the returned Julia result into the internal
   `hsquared_fit` contract.
 - The first fitted-object/extractor contract over internal
-  `hsquared_fit` objects and mocked Julia result fields.
+  `hsquared_fit` objects and mocked Julia result fields, including
+  variance components, heritability, EBVs, PEV, reliability, fixed
+  effects, random effects, log-likelihood, AIC, prediction, and
+  summaries.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.
@@ -35,6 +38,7 @@ This page separates what exists from what is planned.
 - R-side `Ainv` construction.
 - Real variance components, heritability, EBVs, or BLUPs from fitted
   models.
+- PEV or reliability through the current live Julia result payload.
 - File-backed genotype/omics loading or streaming computation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.

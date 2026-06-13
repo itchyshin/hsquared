@@ -1,10 +1,8 @@
 # Extract variance components
 
 `variance_components()` is part of the planned v0.1 fitted-object
-contract. It works for internal `hsquared_fit` objects that already
-contain a Julia result, but ordinary calls to
-[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-do not return fitted models yet.
+contract. It works for `hsquared_fit` objects that contain a Julia
+result.
 
 ## Usage
 
