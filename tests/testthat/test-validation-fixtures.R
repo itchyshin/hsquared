@@ -609,6 +609,54 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
   )
 })
 
+test_that("AI-REML and sparse REML optimizers reach the same REML optimum", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live AI-REML-vs-sparse REML optimizer validation."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  init <- c(sigma_a2 = 1, sigma_e2 = 1)
+  fit_target <- function(target) {
+    hsquared(
+      fixture$formula,
+      data = fixture$data,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = target,
+          initial = init,
+          iterations = 1000L
+        )
+      )
+    )
+  }
+
+  # Internal comparator: average-information REML (fit_ai_reml) and the sparse
+  # NelderMead REML optimizer (fit_sparse_reml) maximize the SAME REML objective
+  # via different algorithms (an AI/Newton step vs derivative-free search), so on
+  # the same data they must reach the same optimum. This cross-validates the
+  # AI-REML estimator against the sparse one; it is NOT an external comparator,
+  # DGP recovery, or production-fitting claim.
+  ai <- fit_target("ai_reml")
+  sparse <- fit_target("sparse_reml")
+
+  expect_equal(ai$spec$target, "ai_reml")
+  expect_equal(sparse$spec$target, "sparse_reml")
+  expect_true(is.finite(ai$result$loglik) && is.finite(sparse$result$loglik))
+  # Same REML optimum (loglik is the shared objective; compare tightly).
+  expect_equal(ai$result$loglik, sparse$result$loglik, tolerance = 1e-3)
+  # Same variance estimates (flat near the optimum; compare a little loosely).
+  expect_equal(
+    variance_components(ai)$estimate,
+    variance_components(sparse)$estimate,
+    tolerance = 5e-2
+  )
+})
+
 test_that("independent pure-R REML optimizer matches the Julia sparse REML estimate", {
   fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
   spec <- hsquared:::hs_build_model_spec(

@@ -227,6 +227,21 @@ test_that("sparse REML payload requires an internal bridge payload", {
   )
 })
 
+test_that("Julia bridge accepts the ai_reml target", {
+  expect_equal(
+    hsquared:::hs_validate_julia_target("ai_reml"),
+    "ai_reml"
+  )
+})
+
+test_that("AI-REML payload requires an internal bridge payload", {
+  expect_error(
+    hsquared:::hs_fit_julia_ai_reml_payload(list()),
+    "must be an internal `hs_bridge_payload`",
+    fixed = TRUE
+  )
+})
+
 test_that("Julia Henderson MME bridge requires supplied variance components", {
   expect_error(
     hsquared:::hs_validate_supplied_variances(NULL),
@@ -424,5 +439,50 @@ test_that("hsquared can use the opt-in experimental sparse REML estimator bridge
   expect_equal(
     diag$value[diag$metric == "variance_components_source"],
     "estimated_sparse_reml"
+  )
+})
+
+test_that("hsquared can use the opt-in experimental AI-REML estimator bridge", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live AI-REML estimator bridge validation."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  fit <- hsquared(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "ai_reml",
+        initial = c(sigma_a2 = 1, sigma_e2 = 1),
+        iterations = 200L
+      )
+    )
+  )
+
+  # Experimental, opt-in, Julia-owned average-information REML optimizer that R
+  # only surfaces. Honest behaviour checks only: not DGP recovery, not ASReml
+  # parity.
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$engine, "HSquared.jl")
+  expect_equal(fit$spec$target, "ai_reml")
+  est <- variance_components(fit)$estimate
+  expect_equal(variance_components(fit)$component, c("animal", "residual"))
+  expect_true(all(is.finite(est)) && all(est > 0))
+  expect_true(is.finite(fit$result$loglik))
+  h2 <- heritability(fit)$estimate
+  expect_true(is.finite(h2) && h2 > 0 && h2 < 1)
+
+  # Estimated-vs-supplied provenance is explicit and distinct from sparse_reml.
+  diag <- fit_diagnostics(fit)
+  expect_equal(diag$value[diag$metric == "target"], "ai_reml")
+  expect_equal(
+    diag$value[diag$metric == "variance_components_source"],
+    "estimated_ai_reml"
   )
 })

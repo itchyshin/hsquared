@@ -38,7 +38,12 @@ requires \code{variance_components} with named \code{sigma_a2} and \code{sigma_e
 surfaces the Julia-owned \code{HSquared.fit_sparse_reml()} REML-only sparse
 optimizer; it accepts \code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and
 \code{iterations}. It is not the default, not production fitting, and not a
-variance-component estimation claim for the public R interface.}
+variance-component estimation claim for the public R interface.
+\code{target = "ai_reml"} is an experimental, opt-in validation path that
+surfaces the Julia-owned \code{HSquared.fit_ai_reml()} average-information REML
+optimizer; like \code{sparse_reml} it accepts \code{initial} and \code{iterations}, is not
+the default, and is not a variance-component estimation claim for the
+public R interface.}
 }
 \value{
 An object of class \code{"hs_control"}.

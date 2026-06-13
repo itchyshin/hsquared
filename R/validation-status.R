@@ -42,6 +42,7 @@ hs_validation_status_capabilities <- function() {
     "sparse REML likelihood identity",
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
+    "experimental AI-REML estimator (opt-in)",
     "Mrode fitted animal-model outputs",
     "ASReml comparison policy",
     "BLUPF90/DMU/WOMBAT comparison policy",
@@ -54,7 +55,7 @@ hs_validation_status_capabilities <- function() {
 
 hs_validation_status_phases <- function() {
   c(
-    rep("Phase 1", 9L),
+    rep("Phase 1", 10L),
     rep("Phase 5+", 2L),
     "Phase 6",
     "Phase 7+"
@@ -63,7 +64,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 6L),
+    rep("partial", 7L),
     rep("planned", 7L)
   )
 }
@@ -103,6 +104,14 @@ hs_validation_status_evidence <- function() {
       "against the dense REML optimizer, an independent pure-R REML optimizer,",
       "and the external pedigreemm package (at least as good by REML logLik)."
     ),
+    paste(
+      "Pure-R control/validator tests plus a skip-guarded live test running",
+      "Julia fit_ai_reml() through the opt-in target = \"ai_reml\" bridge;",
+      "checks positive estimated variances, finite REML logLik, and h2 in",
+      "(0, 1) on the Mrode fixture; fit provenance tagged",
+      "variance_components_source = \"estimated_ai_reml\". Cross-checked to reach",
+      "the same REML optimum as the sparse REML optimizer."
+    ),
     "None yet.",
     "None yet.",
     "None yet.",
@@ -133,6 +142,11 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned estimator that R surfaces;",
       "gated on twin validation_status; not the default, not production sparse",
       "fitting, AI-REML, or ASReml parity."
+    ),
+    paste(
+      "Experimental opt-in path only; Julia-owned average-information REML",
+      "estimator that R surfaces; gated on twin validation_status; not the",
+      "default, not production sparse fitting, or ASReml parity."
     ),
     "Planned; no Mrode fitted-output claim.",
     "Planned; no ASReml parity claim.",

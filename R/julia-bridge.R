@@ -206,6 +206,68 @@ hs_fit_julia_sparse_reml_payload <- function(
   )
 }
 
+hs_fit_julia_ai_reml_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = c(sigma_a2 = 1, sigma_e2 = 1),
+  iterations = 100L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  initial <- hs_validate_initial_variances(initial)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  hs_julia_assign_payload(payload, initial)
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_spec = HSquared.animal_model_spec(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+    "ids = hsq_ped.ids, method = :REML);",
+    "hsq_fit = HSquared.fit_ai_reml(",
+    "hsq_spec;",
+    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+    "sigma_e2 = hsq_initial_sigma_e2),",
+    "iterations = hsq_iterations);",
+    "hsq_result = HSquared.result_payload(hsq_fit);",
+    "if isdefined(HSquared, :prediction_error_variance) &&",
+    "isdefined(HSquared, :reliability) &&",
+    "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
+    "applicable(HSquared.reliability, hsq_fit);",
+    "hsq_result = merge(hsq_result, (",
+    "prediction_error_variance =",
+    "HSquared.prediction_error_variance(hsq_fit),",
+    "reliability = HSquared.reliability(hsq_fit)));",
+    "end;"
+  ))
+
+  raw <- JuliaCall::julia_eval(
+    "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
+  )
+  result <- hs_normalize_julia_result(raw, payload)
+  result$diagnostics$variance_components <- "estimated_ai_reml"
+  hs_new_fit(
+    spec = list(
+      method = payload$method,
+      family = list(family = payload$family, link = "identity"),
+      target = "ai_reml"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
   if (
@@ -321,10 +383,13 @@ hs_validate_julia_target <- function(target) {
       call. = FALSE
     )
   }
-  if (!target %in% c("fit_animal_model", "henderson_mme", "sparse_reml")) {
+  if (
+    !target %in%
+      c("fit_animal_model", "henderson_mme", "sparse_reml", "ai_reml")
+  ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
-      "\"henderson_mme\", or \"sparse_reml\".",
+      "\"henderson_mme\", \"sparse_reml\", or \"ai_reml\".",
       call. = FALSE
     )
   }
