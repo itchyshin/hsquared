@@ -63,6 +63,13 @@ Local checks:
 - `Rscript -e "pkgdown::check_pkgdown()"`: no problems found.
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
 
+Remote checks:
+
+- Commit: `f806a96 Expand genomics QTL GPU plan`.
+- R-CMD-check `27459396773`: passed.
+- pkgdown `27459396771`: passed.
+- GitHub Pages build and deployment `27459433476`: passed.
+
 ## Rose Audit
 
 Verdict: clean with limitations.

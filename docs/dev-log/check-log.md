@@ -843,3 +843,9 @@ with private memory.
     examples planned targets only.
   - Public wording does not claim those workflows are implemented, benchmarked,
     or ASReml-level.
+- Remote checks:
+  - Commit: `f806a96 Expand genomics QTL GPU plan`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27459396773` passed in GitHub Actions.
+  - Result: pkgdown `27459396771` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27459433476` passed.
