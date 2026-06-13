@@ -777,3 +777,75 @@ test_that("hsquared's REML solution is at least as good as the pedigreemm compar
   # or ASReml parity).
   expect_equal(h2(ref$estimate), h2(ext), tolerance = 0.1)
 })
+
+test_that("hsquared's R REML reference recovers the published gryphon estimates", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("enhancer")
+
+  # External published-estimate anchor: the gryphon birth-weight univariate
+  # animal model (BWT ~ 1 + animal). This validates hsquared's INDEPENDENT pure-R
+  # REML reference optimizer against a named published REML estimate (Wilson et
+  # al. 2010), plus an optional agreement check against the external sommer
+  # package. It is the first externally-anchored REML-recovery atom in the R
+  # lane. It does NOT exercise the production fit path and does NOT satisfy the
+  # twin-owned V1-MRODE-FIT gate row; the gryphon population is teaching/simulated
+  # data shipped in `enhancer`.
+  e <- new.env()
+  utils::data("DT_gryphon", package = "enhancer", envir = e)
+  DT <- get("DT_gryphon", e)
+  A <- get("A_gryphon", e)
+  ids <- rownames(A)
+  if (is.null(ids)) {
+    ids <- as.character(seq_len(nrow(A)))
+  }
+  dat <- DT[!is.na(DT$BWT), ]
+
+  pub <- hsquared:::hs_gryphon_published_reml()
+
+  # hsquared's independent pure-R REML reference on the same y, X, Z, Ainv.
+  y <- dat$BWT
+  X <- matrix(1, length(y), 1L)
+  j <- match(as.character(dat$ANIMAL), ids)
+  Z <- matrix(0, length(y), length(ids))
+  Z[cbind(seq_along(j), j)] <- 1
+  Ainv <- solve(A)
+  ref <- hsquared:::hs_reml_estimate_reference(
+    y,
+    X,
+    Z,
+    Ainv,
+    method = "REML",
+    initial = c(sigma_a2 = 3, sigma_e2 = 4)
+  )
+  va <- ref$estimate[["sigma_a2"]]
+  ve <- ref$estimate[["sigma_e2"]]
+  h2 <- va / (va + ve)
+
+  expect_equal(ref$convergence, 0L)
+  expect_equal(va, pub[["sigma_a2"]], tolerance = 0.02)
+  expect_equal(ve, pub[["sigma_e2"]], tolerance = 0.02)
+  expect_equal(h2, pub[["h2"]], tolerance = 0.02)
+
+  # Optional two-sided agreement against the external sommer package, robust to
+  # sommer API churn (skip the agreement leg if its API differs, do not fail).
+  if (requireNamespace("sommer", quietly = TRUE)) {
+    m <- tryCatch(
+      {
+        d2 <- dat
+        d2$ANIMAL <- factor(as.character(d2$ANIMAL))
+        sommer::mmes(
+          BWT ~ 1,
+          random = ~ sommer::vsm(sommer::ism(ANIMAL), Gu = A),
+          data = d2,
+          verbose = FALSE
+        )
+      },
+      error = function(e) NULL
+    )
+    if (!is.null(m)) {
+      sv <- sort(as.numeric(unlist(m$theta)))
+      expect_equal(sv[1], min(va, ve), tolerance = 0.05)
+      expect_equal(sv[2], max(va, ve), tolerance = 0.05)
+    }
+  }
+})

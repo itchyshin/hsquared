@@ -710,6 +710,22 @@ hs_reml_estimate_reference <- function(
   )
 }
 
+# Published REML variance components for the gryphon birth-weight univariate
+# animal model (BWT ~ 1 + animal), used to anchor an external published-estimate
+# recovery check of hsquared's pure-R REML reference. Source: Wilson et al.
+# (2010) "An ecologist's guide to the animal model", J. Anim. Ecol. 79:13-26, as
+# reproduced in the Wild Animal Models tutorial. The gryphon population is a
+# teaching/simulated dataset (shipped in the CRAN package `enhancer`); the
+# maintainer should confirm the headline numbers against the paper before any
+# promotion. This is an external-anchor cross-check of the R reference optimizer,
+# NOT the production fit path and NOT the twin-owned V1-MRODE-FIT gate row.
+hs_gryphon_published_reml <- function() {
+  out <- c(sigma_a2 = 3.3954, sigma_e2 = 3.8286, h2 = 0.470)
+  attr(out, "source") <-
+    "Wilson et al. (2010) J. Anim. Ecol. 79:13-26 (gryphon BWT animal model)"
+  out
+}
+
 # Deterministic replicated animal-model dataset used only as an
 # external-comparator input (e.g. pedigreemm). Three records per animal on the
 # twelve-animal Mrode pedigree, so the design is non-degenerate for general REML

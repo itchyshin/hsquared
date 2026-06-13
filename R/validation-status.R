@@ -43,6 +43,7 @@ hs_validation_status_capabilities <- function() {
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
     "experimental AI-REML estimator (opt-in)",
+    "external published-REML recovery (gryphon, R reference)",
     "Mrode fitted animal-model outputs",
     "ASReml comparison policy",
     "BLUPF90/DMU/WOMBAT comparison policy",
@@ -55,7 +56,7 @@ hs_validation_status_capabilities <- function() {
 
 hs_validation_status_phases <- function() {
   c(
-    rep("Phase 1", 10L),
+    rep("Phase 1", 11L),
     rep("Phase 5+", 2L),
     "Phase 6",
     "Phase 7+"
@@ -64,7 +65,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 7L),
+    rep("partial", 8L),
     rep("planned", 7L)
   )
 }
@@ -112,6 +113,12 @@ hs_validation_status_evidence <- function() {
       "variance_components_source = \"estimated_ai_reml\". Cross-checked to reach",
       "the same REML optimum as the sparse REML optimizer."
     ),
+    paste(
+      "A skip-guarded test recovers the published gryphon birth-weight REML",
+      "variance components and h2 (Wilson et al. 2010) with hsquared's",
+      "independent pure-R REML reference, and optionally agrees with the external",
+      "sommer package, on the gryphon dataset (CRAN package enhancer)."
+    ),
     "None yet.",
     "None yet.",
     "None yet.",
@@ -147,6 +154,12 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned average-information REML",
       "estimator that R surfaces; gated on twin validation_status; not the",
       "default, not production sparse fitting, or ASReml parity."
+    ),
+    paste(
+      "External-anchor cross-check of the pure-R REML reference only; not the",
+      "production fit path and does not satisfy the twin-owned V1-MRODE-FIT gate;",
+      "gryphon is teaching/simulated data, confirm headline numbers before any",
+      "promotion."
     ),
     "Planned; no Mrode fitted-output claim.",
     "Planned; no ASReml parity claim.",

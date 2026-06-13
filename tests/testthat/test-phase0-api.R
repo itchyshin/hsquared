@@ -117,7 +117,7 @@ test_that("validation_status separates evidence from planned validation", {
   status <- validation_status()
 
   expect_s3_class(status, "hs_validation_status")
-  expect_equal(nrow(status), 14L)
+  expect_equal(nrow(status), 15L)
   expect_true(all(
     c("capability", "phase", "status", "evidence", "claim_boundary") %in%
       names(status)
@@ -147,6 +147,13 @@ test_that("validation_status separates evidence from planned validation", {
   expect_equal(
     status$status[
       status$capability == "experimental AI-REML estimator (opt-in)"
+    ],
+    "partial"
+  )
+  expect_equal(
+    status$status[
+      status$capability ==
+        "external published-REML recovery (gryphon, R reference)"
     ],
     "partial"
   )

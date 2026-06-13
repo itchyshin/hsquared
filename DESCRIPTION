@@ -19,6 +19,7 @@ Roxygen: list(markdown = TRUE)
 Imports:
     Matrix
 Suggests:
+    enhancer,
     JuliaCall,
     knitr,
     lme4,
@@ -26,6 +27,7 @@ Suggests:
     pedigreemm,
     pkgdown,
     rmarkdown,
+    sommer,
     testthat (>= 3.0.0),
     withr
 VignetteBuilder:
