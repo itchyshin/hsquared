@@ -25,6 +25,7 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
 
   expect_s3_class(data, "hs_data")
   expect_s3_class(data$marker_spec, "hs_marker_map_spec")
+  expect_s3_class(data$genotype_marker_spec, "hs_genotype_marker_spec")
   expect_equal(data$id_map$phenotype_ids, c("a", "b"))
   expect_equal(data$id_map$pedigree_ids, c("a", "b", "c"))
   expect_equal(data$id_map$genotype_ids, c("b", "d"))
@@ -37,6 +38,8 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
       position = 3L
     )
   )
+  expect_equal(data$genotype_marker_spec$marker_ids, c("m1", "m2", "m3"))
+  expect_equal(data$genotype_marker_spec$marker_map_index, c(1L, 2L, 3L))
   expect_equal(data$id_map$phenotypes_without_pedigree, character())
   expect_equal(data$id_map$phenotypes_without_genotypes, "a")
   expect_equal(data$id_map$genotypes_without_phenotypes, "d")
@@ -174,6 +177,67 @@ test_that("hs_data validates marker-map columns and marker positions", {
     "chromosome column cannot contain missing or empty values",
     fixed = TRUE
   )
+})
+
+test_that("hs_data validates genotype marker columns against marker maps", {
+  phenotypes <- data.frame(id = "a", y = 1)
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      genotypes = matrix(
+        0,
+        nrow = 1,
+        ncol = 2,
+        dimnames = list("a", c("m1", "m_extra"))
+      ),
+      markers = data.frame(
+        marker = c("m1", "m2"),
+        chr = c("1", "1"),
+        pos = c(10, 20)
+      )
+    ),
+    "missing from `markers`: m_extra; missing from `genotypes`: m2",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      genotypes = matrix(
+        0,
+        nrow = 1,
+        ncol = 1,
+        dimnames = list("a", NULL)
+      ),
+      markers = data.frame(marker = "m1", chr = "1", pos = 10)
+    ),
+    "must have marker IDs as column names",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      genotypes = data.frame(id = "a"),
+      markers = data.frame(marker = "m1", chr = "1", pos = 10)
+    ),
+    "at least one marker column",
+    fixed = TRUE
+  )
+
+  data <- hs_data(
+    phenotypes = phenotypes,
+    genotypes = data.frame(id = "a", m2 = 1, m1 = 0),
+    markers = data.frame(
+      marker = c("m1", "m2"),
+      chr = c("1", "1"),
+      pos = c(10, 20)
+    )
+  )
+
+  expect_equal(data$genotype_marker_spec$marker_ids, c("m2", "m1"))
+  expect_equal(data$genotype_marker_spec$marker_map_index, c(2L, 1L))
 })
 
 test_that("hsquared can validate the v0.1 formula from an hs_data bundle", {

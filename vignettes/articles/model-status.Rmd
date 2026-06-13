@@ -57,6 +57,8 @@ This page separates what exists from what is planned.
   phenotype, pedigree, genotype, and expression components.
 - `hs_data()` validates supplied marker maps for marker ID, chromosome, and
   non-negative numeric position columns. This is metadata validation only.
+- When both `genotypes` and `markers` are supplied, `hs_data()` checks that
+  genotype marker columns match marker-map IDs exactly.
 - `model_spec()` and `hsquared()` can use an `hs_data()` object for the v0.1
   animal-model parser, reading model variables from `phenotypes` and formula
   components such as `pedigree = pedigree` from the bundle.

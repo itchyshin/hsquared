@@ -20,7 +20,9 @@ hs_data(
 
 \item{pedigree}{Optional pedigree data frame.}
 
-\item{genotypes}{Optional genotype matrix or data frame.}
+\item{genotypes}{Optional genotype matrix or data frame. Matrix row names or
+data-frame ID values identify individuals. When \code{markers} is supplied,
+genotype marker column names must match marker-map IDs exactly.}
 
 \item{markers}{Optional marker map data frame. When supplied, it must contain
 marker ID, chromosome, and position columns. Recognized aliases include

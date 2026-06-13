@@ -10,7 +10,9 @@
 #'
 #' @param phenotypes A data frame of phenotypic records.
 #' @param pedigree Optional pedigree data frame.
-#' @param genotypes Optional genotype matrix or data frame.
+#' @param genotypes Optional genotype matrix or data frame. Matrix row names or
+#'   data-frame ID values identify individuals. When `markers` is supplied,
+#'   genotype marker column names must match marker-map IDs exactly.
 #' @param markers Optional marker map data frame. When supplied, it must contain
 #'   marker ID, chromosome, and position columns. Recognized aliases include
 #'   `marker`, `snp`, or `id`; `chromosome`, `chr`, or `chrom`; and
@@ -48,6 +50,11 @@ hs_data <- function(
   expression_ids <- hs_optional_component_ids(expression, id, "`expression`")
 
   marker_spec <- hs_validate_marker_map(markers)
+  genotype_marker_spec <- hs_validate_genotype_marker_alignment(
+    genotypes,
+    id,
+    marker_spec
+  )
   hs_validate_optional_data_frame(annotation, "`annotation`")
   hs_validate_optional_data_frame(environment, "`environment`")
 
@@ -58,6 +65,7 @@ hs_data <- function(
       genotypes = genotypes,
       markers = markers,
       marker_spec = marker_spec,
+      genotype_marker_spec = genotype_marker_spec,
       expression = expression,
       annotation = annotation,
       environment = environment,
@@ -321,6 +329,89 @@ hs_validate_marker_map <- function(markers) {
     ),
     class = "hs_marker_map_spec"
   )
+}
+
+hs_validate_genotype_marker_alignment <- function(genotypes, id, marker_spec) {
+  if (is.null(genotypes) || is.null(marker_spec)) {
+    return(NULL)
+  }
+
+  genotype_markers <- hs_genotype_marker_ids(genotypes, id)
+  duplicated <- unique(genotype_markers[duplicated(genotype_markers)])
+  if (length(duplicated) > 0L) {
+    stop(
+      "`genotypes` contains duplicate marker column",
+      if (length(duplicated) > 1L) "s" else "",
+      ": ",
+      paste(duplicated, collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  missing_from_map <- setdiff(genotype_markers, marker_spec$marker_ids)
+  missing_from_genotypes <- setdiff(marker_spec$marker_ids, genotype_markers)
+  if (length(missing_from_map) > 0L || length(missing_from_genotypes) > 0L) {
+    details <- c(
+      if (length(missing_from_map) > 0L) {
+        paste0(
+          "missing from `markers`: ",
+          paste(missing_from_map, collapse = ", ")
+        )
+      },
+      if (length(missing_from_genotypes) > 0L) {
+        paste0(
+          "missing from `genotypes`: ",
+          paste(missing_from_genotypes, collapse = ", ")
+        )
+      }
+    )
+    stop(
+      "`genotypes` marker columns must match `markers` marker IDs exactly; ",
+      paste(details, collapse = "; "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  structure(
+    list(
+      marker_ids = genotype_markers,
+      marker_map_index = match(genotype_markers, marker_spec$marker_ids)
+    ),
+    class = "hs_genotype_marker_spec"
+  )
+}
+
+hs_genotype_marker_ids <- function(genotypes, id) {
+  if (is.matrix(genotypes)) {
+    marker_ids <- colnames(genotypes)
+    if (is.null(marker_ids)) {
+      stop(
+        "`genotypes` matrix must have marker IDs as column names when ",
+        "`markers` is supplied.",
+        call. = FALSE
+      )
+    }
+    return(hs_checked_ids(marker_ids, "`genotypes` marker columns"))
+  }
+
+  if (is.data.frame(genotypes)) {
+    marker_columns <- names(genotypes)
+    if (id %in% marker_columns) {
+      marker_columns <- setdiff(marker_columns, id)
+    }
+    if (length(marker_columns) == 0L) {
+      stop(
+        "`genotypes` must contain at least one marker column when `markers` ",
+        "is supplied.",
+        call. = FALSE
+      )
+    }
+    return(hs_checked_ids(marker_columns, "`genotypes` marker columns"))
+  }
+
+  character()
 }
 
 hs_print_component_count <- function(label, ids) {

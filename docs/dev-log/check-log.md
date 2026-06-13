@@ -1045,3 +1045,40 @@ with private memory.
   - Public wording says marker metadata validation only.
   - Public wording does not claim genotype parsing, PLINK/VCF ingestion, marker
     imputation, marker scans, genomic fitting, or QTL/eQTL fitting.
+
+## 2026-06-13 hs_data genotype-marker alignment
+
+- Goal: check that genotype marker columns match supplied marker-map IDs.
+- Active lenses: Emmy, Jason, Pat, Rose.
+- Spawned subagents: none.
+- Scout:
+  - Reused `docs/dev-log/scout/2026-06-13-marker-map-validation-scout.md` and
+    updated it with the alignment rule.
+- Implementation evidence:
+  - Added private `hs_validate_genotype_marker_alignment()` and
+    `hs_genotype_marker_ids()`.
+  - When both `genotypes` and `markers` are supplied, genotype marker column
+    names must match marker-map IDs exactly, allowing different order but no
+    missing or extra markers.
+  - Stored private `hs_genotype_marker_spec` with marker IDs and marker-map
+    indices.
+  - Updated tests, README, model-status article, capability status, validation
+    debt, claims register, NEWS, and roxygen docs.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `hs_data.Rd`.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `34 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `242 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says genotype-marker alignment validation only.
+  - Public wording does not claim genotype parsing, marker imputation, marker
+    scans, genomic fitting, or QTL/eQTL fitting.

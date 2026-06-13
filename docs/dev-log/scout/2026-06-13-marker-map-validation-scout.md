@@ -24,6 +24,8 @@ model-fitting claims behind explicit evidence.
 
 - Validate marker maps supplied to `hs_data()` for marker ID, chromosome, and
   non-negative numeric position columns.
+- When both genotypes and marker maps are supplied, check that genotype marker
+  column names match marker-map IDs exactly.
 - Store normalized marker IDs, chromosomes, positions, and column indices in a
   private `hs_marker_map_spec`.
 - Keep genotype parsing, PLINK/VCF ingestion, marker imputation, GWAS/QTL scans,
