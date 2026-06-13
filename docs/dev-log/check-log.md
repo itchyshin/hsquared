@@ -592,3 +592,9 @@ with private memory.
     unavailable execution status.
   - Public wording does not claim runtime backend probes, CPU/GPU execution,
     backend benchmarking, or CPU/GPU numerical agreement.
+- Remote checks:
+  - Commit: `498d41f Add backend status diagnostics`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27458148965` passed in GitHub Actions.
+  - Result: pkgdown `27458148970` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27458179717` passed.

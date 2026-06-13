@@ -50,6 +50,14 @@ Local checks:
 - Second `Rscript -e "pkgdown::check_pkgdown()"`: `No problems found.`
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
 
+Remote checks:
+
+- R-CMD-check `27458148965`: passed on commit
+  `498d41f Add backend status diagnostics`.
+- pkgdown `27458148970`: passed on commit
+  `498d41f Add backend status diagnostics`.
+- GitHub Pages build and deployment `27458179717`: passed.
+
 ## Rose Audit
 
 Verdict: clean with limitations.
@@ -80,3 +88,9 @@ execution-ready backend.
    capability API.
 3. Add `backend()` and `device_info()` extractors once real fitted objects carry
    backend metadata.
+
+## Coordination
+
+The R diagnostic follows the same no-execution guardrail handed to the Julia
+twin for planned backend vocabulary. Julia should mirror this only after it has
+an equivalent typed status surface.
