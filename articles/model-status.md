@@ -50,7 +50,9 @@ This page separates what exists from what is planned.
 - An experimental opt-in `control = hs_control(engine = "julia")` path
   that can send the tiny payload into a sibling `HSquared.jl` checkout,
   marshal sparse `Z` through CSC slots, and normalize the returned Julia
-  result into the internal `hsquared_fit` contract.
+  result into the internal `hsquared_fit` contract. When the sibling
+  Julia package exposes dense validation extractors, this path also
+  enriches the result with PEV/reliability fields.
 - An internal tiny validation fixture that pins R payload ordering,
   sparse `Z`, and live Julia `pedigree_inverse()` agreement for a
   three-animal pedigree when the local Julia bridge is available.
@@ -75,7 +77,7 @@ This page separates what exists from what is planned.
 - R-side `Ainv` construction.
 - Real variance components, heritability, EBVs, or BLUPs from fitted
   models.
-- PEV or reliability through the current live Julia result payload.
+- Production sparse PEV or reliability.
 - Full Mrode animal-model fit-output validation.
 - ASReml, BLUPF90, DMU, or WOMBAT comparator validation.
 - File-backed genotype/omics loading or streaming computation.

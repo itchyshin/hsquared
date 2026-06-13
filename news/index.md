@@ -22,8 +22,15 @@
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
   are now part of the R fitted-object extractor contract. They work for
-  `hsquared_fit` objects containing those result fields; the current
-  Julia bridge payload does not return them yet
+  `hsquared_fit` objects containing those result fields
+  ([\#5](https://github.com/itchyshin/hsquared/issues/5),
+  [\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- The experimental local Julia bridge now enriches tiny `hsquared_fit`
+  results with dense validation-path PEV and reliability fields when the
+  sibling `HSquared.jl` checkout exposes
+  [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
+  and
+  [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
   ([\#5](https://github.com/itchyshin/hsquared/issues/5),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - The experimental Julia bridge now sends sparse `Matrix::dgCMatrix`
