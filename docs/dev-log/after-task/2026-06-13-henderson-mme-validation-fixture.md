@@ -60,7 +60,12 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- Commit: `ec2a9cc Add Henderson MME validation fixture`.
+- GitHub Actions R-CMD-check `27461936435`: passed in 1m40s.
+- GitHub Actions pkgdown `27461936446`: passed in 1m36s.
+- GitHub Pages build/deploy `27461969071`: passed. The Pages run reported a
+  Node.js 20 deprecation warning from GitHub's action stack, not from package
+  code.
 
 ## Rose Audit
 

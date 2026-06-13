@@ -1282,3 +1282,8 @@ with private memory.
   - Public wording does not claim variance-component estimation, general
     fitting, Mrode fitted-output validation, AI-REML, or production sparse
     fitting.
+- Remote checks for commit `ec2a9cc`:
+  - GitHub Actions R-CMD-check `27461936435`: passed in 1m40s.
+  - GitHub Actions pkgdown `27461936446`: passed in 1m36s.
+  - GitHub Pages build/deploy `27461969071`: passed; Node.js 20 deprecation
+    warning is from the Pages action stack, not this package code.
