@@ -115,7 +115,15 @@ hs_fit_julia_henderson_mme_payload <- function(
     "\"animal_effects\" => hsq_mme_bv.values,",
     "\"fitted\" => HSquared.fitted_values(hsq_mme),",
     "\"nobs\" => length(hsq_y)",
-    ");"
+    ");",
+    "if isdefined(HSquared, :prediction_error_variance) &&",
+    "isdefined(HSquared, :reliability) &&",
+    "applicable(HSquared.prediction_error_variance, hsq_mme) &&",
+    "applicable(HSquared.reliability, hsq_mme);",
+    "hsq_mme_raw[\"prediction_error_variance\"] =",
+    "HSquared.prediction_error_variance(hsq_mme);",
+    "hsq_mme_raw[\"reliability\"] = HSquared.reliability(hsq_mme);",
+    "end;"
   ))
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
@@ -352,7 +360,7 @@ hs_normalize_julia_henderson_mme_result <- function(
     value = as.numeric(raw$animal_effects)
   )
 
-  list(
+  result <- list(
     variance_components = data.frame(
       component = c("animal", "residual"),
       estimate = c(
@@ -377,6 +385,17 @@ hs_normalize_julia_henderson_mme_result <- function(
     ),
     converged = TRUE
   )
+
+  if (!is.null(raw$prediction_error_variance)) {
+    result$prediction_error_variance <- hs_julia_id_values(
+      raw$prediction_error_variance
+    )
+  }
+  if (!is.null(raw$reliability)) {
+    result$reliability <- hs_julia_id_values(raw$reliability)
+  }
+
+  result
 }
 
 hs_julia_id_values <- function(x) {

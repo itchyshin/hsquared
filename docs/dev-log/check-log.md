@@ -1227,6 +1227,19 @@ with private memory.
   - Result: articles rebuilt and `No problems found.`
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n 'henderson_mme.*estimate|Henderson MME.*estimate|supplied-variance.*log-likelihood|log-likelihood.*supplied-variance|production sparse reliability.*implemented|general animal-model support|AI-REML is implemented|Mrode fitted-output validation is covered|ASReml parity|fast|faster|speedup' README.md NEWS.md R man tests vignettes docs/design docs/dev-log _pkgdown.yml`.
+  - Result: hits were planned, blocked, negated, or prior scan/report records.
+  - Public wording says optional dense validation-path PEV/reliability for the
+    supplied-variance Henderson MME bridge only.
+  - Public wording does not claim variance-component estimation, log-likelihood
+    support, AI-REML, Mrode fitted-output validation, ASReml parity, production
+    sparse reliability, or speedup.
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
 - Rose wording sweep:
   - Public wording says this is parser/data-container ergonomics only.
   - Public wording does not claim new animal-model fitting, R-side Ainv
@@ -1430,3 +1443,30 @@ with private memory.
   - GitHub Actions R-CMD-check `27462704120`: passed in 1m51s.
   - GitHub Actions pkgdown `27462704121`: passed.
   - GitHub Pages build/deploy `27462736392`: passed.
+
+## 2026-06-13 Henderson MME bridge PEV/reliability parity
+
+- Goal: let the supplied-variance Henderson MME bridge target attach dense
+  validation-path PEV and reliability when the sibling `HSquared.jl` checkout
+  exposes applicable `prediction_error_variance()` and `reliability()` methods.
+- Active lenses: Hopper, Lovelace, Henderson, Fisher, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added an `applicable()`-guarded JuliaCall enrichment step for
+    `target = "henderson_mme"`.
+  - Added optional `prediction_error_variance` and `reliability` normalization
+    to `hs_normalize_julia_henderson_mme_result()`.
+  - Added a mocked normalizer test and live bridge assertions for local
+    `HSquared.jl` checkouts that expose the MME extractor methods.
+  - Updated README, model-status article, v0.1 contract, engine contract,
+    validation canon, capability status, validation debt, public claims, NEWS,
+    and `validation_status()` wording.
+- Local checks:
+  - `air format . && Rscript -e "devtools::test(filter = 'julia-bridge|phase0-api')"`
+  - Result: passed with `117 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `333 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`

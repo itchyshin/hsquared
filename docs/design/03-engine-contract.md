@@ -43,8 +43,11 @@ hs_control(
 
 That path calls Julia `henderson_mme()` after building `Ainv`. It returns fixed
 effects, EBVs/BLUPs, fitted values, variance components, and h2 for tiny
-validation examples. It does not optimize variance components, does not return
-a log-likelihood, and is not a production sparse fitting claim.
+validation examples. When the sibling Julia checkout exposes applicable
+`prediction_error_variance()` and `reliability()` methods for the MME result,
+the R bridge also attaches dense validation-path PEV and reliability fields. It
+does not optimize variance components, does not return a log-likelihood, and is
+not a production sparse fitting claim.
 
 ## Initial Julia Result
 
@@ -87,11 +90,15 @@ breeding_values
 random_effects
 predictions
 nobs
+prediction_error_variance
+reliability
 diagnostics
 converged
 ```
 
-It deliberately omits `loglik`, `df`, PEV, and reliability.
+It deliberately omits `loglik` and `df`. The PEV and reliability fields are
+optional and appear only when the local Julia result exposes applicable dense
+validation extractors.
 
 ## Storage Policy
 

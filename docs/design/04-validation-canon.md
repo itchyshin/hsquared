@@ -41,5 +41,7 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   `pedigree_inverse()` against `nadiv::makeAinv()` for the Mrode9 pedigree when
   optional dependencies are available.
 - Supplied-variance Henderson MME fixture: checks an independent R solve
-  against Julia `henderson_mme()` for fixed effects, EBVs, fitted values, and
-  h2. This does not estimate variance components.
+  against Julia `henderson_mme()` for fixed effects, EBVs, fitted values, h2,
+  and optional dense validation-path PEV/reliability when the sibling Julia
+  checkout exposes those extractors. This does not estimate variance
+  components.

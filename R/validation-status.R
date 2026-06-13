@@ -78,7 +78,8 @@ hs_validation_status_evidence <- function() {
     ),
     paste(
       "Local R reference solve and optional live Julia henderson_mme()",
-      "comparison for fixed effects, EBVs, fitted values, and h2."
+      "comparison for fixed effects, EBVs, fitted values, h2, and optional",
+      "dense validation-path PEV/reliability."
     ),
     "None yet.",
     "None yet.",
@@ -96,7 +97,7 @@ hs_validation_status_boundaries <- function() {
     "Pedigree inverse comparator only; not fitted Mrode outputs.",
     paste(
       "Supplied-variance BLUP/MME only; not variance-component estimation,",
-      "AI-REML, or production sparse fitting."
+      "AI-REML, production sparse reliability, or production sparse fitting."
     ),
     "Planned; no Mrode fitted-output claim.",
     "Planned; no ASReml parity claim.",

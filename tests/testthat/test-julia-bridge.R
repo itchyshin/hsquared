@@ -225,6 +225,40 @@ test_that("Julia Henderson MME bridge requires supplied variance components", {
   )
 })
 
+test_that("Julia Henderson MME normalizer accepts optional PEV and reliability fields", {
+  raw <- list(
+    fixed_effects = c(3.2),
+    animal_ids = c("sire", "dam", "calf"),
+    animal_effects = c(-0.1, 0.2, 0.3),
+    fitted = c(3.1, 3.4, 3.5),
+    nobs = 3L,
+    prediction_error_variance = list(
+      ids = c("sire", "dam", "calf"),
+      values = c(0.2, 0.25, 0.3)
+    ),
+    reliability = list(
+      ids = c("sire", "dam", "calf"),
+      values = c(0.8, 0.75, 0.7)
+    )
+  )
+  payload <- list(metadata = list(fixed_colnames = "(Intercept)"))
+
+  result <- hsquared:::hs_normalize_julia_henderson_mme_result(
+    raw,
+    payload,
+    variance_components = c(sigma_a2 = 1.2, sigma_e2 = 0.8)
+  )
+
+  expect_equal(
+    result$prediction_error_variance,
+    data.frame(id = c("sire", "dam", "calf"), value = c(0.2, 0.25, 0.3))
+  )
+  expect_equal(
+    result$reliability,
+    data.frame(id = c("sire", "dam", "calf"), value = c(0.8, 0.75, 0.7))
+  )
+})
+
 test_that("experimental Julia Henderson MME bridge matches validation fixture", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
@@ -273,6 +307,18 @@ test_that("experimental Julia Henderson MME bridge matches validation fixture", 
     tolerance = 1e-10
   )
   expect_equal(heritability(fit)$estimate, fixture$expected$heritability)
+  if (
+    !is.null(fit$result$prediction_error_variance) &&
+      !is.null(fit$result$reliability)
+  ) {
+    expect_equal(
+      prediction_error_variance(fit)$id,
+      fixture$expected$breeding_values$id
+    )
+    expect_equal(reliability(fit)$id, fixture$expected$breeding_values$id)
+    expect_true(all(is.finite(prediction_error_variance(fit)$value)))
+    expect_true(all(is.finite(reliability(fit)$value)))
+  }
   expect_error(
     stats::logLik(fit),
     "does not contain log-likelihood",
