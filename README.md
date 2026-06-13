@@ -150,13 +150,14 @@ bundle <- hs_data(
 )
 ```
 
-The marker-map, annotation-feature, and environment-key checks are metadata
-validation only. Genomic, QTL/eQTL, omics, and environment-effect models remain
-planned.
+The expression-feature, marker-map, annotation-feature, and environment-key
+checks are metadata validation only. Genomic, QTL/eQTL, omics, and
+environment-effect models remain planned.
 `summary(bundle)` and `data_status(bundle)` report pedigree coverage, founder
 and parent-link counts, marker-map size, genotype marker-column count,
 chromosome count, coordinate range, whether the genotype-marker alignment was
-checked, expression-feature annotation coverage when `annotation_id` is
+checked, expression row and feature counts, unnamed or duplicate expression
+features, expression-feature annotation coverage when `annotation_id` is
 supplied, and environment metadata coverage when `environment_id` is supplied.
 When both `genotypes` and `markers` are supplied, genotype marker column names
 must match marker-map IDs exactly.

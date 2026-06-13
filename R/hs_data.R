@@ -32,11 +32,11 @@
 #'
 #' @details
 #' `summary(hs_data(...))` reports ID overlap diagnostics, pedigree diagnostics,
-#' and, when genotype or marker components are supplied, marker-map and
-#' genotype-column alignment diagnostics. When `annotation_id` is supplied, it
-#' reports expression-feature annotation coverage diagnostics. When
-#' `environment_id` is supplied, it also reports environment metadata coverage
-#' diagnostics.
+#' and, when expression, genotype, or marker components are supplied,
+#' expression-feature, marker-map, and genotype-column alignment diagnostics.
+#' When `annotation_id` is supplied, it reports expression-feature annotation
+#' coverage diagnostics. When `environment_id` is supplied, it also reports
+#' environment metadata coverage diagnostics.
 #' @export
 hs_data <- function(
   phenotypes,
@@ -145,12 +145,13 @@ print.hs_data <- function(x, ...) {
 #'
 #' `data_status()` gives a direct user-facing view of the checks stored in an
 #' [hs_data()] object. It reports component presence, ID overlap diagnostics,
-#' pedigree diagnostics, and marker-map/genotype-marker alignment diagnostics
-#' when those inputs are supplied. When `annotation_id` is supplied, it reports
-#' expression-feature annotation coverage diagnostics. When `environment_id` is
-#' supplied, it also reports environment metadata coverage diagnostics. It does
-#' not fit models, build genomic relationship matrices, add eQTL terms, or add
-#' environment-effect terms.
+#' pedigree diagnostics, expression-feature diagnostics, and marker-map/
+#' genotype-marker alignment diagnostics when those inputs are supplied. When
+#' `annotation_id` is supplied, it reports expression-feature annotation
+#' coverage diagnostics. When `environment_id` is supplied, it also reports
+#' environment metadata coverage diagnostics. It does not fit models, build
+#' genomic relationship matrices, add eQTL terms, or add environment-effect
+#' terms.
 #'
 #' @param data An [hs_data()] object.
 #'
@@ -176,6 +177,7 @@ data_status.hs_data <- function(data) {
       components = out$components,
       id_overlap = out$id_overlap,
       pedigree_status = out$pedigree_status,
+      expression_status = out$expression_status,
       marker_status = out$marker_status,
       annotation_status = out$annotation_status,
       environment_status = out$environment_status
@@ -195,6 +197,12 @@ print.hs_data_status <- function(x, ...) {
   } else {
     cat("  pedigree status:\n", sep = "")
     print.data.frame(x$pedigree_status, row.names = FALSE)
+  }
+  if (is.null(x$expression_status)) {
+    cat("  expression status: not available\n", sep = "")
+  } else {
+    cat("  expression status:\n", sep = "")
+    print.data.frame(x$expression_status, row.names = FALSE)
   }
   if (is.null(x$marker_status)) {
     cat("  marker status: not available\n", sep = "")
@@ -236,6 +244,7 @@ summary.hs_data <- function(object, ...) {
       id_map = object$id_map,
       id_overlap = hs_data_id_overlap(object$id_map),
       pedigree_status = hs_data_pedigree_status(object),
+      expression_status = hs_data_expression_status(object),
       marker_status = hs_data_marker_status(object),
       annotation_status = hs_data_annotation_status(object),
       environment_status = hs_data_environment_status(object)
@@ -254,6 +263,10 @@ print.summary_hs_data <- function(x, ...) {
   if (!is.null(x$pedigree_status)) {
     cat("  pedigree status:\n", sep = "")
     print.data.frame(x$pedigree_status, row.names = FALSE)
+  }
+  if (!is.null(x$expression_status)) {
+    cat("  expression status:\n", sep = "")
+    print.data.frame(x$expression_status, row.names = FALSE)
   }
   if (!is.null(x$marker_status)) {
     cat("  marker status:\n", sep = "")
@@ -410,6 +423,43 @@ hs_data_marker_status <- function(object) {
       hs_optional_summary_value(position_min),
       hs_optional_summary_value(position_max),
       alignment
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+hs_data_expression_status <- function(object) {
+  if (is.null(object$expression)) {
+    return(NULL)
+  }
+
+  feature_ids <- hs_expression_feature_ids(
+    object$expression,
+    object$id,
+    require_names = FALSE
+  )
+  has_feature_name <- !is.na(feature_ids) & feature_ids != ""
+  named_features <- feature_ids[has_feature_name]
+  duplicate_features <- unique(named_features[duplicated(named_features)])
+
+  data.frame(
+    metric = c(
+      "expression_rows",
+      "expression_ids",
+      "expression_features",
+      "named_expression_features",
+      "unnamed_expression_features",
+      "duplicate_expression_features",
+      "component_type"
+    ),
+    value = c(
+      as.character(hs_expression_row_count(object$expression)),
+      as.character(length(object$id_map$expression_ids)),
+      as.character(length(feature_ids)),
+      as.character(length(named_features)),
+      as.character(sum(!has_feature_name)),
+      as.character(length(duplicate_features)),
+      hs_expression_component_type(object$expression)
     ),
     stringsAsFactors = FALSE
   )
@@ -755,6 +805,23 @@ hs_expression_feature_ids <- function(
     return(feature_ids)
   }
   character()
+}
+
+hs_expression_row_count <- function(expression) {
+  if (is.matrix(expression) || is.data.frame(expression)) {
+    return(nrow(expression))
+  }
+  NA_integer_
+}
+
+hs_expression_component_type <- function(expression) {
+  if (is.matrix(expression)) {
+    return("matrix")
+  }
+  if (is.data.frame(expression)) {
+    return("data.frame")
+  }
+  "unknown"
 }
 
 hs_validate_environment <- function(environment, phenotypes, environment_id) {

@@ -287,6 +287,75 @@ test_that("hs_data accepts expression IDs from an ID column", {
   expect_equal(data$id_map$expression_ids, c("s2", "s3"))
   expect_equal(data$id_map$phenotypes_without_expression, "s1")
   expect_equal(data$id_map$expression_without_phenotypes, "s3")
+  expect_equal(summary(data)$expression_status$value[[7L]], "data.frame")
+})
+
+test_that("hs_data reports expression feature diagnostics", {
+  phenotypes <- data.frame(id = c("s1", "s2"), y = c(1, 2))
+  expression <- matrix(
+    1:6,
+    nrow = 2,
+    dimnames = list(c("s1", "s2"), c("gene1", "gene2", "gene2"))
+  )
+
+  data <- hs_data(
+    phenotypes = phenotypes,
+    expression = expression
+  )
+
+  expression_status <- summary(data)$expression_status
+  expect_equal(
+    expression_status$metric,
+    c(
+      "expression_rows",
+      "expression_ids",
+      "expression_features",
+      "named_expression_features",
+      "unnamed_expression_features",
+      "duplicate_expression_features",
+      "component_type"
+    )
+  )
+  expect_equal(
+    expression_status$value,
+    c("2", "2", "3", "3", "0", "1", "matrix")
+  )
+
+  status <- data_status(data)
+  expect_equal(status$expression_status$value[[3L]], "3")
+  expect_equal(status$expression_status$value[[6L]], "1")
+})
+
+test_that("hs_data reports unnamed expression matrix features", {
+  data <- hs_data(
+    phenotypes = data.frame(id = "s1", y = 1),
+    expression = matrix(
+      1,
+      nrow = 1,
+      ncol = 2,
+      dimnames = list("s1", NULL)
+    )
+  )
+
+  expression_status <- summary(data)$expression_status
+  expect_equal(
+    expression_status$value,
+    c("1", "1", "2", "0", "2", "0", "matrix")
+  )
+
+  partly_named <- hs_data(
+    phenotypes = data.frame(id = "s1", y = 1),
+    expression = matrix(
+      1,
+      nrow = 1,
+      ncol = 2,
+      dimnames = list("s1", c("gene1", NA))
+    )
+  )
+  expect_equal(
+    summary(partly_named)$expression_status$value,
+    c("1", "1", "2", "1", "1", "0", "matrix")
+  )
 })
 
 test_that("hs_data reports expression annotation diagnostics", {

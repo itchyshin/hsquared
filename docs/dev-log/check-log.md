@@ -1428,6 +1428,49 @@ with private memory.
   - Updated issue #8:
     <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698262135>.
 
+## 2026-06-13 hs_data expression-status diagnostics
+
+- Goal: add `hs_data()` diagnostics for expression matrix/data-frame shape and
+  feature naming without adding eQTL or omics modelling.
+- Active lenses: Emmy, Jason, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `summary(hs_data(...))$expression_status`.
+  - Added `data_status(...)$expression_status` and print support.
+  - The status table reports expression rows, expression IDs, expression
+    feature count, named feature count, unnamed feature count, duplicate named
+    feature count, and component type.
+  - Added tests for data-frame expression inputs, named matrix features with
+    duplicate feature IDs, and unnamed expression matrix columns.
+  - Updated README, model-status article, capability status, validation debt,
+    public claims, NEWS, roxygen docs, and board.
+- Local checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: documentation updated; wrote `hs_data.Rd` and `data_status.Rd`.
+  - `air format . && Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: formatting completed, and focused tests passed with `101 pass`,
+    `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `395 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "expression.*model|expression.*fit|expression_status.*fit|expression_status.*model|eQTL.*implemented|omics.*implemented|automatic.*expression|automatic.*annotation|genomic.*implemented|QTL.*implemented|GLLVM.*implemented|GPU.*implemented|supports eQTL|supports omics|supports QTL|ASReml parity|speedup|fast|faster" README.md NEWS.md R man tests vignettes docs/design docs/dev-log _pkgdown.yml`.
+  - Result: hits were planned, blocked, negated, prior scan/report records, or
+    the intended new `without fitting eQTL or omics models` wording.
+  - Public wording says expression-status diagnostics only.
+  - Public wording does not claim eQTL fitting, omics models, automatic
+    expression or annotation joins, marker/QTL/GWAS fitting, GLLVM support,
+    GPU execution, ASReml parity, or speedup.
+- Remote checks:
+  - Pending until this slice is pushed.
+
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 
 - Goal: add an internal supplied-variance Henderson mixed-model-equation

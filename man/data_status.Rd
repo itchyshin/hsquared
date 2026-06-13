@@ -15,10 +15,11 @@ An \code{"hs_data_status"} object.
 \description{
 \code{data_status()} gives a direct user-facing view of the checks stored in an
 \code{\link[=hs_data]{hs_data()}} object. It reports component presence, ID overlap diagnostics,
-pedigree diagnostics, and marker-map/genotype-marker alignment diagnostics
-when those inputs are supplied. When \code{annotation_id} is supplied, it reports
-expression-feature annotation coverage diagnostics. When \code{environment_id} is
-supplied, it also reports environment metadata coverage diagnostics. It does
-not fit models, build genomic relationship matrices, add eQTL terms, or add
-environment-effect terms.
+pedigree diagnostics, expression-feature diagnostics, and marker-map/
+genotype-marker alignment diagnostics when those inputs are supplied. When
+\code{annotation_id} is supplied, it reports expression-feature annotation
+coverage diagnostics. When \code{environment_id} is supplied, it also reports
+environment metadata coverage diagnostics. It does not fit models, build
+genomic relationship matrices, add eQTL terms, or add environment-effect
+terms.
 }
