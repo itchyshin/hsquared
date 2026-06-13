@@ -2415,6 +2415,12 @@ with private memory.
   `docs/design/03-engine-contract.md`, and
   `vignettes/articles/formula-grammar.Rmd`. Repo-wide grep for stale pre-flip
   phrasing in living surfaces is clean; both edited articles render.
-- Remote checks: PENDING. Push is gated on the twin's
-  `v01-gate-validation-status` landing on Julia `main` (currently `94e695b`);
-  remote CI evidence will be appended after the push.
+- Twin gate landed: `v01-gate-validation-status` (`100adbe`) fast-forwarded onto
+  Julia `main` under maintainer authorization (`94e695b..100adbe`); `main` now
+  reads V1-AI-REML covered, V1-MRODE-FIT / V1-COMPARATORS covered_external.
+  Coordination issue `HSquared.jl#13` opened and closed. Then pushed the four R
+  commits (`cd13551..b07bf58`).
+- Remote checks for commit `b07bf58`:
+  - GitHub Actions R-CMD-check `27482232390`: passed.
+  - GitHub Actions pkgdown `27482232393`: passed.
+  - GitHub Pages build/deploy `27482264882`: passed.
