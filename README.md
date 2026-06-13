@@ -8,7 +8,9 @@ eventually the bridge to the `HSquared.jl` engine.
 This repository has moved past the initial scaffold into early Phase 1 parser
 and bridge-contract work. It can validate the narrow v0.1 formula contract and
 build a tested internal R-to-Julia payload shape, but it does not execute Julia
-or fit animal models yet.
+or fit animal models yet. The first fitted-object and extractor methods are
+also defined over an internal `hsquared_fit` contract, ready for the Julia
+result once fitting exists.
 
 The intended two-package shape is:
 

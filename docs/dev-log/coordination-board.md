@@ -8,6 +8,7 @@
 | 2026-06-13 | R | Emmy/Boole/Hopper/Grace/Rose | main | animal formula parser, pkgdown, genomics/GPU plan | partial | no fitted bridge yet | push Phase 1A and start bridge payload issue #6 |
 | 2026-06-13 | Julia | Gauss/Karpinski/Noether/Grace | twin thread | pedigree inverse utilities, Documenter, genomics/GPU roadmap | active | R bridge payload pending | keep Julia docs and R contract mirrored |
 | 2026-06-13 | R | Hopper/Lovelace/Emmy/Grace/Rose | main | internal bridge payload for issue #6 | pushed; CI/pkgdown/Pages passed | no live Julia execution | ask Julia twin to align `animal_model_spec()` docs/tests |
+| 2026-06-13 | R | Emmy/Pat/Fisher/Rose/Grace | main | fitted object and extractor contract for issue #5 | local checks passed | no real Julia result yet | push extractor contract and watch CI |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

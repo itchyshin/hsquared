@@ -9,6 +9,7 @@
 | `hsquared()` fit entry point | partial | local tests parse v0.1 animal contract, build bridge payload, and stop at bridge boundary | No fitting or Julia execution. |
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Bridge execution and fitting are not implemented. |
 | R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | `Ainv` construction and live Julia execution remain planned. |
+| `hsquared_fit` object/extractors | partial | local tests over internal mock fit results | `hsquared()` does not return fitted objects yet. |
 | simple Gaussian animal model | planned | none | Phase 1. |
 | sparse Ainv | planned | none | Julia lane. |
 | EBVs/BLUPs | planned | none | Phase 1. |

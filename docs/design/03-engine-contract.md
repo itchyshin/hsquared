@@ -40,6 +40,13 @@ warnings
 id_map
 ```
 
+The R fitted-object contract currently expects these fields to arrive as a
+compact result list. Extractor methods are already defined for
+`variance_components`, `heritability`, `breeding_values`, `fixed_effects`,
+`random_effects`, `loglik`, `df`, `nobs`, `predictions`, `diagnostics`, and
+`converged`, but the package does not create real fitted objects until Julia
+execution exists.
+
 ## Storage Policy
 
 - Save minimal metadata by default.

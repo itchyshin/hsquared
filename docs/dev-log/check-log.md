@@ -191,3 +191,37 @@ with private memory.
   - `gh issue comment 6 --repo itchyshin/hsquared --body ...`
   - Result: issue #6 updated with evidence at
     `https://github.com/itchyshin/hsquared/issues/6#issuecomment-4697408730`.
+
+## 2026-06-13 R fitted object and extractor contract slice
+
+- Local implementation checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: `NAMESPACE` regenerated and Rd topics written for
+    `variance_components()`, `heritability()`, `breeding_values()`,
+    `fixef()`, and `ranef()`.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `65 pass`, `0 fail`.
+  - First `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: failed because five new extractor topics were missing from the
+    reference index.
+  - Fix: added an `Extractor contract` section to `_pkgdown.yml`.
+  - Final `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - First `Rscript -e "devtools::check()"`
+  - Result: `0 errors`, `0 warnings`, `1 note`; NOTE was an unqualified
+    `logLik()` call inside `AIC.hsquared_fit()`.
+  - Fix: changed `AIC.hsquared_fit()` to call `stats::logLik(object)`.
+  - Final `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- API evidence:
+  - Added internal `hs_new_fit()`.
+  - Added extractor generics and `hsquared_fit` methods for variance
+    components, heritability, breeding values, fixed effects, random effects,
+    log-likelihood, AIC, prediction, and summary.
+  - Tests use mocked result fields only; `hsquared()` still does not fit or
+    return an `hsquared_fit` object.
+- Rose wording sweep:
+  - README, vignettes, and design docs describe this as an extractor contract
+    over future/internal fit objects, not as fitted animal-model support.

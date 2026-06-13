@@ -30,6 +30,14 @@ reference:
       - hsquared
       - hs_control
       - animal
+  - title: Extractor contract
+    desc: Extractor names for future fitted objects; ordinary hsquared calls do not fit models yet.
+    contents:
+      - variance_components
+      - heritability
+      - breeding_values
+      - fixef
+      - ranef
   - title: Package
     contents:
       - hsquared-package
