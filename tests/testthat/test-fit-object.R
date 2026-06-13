@@ -26,7 +26,11 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
     df = 4L,
     nobs = 10L,
     predictions = data.frame(.fitted = seq_len(10) + 0.5),
-    diagnostics = list(gradient_norm = 0.001),
+    diagnostics = list(
+      optimizer_status = "converged",
+      iterations = 7L,
+      gradient_norm = 0.001
+    ),
     converged = TRUE
   )
 
@@ -67,6 +71,29 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(attr(logLik(fit), "df"), 4L)
   expect_equal(attr(logLik(fit), "nobs"), 10L)
   expect_equal(AIC(fit), 2 * 4 - 2 * -12.5)
+  diagnostics <- fit_diagnostics(fit)
+  expect_s3_class(diagnostics, "hs_fit_diagnostics")
+  expect_equal(
+    diagnostics$metric,
+    c(
+      "engine",
+      "method",
+      "family",
+      "target",
+      "converged",
+      "optimizer_status",
+      "iterations",
+      "loglik",
+      "df",
+      "nobs",
+      "gradient_norm"
+    )
+  )
+  expect_equal(
+    diagnostics$value[diagnostics$metric == "gradient_norm"],
+    "0.001"
+  )
+  expect_match(capture.output(print(diagnostics))[[1L]], "<hs_fit_diagnostics>")
   expect_s3_class(summary(fit), "summary_hsquared_fit")
 })
 
@@ -108,6 +135,11 @@ test_that("extractor defaults do not imply fitted model support", {
   )
   expect_error(
     accuracy(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    fit_diagnostics(list()),
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
@@ -169,6 +201,23 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
     residuals(fit),
     "does not contain predictions",
     fixed = TRUE
+  )
+})
+
+test_that("fit_diagnostics tolerates scalar diagnostics payloads", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:2),
+    result = list(
+      diagnostics = "scalar-status",
+      converged = FALSE
+    )
+  )
+
+  diagnostics <- fit_diagnostics(fit)
+  expect_equal(
+    diagnostics$value[diagnostics$metric == "diagnostics"],
+    "scalar-status"
   )
 })
 

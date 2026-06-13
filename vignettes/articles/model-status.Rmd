@@ -69,7 +69,8 @@ This page separates what exists from what is planned.
   objects and mocked Julia result fields, including variance components,
   heritability, EBV/BLUP aliases, PEV, reliability, accuracy, fixed effects,
   random effects, log-likelihood, AIC, prediction, fitted values, residuals,
-  and summaries.
+  summaries, and `fit_diagnostics()` for convergence, optimizer, target,
+  iteration, and dense-validation-path metadata.
 - Reserved marker/QTL/eQTL extractor names: `marker_effects()`,
   `marker_variance_explained()`, `qtl_table()`, `gwas_table()`, `eqtl_table()`,
   and `lod_scores()`. These only return values for future `hsquared_fit`

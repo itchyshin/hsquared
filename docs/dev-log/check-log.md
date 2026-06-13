@@ -1727,6 +1727,50 @@ with private memory.
   - GitHub Actions pkgdown `27462704121`: passed.
   - GitHub Pages build/deploy `27462736392`: passed.
 
+## 2026-06-13 fit diagnostics extractor
+
+- Goal: add a conservative `fit_diagnostics()` extractor for `hsquared_fit`
+  objects so users and developers can inspect engine, method, target,
+  convergence, optimizer status, iterations, log-likelihood metadata, and
+  dense-validation-path flags without refitting or implying production support.
+- Active lenses: Emmy, Hopper, Jason, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Sibling scout:
+  - Checked local `drmTMB`, `gllvmTMB`, `GLLVM.jl`, and `DRM.jl` fit-summary
+    and post-fit patterns.
+  - Recorded decision in
+    `docs/dev-log/scout/2026-06-13-fit-diagnostics-sibling-scout.md`.
+- Implementation evidence:
+  - Added `fit_diagnostics()` generic, default method, `hsquared_fit` method,
+    and `print.hs_fit_diagnostics()`.
+  - Added scalar formatting for result diagnostics while preserving extra Julia
+    payload diagnostics such as `gradient_norm`.
+  - Added tests for the extractor, default error, and print method.
+  - Updated README, NEWS, model-status article, public claims register,
+    capability status, roxygen docs, and pkgdown reference index.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'fit-object|julia-bridge|phase0-api')"`
+  - Result: docs updated, formatting completed, focused tests passed with
+    `171 pass`, `0 fail`, `0 warnings`, and `0 skips`; live Julia bridge
+    activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `408 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - First run result: `0 errors | 0 warnings | 1 note`; note was
+    `unable to verify current time`.
+  - `Rscript -e "devtools::check()"`
+  - Rerun result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording boundary:
+  - `fit_diagnostics()` is documented as an inspection helper over existing
+    result payloads.
+  - No public wording claims new model-fitting support, production sparse
+    reliability, ASReml parity, or GPU/backend execution.
+
 ## 2026-06-13 Henderson MME bridge PEV/reliability parity
 
 - Goal: let the supplied-variance Henderson MME bridge target attach dense

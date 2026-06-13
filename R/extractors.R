@@ -216,6 +216,108 @@ accuracy.hsquared_fit <- function(object, ...) {
   out
 }
 
+#' Inspect fitted-model diagnostics
+#'
+#' `fit_diagnostics()` returns a compact diagnostics table for an
+#' `hsquared_fit` object. It is an inspection helper over the current result
+#' payload: it does not refit the model, rerun validation checks, or promote an
+#' experimental bridge target to production support.
+#'
+#' @inheritParams variance_components
+#'
+#' @return A data frame with `metric` and `value` columns and class
+#'   `"hs_fit_diagnostics"`.
+#' @export
+fit_diagnostics <- function(object, ...) {
+  UseMethod("fit_diagnostics")
+}
+
+#' @export
+fit_diagnostics.default <- function(object, ...) {
+  stop(
+    "`fit_diagnostics()` requires an `hsquared_fit` object.",
+    call. = FALSE
+  )
+}
+
+#' @export
+fit_diagnostics.hsquared_fit <- function(object, ...) {
+  diagnostics <- object$result$diagnostics %||% list()
+  if (!is.list(diagnostics)) {
+    diagnostics <- list(diagnostics = diagnostics)
+  }
+  base <- list(
+    engine = object$engine,
+    method = object$spec$method %||% diagnostics$method,
+    family = object$spec$family$family,
+    target = object$spec$target %||%
+      diagnostics$target %||%
+      "variance_components",
+    converged = object$result$converged %||% diagnostics$converged,
+    optimizer_status = diagnostics$optimizer_status,
+    iterations = diagnostics$iterations,
+    loglik = object$result$loglik,
+    df = object$result$df,
+    nobs = object$result$nobs %||%
+      if (!is.null(object$payload$y)) length(object$payload$y) else NULL,
+    dense_validation_path = diagnostics$dense_validation_path,
+    variance_components_source = diagnostics$variance_components
+  )
+
+  diagnostic_names <- names(diagnostics)
+  already_reported <- c(
+    "method",
+    "target",
+    "converged",
+    "optimizer_status",
+    "iterations",
+    "dense_validation_path",
+    "variance_components"
+  )
+  extras <- diagnostics[setdiff(diagnostic_names, already_reported)]
+  rows <- c(base, extras)
+  rows <- rows[!vapply(rows, is.null, logical(1))]
+
+  out <- data.frame(
+    metric = names(rows),
+    value = vapply(rows, hs_diagnostic_value, character(1)),
+    stringsAsFactors = FALSE
+  )
+  class(out) <- c("hs_fit_diagnostics", class(out))
+  out
+}
+
+#' @export
+print.hs_fit_diagnostics <- function(x, ...) {
+  cat("<hs_fit_diagnostics>\n")
+  out <- x
+  class(out) <- setdiff(class(out), "hs_fit_diagnostics")
+  print.data.frame(out, row.names = FALSE)
+  invisible(x)
+}
+
+hs_diagnostic_value <- function(x) {
+  if (length(x) == 0L) {
+    return(NA_character_)
+  }
+  if (is.logical(x)) {
+    return(paste(ifelse(x, "TRUE", "FALSE"), collapse = ", "))
+  }
+  if (is.numeric(x)) {
+    return(paste(format(x, digits = 8, trim = TRUE), collapse = ", "))
+  }
+  if (is.character(x)) {
+    return(paste(x, collapse = ", "))
+  }
+  if (is.factor(x)) {
+    return(paste(as.character(x), collapse = ", "))
+  }
+  if (is.atomic(x)) {
+    return(paste(as.character(x), collapse = ", "))
+  }
+  "<list>"
+}
+
 #' Extract planned marker, QTL, GWAS, and eQTL results
 #'
 #' These extractor names are reserved for future genomic, QTL, GWAS, and eQTL

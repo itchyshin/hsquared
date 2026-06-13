@@ -48,6 +48,7 @@ reference:
       - breeding_values
       - prediction_error_variance
       - reliability
+      - fit_diagnostics
       - marker_extractors
       - fixef
       - ranef
