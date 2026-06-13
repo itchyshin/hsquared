@@ -104,6 +104,43 @@ It deliberately omits `loglik` and `df`. The PEV and reliability fields are
 optional and appear only when the local Julia result exposes applicable dense
 validation extractors.
 
+## Sparse REML Estimator Path (experimental)
+
+An opt-in, fenced bridge target surfaces the Julia-owned, REML-only sparse
+optimizer. It is reachable only via:
+
+```r
+hs_control(
+  engine = "julia",
+  engine_control = list(
+    target = "sparse_reml",
+    initial = c(sigma_a2 = 1, sigma_e2 = 1),
+    iterations = 1000L
+  )
+)
+```
+
+R builds the model spec with `method = :REML` and calls Julia
+`HSquared.fit_sparse_reml(spec; initial = (sigma_a2, sigma_e2), iterations)`,
+then normalizes the returned `result_payload(fit)` through the same shape as the
+default fitted path (`variance_components`, `heritability`, `fixed_effects`,
+`breeding_values`, `random_effects`, `loglik`, `df`, `nobs`, `predictions`,
+`diagnostics`, `converged`). The R bridge tags
+`diagnostics$variance_components = "estimated_sparse_reml"` so `fit_diagnostics()`
+reports an estimated (not supplied) variance provenance, distinct from the
+`"supplied"` Henderson MME path.
+
+Ownership and boundary:
+
+- The estimator is Julia-owned; R only surfaces it. R tracks the twin by reading
+  `HSquared.jl` exports and `validation_status()`, never by editing Julia source.
+- Experimental and opt-in: the default `hsquared()` still validates and stops.
+  Promote to a public-facing claim only once the twin's `validation_status()`
+  marks `fit_sparse_reml` green (currently partial).
+- Not variance-component estimation via the public R interface, not production
+  sparse fitting, not AI-REML, and not an ASReml-parity claim. Live tests are
+  skip-guarded when JuliaCall, Julia, or the sibling checkout is unavailable.
+
 ## Storage Policy
 
 - Save minimal metadata by default.
