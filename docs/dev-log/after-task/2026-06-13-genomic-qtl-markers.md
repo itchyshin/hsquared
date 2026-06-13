@@ -60,6 +60,14 @@ Local checks:
 - `Rscript -e "pkgdown::check_pkgdown()"`: `No problems found.`
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
 
+Remote checks:
+
+- R-CMD-check `27458338370`: passed on commit
+  `dc53584 Add planned genomic QTL markers`.
+- pkgdown `27458338374`: passed on commit
+  `dc53584 Add planned genomic QTL markers`.
+- GitHub Pages build and deployment `27458374477`: passed.
+
 ## Rose Audit
 
 Verdict: clean with limitations.
@@ -91,3 +99,9 @@ The tests check both sides of the guardrail:
    contract exists.
 3. Keep QTL/eQTL scans as roadmap syntax until genotype storage and validation
    are real.
+
+## Coordination
+
+The Julia twin should mirror these only as model-spec vocabulary until the
+Julia engine has real genomic relationship, marker-scan, and QTL/eQTL
+contracts.

@@ -639,3 +639,9 @@ with private memory.
     parser errors.
   - Public wording does not claim genomic prediction, marker scanning,
     QTL/eQTL analysis, single-step fitting, or marker-effect estimation.
+- Remote checks:
+  - Commit: `dc53584 Add planned genomic QTL markers`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27458338370` passed in GitHub Actions.
+  - Result: pkgdown `27458338374` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27458374477` passed.
