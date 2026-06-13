@@ -9,6 +9,9 @@ This page separates what exists from what is planned.
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   with default validation-only behavior and an experimental
   `engine = "julia"` option for tiny local bridge examples.
+- [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
+  stores planned CPU-thread, CUDA, AMDGPU, Metal, and oneAPI backend
+  names as control metadata.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.

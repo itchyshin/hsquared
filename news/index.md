@@ -40,6 +40,12 @@
   [`nadiv::makeAinv()`](https://rdrr.io/pkg/nadiv/man/makeAinv.html) for
   the Mrode9 pedigree
   ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
+- Expanded
+  [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
+  to preserve planned backend and accelerator vocabulary for CPU
+  threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface
+  placeholders only; GPU execution remains planned
+  ([\#3](https://github.com/itchyshin/hsquared/issues/3)).
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`

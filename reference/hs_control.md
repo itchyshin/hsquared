@@ -11,8 +11,8 @@ payloads.
 ``` r
 hs_control(
   engine = c("validate", "julia"),
-  backend = c("auto", "cpu", "cuda"),
-  accelerator = c("auto", "none", "cuda"),
+  backend = c("auto", "cpu", "threads", "cuda", "amdgpu", "metal", "oneapi"),
+  accelerator = c("auto", "none", "gpu", "cuda", "amdgpu", "metal", "oneapi"),
   precision = c("float64", "float32"),
   save = c("minimal", "full", "tiny"),
   engine_control = list()
@@ -28,12 +28,13 @@ hs_control(
 
 - backend:
 
-  Planned compute backend. One of `"auto"`, `"cpu"`, or `"cuda"`.
+  Planned compute backend. One of `"auto"`, `"cpu"`, `"threads"`,
+  `"cuda"`, `"amdgpu"`, `"metal"`, or `"oneapi"`.
 
 - accelerator:
 
-  Planned accelerator preference. One of `"auto"`, `"none"`, or
-  `"cuda"`.
+  Planned accelerator preference. One of `"auto"`, `"none"`, `"gpu"`,
+  `"cuda"`, `"amdgpu"`, `"metal"`, or `"oneapi"`.
 
 - precision:
 
