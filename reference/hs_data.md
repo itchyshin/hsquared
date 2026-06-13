@@ -19,6 +19,7 @@ hs_data(
   expression = NULL,
   annotation = NULL,
   environment = NULL,
+  environment_id = NULL,
   id = "id"
 )
 ```
@@ -58,6 +59,12 @@ hs_data(
 
   Optional environment/covariate data frame.
 
+- environment_id:
+
+  Optional column name used to match `environment` rows to phenotype
+  records. When supplied, the column must exist in both `phenotypes` and
+  `environment`.
+
 - id:
 
   Name of the individual ID column in `phenotypes`.
@@ -70,4 +77,6 @@ An `hs_data` object.
 
 `summary(hs_data(...))` reports ID overlap diagnostics, pedigree
 diagnostics, and, when genotype or marker components are supplied,
-marker-map and genotype-column alignment diagnostics.
+marker-map and genotype-column alignment diagnostics. When
+`environment_id` is supplied, it also reports environment metadata
+coverage diagnostics.

@@ -189,6 +189,12 @@
   marker, expression, annotation, and environment inputs. It records ID
   maps for future integrated genomic/QTL/eQTL workflows, but does not
   fit models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  now accepts `environment_id` to check environment/covariate metadata
+  coverage against phenotype records, and
+  [`summary()`](https://rdrr.io/r/base/summary.html)/[`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
+  report environment-key diagnostics without constructing environmental
+  model terms ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - `summary(hs_data(...))` now includes pedigree coverage and parent-link
   diagnostics when a pedigree component is supplied
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).

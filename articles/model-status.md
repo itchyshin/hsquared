@@ -24,9 +24,9 @@ This page separates what exists from what is planned.
 - [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
   reports
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
-  component presence, ID overlap, and pedigree and
-  marker-map/genotype-marker alignment diagnostics without implying
-  fitted support.
+  component presence, ID overlap, and pedigree,
+  marker-map/genotype-marker alignment, and environment-key diagnostics
+  without implying fitted support.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   previews the parsed v0.1 animal-model contract, including fixed-effect
   design columns, sparse animal-effect design dimensions, normalized
@@ -117,6 +117,9 @@ This page separates what exists from what is planned.
 - When both `genotypes` and `markers` are supplied,
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   checks that genotype marker columns match marker-map IDs exactly.
+- `hs_data(environment = ..., environment_id = ...)` checks environment
+  metadata coverage against phenotype records and reports duplicate or
+  unmatched environment keys. This is metadata validation only.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
@@ -145,6 +148,8 @@ This page separates what exists from what is planned.
 - Automatic model construction from genotype, marker, expression,
   annotation, or environment components in
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md).
+- Environmental random effects or multi-environment model terms from
+  `environment` metadata.
 - Allele coding, marker imputation, PLINK/VCF parsing, or marker
   scanning from marker maps.
 - Marker, QTL, GWAS, or eQTL result generation.
