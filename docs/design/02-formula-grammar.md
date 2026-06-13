@@ -30,7 +30,8 @@ Current bridge-payload limits:
 - pedigree IDs are normalized to parent-before-offspring order;
 - the payload records parent indices for Julia-side sparse `Ainv`
   construction;
-- live Julia execution remains planned.
+- production Julia execution remains planned; only the experimental tiny local
+  bridge path exists.
 
 ## Later Relationship Terms
 

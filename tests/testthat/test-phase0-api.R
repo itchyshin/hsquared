@@ -2,6 +2,7 @@ test_that("hs_control stores validated defaults", {
   control <- hs_control()
 
   expect_s3_class(control, "hs_control")
+  expect_equal(control$engine, "validate")
   expect_equal(control$backend, "auto")
   expect_equal(control$accelerator, "auto")
   expect_equal(control$precision, "float64")
@@ -9,10 +10,32 @@ test_that("hs_control stores validated defaults", {
   expect_equal(control$engine_control, list())
 })
 
+test_that("hs_control validates engine selection", {
+  control <- hs_control(
+    engine = "julia",
+    engine_control = list(max_dense_cells = 10L)
+  )
+
+  expect_equal(control$engine, "julia")
+  expect_equal(control$engine_control$max_dense_cells, 10L)
+
+  expect_error(
+    hs_control(engine = "not-an-engine"),
+    "'arg' should be one of",
+    fixed = TRUE
+  )
+})
+
 test_that("hs_control validates engine_control", {
   expect_error(
     hs_control(engine_control = "not-a-list"),
     "`engine_control` must be a list.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_control(engine_control = list(1)),
+    "`engine_control` must be a named list.",
     fixed = TRUE
   )
 })

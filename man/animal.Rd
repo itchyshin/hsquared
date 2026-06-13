@@ -21,7 +21,7 @@ appears inside a model formula.
 \description{
 \code{animal()} marks an additive-genetic random effect in an \code{hsquared()}
 formula. The first implemented parser contract accepts only
-\code{animal(1 | id, pedigree = ped)}. Fitting still waits for the Julia engine
-bridge, so this function is a syntax marker rather than a standalone
-modelling helper.
+\code{animal(1 | id, pedigree = ped)}. General fitting still waits for the
+production Julia engine bridge, so this function is a syntax marker rather
+than a standalone modelling helper.
 }

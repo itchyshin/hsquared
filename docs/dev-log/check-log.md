@@ -301,3 +301,40 @@ with private memory.
     and public claims register now say local internal bridge smoke only.
   - Public wording still says ordinary `hsquared()` calls do not fit models and
     production/user-facing bridge execution remains planned.
+
+## 2026-06-13 R opt-in Julia engine slice
+
+- Goal: make the live Julia bridge reachable through an explicit experimental
+  user-facing control while keeping the default `hsquared()` call
+  validation-only.
+- Active lenses: Ada, Shannon, Hopper, Lovelace, Emmy, Grace, Rose, Pat.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `engine = c("validate", "julia")` to `hs_control()`.
+  - Kept Julia-specific knobs in `engine_control`: currently `julia_project`,
+    `initial`, and `max_dense_cells`.
+  - Updated `hsquared()` so `control = hs_control(engine = "julia")` calls the
+    experimental Julia bridge and returns an internal `hsquared_fit`.
+  - Default `hs_control(engine = "validate")` still parses, validates, builds
+    the bridge payload, and stops with an informative message.
+  - Added validation for named `engine_control` and positive
+    `max_dense_cells`.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `animal`, `hs_control`, `hsquared`, and package Rd
+    topics.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `105 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live tests activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says experimental opt-in tiny local engine path.
+  - Public wording does not claim general animal-model fitting, sparse
+    production bridge execution, ASReml-level support, or large-data readiness.

@@ -380,7 +380,9 @@ hs_topological_pedigree <- function(ids, sire, dam) {
   sorted_dam_index <- dam_index[order]
   known_sire <- sorted_sire_index != 0L
   known_dam <- sorted_dam_index != 0L
-  sorted_sire_index[known_sire] <- sorted_position[sorted_sire_index[known_sire]]
+  sorted_sire_index[known_sire] <- sorted_position[sorted_sire_index[
+    known_sire
+  ]]
   sorted_dam_index[known_dam] <- sorted_position[sorted_dam_index[known_dam]]
 
   list(

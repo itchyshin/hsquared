@@ -5,6 +5,7 @@
 \title{Create hsquared control options}
 \usage{
 hs_control(
+  engine = c("validate", "julia"),
   backend = c("auto", "cpu", "cuda"),
   accelerator = c("auto", "none", "cuda"),
   precision = c("float64", "float32"),
@@ -13,6 +14,9 @@ hs_control(
 )
 }
 \arguments{
+\item{engine}{Execution engine. \code{"validate"} stops after parser and bridge
+payload validation. \code{"julia"} uses the experimental local JuliaCall bridge.}
+
 \item{backend}{Planned compute backend. One of \code{"auto"}, \code{"cpu"}, or
 \code{"cuda"}.}
 
@@ -25,14 +29,16 @@ hs_control(
 \item{save}{Planned fitted-object storage mode. One of \code{"minimal"},
 \code{"full"}, or \code{"tiny"}.}
 
-\item{engine_control}{A named list reserved for future HSquared.jl engine
-controls.}
+\item{engine_control}{A named list for engine-specific controls. The current
+experimental Julia bridge recognizes \code{julia_project}, \code{initial}, and
+\code{max_dense_cells}.}
 }
 \value{
 An object of class \code{"hs_control"}.
 }
 \description{
-\code{hs_control()} records the planned execution and storage controls for future
-hsquared model calls. In Phase 0 these options are validated and stored, but no
-model fitting is performed.
+\code{hs_control()} records execution and storage controls for hsquared model
+calls. The default \code{engine = "validate"} parses and validates the v0.1
+contract before stopping. The experimental \code{engine = "julia"} path attempts
+the current local Julia bridge for tiny v0.1 animal-model payloads.
 }

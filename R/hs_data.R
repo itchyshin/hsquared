@@ -60,11 +60,26 @@ hs_data <- function(
         pedigree_ids = pedigree_ids,
         genotype_ids = genotype_ids,
         expression_ids = expression_ids,
-        phenotypes_without_pedigree = setdiff(unique(phenotype_ids), pedigree_ids),
-        phenotypes_without_genotypes = setdiff(unique(phenotype_ids), genotype_ids),
-        genotypes_without_phenotypes = setdiff(genotype_ids, unique(phenotype_ids)),
-        phenotypes_without_expression = setdiff(unique(phenotype_ids), expression_ids),
-        expression_without_phenotypes = setdiff(expression_ids, unique(phenotype_ids))
+        phenotypes_without_pedigree = setdiff(
+          unique(phenotype_ids),
+          pedigree_ids
+        ),
+        phenotypes_without_genotypes = setdiff(
+          unique(phenotype_ids),
+          genotype_ids
+        ),
+        genotypes_without_phenotypes = setdiff(
+          genotype_ids,
+          unique(phenotype_ids)
+        ),
+        phenotypes_without_expression = setdiff(
+          unique(phenotype_ids),
+          expression_ids
+        ),
+        expression_without_phenotypes = setdiff(
+          expression_ids,
+          unique(phenotype_ids)
+        )
       )
     ),
     class = "hs_data"
@@ -172,7 +187,11 @@ hs_optional_component_ids <- function(x, id, label) {
   }
   if (is.matrix(x)) {
     if (is.null(rownames(x))) {
-      stop(label, " matrix must have individual IDs as row names.", call. = FALSE)
+      stop(
+        label,
+        " matrix must have individual IDs as row names.",
+        call. = FALSE
+      )
     }
     return(unique(hs_checked_ids(rownames(x), label)))
   }

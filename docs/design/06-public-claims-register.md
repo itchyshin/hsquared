@@ -6,12 +6,12 @@ public examples.
 | Claim | Status | Evidence | Allowed wording |
 | --- | --- | --- | --- |
 | `hsquared` is an R package scaffold | covered | package loads; local and GitHub Actions R-CMD-check passed after Phase 0 placeholder API | implemented scaffold |
-| `hsquared` parses the first animal-model formula contract | partial | local tests for `animal(1 \| id, pedigree = ped)` parser and unsupported-syntax errors | early parser; no fitting |
+| `hsquared` parses the first animal-model formula contract | partial | local tests for `animal(1 \| id, pedigree = ped)` parser and unsupported-syntax errors | early parser; fitting only through separate opt-in tiny engine path |
 | `hsquared` builds the first internal R-to-Julia payload shape | partial | local tests for `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and target metadata | internal bridge payload; no Julia execution |
-| internal R-to-Julia live smoke | partial | local JuliaCall smoke test passes when a sibling `HSquared.jl` checkout is available | local internal bridge smoke; not public fitting |
+| opt-in experimental R-to-Julia fit path | partial | local JuliaCall tests pass when a sibling `HSquared.jl` checkout is available; CI skips when unavailable | `hs_control(engine = "julia")` tiny local examples only |
 | `hsquared` defines the first fitted-object/extractor contract | partial | local tests over internal `hsquared_fit` objects and mocked result fields | extractor plumbing; no real fits returned by `hsquared()` |
 | `hsquared` provides a data container for integrated inputs | partial | local tests for `hs_data()` ID maps and input validation | lightweight data container; no modelling or file-backed storage |
-| `hsquared` fits animal models | planned | none | planned v0.1 target |
+| `hsquared` fits general animal models | planned | none | planned v0.1 target after sparse marshalling and validation |
 | `hsquared` supports genomic, QTL/eQTL, GLLVM, or GPU workflows | planned | none | roadmap only |
 | `HSquared.jl` is the Julia engine package identity | covered | public repo exists; Julia package scaffold and CI green | Julia engine scaffold |
 | sparse Ainv construction | planned | none | planned |

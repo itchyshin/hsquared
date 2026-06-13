@@ -37,6 +37,7 @@ hs_fit_julia_payload <- function(
   }
 
   initial <- hs_validate_initial_variances(initial)
+  max_dense_cells <- hs_validate_max_dense_cells(max_dense_cells)
   dense_cells <- prod(dim(payload$Z))
   if (dense_cells > max_dense_cells) {
     stop(
@@ -80,8 +81,10 @@ hs_fit_julia_payload <- function(
 
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
-  if (isTRUE(hs_julia_bridge_state$initialized) &&
-      identical(hs_julia_bridge_state$project, project)) {
+  if (
+    isTRUE(hs_julia_bridge_state$initialized) &&
+      identical(hs_julia_bridge_state$project, project)
+  ) {
     return(invisible(TRUE))
   }
 
@@ -100,7 +103,10 @@ hs_julia_assign_payload <- function(payload, initial) {
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_Z", as.matrix(payload$Z))
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
-  JuliaCall::julia_assign("hsq_sire", hs_parent_for_julia(payload$pedigree$sire))
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
   JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
   JuliaCall::julia_assign("hsq_method", payload$method)
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
@@ -115,8 +121,10 @@ hs_parent_for_julia <- function(x) {
 }
 
 hs_validate_initial_variances <- function(initial) {
-  if (is.null(names(initial)) ||
-      !all(c("sigma_a2", "sigma_e2") %in% names(initial))) {
+  if (
+    is.null(names(initial)) ||
+      !all(c("sigma_a2", "sigma_e2") %in% names(initial))
+  ) {
     stop(
       "`initial` must include `sigma_a2` and `sigma_e2`.",
       call. = FALSE
@@ -125,9 +133,27 @@ hs_validate_initial_variances <- function(initial) {
   out <- as.numeric(initial[c("sigma_a2", "sigma_e2")])
   names(out) <- c("sigma_a2", "sigma_e2")
   if (any(!is.finite(out)) || any(out <= 0)) {
-    stop("`initial` variance values must be positive and finite.", call. = FALSE)
+    stop(
+      "`initial` variance values must be positive and finite.",
+      call. = FALSE
+    )
   }
   out
+}
+
+hs_validate_max_dense_cells <- function(max_dense_cells) {
+  if (
+    length(max_dense_cells) != 1L ||
+      !is.numeric(max_dense_cells) ||
+      !is.finite(max_dense_cells) ||
+      max_dense_cells < 1
+  ) {
+    stop(
+      "`max_dense_cells` must be a positive finite number.",
+      call. = FALSE
+    )
+  }
+  as.integer(max_dense_cells)
 }
 
 hs_normalize_julia_result <- function(raw, payload) {

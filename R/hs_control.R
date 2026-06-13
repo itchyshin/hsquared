@@ -1,9 +1,12 @@
 #' Create hsquared control options
 #'
-#' `hs_control()` records the planned execution and storage controls for future
-#' hsquared model calls. In Phase 0 these options are validated and stored, but no
-#' model fitting is performed.
+#' `hs_control()` records execution and storage controls for hsquared model
+#' calls. The default `engine = "validate"` parses and validates the v0.1
+#' contract before stopping. The experimental `engine = "julia"` path attempts
+#' the current local Julia bridge for tiny v0.1 animal-model payloads.
 #'
+#' @param engine Execution engine. `"validate"` stops after parser and bridge
+#'   payload validation. `"julia"` uses the experimental local JuliaCall bridge.
 #' @param backend Planned compute backend. One of `"auto"`, `"cpu"`, or
 #'   `"cuda"`.
 #' @param accelerator Planned accelerator preference. One of `"auto"`,
@@ -12,18 +15,21 @@
 #'   `"float32"`.
 #' @param save Planned fitted-object storage mode. One of `"minimal"`,
 #'   `"full"`, or `"tiny"`.
-#' @param engine_control A named list reserved for future HSquared.jl engine
-#'   controls.
+#' @param engine_control A named list for engine-specific controls. The current
+#'   experimental Julia bridge recognizes `julia_project`, `initial`, and
+#'   `max_dense_cells`.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export
 hs_control <- function(
+  engine = c("validate", "julia"),
   backend = c("auto", "cpu", "cuda"),
   accelerator = c("auto", "none", "cuda"),
   precision = c("float64", "float32"),
   save = c("minimal", "full", "tiny"),
   engine_control = list()
 ) {
+  engine <- match.arg(engine)
   backend <- match.arg(backend)
   accelerator <- match.arg(accelerator)
   precision <- match.arg(precision)
@@ -32,9 +38,17 @@ hs_control <- function(
   if (!is.list(engine_control)) {
     stop("`engine_control` must be a list.", call. = FALSE)
   }
+  if (length(engine_control) > 0L) {
+    names_ok <- !is.null(names(engine_control)) &&
+      all(nzchar(names(engine_control)))
+    if (!names_ok) {
+      stop("`engine_control` must be a named list.", call. = FALSE)
+    }
+  }
 
   structure(
     list(
+      engine = engine,
       backend = backend,
       accelerator = accelerator,
       precision = precision,
@@ -43,4 +57,11 @@ hs_control <- function(
     ),
     class = "hs_control"
   )
+}
+
+hs_engine_control_value <- function(control, name, default) {
+  if (!name %in% names(control$engine_control)) {
+    return(default)
+  }
+  control$engine_control[[name]]
 }

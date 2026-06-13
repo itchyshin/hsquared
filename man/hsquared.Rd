@@ -22,18 +22,21 @@ hsquared(
 \item{family}{A response family. The v0.1 parser accepts only
 \code{gaussian()}.}
 
-\item{REML}{Logical; whether the planned Gaussian animal model should use
-REML. This is recorded for the future v0.1 contract only.}
+\item{REML}{Logical; whether the Gaussian animal model should use REML when
+the experimental Julia engine is selected.}
 
 \item{control}{An object created by \code{\link[=hs_control]{hs_control()}}.}
 
 \item{...}{Reserved for future arguments.}
 }
 \value{
-The current scaffold always errors before returning a fit.
+A \code{"hsquared_fit"} object for the experimental Julia engine, or an
+informative error for the default validation-only path.
 }
 \description{
 \code{hsquared()} is the planned R entry point for heritability, breeding-value,
 G-matrix, and inheritance-structured mixed models. The current parser
-validates the narrow v0.1 animal-model contract and stops before fitting.
+validates the narrow v0.1 animal-model contract. The default control path
+stops after validation; the experimental Julia engine can fit tiny local
+bridge examples when a sibling \code{HSquared.jl} checkout is available.
 }

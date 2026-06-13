@@ -5,7 +5,8 @@
 #' models backed by the HSquared.jl Julia engine.
 #'
 #' The current package has an early parser for the first v0.1 animal-model
-#' formula contract. It does not fit models yet.
+#' formula contract. The default path validates and stops; an experimental
+#' local Julia engine path exists for tiny v0.1 examples.
 #'
 #' @keywords internal
 "_PACKAGE"

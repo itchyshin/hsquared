@@ -7,14 +7,15 @@ eventually the bridge to the `HSquared.jl` engine.
 
 This repository has moved past the initial scaffold into early Phase 1 parser
 and bridge-contract work. It can validate the narrow v0.1 formula contract and
-build a tested internal R-to-Julia payload shape. A local-only internal
-JuliaCall smoke path can send the tiny payload to a sibling `HSquared.jl`
-checkout, but ordinary `hsquared()` calls still do not execute Julia or fit
-animal models yet. The first fitted-object and extractor methods are also
-defined over an internal `hsquared_fit` contract, ready for the Julia result
-once user-facing fitting exists. A lightweight `hs_data()` container now
-records phenotype, pedigree, genotype, expression, marker, annotation, and
-environment inputs for future integrated workflows.
+build a tested internal R-to-Julia payload shape. The default call validates
+and stops, while an experimental opt-in
+`control = hs_control(engine = "julia")` path can send a tiny v0.1 payload to a
+sibling `HSquared.jl` checkout through JuliaCall. This is still a narrow local
+validation path, not general animal-model support. The first fitted-object and
+extractor methods are defined over the returned `hsquared_fit` contract. A
+lightweight `hs_data()` container now records phenotype, pedigree, genotype,
+expression, marker, annotation, and environment inputs for future integrated
+workflows.
 
 The intended two-package shape is:
 
@@ -36,10 +37,11 @@ fit <- hsquared(
 
 That syntax is parsed and validated as the first contract. The R side now
 constructs the intended `y`, `X`, sparse `Z`, method, family, ID, and normalized
-pedigree metadata payload. Internal tests can smoke the tiny payload through
-Julia-side `Ainv` construction and the current dense validation target when a
-local sibling `HSquared.jl` checkout is available. Public fitting waits for a
-proper user-facing bridge, sparse production path, and validation canon.
+pedigree metadata payload. With `control = hs_control(engine = "julia")`,
+internal tests can smoke the tiny payload through Julia-side `Ainv`
+construction and the current dense validation target when a local sibling
+`HSquared.jl` checkout is available. General public fitting waits for sparse
+marshalling, a production bridge, and validation-canon evidence.
 
 The interface rule is deliberately simple: easy, easy, easy. Applied users are
 gold; the package should make the common quantitative-genetic model feel

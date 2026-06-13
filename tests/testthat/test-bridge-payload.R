@@ -27,11 +27,14 @@ test_that("bridge payload exposes the v0.1 Julia contract", {
   expect_s4_class(payload$Z, "dgCMatrix")
   expect_equal(dim(payload$Z), c(3L, 4L))
   expect_equal(colnames(payload$Z), c("a", "b", "c", "d"))
-  expect_equal(unname(as.matrix(payload$Z)), rbind(
-    c(1, 0, 0, 0),
-    c(0, 0, 1, 0),
-    c(0, 0, 0, 1)
-  ))
+  expect_equal(
+    unname(as.matrix(payload$Z)),
+    rbind(
+      c(1, 0, 0, 0),
+      c(0, 0, 1, 0),
+      c(0, 0, 0, 1)
+    )
+  )
   expect_null(payload$Ainv)
   expect_equal(payload$method, "REML")
   expect_equal(payload$family, "gaussian")
