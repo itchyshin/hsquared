@@ -131,3 +131,10 @@ shape is:
 
 That error is part of the user interface. It tells users the idea is on
 the roadmap without pretending that the model has been fitted.
+
+For a compact table of the same status information from R, use:
+
+``` r
+
+formula_status()
+```

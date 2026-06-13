@@ -25,7 +25,9 @@ standard quantitative-genetic extensions such as permanent environment,
 maternal/paternal effects, dominance, epistasis, cytoplasmic
 inheritance, imprinting, and custom relationship or precision matrices.
 Those markers are syntax reservations only and currently abort as
-planned, not implemented.
+planned, not implemented. Use
+[`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
+to inspect the parsed, reserved, and planned formula grammar from R.
 
 The intended two-package shape is:
 

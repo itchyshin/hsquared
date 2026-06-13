@@ -15,6 +15,9 @@ This page separates what exists from what is planned.
 - [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
   reports the planned backend vocabulary and marks backend execution
   unavailable.
+- [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
+  reports parsed, reserved, and planned grammar terms without implying
+  fitted support.
 - [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),

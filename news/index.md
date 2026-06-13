@@ -50,6 +50,10 @@
   [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
   so users and developers can inspect planned backend names while seeing
   that backend execution is not available yet.
+- Added
+  [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
+  so users and developers can inspect parsed, reserved, and planned
+  formula grammar without reading the full roadmap.
 - Added inert planned formula markers for
   [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
