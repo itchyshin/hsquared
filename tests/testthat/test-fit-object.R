@@ -88,12 +88,18 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
       "loglik",
       "df",
       "nobs",
+      "at_boundary",
       "gradient_norm"
     )
   )
   expect_equal(
     diagnostics$value[diagnostics$metric == "gradient_norm"],
     "0.001"
+  )
+  # Interior fit (h2 = 0.4) is not flagged at a variance-component boundary.
+  expect_equal(
+    diagnostics$value[diagnostics$metric == "at_boundary"],
+    "FALSE"
   )
   expect_match(capture.output(print(diagnostics))[[1L]], "<hs_fit_diagnostics>")
   expect_s3_class(summary(fit), "summary_hsquared_fit")
@@ -241,6 +247,40 @@ test_that("fit_diagnostics tolerates scalar diagnostics payloads", {
   expect_equal(
     diagnostics$value[diagnostics$metric == "diagnostics"],
     "scalar-status"
+  )
+})
+
+test_that("fit_diagnostics flags a variance-component boundary solution", {
+  boundary <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0, 1.2)
+      ),
+      converged = TRUE
+    )
+  )
+  diag <- fit_diagnostics(boundary)
+  expect_equal(diag$value[diag$metric == "at_boundary"], "TRUE")
+
+  interior <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.5, 0.5)
+      ),
+      converged = TRUE
+    )
+  )
+  expect_equal(
+    fit_diagnostics(interior)$value[
+      fit_diagnostics(interior)$metric == "at_boundary"
+    ],
+    "FALSE"
   )
 })
 

@@ -261,7 +261,8 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     nobs = object$result$nobs %||%
       if (!is.null(object$payload$y)) length(object$payload$y) else NULL,
     dense_validation_path = diagnostics$dense_validation_path,
-    variance_components_source = diagnostics$variance_components
+    variance_components_source = diagnostics$variance_components,
+    at_boundary = hs_fit_boundary_flag(object)
   )
 
   diagnostic_names <- names(diagnostics)
@@ -294,6 +295,30 @@ print.hs_fit_diagnostics <- function(x, ...) {
   class(out) <- setdiff(class(out), "hs_fit_diagnostics")
   print.data.frame(out, row.names = FALSE)
   invisible(x)
+}
+
+# Flag whether the fit sits at a variance-component boundary (sigma_a2 ~ 0 or
+# sigma_e2 ~ 0, i.e. h2 at 0 or 1), so a boundary estimate is not silently read
+# as an ordinary interior one. Computed from the returned variance components;
+# returns NULL (row dropped) when they are unavailable. This is the surfacing
+# half of the v0.1 promotion predicate item 4; the engine (HSquared.jl) owns
+# boundary-stable optimization.
+hs_fit_boundary_flag <- function(object, tol = 1e-4) {
+  vc <- object$result$variance_components
+  if (is.null(vc) || is.null(vc$estimate) || is.null(vc$component)) {
+    return(NULL)
+  }
+  est <- as.numeric(vc$estimate)
+  total <- sum(est)
+  if (!is.finite(total) || total <= 0) {
+    return(NULL)
+  }
+  animal <- est[vc$component == "animal"]
+  if (length(animal) != 1L) {
+    return(NULL)
+  }
+  h2 <- animal / total
+  isTRUE(h2 <= tol) || isTRUE(h2 >= 1 - tol)
 }
 
 hs_diagnostic_value <- function(x) {
