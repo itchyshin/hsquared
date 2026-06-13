@@ -64,6 +64,13 @@ Local checks:
 - `Rscript -e "pkgdown::check_pkgdown()"`: `No problems found.`
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
 
+Remote checks:
+
+- Commit: `c161a7f Add tiny Ainv validation fixture`.
+- GitHub Actions R-CMD-check `27457494019`: passed.
+- GitHub Actions pkgdown `27457494023`: passed.
+- GitHub Pages build/deploy `27457528612`: passed.
+
 ## Rose Audit
 
 Verdict: clean with limitations.

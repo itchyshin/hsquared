@@ -456,6 +456,14 @@ with private memory.
   - Result: `No problems found.`
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
+- Remote checks:
+  - Commit: `c161a7f Add tiny Ainv validation fixture`.
+  - `gh run watch 27457494019 --exit-status`
+  - Result: R-CMD-check passed in GitHub Actions.
+  - `gh run watch 27457494023 --exit-status`
+  - Result: pkgdown passed in GitHub Actions.
+  - `gh run list --limit 8`
+  - Result: GitHub Pages build and deployment `27457528612` passed.
 - Rose wording sweep:
   - Public wording says tiny deterministic Ainv validation fixture.
   - Public wording does not claim Mrode validation, ASReml comparison,

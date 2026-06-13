@@ -14,7 +14,7 @@
 | 2026-06-13 | R | Hopper/Lovelace/Emmy/Grace/Rose | main | opt-in `hs_control(engine = "julia")` for issue #6 | local checks passed | dense tiny path only | push opt-in engine and watch CI/pkgdown |
 | 2026-06-13 | R | Fisher/Pat/Emmy/Hopper/Rose | main | PEV/reliability extractor contract for issues #5/#6 | local checks passed | not in live payload yet | push extractor contract and watch CI/pkgdown |
 | 2026-06-13 | R | Hopper/Lovelace/Karpinski/Grace/Rose | main | sparse `Z` CSC marshalling for issue #6 | pushed; CI/pkgdown/Pages passed | production fitting still planned | start validation issue #7 |
-| 2026-06-13 | R | Curie/Fisher/Gauss/Jason/Rose | main | tiny Ainv validation fixture for issue #7 | local checks passed | Mrode/comparator validation still planned | push fixture and hand off to Julia twin |
+| 2026-06-13 | R | Curie/Fisher/Gauss/Jason/Rose | main | tiny Ainv validation fixture for issue #7 | pushed; CI/pkgdown/Pages passed | Mrode/comparator validation still planned | hand off fixture to Julia twin |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
