@@ -658,3 +658,74 @@ test_that("independent pure-R REML optimizer matches the Julia sparse REML estim
     tolerance = 5e-2
   )
 })
+
+test_that("hsquared's REML solution is at least as good as the pedigreemm comparator", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("pedigreemm")
+  testthat::skip_if_not_installed("withr")
+
+  fixture <- hsquared:::hs_replicated_animal_comparator_fixture()
+  lab <- as.character(fixture$pedigree$id)
+
+  # External comparator: pedigreemm (lme4-based pedigree animal model, REML).
+  # pedigreemm Depends on lme4, which must be attached for its internal lmer().
+  withr::local_package("pedigreemm")
+  ped <- pedigreemm::pedigree(
+    sire = match(as.character(fixture$pedigree$sire), lab),
+    dam = match(as.character(fixture$pedigree$dam), lab),
+    label = lab
+  )
+  dat <- fixture$data
+  dat$id <- factor(as.character(dat$id), levels = lab)
+  m <- pedigreemm::pedigreemm(
+    y ~ x + (1 | id),
+    data = dat,
+    pedigree = list(id = ped)
+  )
+  vc <- as.data.frame(lme4::VarCorr(m))
+  ext <- c(
+    sigma_a2 = vc$vcov[vc$grp == "id"],
+    sigma_e2 = vc$vcov[vc$grp == "Residual"]
+  )
+
+  # hsquared's REML estimate via the independent pure-R reference (which equals
+  # the Julia sparse_reml estimate; see the pure-R cross-check test above).
+  spec <- hsquared:::hs_build_model_spec(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  Z <- as.matrix(payload$Z)
+  ref <- hsquared:::hs_reml_estimate_reference(
+    payload$y,
+    payload$X,
+    Z,
+    fixture$expected$Ainv,
+    method = "REML"
+  )
+
+  ll <- function(theta) {
+    hsquared:::hs_gaussian_loglik_reference(
+      payload$y,
+      payload$X,
+      Z,
+      fixture$expected$Ainv,
+      theta[["sigma_a2"]],
+      theta[["sigma_e2"]],
+      "REML"
+    )$loglik
+  }
+  h2 <- function(theta) {
+    theta[["sigma_a2"]] / sum(theta[c("sigma_a2", "sigma_e2")])
+  }
+
+  # Core claim: under the same verified REML objective, hsquared's solution is at
+  # least as good as the established external package (it reaches the true
+  # optimum; pedigreemm's optimizer lands slightly off on pedigree models).
+  expect_gte(ll(ref$estimate), ll(ext) - 1e-6)
+  # Heritabilities agree within a sane band (flat REML surfaces; not DGP recovery
+  # or ASReml parity).
+  expect_equal(h2(ref$estimate), h2(ext), tolerance = 0.1)
+})

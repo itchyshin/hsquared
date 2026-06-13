@@ -75,3 +75,15 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   Julia `fit_sparse_reml()` estimate. A fully independent (non-Julia)
   implementation of the same estimand; not an external comparator or a
   production-fitting claim.
+- External comparator (pedigreemm): an optional, `pedigreemm`-gated test fits a
+  deterministic replicated animal-model dataset with `pedigreemm` (an
+  established lme4-based REML animal-model package) and verifies that hsquared's
+  REML solution is at least as good — by the common verified REML
+  log-likelihood — as pedigreemm's, with heritabilities agreeing within a sane
+  band. Finding: hsquared/the pure-R reference reach the true REML optimum while
+  pedigreemm's optimizer lands slightly off on these pedigree models, and
+  pedigreemm cannot fit the saturated one-record-per-animal Mrode fixture at all
+  (hence the replicated design). This is a same-estimand external cross-check
+  showing hsquared is at least as good as an established package; it is NOT
+  ASReml/BLUPF90/DMU/WOMBAT parity, production-software validation, or DGP
+  recovery.

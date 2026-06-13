@@ -709,3 +709,77 @@ hs_reml_estimate_reference <- function(
     method = method
   )
 }
+
+# Deterministic replicated animal-model dataset used only as an
+# external-comparator input (e.g. pedigreemm). Three records per animal on the
+# twelve-animal Mrode pedigree, so the design is non-degenerate for general REML
+# fitters. The response was simulated once with set.seed(1) and is embedded
+# verbatim; variance components are estimated, not supplied, and no
+# data-generating recovery is claimed.
+hs_replicated_animal_comparator_fixture <- function() {
+  base <- hs_mrode_supplied_variance_validation_fixture()
+  pedigree <- base$pedigree
+  lab <- as.character(pedigree$id)
+  y <- c(
+    8.75230561,
+    8.6588463,
+    10.49847711,
+    10.13870972,
+    11.66745306,
+    11.12747953,
+    9.98559258,
+    11.25827271,
+    10.08334876,
+    12.3774171,
+    13.16984579,
+    9.60592911,
+    10.12178172,
+    10.94582723,
+    9.34616046,
+    8.83855092,
+    11.33115325,
+    10.72724487,
+    11.60897358,
+    11.6475063,
+    10.63796564,
+    10.33658089,
+    10.51332638,
+    9.97539137,
+    11.00568231,
+    12.84065887,
+    12.49999764,
+    11.54006692,
+    12.11236757,
+    10.52352949,
+    12.11579871,
+    13.47549853,
+    10.73007964,
+    9.91801026,
+    12.49008738,
+    11.39403834
+  )
+  data <- data.frame(
+    y = y,
+    x = rep(c(0, 1, 0), times = length(lab)),
+    id = rep(lab, each = 3L),
+    stringsAsFactors = FALSE
+  )
+  list(
+    name = "replicated_animal_reml_comparator",
+    description = paste(
+      "Deterministic replicated animal-model dataset (three records per animal",
+      "on the twelve-animal Mrode pedigree) used only as an external-comparator",
+      "input for REML variance-component estimation. Variance components are",
+      "estimated, not supplied, and no data-generating recovery is claimed."
+    ),
+    source = paste(
+      "Response simulated once with set.seed(1) from the animal model on the",
+      "Mrode pedigree (sigma_a2 = sigma_e2 = 1) and embedded verbatim for",
+      "reproducibility."
+    ),
+    formula = y ~ x + animal(1 | id, pedigree = pedigree),
+    data = data,
+    pedigree = pedigree,
+    expected = list(ids = lab, Ainv = base$expected$Ainv)
+  )
+}

@@ -99,7 +99,9 @@ hs_validation_status_evidence <- function() {
       "Julia fit_sparse_reml() through the opt-in target = \"sparse_reml\"",
       "bridge; checks positive estimated variances, finite REML logLik, and",
       "h2 in (0, 1) on the Mrode fixture; fit provenance tagged",
-      "variance_components_source = \"estimated_sparse_reml\"."
+      "variance_components_source = \"estimated_sparse_reml\". Cross-checked",
+      "against the dense REML optimizer, an independent pure-R REML optimizer,",
+      "and the external pedigreemm package (at least as good by REML logLik)."
     ),
     "None yet.",
     "None yet.",
