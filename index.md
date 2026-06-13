@@ -6,6 +6,11 @@ applied-user surface: formula syntax, data validation, summaries,
 extractors, examples, and eventually the bridge to the `HSquared.jl`
 engine.
 
+The pkgdown site includes a [mission control
+page](https://itchyshin.github.io/hsquared/articles/mission-control.html)
+that summarizes current lanes, evidence gates, and blocked claims for
+the R and Julia twin project.
+
 This repository has moved past the initial scaffold into early Phase 1
 parser and bridge-contract work. It can validate the narrow v0.1 formula
 contract and build a tested internal R-to-Julia payload shape. Use

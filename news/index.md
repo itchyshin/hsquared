@@ -173,6 +173,9 @@
 - Added a pkgdown formula grammar roadmap article that separates parsed
   v0.1 syntax from planned quantitative-genetic, genomic, multivariate,
   and inheritance syntax.
+- Added a pkgdown mission-control dashboard that summarizes the R lane,
+  Julia boundary, validation atoms, and blocked claims without adding
+  fitted support.
 - Expanded the genomics/QTL/GLLVM/accelerator design plan and pkgdown
   roadmap with a source-backed CPU/GPU strategy, QTL/eQTL path,
   sibling-package lessons, and explicit evidence gates.

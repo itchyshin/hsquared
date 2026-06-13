@@ -4,6 +4,8 @@
 
 - [Getting started with
   hsquared](https://itchyshin.github.io/hsquared/articles/hsquared.md):
+- [Mission
+  control](https://itchyshin.github.io/hsquared/articles/mission-control.md):
 - [Model
   status](https://itchyshin.github.io/hsquared/articles/model-status.md):
 - [Formula grammar
