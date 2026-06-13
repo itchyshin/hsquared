@@ -1371,3 +1371,7 @@ with private memory.
   - Public wording says output extractor vocabulary only.
   - Public wording does not claim marker scanning, QTL, GWAS, eQTL, genomic
     fitting, or generated result tables.
+- Remote checks for commit `ab5d5dd`:
+  - GitHub Actions R-CMD-check `27462369055`: passed in 1m51s.
+  - GitHub Actions pkgdown `27462369052`: passed in 1m40s.
+  - GitHub Pages build/deploy `27462402877`: passed.

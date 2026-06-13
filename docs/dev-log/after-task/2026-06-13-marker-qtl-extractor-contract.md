@@ -58,7 +58,10 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- Commit: `ab5d5dd Add marker QTL extractor contract`.
+- GitHub Actions R-CMD-check `27462369055`: passed in 1m51s.
+- GitHub Actions pkgdown `27462369052`: passed in 1m40s.
+- GitHub Pages build/deploy `27462402877`: passed.
 
 ## Rose Audit
 
