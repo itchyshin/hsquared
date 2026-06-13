@@ -498,6 +498,14 @@ with private memory.
   - Result: `No problems found.`
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
+- Remote checks:
+  - Commit: `f0e71c7 Add Mrode9 Ainv comparator`.
+  - `gh run watch 27457712229 --exit-status`
+  - Result: R-CMD-check passed in GitHub Actions.
+  - `gh run watch 27457712238 --exit-status`
+  - Result: pkgdown passed in GitHub Actions.
+  - `gh run list --limit 8`
+  - Result: GitHub Pages build and deployment `27457742164` passed.
 - Rose wording sweep:
   - Public wording says Mrode9 pedigree-Ainv comparator.
   - Public wording does not claim fitted Mrode animal-model validation,
