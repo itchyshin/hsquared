@@ -2164,3 +2164,20 @@ with private memory.
   - GitHub Actions R-CMD-check `27469532263`: passed.
   - GitHub Actions pkgdown `27469532270`: passed.
   - GitHub Pages build/deploy `27469579694`: passed.
+
+## 2026-06-13 User-docs honesty pass for the sparse REML path (B8)
+
+- Goal: keep user-facing docs in sync with capability — surface the opt-in
+  `target = "sparse_reml"` estimator path in the model-status article and refresh
+  the vision "Current Status" (Pat/Rose lens).
+- Active lenses: Pat, Rose, Grace. Spawned subagents: none.
+- Local checks:
+  - `pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()`:
+    `model-status.html` rebuilt; "No problems found."
+  - `rcmdcheck::rcmdcheck()`: `0 errors`, `0 warnings`, `0 notes`.
+  - `air format .` + `git diff --check`: clean.
+- Boundary: docs match capability; no new claim; default still validates-and-stops.
+- Remote checks for commit `1e89593`:
+  - GitHub Actions R-CMD-check `27469723178`: passed.
+  - GitHub Actions pkgdown `27469723172`: passed.
+  - GitHub Pages build/deploy `27469763549`: passed.
