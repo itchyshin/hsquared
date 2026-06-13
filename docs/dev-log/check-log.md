@@ -778,3 +778,26 @@ with private memory.
   - Result: R-CMD-check `27459051476` passed in GitHub Actions.
   - Result: pkgdown `27459051483` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27459084347` passed.
+
+## 2026-06-13 GPU/backend and algorithm scout
+
+- Goal: record source-backed backend and algorithm leads for later
+  `HSquared.jl` engine work.
+- Active lenses: Jason, Gauss, Karpinski, Grace, Rose.
+- Spawned subagents: none.
+- Sources checked:
+  - Official JuliaGPU documentation for CUDA.jl, AMDGPU.jl, Metal.jl,
+    oneAPI.jl, and KernelAbstractions.jl.
+  - Source pages for Takahashi selected inverse, sparse inverse subset, APY
+    genomic relationship inverse, sparse AI-REML, and augmented AI-REML.
+- Implementation evidence:
+  - Added `docs/dev-log/scout/2026-06-13-gpu-algorithm-scout.md`.
+- Local checks:
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - The scout says research direction only.
+  - It does not claim backend execution, selected-inverse, APY, or AI-REML is
+    implemented.
+- Remote checks:
+  - Pending first push for this scout slice.
