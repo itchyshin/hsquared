@@ -60,7 +60,12 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- Commit: `a52337a Add validation status helper`.
+- GitHub Actions R-CMD-check `27462165978`: passed in 1m38s.
+- GitHub Actions pkgdown `27462165981`: passed in 1m42s.
+- GitHub Pages build/deploy `27462200373`: passed. The Pages run reported a
+  Node.js 20 deprecation warning from GitHub's action stack, not from package
+  code.
 
 ## Rose Audit
 

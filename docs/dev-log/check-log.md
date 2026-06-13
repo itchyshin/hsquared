@@ -1328,3 +1328,8 @@ with private memory.
   - Public wording does not claim checks are run, fitting is available,
     validation rows are covered, ASReml parity, GPU speedup, or production
     sparse fitting.
+- Remote checks for commit `a52337a`:
+  - GitHub Actions R-CMD-check `27462165978`: passed in 1m38s.
+  - GitHub Actions pkgdown `27462165981`: passed in 1m42s.
+  - GitHub Pages build/deploy `27462200373`: passed; Node.js 20 deprecation
+    warning is from the Pages action stack, not this package code.

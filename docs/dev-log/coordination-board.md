@@ -35,7 +35,7 @@
 | 2026-06-13 | R | Emmy/Henderson/Pat/Rose/Grace | main | `summary.hs_data()` pedigree-status diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only | no Julia action required |
 | 2026-06-13 | R | Boole/Noether/Emmy/Hopper/Pat/Rose/Grace | main | `animal(1 \| id)` hs_data pedigree shorthand | pushed; CI/pkgdown/Pages passed | no new fitting; shorthand only when bundle has pedigree | update issues #4/#8 and notify Julia twin |
 | 2026-06-13 | R | Curie/Henderson/Fisher/Hopper/Rose/Grace | main | supplied-variance Henderson MME validation fixture | pushed; CI/pkgdown/Pages passed | not variance-component estimation or production fitting | notify issue #7 and Julia twin |
-| 2026-06-13 | R | Curie/Fisher/Pat/Rose/Grace | main | `validation_status()` evidence diagnostics | local checks passed | diagnostic only; does not run checks | push, watch CI/pkgdown/Pages, and notify issue #7 |
+| 2026-06-13 | R | Curie/Fisher/Pat/Rose/Grace | main | `validation_status()` evidence diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only; does not run checks | notify issue #7 |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
