@@ -42,7 +42,7 @@ hs_validation_status_capabilities <- function() {
     "sparse REML likelihood identity",
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
-    "experimental AI-REML estimator (opt-in)",
+    "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
     "Mrode fitted animal-model outputs",
@@ -66,7 +66,8 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 9L),
+    rep("partial", 6L),
+    rep("covered", 3L),
     rep("planned", 7L)
   )
 }
@@ -107,12 +108,15 @@ hs_validation_status_evidence <- function() {
       "and the external pedigreemm package (at least as good by REML logLik)."
     ),
     paste(
-      "Pure-R control/validator tests plus a skip-guarded live test running",
-      "Julia fit_ai_reml() through the opt-in target = \"ai_reml\" bridge;",
-      "checks positive estimated variances, finite REML logLik, and h2 in",
-      "(0, 1) on the Mrode fixture; fit provenance tagged",
-      "variance_components_source = \"estimated_ai_reml\". Cross-checked to reach",
-      "the same REML optimum as the sparse REML optimizer."
+      "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
+      "average-information REML (`fit_ai_reml`) on the sparse MME through the",
+      "bridge. A skip-guarded live test fits the contract through the default",
+      "control and checks positive estimated variances, finite REML logLik, and",
+      "h2 in (0, 1) on the Mrode fixture; fit provenance tagged",
+      "variance_components_source = \"estimated_ai_reml\". The estimator reaches",
+      "the same REML optimum as the sparse REML optimizer, and its known-truth",
+      "and external-anchor recovery are evidenced in the two rows below. Mirrors",
+      "the twin V1-AI-REML gate (covered)."
     ),
     paste(
       "A skip-guarded test recovers the published gryphon birth-weight REML",
@@ -120,10 +124,11 @@ hs_validation_status_evidence <- function() {
       "independent pure-R REML reference, and agrees with the external sommer",
       "package within the signed-off band (VC ~1-2%, h2 ~0.01-0.02), on the",
       "gryphon dataset (CRAN package enhancer). The Julia engine (fit_sparse_reml",
-      "and fit_ai_reml) also recovers the published estimates exactly via supplied",
-      "A_gryphon (the engine correctly rejects the pathological raw pedigree).",
-      "Gryphon is the maintainer (2026-06-13) signed-off V1-MRODE-FIT anchor and",
-      "sommer the V1-COMPARATORS comparator."
+      "and fit_ai_reml) also recovers the published estimates within the",
+      "signed-off band via supplied A_gryphon (the engine correctly rejects the",
+      "pathological raw pedigree); engine-vs-pure-R agreement is to machine",
+      "precision. Gryphon is the maintainer (2026-06-13) signed-off V1-MRODE-FIT",
+      "anchor and sommer the V1-COMPARATORS comparator."
     ),
     paste(
       "An ADEMP recovery study (data-raw/dgp-recovery-study.R) simulates from",
@@ -171,21 +176,23 @@ hs_validation_status_boundaries <- function() {
       "fitting, AI-REML, or ASReml parity."
     ),
     paste(
-      "Experimental opt-in path only; Julia-owned average-information REML",
-      "estimator that R surfaces; gated on twin validation_status; not the",
-      "default, not production sparse fitting, or ASReml parity."
+      "Univariate Gaussian animal model only (single additive genetic effect);",
+      "REML only (ML is rejected on the fit path); multivariate, genomic,",
+      "repeated-records, and non-Gaussian fitting remain planned. Mirrors the",
+      "twin-owned V1-AI-REML gate (covered); not ASReml multi-trait parity."
     ),
     paste(
-      "External-anchor cross-check of the pure-R REML reference only; not the",
-      "production fit path and does not satisfy the twin-owned V1-MRODE-FIT gate;",
-      "gryphon is teaching/simulated data, confirm headline numbers before any",
+      "Published-anchor recovery within the maintainer-signed-off band (not",
+      "bit-exact); backs the twin-owned V1-MRODE-FIT gate (covered_external).",
+      "Gryphon is teaching data; confirm headline numbers before any new",
       "promotion."
     ),
     paste(
-      "Known-truth recovery evidence for the estimator; R-lane study via the",
-      "read-only bridge. Does not itself flip the twin-owned estimator gate row",
-      "(V1-SPARSE-REML-OPT / V1-AI-REML); single h2 = 0.4 setting; no boundary,",
-      "interval, or production-robustness claim."
+      "Known-truth recovery evidence for the default AI-REML estimator; R-lane",
+      "ADEMP study via the read-only bridge across an h2 grid (0.2/0.4/0.6) plus",
+      "a near-boundary cell (h2 = 0.1) and a fixed-effect model; backs the",
+      "twin-owned V1-AI-REML gate (covered). No interval-coverage or",
+      "production-robustness claim beyond the studied grid."
     ),
     "Planned; no Mrode fitted-output claim.",
     "Planned; no ASReml parity claim.",

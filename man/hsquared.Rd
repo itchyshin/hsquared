@@ -28,21 +28,25 @@ object whose \code{phenotypes} component contains the model variables. When
 \item{family}{A response family. The v0.1 parser accepts only
 \code{gaussian()}.}
 
-\item{REML}{Logical; whether the Gaussian animal model should use REML when
-the experimental Julia engine is selected.}
+\item{REML}{Logical; whether to use REML estimation. The v0.1 fit path
+supports REML only (the default, \code{TRUE}); \code{REML = FALSE} (ML) is not yet
+implemented and is rejected with an error.}
 
 \item{control}{An object created by \code{\link[=hs_control]{hs_control()}}.}
 
 \item{...}{Reserved for future arguments.}
 }
 \value{
-A \code{"hsquared_fit"} object for the experimental Julia engine, or an
-informative error for the default validation-only path.
+A \code{"hsquared_fit"} object from the fitted v0.1 Gaussian animal model,
+or an informative error when the Julia engine is unavailable or
+\code{engine = "validate"} is used.
 }
 \description{
-\code{hsquared()} is the planned R entry point for heritability, breeding-value,
-G-matrix, and inheritance-structured mixed models. The current parser
-validates the narrow v0.1 animal-model contract. The default control path
-stops after validation; the experimental Julia engine can fit tiny local
-bridge examples when a sibling \code{HSquared.jl} checkout is available.
+\code{hsquared()} is the R entry point for heritability, breeding-value,
+G-matrix, and inheritance-structured mixed models. v0.1 fits the univariate
+Gaussian animal model \code{y ~ fixed + animal(1 | id, pedigree = ped)} by REML
+through the \code{HSquared.jl} engine. The default \code{control} fits when a local
+Julia and \code{HSquared.jl} are available and otherwise errors with install
+guidance; \code{hs_control(engine = "validate")} validates the contract without
+fitting. Multivariate, genomic, and non-Gaussian models remain planned.
 }

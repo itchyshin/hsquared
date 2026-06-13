@@ -2,7 +2,7 @@ test_that("hs_control stores validated defaults", {
   control <- hs_control()
 
   expect_s3_class(control, "hs_control")
-  expect_equal(control$engine, "validate")
+  expect_equal(control$engine, "fit")
   expect_equal(control$backend, "auto")
   expect_equal(control$accelerator, "auto")
   expect_equal(control$precision, "float64")
@@ -146,23 +146,24 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_equal(
     status$status[
-      status$capability == "experimental AI-REML estimator (opt-in)"
+      status$capability ==
+        "univariate Gaussian animal-model fit (default path, AI-REML)"
     ],
-    "partial"
+    "covered"
   )
   expect_equal(
     status$status[
       status$capability ==
         "external published-REML recovery (gryphon, R reference)"
     ],
-    "partial"
+    "covered"
   )
   expect_equal(
     status$status[
       status$capability ==
         "known-truth DGP variance-component recovery (R reference)"
     ],
-    "partial"
+    "covered"
   )
   expect_equal(
     status$status[status$capability == "ASReml comparison policy"],
@@ -222,8 +223,68 @@ test_that("hsquared errors honestly before fitting", {
   )
 
   expect_error(
-    hsquared(y ~ sex + age + animal(1 | id, pedigree = ped), data = dat),
-    "parsed the v0.1 animal-model contract",
+    hsquared(
+      y ~ sex + age + animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(engine = "validate")
+    ),
+    "validated the v0.1 animal-model contract",
+    fixed = TRUE
+  )
+})
+
+test_that("the default engine fits, and errors clearly without the Julia engine", {
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    y = c(1, 2, 3),
+    sex = c("m", "f", "m"),
+    id = c("a", "b", "c")
+  )
+
+  # Default engine = "fit"; with no Julia engine available it errors with
+  # actionable install guidance rather than silently doing nothing.
+  expect_error(
+    hsquared(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(
+        engine = "fit",
+        engine_control = list(julia_project = tempfile())
+      )
+    ),
+    "requires the HSquared.jl Julia",
+    fixed = TRUE
+  )
+})
+
+test_that("the default fit path rejects REML = FALSE rather than mislabeling ML", {
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    y = c(1, 2, 3),
+    sex = c("m", "f", "m"),
+    id = c("a", "b", "c")
+  )
+
+  # The default fit path estimates variance components by REML only. A
+  # `REML = FALSE` request must be rejected honestly (ML is not implemented),
+  # not silently run as REML and returned mislabeled as "ML". This is a pure
+  # request-validity error, so it fires before any Julia-engine check.
+  expect_error(
+    hsquared(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = FALSE
+    ),
+    "ML estimation",
     fixed = TRUE
   )
 })

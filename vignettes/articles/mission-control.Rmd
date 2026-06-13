@@ -199,9 +199,9 @@ claims register.
     </p>
     <div class="hs-tagrow" aria-label="current status tags">
       <span class="hs-tag done">Phase 0 public scaffold complete</span>
-      <span class="hs-tag partial">Phase 1 parser and validation active</span>
-      <span class="hs-tag partial">Julia bridge opt-in and tiny/local</span>
-      <span class="hs-tag block">No production fitting claim</span>
+      <span class="hs-tag done">v0.1 Gaussian animal model fits by default (REML)</span>
+      <span class="hs-tag partial">Phase 1 validation and comparators active</span>
+      <span class="hs-tag block">Multivariate, genomic, GPU still planned</span>
     </div>
   </section>
 
@@ -211,16 +211,16 @@ claims register.
       <span>public formula contract parsed today: <code>animal(1 | id, pedigree = ped)</code></span>
     </article>
     <article class="hs-card hs-metric">
-      <strong>14</strong>
-      <span>validation-status rows separating partial and planned evidence</span>
+      <strong>16</strong>
+      <span>validation-status rows separating covered, partial, and planned evidence</span>
     </article>
     <article class="hs-card hs-metric">
-      <strong>6</strong>
-      <span>planned backend names recorded: CPU, threads, CUDA, AMDGPU, Metal, oneAPI</span>
+      <strong>1</strong>
+      <span>model fitted by default: the v0.1 univariate Gaussian animal model (REML via the HSquared.jl engine)</span>
     </article>
     <article class="hs-card hs-metric">
       <strong>0</strong>
-      <span>production / default-callable AI-REML, GPU, QTL/eQTL, or GLLVM capabilities. AI-REML and sparse REML exist only as opt-in, Julia-owned, tiny-fixture validation bridges</span>
+      <span>production GPU, QTL/eQTL, or GLLVM capabilities (planned)</span>
     </article>
   </section>
 
@@ -229,9 +229,9 @@ claims register.
       <h3>R Interface Lane</h3>
       <p>Current focus: make the first animal-model contract obvious, tested, and honest.</p>
       <ul class="hs-list">
-        <li>Implemented: package scaffold, pkgdown, parser diagnostics, data-container diagnostics, fitted-object extractor contract.</li>
-        <li>Experimental: opt-in local Julia bridge for tiny validation paths and supplied-variance Henderson MME checks.</li>
-        <li>Planned: default production fitting, genomic models, QTL/eQTL, GLLVMs, unusual inheritance, and real backend execution.</li>
+        <li>Implemented: default fit of the v0.1 Gaussian animal model (REML via the HSquared.jl engine), package scaffold, pkgdown, parser diagnostics, data-container diagnostics, fitted-object extractors.</li>
+        <li>Experimental: opt-in local Julia bridge targets for supplied-variance Henderson MME checks and the REML-only sparse optimizer.</li>
+        <li>Planned: multivariate/genomic production fitting, QTL/eQTL, GLLVMs, unusual inheritance, ML estimation, and real backend execution.</li>
       </ul>
     </article>
     <article class="hs-card">
@@ -278,9 +278,9 @@ claims register.
     <article class="hs-card">
       <h3>Blocked Claims</h3>
       <ul class="hs-list">
-        <li>No general fitted animal-model support from the default R call.</li>
-        <li>No variance-component estimation claim for supplied-variance Henderson MME.</li>
-        <li>No production/default sparse optimizer, estimated-variance Mrode validation, or ASReml parity claim (sparse REML and AI-REML estimators exist only as experimental, opt-in, Julia-owned, gated bridges).</li>
+        <li>No fitting beyond the v0.1 univariate Gaussian animal model (the default fits that model; multivariate, genomic, factor-analytic, and non-Gaussian models remain planned).</li>
+        <li>No standard errors / confidence intervals for variance components or h2 (out of v0.1 scope).</li>
+        <li>No ASReml/BLUPF90-family multi-package parity or large-scale (&gt;10k) production-fitting claim; the v0.1 fit is validated to gryphon scale (~1300 animals) and on clean simulated pedigrees.</li>
         <li>No genomic prediction, marker scan, QTL/eQTL, GLLVM, or unusual-inheritance fitting claim.</li>
         <li>No CPU/GPU execution, backend benchmark, or speedup claim.</li>
       </ul>

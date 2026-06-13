@@ -3,12 +3,13 @@ Title: R Interface for Julia-Backed Quantitative-Genetic Models
 Version: 0.0.0.9000
 Authors@R: 
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
-Description: Provides the R-facing home for a planned open quantitative-genetic
-    modelling system. The package provides an early parser for the first
-    Gaussian animal-model formula contract and will provide validation,
-    summaries, and extractors for heritability, breeding-value, G-matrix, and
-    inheritance-structured models backed by the HSquared.jl Julia engine. The
-    current package does not fit models yet.
+Description: Provides the R-facing interface for an open quantitative-genetic
+    modelling system backed by the HSquared.jl Julia engine. Version 0.1 fits
+    the univariate Gaussian animal model (y ~ fixed + animal(1 | id, pedigree =
+    ped)) by restricted maximum likelihood and returns heritability, variance
+    components, breeding values, and standard extractors. Fitting requires a
+    local Julia and HSquared.jl. Multivariate, genomic, factor-analytic, and
+    non-Gaussian models are planned.
 License: MIT + file LICENSE
 URL: https://itchyshin.github.io/hsquared/,
     https://github.com/itchyshin/hsquared,

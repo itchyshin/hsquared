@@ -94,7 +94,7 @@ test_that("pedigree cycles are rejected before bridge payload construction", {
   )
 })
 
-test_that("hsquared error describes the validated Julia target", {
+test_that("hsquared validate-only error describes the Julia fit target", {
   ped <- data.frame(
     id = c("a", "b"),
     sire = c(NA, NA),
@@ -106,9 +106,10 @@ test_that("hsquared error describes the validated Julia target", {
     hsquared(
       y ~ animal(1 | id, pedigree = ped),
       data = dat,
-      family = stats::gaussian()
+      family = stats::gaussian(),
+      control = hs_control(engine = "validate")
     ),
-    "HSquared.fit_animal_model",
+    "HSquared.fit_ai_reml",
     fixed = TRUE
   )
 })

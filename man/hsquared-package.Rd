@@ -10,9 +10,12 @@ breeding-value, G-matrix, and inheritance-structured quantitative-genetic
 models backed by the HSquared.jl Julia engine.
 }
 \details{
-The current package has an early parser for the first v0.1 animal-model
-formula contract. The default path validates and stops; an experimental
-local Julia engine path exists for tiny v0.1 examples.
+v0.1 fits the univariate Gaussian animal model
+\code{y ~ fixed + animal(1 | id, pedigree = ped)} by REML (average-information)
+through the HSquared.jl engine: the default \code{hsquared()} call fits when a
+local Julia and \code{HSquared.jl} are available, and otherwise errors with
+install guidance. Multivariate, genomic, and non-Gaussian models remain
+planned.
 }
 \seealso{
 Useful links:

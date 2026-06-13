@@ -5,7 +5,7 @@
 \title{Create hsquared control options}
 \usage{
 hs_control(
-  engine = c("validate", "julia"),
+  engine = c("fit", "validate", "julia"),
   backend = c("auto", "cpu", "threads", "cuda", "amdgpu", "metal", "oneapi"),
   accelerator = c("auto", "none", "gpu", "cuda", "amdgpu", "metal", "oneapi"),
   precision = c("float64", "float32"),
@@ -14,8 +14,11 @@ hs_control(
 )
 }
 \arguments{
-\item{engine}{Execution engine. \code{"validate"} stops after parser and bridge
-payload validation. \code{"julia"} uses the experimental local JuliaCall bridge.}
+\item{engine}{Execution engine. \code{"fit"} (default) fits the v0.1 Gaussian
+animal model via the \code{HSquared.jl} engine; this requires a local Julia,
+the \code{JuliaCall} package, and an \code{HSquared.jl} checkout. \code{"validate"} stops
+after parser and bridge payload validation without fitting. \code{"julia"}
+exposes the advanced opt-in bridge with explicit \code{target} control.}
 
 \item{backend}{Planned compute backend. One of \code{"auto"}, \code{"cpu"},
 \code{"threads"}, \code{"cuda"}, \code{"amdgpu"}, \code{"metal"}, or \code{"oneapi"}.}
@@ -39,18 +42,19 @@ surfaces the Julia-owned \code{HSquared.fit_sparse_reml()} REML-only sparse
 optimizer; it accepts \code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and
 \code{iterations}. It is not the default, not production fitting, and not a
 variance-component estimation claim for the public R interface.
-\code{target = "ai_reml"} is an experimental, opt-in validation path that
-surfaces the Julia-owned \code{HSquared.fit_ai_reml()} average-information REML
-optimizer; like \code{sparse_reml} it accepts \code{initial} and \code{iterations}, is not
-the default, and is not a variance-component estimation claim for the
-public R interface.}
+\code{target = "ai_reml"} exposes the same average-information REML estimator
+(\code{HSquared.fit_ai_reml()}) that the default \code{engine = "fit"} path uses,
+with explicit \code{initial} and \code{iterations} control. This is the validated
+v0.1 estimator for the univariate Gaussian animal model; the \code{engine = "fit"}
+default is the ordinary way to reach it.}
 }
 \value{
 An object of class \code{"hs_control"}.
 }
 \description{
 \code{hs_control()} records execution and storage controls for hsquared model
-calls. The default \code{engine = "validate"} parses and validates the v0.1
-contract before stopping. The experimental \code{engine = "julia"} path attempts
-the current local Julia bridge for tiny v0.1 animal-model payloads.
+calls. The default \code{engine = "fit"} fits the validated v0.1 Gaussian
+animal model through the \code{HSquared.jl} engine (average-information REML);
+\code{engine = "validate"} parses and validates the contract without fitting; and
+\code{engine = "julia"} exposes advanced engine controls.
 }

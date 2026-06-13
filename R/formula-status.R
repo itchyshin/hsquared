@@ -26,7 +26,8 @@ print.hs_formula_status <- function(x, ...) {
   cat("<hs_formula_status>\n")
   cat("  parsed today: animal(1 | id, pedigree = ped); ")
   cat("animal(1 | id) with an hs_data pedigree\n")
-  cat("  fitting: general model fitting remains planned\n")
+  cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
+  cat("other terms are parse-only and general fitting remains planned\n")
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
   print.data.frame(
@@ -92,7 +93,7 @@ hs_formula_status_syntax <- function() {
 
 hs_formula_status_fitting <- function() {
   c(
-    rep("experimental tiny bridge only", 2L),
+    rep("fitted (v0.1 default)", 2L),
     rep("not available", 19L)
   )
 }
@@ -100,12 +101,12 @@ hs_formula_status_fitting <- function() {
 hs_formula_status_behavior <- function() {
   c(
     paste(
-      "Validated by the R parser; default hsquared() stops before general",
-      "fitting."
+      "Parsed and fitted by the default v0.1 path (Gaussian animal model,",
+      "REML through the HSquared.jl engine)."
     ),
     paste(
-      "Validated only when data is an hs_data() bundle with a pedigree",
-      "component; default hsquared() stops before general fitting."
+      "Fitted by the default v0.1 path when data is an hs_data() bundle with a",
+      "pedigree component (Gaussian animal model, REML)."
     ),
     rep(
       paste(

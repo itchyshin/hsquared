@@ -112,7 +112,7 @@ test_that("hsquared can use the opt-in experimental Julia engine", {
     y ~ animal(1 | id, pedigree = ped),
     data = dat,
     family = stats::gaussian(),
-    REML = FALSE,
+    REML = TRUE,
     control = hs_control(
       engine = "julia",
       engine_control = list(
@@ -128,6 +128,35 @@ test_that("hsquared can use the opt-in experimental Julia engine", {
   expect_true(is.finite(heritability(fit)$estimate))
   expect_equal(prediction_error_variance(fit)$id, c("sire", "dam", "calf"))
   expect_equal(reliability(fit)$id, c("sire", "dam", "calf"))
+})
+
+test_that("the opt-in engine = \"julia\" estimation path rejects REML = FALSE (ML)", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  dat <- data.frame(y = c(1, 2.5, 4), id = c("sire", "dam", "calf"))
+
+  # ML is not implemented in v0.1. The estimation targets (the default
+  # fit_animal_model, and the REML-only sparse_reml/ai_reml) must reject
+  # REML = FALSE rather than run the ML optimizer or silently ignore the
+  # request. This is a pure request-validity error: it fires before any Julia
+  # engine call, so it needs no live bridge.
+  for (tgt in list(NULL, "ai_reml", "sparse_reml")) {
+    ec <- if (is.null(tgt)) list() else list(target = tgt)
+    expect_error(
+      hsquared(
+        y ~ animal(1 | id, pedigree = ped),
+        data = dat,
+        family = stats::gaussian(),
+        REML = FALSE,
+        control = hs_control(engine = "julia", engine_control = ec)
+      ),
+      "ML estimation",
+      fixed = TRUE
+    )
+  }
 })
 
 test_that("sparse CSC slot helper exposes R Matrix slots", {
@@ -481,6 +510,37 @@ test_that("hsquared can use the opt-in experimental AI-REML estimator bridge", {
   # Estimated-vs-supplied provenance is explicit and distinct from sparse_reml.
   diag <- fit_diagnostics(fit)
   expect_equal(diag$value[diag$metric == "target"], "ai_reml")
+  expect_equal(
+    diag$value[diag$metric == "variance_components_source"],
+    "estimated_ai_reml"
+  )
+})
+
+test_that("the default engine fits the v0.1 contract via ai_reml", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the default-fit path."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  # Default control => engine = "fit": the default call now fits the v0.1
+  # Gaussian animal model by REML (average-information) through the engine.
+  fit <- hsquared(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$engine, "HSquared.jl")
+  expect_equal(fit$spec$target, "ai_reml")
+  est <- variance_components(fit)$estimate
+  expect_true(all(is.finite(est)) && all(est > 0))
+  h2 <- heritability(fit)$estimate
+  expect_true(is.finite(h2) && h2 > 0 && h2 < 1)
+  diag <- fit_diagnostics(fit)
   expect_equal(
     diag$value[diag$metric == "variance_components_source"],
     "estimated_ai_reml"

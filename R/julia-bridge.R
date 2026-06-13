@@ -196,7 +196,9 @@ hs_fit_julia_sparse_reml_payload <- function(
   result$diagnostics$variance_components <- "estimated_sparse_reml"
   hs_new_fit(
     spec = list(
-      method = payload$method,
+      # fit_sparse_reml is a REML-only optimizer; stamp what was computed
+      # rather than echoing the requested method.
+      method = "REML",
       family = list(family = payload$family, link = "identity"),
       target = "sparse_reml"
     ),
@@ -258,7 +260,9 @@ hs_fit_julia_ai_reml_payload <- function(
   result$diagnostics$variance_components <- "estimated_ai_reml"
   hs_new_fit(
     spec = list(
-      method = payload$method,
+      # fit_ai_reml is a REML-only (average-information) optimizer; stamp what
+      # was computed rather than echoing the requested method.
+      method = "REML",
       family = list(family = payload$family, link = "identity"),
       target = "ai_reml"
     ),

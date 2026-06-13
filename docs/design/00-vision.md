@@ -45,13 +45,16 @@ specialized quantitative-genetic package.
 
 ## Current Status
 
-The R package parses and validates the v0.1 animal-model formula contract; the
-default `hsquared()` call validates and stops. No model fitting is implemented in
-the R package itself. An experimental, opt-in `engine = "julia"` bridge can
-surface the sibling `HSquared.jl` engine for tiny local examples — supplied-
-variance Henderson MME and an experimental REML-only sparse estimator
-(`engine_control = list(target = "sparse_reml")`) — strictly for local
-validation, not production fitting.
+The R package fits the v0.1 univariate Gaussian animal model
+(`y ~ fixed + animal(1 | id, pedigree = ped)`, REML) by default through the
+sibling `HSquared.jl` engine, returning variance components, heritability,
+breeding values, and the standard extractors. Fitting is computed in
+`HSquared.jl` (the R package marshals the model and surfaces the results), so it
+requires a local Julia + `HSquared.jl`; without them the default call errors with
+install guidance, and `engine = "validate"` validates without fitting. The fit is
+validated by known-truth recovery, the published gryphon REML anchor, and sommer
+agreement. Multivariate, genomic, factor-analytic, and non-Gaussian models
+remain planned.
 
 ## First Capability Target
 

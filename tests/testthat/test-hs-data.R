@@ -778,9 +778,10 @@ test_that("hsquared can validate the v0.1 formula from an hs_data bundle", {
   expect_error(
     hsquared(
       y ~ animal(1 | id, pedigree = pedigree),
-      data = bundle
+      data = bundle,
+      control = hs_control(engine = "validate")
     ),
-    "parsed the v0.1 animal-model contract",
+    "validated the v0.1 animal-model contract",
     fixed = TRUE
   )
 })
