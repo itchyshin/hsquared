@@ -268,7 +268,7 @@ claims register.
         <tbody>
           <tr><td>Formula parser</td><td><span class="hs-tag partial">partial</span></td><td><code>animal(1 | id, pedigree = ped)</code> and <code>hs_data()</code> pedigree shorthand parse and validate.</td></tr>
           <tr><td>Bridge payload</td><td><span class="hs-tag partial">partial</span></td><td>Tests pin <code>y</code>, <code>X</code>, sparse <code>Z</code>, IDs, method, family, pedigree metadata.</td></tr>
-          <tr><td>Validation atoms</td><td><span class="hs-tag partial">partial</span></td><td>Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, and sparse REML identity checks.</td></tr>
+          <tr><td>Validation atoms</td><td><span class="hs-tag partial">partial</span></td><td>Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, sparse REML identity, and Mrode-style supplied-variance output checks.</td></tr>
           <tr><td>Fit object</td><td><span class="hs-tag partial">partial</span></td><td>Extractor contract exists for objects that contain matching result fields.</td></tr>
           <tr><td>Data container</td><td><span class="hs-tag partial">partial</span></td><td><code>hs_data()</code> checks phenotype, pedigree, genotype, marker, expression, annotation, and environment metadata.</td></tr>
           <tr><td>Backends</td><td><span class="hs-tag plan">planned</span></td><td><code>hs_control()</code> stores planned names; <code>backend_info()</code> marks execution unavailable.</td></tr>
@@ -280,7 +280,7 @@ claims register.
       <ul class="hs-list">
         <li>No general fitted animal-model support from the default R call.</li>
         <li>No variance-component estimation claim for supplied-variance Henderson MME.</li>
-        <li>No sparse optimizer, AI-REML, fitted Mrode output validation, or ASReml parity claim.</li>
+        <li>No sparse optimizer, AI-REML, estimated-variance Mrode validation, or ASReml parity claim.</li>
         <li>No genomic prediction, marker scan, QTL/eQTL, GLLVM, or unusual-inheritance fitting claim.</li>
         <li>No CPU/GPU execution, backend benchmark, or speedup claim.</li>
       </ul>

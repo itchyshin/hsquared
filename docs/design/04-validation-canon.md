@@ -45,3 +45,9 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   and optional dense validation-path PEV/reliability when the sibling Julia
   checkout exposes those extractors. This does not estimate variance
   components.
+- Mrode-style supplied-variance output fixture: checks a twelve-animal
+  pedigree example against independent R reference calculations and optional
+  live Julia calls for Ainv, fixed effects, EBVs, fitted values, PEV,
+  reliability, h2, ML log-likelihood, and dense/sparse REML log-likelihood at
+  supplied variance components. This is not variance-component estimation or
+  full Mrode fitted-output validation.

@@ -214,6 +214,285 @@ hs_reml_likelihood_validation_fixture <- function() {
   )
 }
 
+hs_mrode_supplied_variance_validation_fixture <- function() {
+  ids <- as.character(c(2, 4, 1, 3, 5, 6, 7, 8, 9, 10, 11, 12))
+  pedigree <- data.frame(
+    id = ids,
+    sire = c(NA, NA, NA, NA, "1", "3", "6", NA, "3", "3", "6", "6"),
+    dam = c(NA, NA, NA, NA, "2", "4", "5", "5", "8", "8", "8", "8"),
+    stringsAsFactors = FALSE
+  )
+  data <- data.frame(
+    y = c(
+      10.2,
+      9.7,
+      10.8,
+      9.9,
+      11.5,
+      11.0,
+      12.4,
+      10.9,
+      12.1,
+      11.8,
+      12.9,
+      12.7
+    ),
+    x = rep(c(0, 1), 6),
+    id = ids,
+    stringsAsFactors = FALSE
+  )
+  Ainv <- matrix(
+    c(
+      1.5,
+      0,
+      0.5,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1.5,
+      0,
+      0.5,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.5,
+      0,
+      1.5,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.5,
+      0,
+      2.5,
+      0,
+      -1,
+      0,
+      1,
+      -1,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      2.8333333333333335,
+      0.5,
+      -1,
+      -0.6666666666666666,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      -1,
+      0.5,
+      3.5,
+      -1,
+      1,
+      0,
+      0,
+      -1,
+      -1,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      -1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      -0.6666666666666666,
+      1,
+      0,
+      3.3333333333333335,
+      -1,
+      -1,
+      -1,
+      -1,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      -1,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      2
+    ),
+    nrow = 12,
+    byrow = TRUE,
+    dimnames = list(ids, ids)
+  )
+
+  list(
+    name = "mrode_style_supplied_variance_outputs",
+    description = paste(
+      "Twelve-animal Mrode-style supplied-variance fixture for Ainv,",
+      "Henderson MME outputs, ML/REML likelihoods, PEV, reliability,",
+      "accuracy, and heritability."
+    ),
+    source = paste(
+      "Mirrors the sibling HSquared.jl Phase 1 Mrode-style",
+      "supplied-variance validation fixture."
+    ),
+    formula = y ~ x + animal(1 | id, pedigree = pedigree),
+    data = data,
+    pedigree = pedigree,
+    sigma_a2 = 1.4,
+    sigma_e2 = 0.9,
+    expected = list(
+      ids = ids,
+      Ainv = Ainv,
+      fixed_effects = c(
+        "(Intercept)" = 11.317393070236822,
+        x = -1.0063726022361354
+      ),
+      breeding_values = data.frame(
+        id = ids,
+        value = c(
+          -0.5021061319436008,
+          -0.11525433671959359,
+          -0.13688874063925227,
+          0.20787891031852276,
+          0.1355094468877566,
+          0.7022497098504573,
+          0.7092602946040143,
+          0.8873101719197427,
+          0.6504124611509037,
+          0.9594504746292134,
+          1.1394542485192605,
+          1.4922422619975693
+        ),
+        stringsAsFactors = FALSE
+      ),
+      fitted = data.frame(
+        .fitted = c(
+          10.815286938293221,
+          10.195766131281093,
+          11.18050432959757,
+          10.518899378319208,
+          11.452902517124578,
+          11.013270177851144,
+          12.026653364840836,
+          11.198330639920428,
+          11.967805531387725,
+          11.270470942629899,
+          12.456847318756083,
+          11.803262729998256
+        )
+      ),
+      prediction_error_variance = data.frame(
+        id = ids,
+        value = c(
+          0.7995095200390083,
+          0.7610908283670357,
+          0.7995095200390082,
+          0.7311017691367848,
+          0.9080482784527696,
+          0.7881609637019633,
+          0.9046409311296871,
+          0.7330130895894281,
+          0.8217902414402057,
+          0.8599627801418696,
+          0.8487180314157624,
+          0.8907596807820399
+        ),
+        stringsAsFactors = FALSE
+      ),
+      reliability = data.frame(
+        id = ids,
+        value = c(
+          0.4289217714007082,
+          0.4563636940235458,
+          0.4289217714007084,
+          0.47778445061658215,
+          0.35139408681945017,
+          0.43702788307002605,
+          0.35382790633593764,
+          0.4764192217218369,
+          0.4130069703998529,
+          0.385740871327236,
+          0.3937728347030267,
+          0.36374308515568576
+        ),
+        stringsAsFactors = FALSE
+      ),
+      heritability = 0.6086956521739131,
+      ml_loglik = -18.181909573827813,
+      reml_loglik = -16.973441618108648
+    )
+  )
+}
+
 hs_solve_henderson_mme_reference <- function(
   y,
   X,
@@ -276,6 +555,118 @@ hs_solve_henderson_mme_reference <- function(
     fitted = data.frame(
       .fitted = as.numeric(as.matrix(X) %*% fixed + as.matrix(Z) %*% animal)
     ),
+    prediction_error_variance = data.frame(
+      id = ids,
+      value = unname(
+        hs_henderson_pev_reference(X, Z, Ainv, sigma_a2, sigma_e2)
+      ),
+      stringsAsFactors = FALSE
+    ),
+    reliability = data.frame(
+      id = ids,
+      value = unname(
+        hs_henderson_reliability_reference(
+          X,
+          Z,
+          Ainv,
+          sigma_a2,
+          sigma_e2
+        )
+      ),
+      stringsAsFactors = FALSE
+    ),
     heritability = sigma_a2 / (sigma_a2 + sigma_e2)
   )
+}
+
+hs_henderson_pev_reference <- function(X, Z, Ainv, sigma_a2, sigma_e2) {
+  inverse <- hs_henderson_mme_inverse_reference(
+    X,
+    Z,
+    Ainv,
+    sigma_a2,
+    sigma_e2
+  )
+  nfixed <- ncol(as.matrix(X))
+  diag(inverse[-seq_len(nfixed), -seq_len(nfixed), drop = FALSE])
+}
+
+hs_henderson_reliability_reference <- function(
+  X,
+  Z,
+  Ainv,
+  sigma_a2,
+  sigma_e2
+) {
+  pev <- hs_henderson_pev_reference(X, Z, Ainv, sigma_a2, sigma_e2)
+  relationship <- solve(as.matrix(Ainv))
+  1 - pev / (sigma_a2 * diag(relationship))
+}
+
+hs_henderson_mme_inverse_reference <- function(
+  X,
+  Z,
+  Ainv,
+  sigma_a2,
+  sigma_e2
+) {
+  residual_precision <- 1 / sigma_e2
+  relationship_precision <- 1 / sigma_a2
+  X <- Matrix::Matrix(X, sparse = TRUE)
+  Z <- Matrix::Matrix(Z, sparse = TRUE)
+  Ainv <- Matrix::Matrix(Ainv, sparse = TRUE)
+  lhs <- rbind(
+    cbind(
+      residual_precision * Matrix::crossprod(X),
+      residual_precision * Matrix::crossprod(X, Z)
+    ),
+    cbind(
+      residual_precision * Matrix::crossprod(Z, X),
+      residual_precision * Matrix::crossprod(Z) + relationship_precision * Ainv
+    )
+  )
+  solve(as.matrix(lhs))
+}
+
+hs_gaussian_loglik_reference <- function(
+  y,
+  X,
+  Z,
+  Ainv,
+  sigma_a2,
+  sigma_e2,
+  method = c("REML", "ML")
+) {
+  method <- match.arg(method)
+  y <- as.numeric(y)
+  X <- as.matrix(X)
+  Z <- as.matrix(Z)
+  A <- solve(as.matrix(Ainv))
+  V <- sigma_a2 * Z %*% A %*% t(Z) + sigma_e2 * diag(length(y))
+  cholV <- chol(V)
+  Vinv_y <- backsolve(cholV, forwardsolve(t(cholV), y))
+  Vinv_X <- backsolve(cholV, forwardsolve(t(cholV), X))
+  XtVinvX <- crossprod(X, Vinv_X)
+  beta <- solve(XtVinvX, crossprod(X, Vinv_y))
+  residual <- y - X %*% beta
+  quad <- drop(crossprod(
+    residual,
+    backsolve(
+      cholV,
+      forwardsolve(t(cholV), residual)
+    )
+  ))
+  logdetV <- 2 * sum(log(diag(cholV)))
+  n <- length(y)
+  p <- ncol(X)
+
+  if (identical(method, "ML")) {
+    loglik <- -0.5 * (n * log(2 * pi) + logdetV + quad)
+  } else {
+    cholXtVinvX <- chol(XtVinvX)
+    logdetXtVinvX <- 2 * sum(log(diag(cholXtVinvX)))
+    loglik <- -0.5 * ((n - p) * log(2 * pi) + logdetV + logdetXtVinvX + quad)
+  }
+
+  list(loglik = loglik, beta = as.numeric(beta))
 }

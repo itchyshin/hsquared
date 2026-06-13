@@ -298,3 +298,218 @@ test_that("sparse REML likelihood fixture matches Julia dense REML when availabl
     tolerance = 1e-10
   )
 })
+
+test_that("Mrode-style supplied-variance fixture pins R reference outputs", {
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  spec <- hsquared:::hs_build_model_spec(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = FALSE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_equal(fixture$name, "mrode_style_supplied_variance_outputs")
+  expect_equal(payload$ids, fixture$expected$ids)
+  expect_equal(payload$pedigree$id, fixture$expected$ids)
+  expect_equal(as.numeric(payload$X[, 1]), rep(1, 12))
+  expect_equal(as.numeric(payload$X[, 2]), fixture$data$x)
+  expect_equal(unname(as.matrix(payload$Z)), diag(12))
+  expect_equal(fixture$expected$Ainv, t(fixture$expected$Ainv))
+
+  reference <- hsquared:::hs_solve_henderson_mme_reference(
+    y = payload$y,
+    X = payload$X,
+    Z = payload$Z,
+    Ainv = fixture$expected$Ainv,
+    sigma_a2 = fixture$sigma_a2,
+    sigma_e2 = fixture$sigma_e2,
+    ids = payload$ids
+  )
+  ml <- hsquared:::hs_gaussian_loglik_reference(
+    y = payload$y,
+    X = payload$X,
+    Z = payload$Z,
+    Ainv = fixture$expected$Ainv,
+    sigma_a2 = fixture$sigma_a2,
+    sigma_e2 = fixture$sigma_e2,
+    method = "ML"
+  )
+  reml <- hsquared:::hs_gaussian_loglik_reference(
+    y = payload$y,
+    X = payload$X,
+    Z = payload$Z,
+    Ainv = fixture$expected$Ainv,
+    sigma_a2 = fixture$sigma_a2,
+    sigma_e2 = fixture$sigma_e2,
+    method = "REML"
+  )
+
+  expect_equal(
+    reference$fixed_effects,
+    fixture$expected$fixed_effects,
+    tolerance = 1e-10,
+    ignore_attr = TRUE
+  )
+  expect_equal(
+    reference$breeding_values,
+    fixture$expected$breeding_values,
+    tolerance = 1e-10
+  )
+  expect_equal(reference$fitted, fixture$expected$fitted, tolerance = 1e-10)
+  expect_equal(
+    reference$prediction_error_variance,
+    fixture$expected$prediction_error_variance,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    reference$reliability,
+    fixture$expected$reliability,
+    tolerance = 1e-10
+  )
+  expect_equal(reference$heritability, fixture$expected$heritability)
+  expect_equal(ml$loglik, fixture$expected$ml_loglik, tolerance = 1e-10)
+  expect_equal(reml$loglik, fixture$expected$reml_loglik, tolerance = 1e-10)
+  expect_equal(
+    reml$beta,
+    unname(fixture$expected$fixed_effects),
+    tolerance = 1e-10
+  )
+})
+
+test_that("Mrode-style supplied-variance fixture matches Julia when available", {
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  spec <- hsquared:::hs_build_model_spec(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = FALSE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    paste(
+      "JuliaCall, Julia, and local HSquared.jl are required for live",
+      "Mrode-style supplied-variance validation."
+    )
+  )
+
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  hsquared:::hs_julia_assign_payload(
+    payload,
+    initial = c(
+      sigma_a2 = fixture$sigma_a2,
+      sigma_e2 = fixture$sigma_e2
+    )
+  )
+  JuliaCall::julia_assign("hsq_ms_sigma_a2", fixture$sigma_a2)
+  JuliaCall::julia_assign("hsq_ms_sigma_e2", fixture$sigma_e2)
+  JuliaCall::julia_command(paste(
+    "hsq_ms_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_ms_Ainv = HSquared.pedigree_inverse(hsq_ms_ped);",
+    "hsq_ms_spec_ml = HSquared.animal_model_spec(",
+    "hsq_y, hsq_X, hsq_Z, hsq_ms_Ainv;",
+    "ids = hsq_ms_ped.ids, method = :ML);",
+    "hsq_ms_spec_reml = HSquared.animal_model_spec(",
+    "hsq_y, hsq_X, hsq_Z, hsq_ms_Ainv;",
+    "ids = hsq_ms_ped.ids, method = :REML);",
+    "hsq_ms_ml = HSquared.gaussian_loglik(",
+    "hsq_ms_spec_ml, hsq_ms_sigma_a2, hsq_ms_sigma_e2;",
+    "method = :ML);",
+    "hsq_ms_reml = HSquared.gaussian_loglik(",
+    "hsq_ms_spec_reml, hsq_ms_sigma_a2, hsq_ms_sigma_e2;",
+    "method = :REML);",
+    "hsq_ms_sparse_reml = HSquared.sparse_reml_loglik(",
+    "hsq_ms_spec_reml, hsq_ms_sigma_a2, hsq_ms_sigma_e2);",
+    "hsq_ms_mme = HSquared.henderson_mme(",
+    "hsq_ms_spec_ml, hsq_ms_sigma_a2, hsq_ms_sigma_e2);",
+    "hsq_ms_bv = HSquared.breeding_values(hsq_ms_mme);",
+    "hsq_ms_payload = Dict(",
+    "\"ids\" => hsq_ms_ped.ids,",
+    "\"Ainv\" => Matrix(hsq_ms_Ainv),",
+    "\"ml_loglik\" => hsq_ms_ml.loglik,",
+    "\"dense_reml_loglik\" => hsq_ms_reml.loglik,",
+    "\"sparse_reml_loglik\" => hsq_ms_sparse_reml.loglik,",
+    "\"sparse_beta\" => hsq_ms_sparse_reml.beta,",
+    "\"fixed_effects\" => HSquared.fixed_effects(hsq_ms_mme),",
+    "\"animal_ids\" => hsq_ms_bv.ids,",
+    "\"animal_effects\" => hsq_ms_bv.values,",
+    "\"fitted\" => HSquared.fitted_values(hsq_ms_mme),",
+    "\"heritability\" => HSquared.heritability(hsq_ms_mme)",
+    ");",
+    "if isdefined(HSquared, :prediction_error_variance) &&",
+    "isdefined(HSquared, :reliability) &&",
+    "applicable(HSquared.prediction_error_variance, hsq_ms_mme) &&",
+    "applicable(HSquared.reliability, hsq_ms_mme);",
+    "hsq_ms_pev = HSquared.prediction_error_variance(hsq_ms_mme);",
+    "hsq_ms_rel = HSquared.reliability(hsq_ms_mme);",
+    "hsq_ms_payload[\"pev_ids\"] = hsq_ms_pev.ids;",
+    "hsq_ms_payload[\"pev\"] = hsq_ms_pev.values;",
+    "hsq_ms_payload[\"reliability_ids\"] = hsq_ms_rel.ids;",
+    "hsq_ms_payload[\"reliability\"] = hsq_ms_rel.values;",
+    "end;"
+  ))
+
+  observed <- JuliaCall::julia_eval("hsq_ms_payload")
+
+  expect_equal(as.character(observed$ids), fixture$expected$ids)
+  dimnames(observed$Ainv) <- list(fixture$expected$ids, fixture$expected$ids)
+  expect_equal(observed$Ainv, fixture$expected$Ainv, tolerance = 1e-10)
+  expect_equal(
+    as.numeric(observed$fixed_effects),
+    unname(fixture$expected$fixed_effects),
+    tolerance = 1e-10
+  )
+  expect_equal(as.character(observed$animal_ids), fixture$expected$ids)
+  expect_equal(
+    as.numeric(observed$animal_effects),
+    fixture$expected$breeding_values$value,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    as.numeric(observed$fitted),
+    fixture$expected$fitted$.fitted,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    as.numeric(observed$ml_loglik),
+    fixture$expected$ml_loglik,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    as.numeric(observed$dense_reml_loglik),
+    fixture$expected$reml_loglik,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    as.numeric(observed$sparse_reml_loglik),
+    fixture$expected$reml_loglik,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    as.numeric(observed$sparse_beta),
+    unname(fixture$expected$fixed_effects),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    as.numeric(observed$heritability),
+    fixture$expected$heritability,
+    tolerance = 1e-12
+  )
+
+  if (!is.null(observed$pev) && !is.null(observed$reliability)) {
+    expect_equal(as.character(observed$pev_ids), fixture$expected$ids)
+    expect_equal(as.character(observed$reliability_ids), fixture$expected$ids)
+    expect_equal(
+      as.numeric(observed$pev),
+      fixture$expected$prediction_error_variance$value,
+      tolerance = 1e-10
+    )
+    expect_equal(
+      as.numeric(observed$reliability),
+      fixture$expected$reliability$value,
+      tolerance = 1e-10
+    )
+  }
+})

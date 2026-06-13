@@ -117,7 +117,7 @@ test_that("validation_status separates evidence from planned validation", {
   status <- validation_status()
 
   expect_s3_class(status, "hs_validation_status")
-  expect_equal(nrow(status), 11L)
+  expect_equal(nrow(status), 12L)
   expect_true(all(
     c("capability", "phase", "status", "evidence", "claim_boundary") %in%
       names(status)
@@ -130,6 +130,12 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_equal(
     status$status[status$capability == "sparse REML likelihood identity"],
+    "partial"
+  )
+  expect_equal(
+    status$status[
+      status$capability == "Mrode-style supplied-variance outputs"
+    ],
     "partial"
   )
   expect_equal(
