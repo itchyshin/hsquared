@@ -74,6 +74,9 @@ Current lane: R, with coordinator updates.
   initialization, then failed because `hsquared` was not installed before
   reference-page generation. The workflow was patched with `R CMD INSTALL .`
   before deployment.
+- Second follow-up pkgdown deployment passed in 1m19s.
+- GitHub Pages was enabled from `gh-pages`; Pages build/deploy passed, and
+  `https://itchyshin.github.io/hsquared/` returned `HTTP/2 200`.
 
 ## Public Claim Audit
 

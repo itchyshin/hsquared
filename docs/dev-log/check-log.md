@@ -129,3 +129,15 @@ with private memory.
     `gh-pages`, and then failed while building reference pages because
     `library(hsquared)` could not find an installed package on the runner.
   - Fix: added an explicit `R CMD INSTALL .` step before deployment.
+- Remote GitHub Actions after install-step fix:
+  - `gh run watch 27455352894 --repo itchyshin/hsquared --exit-status`
+  - Result: pkgdown passed in 1m19s and pushed `gh-pages`.
+  - `gh run watch 27455352898 --repo itchyshin/hsquared --exit-status`
+  - Result: R-CMD-check passed in 1m46s.
+  - `gh api --method POST repos/itchyshin/hsquared/pages -f "source[branch]=gh-pages" -f "source[path]=/"`
+  - Result: GitHub Pages enabled for
+    `https://itchyshin.github.io/hsquared/`.
+  - `gh run watch 27455403672 --repo itchyshin/hsquared --exit-status`
+  - Result: Pages build and deployment passed.
+  - `curl -L --max-time 20 -I https://itchyshin.github.io/hsquared/`
+  - Result: live site returned `HTTP/2 200`.
