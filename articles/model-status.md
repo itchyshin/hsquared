@@ -22,6 +22,8 @@ This page separates what exists from what is planned.
 - An internal tiny validation fixture that pins R payload ordering,
   sparse `Z`, and live Julia `pedigree_inverse()` agreement for a
   three-animal pedigree when the local Julia bridge is available.
+- An optional Mrode9/nadiv pedigree-Ainv comparator test when `nadiv`
+  and a sibling `HSquared.jl` checkout are available.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBVs, PEV, reliability, fixed
@@ -42,7 +44,8 @@ This page separates what exists from what is planned.
 - Real variance components, heritability, EBVs, or BLUPs from fitted
   models.
 - PEV or reliability through the current live Julia result payload.
-- Mrode, ASReml, BLUPF90, DMU, or WOMBAT comparator validation.
+- Full Mrode animal-model fit-output validation.
+- ASReml, BLUPF90, DMU, or WOMBAT comparator validation.
 - File-backed genotype/omics loading or streaming computation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
