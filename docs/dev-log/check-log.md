@@ -2295,3 +2295,32 @@ with private memory.
     with sommer/enhancer installed).
   - GitHub Actions pkgdown `27474821893`: passed.
   - GitHub Pages build/deploy `27474859398`: passed.
+
+## 2026-06-13 Known-truth DGP variance-component recovery study
+
+- Goal: fill the v0.1 promotion-predicate item-3 gap (known-truth recovery, not
+  optimizer reproducibility). ADEMP study (Morris 2019; Williams 2024):
+  simulate a univariate Gaussian animal model with known VC over a clean
+  pedigree, recover with the engine (ai_reml) + the pure-R reference.
+- Active lenses: Curie, Fisher, Gauss, Rose. Spawned subagents: none (used the
+  simulation-design skill).
+- Result (n=420, 120 engine reps, 100% converged): bias s2a=-0.0000 (MCSE
+  0.0090), s2e=+0.0057 (MCSE 0.0067), h2=-0.0049 (MCSE 0.0073) — 0 within
+  bias +/- 2*MCSE for all three; EBV accuracy 0.737; engine matches the pure-R
+  reference to machine precision (max |h2 diff| 0.0000 on shared reps).
+- Files: `data-raw/dgp-recovery-study.R` (full study + ADEMP design, .Rbuildignore'd),
+  `tests/testthat/helper-simulation.R`, skip-guarded pure-R regression test in
+  `test-validation-fixtures.R`, `R/validation-status.R` (16 rows),
+  capability-status + validation-debt registers, `test-phase0-api.R`.
+- Local checks:
+  - `devtools::test()` (NOT_CRAN): the pure-R regression test ran and passed.
+  - `rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))`: 0 errors,
+    0 warnings, 1 note (benign).
+  - `air format .`: clean.
+- Boundary: R-lane recovery evidence via the read-only bridge; does NOT flip the
+  twin estimator gate row; single h2=0.4 setting; no boundary/interval/
+  production-robustness or default-fit claim.
+- Remote checks for commit `874bf07`:
+  - GitHub Actions R-CMD-check `27475342941`: passed (DGP test ran on CI with nadiv).
+  - GitHub Actions pkgdown `27475342963`: passed.
+  - GitHub Pages build/deploy `27475387456`: passed.
