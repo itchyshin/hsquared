@@ -96,9 +96,11 @@ pedigree argument:</p>
 <span>  REML <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The R side validates the formula, data, response, pedigree columns,
-and animal IDs. It builds the internal bridge payload for
-<code>HSquared.jl</code>. The default call still stops at the planned
-bridge boundary, so this is not general fitted animal-model support.</p>
+and animal IDs, builds the internal bridge payload, and (by default)
+fits the v0.1 univariate Gaussian animal model by REML through
+<code>HSquared.jl</code>. This is the v0.1 contract only; the reserved
+terms below are parse-only and are not yet general fitted animal-model
+support.</p>
 </div>
 <div class="section level2">
 <h2 id="standard-quantitative-genetic-extensions">Standard quantitative-genetic extensions<a class="anchor" aria-label="anchor" href="#standard-quantitative-genetic-extensions"></a>

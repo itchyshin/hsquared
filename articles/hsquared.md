@@ -16,13 +16,20 @@ fit <- hsquared(
 )
 ```
 
-Current status: this formula is parsed and validated, and the R side
-builds the first tested internal bridge payload. Model fitting and live
-Julia execution are not implemented yet. The package stops at the
-planned Julia bridge boundary. The first extractor functions exist for
-future `hsquared_fit` objects, but
+Current status: v0.1 **fits** this model.
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-does not return fitted objects yet.
+parses and validates the formula, marshals the model to the
+`HSquared.jl` engine, and returns a fitted `hsquared_fit` object
+carrying heritability, variance components, breeding values
+(EBVs/BLUPs), fixed effects, fitted values, residuals, and diagnostics,
+estimated by REML (average-information). Fitting is computed in
+`HSquared.jl`, so it needs a local Julia, the `JuliaCall` R package, and
+an `HSquared.jl` checkout; without them the default call errors with
+install guidance, and `control = hs_control(engine = "validate")`
+validates the contract without fitting. ML is not implemented —
+`REML = FALSE` is rejected on the fit path. The fit is validated by
+known-truth recovery, the published gryphon REML anchor, and agreement
+with the `sommer` package.
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 can collect phenotype, pedigree, genotype, marker, expression,
 annotation, and environment inputs into a checked container for future

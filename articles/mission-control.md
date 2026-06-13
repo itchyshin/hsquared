@@ -13,32 +13,33 @@ This board tracks the R lane and its contract with the Julia twin. It
 separates implemented package surfaces, experimental validation paths,
 and roadmap capabilities that are deliberately still planned.
 
-Phase 0 public scaffold complete Phase 1 parser and validation active
-Julia bridge opt-in and tiny/local No production fitting claim
+Phase 0 public scaffold complete v0.1 Gaussian animal model fits by
+default (REML) Phase 1 validation and comparators active Multivariate,
+genomic, GPU still planned
 
 **1** public formula contract parsed today:
 `animal(1 | id, pedigree = ped)`
 
-**14** validation-status rows separating partial and planned evidence
+**16** validation-status rows separating covered, partial, and planned
+evidence
 
-**6** planned backend names recorded: CPU, threads, CUDA, AMDGPU, Metal,
-oneAPI
+**1** model fitted by default: the v0.1 univariate Gaussian animal model
+(REML via the HSquared.jl engine)
 
-**0** production / default-callable AI-REML, GPU, QTL/eQTL, or GLLVM
-capabilities. AI-REML and sparse REML exist only as opt-in, Julia-owned,
-tiny-fixture validation bridges
+**0** production GPU, QTL/eQTL, or GLLVM capabilities (planned)
 
 ### R Interface Lane
 
 Current focus: make the first animal-model contract obvious, tested, and
 honest.
 
-- Implemented: package scaffold, pkgdown, parser diagnostics,
-  data-container diagnostics, fitted-object extractor contract.
-- Experimental: opt-in local Julia bridge for tiny validation paths and
-  supplied-variance Henderson MME checks.
-- Planned: default production fitting, genomic models, QTL/eQTL, GLLVMs,
-  unusual inheritance, and real backend execution.
+- Implemented: default fit of the v0.1 Gaussian animal model (REML via
+  the HSquared.jl engine), package scaffold, pkgdown, parser
+  diagnostics, data-container diagnostics, fitted-object extractors.
+- Experimental: opt-in local Julia bridge targets for supplied-variance
+  Henderson MME checks and the REML-only sparse optimizer.
+- Planned: multivariate/genomic production fitting, QTL/eQTL, GLLVMs,
+  unusual inheritance, ML estimation, and real backend execution.
 
 ### Julia Twin Boundary
 
@@ -95,12 +96,14 @@ backends, checkpoints, benchmarks.
 
 ### Blocked Claims
 
-- No general fitted animal-model support from the default R call.
-- No variance-component estimation claim for supplied-variance Henderson
-  MME.
-- No production/default sparse optimizer, estimated-variance Mrode
-  validation, or ASReml parity claim (sparse REML and AI-REML estimators
-  exist only as experimental, opt-in, Julia-owned, gated bridges).
+- No fitting beyond the v0.1 univariate Gaussian animal model (the
+  default fits that model; multivariate, genomic, factor-analytic, and
+  non-Gaussian models remain planned).
+- No standard errors / confidence intervals for variance components or
+  h2 (out of v0.1 scope).
+- No ASReml/BLUPF90-family multi-package parity or large-scale (\>10k)
+  production-fitting claim; the v0.1 fit is validated to gryphon scale
+  (~1300 animals) and on clean simulated pedigrees.
 - No genomic prediction, marker scan, QTL/eQTL, GLLVM, or
   unusual-inheritance fitting claim.
 - No CPU/GPU execution, backend benchmark, or speedup claim.

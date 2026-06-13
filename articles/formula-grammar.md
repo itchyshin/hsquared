@@ -35,9 +35,10 @@ fit <- hsquared(
 ```
 
 The R side validates the formula, data, response, pedigree columns, and
-animal IDs. It builds the internal bridge payload for `HSquared.jl`. The
-default call still stops at the planned bridge boundary, so this is not
-general fitted animal-model support.
+animal IDs, builds the internal bridge payload, and (by default) fits
+the v0.1 univariate Gaussian animal model by REML through `HSquared.jl`.
+This is the v0.1 contract only; the reserved terms below are parse-only
+and are not yet general fitted animal-model support.
 
 ## Standard quantitative-genetic extensions
 

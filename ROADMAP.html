@@ -61,17 +61,17 @@
 </ul></div>
 <div class="section level2">
 <h2 id="phase-1-simple-gaussian-animal-model">Phase 1: Simple Gaussian Animal Model<a class="anchor" aria-label="anchor" href="#phase-1-simple-gaussian-animal-model"></a></h2>
-<p>Status: started.</p>
-<ul><li>R formula: <code>animal(1 | id, pedigree = ped)</code> parser is partial.</li>
+<p>Status: v0.1 default fit landed. The default <code><a href="reference/hsquared.html">hsquared()</a></code> call fits the univariate Gaussian animal model <code>y ~ fixed + animal(1 | id, pedigree = ped)</code> by REML (average-information) through the <code>HSquared.jl</code> engine; validated by known-truth recovery, the published gryphon anchor, and sommer agreement. ML is not implemented (REML only). Broader Phase 1 hardening (large/real pedigrees, engine boundary stability) continues.</p>
+<ul><li>R formula: <code>animal(1 | id, pedigree = ped)</code> parser; fits by default.</li>
 <li>Julia sparse pedigree parser and Ainv.</li>
-<li>Gaussian ML/REML engine.</li>
+<li>Gaussian REML engine (ML deferred).</li>
 <li>EBVs/BLUPs, variance components, heritability.</li>
 <li>First tiny and Mrode-style validation examples.</li>
 </ul><p>Standing Phase 1+ rule: check local sister packages and relevant statistical literature before changing grammar, engine contracts, validation claims, or roadmap promises.</p>
 <div class="section level3">
-<h3 id="next-work-queue-r-lane-phase-1-frontier">Next work queue (R lane, Phase 1 frontier)<a class="anchor" aria-label="anchor" href="#next-work-queue-r-lane-phase-1-frontier"></a></h3>
-<p>The active R-lane frontier is surfacing the Julia twin’s experimental sparse REML estimator (<code>HSquared.fit_sparse_reml</code>) through R behind an opt-in fence, reusing existing local sister-package code rather than reinventing it:</p>
-<ul><li>B2 — opt-in fenced sparse-REML bridge path (<code>engine = "julia"</code>, <code>engine_control = list(target = "sparse_reml", ...)</code>); default <code><a href="reference/hsquared.html">hsquared()</a></code> still validates-and-stops. Adapt the R-to-Julia bridge discipline already proven in <code>gllvmTMB/R/julia-bridge.R</code> and <code>drmTMB/R/julia-bridge.R</code>.</li>
+<h3 id="phase-1-frontier-completed-arc--next">Phase 1 frontier (completed arc + next)<a class="anchor" aria-label="anchor" href="#phase-1-frontier-completed-arc--next"></a></h3>
+<p>The default fit now uses the average-information REML estimator (<code>HSquared.fit_ai_reml</code>). An earlier arc (B2-B5, complete) surfaced the Julia twin’s separate experimental sparse REML estimator (<code>HSquared.fit_sparse_reml</code>) through R behind an opt-in fence, reusing existing local sister-package code rather than reinventing it:</p>
+<ul><li>B2 — opt-in fenced sparse-REML bridge path (<code>engine = "julia"</code>, <code>engine_control = list(target = "sparse_reml", ...)</code>); this stays opt-in and is not the default (the default fits via <code>ai_reml</code>). Adapted the R-to-Julia bridge discipline already proven in <code>gllvmTMB/R/julia-bridge.R</code> and <code>drmTMB/R/julia-bridge.R</code>.</li>
 <li>B3 — estimated-vs-supplied variance provenance in <code><a href="reference/fit_diagnostics.html">fit_diagnostics()</a></code> and <code><a href="reference/validation_status.html">validation_status()</a></code>.</li>
 <li>B4 — sparse REML estimate-recovery validation fixture (optimizer improves the REML objective over a known start; not data-generating recovery). Reuse the comparator discipline in <code>DRM.jl/src/comparison.jl</code>.</li>
 <li>B5 — record the sparse-REML bridge contract in <code>03-engine-contract.md</code>.</li>

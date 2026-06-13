@@ -4,12 +4,27 @@
 
 ### New features
 
+- **The default
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  call now fits the v0.1 univariate Gaussian animal model**
+  `y ~ fixed + animal(1 | id, pedigree = ped)` by REML
+  (average-information) through the `HSquared.jl` engine, returning
+  heritability, variance components, breeding values, fixed effects,
+  fitted values, residuals, and diagnostics. Fitting requires a local
+  Julia, the `JuliaCall` package, and an `HSquared.jl` checkout; without
+  them the default call errors with install guidance, and
+  `hs_control(engine = "validate")` validates the contract without
+  fitting. ML is not implemented — `REML = FALSE` is rejected on the fit
+  path. The fit is validated by known-truth recovery, the published
+  gryphon REML anchor (within the signed-off comparator band), and
+  `sommer` agreement
+  ([\#6](https://github.com/itchyshin/hsquared/issues/6),
+  [\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   is now exported as an inert formula marker, and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-  now parses the narrow v0.1 formula contract
-  `animal(1 | id, pedigree = ped)` before stopping at the planned Julia
-  bridge boundary
+  parses the narrow v0.1 formula contract
+  `animal(1 | id, pedigree = ped)`
   ([\#4](https://github.com/itchyshin/hsquared/issues/4),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
@@ -40,11 +55,13 @@
   observation count or response-payload fallback when available
   ([\#5](https://github.com/itchyshin/hsquared/issues/5)).
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
-  now has an experimental `engine = "julia"` option that lets local
-  developers run the tiny v0.1 animal-model payload through a sibling
-  `HSquared.jl` checkout via JuliaCall. The default engine remains
-  validation-only, and general fitted animal-model support is still
-  planned ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
+  has an `engine = "julia"` option that exposes advanced engine targets
+  (supplied-variance Henderson MME, the opt-in sparse REML optimizer,
+  and explicit `ai_reml` control) through a sibling `HSquared.jl`
+  checkout via JuliaCall. The default `engine = "fit"` already fits the
+  v0.1 model via `ai_reml`; general (multivariate/genomic/non-Gaussian)
+  fitted-model support is still planned
+  ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   now recognizes an experimental, opt-in
   `engine_control = list(target = "sparse_reml", initial = ..., iterations = ...)`

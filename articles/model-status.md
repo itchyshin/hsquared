@@ -4,19 +4,27 @@ This page separates what exists from what is planned.
 
 ## Exists now
 
-Everything below is parser, validation-fixture, data-container, or
-extractor-contract surface, plus opt-in local Julia validation bridges.
-None of it fits a model from the default
+The default
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-call, and none of it is a validated estimation capability — see the
-[V0.1 promotion
-predicate](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-contract.md).
+call fits the v0.1 univariate Gaussian animal model
+(`y ~ fixed + animal(1 | id, pedigree = ped)`, REML) through the
+`HSquared.jl` engine, validated by known-truth recovery, the published
+gryphon REML anchor, and sommer agreement (see the [V0.1
+contract](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-contract.md)).
+Fitting requires a local Julia + `HSquared.jl`. The remaining items
+below are the surrounding surface — parser, validation atoms, data
+container, extractors, and advanced opt-in engine controls.
 
+- Fits the v0.1 univariate Gaussian animal model by default and returns
+  variance components, heritability, breeding values, fixed effects,
+  fitted values, residuals, and
+  [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
+  (with an `at_boundary` flag).
 - R package scaffold and CI.
 - Team operating memory and claim registers.
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
-  with default validation-only behavior and an experimental
-  `engine = "julia"` option for tiny local bridge examples.
+  with default `engine = "fit"`, `engine = "validate"` for a no-fit
+  preview, and `engine = "julia"` for advanced engine targets.
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   stores planned CPU-thread, CUDA, AMDGPU, Metal, and oneAPI backend
   names as control metadata.
@@ -101,29 +109,20 @@ predicate](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-c
   effects, EBVs, fitted values, PEV, reliability, h2, ML log-likelihood,
   and dense/sparse REML log-likelihood against independent R references
   and the sibling Julia engine when available.
-- Not general variance-component estimation. An experimental, opt-in,
-  Julia-owned sparse REML optimizer (`HSquared.fit_sparse_reml()`) is
-  reachable only via
-  `control = hs_control(engine = "julia", engine_control = list(target = "sparse_reml"))`
-  for tiny local fixtures; the default
-  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-  still validates and stops. It records the internal provenance label
-  `variance_components_source = "estimated_sparse_reml"` on those
-  fixtures (not a public estimation capability), and is cross-checked
-  for optimizer agreement against the dense REML optimizer and an
-  independent pure-R REML optimum — not validated against known truth.
-- Not general variance-component estimation. An experimental, opt-in,
-  Julia-owned average-information REML optimizer
-  (`HSquared.fit_ai_reml()`) is reachable only via
-  `control = hs_control(engine = "julia", engine_control = list(target = "ai_reml"))`
-  for tiny local fixtures; the default
-  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-  still validates and stops, and it is gated on the twin’s validation
-  status. It records the internal provenance label
-  `variance_components_source = "estimated_ai_reml"` (not a public
-  estimation capability), and is cross-checked to reach the same REML
-  optimum as the sparse optimizer on the Mrode fixture — not validated
-  against known truth.
+- The average-information REML optimizer (`HSquared.fit_ai_reml()`) that
+  the default `engine = "fit"` uses to estimate the variance components.
+  It is also reachable explicitly via
+  `control = hs_control(engine = "julia", engine_control = list(target = "ai_reml"))`,
+  records `variance_components_source = "estimated_ai_reml"`, recovers
+  known truth in the DGP recovery study (near-unbiased), and recovers
+  the published gryphon REML estimate within the maintainer-signed-off
+  comparator band.
+- The sparse NelderMead REML optimizer (`HSquared.fit_sparse_reml()`),
+  reachable via
+  `control = hs_control(engine = "julia", engine_control = list(target = "sparse_reml"))`.
+  It records `variance_components_source = "estimated_sparse_reml"`,
+  agrees with the average-information and dense optimizers, and recovers
+  the published gryphon anchor.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBV/BLUP aliases, PEV, reliability,
@@ -181,12 +180,14 @@ predicate](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-c
 
 ## Not implemented yet
 
-- General model fitting.
-- Default R-to-Julia bridge execution through
-  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md).
-- R-side `Ainv` construction.
-- General estimated variance components, heritability, EBVs, or BLUPs
-  from fitted models.
+- General model fitting beyond the v0.1 univariate Gaussian animal model
+  (multivariate, genomic, non-Gaussian, and the reserved inheritance
+  kernels).
+- ML estimation on the fit path (`REML = FALSE` is rejected; only REML
+  is implemented).
+- R-side `Ainv` construction (the engine builds `Ainv` in Julia).
+- Estimated variance components, heritability, EBVs, or BLUPs for any
+  model other than the v0.1 univariate Gaussian animal model.
 - Log-likelihood or information criteria for supplied-variance Henderson
   MME bridge results.
 - Production sparse PEV or reliability.
@@ -214,9 +215,13 @@ predicate](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-c
 
 ## Comparator targets
 
-The long-term comparator set includes ASReml, MCMCglmm, sommer, BLUPF90,
-DMU, WOMBAT, JWAS.jl, XSim.jl, AGHmatrix, nadiv, `drmTMB`, `gllvmTMB`,
-`DRM.jl`, and `GLLVM.jl`.
+`sommer` and `pedigreemm` are already in use as v0.1 comparators:
+`sommer` is the signed-off `V1-COMPARATORS` agreement check on the
+gryphon anchor, and `pedigreemm` provides a one-sided
+REML-log-likelihood floor. The broader long-term comparator set
+additionally includes ASReml, MCMCglmm, BLUPF90, DMU, WOMBAT, JWAS.jl,
+XSim.jl, AGHmatrix, nadiv, `drmTMB`, `gllvmTMB`, `DRM.jl`, and
+`GLLVM.jl`.
 
 Performance and coverage claims are evidence-gated. Public pages may
 call a feature working only after code, tests, documentation, and

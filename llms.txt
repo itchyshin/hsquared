@@ -11,36 +11,38 @@ page](https://itchyshin.github.io/hsquared/articles/mission-control.html)
 that summarizes current lanes, evidence gates, and blocked claims for
 the R and Julia twin project.
 
-This repository has moved past the initial scaffold into early Phase 1
-parser and bridge-contract work. It can validate the narrow v0.1 formula
-contract and build a tested internal R-to-Julia payload shape. Use
+Version 0.1 fits the univariate Gaussian animal model
+`y ~ fixed + animal(1 | id, pedigree = ped)` by REML through the
+`HSquared.jl` engine. The default
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+call fits the model and returns heritability, variance components,
+breeding values (EBVs/BLUPs), fixed effects, fitted values, residuals,
+and diagnostics. Fitting requires a local Julia, the `JuliaCall`
+package, and an `HSquared.jl` checkout; without them the default call
+errors with install guidance, and
+`control = hs_control(engine = "validate")` validates the contract
+without fitting. Use
 [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
 to preview the parsed fixed-effect design, sparse animal-effect design,
-normalized pedigree ordering, and Julia targets without fitting a model.
-The default call validates and stops, while an experimental opt-in
-`control = hs_control(engine = "julia")` path can send a tiny v0.1
-payload to a sibling `HSquared.jl` checkout through JuliaCall. This is
-still a narrow local validation path, not general animal-model support.
-The same opt-in bridge can also call `HSquared.jl::henderson_mme()` at
-explicitly supplied variance components for tiny validation examples.
-That path does not estimate variance components or provide a
-log-likelihood. When the sibling Julia checkout exposes applicable dense
-validation extractors, the target also attaches PEV and reliability
-fields. The fitted-object extractor contract defines the methods that
-future fitted objects will expose — variance components, heritability,
+normalized pedigree ordering, and Julia targets without fitting.
+
+The v0.1 fit is validated by known-truth recovery (a replicated DGP
+study in which the engine recovers the generating variance components
+near-unbiased), by the published gryphon REML estimate (Wilson et
+al. 2010, which the engine recovers within the maintainer-signed-off
+comparator band), and by agreement with the `sommer` package. The
+fitted-object extractors — variance components, heritability,
 EBVs/BLUPs, PEV, reliability, accuracy, fixed effects, random effects,
-log-likelihood, AIC, prediction, fitted values, residuals, summaries,
+log-likelihood, AIC, prediction, fitted values, residuals,
+[`summary()`](https://rdrr.io/r/base/summary.html),
 [`coef()`](https://rdrr.io/r/stats/coef.html),
 [`nobs()`](https://rdrr.io/r/stats/nobs.html), and
 [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
-for convergence and optimizer metadata — and returns each only for
-objects that already carry the matching Julia result fields. In the
-experimental local bridge, PEV/reliability are enriched from exported
-`HSquared.jl` dense validation extractors when available; this is still
-not production sparse reliability or general animal-model support. The
-default
-[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-call computes none of these: it validates and stops. A lightweight
+(including an `at_boundary` flag) — operate on the fitted object.
+Standard errors and confidence intervals for variance components and
+heritability are out of v0.1 scope. The advanced
+`control = hs_control(engine = "julia")` path exposes explicit engine
+targets (supplied-variance Henderson MME, sparse REML). A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows,
@@ -71,7 +73,7 @@ hsquared       R package: friendly modelling interface for applied users
 HSquared.jl    Julia package: sparse quantitative-genetic engine
 ```
 
-The first implementation target is a univariate Gaussian animal model:
+The v0.1 fit is the univariate Gaussian animal model:
 
 ``` r
 
@@ -83,15 +85,11 @@ fit <- hsquared(
 )
 ```
 
-That syntax is parsed and validated as the first contract. The R side
-now constructs the intended `y`, `X`, sparse `Z`, method, family, ID,
-and normalized pedigree metadata payload. With
-`control = hs_control(engine = "julia")`, internal tests can send the
-sparse `Z` design through Julia CSC slots, build Julia-side `Ainv`, and
-run the current validation target when a local sibling `HSquared.jl`
-checkout is available. General public fitting waits for a production
-bridge and validation-canon evidence. For supplied-variance MME checks,
-use:
+This fits by default: the R side builds the `y`, `X`, sparse `Z`, and
+normalized pedigree payload, the `HSquared.jl` engine builds `Ainv`,
+estimates the variance components by REML, and returns an `hsquared_fit`
+object. Multivariate, genomic, factor-analytic, and non-Gaussian models
+remain planned. For supplied-variance MME checks, use:
 
 ``` r
 
@@ -220,6 +218,15 @@ model feel obvious before it exposes specialist machinery.
 # install.packages("pak")
 pak::pak("itchyshin/hsquared")
 ```
+
+Fitting also needs a local [Julia](https://julialang.org/), the
+[`JuliaCall`](https://cran.r-project.org/package=JuliaCall) R package,
+and a local [`HSquared.jl`](https://github.com/itchyshin/HSquared.jl)
+checkout (the engine that performs the fit). Without them,
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+still parses and validates the model —
+`control = hs_control(engine = "validate")` — but the default fit call
+errors with install guidance.
 
 ## Development
 

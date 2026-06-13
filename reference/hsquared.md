@@ -1,11 +1,13 @@
 # Fit a quantitative-genetic model
 
-`hsquared()` is the planned R entry point for heritability,
-breeding-value, G-matrix, and inheritance-structured mixed models. The
-current parser validates the narrow v0.1 animal-model contract. The
-default control path stops after validation; the experimental Julia
-engine can fit tiny local bridge examples when a sibling `HSquared.jl`
-checkout is available.
+`hsquared()` is the R entry point for heritability, breeding-value,
+G-matrix, and inheritance-structured mixed models. v0.1 fits the
+univariate Gaussian animal model
+`y ~ fixed + animal(1 | id, pedigree = ped)` by REML through the
+`HSquared.jl` engine. The default `control` fits when a local Julia and
+`HSquared.jl` are available and otherwise errors with install guidance;
+`hs_control(engine = "validate")` validates the contract without
+fitting. Multivariate, genomic, and non-Gaussian models remain planned.
 
 ## Usage
 
@@ -46,8 +48,9 @@ hsquared(
 
 - REML:
 
-  Logical; whether the Gaussian animal model should use REML when the
-  experimental Julia engine is selected.
+  Logical; whether to use REML estimation. The v0.1 fit path supports
+  REML only (the default, `TRUE`); `REML = FALSE` (ML) is not yet
+  implemented and is rejected with an error.
 
 - control:
 
@@ -60,5 +63,6 @@ hsquared(
 
 ## Value
 
-A `"hsquared_fit"` object for the experimental Julia engine, or an
-informative error for the default validation-only path.
+A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model, or
+an informative error when the Julia engine is unavailable or
+`engine = "validate"` is used.
