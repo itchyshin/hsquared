@@ -89,6 +89,25 @@ spec <- model_spec(
 )
 ```
 
+Marker maps can also be checked in the same container:
+
+``` r
+
+bundle <- hs_data(
+  phenotypes = dat,
+  pedigree = ped,
+  genotypes = geno,
+  markers = data.frame(
+    marker = c("m1", "m2"),
+    chr = c("1", "1"),
+    pos = c(10, 20)
+  )
+)
+```
+
+The marker-map check is metadata validation only. Genomic and QTL/eQTL
+models remain planned.
+
 The interface rule is deliberately simple: easy, easy, easy. Applied
 users are gold; the package should make the common quantitative-genetic
 model feel obvious before it exposes specialist machinery.

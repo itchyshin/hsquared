@@ -143,6 +143,10 @@ environment inputs.</li>
 counts for phenotype, pedigree, genotype, and expression
 components.</li>
 <li>
+<code><a href="../reference/hs_data.html">hs_data()</a></code> validates supplied marker maps for marker ID,
+chromosome, and non-negative numeric position columns. This is metadata
+validation only.</li>
+<li>
 <code><a href="../reference/model_spec.html">model_spec()</a></code> and <code><a href="../reference/hsquared.html">hsquared()</a></code> can use an
 <code><a href="../reference/hs_data.html">hs_data()</a></code> object for the v0.1 animal-model parser, reading
 model variables from <code>phenotypes</code> and formula components such
@@ -167,6 +171,8 @@ models.</li>
 <li>File-backed genotype/omics loading or streaming computation.</li>
 <li>Automatic model construction from genotype, marker, expression,
 annotation, or environment components in <code><a href="../reference/hs_data.html">hs_data()</a></code>.</li>
+<li>Allele coding, marker imputation, PLINK/VCF parsing, or marker
+scanning from marker maps.</li>
 <li>Genomic and single-step models.</li>
 <li>Multivariate and factor-analytic G matrices.</li>
 <li>Permanent environment, common environment, maternal/paternal,

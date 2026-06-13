@@ -39,7 +39,10 @@ hs_data(
 
 - markers:
 
-  Optional marker map data frame.
+  Optional marker map data frame. When supplied, it must contain marker
+  ID, chromosome, and position columns. Recognized aliases include
+  `marker`, `snp`, or `id`; `chromosome`, `chr`, or `chrom`; and
+  `position`, `pos`, `bp`, or `base_pair`.
 
 - expression:
 

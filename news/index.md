@@ -133,6 +133,11 @@
 - `summary(hs_data(...))` now includes an ID overlap table with
   phenotype, pedigree, genotype, expression, and mismatch counts
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  now validates supplied marker maps for marker ID, chromosome, and
+  non-negative numeric position columns. This is metadata validation
+  only; genomic and QTL/eQTL fitting remain planned
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)

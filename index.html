@@ -90,11 +90,24 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">pedigree</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">bundle</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Marker maps can also be checked in the same container:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bundle</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hs_data.html">hs_data</a></span><span class="op">(</span></span>
+<span>  phenotypes <span class="op">=</span> <span class="va">dat</span>,</span>
+<span>  pedigree <span class="op">=</span> <span class="va">ped</span>,</span>
+<span>  genotypes <span class="op">=</span> <span class="va">geno</span>,</span>
+<span>  markers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    marker <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m1"</span>, <span class="st">"m2"</span><span class="op">)</span>,</span>
+<span>    chr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1"</span>, <span class="st">"1"</span><span class="op">)</span>,</span>
+<span>    pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The marker-map check is metadata validation only. Genomic and QTL/eQTL models remain planned.</p>
 <p>The interface rule is deliberately simple: easy, easy, easy. Applied users are gold; the package should make the common quantitative-genetic model feel obvious before it exposes specialist machinery.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"itchyshin/hsquared"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -102,7 +115,7 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <h2 id="development">Development<a class="anchor" aria-label="anchor" href="#development"></a>
 </h2>
 <p>Run the local checks with:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>The project operating system lives in:</p>
 <ul>

@@ -72,6 +72,10 @@ This page separates what exists from what is planned.
   genotype, expression, marker, annotation, and environment inputs.
 - `summary(hs_data(...))` reports ID overlap and mismatch counts for
   phenotype, pedigree, genotype, and expression components.
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  validates supplied marker maps for marker ID, chromosome, and
+  non-negative numeric position columns. This is metadata validation
+  only.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
@@ -98,6 +102,8 @@ This page separates what exists from what is planned.
 - Automatic model construction from genotype, marker, expression,
   annotation, or environment components in
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md).
+- Allele coding, marker imputation, PLINK/VCF parsing, or marker
+  scanning from marker maps.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - Permanent environment, common environment, maternal/paternal,
