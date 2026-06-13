@@ -2235,3 +2235,34 @@ with private memory.
   - GitHub Actions R-CMD-check `27473026734`: passed.
   - GitHub Actions pkgdown `27473026735`: passed.
   - GitHub Pages build/deploy `27473061867`: passed.
+
+## 2026-06-13 Honesty pass + v0.1 promotion predicate
+
+- Goal (autonomous run, user away): finish the packages honestly. A 6-agent
+  audit found the v0.1 fit gate genuinely closed and not openable autonomously;
+  the safe high-value work was an honesty pass + binding the gate. Edits made,
+  then a 4-agent adversarial review (`safe_to_commit: false`) returned three
+  must-fixes + medium predicate-rigor gaps, all applied before commit.
+- Active lenses: Rose, Pat, Fisher (review workflow); Ada/Shannon. Spawned
+  subagents: yes — workflows `twin-finish-audit` (6) and `honesty-slice-verify`
+  (4); also `gate-source-scout` (4) for the maintainer decision menu.
+- Files: README.md, vignettes/articles/mission-control.Rmd,
+  vignettes/articles/model-status.Rmd, docs/design/01-v0.1-contract.md
+  (V0.1 Promotion Predicate + Uncertainty Scope).
+- Local checks:
+  - `pkgdown::build_articles(lazy = FALSE)` + `pkgdown::check_pkgdown()`:
+    rebuilt; "No problems found."
+  - `rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))`: 0 errors,
+    0 warnings, 1 note (benign new-submission/dev-version).
+  - Docs-only; no R code changed.
+- Twin-lane finding (verified, NOT fixed here — Julia lane owns it): the twin
+  `V1-AI-REML` evidence string (`HSquared.jl/src/validation_status.jl:97`) cites
+  a "250-animal simulation / observed-information ratio ~0.99" with no backing
+  test (grep: `250` only in that string; real test is an 8-animal
+  optimizer-agreement fixture). Must be fixed before any promotion cites that
+  row. A GitHub issue on the twin repo was denied by the permission classifier;
+  recorded on the coordination board + after-task report for the maintainer.
+- Remote checks for commit `0565948`:
+  - GitHub Actions R-CMD-check `27473795597`: passed.
+  - GitHub Actions pkgdown `27473795603`: passed.
+  - GitHub Pages build/deploy `27473836594`: passed.
