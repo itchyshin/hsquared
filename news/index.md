@@ -201,6 +201,12 @@
   [`summary()`](https://rdrr.io/r/base/summary.html)/[`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
   report environment-key diagnostics without constructing environmental
   model terms ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- `summary(hs_data(...))` and
+  [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
+  now report expression row counts, expression ID counts, feature
+  counts, unnamed feature columns, duplicate feature IDs, and expression
+  component type without fitting eQTL or omics models
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - `summary(hs_data(...))` now includes pedigree coverage and parent-link
   diagnostics when a pedigree component is supplied
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).

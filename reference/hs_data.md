@@ -82,8 +82,9 @@ An `hs_data` object.
 ## Details
 
 `summary(hs_data(...))` reports ID overlap diagnostics, pedigree
-diagnostics, and, when genotype or marker components are supplied,
-marker-map and genotype-column alignment diagnostics. When
-`annotation_id` is supplied, it reports expression-feature annotation
-coverage diagnostics. When `environment_id` is supplied, it also reports
-environment metadata coverage diagnostics.
+diagnostics, and, when expression, genotype, or marker components are
+supplied, expression-feature, marker-map, and genotype-column alignment
+diagnostics. When `annotation_id` is supplied, it reports
+expression-feature annotation coverage diagnostics. When
+`environment_id` is supplied, it also reports environment metadata
+coverage diagnostics.

@@ -24,7 +24,7 @@ This page separates what exists from what is planned.
 - [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
   reports
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
-  component presence, ID overlap, and pedigree,
+  component presence, ID overlap, and pedigree, expression-feature,
   marker-map/genotype-marker alignment, annotation-feature, and
   environment-key diagnostics without implying fitted support.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)

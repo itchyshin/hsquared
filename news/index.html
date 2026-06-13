@@ -82,6 +82,8 @@
 <li>
 <code><a href="../reference/hs_data.html">hs_data()</a></code> now accepts <code>environment_id</code> to check environment/covariate metadata coverage against phenotype records, and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>/<code><a href="../reference/data_status.html">data_status()</a></code> report environment-key diagnostics without constructing environmental model terms (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
 <li>
+<code>summary(hs_data(...))</code> and <code><a href="../reference/data_status.html">data_status()</a></code> now report expression row counts, expression ID counts, feature counts, unnamed feature columns, duplicate feature IDs, and expression component type without fitting eQTL or omics models (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
+<li>
 <code>summary(hs_data(...))</code> now includes pedigree coverage and parent-link diagnostics when a pedigree component is supplied (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
 <li>
 <code>summary(hs_data(...))</code> now includes an ID overlap table with phenotype, pedigree, genotype, expression, and mismatch counts (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
