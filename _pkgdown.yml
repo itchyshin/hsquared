@@ -20,6 +20,8 @@ navbar:
           href: articles/hsquared.html
         - text: Model status
           href: articles/model-status.html
+        - text: Formula grammar roadmap
+          href: articles/formula-grammar.html
         - text: Genomics and GPU roadmap
           href: articles/genomics-gpu-roadmap.html
 
@@ -53,4 +55,5 @@ articles:
     contents:
       - hsquared
       - articles/model-status
+      - articles/formula-grammar
       - articles/genomics-gpu-roadmap

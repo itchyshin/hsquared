@@ -699,3 +699,35 @@ with private memory.
   - Result: R-CMD-check `27458665520` passed in GitHub Actions.
   - Result: pkgdown `27458665528` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27458695360` passed.
+
+## 2026-06-13 Formula grammar roadmap article
+
+- Goal: make the pkgdown site easier for applied users by separating parsed
+  v0.1 syntax from planned quantitative-genetic, inheritance-kernel, genomic,
+  marker, multivariate, and factor-analytic syntax.
+- Active lenses: Pat, Boole, Rose, Grace.
+- Spawned subagents: none.
+- Scout/style input:
+  - Used `prose-style-review`: reader first, purpose before mechanics, and
+    implemented/partial/planned separation.
+  - Used `rose-pre-public-audit`: public claims must not imply fitted Phase 2+
+    support.
+- Implementation evidence:
+  - Added `vignettes/articles/formula-grammar.Rmd`.
+  - Added the article to the pkgdown navbar and article list.
+  - Added a NEWS entry.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Replaced a too-broad "Works today" heading with "Parsed today".
+  - Public wording says the article is a grammar map and that planned markers
+    are syntax reservations only.
+- Remote checks:
+  - Pending first push for this article slice.
