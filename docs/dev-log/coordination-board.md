@@ -50,6 +50,7 @@
 | 2026-06-13 | R | Curie/Gauss/Fisher/Hopper/Rose/Grace | main | sparse REML likelihood validation atom | pushed; CI/pkgdown/Pages passed | supplied-variance identity only; no optimizer | notify issue #7 and Julia twin |
 | 2026-06-13 | R/docs | Ada/Shannon/Boole/Hopper/Emmy/Grace/Rose/Pat | main | mission-control pkgdown article | complete; CI/pkgdown/Pages passed | dashboard only; no new fitting | choose next Phase 1 validation or bridge atom |
 | 2026-06-13 | R | Jason/Hopper/Lovelace/Curie/Fisher/Mrode/Rose/Grace | main | Mrode-style supplied-variance output fixture | pushed; CI/pkgdown/Pages passed | supplied variances only; no optimizer or ASReml parity | notify issue #7 and Julia twin |
+| 2026-06-13 | R | Ada/Shannon/Grace/Rose | main | Claude agent roster + readiness (.claude/agents x21, .claude/skills x11, CLAUDE.md) | pushed; CI/pkgdown/Pages passed | tooling/readiness only; no package or claim change | proceed to Phase B frontier (B1) |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

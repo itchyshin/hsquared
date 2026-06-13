@@ -2003,3 +2003,36 @@ with private memory.
   - GitHub Actions R-CMD-check `27467574922`: passed.
   - GitHub Actions pkgdown `27467574904`: passed.
   - GitHub Pages build/deploy `27467612204`: passed.
+
+## 2026-06-13 Claude agent roster and readiness layer
+
+- Goal: stand up the Claude-side operating layer for the R lane without forking
+  the Codex instruction set: convert the 21 `.codex/agents/*.toml` review lenses
+  to `.claude/agents/*.md`, add `CLAUDE.md` (imports `AGENTS.md`), and symlink
+  the 11 `.agents/skills` into `.claude/skills`.
+- Active lenses: Ada, Shannon, Grace, Rose. Spawned subagents: none (mechanical
+  conversion done solo).
+- Implementation evidence:
+  - 21 `.claude/agents/*.md` generated from the TOML via tomllib; frontmatter
+    `name` (kebab stem) + `description` preserved; `model_reasoning_effort=high`
+    -> `model: opus` (11 opus / 10 inherit), else inherit; body =
+    `developer_instructions`.
+  - `CLAUDE.md` imports `@AGENTS.md` plus Claude-specific notes (lane boundary,
+    rehydrate loop, lenses in `.claude/agents`, skills in `.claude/skills`,
+    local-checks-over-CI, commit convention).
+  - `.claude/skills/<name>` -> `../../.agents/skills/<name>` for all 11 skills
+    (all resolve to a `SKILL.md`).
+  - `.Rbuildignore` extended with `^\.claude$` and `^CLAUDE\.md$` so the new
+    top-level files do not trigger an R CMD check note.
+- Local checks:
+  - `Rscript -e "rcmdcheck::rcmdcheck(args=c('--no-manual','--no-build-vignettes'))"`:
+    `0 errors | 0 warnings | 0 notes` (confirms `.Rbuildignore` excludes the new
+    files; no non-standard top-level files note).
+  - `.claude/agents`: 21 files. `.claude/skills`: 11 resolving symlinks.
+- Boundary: tooling/readiness only; no package code, R API, claims, or bridge
+  contract changed. This is the R-lane twin of the Julia lane's agent roster
+  (separate repo, no lane collision).
+- Remote checks for commit `b43b682`:
+  - GitHub Actions R-CMD-check `27467772941`: passed.
+  - GitHub Actions pkgdown `27467772929`: passed.
+  - GitHub Pages build/deploy `27467811302`: passed.
