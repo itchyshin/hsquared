@@ -73,7 +73,8 @@ This page separates what exists from what is planned.
   `engine_control = list(target = "henderson_mme", variance_components = ...)`,
   that calls Julia `henderson_mme()` for tiny validation examples. It
   does not estimate variance components and does not provide a
-  log-likelihood.
+  log-likelihood. When the sibling Julia checkout exposes applicable
+  dense validation extractors, it can attach PEV/reliability fields.
 - An internal tiny validation fixture that pins R payload ordering,
   sparse `Z`, and live Julia `pedigree_inverse()` agreement for a
   three-animal pedigree when the local Julia bridge is available.
@@ -81,8 +82,9 @@ This page separates what exists from what is planned.
   and a sibling `HSquared.jl` checkout are available.
 - An internal supplied-variance Henderson MME validation fixture that
   compares an independent R reference solve with Julia `henderson_mme()`
-  for fixed effects, EBVs, fitted values, and h2 when a sibling
-  `HSquared.jl` checkout is available.
+  for fixed effects, EBVs, fitted values, h2, and optional dense
+  validation-path PEV/reliability when a sibling `HSquared.jl` checkout
+  is available.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBVs, PEV, reliability, fixed

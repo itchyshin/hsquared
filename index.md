@@ -19,13 +19,15 @@ still a narrow local validation path, not general animal-model support.
 The same opt-in bridge can also call `HSquared.jl::henderson_mme()` at
 explicitly supplied variance components for tiny validation examples.
 That path does not estimate variance components or provide a
-log-likelihood. The fitted-object extractor contract now includes
-variance components, heritability, EBVs, PEV, reliability, fixed
-effects, random effects, log-likelihood, AIC, prediction, and summaries.
-In the experimental local bridge, PEV/reliability are enriched from
-exported `HSquared.jl` dense validation extractors when available; this
-is still not production sparse reliability or general animal-model
-support. A lightweight
+log-likelihood. When the sibling Julia checkout exposes applicable dense
+validation extractors, the target also attaches PEV and reliability
+fields. The fitted-object extractor contract now includes variance
+components, heritability, EBVs, PEV, reliability, fixed effects, random
+effects, log-likelihood, AIC, prediction, and summaries. In the
+experimental local bridge, PEV/reliability are enriched from exported
+`HSquared.jl` dense validation extractors when available; this is still
+not production sparse reliability or general animal-model support. A
+lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows. The
@@ -97,7 +99,8 @@ This is a validation bridge target with supplied variances, not an
 optimizer. Current validation atoms include tiny deterministic `Ainv`
 checks, an optional Mrode9/nadiv pedigree-Ainv comparator, and a
 supplied-variance Henderson MME fixture that compares R reference fixed
-effects, EBVs, fitted values, and h2 with Julia when available. Use
+effects, EBVs, fitted values, h2, and optional dense validation-path
+PEV/reliability with Julia when available. Use
 [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
 to inspect validation evidence and planned comparator lanes from R.
 

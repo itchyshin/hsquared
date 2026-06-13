@@ -45,6 +45,15 @@
   without claiming variance-component estimation or production fitting
   ([\#6](https://github.com/itchyshin/hsquared/issues/6),
   [\#7](https://github.com/itchyshin/hsquared/issues/7)).
+- The supplied-variance Henderson MME bridge target now attaches dense
+  validation-path PEV and reliability fields when the sibling
+  `HSquared.jl` checkout exposes applicable
+  [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
+  and
+  [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  methods for `HendersonMMEResult`
+  ([\#6](https://github.com/itchyshin/hsquared/issues/6),
+  [\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - The experimental local Julia bridge now enriches tiny `hsquared_fit`
   results with dense validation-path PEV and reliability fields when the
   sibling `HSquared.jl` checkout exposes
