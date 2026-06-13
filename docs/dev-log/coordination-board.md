@@ -74,3 +74,4 @@
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
+| 2026-06-13 | maintainer sign-off | user (Ada/Shannon record) | main | v0.1 gate decisions SIGNED OFF: gryphon anchor + sommer comparator (VC ~1-2%, h2 ~0.01-0.02, EBV r>0.999) + DGP thresholds (>=100 reps, 0 within bias±2MCSE, acc>=0.5) | recorded in `01-v0.1-contract.md` Gate decisions; gryphon atom band tightened to signed-off values | the three maintainer decisions are now binding numeric targets; default-fit flip still needs twin rows + engine production-readiness | twin: meet these targets via the engine (gryphon via supplied A) and flip V1-MRODE-FIT/V1-COMPARATORS/estimator rows |

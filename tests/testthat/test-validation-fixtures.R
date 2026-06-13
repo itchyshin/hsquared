@@ -843,9 +843,12 @@ test_that("hsquared's R REML reference recovers the published gryphon estimates"
       error = function(e) NULL
     )
     if (!is.null(m)) {
+      # Maintainer-signed-off V1-COMPARATORS band (2026-06-13): variance
+      # components within ~1-2% relative, h2 within ~0.01-0.02 absolute.
       sv <- sort(as.numeric(unlist(m$theta)))
-      expect_equal(sv[1], min(va, ve), tolerance = 0.05)
-      expect_equal(sv[2], max(va, ve), tolerance = 0.05)
+      expect_equal(sv[1], min(va, ve), tolerance = 0.02)
+      expect_equal(sv[2], max(va, ve), tolerance = 0.02)
+      expect_lt(abs(sv[1] / sum(sv) - va / (va + ve)), 0.02)
     }
   }
 })

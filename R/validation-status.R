@@ -117,8 +117,11 @@ hs_validation_status_evidence <- function() {
     paste(
       "A skip-guarded test recovers the published gryphon birth-weight REML",
       "variance components and h2 (Wilson et al. 2010) with hsquared's",
-      "independent pure-R REML reference, and optionally agrees with the external",
-      "sommer package, on the gryphon dataset (CRAN package enhancer)."
+      "independent pure-R REML reference, and agrees with the external sommer",
+      "package within the signed-off band (VC ~1-2%, h2 ~0.01-0.02), on the",
+      "gryphon dataset (CRAN package enhancer). Gryphon is the maintainer",
+      "(2026-06-13) signed-off V1-MRODE-FIT anchor and sommer the V1-COMPARATORS",
+      "comparator."
     ),
     paste(
       "An ADEMP recovery study (data-raw/dgp-recovery-study.R) simulates from",
@@ -130,8 +133,9 @@ hs_validation_status_evidence <- function() {
       "near-boundary cell (h2 = 0.1) shows mild upward bias, 94% convergence, and",
       "5% boundary pinning. Recovery also holds for the contract model with a",
       "fixed effect (y ~ x + animal): h2 near-unbiased and the fixed effect",
-      "recovered (b_x 0.99 vs 1.0). A skip-guarded pure-R regression test guards",
-      "a small-N case."
+      "recovered (b_x 0.99 vs 1.0). Meets the maintainer-signed-off item-3",
+      "thresholds (>= 100 reps, 0 within bias +/- 2*MCSE, mean cor(EBV, true) >=",
+      "0.5). A skip-guarded pure-R regression test guards a small-N case."
     ),
     "None yet.",
     "None yet.",

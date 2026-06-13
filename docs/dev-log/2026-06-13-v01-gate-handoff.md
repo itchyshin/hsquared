@@ -28,15 +28,15 @@ Also blocking, separate from the four items:
 
 ## The two parties
 
-**Maintainer — three sign-offs** (all backed by committed, verified evidence;
-the autonomous run did not pick them):
+**Maintainer — three sign-offs — ✅ SIGNED OFF 2026-06-13** (adopting the
+recommendations; recorded in `01-v0.1-contract.md` → Gate decisions):
 
-1. Anchor for `V1-MRODE-FIT` — recommended: gryphon (data in CRAN `enhancer`;
-   confirm Wilson 2010 headline numbers).
-2. Comparator + agreement band for `V1-COMPARATORS` — recommended: sommer,
-   clean-convergence gated; VC ~1–2 %, h² ~0.01–0.02, EBV r > 0.999.
-3. DGP-recovery pass thresholds (replicates, bias ± MCSE cap, EBV-accuracy
-   floor).
+1. Anchor for `V1-MRODE-FIT` — **gryphon** (data in CRAN `enhancer`; Wilson 2010
+   VA=3.3954, VE=3.8286, h²=0.470). Engine must fit via supplied `A_gryphon`.
+2. Comparator + band for `V1-COMPARATORS` — **sommer**, clean-convergence gated;
+   VC ~1–2 %, h² ~0.01–0.02, EBV r > 0.999.
+3. DGP-recovery thresholds — **≥ 100 reps, 0 within bias ± 2·MCSE, mean
+   cor(EBV, true) ≥ 0.5** (the recovery study already meets these).
 
 **Twin thread (`HSquared.jl`)** — currently on Phase-2 genomics, not the gate:
 
