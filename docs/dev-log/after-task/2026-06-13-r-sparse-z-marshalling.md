@@ -40,6 +40,14 @@ Local checks:
 - `Rscript -e "pkgdown::check_pkgdown()"`: `No problems found.`
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
 
+Remote checks:
+
+- Commit: `2a9ba37 Use sparse Z bridge marshalling`.
+- GitHub Actions R-CMD-check `27457225007`: passed.
+- GitHub Actions pkgdown `27457225023`: passed.
+- GitHub Pages build/deploy `27457267046`: passed, with a hosted-runner
+  Node.js 20 deprecation annotation from the Pages actions stack.
+
 ## Rose Audit
 
 Verdict: clean with limitations.

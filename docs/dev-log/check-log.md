@@ -406,6 +406,15 @@ with private memory.
   - Result: `No problems found.`
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
+- Remote checks:
+  - Commit: `2a9ba37 Use sparse Z bridge marshalling`.
+  - `gh run watch 27457225007 --exit-status`
+  - Result: R-CMD-check passed in GitHub Actions.
+  - `gh run watch 27457225023 --exit-status`
+  - Result: pkgdown passed in GitHub Actions.
+  - `gh run watch 27457267046 --exit-status`
+  - Result: GitHub Pages build and deployment passed. The run emitted a
+    GitHub-hosted Node.js 20 deprecation annotation for Pages actions.
 - Rose wording sweep:
   - Public wording says sparse `Z` marshalling, not production sparse fitting.
   - Public wording does not claim large-data readiness, Mrode validation, or
