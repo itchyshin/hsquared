@@ -2407,7 +2407,14 @@ with private memory.
   fit, gryphon, DGP, sommer all run) — 0 failures, 0 warnings, 0 skipped;
   `rcmdcheck(--as-cran)` 0 errors, 0 warnings, 1 note (benign new-submission);
   both pkgdown articles render.
-- Local commit `fd7975e` (not yet pushed).
+- Local commit `fd7975e` (flip) + `2437e09` (records), not yet pushed.
+- Follow-on honesty sweep (separate commit): corrected the last stale
+  "validates-and-stops" / "validation-only" claims in living surfaces that the
+  flip should have touched — `ROADMAP.md` (Phase 1 status + frontier framing),
+  `NEWS.md` (added the headline flip entry + fixed two now-false bullets),
+  `docs/design/03-engine-contract.md`, and
+  `vignettes/articles/formula-grammar.Rmd`. Repo-wide grep for stale pre-flip
+  phrasing in living surfaces is clean; both edited articles render.
 - Remote checks: PENDING. Push is gated on the twin's
   `v01-gate-validation-status` landing on Julia `main` (currently `94e695b`);
   remote CI evidence will be appended after the push.

@@ -134,9 +134,10 @@ Ownership and boundary:
 
 - The estimator is Julia-owned; R only surfaces it. R tracks the twin by reading
   `HSquared.jl` exports and `validation_status()`, never by editing Julia source.
-- Experimental and opt-in: the default `hsquared()` still validates and stops.
-  Promote to a public-facing claim only once the twin's `validation_status()`
-  marks `fit_sparse_reml` green (currently partial).
+- Experimental and opt-in: the default `hsquared()` fits via `ai_reml`, not
+  `sparse_reml`. This sparse-REML path stays opt-in (`engine = "julia"`,
+  `target = "sparse_reml"`). Promote it to a public-facing claim only once the
+  twin's `validation_status()` marks `fit_sparse_reml` green (currently partial).
 - Not variance-component estimation via the public R interface, not production
   sparse fitting, not AI-REML, and not an ASReml-parity claim. Live tests are
   skip-guarded when JuliaCall, Julia, or the sibling checkout is unavailable.

@@ -30,11 +30,16 @@ Issue ledger:
 
 ## Phase 1: Simple Gaussian Animal Model
 
-Status: started.
+Status: v0.1 default fit landed. The default `hsquared()` call fits the
+univariate Gaussian animal model `y ~ fixed + animal(1 | id, pedigree = ped)`
+by REML (average-information) through the `HSquared.jl` engine; validated by
+known-truth recovery, the published gryphon anchor, and sommer agreement. ML is
+not implemented (REML only). Broader Phase 1 hardening (large/real pedigrees,
+engine boundary stability) continues.
 
-- R formula: `animal(1 | id, pedigree = ped)` parser is partial.
+- R formula: `animal(1 | id, pedigree = ped)` parser; fits by default.
 - Julia sparse pedigree parser and Ainv.
-- Gaussian ML/REML engine.
+- Gaussian REML engine (ML deferred).
 - EBVs/BLUPs, variance components, heritability.
 - First tiny and Mrode-style validation examples.
 
@@ -42,16 +47,19 @@ Standing Phase 1+ rule: check local sister packages and relevant statistical
 literature before changing grammar, engine contracts, validation claims, or
 roadmap promises.
 
-### Next work queue (R lane, Phase 1 frontier)
+### Phase 1 frontier (completed arc + next)
 
-The active R-lane frontier is surfacing the Julia twin's experimental sparse
-REML estimator (`HSquared.fit_sparse_reml`) through R behind an opt-in fence,
-reusing existing local sister-package code rather than reinventing it:
+The default fit now uses the average-information REML estimator
+(`HSquared.fit_ai_reml`). An earlier arc (B2-B5, complete) surfaced the Julia
+twin's separate experimental sparse REML estimator
+(`HSquared.fit_sparse_reml`) through R behind an opt-in fence, reusing existing
+local sister-package code rather than reinventing it:
 
 - B2 — opt-in fenced sparse-REML bridge path (`engine = "julia"`,
-  `engine_control = list(target = "sparse_reml", ...)`); default `hsquared()`
-  still validates-and-stops. Adapt the R-to-Julia bridge discipline already
-  proven in `gllvmTMB/R/julia-bridge.R` and `drmTMB/R/julia-bridge.R`.
+  `engine_control = list(target = "sparse_reml", ...)`); this stays opt-in and
+  is not the default (the default fits via `ai_reml`). Adapted the R-to-Julia
+  bridge discipline already proven in `gllvmTMB/R/julia-bridge.R` and
+  `drmTMB/R/julia-bridge.R`.
 - B3 — estimated-vs-supplied variance provenance in `fit_diagnostics()` and
   `validation_status()`.
 - B4 — sparse REML estimate-recovery validation fixture (optimizer improves the
