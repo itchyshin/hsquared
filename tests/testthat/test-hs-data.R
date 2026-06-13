@@ -289,6 +289,71 @@ test_that("hs_data accepts expression IDs from an ID column", {
   expect_equal(data$id_map$expression_without_phenotypes, "s3")
 })
 
+test_that("hs_data reports expression annotation diagnostics", {
+  phenotypes <- data.frame(id = c("s1", "s2"), y = c(1, 2))
+  expression <- matrix(
+    c(1, 2, 3, 4),
+    nrow = 2,
+    dimnames = list(c("s1", "s2"), c("gene1", "gene3"))
+  )
+  annotation <- data.frame(
+    gene_id = c("gene1", "gene2", "gene2"),
+    chromosome = c("1", "1", "2")
+  )
+
+  data <- hs_data(
+    phenotypes = phenotypes,
+    expression = expression,
+    annotation = annotation,
+    annotation_id = "gene_id"
+  )
+
+  expect_s3_class(data$annotation_spec, "hs_annotation_spec")
+  expect_equal(data$annotation_spec$annotation_features, c("gene1", "gene2"))
+  expect_equal(data$annotation_spec$expression_features, c("gene1", "gene3"))
+  expect_equal(data$annotation_spec$expression_without_annotation, "gene3")
+  expect_equal(data$annotation_spec$annotation_without_expression, "gene2")
+  expect_equal(data$annotation_spec$duplicate_annotation_features, "gene2")
+
+  annotation_status <- summary(data)$annotation_status
+  expect_equal(
+    annotation_status$metric,
+    c(
+      "annotation_rows",
+      "annotation_key",
+      "annotation_features",
+      "expression_features",
+      "expression_features_with_annotation",
+      "annotation_only_features",
+      "expression_features_without_annotation",
+      "duplicate_annotation_features"
+    )
+  )
+  expect_equal(
+    annotation_status$value,
+    c("3", "gene_id", "2", "2", "1", "1", "1", "1")
+  )
+
+  status <- data_status(data)
+  expect_equal(status$annotation_status$value[[2L]], "gene_id")
+  expect_equal(status$annotation_status$value[[7L]], "1")
+})
+
+test_that("hs_data reports unkeyed annotation tables without overchecking", {
+  data <- hs_data(
+    phenotypes = data.frame(id = "s1", y = 1),
+    annotation = data.frame(gene = "gene1", chr = "1")
+  )
+
+  annotation_status <- summary(data)$annotation_status
+  expect_equal(annotation_status$value[[1L]], "1")
+  expect_equal(
+    annotation_status$value[[2L]],
+    "not_checked_no_annotation_id"
+  )
+  expect_equal(annotation_status$value[[3L]], "not_available")
+})
+
 test_that("hs_data rejects missing phenotype IDs and incomplete pedigree IDs", {
   expect_error(
     hs_data(data.frame(id = c("a", NA), y = c(1, 2))),
@@ -337,9 +402,81 @@ test_that("hs_data rejects unsupported component shapes", {
   expect_error(
     hs_data(
       phenotypes = data.frame(id = "a", y = 1),
+      annotation = matrix(1)
+    ),
+    "`annotation` must be a data frame",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", y = 1),
       environment = matrix(1)
     ),
     "`environment` must be a data frame",
+    fixed = TRUE
+  )
+})
+
+test_that("hs_data validates annotation key inputs", {
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "s1", y = 1),
+      annotation_id = "gene_id"
+    ),
+    "`annotation_id` can be supplied only when `annotation` is supplied",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "s1", y = 1),
+      annotation = data.frame(gene_id = "gene1"),
+      annotation_id = ""
+    ),
+    "`annotation_id` must be one non-empty column name",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "s1", y = 1),
+      annotation = data.frame(feature = "gene1"),
+      annotation_id = "gene_id"
+    ),
+    "`annotation_id` column `gene_id` was not found in `annotation`",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "s1", y = 1),
+      expression = matrix(1, nrow = 1, dimnames = list("s1", NULL)),
+      annotation = data.frame(gene_id = "gene1"),
+      annotation_id = "gene_id"
+    ),
+    "`expression` matrix must have feature IDs as column names",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "s1", y = 1),
+      expression = data.frame(id = "s1"),
+      annotation = data.frame(gene_id = "gene1"),
+      annotation_id = "gene_id"
+    ),
+    "`expression` must contain at least one feature column",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "s1", y = 1),
+      annotation = data.frame(gene_id = NA),
+      annotation_id = "gene_id"
+    ),
+    "`annotation` column `gene_id` cannot contain missing or empty values",
     fixed = TRUE
   )
 })

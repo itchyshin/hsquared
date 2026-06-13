@@ -29,6 +29,7 @@
 * Added a local-only experimental JuliaCall smoke path for the tiny v0.1 payload when a sibling `HSquared.jl` checkout is available. This validates bridge shape against Julia `pedigree_inverse()` and `fit_animal_model()` but is not yet the public `hsquared()` fitting path (#6).
 * Added the first `hsquared_fit` object and extractor contract, including `variance_components()`, `heritability()`, `breeding_values()`, `fixef()`, `ranef()`, `logLik()`, `AIC()`, `predict()`, and `summary()` methods over internal fit objects. These are contract plumbing only until the Julia engine returns real fits (#5).
 * Added `hs_data()` as a lightweight R data container for phenotype, pedigree, genotype, marker, expression, annotation, and environment inputs. It records ID maps for future integrated genomic/QTL/eQTL workflows, but does not fit models (#8).
+* `hs_data()` now accepts `annotation_id` to check expression feature columns against annotation rows, and `summary()`/`data_status()` report annotation-feature diagnostics without fitting eQTL or omics models (#8).
 * `hs_data()` now accepts `environment_id` to check environment/covariate metadata coverage against phenotype records, and `summary()`/`data_status()` report environment-key diagnostics without constructing environmental model terms (#8).
 * `summary(hs_data(...))` now includes pedigree coverage and parent-link diagnostics when a pedigree component is supplied (#8).
 * `summary(hs_data(...))` now includes an ID overlap table with phenotype, pedigree, genotype, expression, and mismatch counts (#8).

@@ -27,7 +27,8 @@ available; this is still not production sparse reliability or general
 animal-model support. A lightweight
 `hs_data()` container now records phenotype, pedigree, genotype, expression,
 marker, annotation, and environment inputs for future integrated workflows,
-including optional environment-key diagnostics through `environment_id`.
+including optional expression-feature annotation diagnostics through
+`annotation_id` and environment-key diagnostics through `environment_id`.
 The package also reserves planned formula markers for genomic/QTL terms and
 standard quantitative-genetic extensions such as permanent environment,
 maternal/paternal effects, dominance, epistasis, cytoplasmic inheritance,
@@ -128,8 +129,17 @@ bundle <- hs_data(
 )
 ```
 
-Environment metadata can be keyed to phenotype records without fitting an
-environmental model:
+Expression feature annotations and environment metadata can also be checked
+without fitting eQTL, omics, or environmental models:
+
+```r
+bundle <- hs_data(
+  phenotypes = dat,
+  expression = expr,
+  annotation = genes,
+  annotation_id = "gene_id"
+)
+```
 
 ```r
 bundle <- hs_data(
@@ -140,12 +150,14 @@ bundle <- hs_data(
 )
 ```
 
-The marker-map and environment-key checks are metadata validation only.
-Genomic, QTL/eQTL, and environment-effect models remain planned.
+The marker-map, annotation-feature, and environment-key checks are metadata
+validation only. Genomic, QTL/eQTL, omics, and environment-effect models remain
+planned.
 `summary(bundle)` and `data_status(bundle)` report pedigree coverage, founder
 and parent-link counts, marker-map size, genotype marker-column count,
 chromosome count, coordinate range, whether the genotype-marker alignment was
-checked, and environment metadata coverage when `environment_id` is supplied.
+checked, expression-feature annotation coverage when `annotation_id` is
+supplied, and environment metadata coverage when `environment_id` is supplied.
 When both `genotypes` and `markers` are supplied, genotype marker column names
 must match marker-map IDs exactly.
 The animal-model parser uses the bundle pedigree by default, so

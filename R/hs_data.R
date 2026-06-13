@@ -19,6 +19,9 @@
 #'   `position`, `pos`, `bp`, or `base_pair`.
 #' @param expression Optional expression matrix or data frame.
 #' @param annotation Optional annotation data frame.
+#' @param annotation_id Optional column name used to match `annotation` rows to
+#'   expression feature columns. When supplied, the column must exist in
+#'   `annotation`.
 #' @param environment Optional environment/covariate data frame.
 #' @param environment_id Optional column name used to match `environment` rows
 #'   to phenotype records. When supplied, the column must exist in both
@@ -30,8 +33,10 @@
 #' @details
 #' `summary(hs_data(...))` reports ID overlap diagnostics, pedigree diagnostics,
 #' and, when genotype or marker components are supplied, marker-map and
-#' genotype-column alignment diagnostics. When `environment_id` is supplied, it
-#' also reports environment metadata coverage diagnostics.
+#' genotype-column alignment diagnostics. When `annotation_id` is supplied, it
+#' reports expression-feature annotation coverage diagnostics. When
+#' `environment_id` is supplied, it also reports environment metadata coverage
+#' diagnostics.
 #' @export
 hs_data <- function(
   phenotypes,
@@ -40,6 +45,7 @@ hs_data <- function(
   markers = NULL,
   expression = NULL,
   annotation = NULL,
+  annotation_id = NULL,
   environment = NULL,
   environment_id = NULL,
   id = "id"
@@ -65,7 +71,12 @@ hs_data <- function(
     id,
     marker_spec
   )
-  hs_validate_optional_data_frame(annotation, "`annotation`")
+  annotation_spec <- hs_validate_annotation(
+    annotation,
+    expression,
+    id,
+    annotation_id
+  )
   environment_spec <- hs_validate_environment(
     environment,
     phenotypes,
@@ -82,6 +93,8 @@ hs_data <- function(
       genotype_marker_spec = genotype_marker_spec,
       expression = expression,
       annotation = annotation,
+      annotation_id = annotation_id,
+      annotation_spec = annotation_spec,
       environment = environment,
       environment_id = environment_id,
       environment_spec = environment_spec,
@@ -133,9 +146,11 @@ print.hs_data <- function(x, ...) {
 #' `data_status()` gives a direct user-facing view of the checks stored in an
 #' [hs_data()] object. It reports component presence, ID overlap diagnostics,
 #' pedigree diagnostics, and marker-map/genotype-marker alignment diagnostics
-#' when those inputs are supplied. When `environment_id` is supplied, it also
-#' reports environment metadata coverage diagnostics. It does not fit models,
-#' build genomic relationship matrices, or add environment-effect terms.
+#' when those inputs are supplied. When `annotation_id` is supplied, it reports
+#' expression-feature annotation coverage diagnostics. When `environment_id` is
+#' supplied, it also reports environment metadata coverage diagnostics. It does
+#' not fit models, build genomic relationship matrices, add eQTL terms, or add
+#' environment-effect terms.
 #'
 #' @param data An [hs_data()] object.
 #'
@@ -162,6 +177,7 @@ data_status.hs_data <- function(data) {
       id_overlap = out$id_overlap,
       pedigree_status = out$pedigree_status,
       marker_status = out$marker_status,
+      annotation_status = out$annotation_status,
       environment_status = out$environment_status
     ),
     class = "hs_data_status"
@@ -185,6 +201,12 @@ print.hs_data_status <- function(x, ...) {
   } else {
     cat("  marker status:\n", sep = "")
     print.data.frame(x$marker_status, row.names = FALSE)
+  }
+  if (is.null(x$annotation_status)) {
+    cat("  annotation status: not available\n", sep = "")
+  } else {
+    cat("  annotation status:\n", sep = "")
+    print.data.frame(x$annotation_status, row.names = FALSE)
   }
   if (is.null(x$environment_status)) {
     cat("  environment status: not available\n", sep = "")
@@ -215,6 +237,7 @@ summary.hs_data <- function(object, ...) {
       id_overlap = hs_data_id_overlap(object$id_map),
       pedigree_status = hs_data_pedigree_status(object),
       marker_status = hs_data_marker_status(object),
+      annotation_status = hs_data_annotation_status(object),
       environment_status = hs_data_environment_status(object)
     ),
     class = "summary_hs_data"
@@ -235,6 +258,10 @@ print.summary_hs_data <- function(x, ...) {
   if (!is.null(x$marker_status)) {
     cat("  marker status:\n", sep = "")
     print.data.frame(x$marker_status, row.names = FALSE)
+  }
+  if (!is.null(x$annotation_status)) {
+    cat("  annotation status:\n", sep = "")
+    print.data.frame(x$annotation_status, row.names = FALSE)
   }
   if (!is.null(x$environment_status)) {
     cat("  environment status:\n", sep = "")
@@ -383,6 +410,61 @@ hs_data_marker_status <- function(object) {
       hs_optional_summary_value(position_min),
       hs_optional_summary_value(position_max),
       alignment
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+hs_data_annotation_status <- function(object) {
+  if (is.null(object$annotation)) {
+    return(NULL)
+  }
+
+  if (is.null(object$annotation_spec)) {
+    return(data.frame(
+      metric = c(
+        "annotation_rows",
+        "annotation_key",
+        "annotation_features",
+        "expression_features",
+        "expression_features_with_annotation",
+        "annotation_only_features",
+        "expression_features_without_annotation",
+        "duplicate_annotation_features"
+      ),
+      value = c(
+        as.character(nrow(object$annotation)),
+        "not_checked_no_annotation_id",
+        rep("not_available", 6L)
+      ),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  spec <- object$annotation_spec
+  data.frame(
+    metric = c(
+      "annotation_rows",
+      "annotation_key",
+      "annotation_features",
+      "expression_features",
+      "expression_features_with_annotation",
+      "annotation_only_features",
+      "expression_features_without_annotation",
+      "duplicate_annotation_features"
+    ),
+    value = c(
+      as.character(nrow(object$annotation)),
+      spec$key,
+      as.character(length(spec$annotation_features)),
+      as.character(length(spec$expression_features)),
+      as.character(length(intersect(
+        spec$expression_features,
+        spec$annotation_features
+      ))),
+      as.character(length(spec$annotation_without_expression)),
+      as.character(length(spec$expression_without_annotation)),
+      as.character(length(spec$duplicate_annotation_features))
     ),
     stringsAsFactors = FALSE
   )
@@ -566,6 +648,113 @@ hs_validate_optional_data_frame <- function(x, label) {
     stop(label, " must be a data frame when supplied.", call. = FALSE)
   }
   invisible(TRUE)
+}
+
+hs_validate_annotation <- function(annotation, expression, id, annotation_id) {
+  hs_validate_optional_data_frame(annotation, "`annotation`")
+
+  if (is.null(annotation)) {
+    if (!is.null(annotation_id)) {
+      stop(
+        "`annotation_id` can be supplied only when `annotation` is supplied.",
+        call. = FALSE
+      )
+    }
+    return(NULL)
+  }
+  if (is.null(annotation_id)) {
+    return(NULL)
+  }
+  if (
+    !is.character(annotation_id) ||
+      length(annotation_id) != 1L ||
+      is.na(annotation_id) ||
+      annotation_id == ""
+  ) {
+    stop(
+      "`annotation_id` must be one non-empty column name when supplied.",
+      call. = FALSE
+    )
+  }
+  if (!annotation_id %in% names(annotation)) {
+    stop(
+      "`annotation_id` column `",
+      annotation_id,
+      "` was not found in `annotation`.",
+      call. = FALSE
+    )
+  }
+
+  annotation_features <- hs_checked_component_keys(
+    annotation[[annotation_id]],
+    "`annotation`",
+    annotation_id
+  )
+  expression_features <- hs_expression_feature_ids(
+    expression,
+    id,
+    require_names = TRUE
+  )
+  duplicate_annotation_features <- unique(annotation_features[
+    duplicated(annotation_features)
+  ])
+
+  structure(
+    list(
+      key = annotation_id,
+      annotation_features = unique(annotation_features),
+      expression_features = unique(expression_features),
+      expression_without_annotation = setdiff(
+        unique(expression_features),
+        unique(annotation_features)
+      ),
+      annotation_without_expression = setdiff(
+        unique(annotation_features),
+        unique(expression_features)
+      ),
+      duplicate_annotation_features = duplicate_annotation_features
+    ),
+    class = "hs_annotation_spec"
+  )
+}
+
+hs_expression_feature_ids <- function(
+  expression,
+  id,
+  require_names = FALSE
+) {
+  if (is.null(expression)) {
+    return(character())
+  }
+  if (is.matrix(expression)) {
+    feature_ids <- colnames(expression)
+    if (is.null(feature_ids)) {
+      if (isTRUE(require_names)) {
+        stop(
+          "`expression` matrix must have feature IDs as column names when ",
+          "`annotation_id` is supplied.",
+          call. = FALSE
+        )
+      }
+      return(rep("", ncol(expression)))
+    }
+    return(feature_ids)
+  }
+  if (is.data.frame(expression)) {
+    feature_ids <- names(expression)
+    if (id %in% feature_ids) {
+      feature_ids <- setdiff(feature_ids, id)
+    }
+    if (length(feature_ids) == 0L && isTRUE(require_names)) {
+      stop(
+        "`expression` must contain at least one feature column when ",
+        "`annotation_id` is supplied.",
+        call. = FALSE
+      )
+    }
+    return(feature_ids)
+  }
+  character()
 }
 
 hs_validate_environment <- function(environment, phenotypes, environment_id) {

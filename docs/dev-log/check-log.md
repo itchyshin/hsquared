@@ -1384,6 +1384,43 @@ with private memory.
   - Issue #8 updated:
     <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698232188>.
 
+## 2026-06-13 hs_data annotation-feature diagnostics
+
+- Goal: add `hs_data()` diagnostics for expression feature columns keyed to
+  annotation metadata rows.
+- Active lenses: Emmy, Jason, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `annotation_id` to `hs_data()`.
+  - Added `hs_annotation_spec` metadata for keyed annotation tables.
+  - Added `summary(hs_data(...))$annotation_status`.
+  - Added `data_status(...)$annotation_status` and print support.
+  - Added tests for keyed annotation coverage, unkeyed annotation tables, and
+    invalid annotation-key inputs.
+  - Updated README, model-status article, capability status, validation debt,
+    public claims, NEWS, roxygen docs, and board.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: documentation updated, formatting completed, and focused tests
+    passed with `94 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `388 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "annotation.*model|annotation.*fit|annotation_id.*fit|annotation_id.*model|eQTL.*implemented|omics.*implemented|expression.*model|expression.*fit|automatic.*annotation|genomic.*implemented|QTL.*implemented|GLLVM.*implemented|GPU.*implemented|supports eQTL|supports omics|supports QTL|ASReml parity|speedup|fast|faster" README.md NEWS.md R man tests vignettes docs/design docs/dev-log _pkgdown.yml`.
+  - Result: hits were planned, blocked, negated, or prior scan/report records.
+  - Public wording says annotation-feature diagnostics only.
+  - Public wording does not claim eQTL fitting, omics models, automatic
+    annotation joins, marker/QTL/GWAS fitting, GLLVM support, GPU execution,
+    ASReml parity, or speedup.
+
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 
 - Goal: add an internal supplied-variance Henderson mixed-model-equation
