@@ -2354,3 +2354,15 @@ with private memory.
   - GitHub Actions R-CMD-check `27476005389`: passed.
   - GitHub Actions pkgdown: passed.
   - GitHub Pages build/deploy `27476045834`: passed.
+
+## 2026-06-13 Fixed-effect DGP recovery (contract model)
+
+- Goal: verify recovery holds for `y ~ x + animal(1|id, pedigree=ped)` (the v0.1
+  contract structure with a fixed effect), exercising the multi-column X path.
+- Result (100 reps, 100% converged): h2 near-unbiased (bias +0.0014, MCSE
+  0.0081), EBV acc 0.74, fixed effect recovered (b_x 0.99 vs 1.0).
+- `rcmdcheck(--as-cran)`: 0/0/1 (benign). `air format`: clean.
+- Remote checks for commit `fdd8705`:
+  - GitHub Actions R-CMD-check `27476335755`: passed.
+  - GitHub Actions pkgdown `27476335754`: passed.
+  - GitHub Pages build/deploy `27476377904`: passed.
