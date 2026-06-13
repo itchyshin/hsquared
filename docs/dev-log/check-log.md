@@ -1935,3 +1935,71 @@ with private memory.
   - `https://itchyshin.github.io/HSquared.jl/dev/mission-control.html`:
     HTTP 200 and contains the Julia mission-control page title and
     blocked-claims dashboard section.
+
+## 2026-06-13 Mrode-style supplied-variance fixture
+
+- Goal: mirror the Julia twin's Mrode-style supplied-variance validation
+  fixture on the R side without claiming general fitting, variance-component
+  estimation, or ASReml parity.
+- Active lenses: Ada, Shannon, Jason, Hopper, Lovelace, Curie, Fisher, Mrode,
+  Rose, Grace.
+- Spawned subagents: none.
+- Scout evidence:
+  - `HSquared.jl/test/runtests.jl` Phase 1 Mrode-style fixture.
+  - `HSquared.jl/src/likelihood.jl` likelihood/MME boundaries.
+  - `gllvmTMB/R/julia-bridge.R` R-to-Julia result-shape discipline.
+  - `DRM.jl/src/comparison.jl` REML comparability guardrail.
+- Implementation evidence:
+  - Added internal `hs_mrode_supplied_variance_validation_fixture()`.
+  - Added independent R reference helpers for MME PEV, reliability, and dense
+    Gaussian ML/REML log-likelihood at supplied variance components.
+  - Added pure R and optional live JuliaCall tests for Ainv, fixed effects,
+    EBVs, fitted values, PEV, reliability, h2, ML logLik, and dense/sparse REML
+    logLik.
+  - Updated `validation_status()`, README, NEWS, model-status article,
+    mission-control article, validation canon, capability status, validation
+    debt register, and public claims register.
+- Local checks:
+  - `air format . && Rscript -e "devtools::test(filter = 'validation-fixtures|mrode-validation|phase0-api|julia-bridge')"`
+  - Initial result: two failures from incidental row names inherited from named
+    PEV/reliability vectors.
+  - Fix: strip incidental names in the R reference helper.
+  - Result after fix: passed with `192 pass`, `0 fail`, `0 warnings`, and
+    `0 skips`; live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `460 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt, including `mission-control.html` and
+    `model-status.html`; pkgdown reported `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors`, `0 warnings`, and `0 notes`.
+  - `git diff --check`
+  - Result: clean.
+  - Rendered article spot-check:
+    `rg -n "Mrode-style supplied-variance|estimated-variance Mrode|full Mrode" pkgdown-site/articles/model-status.html pkgdown-site/articles/mission-control.html`
+  - Result: found the new model-status and mission-control wording plus the
+    blocked estimated-variance Mrode claim.
+  - Targeted Rose search:
+    `rg -n "Mrode validation complete|animal-model fitting works|REML estimation works|ASReml parity is established|variance-component estimation is implemented|GPU execution is available|QTL/eQTL.*available" README.md NEWS.md docs/design vignettes || true`
+  - Result: no matches.
+- Rose wording boundary:
+  - Allowed: Mrode-style supplied-variance validation fixture with pinned
+    Ainv, fixed effects, EBVs, fitted values, PEV, reliability, h2, ML logLik,
+    and dense/sparse REML logLik.
+  - Blocked: general animal-model fitting, variance-component estimation,
+    AI-REML, full Mrode fitted-output validation, ASReml parity, production
+    sparse reliability, GPU execution, or speedup.
+- Closeout verification (Claude, R lane), takeover of the sister-thread slice:
+  - Independent pure-R re-derivation (pedigree -> A -> Ainv -> Henderson MME
+    plus marginal-V ML/REML) reproduced every pinned value (Ainv, fixed
+    effects, EBVs, fitted, PEV, reliability, h2, ML logLik, dense/sparse REML
+    logLik) to machine precision: max abs diff approximately 1.8e-14;
+    h2/ML/REML matched exactly.
+  - `Rscript -e "rcmdcheck::rcmdcheck(args=c('--no-manual','--no-build-vignettes'))"`:
+    `0 errors | 0 warnings | 0 notes`.
+  - `air format --check .` and `git diff --check`: clean.
+- Remote checks for commit `a437feb`:
+  - GitHub Actions R-CMD-check `27467574922`: passed.
+  - GitHub Actions pkgdown `27467574904`: passed.
+  - GitHub Pages build/deploy `27467612204`: passed.
