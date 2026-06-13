@@ -2380,3 +2380,34 @@ with private memory.
   - GitHub Actions R-CMD-check `27476877537`: passed.
   - GitHub Actions pkgdown: passed.
   - GitHub Pages build/deploy `27476923025`: passed.
+
+## 2026-06-13 v0.1 default-fit flip (engine = "fit")
+
+- Goal: flip the default `hsquared()` from validate-and-stop to a real REML fit
+  of the v0.1 Gaussian animal model (`fit_ai_reml` through the bridge) and make
+  every living public surface honest about it. Predicate SATISFIED + maintainer
+  sign-off (2026-06-13); mirrors twin gates (V1-AI-REML covered, V1-MRODE-FIT /
+  V1-COMPARATORS covered_external).
+- Active lenses: Ada, Shannon, Boole, Fisher, Rose, Pat, Hopper. Spawned
+  subagents: 5-agent adversarial honesty audit `wetqf4t9i` (3 lenses clean; 1
+  confirmed blocker — `engine = "julia"`/`fit_animal_model` ran ML for
+  `REML = FALSE` — fixed by an ML guard + regression test).
+- ML is not implemented: `REML = FALSE` is rejected on every estimation path;
+  the REML-only optimizers stamp `method = "REML"`. Promoted the default-fit,
+  gryphon, and DGP validation_status rows to `covered`; corrected "exact" →
+  signed-off band (machine precision reserved for engine-vs-pure-R).
+- Files: `R/{hsquared,hs_control,julia-bridge,validation-status,formula-status,
+  hsquared-package}.R`, `man/*`, `DESCRIPTION`, `README.md`, `vignettes/*`,
+  `docs/design/{00-vision,01-v0.1-contract,06-public-claims-register,
+  capability-status,validation-debt-register}.md`,
+  `tests/testthat/{test-phase0-api,test-julia-bridge,test-bridge-payload,
+  test-hs-data}.R`.
+- Local checks: `air format .` clean; `devtools::document()`; full `testthat`
+  suite with juliaup on PATH + `NOT_CRAN` + `sommer` + `enhancer` (live default
+  fit, gryphon, DGP, sommer all run) — 0 failures, 0 warnings, 0 skipped;
+  `rcmdcheck(--as-cran)` 0 errors, 0 warnings, 1 note (benign new-submission);
+  both pkgdown articles render.
+- Local commit `fd7975e` (not yet pushed).
+- Remote checks: PENDING. Push is gated on the twin's
+  `v01-gate-validation-status` landing on Julia `main` (currently `94e695b`);
+  remote CI evidence will be appended after the push.
