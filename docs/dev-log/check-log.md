@@ -125,3 +125,7 @@ with private memory.
     because the runner had no git author identity.
   - Fix: added a `Configure git identity` step to
     `.github/workflows/pkgdown.yaml`.
+  - Follow-up run `27455290071` reached the deploy step, initialized
+    `gh-pages`, and then failed while building reference pages because
+    `library(hsquared)` could not find an installed package on the runner.
+  - Fix: added an explicit `R CMD INSTALL .` step before deployment.

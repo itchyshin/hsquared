@@ -70,6 +70,10 @@ Current lane: R, with coordinator updates.
 - First GitHub Actions pkgdown deployment on pushed commit `1eb5872`: failed
   because `pkgdown::deploy_to_branch()` needed an explicit git author identity
   before creating `gh-pages`; the workflow was patched with a bot identity step.
+- First follow-up pkgdown deployment reached site build and `gh-pages`
+  initialization, then failed because `hsquared` was not installed before
+  reference-page generation. The workflow was patched with `R CMD INSTALL .`
+  before deployment.
 
 ## Public Claim Audit
 
