@@ -60,3 +60,10 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   comparator (ASReml/BLUPF90/DMU/WOMBAT) is added later, the comparator
   discipline above (confirm DGP, fitted model, estimator, scale, missing-data
   handling before calling a difference an engine bug) governs it.
+- Sparse-vs-dense REML optimizer agreement: an optional live test fits the same
+  Mrode fixture with REML through both the dense optimizer (`fit_variance_components`,
+  the default `target = "fit_animal_model"`) and the sparse optimizer
+  (`fit_sparse_reml`, `target = "sparse_reml"`) and verifies they reach the same
+  REML optimum (matching log-likelihood and variance estimates). This is an
+  internal cross-check between two engines of the same estimand; it is not an
+  external comparator or a production-fitting claim.

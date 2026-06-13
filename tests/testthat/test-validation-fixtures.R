@@ -565,3 +565,46 @@ test_that("sparse REML optimizer reaches the same REML optimum from different st
     "estimated_sparse_reml"
   )
 })
+
+test_that("sparse and dense REML optimizers reach the same REML optimum", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live sparse-vs-dense REML optimizer validation."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  init <- c(sigma_a2 = 1, sigma_e2 = 1)
+  fit_with <- function(extra) {
+    hsquared(
+      fixture$formula,
+      data = fixture$data,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = hs_control(
+        engine = "julia",
+        engine_control = c(list(initial = init, iterations = 1000L), extra)
+      )
+    )
+  }
+
+  # Internal comparator: the dense REML optimizer (fit_variance_components) and
+  # the sparse REML optimizer (fit_sparse_reml) maximize the SAME REML objective
+  # via different linear algebra, so on the same data they must reach the same
+  # optimum. This cross-validates the sparse optimizer against the dense one; it
+  # is NOT an external comparator, DGP recovery, or production-fitting claim.
+  dense <- fit_with(list())
+  sparse <- fit_with(list(target = "sparse_reml"))
+
+  expect_equal(dense$spec$target %||% "fit_animal_model", "fit_animal_model")
+  expect_equal(sparse$spec$target, "sparse_reml")
+  expect_true(is.finite(dense$result$loglik) && is.finite(sparse$result$loglik))
+  # Same REML optimum (loglik is the shared objective; compare tightly).
+  expect_equal(dense$result$loglik, sparse$result$loglik, tolerance = 1e-3)
+  # Same variance estimates (flat near the optimum; compare a little loosely).
+  expect_equal(
+    variance_components(dense)$estimate,
+    variance_components(sparse)$estimate,
+    tolerance = 5e-2
+  )
+})
