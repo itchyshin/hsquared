@@ -166,7 +166,7 @@ hs_normalize_julia_result <- function(raw, payload) {
     names(fixed_effects) <- fixed_names
   }
 
-  list(
+  result <- list(
     variance_components = data.frame(
       component = c("animal", "residual"),
       estimate = c(
@@ -195,6 +195,24 @@ hs_normalize_julia_result <- function(raw, payload) {
     predictions = data.frame(.fitted = as.numeric(raw$predictions)),
     diagnostics = hs_drop_julia_classes(raw$diagnostics),
     converged = isTRUE(raw$converged)
+  )
+
+  if (!is.null(raw$prediction_error_variance)) {
+    result$prediction_error_variance <- hs_julia_id_values(
+      raw$prediction_error_variance
+    )
+  }
+  if (!is.null(raw$reliability)) {
+    result$reliability <- hs_julia_id_values(raw$reliability)
+  }
+
+  result
+}
+
+hs_julia_id_values <- function(x) {
+  data.frame(
+    id = as.character(x$ids),
+    value = as.numeric(x$values)
   )
 }
 

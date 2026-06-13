@@ -37,6 +37,8 @@ reference:
       - variance_components
       - heritability
       - breeding_values
+      - prediction_error_variance
+      - reliability
       - fixef
       - ranef
   - title: Package

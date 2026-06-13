@@ -12,6 +12,7 @@
 | 2026-06-13 | R | Emmy/Jason/Darwin/Pat/Rose | main | `hs_data()` data container for issue #8 | local checks passed | no file-backed storage | push data container and watch CI |
 | 2026-06-13 | R | Hopper/Lovelace/Grace/Rose/Pat | main | internal JuliaCall bridge smoke for issue #6 | local checks passed | not public fitting | push smoke path and watch CI/pkgdown |
 | 2026-06-13 | R | Hopper/Lovelace/Emmy/Grace/Rose | main | opt-in `hs_control(engine = "julia")` for issue #6 | local checks passed | dense tiny path only | push opt-in engine and watch CI/pkgdown |
+| 2026-06-13 | R | Fisher/Pat/Emmy/Hopper/Rose | main | PEV/reliability extractor contract for issues #5/#6 | local checks passed | not in live payload yet | push extractor contract and watch CI/pkgdown |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

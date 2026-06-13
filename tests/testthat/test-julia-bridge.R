@@ -81,6 +81,11 @@ test_that("hsquared can use the opt-in experimental Julia engine", {
   expect_equal(fit$result$nobs, 3L)
   expect_equal(breeding_values(fit)$id, c("sire", "dam", "calf"))
   expect_true(is.finite(heritability(fit)$estimate))
+  expect_error(
+    reliability(fit),
+    "does not contain reliability estimates",
+    fixed = TRUE
+  )
 })
 
 test_that("experimental Julia bridge refuses large dense validation payloads", {

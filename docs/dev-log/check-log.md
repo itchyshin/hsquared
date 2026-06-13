@@ -338,3 +338,40 @@ with private memory.
   - Public wording says experimental opt-in tiny local engine path.
   - Public wording does not claim general animal-model fitting, sparse
     production bridge execution, ASReml-level support, or large-data readiness.
+
+## 2026-06-13 R PEV and reliability extractor contract
+
+- Goal: mirror Julia's new dense experimental PEV/reliability extractor
+  vocabulary on the R fitted-object side without claiming the live bridge
+  payload returns those fields yet.
+- Active lenses: Fisher, Pat, Emmy, Hopper, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added exported `prediction_error_variance()` generic and
+    `hsquared_fit` method.
+  - Added exported `reliability()` generic and `hsquared_fit` method.
+  - Added future-compatible bridge normalization for
+    `raw$prediction_error_variance` and `raw$reliability` if Julia adds those
+    fields to `result_payload()`.
+  - Updated pkgdown extractor index.
+  - Updated claim register, capability status, validation debt, engine
+    contract, README, NEWS, and model-status article.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `NAMESPACE` and extractor Rd topics.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `111 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge test still confirms reliability is absent from the current
+    Julia payload.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says R extractor contract only.
+  - Public wording does not claim current live bridge PEV/reliability,
+    production sparse PEV/reliability, or comparator validation.

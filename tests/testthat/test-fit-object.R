@@ -6,6 +6,11 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
     ),
     heritability = data.frame(term = "animal", estimate = 0.4),
     breeding_values = data.frame(id = c("a", "b"), value = c(0.1, -0.1)),
+    prediction_error_variance = data.frame(
+      id = c("a", "b"),
+      value = c(0.2, 0.25)
+    ),
+    reliability = data.frame(id = c("a", "b"), value = c(0.8, 0.75)),
     fixed_effects = c("(Intercept)" = 1.2, sexm = -0.3),
     random_effects = list(animal = c(a = 0.1, b = -0.1)),
     loglik = -12.5,
@@ -27,6 +32,8 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(variance_components(fit), result$variance_components)
   expect_equal(heritability(fit), result$heritability)
   expect_equal(breeding_values(fit), result$breeding_values)
+  expect_equal(prediction_error_variance(fit), result$prediction_error_variance)
+  expect_equal(reliability(fit), result$reliability)
   expect_equal(fixef(fit), result$fixed_effects)
   expect_equal(ranef(fit), result$random_effects)
   expect_equal(predict(fit), result$predictions)
@@ -53,6 +60,16 @@ test_that("extractor defaults do not imply fitted model support", {
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
+  expect_error(
+    prediction_error_variance(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    reliability(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
 })
 
 test_that("hsquared_fit extractors fail loudly when a result field is absent", {
@@ -65,6 +82,11 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     variance_components(fit),
     "does not contain variance components",
+    fixed = TRUE
+  )
+  expect_error(
+    reliability(fit),
+    "does not contain reliability estimates",
     fixed = TRUE
   )
 })

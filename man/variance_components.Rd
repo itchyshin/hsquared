@@ -16,6 +16,5 @@ Variance component results for \code{hsquared_fit} objects.
 }
 \description{
 \code{variance_components()} is part of the planned v0.1 fitted-object contract.
-It works for internal \code{hsquared_fit} objects that already contain a Julia
-result, but ordinary calls to \code{\link[=hsquared]{hsquared()}} do not return fitted models yet.
+It works for \code{hsquared_fit} objects that contain a Julia result.
 }

@@ -38,6 +38,8 @@ reml_loglik
 variance_components
 fixed_effects
 breeding_values
+prediction_error_variance
+reliability
 heritability
 gradient_norm
 iterations
@@ -51,7 +53,9 @@ compact result list. Extractor methods are already defined for
 `random_effects`, `loglik`, `df`, `nobs`, `predictions`, `diagnostics`, and
 `converged`. The experimental Julia engine path can normalize the current Julia
 result into this shape for a tiny example; default `hsquared()` calls still stop
-before returning a fitted object.
+before returning a fitted object. The R extractor contract also includes
+`prediction_error_variance` and `reliability`, but the current live Julia
+`result_payload()` does not return those fields yet.
 
 ## Storage Policy
 

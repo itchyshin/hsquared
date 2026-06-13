@@ -10,11 +10,12 @@
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Production bridge execution and general fitting remain planned. |
 | R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | Tiny live smoke exists separately; production bridge execution remains planned. |
 | opt-in experimental Julia engine | partial | local JuliaCall tests against sibling `HSquared.jl` return variance components, EBVs, h², logLik, and fitted values for a tiny example | Requires `hs_control(engine = "julia")`; dense guarded validation path only. |
-| `hsquared_fit` object/extractors | partial | local tests over internal mock fit results and opt-in tiny Julia result | General fitted-model support remains planned. |
+| `hsquared_fit` object/extractors | partial | local tests over internal mock fit results and opt-in tiny Julia result | PEV/reliability extractor contract exists; current live bridge payload does not return those fields yet. |
 | `hs_data()` container | partial | local tests over phenotype, pedigree, genotype, expression, and marker inputs | No file-backed storage or modelling integration yet. |
 | simple Gaussian animal model | planned | none | Phase 1. |
 | sparse Ainv | planned | none | Julia lane. |
-| EBVs/BLUPs | planned | none | Phase 1. |
+| EBVs/BLUPs | partial | opt-in tiny Julia bridge returns breeding values | Experimental tiny/local only. |
+| PEV/reliability | partial | R extractor contract tests over mocked `hsquared_fit` fields | Current live bridge payload does not return PEV/reliability yet. |
 | multivariate G matrices | planned | none | Phase 3. |
 | factor-analytic G matrices | planned | none | Phase 4. |
 | genomic/single-step models | planned | none | Phase 5. |

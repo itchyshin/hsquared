@@ -40,7 +40,7 @@ hs_fit_result <- function(object, name, label) {
       "This `hsquared_fit` object does not contain ",
       label,
       ". The extractor is part of the planned v0.1 contract, but the current ",
-      "package does not fit models yet.",
+      "result payload did not provide this field.",
       call. = FALSE
     )
   }

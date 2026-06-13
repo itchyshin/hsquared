@@ -11,8 +11,10 @@ build a tested internal R-to-Julia payload shape. The default call validates
 and stops, while an experimental opt-in
 `control = hs_control(engine = "julia")` path can send a tiny v0.1 payload to a
 sibling `HSquared.jl` checkout through JuliaCall. This is still a narrow local
-validation path, not general animal-model support. The first fitted-object and
-extractor methods are defined over the returned `hsquared_fit` contract. A
+validation path, not general animal-model support. The fitted-object extractor
+contract now includes variance components, heritability, EBVs, PEV,
+reliability, fixed effects, random effects, log-likelihood, AIC, prediction,
+and summaries, with PEV/reliability waiting on Julia result-payload fields. A
 lightweight `hs_data()` container now records phenotype, pedigree, genotype,
 expression, marker, annotation, and environment inputs for future integrated
 workflows.

@@ -1,8 +1,7 @@
 #' Extract variance components
 #'
 #' `variance_components()` is part of the planned v0.1 fitted-object contract.
-#' It works for internal `hsquared_fit` objects that already contain a Julia
-#' result, but ordinary calls to [hsquared()] do not return fitted models yet.
+#' It works for `hsquared_fit` objects that contain a Julia result.
 #'
 #' @param object A fitted model object.
 #' @param ... Reserved for future arguments.
@@ -17,7 +16,7 @@ variance_components <- function(object, ...) {
 variance_components.default <- function(object, ...) {
   stop(
     "`variance_components()` requires an `hsquared_fit` object. The current ",
-    "package does not fit models yet.",
+    "package only returns these from fitted `hsquared_fit` results.",
     call. = FALSE
   )
 }
@@ -30,8 +29,7 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' Extract heritability estimates
 #'
 #' `heritability()` is part of the planned v0.1 fitted-object contract. It
-#' works for internal `hsquared_fit` objects that already contain a Julia
-#' result, but ordinary calls to [hsquared()] do not return fitted models yet.
+#' works for `hsquared_fit` objects that contain a Julia result.
 #'
 #' @inheritParams variance_components
 #'
@@ -45,7 +43,7 @@ heritability <- function(object, ...) {
 heritability.default <- function(object, ...) {
   stop(
     "`heritability()` requires an `hsquared_fit` object. The current package ",
-    "does not fit models yet.",
+    "only returns these from fitted `hsquared_fit` results.",
     call. = FALSE
   )
 }
@@ -58,8 +56,7 @@ heritability.hsquared_fit <- function(object, ...) {
 #' Extract breeding values
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It
-#' works for internal `hsquared_fit` objects that already contain a Julia
-#' result, but ordinary calls to [hsquared()] do not return fitted models yet.
+#' works for `hsquared_fit` objects that contain a Julia result.
 #'
 #' @inheritParams variance_components
 #'
@@ -73,7 +70,7 @@ breeding_values <- function(object, ...) {
 breeding_values.default <- function(object, ...) {
   stop(
     "`breeding_values()` requires an `hsquared_fit` object. The current ",
-    "package does not fit models yet.",
+    "package only returns these from fitted `hsquared_fit` results.",
     call. = FALSE
   )
 }
@@ -81,6 +78,66 @@ breeding_values.default <- function(object, ...) {
 #' @export
 breeding_values.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "breeding_values", "breeding values")
+}
+
+#' Extract prediction error variances
+#'
+#' `prediction_error_variance()` is part of the planned v0.1 fitted-object
+#' contract. It returns values only when an `hsquared_fit` object contains a
+#' Julia result field for prediction error variances.
+#'
+#' @inheritParams variance_components
+#'
+#' @return Prediction error variances for `hsquared_fit` objects.
+#' @export
+prediction_error_variance <- function(object, ...) {
+  UseMethod("prediction_error_variance")
+}
+
+#' @export
+prediction_error_variance.default <- function(object, ...) {
+  stop(
+    "`prediction_error_variance()` requires an `hsquared_fit` object. The ",
+    "current package only returns these from fitted `hsquared_fit` results.",
+    call. = FALSE
+  )
+}
+
+#' @export
+prediction_error_variance.hsquared_fit <- function(object, ...) {
+  hs_fit_result(
+    object,
+    "prediction_error_variance",
+    "prediction error variances"
+  )
+}
+
+#' Extract reliability estimates
+#'
+#' `reliability()` is part of the planned v0.1 fitted-object contract. It
+#' returns values only when an `hsquared_fit` object contains a Julia result
+#' field for reliability estimates.
+#'
+#' @inheritParams variance_components
+#'
+#' @return Reliability estimates for `hsquared_fit` objects.
+#' @export
+reliability <- function(object, ...) {
+  UseMethod("reliability")
+}
+
+#' @export
+reliability.default <- function(object, ...) {
+  stop(
+    "`reliability()` requires an `hsquared_fit` object. The current package ",
+    "only returns these from fitted `hsquared_fit` results.",
+    call. = FALSE
+  )
+}
+
+#' @export
+reliability.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "reliability", "reliability estimates")
 }
 
 #' Extract fixed effects
@@ -100,7 +157,7 @@ fixef <- function(object, ...) {
 fixef.default <- function(object, ...) {
   stop(
     "`fixef()` requires an `hsquared_fit` object. The current package does ",
-    "not fit models yet.",
+    "not provide fixed effects for this object.",
     call. = FALSE
   )
 }
@@ -127,7 +184,7 @@ ranef <- function(object, ...) {
 ranef.default <- function(object, ...) {
   stop(
     "`ranef()` requires an `hsquared_fit` object. The current package does ",
-    "not fit models yet.",
+    "not provide random effects for this object.",
     call. = FALSE
   )
 }

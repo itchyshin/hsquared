@@ -23,7 +23,9 @@ This page separates what exists from what is planned.
   send the tiny payload into a sibling `HSquared.jl` checkout and normalize the
   returned Julia result into the internal `hsquared_fit` contract.
 - The first fitted-object/extractor contract over internal `hsquared_fit`
-  objects and mocked Julia result fields.
+  objects and mocked Julia result fields, including variance components,
+  heritability, EBVs, PEV, reliability, fixed effects, random effects,
+  log-likelihood, AIC, prediction, and summaries.
 - `hs_data()` as a lightweight input container with ID maps for phenotype,
   pedigree, genotype, expression, marker, annotation, and environment inputs.
 - Local tests for accepted syntax, rejected future syntax, and pedigree/data ID
@@ -35,6 +37,7 @@ This page separates what exists from what is planned.
 - Default R-to-Julia bridge execution through `hsquared()`.
 - R-side `Ainv` construction.
 - Real variance components, heritability, EBVs, or BLUPs from fitted models.
+- PEV or reliability through the current live Julia result payload.
 - File-backed genotype/omics loading or streaming computation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
