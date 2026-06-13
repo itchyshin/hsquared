@@ -9,6 +9,7 @@
 * The experimental Julia bridge now sends sparse `Matrix::dgCMatrix` random-effect designs through Julia CSC slots instead of densifying `Z` (#6).
 * Added an internal tiny animal-model validation fixture that pins R payload ordering, sparse `Z` construction, and live Julia `pedigree_inverse()` agreement for a three-animal Henderson-style pedigree when a sibling `HSquared.jl` checkout is available (#7).
 * Added an optional Mrode9/nadiv pedigree-Ainv comparator fixture. When `nadiv` and a sibling `HSquared.jl` checkout are available, local tests compare Julia `pedigree_inverse()` with `nadiv::makeAinv()` for the Mrode9 pedigree (#7).
+* Added an internal supplied-variance Henderson mixed-model-equation validation fixture that compares R reference fixed effects, EBVs, fitted values, and h2 with Julia `henderson_mme()` when a sibling `HSquared.jl` checkout is available (#7).
 * Expanded `hs_control()` to preserve planned backend and accelerator vocabulary for CPU threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface placeholders only; GPU execution remains planned (#3).
 * Added `backend_info()` so users and developers can inspect planned backend names while seeing that backend execution is not available yet.
 * `data_status()` now gives users a direct diagnostic view of `hs_data()` component presence, ID overlap, pedigree coverage, and marker-map/genotype-marker alignment status. It is a status helper only and does not fit models (#8).

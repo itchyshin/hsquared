@@ -86,3 +86,158 @@ hs_mrode9_pedigree_validation_fixture <- function() {
     expected = list(Ainv = ainv)
   )
 }
+
+hs_henderson_mme_validation_fixture <- function() {
+  ids <- c("founder_a", "founder_b", "animal_1", "animal_2", "animal_3")
+  pedigree <- data.frame(
+    id = ids,
+    sire = c(NA, NA, "founder_a", "founder_a", "animal_1"),
+    dam = c(NA, NA, "founder_b", "founder_b", "animal_2"),
+    stringsAsFactors = FALSE
+  )
+  data <- data.frame(
+    y = c(3.2, 4.1, 5.4, 5.9),
+    x = c(0, 1, 0, 1),
+    id = c("animal_1", "animal_2", "animal_3", "animal_3"),
+    stringsAsFactors = FALSE
+  )
+  Ainv <- matrix(
+    c(
+      2,
+      1,
+      -1,
+      -1,
+      0,
+      1,
+      2,
+      -1,
+      -1,
+      0,
+      -1,
+      -1,
+      2.5,
+      0.5,
+      -1,
+      -1,
+      -1,
+      0.5,
+      2.5,
+      -1,
+      0,
+      0,
+      -1,
+      -1,
+      2
+    ),
+    nrow = 5,
+    byrow = TRUE,
+    dimnames = list(ids, ids)
+  )
+
+  list(
+    name = "henderson_supplied_variance_mme",
+    description = paste(
+      "Five-animal supplied-variance Henderson mixed-model-equation",
+      "fixture for fixed effects, EBVs, fitted values, and heritability."
+    ),
+    formula = y ~ x + animal(1 | id, pedigree = pedigree),
+    data = data,
+    pedigree = pedigree,
+    sigma_a2 = 1.2,
+    sigma_e2 = 0.8,
+    expected = list(
+      ids = ids,
+      Ainv = Ainv,
+      fixed_effects = c(
+        "(Intercept)" = 3.898701298701298,
+        x = 0.6454545454545471
+      ),
+      breeding_values = data.frame(
+        id = ids,
+        value = c(
+          0,
+          0,
+          -0.054545454545454695,
+          0.05454545454545385,
+          0.8571428571428561
+        ),
+        stringsAsFactors = FALSE
+      ),
+      fitted = data.frame(
+        .fitted = c(
+          3.844155844155843,
+          4.5987012987012985,
+          4.755844155844154,
+          5.401298701298701
+        )
+      ),
+      heritability = 0.6
+    )
+  )
+}
+
+hs_solve_henderson_mme_reference <- function(
+  y,
+  X,
+  Z,
+  Ainv,
+  sigma_a2,
+  sigma_e2,
+  ids
+) {
+  if (!is.numeric(y)) {
+    stop("`y` must be numeric.", call. = FALSE)
+  }
+  if (!is.matrix(X)) {
+    X <- as.matrix(X)
+  }
+  if (!inherits(Z, "Matrix")) {
+    Z <- Matrix::Matrix(Z, sparse = TRUE)
+  }
+  if (!is.matrix(Ainv)) {
+    Ainv <- as.matrix(Ainv)
+  }
+  if (!is.numeric(sigma_a2) || length(sigma_a2) != 1L || sigma_a2 <= 0) {
+    stop("`sigma_a2` must be a positive number.", call. = FALSE)
+  }
+  if (!is.numeric(sigma_e2) || length(sigma_e2) != 1L || sigma_e2 <= 0) {
+    stop("`sigma_e2` must be a positive number.", call. = FALSE)
+  }
+
+  residual_precision <- 1 / sigma_e2
+  relationship_precision <- 1 / sigma_a2
+  X <- Matrix::Matrix(X, sparse = TRUE)
+  Ainv <- Matrix::Matrix(Ainv, sparse = TRUE)
+  lhs <- rbind(
+    cbind(
+      residual_precision * Matrix::crossprod(X),
+      residual_precision * Matrix::crossprod(X, Z)
+    ),
+    cbind(
+      residual_precision * Matrix::crossprod(Z, X),
+      residual_precision * Matrix::crossprod(Z) + relationship_precision * Ainv
+    )
+  )
+  rhs <- c(
+    as.numeric(residual_precision * Matrix::crossprod(X, y)),
+    as.numeric(residual_precision * Matrix::crossprod(Z, y))
+  )
+  solution <- as.numeric(solve(as.matrix(lhs), rhs))
+  nfixed <- ncol(X)
+  fixed <- solution[seq_len(nfixed)]
+  names(fixed) <- colnames(X)
+  animal <- solution[-seq_len(nfixed)]
+
+  list(
+    fixed_effects = fixed,
+    breeding_values = data.frame(
+      id = ids,
+      value = animal,
+      stringsAsFactors = FALSE
+    ),
+    fitted = data.frame(
+      .fitted = as.numeric(as.matrix(X) %*% fixed + as.matrix(Z) %*% animal)
+    ),
+    heritability = sigma_a2 / (sigma_a2 + sigma_e2)
+  )
+}

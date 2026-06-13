@@ -31,3 +31,15 @@ Record:
 
 Do not compare different estimands. Before calling a difference an engine bug,
 confirm the DGP, fitted model, estimator, scale, and missing-data handling.
+
+## Current Validation Atoms
+
+- Tiny deterministic Henderson-style three-animal `Ainv` fixture: checks R
+  payload ordering, sparse `Z`, and live Julia `pedigree_inverse()` agreement
+  when a sibling `HSquared.jl` checkout is available.
+- Optional Mrode9/nadiv pedigree `Ainv` comparator: checks Julia
+  `pedigree_inverse()` against `nadiv::makeAinv()` for the Mrode9 pedigree when
+  optional dependencies are available.
+- Supplied-variance Henderson MME fixture: checks an independent R solve
+  against Julia `henderson_mme()` for fixed effects, EBVs, fitted values, and
+  h2. This does not estimate variance components.

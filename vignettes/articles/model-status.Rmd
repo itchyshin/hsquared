@@ -52,6 +52,10 @@ This page separates what exists from what is planned.
   when the local Julia bridge is available.
 - An optional Mrode9/nadiv pedigree-Ainv comparator test when `nadiv` and a
   sibling `HSquared.jl` checkout are available.
+- An internal supplied-variance Henderson MME validation fixture that compares
+  an independent R reference solve with Julia `henderson_mme()` for fixed
+  effects, EBVs, fitted values, and h2 when a sibling `HSquared.jl` checkout is
+  available.
 - The first fitted-object/extractor contract over internal `hsquared_fit`
   objects and mocked Julia result fields, including variance components,
   heritability, EBVs, PEV, reliability, fixed effects, random effects,
@@ -79,7 +83,8 @@ This page separates what exists from what is planned.
 - General model fitting.
 - Default R-to-Julia bridge execution through `hsquared()`.
 - R-side `Ainv` construction.
-- Real variance components, heritability, EBVs, or BLUPs from fitted models.
+- General estimated variance components, heritability, EBVs, or BLUPs from
+  fitted models.
 - Production sparse PEV or reliability.
 - Full Mrode animal-model fit-output validation.
 - ASReml, BLUPF90, DMU, or WOMBAT comparator validation.

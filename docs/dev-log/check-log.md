@@ -1236,3 +1236,49 @@ with private memory.
   - Result: R-CMD-check `27461541666` passed in 1m36s.
   - Result: pkgdown `27461541639` passed in 1m41s.
   - Result: Pages `27461576199` passed in 22s.
+
+## 2026-06-13 supplied-variance Henderson MME validation fixture
+
+- Goal: add an internal supplied-variance Henderson mixed-model-equation
+  validation atom for issue #7.
+- Active lenses: Curie, Henderson, Fisher, Hopper, Rose, Grace.
+- Spawned subagents: none.
+- Scout:
+  - Checked local `HSquared.jl/src/likelihood.jl` to confirm
+    `henderson_mme()` is a supplied-variance solver, not a variance-component
+    optimizer.
+  - Checked local `GLLVM.jl/CLAUDE.md` for verify-before-claim discipline.
+  - Recorded
+    `docs/dev-log/scout/2026-06-13-henderson-mme-validation-scout.md`.
+- Implementation evidence:
+  - Added `hs_henderson_mme_validation_fixture()`.
+  - Added `hs_solve_henderson_mme_reference()` as an independent R MME solve.
+  - Added tests comparing fixed effects, EBVs, fitted values, and h2 against
+    expected fixture values.
+  - Added an optional live Julia test comparing the R fixture with
+    `HSquared.henderson_mme()` when a sibling checkout is available.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'validation-fixtures')"`
+  - Result: passed with `19 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live fixture activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `287 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "general animal-model support|production sparse fitting is validated|Mrode validation is covered|ASReml comparison is covered|GPU execution is (available|implemented)|fits general animal|supports genomic|supports QTL|supports eQTL" README.md vignettes docs/design docs/dev-log NEWS.md`.
+  - Result: hits were planned, blocked, or negated wording only.
+  - Public wording says supplied-variance Henderson MME validation fixture only.
+  - Public wording does not claim variance-component estimation, general
+    fitting, Mrode fitted-output validation, AI-REML, or production sparse
+    fitting.

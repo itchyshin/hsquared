@@ -55,6 +55,10 @@ internal tests can send the sparse `Z` design through Julia CSC slots, build
 Julia-side `Ainv`, and run the current validation target when a local sibling
 `HSquared.jl` checkout is available. General public fitting waits for a
 production bridge and validation-canon evidence.
+Current validation atoms include tiny deterministic `Ainv` checks, an optional
+Mrode9/nadiv pedigree-Ainv comparator, and a supplied-variance Henderson MME
+fixture that compares R reference fixed effects, EBVs, fitted values, and h2
+with Julia when available.
 
 ```r
 spec <- model_spec(
