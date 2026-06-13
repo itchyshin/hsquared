@@ -90,7 +90,9 @@ This page separates what exists from what is planned.
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBV/BLUP aliases, PEV, reliability,
   accuracy, fixed effects, random effects, log-likelihood, AIC,
-  prediction, fitted values, residuals, summaries, and
+  prediction, fitted values, residuals, summaries,
+  [`coef()`](https://rdrr.io/r/stats/coef.html),
+  [`nobs()`](https://rdrr.io/r/stats/nobs.html), and
   [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
   for convergence, optimizer, target, iteration, and
   dense-validation-path metadata.

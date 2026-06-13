@@ -24,7 +24,8 @@ validation extractors, the target also attaches PEV and reliability
 fields. The fitted-object extractor contract now includes variance
 components, heritability, EBVs/BLUPs, PEV, reliability, accuracy, fixed
 effects, random effects, log-likelihood, AIC, prediction, fitted values,
-residuals, summaries, and
+residuals, summaries, [`coef()`](https://rdrr.io/r/stats/coef.html),
+[`nobs()`](https://rdrr.io/r/stats/nobs.html), and
 [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
 for convergence and optimizer metadata. In the experimental local
 bridge, PEV/reliability are enriched from exported `HSquared.jl` dense
