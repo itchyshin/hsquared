@@ -76,6 +76,13 @@ Remote checks:
 - GitHub Actions pkgdown `27463477467`: passed in 1m49s.
 - GitHub Pages build/deploy `27463517699`: passed; Node.js 20 deprecation
   warning is from the Pages action stack, not this package code.
+- Evidence commit `66d4d36`: R-CMD-check `27463547679` passed in 1m30s,
+  pkgdown `27463547685` passed in 1m36s, and Pages `27463582542` passed.
+
+Issue ledger:
+
+- Issue #5 updated:
+  <https://github.com/itchyshin/hsquared/issues/5#issuecomment-4698196423>.
 
 ## Rose Audit
 
