@@ -74,6 +74,11 @@
 <div class="section level2">
 <h2 id="exists-now">Exists now<a class="anchor" aria-label="anchor" href="#exists-now"></a>
 </h2>
+<p>Everything below is parser, validation-fixture, data-container, or
+extractor-contract surface, plus opt-in local Julia validation bridges.
+None of it fits a model from the default <code><a href="../reference/hsquared.html">hsquared()</a></code> call,
+and none of it is a validated estimation capability — see the <a href="https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-contract.md" class="external-link">V0.1
+promotion predicate</a>.</p>
 <ul>
 <li>R package scaffold and CI.</li>
 <li>Team operating memory and claim registers.</li>
@@ -159,17 +164,28 @@ when a sibling <code>HSquared.jl</code> checkout is available.</li>
 effects, EBVs, fitted values, PEV, reliability, h2, ML log-likelihood,
 and dense/sparse REML log-likelihood against independent R references
 and the sibling Julia engine when available.</li>
-<li>An experimental, opt-in sparse REML estimator bridge. With
-<code>control = hs_control(engine = "julia", engine_control = list(target = "sparse_reml"))</code>,
-R surfaces the Julia-owned <code>HSquared.fit_sparse_reml()</code>
-REML-only optimizer for tiny local examples and records
-<code>variance_components_source = "estimated_sparse_reml"</code>. It is
-opt-in only (the default <code><a href="../reference/hsquared.html">hsquared()</a></code> still validates and
-stops), the estimator is Julia-owned (R only surfaces it), and it is not
-variance-component estimation in the public R interface, production
-sparse fitting, AI-REML, or ASReml parity. It is cross-checked on the
-Mrode fixture against the dense REML optimizer and an independent pure-R
-REML optimum.</li>
+<li>Not general variance-component estimation. An experimental, opt-in,
+Julia-owned sparse REML optimizer
+(<code>HSquared.fit_sparse_reml()</code>) is reachable only via
+<code>control = hs_control(engine = "julia", engine_control = list(target = "sparse_reml"))</code>
+for tiny local fixtures; the default <code><a href="../reference/hsquared.html">hsquared()</a></code> still
+validates and stops. It records the internal provenance label
+<code>variance_components_source = "estimated_sparse_reml"</code> on
+those fixtures (not a public estimation capability), and is
+cross-checked for optimizer agreement against the dense REML optimizer
+and an independent pure-R REML optimum — not validated against known
+truth.</li>
+<li>Not general variance-component estimation. An experimental, opt-in,
+Julia-owned average-information REML optimizer
+(<code>HSquared.fit_ai_reml()</code>) is reachable only via
+<code>control = hs_control(engine = "julia", engine_control = list(target = "ai_reml"))</code>
+for tiny local fixtures; the default <code><a href="../reference/hsquared.html">hsquared()</a></code> still
+validates and stops, and it is gated on the twin’s validation status. It
+records the internal provenance label
+<code>variance_components_source = "estimated_ai_reml"</code> (not a
+public estimation capability), and is cross-checked to reach the same
+REML optimum as the sparse optimizer on the Mrode fixture — not
+validated against known truth.</li>
 <li>The first fitted-object/extractor contract over internal
 <code>hsquared_fit</code> objects and mocked Julia result fields,
 including variance components, heritability, EBV/BLUP aliases, PEV,

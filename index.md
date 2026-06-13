@@ -26,16 +26,21 @@ explicitly supplied variance components for tiny validation examples.
 That path does not estimate variance components or provide a
 log-likelihood. When the sibling Julia checkout exposes applicable dense
 validation extractors, the target also attaches PEV and reliability
-fields. The fitted-object extractor contract now includes variance
-components, heritability, EBVs/BLUPs, PEV, reliability, accuracy, fixed
-effects, random effects, log-likelihood, AIC, prediction, fitted values,
-residuals, summaries, [`coef()`](https://rdrr.io/r/stats/coef.html),
+fields. The fitted-object extractor contract defines the methods that
+future fitted objects will expose — variance components, heritability,
+EBVs/BLUPs, PEV, reliability, accuracy, fixed effects, random effects,
+log-likelihood, AIC, prediction, fitted values, residuals, summaries,
+[`coef()`](https://rdrr.io/r/stats/coef.html),
 [`nobs()`](https://rdrr.io/r/stats/nobs.html), and
 [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
-for convergence and optimizer metadata. In the experimental local
-bridge, PEV/reliability are enriched from exported `HSquared.jl` dense
-validation extractors when available; this is still not production
-sparse reliability or general animal-model support. A lightweight
+for convergence and optimizer metadata — and returns each only for
+objects that already carry the matching Julia result fields. In the
+experimental local bridge, PEV/reliability are enriched from exported
+`HSquared.jl` dense validation extractors when available; this is still
+not production sparse reliability or general animal-model support. The
+default
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+call computes none of these: it validates and stops. A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows,
@@ -115,7 +120,9 @@ supplied-variance output fixture that pins Ainv, fixed effects, EBVs,
 fitted values, PEV, reliability, h2, ML log-likelihood, and dense/sparse
 REML log-likelihood. Optional local tests also compare Julia dense REML
 and sparse REML likelihood evaluators on a tiny supplied-variance
-three-founder fixture. Use
+three-founder fixture. All of these are tiny supplied-variance or
+deterministic validation fixtures — they check the engine arithmetic,
+not estimation, and are not reachable from the default call. Use
 [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
 to inspect validation evidence and planned comparator lanes from R.
 

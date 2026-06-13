@@ -19,12 +19,14 @@ Julia bridge opt-in and tiny/local No production fitting claim
 **1** public formula contract parsed today:
 `animal(1 | id, pedigree = ped)`
 
-**11** validation-status rows separating partial and planned evidence
+**14** validation-status rows separating partial and planned evidence
 
 **6** planned backend names recorded: CPU, threads, CUDA, AMDGPU, Metal,
 oneAPI
 
-**0** production GPU, QTL/eQTL, GLLVM, or AI-REML claims
+**0** production / default-callable AI-REML, GPU, QTL/eQTL, or GLLVM
+capabilities. AI-REML and sparse REML exist only as opt-in, Julia-owned,
+tiny-fixture validation bridges
 
 ### R Interface Lane
 
@@ -96,8 +98,9 @@ backends, checkpoints, benchmarks.
 - No general fitted animal-model support from the default R call.
 - No variance-component estimation claim for supplied-variance Henderson
   MME.
-- No sparse optimizer, AI-REML, estimated-variance Mrode validation, or
-  ASReml parity claim.
+- No production/default sparse optimizer, estimated-variance Mrode
+  validation, or ASReml parity claim (sparse REML and AI-REML estimators
+  exist only as experimental, opt-in, Julia-owned, gated bridges).
 - No genomic prediction, marker scan, QTL/eQTL, GLLVM, or
   unusual-inheritance fitting claim.
 - No CPU/GPU execution, backend benchmark, or speedup claim.
