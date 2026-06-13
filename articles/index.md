@@ -1,0 +1,10 @@
+# Articles
+
+### Start here
+
+- [Getting started with
+  hsquared](https://itchyshin.github.io/hsquared/articles/hsquared.md):
+- [Model
+  status](https://itchyshin.github.io/hsquared/articles/model-status.md):
+- [Genomics, QTL, and CPU/GPU
+  roadmap](https://itchyshin.github.io/hsquared/articles/genomics-gpu-roadmap.md):
