@@ -53,6 +53,8 @@ This page separates what exists from what is planned.
   log-likelihood, AIC, prediction, and summaries.
 - `hs_data()` as a lightweight input container with ID maps for phenotype,
   pedigree, genotype, expression, marker, annotation, and environment inputs.
+- `summary(hs_data(...))` reports ID overlap and mismatch counts for
+  phenotype, pedigree, genotype, and expression components.
 - `model_spec()` and `hsquared()` can use an `hs_data()` object for the v0.1
   animal-model parser, reading model variables from `phenotypes` and formula
   components such as `pedigree = pedigree` from the bundle.

@@ -116,7 +116,8 @@ summary.hs_data <- function(object, ...) {
             "environment"
           )
       ],
-      id_map = object$id_map
+      id_map = object$id_map,
+      id_overlap = hs_data_id_overlap(object$id_map)
     ),
     class = "summary_hs_data"
   )
@@ -127,7 +128,37 @@ print.summary_hs_data <- function(x, ...) {
   cat("<summary_hs_data>\n")
   cat("  components: ", paste(x$components, collapse = ", "), "\n", sep = "")
   cat("  phenotype IDs: ", length(x$id_map$phenotype_ids), "\n", sep = "")
+  cat("  ID overlap:\n", sep = "")
+  print.data.frame(x$id_overlap, row.names = FALSE)
   invisible(x)
+}
+
+hs_data_id_overlap <- function(id_map) {
+  data.frame(
+    metric = c(
+      "phenotype_ids",
+      "pedigree_ids",
+      "genotype_ids",
+      "expression_ids",
+      "phenotypes_without_pedigree",
+      "phenotypes_without_genotypes",
+      "genotypes_without_phenotypes",
+      "phenotypes_without_expression",
+      "expression_without_phenotypes"
+    ),
+    count = c(
+      length(id_map$phenotype_ids),
+      length(id_map$pedigree_ids),
+      length(id_map$genotype_ids),
+      length(id_map$expression_ids),
+      length(id_map$phenotypes_without_pedigree),
+      length(id_map$phenotypes_without_genotypes),
+      length(id_map$genotypes_without_phenotypes),
+      length(id_map$phenotypes_without_expression),
+      length(id_map$expression_without_phenotypes)
+    ),
+    stringsAsFactors = FALSE
+  )
 }
 
 hs_checked_ids <- function(x, label) {

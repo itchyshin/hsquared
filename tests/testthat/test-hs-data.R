@@ -27,6 +27,26 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
   expect_equal(data$id_map$phenotypes_without_genotypes, "a")
   expect_equal(data$id_map$genotypes_without_phenotypes, "d")
   expect_s3_class(summary(data), "summary_hs_data")
+
+  overlap <- summary(data)$id_overlap
+  expect_equal(
+    overlap$metric,
+    c(
+      "phenotype_ids",
+      "pedigree_ids",
+      "genotype_ids",
+      "expression_ids",
+      "phenotypes_without_pedigree",
+      "phenotypes_without_genotypes",
+      "genotypes_without_phenotypes",
+      "phenotypes_without_expression",
+      "expression_without_phenotypes"
+    )
+  )
+  expect_equal(
+    overlap$count,
+    c(2L, 3L, 2L, 0L, 0L, 1L, 1L, 2L, 0L)
+  )
 })
 
 test_that("hs_data accepts expression IDs from an ID column", {

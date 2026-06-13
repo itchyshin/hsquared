@@ -976,3 +976,34 @@ with private memory.
     phenotype/pedigree parser path.
   - Public wording does not claim file-backed storage, automatic genotype/omics
     model construction, or broader fitting support.
+
+## 2026-06-13 hs_data ID-overlap summary
+
+- Goal: make `summary(hs_data(...))` more useful for phenotype, pedigree,
+  genotype, and expression ID checks.
+- Active lenses: Emmy, Pat, Rose.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added an `id_overlap` table to `summary.hs_data()`.
+  - The table reports phenotype, pedigree, genotype, expression, and mismatch
+    counts using the existing `id_map`.
+  - Updated tests, README, model-status article, capability status, claims
+    register, NEWS, and coordination board.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; no generated file changes.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `19 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `227 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording describes an ID diagnostic only.
+  - Public wording does not claim modelling support from genotype or expression
+    components.
