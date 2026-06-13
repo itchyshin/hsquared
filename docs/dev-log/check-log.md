@@ -1848,3 +1848,46 @@ with private memory.
     live Julia bridge activated sibling `HSquared.jl`.
   - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
   - Result: articles rebuilt and `No problems found.`
+
+## 2026-06-13 sparse REML likelihood validation atom
+
+- Goal: mirror the Julia lane's sparse REML identity evidence in the R repo by
+  adding a tiny supplied-variance fixture that compares Julia dense REML,
+  sparse REML, and ML hand-check targets through the existing R bridge setup.
+- Active lenses: Curie, Gauss, Fisher, Hopper, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added internal `hs_reml_likelihood_validation_fixture()`.
+  - Added a pure R fixture test for payload IDs, all-founder parent indices,
+    intercept-only `X`, identity `Z`, identity `Ainv`, beta target, and
+    closed-form ML/REML log-likelihood values.
+  - Added an optional live JuliaCall test that constructs the sibling
+    `HSquared.jl` `animal_model_spec()`, calls `gaussian_loglik()` for ML and
+    REML, calls `sparse_reml_loglik()`, and checks sparse REML equals dense
+    REML at supplied variance components.
+  - Updated `validation_status()`, README, NEWS, model-status article,
+    capability status, validation debt register, and public claims register.
+- Local checks:
+  - `Rscript -e "devtools::test(filter = 'validation-fixtures|phase0-api')"`
+  - Initial result: live Julia bridge executed, but two R-only expectations
+    failed because they compared incidental matrix attributes and dimensions.
+  - Fix: compare numeric values and matrix shape directly.
+  - `Rscript -e "devtools::test(filter = 'validation-fixtures|phase0-api')"`
+  - Result after fix: passed with `93 pass`, `0 fail`, `0 warnings`, and
+    `0 skips`; live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test()"`
+  - Result: docs updated, formatting completed, full tests passed with
+    `428 pass`, `0 fail`, `0 warnings`, and `0 skips`; live Julia bridge
+    activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors`, `0 warnings`, and `0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording boundary:
+  - Allowed: tiny supplied-variance likelihood identity, dense-vs-sparse REML
+    agreement, ML and REML hand-check targets.
+  - Blocked: sparse optimizer, AI-REML, fitted Mrode output validation,
+    production sparse fitting, general animal-model support, ASReml parity,
+    GPU execution, or speedup.

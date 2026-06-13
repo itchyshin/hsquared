@@ -176,6 +176,44 @@ hs_henderson_mme_validation_fixture <- function() {
   )
 }
 
+hs_reml_likelihood_validation_fixture <- function() {
+  ids <- c("a", "b", "c")
+  pedigree <- data.frame(
+    id = ids,
+    sire = c(NA, NA, NA),
+    dam = c(NA, NA, NA),
+    stringsAsFactors = FALSE
+  )
+  data <- data.frame(
+    y = c(1, 2, 3),
+    id = ids,
+    stringsAsFactors = FALSE
+  )
+
+  list(
+    name = "tiny_sparse_reml_likelihood_identity",
+    description = paste(
+      "Three-founder supplied-variance Gaussian likelihood fixture for",
+      "dense REML, sparse REML, and ML identity checks."
+    ),
+    formula = y ~ animal(1 | id, pedigree = pedigree),
+    data = data,
+    pedigree = pedigree,
+    sigma_a2 = 1,
+    sigma_e2 = 1,
+    expected = list(
+      ids = ids,
+      sire_index = c(0L, 0L, 0L),
+      dam_index = c(0L, 0L, 0L),
+      Z = diag(3),
+      Ainv = diag(3),
+      fixed_effects = c("(Intercept)" = 2),
+      ml_loglik = -0.5 * (3 * log(2 * pi) + 3 * log(2) + 1),
+      reml_loglik = -0.5 * (2 * log(2 * pi) + 3 * log(2) + log(1.5) + 1)
+    )
+  )
+}
+
 hs_solve_henderson_mme_reference <- function(
   y,
   X,
