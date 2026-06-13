@@ -23,6 +23,10 @@ planned Julia bridge boundary. The first extractor functions exist for
 future `hsquared_fit` objects, but
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 does not return fitted objects yet.
+[`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+can collect phenotype, pedigree, genotype, marker, expression,
+annotation, and environment inputs into a checked container for future
+integrated workflows.
 
 The interface rule is: easy, easy, easy. Users are gold. The common
 animal model should be obvious before the package exposes genomic,

@@ -84,7 +84,10 @@ builds the first tested internal bridge payload. Model fitting and live
 Julia execution are not implemented yet. The package stops at the
 planned Julia bridge boundary. The first extractor functions exist for
 future <code>hsquared_fit</code> objects, but <code><a href="../reference/hsquared.html">hsquared()</a></code>
-does not return fitted objects yet.</p>
+does not return fitted objects yet. <code><a href="../reference/hs_data.html">hs_data()</a></code> can collect
+phenotype, pedigree, genotype, marker, expression, annotation, and
+environment inputs into a checked container for future integrated
+workflows.</p>
 <p>The interface rule is: easy, easy, easy. Users are gold. The common
 animal model should be obvious before the package exposes genomic,
 multivariate, factor-analytic, non-Gaussian, or unusual-inheritance

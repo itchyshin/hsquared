@@ -16,6 +16,9 @@ This page separates what exists from what is planned.
   target metadata.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields.
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  as a lightweight input container with ID maps for phenotype, pedigree,
+  genotype, expression, marker, annotation, and environment inputs.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 
@@ -26,6 +29,7 @@ This page separates what exists from what is planned.
 - R-side `Ainv` construction.
 - Real variance components, heritability, EBVs, or BLUPs from fitted
   models.
+- File-backed genotype/omics loading or streaming computation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - QTL-style effects, selfing, clonal inheritance, haplodiploidy,

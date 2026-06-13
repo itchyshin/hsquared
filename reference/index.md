@@ -4,6 +4,8 @@
 
 Current parser entry points and planned fitting controls.
 
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  : Create an hsquared data container
 - [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   : Fit a quantitative-genetic model
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)

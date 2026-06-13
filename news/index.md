@@ -31,6 +31,12 @@
   internal fit objects. These are contract plumbing only until the Julia
   engine returns real fits
   ([\#5](https://github.com/itchyshin/hsquared/issues/5)).
+- Added
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  as a lightweight R data container for phenotype, pedigree, genotype,
+  marker, expression, annotation, and environment inputs. It records ID
+  maps for future integrated genomic/QTL/eQTL workflows, but does not
+  fit models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - Added Phase 0 project operating documentation, an honest placeholder
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   entry point, and
