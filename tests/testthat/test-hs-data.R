@@ -64,6 +64,72 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
     overlap$count,
     c(2L, 3L, 2L, 0L, 0L, 1L, 1L, 2L, 0L)
   )
+
+  marker_status <- summary(data)$marker_status
+  expect_equal(
+    marker_status$metric,
+    c(
+      "marker_map_markers",
+      "genotype_marker_columns",
+      "aligned_marker_columns",
+      "chromosomes",
+      "position_min",
+      "position_max",
+      "alignment"
+    )
+  )
+  expect_equal(
+    marker_status$value,
+    c("3", "3", "3", "2", "5", "20", "checked")
+  )
+})
+
+test_that("summary.hs_data reports partial marker diagnostics", {
+  phenotypes <- data.frame(id = "a", y = 1)
+
+  marker_only <- hs_data(
+    phenotypes = phenotypes,
+    markers = data.frame(marker = "m1", chr = "1", pos = 10)
+  )
+  expect_equal(
+    summary(marker_only)$marker_status$value,
+    c("1", "0", "0", "1", "10", "10", "not_checked_no_genotypes")
+  )
+
+  genotype_only <- hs_data(
+    phenotypes = phenotypes,
+    genotypes = data.frame(id = "a", m1 = 0, m2 = 1)
+  )
+  expect_equal(
+    summary(genotype_only)$marker_status$value,
+    c(
+      "0",
+      "2",
+      "0",
+      "not_available",
+      "not_available",
+      "not_available",
+      "not_checked_no_marker_map"
+    )
+  )
+
+  unnamed_matrix <- hs_data(
+    phenotypes = phenotypes,
+    genotypes = matrix(
+      0,
+      nrow = 1,
+      ncol = 2,
+      dimnames = list("a", NULL)
+    )
+  )
+  expect_equal(summary(unnamed_matrix)$marker_status$value[2], "2")
+  expect_equal(
+    summary(unnamed_matrix)$marker_status$value[7],
+    "not_checked_no_marker_map"
+  )
+
+  phenotype_only <- hs_data(phenotypes = phenotypes)
+  expect_null(summary(phenotype_only)$marker_status)
 })
 
 test_that("hs_data accepts expression IDs from an ID column", {

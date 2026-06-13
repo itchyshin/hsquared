@@ -23,6 +23,11 @@
 #' @param id Name of the individual ID column in `phenotypes`.
 #'
 #' @return An `hs_data` object.
+#'
+#' @details
+#' `summary(hs_data(...))` reports ID overlap diagnostics and, when genotype
+#' or marker components are supplied, marker-map and genotype-column alignment
+#' diagnostics.
 #' @export
 hs_data <- function(
   phenotypes,
@@ -129,7 +134,8 @@ summary.hs_data <- function(object, ...) {
           )
       ],
       id_map = object$id_map,
-      id_overlap = hs_data_id_overlap(object$id_map)
+      id_overlap = hs_data_id_overlap(object$id_map),
+      marker_status = hs_data_marker_status(object)
     ),
     class = "summary_hs_data"
   )
@@ -142,6 +148,10 @@ print.summary_hs_data <- function(x, ...) {
   cat("  phenotype IDs: ", length(x$id_map$phenotype_ids), "\n", sep = "")
   cat("  ID overlap:\n", sep = "")
   print.data.frame(x$id_overlap, row.names = FALSE)
+  if (!is.null(x$marker_status)) {
+    cat("  marker status:\n", sep = "")
+    print.data.frame(x$marker_status, row.names = FALSE)
+  }
   invisible(x)
 }
 
@@ -171,6 +181,111 @@ hs_data_id_overlap <- function(id_map) {
     ),
     stringsAsFactors = FALSE
   )
+}
+
+hs_data_marker_status <- function(object) {
+  marker_spec <- object$marker_spec
+  genotype_marker_spec <- object$genotype_marker_spec
+  genotype_marker_ids <- hs_data_summary_genotype_marker_ids(object)
+
+  if (is.null(marker_spec) && length(genotype_marker_ids) == 0L) {
+    return(NULL)
+  }
+
+  marker_count <- if (is.null(marker_spec)) {
+    0L
+  } else {
+    length(marker_spec$marker_ids)
+  }
+  genotype_count <- length(genotype_marker_ids)
+  aligned_count <- if (is.null(genotype_marker_spec)) {
+    0L
+  } else {
+    length(genotype_marker_spec$marker_ids)
+  }
+  chromosome_count <- if (is.null(marker_spec)) {
+    NA_integer_
+  } else {
+    length(unique(marker_spec$chromosome))
+  }
+  position_min <- if (is.null(marker_spec)) {
+    NA_real_
+  } else {
+    min(marker_spec$position)
+  }
+  position_max <- if (is.null(marker_spec)) {
+    NA_real_
+  } else {
+    max(marker_spec$position)
+  }
+  alignment <- hs_data_marker_alignment_status(
+    marker_spec,
+    genotype_marker_spec,
+    genotype_count
+  )
+
+  data.frame(
+    metric = c(
+      "marker_map_markers",
+      "genotype_marker_columns",
+      "aligned_marker_columns",
+      "chromosomes",
+      "position_min",
+      "position_max",
+      "alignment"
+    ),
+    value = c(
+      as.character(marker_count),
+      as.character(genotype_count),
+      as.character(aligned_count),
+      hs_optional_summary_value(chromosome_count),
+      hs_optional_summary_value(position_min),
+      hs_optional_summary_value(position_max),
+      alignment
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+hs_data_summary_genotype_marker_ids <- function(object) {
+  if (is.null(object$genotypes)) {
+    return(character())
+  }
+  if (is.matrix(object$genotypes) && is.null(colnames(object$genotypes))) {
+    return(rep("", ncol(object$genotypes)))
+  }
+  if (is.data.frame(object$genotypes)) {
+    marker_columns <- names(object$genotypes)
+    if (object$id %in% marker_columns) {
+      marker_columns <- setdiff(marker_columns, object$id)
+    }
+    return(marker_columns)
+  }
+  hs_genotype_marker_ids(object$genotypes, object$id)
+}
+
+hs_data_marker_alignment_status <- function(
+  marker_spec,
+  genotype_marker_spec,
+  genotype_count
+) {
+  if (!is.null(genotype_marker_spec)) {
+    return("checked")
+  }
+  if (!is.null(marker_spec) && genotype_count == 0L) {
+    return("not_checked_no_genotypes")
+  }
+  if (is.null(marker_spec) && genotype_count > 0L) {
+    return("not_checked_no_marker_map")
+  }
+  "not_applicable"
+}
+
+hs_optional_summary_value <- function(x) {
+  if (length(x) == 0L || is.na(x)) {
+    return("not_available")
+  }
+  as.character(x)
 }
 
 hs_checked_ids <- function(x, label) {

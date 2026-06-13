@@ -1082,3 +1082,37 @@ with private memory.
   - Public wording says genotype-marker alignment validation only.
   - Public wording does not claim genotype parsing, marker imputation, marker
     scans, genomic fitting, or QTL/eQTL fitting.
+
+## 2026-06-13 hs_data marker-status summary
+
+- Goal: expose marker-map and genotype-marker alignment diagnostics through
+  `summary(hs_data(...))`.
+- Active lenses: Emmy, Jason, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `marker_status` to `summary.hs_data()`.
+  - The table reports marker-map marker count, genotype marker-column count,
+    aligned marker-column count, chromosome count, coordinate range, and
+    alignment status.
+  - `print.summary_hs_data()` prints marker status only when marker or genotype
+    marker components are present.
+  - Updated tests, README, model-status article, capability status, validation
+    debt, claims register, NEWS, and roxygen docs.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `41 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `hs_data.Rd`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `249 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says marker-status diagnostics only.
+  - Public wording does not claim genotype parsing, marker imputation, marker
+    scans, genomic fitting, or QTL/eQTL fitting.

@@ -49,3 +49,8 @@ multi-omics workflows. It does not fit models. The v0.1 parser can use an
 \code{phenotypes} and making named components such as \code{pedigree} available to
 formula terms.
 }
+\details{
+\code{summary(hs_data(...))} reports ID overlap diagnostics and, when genotype
+or marker components are supplied, marker-map and genotype-column alignment
+diagnostics.
+}
