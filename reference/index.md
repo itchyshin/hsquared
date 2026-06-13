@@ -57,6 +57,13 @@ not fit models yet.
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
   : Extract reliability estimates
+- [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  : Extract planned marker, QTL, GWAS, and eQTL results
 - [`fixef()`](https://itchyshin.github.io/hsquared/reference/fixef.md) :
   Extract fixed effects
 - [`ranef()`](https://itchyshin.github.io/hsquared/reference/ranef.md) :

@@ -148,6 +148,12 @@ h2 when a sibling <code>HSquared.jl</code> checkout is available.</li>
 including variance components, heritability, EBVs, PEV, reliability,
 fixed effects, random effects, log-likelihood, AIC, prediction, and
 summaries.</li>
+<li>Reserved marker/QTL/eQTL extractor names:
+<code><a href="../reference/marker_extractors.html">marker_effects()</a></code>, <code><a href="../reference/marker_extractors.html">marker_variance_explained()</a></code>,
+<code><a href="../reference/marker_extractors.html">qtl_table()</a></code>, <code><a href="../reference/marker_extractors.html">gwas_table()</a></code>,
+<code><a href="../reference/marker_extractors.html">eqtl_table()</a></code>, and <code><a href="../reference/marker_extractors.html">lod_scores()</a></code>. These only
+return values for future <code>hsquared_fit</code> objects that contain
+matching result fields.</li>
 <li>
 <code><a href="../reference/hs_data.html">hs_data()</a></code> as a lightweight input container with ID maps
 for phenotype, pedigree, genotype, expression, marker, annotation, and
@@ -199,6 +205,7 @@ from fitted models.</li>
 annotation, or environment components in <code><a href="../reference/hs_data.html">hs_data()</a></code>.</li>
 <li>Allele coding, marker imputation, PLINK/VCF parsing, or marker
 scanning from marker maps.</li>
+<li>Marker, QTL, GWAS, or eQTL result generation.</li>
 <li>Genomic and single-step models.</li>
 <li>Multivariate and factor-analytic G matrices.</li>
 <li>Permanent environment, common environment, maternal/paternal,

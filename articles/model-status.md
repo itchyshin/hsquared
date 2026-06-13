@@ -83,6 +83,16 @@ This page separates what exists from what is planned.
   variance components, heritability, EBVs, PEV, reliability, fixed
   effects, random effects, log-likelihood, AIC, prediction, and
   summaries.
+- Reserved marker/QTL/eQTL extractor names:
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  and
+  [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md).
+  These only return values for future `hsquared_fit` objects that
+  contain matching result fields.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.
@@ -128,6 +138,7 @@ This page separates what exists from what is planned.
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md).
 - Allele coding, marker imputation, PLINK/VCF parsing, or marker
   scanning from marker maps.
+- Marker, QTL, GWAS, or eQTL result generation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - Permanent environment, common environment, maternal/paternal,

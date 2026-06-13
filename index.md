@@ -33,6 +33,15 @@ Those markers are syntax reservations only and currently abort as
 planned, not implemented. Use
 [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
 to inspect the parsed, reserved, and planned formula grammar from R.
+Output extractor names such as
+[`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+[`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+[`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+[`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+[`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+and
+[`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+are also reserved for future fitted marker/QTL/eQTL results.
 
 The intended two-package shape is:
 

@@ -25,6 +25,18 @@
   `hsquared_fit` objects containing those result fields
   ([\#5](https://github.com/itchyshin/hsquared/issues/5),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- Added reserved marker/QTL/eQTL extractor names:
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
+  and
+  [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md).
+  These are output-vocabulary placeholders only; marker, QTL, GWAS, and
+  eQTL fitting remain planned
+  ([\#5](https://github.com/itchyshin/hsquared/issues/5),
+  [\#9](https://github.com/itchyshin/hsquared/issues/9)).
 - The experimental local Julia bridge now enriches tiny `hsquared_fit`
   results with dense validation-path PEV and reliability fields when the
   sibling `HSquared.jl` checkout exposes
