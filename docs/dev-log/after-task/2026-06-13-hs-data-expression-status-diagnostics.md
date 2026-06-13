@@ -65,7 +65,11 @@ Local checks:
 
 Remote checks:
 
-- Pending until this slice is pushed.
+- GitHub Actions R-CMD-check `27464519542`: passed for commit `c5e97d1`.
+- GitHub Actions pkgdown `27464519547`: passed for commit `c5e97d1`.
+- GitHub Pages build/deploy `27464558016`: passed after the pkgdown publish.
+- Pages emitted the upstream Node.js 20 action deprecation annotation from the
+  Pages action stack; no package-code failure.
 
 ## Rose Audit
 
@@ -96,6 +100,9 @@ The focused tests cover:
 ## Coordination Notes
 
 R-only slice. No Julia payload or engine API change is required.
+
+Issue #8 was updated:
+<https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698297184>.
 
 ## Known Limitations
 
