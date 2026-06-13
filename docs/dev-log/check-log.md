@@ -2036,3 +2036,40 @@ with private memory.
   - GitHub Actions R-CMD-check `27467772941`: passed.
   - GitHub Actions pkgdown `27467772929`: passed.
   - GitHub Pages build/deploy `27467811302`: passed.
+
+## 2026-06-13 Experimental sparse REML estimator bridge (B2)
+
+- Goal: surface the twin's Julia-owned `HSquared.fit_sparse_reml()` REML-only
+  sparse optimizer through a fenced, opt-in R bridge target
+  `engine_control = list(target = "sparse_reml")`; default `hsquared()` still
+  validates-and-stops.
+- Active lenses: Jason, Hopper, Lovelace, Gauss, Fisher, Curie, Rose. Spawned
+  subagents: B2 scout (Jason/Hopper/Curie) and B2 review (Hopper/Fisher/Rose) via
+  Workflow.
+- Reuse (license-clean): mirrored hsquared's own MIT `hs_fit_julia_payload()` /
+  `henderson_mme` pattern and reused `hs_normalize_julia_result()`; adapted
+  R-Julia bridge idioms (patterns only) from GPL-3 `gllvmTMB`/`drmTMB`
+  `julia-bridge.R` — no GPL code copied into MIT hsquared.
+- Implementation:
+  - `hs_validate_julia_target()` now accepts `"sparse_reml"`.
+  - new `hs_validate_iterations()` and `hs_fit_julia_sparse_reml_payload()`
+    (builds a REML spec, calls `fit_sparse_reml(spec; initial, iterations)`,
+    reuses the default normalizer, tags `spec$target = "sparse_reml"`).
+  - dispatch branch in `hsquared.R`; `hs_control()` doc updated.
+- Local checks:
+  - `NOT_CRAN=true` `testthat::test_dir(filter = "julia-bridge")`: pass; the live
+    sparse-REML test executed against the sibling `HSquared.jl`.
+  - `devtools::test()` full: `473 pass`, `0 fail`, `0 warnings`, `0 skips`; live
+    Julia bridge active.
+  - `rcmdcheck::rcmdcheck()`: `0 errors`, `0 warnings`, `0 notes`.
+  - `air format .` and `git diff --check`: clean.
+- Multi-lens review (Workflow): Hopper (bridge parity), Fisher (claim/estimand),
+  Rose (claim-vs-evidence) — all returned `clean`, no blocking/required findings.
+- Boundary: experimental, opt-in, REML-only, Julia-owned estimator that R only
+  surfaces; gated on the twin's green `validation_status()`; not the default, not
+  variance-component estimation via the public R interface, not production sparse
+  fitting, AI-REML, fitted-Mrode, or ASReml parity.
+- Remote checks for commit `6add692` (+ `2dd436b`):
+  - GitHub Actions R-CMD-check `27468442096`: passed.
+  - GitHub Actions pkgdown `27468442094`: passed.
+  - GitHub Pages build/deploy `27468475645`: passed.
