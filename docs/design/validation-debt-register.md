@@ -7,6 +7,7 @@
 | R formula parser | partial | local parser tests for v0.1 syntax and unsupported errors | Boole/Noether | No model fitting or bridge execution yet. |
 | R-to-Julia bridge payload | partial | local tests for `y`, `X`, sparse `Z`, normalized pedigree order, parent indices, method, family, and target metadata | Hopper/Lovelace | No live Julia execution yet. |
 | `hsquared_fit` extractor contract | partial | local tests over mocked result fields | Emmy/Pat | No real Julia fit results yet. |
+| `hs_data()` input container | partial | local ID-map and input-shape tests | Emmy/Jason | No large-file or file-backed tests yet. |
 | `hsquared()` bridge-boundary error | partial | local tests | Rose/Pat | Must not imply fitting. |
 | sparse Ainv tiny pedigree | planned | none | Curie/Gauss/Henderson | Julia Phase 1. |
 | univariate Gaussian animal model | planned | none | Fisher/Henderson | Julia Phase 1. |

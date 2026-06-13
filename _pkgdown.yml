@@ -27,6 +27,7 @@ reference:
   - title: Start here
     desc: Current parser entry points and planned fitting controls.
     contents:
+      - hs_data
       - hsquared
       - hs_control
       - animal

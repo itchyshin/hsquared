@@ -225,3 +225,30 @@ with private memory.
 - Rose wording sweep:
   - README, vignettes, and design docs describe this as an extractor contract
     over future/internal fit objects, not as fitted animal-model support.
+
+## 2026-06-13 R data container slice
+
+- GitHub issue setup:
+  - `gh issue create --repo itchyshin/hsquared --title "R data container for phenotype/pedigree/genotype inputs" ...`
+  - Result: created issue #8 for the `hs_data()` data-container lane.
+- Local implementation checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: `NAMESPACE` regenerated and `man/hs_data.Rd` written.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `81 pass`, `0 fail`.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- API evidence:
+  - Added `hs_data()` for phenotype, pedigree, genotype, marker, expression,
+    annotation, and environment inputs.
+  - Tests cover phenotype/pedigree ID checks, genotype and expression ID maps,
+    genotyped-without-phenotype and phenotyped-without-genotype bookkeeping,
+    default-row-name rejection, and unsupported component shapes.
+- Rose wording sweep:
+  - Public wording says lightweight data container and ID maps only.
+  - No public wording claims file-backed genomics, streaming, QTL/eQTL scans,
+    or model fitting.

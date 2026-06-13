@@ -10,7 +10,9 @@ and bridge-contract work. It can validate the narrow v0.1 formula contract and
 build a tested internal R-to-Julia payload shape, but it does not execute Julia
 or fit animal models yet. The first fitted-object and extractor methods are
 also defined over an internal `hsquared_fit` contract, ready for the Julia
-result once fitting exists.
+result once fitting exists. A lightweight `hs_data()` container now records
+phenotype, pedigree, genotype, expression, marker, annotation, and environment
+inputs for future integrated workflows.
 
 The intended two-package shape is:
 
