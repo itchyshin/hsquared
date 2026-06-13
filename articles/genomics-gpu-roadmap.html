@@ -74,6 +74,9 @@
 interface into a coherent modelling language for phenotypes, pedigrees,
 genotypes, QTL/eQTL, G matrices, inheritance systems, and
 high-dimensional traits.</p>
+<p>The full technical plan lives in
+<code>docs/design/07-genomics-qtl-gpu-plan.md</code>. This article is
+the user-facing map.</p>
 <div class="section level2">
 <h2 id="design-principle">Design principle<a class="anchor" aria-label="anchor" href="#design-principle"></a>
 </h2>
@@ -123,6 +126,55 @@ benchmarkable and numerically checked.</p>
 <li>oneAPI for Intel accelerators;</li>
 <li>portable kernels where appropriate.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="planned-qtl-and-eqtl-path">Planned QTL and eQTL path<a class="anchor" aria-label="anchor" href="#planned-qtl-and-eqtl-path"></a>
+</h2>
+<p>The intended scan grammar is:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="../reference/genomic_markers.html">marker_scan</a></span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span>, leave_one_chr_out <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">pheno</span>,</span>
+<span>  genotypes <span class="op">=</span> <span class="va">geno</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">gwas_table</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu">plot_manhattan</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu">plot_qq</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p>For expression and high-dimensional omics, the long-run plan is to
+combine marker scans, sample factors, and genomic relatedness:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
+<span>  <span class="va">expr_matrix</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="../reference/genomic_markers.html">marker_scan</a></span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">sample_factors</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">expr_data</span>,</span>
+<span>  genotypes <span class="op">=</span> <span class="va">geno</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>These examples are syntax targets only. They do not fit models
+today.</p>
+</div>
+<div class="section level2">
+<h2 id="planned-multivariate-and-gllvm-path">Planned multivariate and GLLVM path<a class="anchor" aria-label="anchor" href="#planned-multivariate-and-gllvm-path"></a>
+</h2>
+<p>Classical multivariate animal models and GLLVM-style models should
+sit on one ladder:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">trait</span> <span class="op">+</span> <span class="va">trait</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span>, cov <span class="op">=</span> <span class="fu">fa</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">residual</span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">unit</span>, cov <span class="op">=</span> <span class="fu">fa</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">long_dat</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The same idea should later extend to response matrices, count
+families, ordination, latent breeding values, and high-dimensional G
+matrices.</p>
 </div>
 <div class="section level2">
 <h2 id="evidence-gate">Evidence gate<a class="anchor" aria-label="anchor" href="#evidence-gate"></a>

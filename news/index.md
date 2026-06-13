@@ -83,6 +83,9 @@
 - Added a pkgdown formula grammar roadmap article that separates parsed
   v0.1 syntax from planned quantitative-genetic, genomic, multivariate,
   and inheritance syntax.
+- Expanded the genomics/QTL/GLLVM/accelerator design plan and pkgdown
+  roadmap with a source-backed CPU/GPU strategy, QTL/eQTL path,
+  sibling-package lessons, and explicit evidence gates.
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`
