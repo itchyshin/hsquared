@@ -129,7 +129,11 @@
 <h2 id="phase-8-huge-scale-and-accelerator-strategy">Phase 8: Huge-Scale And Accelerator Strategy<a class="anchor" aria-label="anchor" href="#phase-8-huge-scale-and-accelerator-strategy"></a></h2>
 <p>Status: planned.</p>
 <ul><li>Disk-backed workflows, PCG/preconditioners, GPU-aware dense/factor models, and million-record benchmarks.</li>
-</ul></div>
+</ul><div class="section level3">
+<h3 id="standing-performance-directive-user-2026-06-13">Standing performance directive (user, 2026-06-13)<a class="anchor" aria-label="anchor" href="#standing-performance-directive-user-2026-06-13"></a></h3>
+<p>Find the fastest REML and ML algorithms for the engine — be creative; try different combinations (AI-REML, EM, Newton / Fisher-scoring, sparse Cholesky vs PCG/preconditioners, selected inverse, etc.). Optimize CPU first (establish the best CPU baseline before GPU), then report the winner. Engine speed is Julia-lane-led (<code>HSquared.jl</code>); the R lane provides the benchmarking harness and honest surfacing. Reuse local sister code rather than reinventing: <code>DRM.jl</code> / <code>GLLVM.jl</code> <code>takahashi_selinv.jl</code> (selected inverse), <code>structured_schur.jl</code>, <code>GLLVM.jl/src/likelihood.jl</code>. The same directive was given to the Julia twin; coordinate via the shared bridge contract and the coordination board.</p>
+</div>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

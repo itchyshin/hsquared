@@ -45,6 +45,18 @@
   `HSquared.jl` checkout via JuliaCall. The default engine remains
   validation-only, and general fitted animal-model support is still
   planned ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
+  now recognizes an experimental, opt-in
+  `engine_control = list(target = "sparse_reml", initial = ..., iterations = ...)`
+  path that surfaces the Julia-owned `HSquared.fit_sparse_reml()`
+  REML-only sparse optimizer through the local bridge. It is not the
+  default
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  behaviour, not variance-component estimation in the public R
+  interface, and not a production sparse fitting, AI-REML, or
+  ASReml-parity claim
+  ([\#6](https://github.com/itchyshin/hsquared/issues/6),
+  [\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
