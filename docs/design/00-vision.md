@@ -45,8 +45,13 @@ specialized quantitative-genetic package.
 
 ## Current Status
 
-The R package parses the first v0.1 animal-model formula contract. No model
-fitting is implemented in the R package yet.
+The R package parses and validates the v0.1 animal-model formula contract; the
+default `hsquared()` call validates and stops. No model fitting is implemented in
+the R package itself. An experimental, opt-in `engine = "julia"` bridge can
+surface the sibling `HSquared.jl` engine for tiny local examples — supplied-
+variance Henderson MME and an experimental REML-only sparse estimator
+(`engine_control = list(target = "sparse_reml")`) — strictly for local
+validation, not production fitting.
 
 ## First Capability Target
 
