@@ -86,6 +86,9 @@ This page separates what exists from what is planned.
   for fixed effects, EBVs, fitted values, h2, and optional dense
   validation-path PEV/reliability when a sibling `HSquared.jl` checkout
   is available.
+- A tiny supplied-variance likelihood fixture that compares Julia dense
+  REML and sparse REML evaluators, plus an ML hand-check target, when a
+  sibling `HSquared.jl` checkout is available.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBV/BLUP aliases, PEV, reliability,

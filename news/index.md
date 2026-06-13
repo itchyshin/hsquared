@@ -108,6 +108,11 @@
   fitted values, and h2 with Julia `henderson_mme()` when a sibling
   `HSquared.jl` checkout is available
   ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
+- Added a tiny supplied-variance REML likelihood validation fixture.
+  When a sibling `HSquared.jl` checkout is available, optional local
+  tests compare Julia dense REML, sparse REML, and ML hand-check targets
+  without claiming sparse optimization or fitted Mrode output validation
+  ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - Expanded
   [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   to preserve planned backend and accelerator vocabulary for CPU
