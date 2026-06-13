@@ -9,6 +9,7 @@
 ^AGENTS\.md$
 ^ROADMAP\.md$
 ^docs$
+^data-raw$
 ^hsquared\.Rproj$
 ^README\.Rmd$
 ^pkgdown-site$

@@ -44,6 +44,7 @@ hs_validation_status_capabilities <- function() {
     "experimental sparse REML estimator (opt-in)",
     "experimental AI-REML estimator (opt-in)",
     "external published-REML recovery (gryphon, R reference)",
+    "known-truth DGP variance-component recovery (R reference)",
     "Mrode fitted animal-model outputs",
     "ASReml comparison policy",
     "BLUPF90/DMU/WOMBAT comparison policy",
@@ -56,7 +57,7 @@ hs_validation_status_capabilities <- function() {
 
 hs_validation_status_phases <- function() {
   c(
-    rep("Phase 1", 11L),
+    rep("Phase 1", 12L),
     rep("Phase 5+", 2L),
     "Phase 6",
     "Phase 7+"
@@ -65,7 +66,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 8L),
+    rep("partial", 9L),
     rep("planned", 7L)
   )
 }
@@ -119,6 +120,14 @@ hs_validation_status_evidence <- function() {
       "independent pure-R REML reference, and optionally agrees with the external",
       "sommer package, on the gryphon dataset (CRAN package enhancer)."
     ),
+    paste(
+      "An ADEMP recovery study (data-raw/dgp-recovery-study.R) simulates from",
+      "known variance components over a clean pedigree; the engine (ai_reml) is",
+      "near-unbiased (0 within bias +/- 2*MCSE for sigma_a2, sigma_e2, h2 over",
+      "120 reps, 100% converged), EBVs track true breeding values (acc ~0.74),",
+      "and the engine matches the independent pure-R reference to machine",
+      "precision. A skip-guarded pure-R regression test guards a small-N case."
+    ),
     "None yet.",
     "None yet.",
     "None yet.",
@@ -160,6 +169,12 @@ hs_validation_status_boundaries <- function() {
       "production fit path and does not satisfy the twin-owned V1-MRODE-FIT gate;",
       "gryphon is teaching/simulated data, confirm headline numbers before any",
       "promotion."
+    ),
+    paste(
+      "Known-truth recovery evidence for the estimator; R-lane study via the",
+      "read-only bridge. Does not itself flip the twin-owned estimator gate row",
+      "(V1-SPARSE-REML-OPT / V1-AI-REML); single h2 = 0.4 setting; no boundary,",
+      "interval, or production-robustness claim."
     ),
     "Planned; no Mrode fitted-output claim.",
     "Planned; no ASReml parity claim.",

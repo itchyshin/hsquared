@@ -849,3 +849,59 @@ test_that("hsquared's R REML reference recovers the published gryphon estimates"
     }
   }
 })
+
+test_that("REML recovers known variance components from a simulated DGP", {
+  # Known-truth recovery (ADEMP; Morris/White/Crowther 2019). Data are simulated
+  # from a univariate Gaussian animal model with KNOWN variance components over a
+  # clean simulated pedigree; the estimator must recover the generating values
+  # (near-unbiased) and produce EBVs that track the true breeding values. This is
+  # the statistical-correctness check the v0.1 promotion predicate (item 3) calls
+  # for, distinct from optimizer reproducibility. This CI leg uses hsquared's
+  # independent pure-R REML reference; the full engine study lives in
+  # data-raw/dgp-recovery-study.R. It does NOT flip the twin-owned estimator gate
+  # row.
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("nadiv")
+
+  ped <- hs_sim_pedigree(n_founder = 40, n_per_gen = 80, n_gen = 2, seed = 1)
+  A <- as.matrix(nadiv::makeA(ped[, c("id", "sire", "dam")]))[ped$id, ped$id]
+  U <- chol(A)
+  Ainv <- solve(A)
+  n <- nrow(ped)
+  s2a <- 0.4
+  s2e <- 0.6
+  set.seed(20240613L)
+  seeds <- sample.int(.Machine$integer.max, 25L)
+
+  out <- t(vapply(
+    seeds,
+    function(sd) {
+      set.seed(sd)
+      sim <- hs_sim_animal_phenotypes(U, s2a, s2e, mu = 5)
+      ref <- hsquared:::hs_reml_estimate_reference(
+        sim$y,
+        matrix(1, n, 1L),
+        diag(n),
+        Ainv,
+        method = "REML",
+        initial = c(sigma_a2 = 0.5, sigma_e2 = 0.5)
+      )
+      va <- ref$estimate[["sigma_a2"]]
+      ve <- ref$estimate[["sigma_e2"]]
+      ebv <- hs_sim_blup_ebv(sim$y, Ainv, va, ve)
+      c(va, ve, va / (va + ve), ref$convergence, stats::cor(ebv, sim$u))
+    },
+    numeric(5)
+  ))
+  colnames(out) <- c("s2a", "s2e", "h2", "conv", "acc")
+
+  # All replicates converged.
+  expect_true(all(out[, "conv"] == 0L))
+  # Near-unbiased recovery of the known truth (loose absolute band, well above
+  # the Monte Carlo SE for 25 replicates).
+  expect_lt(abs(mean(out[, "s2a"]) - s2a), 0.06)
+  expect_lt(abs(mean(out[, "s2e"]) - s2e), 0.06)
+  expect_lt(abs(mean(out[, "h2"]) - 0.4), 0.06)
+  # EBVs track the true breeding values (correlation floor for h2 = 0.4).
+  expect_gt(mean(out[, "acc"]), 0.5)
+})
