@@ -1524,7 +1524,14 @@ with private memory.
     scanning, QTL/GWAS/eQTL fitting, automatic genotype/model construction,
     GLLVM support, GPU execution, ASReml parity, or speedup.
 - Remote checks:
-  - Pending until this slice is pushed.
+  - GitHub Actions R-CMD-check `27464791701`: passed for commit `fd0cbd9`.
+  - GitHub Actions pkgdown `27464791712`: passed for commit `fd0cbd9`.
+  - GitHub Pages build/deploy `27464830072`: passed after the pkgdown publish.
+  - Pages emitted the upstream Node.js 20 action deprecation annotation from
+    the Pages action stack; no package-code failure.
+- Issue ledger:
+  - Updated issue #8:
+    <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698325286>.
 
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 
