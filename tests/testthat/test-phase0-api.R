@@ -41,6 +41,38 @@ test_that("hs_control preserves planned backend vocabulary", {
   expect_error(hs_control(accelerator = "tpu"), "'arg' should be one of")
 })
 
+test_that("backend_info separates control vocabulary from execution", {
+  info <- backend_info(hs_control(backend = "metal"))
+
+  expect_s3_class(info, "hs_backend_info")
+  expect_equal(
+    info$backend,
+    c("cpu", "threads", "cuda", "amdgpu", "metal", "oneapi")
+  )
+  expect_true(info$requested[info$backend == "metal"])
+  expect_true(all(info$selectable))
+  expect_false(any(info$execution_available))
+  expect_true(all(info$status == "planned"))
+
+  gpu_info <- backend_info(hs_control(accelerator = "gpu"))
+  expect_true(all(
+    gpu_info$requested[
+      gpu_info$backend %in%
+        c(
+          "cuda",
+          "amdgpu",
+          "metal",
+          "oneapi"
+        )
+    ]
+  ))
+
+  expect_error(
+    backend_info(control = list()),
+    "`control` must be created by `hs_control\\(\\)`."
+  )
+})
+
 test_that("hs_control validates engine_control", {
   expect_error(
     hs_control(engine_control = "not-a-list"),

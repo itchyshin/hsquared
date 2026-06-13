@@ -30,6 +30,7 @@ reference:
       - hs_data
       - hsquared
       - hs_control
+      - backend_info
       - animal
   - title: Extractor contract
     desc: Extractor names for future fitted objects; ordinary hsquared calls do not fit models yet.

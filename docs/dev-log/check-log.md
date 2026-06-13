@@ -552,3 +552,43 @@ with private memory.
   - Result: R-CMD-check `27457948686` passed in GitHub Actions.
   - Result: pkgdown `27457948693` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27457985141` passed.
+
+## 2026-06-13 Backend status diagnostics
+
+- Goal: add an honest R-side backend diagnostic surface that exposes planned
+  backend vocabulary while marking backend execution unavailable.
+- Active lenses: Lovelace, Karpinski, Grace, Rose, Pat.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added exported `backend_info()`.
+  - Added `print.hs_backend_info()`.
+  - Added tests that check planned backend rows, requested-backend flags,
+    `selectable = TRUE`, `execution_available = FALSE`, and `status =
+    "planned"`.
+  - Added `backend_info()` to the pkgdown reference index.
+  - Updated NEWS, public claims, capability status, validation debt, and the
+    model-status article.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `NAMESPACE` and `man/backend_info.Rd`.
+  - `Rscript -e "devtools::test(filter = 'phase0-api')"`
+  - Result: passed with `35 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `151 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - First `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: failed because `_pkgdown.yml` was missing the new `backend_info`
+    topic from the reference index.
+  - Second `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says `backend_info()` reports planned backend vocabulary and
+    unavailable execution status.
+  - Public wording does not claim runtime backend probes, CPU/GPU execution,
+    backend benchmarking, or CPU/GPU numerical agreement.
