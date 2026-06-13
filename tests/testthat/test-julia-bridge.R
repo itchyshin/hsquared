@@ -417,4 +417,12 @@ test_that("hsquared can use the opt-in experimental sparse REML estimator bridge
   expect_true(is.finite(fit$result$loglik))
   h2 <- heritability(fit)$estimate
   expect_true(is.finite(h2) && h2 > 0 && h2 < 1)
+
+  # B3: estimated-vs-supplied provenance is explicit and distinct.
+  diag <- fit_diagnostics(fit)
+  expect_equal(diag$value[diag$metric == "target"], "sparse_reml")
+  expect_equal(
+    diag$value[diag$metric == "variance_components_source"],
+    "estimated_sparse_reml"
+  )
 })

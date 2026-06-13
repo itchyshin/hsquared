@@ -193,6 +193,7 @@ hs_fit_julia_sparse_reml_payload <- function(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
   result <- hs_normalize_julia_result(raw, payload)
+  result$diagnostics$variance_components <- "estimated_sparse_reml"
   hs_new_fit(
     spec = list(
       method = payload$method,

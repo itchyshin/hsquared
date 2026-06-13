@@ -41,6 +41,7 @@ hs_validation_status_capabilities <- function() {
     "supplied-variance Henderson MME fixture",
     "sparse REML likelihood identity",
     "Mrode-style supplied-variance outputs",
+    "experimental sparse REML estimator (opt-in)",
     "Mrode fitted animal-model outputs",
     "ASReml comparison policy",
     "BLUPF90/DMU/WOMBAT comparison policy",
@@ -53,7 +54,7 @@ hs_validation_status_capabilities <- function() {
 
 hs_validation_status_phases <- function() {
   c(
-    rep("Phase 1", 8L),
+    rep("Phase 1", 9L),
     rep("Phase 5+", 2L),
     "Phase 6",
     "Phase 7+"
@@ -62,7 +63,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 5L),
+    rep("partial", 6L),
     rep("planned", 7L)
   )
 }
@@ -93,6 +94,13 @@ hs_validation_status_evidence <- function() {
       "Mrode-style supplied-variance fixture for Ainv, fixed effects, EBVs,",
       "fitted values, PEV, reliability, h2, ML logLik, and REML logLik."
     ),
+    paste(
+      "Pure-R control/validator tests plus a skip-guarded live test running",
+      "Julia fit_sparse_reml() through the opt-in target = \"sparse_reml\"",
+      "bridge; checks positive estimated variances, finite REML logLik, and",
+      "h2 in (0, 1) on the Mrode fixture; fit provenance tagged",
+      "variance_components_source = \"estimated_sparse_reml\"."
+    ),
     "None yet.",
     "None yet.",
     "None yet.",
@@ -118,6 +126,11 @@ hs_validation_status_boundaries <- function() {
     paste(
       "Supplied-variance validation fixture only; not variance-component",
       "estimation, ASReml parity, or general fitted Mrode output coverage."
+    ),
+    paste(
+      "Experimental opt-in path only; Julia-owned estimator that R surfaces;",
+      "gated on twin validation_status; not the default, not production sparse",
+      "fitting, AI-REML, or ASReml parity."
     ),
     "Planned; no Mrode fitted-output claim.",
     "Planned; no ASReml parity claim.",
