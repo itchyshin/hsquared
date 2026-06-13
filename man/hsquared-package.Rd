@@ -2,13 +2,17 @@
 % Please edit documentation in R/hsquared-package.R
 \docType{package}
 \name{hsquared-package}
-\alias{hsquared}
 \alias{hsquared-package}
-\title{hsquared: Tools for H-Squared Analyses}
+\title{hsquared: R Interface for Julia-Backed Quantitative-Genetic Models}
 \description{
-The hsquared package is a development home for h-squared methods and
-workflows. Public functions will be added here as the package API is
-designed.
+The hsquared package is the planned R-facing interface for heritability,
+breeding-value, G-matrix, and inheritance-structured quantitative-genetic
+models backed by the HSquared.jl Julia engine.
+}
+\details{
+The current package is a Phase 0 scaffold. It defines project identity,
+operating memory, roadmap, and placeholder entry points. It does not fit
+models yet.
 }
 \seealso{
 Useful links:

@@ -1,5 +1,10 @@
 ^\.github$
+^\.agents$
+^\.codex$
 ^\.gitignore$
 ^\.Rproj\.user$
+^AGENTS\.md$
+^ROADMAP\.md$
+^docs$
 ^hsquared\.Rproj$
 ^README\.Rmd$

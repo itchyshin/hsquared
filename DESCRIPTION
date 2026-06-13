@@ -1,11 +1,13 @@
 Package: hsquared
-Title: Tools for H-Squared Analyses
+Title: R Interface for Julia-Backed Quantitative-Genetic Models
 Version: 0.0.0.9000
 Authors@R: 
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
-Description: Provides a development home for tools to estimate, report, and
-    work with h-squared quantities in R. The package is currently an early
-    scaffold, with public functions to be added as the API is designed.
+Description: Provides the R-facing home for a planned open quantitative-genetic
+    modelling system. The package will provide formula syntax, validation,
+    summaries, and extractors for heritability, breeding-value, G-matrix, and
+    inheritance-structured models backed by the HSquared.jl Julia engine. The
+    current package is a Phase 0 scaffold and does not fit models yet.
 License: MIT + file LICENSE
 URL: https://github.com/itchyshin/hsquared
 BugReports: https://github.com/itchyshin/hsquared/issues
