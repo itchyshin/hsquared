@@ -32,6 +32,7 @@
 * `hs_data()` now accepts `annotation_id` to check expression feature columns against annotation rows, and `summary()`/`data_status()` report annotation-feature diagnostics without fitting eQTL or omics models (#8).
 * `hs_data()` now accepts `environment_id` to check environment/covariate metadata coverage against phenotype records, and `summary()`/`data_status()` report environment-key diagnostics without constructing environmental model terms (#8).
 * `summary(hs_data(...))` and `data_status()` now report expression row counts, expression ID counts, feature counts, unnamed feature columns, duplicate feature IDs, and expression component type without fitting eQTL or omics models (#8).
+* `summary(hs_data(...))` and `data_status()` now report genotype row counts, genotype ID counts, marker-column counts, unnamed marker columns, duplicate marker columns, missing genotype value counts, and genotype component type without fitting genomic, marker-scan, or QTL models (#8).
 * `summary(hs_data(...))` now includes pedigree coverage and parent-link diagnostics when a pedigree component is supplied (#8).
 * `summary(hs_data(...))` now includes an ID overlap table with phenotype, pedigree, genotype, expression, and mismatch counts (#8).
 * `summary(hs_data(...))` now includes marker-map and genotype-marker alignment diagnostics when marker or genotype components are supplied (#8).

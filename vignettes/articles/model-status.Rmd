@@ -24,9 +24,9 @@ This page separates what exists from what is planned.
 - `validation_status()` reports current validation atoms and planned comparator
   lanes without running checks or implying fitted support.
 - `data_status()` reports `hs_data()` component presence, ID overlap, and
-  pedigree, expression-feature, marker-map/genotype-marker alignment,
-  annotation-feature, and environment-key diagnostics without implying fitted
-  support.
+  pedigree, expression-feature, genotype-column, marker-map/genotype-marker
+  alignment, annotation-feature, and environment-key diagnostics without
+  implying fitted support.
 - `model_spec()` previews the parsed v0.1 animal-model contract, including
   fixed-effect design columns, sparse animal-effect design dimensions,
   normalized pedigree ordering, and Julia target metadata. It does not fit a

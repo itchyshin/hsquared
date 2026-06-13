@@ -65,6 +65,25 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
     c(2L, 3L, 2L, 0L, 0L, 1L, 1L, 2L, 0L)
   )
 
+  genotype_status <- summary(data)$genotype_status
+  expect_equal(
+    genotype_status$metric,
+    c(
+      "genotype_rows",
+      "genotype_ids",
+      "genotype_marker_columns",
+      "named_genotype_marker_columns",
+      "unnamed_genotype_marker_columns",
+      "duplicate_genotype_marker_columns",
+      "missing_genotype_values",
+      "component_type"
+    )
+  )
+  expect_equal(
+    genotype_status$value,
+    c("2", "2", "3", "3", "0", "0", "0", "matrix")
+  )
+
   pedigree_status <- summary(data)$pedigree_status
   expect_equal(
     pedigree_status$metric,
@@ -124,6 +143,10 @@ test_that("summary.hs_data reports partial marker diagnostics", {
     genotypes = data.frame(id = "a", m1 = 0, m2 = 1)
   )
   expect_equal(
+    summary(genotype_only)$genotype_status$value,
+    c("1", "1", "2", "2", "0", "0", "0", "data.frame")
+  )
+  expect_equal(
     summary(genotype_only)$marker_status$value,
     c(
       "0",
@@ -147,13 +170,38 @@ test_that("summary.hs_data reports partial marker diagnostics", {
   )
   expect_equal(summary(unnamed_matrix)$marker_status$value[2], "2")
   expect_equal(
+    summary(unnamed_matrix)$genotype_status$value,
+    c("1", "1", "2", "0", "2", "0", "0", "matrix")
+  )
+  expect_equal(
     summary(unnamed_matrix)$marker_status$value[7],
     "not_checked_no_marker_map"
   )
 
   phenotype_only <- hs_data(phenotypes = phenotypes)
   expect_null(summary(phenotype_only)$pedigree_status)
+  expect_null(summary(phenotype_only)$genotype_status)
   expect_null(summary(phenotype_only)$marker_status)
+})
+
+test_that("hs_data reports duplicate and missing genotype diagnostics", {
+  phenotypes <- data.frame(id = c("a", "b"), y = c(1, 2))
+  genotypes <- data.frame(
+    id = c("a", "b"),
+    m1 = c(0, NA),
+    m1 = c(1, 2),
+    check.names = FALSE
+  )
+
+  data <- hs_data(
+    phenotypes = phenotypes,
+    genotypes = genotypes
+  )
+
+  expect_equal(
+    summary(data)$genotype_status$value,
+    c("2", "2", "2", "2", "0", "1", "1", "data.frame")
+  )
 })
 
 test_that("summary.hs_data reports pedigree warning diagnostics", {
@@ -207,6 +255,7 @@ test_that("data_status exposes hs_data diagnostics directly", {
   )
   expect_equal(status$id_overlap$count[[1L]], 2L)
   expect_equal(status$pedigree_status$count[[5L]], 2L)
+  expect_equal(status$genotype_status$value[[3L]], "2")
   expect_equal(status$marker_status$value[[7L]], "checked")
   expect_match(capture.output(print(status))[[1L]], "<hs_data_status>")
 })

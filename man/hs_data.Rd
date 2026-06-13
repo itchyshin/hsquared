@@ -62,8 +62,8 @@ formula terms.
 \details{
 \code{summary(hs_data(...))} reports ID overlap diagnostics, pedigree diagnostics,
 and, when expression, genotype, or marker components are supplied,
-expression-feature, marker-map, and genotype-column alignment diagnostics.
-When \code{annotation_id} is supplied, it reports expression-feature annotation
-coverage diagnostics. When \code{environment_id} is supplied, it also reports
-environment metadata coverage diagnostics.
+expression-feature, genotype-column, marker-map, and genotype-marker
+alignment diagnostics. When \code{annotation_id} is supplied, it reports
+expression-feature annotation coverage diagnostics. When \code{environment_id} is
+supplied, it also reports environment metadata coverage diagnostics.
 }

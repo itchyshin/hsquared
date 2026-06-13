@@ -33,10 +33,10 @@
 #' @details
 #' `summary(hs_data(...))` reports ID overlap diagnostics, pedigree diagnostics,
 #' and, when expression, genotype, or marker components are supplied,
-#' expression-feature, marker-map, and genotype-column alignment diagnostics.
-#' When `annotation_id` is supplied, it reports expression-feature annotation
-#' coverage diagnostics. When `environment_id` is supplied, it also reports
-#' environment metadata coverage diagnostics.
+#' expression-feature, genotype-column, marker-map, and genotype-marker
+#' alignment diagnostics. When `annotation_id` is supplied, it reports
+#' expression-feature annotation coverage diagnostics. When `environment_id` is
+#' supplied, it also reports environment metadata coverage diagnostics.
 #' @export
 hs_data <- function(
   phenotypes,
@@ -145,13 +145,13 @@ print.hs_data <- function(x, ...) {
 #'
 #' `data_status()` gives a direct user-facing view of the checks stored in an
 #' [hs_data()] object. It reports component presence, ID overlap diagnostics,
-#' pedigree diagnostics, expression-feature diagnostics, and marker-map/
-#' genotype-marker alignment diagnostics when those inputs are supplied. When
-#' `annotation_id` is supplied, it reports expression-feature annotation
-#' coverage diagnostics. When `environment_id` is supplied, it also reports
-#' environment metadata coverage diagnostics. It does not fit models, build
-#' genomic relationship matrices, add eQTL terms, or add environment-effect
-#' terms.
+#' pedigree diagnostics, expression-feature diagnostics, genotype-column
+#' diagnostics, and marker-map/genotype-marker alignment diagnostics when those
+#' inputs are supplied. When `annotation_id` is supplied, it reports
+#' expression-feature annotation coverage diagnostics. When `environment_id` is
+#' supplied, it also reports environment metadata coverage diagnostics. It does
+#' not fit models, build genomic relationship matrices, add eQTL terms, or add
+#' environment-effect terms.
 #'
 #' @param data An [hs_data()] object.
 #'
@@ -178,6 +178,7 @@ data_status.hs_data <- function(data) {
       id_overlap = out$id_overlap,
       pedigree_status = out$pedigree_status,
       expression_status = out$expression_status,
+      genotype_status = out$genotype_status,
       marker_status = out$marker_status,
       annotation_status = out$annotation_status,
       environment_status = out$environment_status
@@ -203,6 +204,12 @@ print.hs_data_status <- function(x, ...) {
   } else {
     cat("  expression status:\n", sep = "")
     print.data.frame(x$expression_status, row.names = FALSE)
+  }
+  if (is.null(x$genotype_status)) {
+    cat("  genotype status: not available\n", sep = "")
+  } else {
+    cat("  genotype status:\n", sep = "")
+    print.data.frame(x$genotype_status, row.names = FALSE)
   }
   if (is.null(x$marker_status)) {
     cat("  marker status: not available\n", sep = "")
@@ -245,6 +252,7 @@ summary.hs_data <- function(object, ...) {
       id_overlap = hs_data_id_overlap(object$id_map),
       pedigree_status = hs_data_pedigree_status(object),
       expression_status = hs_data_expression_status(object),
+      genotype_status = hs_data_genotype_status(object),
       marker_status = hs_data_marker_status(object),
       annotation_status = hs_data_annotation_status(object),
       environment_status = hs_data_environment_status(object)
@@ -267,6 +275,10 @@ print.summary_hs_data <- function(x, ...) {
   if (!is.null(x$expression_status)) {
     cat("  expression status:\n", sep = "")
     print.data.frame(x$expression_status, row.names = FALSE)
+  }
+  if (!is.null(x$genotype_status)) {
+    cat("  genotype status:\n", sep = "")
+    print.data.frame(x$genotype_status, row.names = FALSE)
   }
   if (!is.null(x$marker_status)) {
     cat("  marker status:\n", sep = "")
@@ -465,6 +477,44 @@ hs_data_expression_status <- function(object) {
   )
 }
 
+hs_data_genotype_status <- function(object) {
+  if (is.null(object$genotypes)) {
+    return(NULL)
+  }
+
+  marker_ids <- hs_data_summary_genotype_marker_ids(object)
+  has_marker_name <- !is.na(marker_ids) & marker_ids != ""
+  named_markers <- marker_ids[has_marker_name]
+  duplicate_markers <- unique(named_markers[duplicated(named_markers)])
+
+  data.frame(
+    metric = c(
+      "genotype_rows",
+      "genotype_ids",
+      "genotype_marker_columns",
+      "named_genotype_marker_columns",
+      "unnamed_genotype_marker_columns",
+      "duplicate_genotype_marker_columns",
+      "missing_genotype_values",
+      "component_type"
+    ),
+    value = c(
+      as.character(hs_genotype_row_count(object$genotypes)),
+      as.character(length(object$id_map$genotype_ids)),
+      as.character(length(marker_ids)),
+      as.character(length(named_markers)),
+      as.character(sum(!has_marker_name)),
+      as.character(length(duplicate_markers)),
+      as.character(hs_genotype_missing_value_count(
+        object$genotypes,
+        object$id
+      )),
+      hs_genotype_component_type(object$genotypes)
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
 hs_data_annotation_status <- function(object) {
   if (is.null(object$annotation)) {
     return(NULL)
@@ -585,7 +635,7 @@ hs_data_summary_genotype_marker_ids <- function(object) {
   if (is.data.frame(object$genotypes)) {
     marker_columns <- names(object$genotypes)
     if (object$id %in% marker_columns) {
-      marker_columns <- setdiff(marker_columns, object$id)
+      marker_columns <- marker_columns[marker_columns != object$id]
     }
     return(marker_columns)
   }
@@ -793,7 +843,7 @@ hs_expression_feature_ids <- function(
   if (is.data.frame(expression)) {
     feature_ids <- names(expression)
     if (id %in% feature_ids) {
-      feature_ids <- setdiff(feature_ids, id)
+      feature_ids <- feature_ids[feature_ids != id]
     }
     if (length(feature_ids) == 0L && isTRUE(require_names)) {
       stop(
@@ -1056,7 +1106,7 @@ hs_genotype_marker_ids <- function(genotypes, id) {
   if (is.data.frame(genotypes)) {
     marker_columns <- names(genotypes)
     if (id %in% marker_columns) {
-      marker_columns <- setdiff(marker_columns, id)
+      marker_columns <- marker_columns[marker_columns != id]
     }
     if (length(marker_columns) == 0L) {
       stop(
@@ -1069,6 +1119,38 @@ hs_genotype_marker_ids <- function(genotypes, id) {
   }
 
   character()
+}
+
+hs_genotype_row_count <- function(genotypes) {
+  if (is.matrix(genotypes) || is.data.frame(genotypes)) {
+    return(nrow(genotypes))
+  }
+  NA_integer_
+}
+
+hs_genotype_missing_value_count <- function(genotypes, id) {
+  if (is.matrix(genotypes)) {
+    return(sum(is.na(genotypes)))
+  }
+  if (is.data.frame(genotypes)) {
+    marker_columns <- seq_along(genotypes)
+    if (id %in% names(genotypes)) {
+      marker_columns <- marker_columns[names(genotypes) != id]
+    }
+    payload <- genotypes[marker_columns]
+    return(sum(vapply(payload, function(x) sum(is.na(x)), integer(1L))))
+  }
+  NA_integer_
+}
+
+hs_genotype_component_type <- function(genotypes) {
+  if (is.matrix(genotypes)) {
+    return("matrix")
+  }
+  if (is.data.frame(genotypes)) {
+    return("data.frame")
+  }
+  "unknown"
 }
 
 hs_print_component_count <- function(label, ids) {

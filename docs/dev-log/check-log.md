@@ -1478,6 +1478,54 @@ with private memory.
   - Updated issue #8:
     <https://github.com/itchyshin/hsquared/issues/8#issuecomment-4698297184>.
 
+## 2026-06-13 hs_data genotype-status diagnostics
+
+- Goal: add `hs_data()` diagnostics for genotype matrix/data-frame shape and
+  marker-column naming without adding genomic, marker-scan, or QTL modelling.
+- Active lenses: Emmy, Jason, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `summary(hs_data(...))$genotype_status`.
+  - Added `data_status(...)$genotype_status` and print support.
+  - The status table reports genotype rows, genotype IDs, marker-column count,
+    named marker-column count, unnamed marker-column count, duplicate named
+    marker-column count, missing genotype value count, and component type.
+  - Fixed duplicate-name handling in genotype and expression feature helper
+    paths by replacing `setdiff()` with order-preserving name filtering.
+  - Added tests for matrix genotype inputs, data-frame genotype inputs,
+    unnamed genotype matrix columns, duplicate genotype marker columns, and
+    missing genotype values.
+  - Updated README, model-status article, capability status, validation debt,
+    public claims, NEWS, roxygen docs, and board.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: documentation updated, formatting completed, and focused tests
+    passed with `108 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `402 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - First run result: `0 errors | 0 warnings | 1 note`; note was
+    `unable to verify current time` from timestamp verification.
+  - `Rscript -e "devtools::check()"`
+  - Rerun result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "genotype.*model|genotype.*fit|genotype_status.*fit|genotype_status.*model|genomic.*implemented|marker.*implemented|QTL.*implemented|eQTL.*implemented|omics.*implemented|automatic.*genotype|automatic.*marker|GLLVM.*implemented|GPU.*implemented|supports genomic|supports QTL|supports eQTL|ASReml parity|speedup|fast|faster" README.md NEWS.md R man tests vignettes docs/design docs/dev-log _pkgdown.yml`.
+  - Result: hits were planned, blocked, negated, prior scan/report records, or
+    the intended new `without fitting genomic, marker-scan, or QTL models`
+    wording.
+  - Public wording says genotype-status diagnostics only.
+  - Public wording does not claim genomic fitting, genotype parsing, marker
+    scanning, QTL/GWAS/eQTL fitting, automatic genotype/model construction,
+    GLLVM support, GPU execution, ASReml parity, or speedup.
+- Remote checks:
+  - Pending until this slice is pushed.
+
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 
 - Goal: add an internal supplied-variance Henderson mixed-model-equation
