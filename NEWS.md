@@ -11,6 +11,7 @@
 * Added an optional Mrode9/nadiv pedigree-Ainv comparator fixture. When `nadiv` and a sibling `HSquared.jl` checkout are available, local tests compare Julia `pedigree_inverse()` with `nadiv::makeAinv()` for the Mrode9 pedigree (#7).
 * Expanded `hs_control()` to preserve planned backend and accelerator vocabulary for CPU threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface placeholders only; GPU execution remains planned (#3).
 * Added `backend_info()` so users and developers can inspect planned backend names while seeing that backend execution is not available yet.
+* `data_status()` now gives users a direct diagnostic view of `hs_data()` component presence, ID overlap, and marker-map/genotype-marker alignment status. It is a status helper only and does not fit models (#8).
 * Added `formula_status()` so users and developers can inspect parsed, reserved, and planned formula grammar without reading the full roadmap.
 * Added `model_spec()` so users and developers can preview the parsed v0.1 animal-model contract, fixed-effect design columns, sparse animal-effect design dimensions, normalized pedigree ordering, and Julia targets without fitting a model.
 * Added inert planned formula markers for `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`. The parser now rejects these terms with explicit planned-not-implemented errors instead of treating them as fixed effects.

@@ -1116,3 +1116,35 @@ with private memory.
   - Public wording says marker-status diagnostics only.
   - Public wording does not claim genotype parsing, marker imputation, marker
     scans, genomic fitting, or QTL/eQTL fitting.
+
+## 2026-06-13 data_status diagnostic helper
+
+- Goal: add a direct user-facing status helper for `hs_data()` diagnostics.
+- Active lenses: Emmy, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added exported `data_status()` S3 generic.
+  - Added `data_status.hs_data()` and `print.hs_data_status()`.
+  - The helper reports component presence, ID-overlap diagnostics, and
+    marker-status diagnostics using the existing `hs_data()` summary surfaces.
+  - Added tests and pkgdown reference-index coverage.
+  - Updated README, model-status article, capability status, validation debt,
+    claims register, NEWS, and coordination board.
+- Local checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `NAMESPACE` and `data_status.Rd`.
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `46 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `254 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says `data_status()` is a diagnostic helper only.
+  - Public wording does not claim fitting, genotype parsing, relationship
+    matrix construction, marker scanning, genomic fitting, or QTL/eQTL fitting.

@@ -30,6 +30,7 @@ reference:
     desc: Current parser entry points and planned fitting controls.
     contents:
       - hs_data
+      - data_status
       - hsquared
       - hs_control
       - backend_info

@@ -72,6 +72,7 @@ from an `hs_data()` bundle:
 ```r
 bundle <- hs_data(phenotypes = dat, pedigree = ped)
 summary(bundle)
+data_status(bundle)
 
 spec <- model_spec(
   y ~ sex + age + animal(1 | id, pedigree = pedigree),

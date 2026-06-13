@@ -132,6 +132,33 @@ test_that("summary.hs_data reports partial marker diagnostics", {
   expect_null(summary(phenotype_only)$marker_status)
 })
 
+test_that("data_status exposes hs_data diagnostics directly", {
+  phenotypes <- data.frame(id = c("a", "b"), y = c(1, 2))
+  genotypes <- matrix(
+    0,
+    nrow = 2,
+    ncol = 2,
+    dimnames = list(c("a", "b"), c("m1", "m2"))
+  )
+  data <- hs_data(
+    phenotypes = phenotypes,
+    genotypes = genotypes,
+    markers = data.frame(
+      marker = c("m1", "m2"),
+      chr = c("1", "2"),
+      pos = c(10, 20)
+    )
+  )
+
+  status <- data_status(data)
+
+  expect_s3_class(status, "hs_data_status")
+  expect_equal(status$components, c("phenotypes", "genotypes", "markers"))
+  expect_equal(status$id_overlap$count[[1L]], 2L)
+  expect_equal(status$marker_status$value[[7L]], "checked")
+  expect_match(capture.output(print(status))[[1L]], "<hs_data_status>")
+})
+
 test_that("hs_data accepts expression IDs from an ID column", {
   phenotypes <- data.frame(sample = c("s1", "s2"), y = c(1, 2))
   expression <- data.frame(sample = c("s2", "s3"), gene1 = c(10, 20))

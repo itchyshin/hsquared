@@ -117,6 +117,57 @@ print.hs_data <- function(x, ...) {
   invisible(x)
 }
 
+#' Inspect hsquared data-container status
+#'
+#' `data_status()` gives a direct user-facing view of the checks stored in an
+#' [hs_data()] object. It reports component presence, ID overlap diagnostics,
+#' and marker-map/genotype-marker alignment diagnostics when those inputs are
+#' supplied. It does not fit models or build genomic relationship matrices.
+#'
+#' @param data An [hs_data()] object.
+#'
+#' @return An `"hs_data_status"` object.
+#' @export
+data_status <- function(data) {
+  UseMethod("data_status")
+}
+
+#' @export
+data_status.default <- function(data) {
+  stop(
+    "`data_status()` currently supports `hs_data()` objects.",
+    call. = FALSE
+  )
+}
+
+#' @export
+data_status.hs_data <- function(data) {
+  out <- summary(data)
+  structure(
+    list(
+      components = out$components,
+      id_overlap = out$id_overlap,
+      marker_status = out$marker_status
+    ),
+    class = "hs_data_status"
+  )
+}
+
+#' @export
+print.hs_data_status <- function(x, ...) {
+  cat("<hs_data_status>\n")
+  cat("  components: ", paste(x$components, collapse = ", "), "\n", sep = "")
+  cat("  ID overlap:\n", sep = "")
+  print.data.frame(x$id_overlap, row.names = FALSE)
+  if (is.null(x$marker_status)) {
+    cat("  marker status: not available\n", sep = "")
+  } else {
+    cat("  marker status:\n", sep = "")
+    print.data.frame(x$marker_status, row.names = FALSE)
+  }
+  invisible(x)
+}
+
 #' @export
 summary.hs_data <- function(object, ...) {
   structure(
