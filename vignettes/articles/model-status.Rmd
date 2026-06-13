@@ -19,6 +19,8 @@ This page separates what exists from what is planned.
   backend names as control metadata.
 - `backend_info()` reports the planned backend vocabulary and marks backend
   execution unavailable.
+- `formula_status()` reports parsed, reserved, and planned grammar terms
+  without implying fitted support.
 - `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`
   reserve planned formula vocabulary and currently error as not implemented.
 - `permanent()`, `common_env()`, `maternal_genetic()`, `maternal_env()`,

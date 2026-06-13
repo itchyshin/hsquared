@@ -10,6 +10,7 @@
 * Added an optional Mrode9/nadiv pedigree-Ainv comparator fixture. When `nadiv` and a sibling `HSquared.jl` checkout are available, local tests compare Julia `pedigree_inverse()` with `nadiv::makeAinv()` for the Mrode9 pedigree (#7).
 * Expanded `hs_control()` to preserve planned backend and accelerator vocabulary for CPU threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface placeholders only; GPU execution remains planned (#3).
 * Added `backend_info()` so users and developers can inspect planned backend names while seeing that backend execution is not available yet.
+* Added `formula_status()` so users and developers can inspect parsed, reserved, and planned formula grammar without reading the full roadmap.
 * Added inert planned formula markers for `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`. The parser now rejects these terms with explicit planned-not-implemented errors instead of treating them as fixed effects.
 * Added inert planned formula markers for `permanent()`, `common_env()`, `maternal_genetic()`, `maternal_env()`, `paternal_genetic()`, `paternal_env()`, `cytoplasmic()`, `imprinting()`, `dominance()`, `epistasis()`, `relmat()`, and `precision()`. They reserve Phase 2+ vocabulary only and currently abort as planned, not implemented.
 * Added a pkgdown formula grammar roadmap article that separates parsed v0.1 syntax from planned quantitative-genetic, genomic, multivariate, and inheritance syntax.

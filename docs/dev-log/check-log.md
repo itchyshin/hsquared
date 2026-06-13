@@ -735,3 +735,42 @@ with private memory.
   - Result: R-CMD-check `27458831298` passed in GitHub Actions.
   - Result: pkgdown `27458831294` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27458861190` passed.
+
+## 2026-06-13 Formula grammar status diagnostic
+
+- Goal: give users a compact R-side status table for parsed, reserved, and
+  planned grammar terms.
+- Active lenses: Pat, Boole, Emmy, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added exported `formula_status()`.
+  - Added `print.hs_formula_status()`.
+  - Added tests for non-empty rows, parsed/reserved/planned status, and print
+    output.
+  - Added pkgdown reference entry.
+  - Updated README, NEWS, model-status article, formula grammar article,
+    capability status, public claims, and validation debt.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `NAMESPACE` and `man/formula_status.Rd`.
+  - `Rscript -e "devtools::load_all(quiet = TRUE); print(formula_status())"`
+  - Result: printed a 20-row `hs_formula_status` table.
+  - `Rscript -e "devtools::test(filter = 'phase0-api')"`
+  - Result: passed with `47 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `186 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says diagnostic/status table.
+  - Public wording does not say `formula_status()` expands the parser or
+    enables fitting.
+- Remote checks:
+  - Pending first push for this slice.

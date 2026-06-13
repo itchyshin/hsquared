@@ -6,6 +6,7 @@
 | Team operating system | covered | Phase 0 docs, skills, agents, board, closeout report, issues, milestones, labels | Use this before Phase 1 work. |
 | `hs_control()` | covered | local tests | Default `engine = "validate"`; experimental `engine = "julia"` is tiny/local only. Backend vocabulary includes planned CPU threads, CUDA, AMDGPU, Metal, and oneAPI controls but does not execute those backends. |
 | `backend_info()` | partial | local tests | Reports planned backend rows and marks execution unavailable for every backend. |
+| `formula_status()` | partial | local tests | Reports parsed, reserved, and planned grammar rows; diagnostic only. |
 | `animal()` formula marker | partial | local parser tests | Inert syntax marker; not a standalone modelling helper. |
 | Genomic/QTL formula markers | partial | local tests | `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()` are inert markers that the parser rejects as planned, not implemented. |
 | Quantitative-genetic effect markers | partial | local tests | `permanent()`, `common_env()`, maternal/paternal, dominance/epistasis, cytoplasmic/imprinting, `relmat()`, and `precision()` markers are inert and rejected as planned, not implemented. |

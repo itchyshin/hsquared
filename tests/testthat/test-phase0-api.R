@@ -73,6 +73,31 @@ test_that("backend_info separates control vocabulary from execution", {
   )
 })
 
+test_that("formula_status separates parsed, reserved, and planned grammar", {
+  status <- formula_status()
+
+  expect_s3_class(status, "hs_formula_status")
+  expect_equal(nrow(status), 20L)
+  expect_true("term" %in% names(status))
+  expect_true("syntax_status" %in% names(status))
+  expect_true("fitting_status" %in% names(status))
+  expect_equal(
+    status$syntax_status[status$term == "animal(1 | id, pedigree = ped)"],
+    "parsed"
+  )
+  expect_true(all(
+    status$fitting_status[status$syntax_status != "parsed"] == "not available"
+  ))
+  expect_true("permanent(1 | id)" %in% status$term)
+  expect_true("genomic(1 | id, Ginv = Ginv)" %in% status$term)
+  expect_true(any(status$syntax_status == "planned"))
+  expect_match(capture.output(print(status))[[1L]], "<hs_formula_status>")
+  expect_match(
+    paste(capture.output(print(status)), collapse = "\n"),
+    "permanent\\(1 \\| id\\)"
+  )
+})
+
 test_that("hs_control validates engine_control", {
   expect_error(
     hs_control(engine_control = "not-a-list"),

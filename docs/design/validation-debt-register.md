@@ -6,6 +6,7 @@
 | `hs_control()` validation | partial | local tests planned in current slice | Emmy/Grace | Phase 0 control object only. |
 | `hs_control()` backend vocabulary | partial | local tests for CPU threads, CUDA, AMDGPU, Metal, and oneAPI names | Lovelace/Karpinski/Rose | Control metadata only; no backend execution. |
 | `backend_info()` status diagnostics | partial | local tests check requested backend flags and `execution_available = FALSE` | Lovelace/Karpinski/Rose | Diagnostic only; no runtime backend probe or benchmark. |
+| `formula_status()` grammar diagnostics | partial | local tests check parsed, reserved, and planned status rows | Boole/Pat/Rose | Diagnostic only; no formula expansion or fitting. |
 | Genomic/QTL formula markers | partial | local tests check inert marker return values and planned-not-implemented parser errors | Boole/Jason/Rose | Syntax reservation only; no genomic/QTL fitting. |
 | Quantitative-genetic effect markers | partial | local tests check inert marker return values and planned-not-implemented parser errors | Boole/Darwin/Rose | Syntax reservation only; no permanent, maternal/paternal, dominance, epistasis, custom-kernel, cytoplasmic, or imprinting fitting. |
 | R formula parser | partial | local parser tests for v0.1 syntax and unsupported errors | Boole/Noether | General fitting remains planned. |
