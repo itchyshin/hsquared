@@ -1,0 +1,58 @@
+---
+title: "Getting started with hsquared"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with hsquared}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+`hsquared` is the R-facing package for an open quantitative-genetic modelling
+system. Its partner package, `HSquared.jl`, owns the sparse Julia engine.
+
+The first user contract is intentionally simple:
+
+```{r, eval = FALSE}
+fit <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE
+)
+```
+
+Current status: this formula is parsed and validated, but model fitting is not
+implemented yet. The package stops at the planned Julia bridge boundary.
+
+The interface rule is: easy, easy, easy. Users are gold. The common animal
+model should be obvious before the package exposes genomic, multivariate,
+factor-analytic, non-Gaussian, or unusual-inheritance machinery.
+
+## Current parser contract
+
+The parser currently accepts:
+
+- one `animal()` term;
+- random-intercept syntax: `1 | id`;
+- `pedigree = ped`;
+- numeric Gaussian responses.
+
+Unsupported syntax is still important because it defines the roadmap. Terms
+such as `cov = fa(K = 2)`, `genomic()`, `single_step()`, QTL effects, selfing,
+polyploidy, haplodiploidy, and GLLVM-style latent genetic axes are planned
+lanes, not current fitting features.
+
+## Twin-package flow
+
+The intended flow is:
+
+```text
+R formula + data
+-> R validation and model specification
+-> HSquared.jl sparse engine
+-> compact result
+-> R summaries, extractors, plots, and diagnostics
+```
+
+R owns the friendly interface. Julia owns speed, sparse computation, and
+experimental engine work.

@@ -1,9 +1,9 @@
 # Formula Grammar
 
-Phase 0 records planned grammar only. The R package does not yet parse or fit
-these model terms.
+The R package now parses the narrow v0.1 animal-model syntax. It does not yet
+fit the model or execute the Julia bridge. Later grammar remains planned.
 
-## V0.1 Planned Syntax
+## V0.1 Parsed Syntax
 
 ```r
 y ~ fixed + animal(1 | id, pedigree = ped)
@@ -12,6 +12,15 @@ y ~ fixed + animal(1 | id, pedigree = ped)
 `animal()` means an additive genetic random effect whose relationship structure
 comes from a pedigree. The Julia engine should use sparse Ainv rather than
 constructing and inverting dense A.
+
+Current parser limits:
+
+- exactly one `animal()` term;
+- random-intercept syntax only: `1 | id`;
+- `pedigree = ped` required;
+- Gaussian identity-link response only;
+- unsupported `cov =`, trait, genomic, single-step, selfing, QTL, and
+  non-Gaussian syntax aborts before marshalling.
 
 ## Later Relationship Terms
 

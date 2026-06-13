@@ -4,9 +4,8 @@
 #' breeding-value, G-matrix, and inheritance-structured quantitative-genetic
 #' models backed by the HSquared.jl Julia engine.
 #'
-#' The current package is a Phase 0 scaffold. It defines project identity,
-#' operating memory, roadmap, and placeholder entry points. It does not fit
-#' models yet.
+#' The current package has an early parser for the first v0.1 animal-model
+#' formula contract. It does not fit models yet.
 #'
 #' @keywords internal
 "_PACKAGE"

@@ -3,8 +3,10 @@
 ^\.codex$
 ^\.gitignore$
 ^\.Rproj\.user$
+^_pkgdown\.yml$
 ^AGENTS\.md$
 ^ROADMAP\.md$
 ^docs$
 ^hsquared\.Rproj$
 ^README\.Rmd$
+^pkgdown-site$

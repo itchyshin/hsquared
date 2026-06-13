@@ -1,0 +1,42 @@
+url: https://itchyshin.github.io/hsquared/
+destination: pkgdown-site
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#126a73"
+    headings-color: "#1b2f33"
+    link-color: "#126a73"
+
+navbar:
+  structure:
+    left: [intro, articles, reference, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: Getting started
+          href: articles/hsquared.html
+        - text: Model status
+          href: articles/model-status.html
+        - text: Genomics and GPU roadmap
+          href: articles/genomics-gpu-roadmap.html
+
+reference:
+  - title: Start here
+    desc: Current parser entry points and planned fitting controls.
+    contents:
+      - hsquared
+      - hs_control
+      - animal
+  - title: Package
+    contents:
+      - hsquared-package
+
+articles:
+  - title: Start here
+    contents:
+      - hsquared
+      - articles/model-status
+      - articles/genomics-gpu-roadmap

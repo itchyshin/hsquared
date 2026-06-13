@@ -68,3 +68,52 @@ with private memory.
   - `gh run watch 27452446531 --repo itchyshin/hsquared --exit-status`
 - Result: final commit `2268ff4` is on `main`; R-CMD-check passed in GitHub
   Actions in 1m12s.
+
+## 2026-06-13
+
+- Rehydrated R repo:
+  - `git status --short --branch`
+  - `git remote -v`
+  - `git log --oneline --decorate -5`
+  - `gh run list --limit 5`
+- Result before Phase 1A R edits: on `main`, tracking `origin/main`;
+  latest remote R-CMD-check runs were green.
+- Coordinated with Julia twin thread
+  `019ebb88-ee69-7be2-850c-0e4840c34734`.
+- Result: Julia lane reported `HSquared.jl` commits for pedigree inverse
+  utilities and the genomics/GPU/HPC roadmap, with CI and Documenter green.
+- Local package commands:
+  - `Rscript -e "devtools::document()"`
+  - `git diff --check`
+  - `Rscript -e "devtools::test()"`
+  - `Rscript -e "pkgdown::build_site()"`
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - `Rscript -e "devtools::check()"`
+- Result: documentation regenerated; whitespace check clean; testthat passed
+  with `22 pass`; pkgdown site built locally into ignored `pkgdown-site/`;
+  `pkgdown::check_pkgdown()` reported no problems; R CMD check passed with
+  `0 errors | 0 warnings | 0 notes`.
+- Formula/API checks:
+  - `animal()` is now an exported inert formula marker.
+  - `hs_build_model_spec()` parses the v0.1
+    `animal(1 | id, pedigree = ped)` contract, validates pedigree/data IDs,
+    builds fixed design matrices, and stops before fitting.
+  - Tests cover accepted syntax, pedigree-column synonyms, unsupported
+    trait/covariance syntax, missing pedigree IDs, and bridge-boundary
+    wording.
+- Documentation and public-site checks:
+  - Added `_pkgdown.yml`, a pkgdown GitHub Actions workflow, and initial
+    vignettes/articles for overview, model status, and the genomics/GPU
+    roadmap.
+  - Added `docs/design/07-genomics-qtl-gpu-plan.md` and a scout note for
+    local packages, quantitative-genetic packages, and GPU backends.
+- Rose wording sweep:
+  - Public wording says parser/design-stage or planned where fitting,
+    genomics, QTL/eQTL, GLLVM, GPU, and HPC features are not implemented.
+  - No public wording claims fitted animal models, Julia bridge execution,
+    GPU acceleration, or genomic/QTL support as implemented.
+- Known check friction:
+  - Early snapshot tests around Phase 0 bridge-boundary wording were replaced
+    with direct `expect_error()` checks after snapshot update tooling created
+    noisy EOF/diff prompts. The formula parser keeps focused snapshots for
+    unsupported syntax.

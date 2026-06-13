@@ -32,7 +32,10 @@ fa(K) = Lambda Lambda' + Psi
 
 ## Phase 5
 
-Add genomic and single-step models: GBLUP, SNP-BLUP, HBLUP, APY, Ginv, Hinv.
+Add genomic and single-step models: GBLUP, SNP-BLUP, HBLUP, APY, Ginv, Hinv,
+marker-derived genomic relationships, and first QTL-style feature effects.
+XSim.jl-style simulation should become part of the validation canon before
+public genomic claims are widened.
 
 ## Phase 6
 
@@ -42,6 +45,10 @@ Add non-Gaussian and GLLVM-style animal models.
 
 Add non-standard inheritance: selfing, clonal, haplodiploid, polyploid,
 cytoplasmic, dominance, epistasis, and custom kernels.
+
+Plant breeding, animal breeding, and evolutionary ecology should all be visible
+in this phase. AGHmatrix and nadiv are scout references for relationship-matrix
+coverage, but `hsquared` should keep the user-facing syntax easy and consistent.
 
 ## Phase 8
 

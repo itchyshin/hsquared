@@ -23,6 +23,27 @@ hsquared(y ~ sex + age + animal(1 | id, pedigree = ped),
 )
 ```
 
+## User Interface Mantra
+
+Users are gold. The public API should be easy, easy, easy to understand.
+
+- The common animal-model path should read like the model an applied user
+  already has in mind.
+- Error messages should name the unsupported syntax and point to the closest
+  implemented or planned path.
+- R and Julia syntax should stay transferable whenever the engine can honestly
+  support the same concept.
+- Specialist machinery belongs behind intuitive defaults until users ask for
+  it.
+- Planned genomic, QTL, selfing, clonal, haplodiploid, polyploid, and
+  GLLVM-style features must stay visible in the roadmap without making the
+  current API feel crowded.
+
+Every Phase 1+ slice should include a Jason scout pass across local sister
+repos (`drmTMB`, `gllvmTMB`, `DRM.jl`, `GLLVM.jl`, and nearby statistical
+packages when present) plus a literature/package check when the slice changes
+scientific design or public claims.
+
 ## Active Team
 
 These names are review lenses unless actual subagents or separate threads are

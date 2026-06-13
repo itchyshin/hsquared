@@ -8,6 +8,24 @@ heritability, breeding values, G matrices, and inheritance-structured mixed
 models. `HSquared.jl` provides the sparse precision engine for pedigree,
 genomic, and high-dimensional quantitative-genetic computation.
 
+## API Mantra
+
+Users are gold. The interface should be easy, easy, easy.
+
+The first syntax should be obvious to a breeder, ecologist, quantitative
+geneticist, or PhD student:
+
+```r
+hsquared(y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE
+)
+```
+
+Advanced machinery should unfold from this grammar rather than force users to
+learn a separate language for every model family.
+
 ## Niche
 
 The project aims for:
@@ -27,7 +45,8 @@ specialized quantitative-genetic package.
 
 ## Current Status
 
-Phase 0 scaffold. No model fitting is implemented in the R package yet.
+The R package parses the first v0.1 animal-model formula contract. No model
+fitting is implemented in the R package yet.
 
 ## First Capability Target
 

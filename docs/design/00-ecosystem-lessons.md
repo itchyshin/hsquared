@@ -16,6 +16,12 @@ genetics.
   low-rank computation, and live parity scoreboards.
 - From the portable agent kit: repository memory is authoritative; private
   memory is a routing layer only.
+- From genomic/QTL packages such as JWAS.jl and XSim.jl: genomics belongs in
+  the roadmap from the start, but validation and simulation evidence must come
+  before claims.
+- From relationship-matrix packages such as AGHmatrix and nadiv: plant,
+  polyploid, dominance, and epistatic users need first-class relationship
+  design rather than animal-only defaults.
 
 ## What To Adapt
 
@@ -34,3 +40,5 @@ The package should borrow the operating system, not the statistical claims.
 - Do not copy GPL source from related projects without an explicit license
   decision.
 - Do not advertise ASReml-level performance before comparator evidence exists.
+- Do not let genomic, QTL, or unusual-inheritance ambition crowd the first easy
+  API.

@@ -10,27 +10,41 @@ test_that("hs_control stores validated defaults", {
 })
 
 test_that("hs_control validates engine_control", {
-  expect_snapshot(error = TRUE, {
-    hs_control(engine_control = "not-a-list")
-  })
+  expect_error(
+    hs_control(engine_control = "not-a-list"),
+    "`engine_control` must be a list.",
+    fixed = TRUE
+  )
 })
 
 test_that("hsquared validates basic call shape", {
-  expect_snapshot(error = TRUE, {
-    hsquared()
-  })
+  expect_error(hsquared(), "`formula` is required.", fixed = TRUE)
 
-  expect_snapshot(error = TRUE, {
-    hsquared(y ~ x)
-  })
+  expect_error(hsquared(y ~ x), "`data` is required.", fixed = TRUE)
 
-  expect_snapshot(error = TRUE, {
-    hsquared(y ~ x, data = data.frame(y = 1, x = 1), control = list())
-  })
+  expect_error(
+    hsquared(y ~ x, data = data.frame(y = 1, x = 1), control = list()),
+    "`control` must be created by `hs_control()`.",
+    fixed = TRUE
+  )
 })
 
 test_that("hsquared errors honestly before fitting", {
-  expect_snapshot(error = TRUE, {
-    hsquared(y ~ x, data = data.frame(y = 1, x = 1))
-  })
+  ped <- data.frame(
+    id = c("a", "b", "c", "d"),
+    sire = c(NA, NA, "a", "a"),
+    dam = c(NA, NA, "b", "c")
+  )
+  dat <- data.frame(
+    y = c(1, 2, 3),
+    sex = c("f", "m", "f"),
+    age = c(1, 2, 3),
+    id = c("a", "c", "d")
+  )
+
+  expect_error(
+    hsquared(y ~ sex + age + animal(1 | id, pedigree = ped), data = dat),
+    "parsed the v0.1 animal-model contract",
+    fixed = TRUE
+  )
 })

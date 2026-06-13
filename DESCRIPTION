@@ -4,16 +4,24 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
 Description: Provides the R-facing home for a planned open quantitative-genetic
-    modelling system. The package will provide formula syntax, validation,
+    modelling system. The package provides an early parser for the first
+    Gaussian animal-model formula contract and will provide validation,
     summaries, and extractors for heritability, breeding-value, G-matrix, and
     inheritance-structured models backed by the HSquared.jl Julia engine. The
-    current package is a Phase 0 scaffold and does not fit models yet.
+    current package does not fit models yet.
 License: MIT + file LICENSE
-URL: https://github.com/itchyshin/hsquared
+URL: https://itchyshin.github.io/hsquared/,
+    https://github.com/itchyshin/hsquared,
+    https://github.com/itchyshin/HSquared.jl
 BugReports: https://github.com/itchyshin/hsquared/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Suggests: 
+    knitr,
+    pkgdown,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder:
+    knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

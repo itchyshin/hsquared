@@ -19,8 +19,8 @@ hsquared(
 
 \item{data}{A data frame containing model variables.}
 
-\item{family}{A response family. Phase 0 accepts the argument but does not
-fit any family.}
+\item{family}{A response family. The v0.1 parser accepts only
+\code{gaussian()}.}
 
 \item{REML}{Logical; whether the planned Gaussian animal model should use
 REML. This is recorded for the future v0.1 contract only.}
@@ -30,10 +30,10 @@ REML. This is recorded for the future v0.1 contract only.}
 \item{...}{Reserved for future arguments.}
 }
 \value{
-This Phase 0 scaffold always errors before returning a fit.
+The current scaffold always errors before returning a fit.
 }
 \description{
 \code{hsquared()} is the planned R entry point for heritability, breeding-value,
-G-matrix, and inheritance-structured mixed models. The Phase 0 scaffold
-validates the call shape and stops before fitting.
+G-matrix, and inheritance-structured mixed models. The current parser
+validates the narrow v0.1 animal-model contract and stops before fitting.
 }

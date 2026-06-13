@@ -30,13 +30,17 @@ Issue ledger:
 
 ## Phase 1: Simple Gaussian Animal Model
 
-Status: planned.
+Status: started.
 
-- R formula: `animal(1 | id, pedigree = ped)`.
+- R formula: `animal(1 | id, pedigree = ped)` parser is partial.
 - Julia sparse pedigree parser and Ainv.
 - Gaussian ML/REML engine.
 - EBVs/BLUPs, variance components, heritability.
 - First tiny and Mrode-style validation examples.
+
+Standing Phase 1+ rule: check local sister packages and relevant statistical
+literature before changing grammar, engine contracts, validation claims, or
+roadmap promises.
 
 ## Phase 2: Standard Quantitative-Genetic Models
 
@@ -73,8 +77,9 @@ Status: planned.
 
 Status: planned.
 
-- GBLUP, SNP-BLUP, `Ginv`, `Hinv`, single-step HBLUP, APY, and marker-derived
-  genomic relationships.
+- GBLUP, SNP-BLUP, `Ginv`, `Hinv`, single-step HBLUP, APY, marker-derived
+  genomic relationships, genomic feature/QTL-style effects, and simulation
+  validation.
 
 ## Phase 6: Non-Gaussian And GLLVM Animal Models
 
