@@ -20,6 +20,19 @@ Current parser entry points and planned fitting controls.
   [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   : Planned genomic and QTL formula markers
+- [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`maternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`paternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`cytoplasmic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`imprinting()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  : Planned quantitative-genetic formula markers
 
 ## Extractor contract
 

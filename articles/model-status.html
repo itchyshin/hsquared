@@ -91,6 +91,15 @@ and marks backend execution unavailable.</li>
 <code><a href="../reference/genomic_markers.html">qtl_scan()</a></code> reserve planned formula vocabulary and currently
 error as not implemented.</li>
 <li>
+<code><a href="../reference/qg_effect_markers.html">permanent()</a></code>, <code><a href="../reference/qg_effect_markers.html">common_env()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>, <code><a href="../reference/qg_effect_markers.html">maternal_env()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">paternal_genetic()</a></code>, <code><a href="../reference/qg_effect_markers.html">paternal_env()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">cytoplasmic()</a></code>, <code><a href="../reference/qg_effect_markers.html">imprinting()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">dominance()</a></code>, <code><a href="../reference/qg_effect_markers.html">epistasis()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">relmat()</a></code>, and <code><a href="../reference/qg_effect_markers.html">precision()</a></code> reserve standard
+quantitative-genetic and inheritance-kernel vocabulary and currently
+error as not implemented.</li>
+<li>
 <code><a href="../reference/animal.html">animal()</a></code> as an inert formula marker.</li>
 <li>A v0.1 parser for <code>animal(1 | id, pedigree = ped)</code>.</li>
 <li>A tested internal R-to-Julia payload shape with <code>y</code>,
@@ -139,8 +148,9 @@ payload.</li>
 <li>File-backed genotype/omics loading or streaming computation.</li>
 <li>Genomic and single-step models.</li>
 <li>Multivariate and factor-analytic G matrices.</li>
-<li>QTL-style effects, selfing, clonal inheritance, haplodiploidy,
-polyploidy, cytoplasmic inheritance, dominance, epistasis, and
+<li>Permanent environment, common environment, maternal/paternal,
+dominance, epistasis, custom relationship/precision, QTL-style, selfing,
+clonal, haplodiploid, polyploid, cytoplasmic, imprinting, and
 GLLVM-style models.</li>
 <li>GPU execution.</li>
 </ul>

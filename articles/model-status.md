@@ -23,6 +23,21 @@ This page separates what exists from what is planned.
   [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   reserve planned formula vocabulary and currently error as not
   implemented.
+- [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`maternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`paternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`cytoplasmic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`imprinting()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  and
+  [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  reserve standard quantitative-genetic and inheritance-kernel
+  vocabulary and currently error as not implemented.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.
@@ -63,8 +78,9 @@ This page separates what exists from what is planned.
 - File-backed genotype/omics loading or streaming computation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
-- QTL-style effects, selfing, clonal inheritance, haplodiploidy,
-  polyploidy, cytoplasmic inheritance, dominance, epistasis, and
+- Permanent environment, common environment, maternal/paternal,
+  dominance, epistasis, custom relationship/precision, QTL-style,
+  selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting, and
   GLLVM-style models.
 - GPU execution.
 

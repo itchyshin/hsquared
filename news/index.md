@@ -60,6 +60,22 @@
   The parser now rejects these terms with explicit
   planned-not-implemented errors instead of treating them as fixed
   effects.
+- Added inert planned formula markers for
+  [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`maternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`paternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`cytoplasmic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`imprinting()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  and
+  [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md).
+  They reserve Phase 2+ vocabulary only and currently abort as planned,
+  not implemented.
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`

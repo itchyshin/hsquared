@@ -48,8 +48,17 @@ Unsupported syntax is still important because it defines the roadmap.
 Terms such as `cov = fa(K = 2)`,
 [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
 [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
-QTL effects, selfing, polyploidy, haplodiploidy, and GLLVM-style latent
-genetic axes are planned lanes, not current fitting features.
+QTL effects,
+[`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+selfing, polyploidy, haplodiploidy, and GLLVM-style latent genetic axes
+are planned lanes, not current fitting features.
 
 ## Twin-package flow
 
