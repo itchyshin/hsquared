@@ -11,7 +11,10 @@
 #' @param phenotypes A data frame of phenotypic records.
 #' @param pedigree Optional pedigree data frame.
 #' @param genotypes Optional genotype matrix or data frame.
-#' @param markers Optional marker map data frame.
+#' @param markers Optional marker map data frame. When supplied, it must contain
+#'   marker ID, chromosome, and position columns. Recognized aliases include
+#'   `marker`, `snp`, or `id`; `chromosome`, `chr`, or `chrom`; and
+#'   `position`, `pos`, `bp`, or `base_pair`.
 #' @param expression Optional expression matrix or data frame.
 #' @param annotation Optional annotation data frame.
 #' @param environment Optional environment/covariate data frame.
@@ -44,7 +47,7 @@ hs_data <- function(
   genotype_ids <- hs_optional_component_ids(genotypes, id, "`genotypes`")
   expression_ids <- hs_optional_component_ids(expression, id, "`expression`")
 
-  hs_validate_optional_data_frame(markers, "`markers`")
+  marker_spec <- hs_validate_marker_map(markers)
   hs_validate_optional_data_frame(annotation, "`annotation`")
   hs_validate_optional_data_frame(environment, "`environment`")
 
@@ -54,6 +57,7 @@ hs_data <- function(
       pedigree = pedigree,
       genotypes = genotypes,
       markers = markers,
+      marker_spec = marker_spec,
       expression = expression,
       annotation = annotation,
       environment = environment,
@@ -243,6 +247,80 @@ hs_validate_optional_data_frame <- function(x, label) {
     stop(label, " must be a data frame when supplied.", call. = FALSE)
   }
   invisible(TRUE)
+}
+
+hs_validate_marker_map <- function(markers) {
+  if (is.null(markers)) {
+    return(NULL)
+  }
+  hs_validate_optional_data_frame(markers, "`markers`")
+
+  nm <- names(markers)
+  lower <- tolower(nm)
+  pick <- function(candidates) {
+    hit <- which(lower %in% candidates)
+    if (length(hit) == 0L) {
+      return(NA_integer_)
+    }
+    hit[[1L]]
+  }
+
+  cols <- list(
+    marker = pick(c("marker", "marker_id", "snp", "snp_id", "id")),
+    chromosome = pick(c("chromosome", "chr", "chrom")),
+    position = pick(c("position", "pos", "bp", "base_pair"))
+  )
+
+  missing <- names(cols)[is.na(unlist(cols, use.names = FALSE))]
+  if (length(missing) > 0L) {
+    stop(
+      "`markers` must contain marker, chromosome, and position columns. ",
+      "Recognized aliases include `marker`, `snp`, or `id`; `chromosome`, ",
+      "`chr`, or `chrom`; and `position`, `pos`, `bp`, or `base_pair`. ",
+      "Missing: ",
+      paste(missing, collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  marker_ids <- hs_checked_ids(markers[[cols$marker]], "`markers`")
+  if (anyDuplicated(marker_ids)) {
+    stop("`markers` contains duplicate marker IDs.", call. = FALSE)
+  }
+
+  chromosome <- as.character(markers[[cols$chromosome]])
+  if (any(is.na(chromosome) | chromosome == "")) {
+    stop(
+      "`markers` chromosome column cannot contain missing or empty values.",
+      call. = FALSE
+    )
+  }
+
+  position <- suppressWarnings(as.numeric(as.character(
+    markers[[cols$position]]
+  )))
+  if (
+    any(is.na(position)) ||
+      any(!is.finite(position)) ||
+      any(position < 0)
+  ) {
+    stop(
+      "`markers` position column must contain finite non-negative numeric ",
+      "positions.",
+      call. = FALSE
+    )
+  }
+
+  structure(
+    list(
+      columns = cols,
+      marker_ids = marker_ids,
+      chromosome = chromosome,
+      position = position
+    ),
+    class = "hs_marker_map_spec"
+  )
 }
 
 hs_print_component_count <- function(label, ids) {

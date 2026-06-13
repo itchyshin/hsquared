@@ -22,7 +22,10 @@ hs_data(
 
 \item{genotypes}{Optional genotype matrix or data frame.}
 
-\item{markers}{Optional marker map data frame.}
+\item{markers}{Optional marker map data frame. When supplied, it must contain
+marker ID, chromosome, and position columns. Recognized aliases include
+\code{marker}, \code{snp}, or \code{id}; \code{chromosome}, \code{chr}, or \code{chrom}; and
+\code{position}, \code{pos}, \code{bp}, or \code{base_pair}.}
 
 \item{expression}{Optional expression matrix or data frame.}
 

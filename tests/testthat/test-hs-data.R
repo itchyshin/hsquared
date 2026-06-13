@@ -16,13 +16,27 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
     phenotypes = phenotypes,
     pedigree = pedigree,
     genotypes = genotypes,
-    markers = data.frame(marker = c("m1", "m2", "m3"))
+    markers = data.frame(
+      marker = c("m1", "m2", "m3"),
+      chr = c("1", "1", "2"),
+      pos = c(10, 20, 5)
+    )
   )
 
   expect_s3_class(data, "hs_data")
+  expect_s3_class(data$marker_spec, "hs_marker_map_spec")
   expect_equal(data$id_map$phenotype_ids, c("a", "b"))
   expect_equal(data$id_map$pedigree_ids, c("a", "b", "c"))
   expect_equal(data$id_map$genotype_ids, c("b", "d"))
+  expect_equal(data$marker_spec$marker_ids, c("m1", "m2", "m3"))
+  expect_equal(
+    data$marker_spec$columns,
+    list(
+      marker = 1L,
+      chromosome = 2L,
+      position = 3L
+    )
+  )
   expect_equal(data$id_map$phenotypes_without_pedigree, character())
   expect_equal(data$id_map$phenotypes_without_genotypes, "a")
   expect_equal(data$id_map$genotypes_without_phenotypes, "d")
@@ -106,6 +120,58 @@ test_that("hs_data rejects unsupported component shapes", {
       markers = matrix(1)
     ),
     "`markers` must be a data frame",
+    fixed = TRUE
+  )
+})
+
+test_that("hs_data validates marker-map columns and marker positions", {
+  phenotypes <- data.frame(id = "a", y = 1)
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      markers = data.frame(marker = "m1", chr = "1")
+    ),
+    "Missing: position.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      markers = data.frame(
+        snp = c("m1", "m1"),
+        chromosome = c("1", "1"),
+        bp = c(10, 20)
+      )
+    ),
+    "`markers` contains duplicate marker IDs.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      markers = data.frame(
+        id = "m1",
+        chrom = "1",
+        base_pair = -1
+      )
+    ),
+    "finite non-negative numeric positions",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = phenotypes,
+      markers = data.frame(
+        id = "m1",
+        chr = "",
+        pos = 1
+      )
+    ),
+    "chromosome column cannot contain missing or empty values",
     fixed = TRUE
   )
 })

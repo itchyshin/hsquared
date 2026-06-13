@@ -55,6 +55,8 @@ This page separates what exists from what is planned.
   pedigree, genotype, expression, marker, annotation, and environment inputs.
 - `summary(hs_data(...))` reports ID overlap and mismatch counts for
   phenotype, pedigree, genotype, and expression components.
+- `hs_data()` validates supplied marker maps for marker ID, chromosome, and
+  non-negative numeric position columns. This is metadata validation only.
 - `model_spec()` and `hsquared()` can use an `hs_data()` object for the v0.1
   animal-model parser, reading model variables from `phenotypes` and formula
   components such as `pedigree = pedigree` from the bundle.
@@ -73,6 +75,8 @@ This page separates what exists from what is planned.
 - File-backed genotype/omics loading or streaming computation.
 - Automatic model construction from genotype, marker, expression, annotation,
   or environment components in `hs_data()`.
+- Allele coding, marker imputation, PLINK/VCF parsing, or marker scanning from
+  marker maps.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - Permanent environment, common environment, maternal/paternal, dominance,

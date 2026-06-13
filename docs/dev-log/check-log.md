@@ -1007,3 +1007,41 @@ with private memory.
   - Public wording describes an ID diagnostic only.
   - Public wording does not claim modelling support from genotype or expression
     components.
+
+## 2026-06-13 hs_data marker-map validation
+
+- Goal: add conservative marker-map metadata validation to `hs_data()`.
+- Active lenses: Emmy, Jason, Pat, Rose.
+- Spawned subagents: none.
+- Scout:
+  - Read `quantgen-scout` and local package map.
+  - Searched local `drmTMB`, `gllvmTMB`, `DRM.jl`, and `GLLVM.jl` for marker
+    and map vocabulary.
+  - Recorded `docs/dev-log/scout/2026-06-13-marker-map-validation-scout.md`.
+- Implementation evidence:
+  - Added private `hs_validate_marker_map()`.
+  - `hs_data(markers = ...)` now requires marker ID, chromosome, and position
+    columns using common aliases.
+  - Marker IDs must be non-missing and unique; chromosomes cannot be missing or
+    empty; positions must be finite, numeric, and non-negative.
+  - Stored normalized metadata in private `hs_marker_map_spec`.
+  - Updated tests, README, model-status article, capability status, validation
+    debt, claims register, NEWS, and roxygen docs.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `hs_data.Rd`.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `26 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `234 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says marker metadata validation only.
+  - Public wording does not claim genotype parsing, PLINK/VCF ingestion, marker
+    imputation, marker scans, genomic fitting, or QTL/eQTL fitting.
