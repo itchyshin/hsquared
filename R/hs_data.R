@@ -25,9 +25,9 @@
 #' @return An `hs_data` object.
 #'
 #' @details
-#' `summary(hs_data(...))` reports ID overlap diagnostics and, when genotype
-#' or marker components are supplied, marker-map and genotype-column alignment
-#' diagnostics.
+#' `summary(hs_data(...))` reports ID overlap diagnostics, pedigree diagnostics,
+#' and, when genotype or marker components are supplied, marker-map and
+#' genotype-column alignment diagnostics.
 #' @export
 hs_data <- function(
   phenotypes,
@@ -121,8 +121,9 @@ print.hs_data <- function(x, ...) {
 #'
 #' `data_status()` gives a direct user-facing view of the checks stored in an
 #' [hs_data()] object. It reports component presence, ID overlap diagnostics,
-#' and marker-map/genotype-marker alignment diagnostics when those inputs are
-#' supplied. It does not fit models or build genomic relationship matrices.
+#' pedigree diagnostics, and marker-map/genotype-marker alignment diagnostics
+#' when those inputs are supplied. It does not fit models or build genomic
+#' relationship matrices.
 #'
 #' @param data An [hs_data()] object.
 #'
@@ -147,6 +148,7 @@ data_status.hs_data <- function(data) {
     list(
       components = out$components,
       id_overlap = out$id_overlap,
+      pedigree_status = out$pedigree_status,
       marker_status = out$marker_status
     ),
     class = "hs_data_status"
@@ -159,6 +161,12 @@ print.hs_data_status <- function(x, ...) {
   cat("  components: ", paste(x$components, collapse = ", "), "\n", sep = "")
   cat("  ID overlap:\n", sep = "")
   print.data.frame(x$id_overlap, row.names = FALSE)
+  if (is.null(x$pedigree_status)) {
+    cat("  pedigree status: not available\n", sep = "")
+  } else {
+    cat("  pedigree status:\n", sep = "")
+    print.data.frame(x$pedigree_status, row.names = FALSE)
+  }
   if (is.null(x$marker_status)) {
     cat("  marker status: not available\n", sep = "")
   } else {
@@ -186,6 +194,7 @@ summary.hs_data <- function(object, ...) {
       ],
       id_map = object$id_map,
       id_overlap = hs_data_id_overlap(object$id_map),
+      pedigree_status = hs_data_pedigree_status(object),
       marker_status = hs_data_marker_status(object)
     ),
     class = "summary_hs_data"
@@ -199,6 +208,10 @@ print.summary_hs_data <- function(x, ...) {
   cat("  phenotype IDs: ", length(x$id_map$phenotype_ids), "\n", sep = "")
   cat("  ID overlap:\n", sep = "")
   print.data.frame(x$id_overlap, row.names = FALSE)
+  if (!is.null(x$pedigree_status)) {
+    cat("  pedigree status:\n", sep = "")
+    print.data.frame(x$pedigree_status, row.names = FALSE)
+  }
   if (!is.null(x$marker_status)) {
     cat("  marker status:\n", sep = "")
     print.data.frame(x$marker_status, row.names = FALSE)
@@ -229,6 +242,59 @@ hs_data_id_overlap <- function(id_map) {
       length(id_map$genotypes_without_phenotypes),
       length(id_map$phenotypes_without_expression),
       length(id_map$expression_without_phenotypes)
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+hs_data_pedigree_status <- function(object) {
+  if (is.null(object$pedigree)) {
+    return(NULL)
+  }
+
+  pedigree <- object$pedigree
+  cols <- hs_pedigree_columns(pedigree)
+  ids <- as.character(pedigree[[cols$id]])
+  sire <- hs_normalize_parent(pedigree[[cols$sire]])
+  dam <- hs_normalize_parent(pedigree[[cols$dam]])
+  known_parent_ids <- unique(c(stats::na.omit(sire), stats::na.omit(dam)))
+
+  duplicate_ids <- unique(ids[duplicated(ids)])
+  missing_parents <- setdiff(known_parent_ids, unique(ids))
+  self_parent <- (!is.na(sire) & sire == ids) | (!is.na(dam) & dam == ids)
+  same_known_parent <- !is.na(sire) & !is.na(dam) & sire == dam
+  founders <- is.na(sire) & is.na(dam)
+  phenotype_ids <- object$id_map$phenotype_ids
+  pedigree_ids <- object$id_map$pedigree_ids
+
+  data.frame(
+    metric = c(
+      "pedigree_rows",
+      "pedigree_ids",
+      "phenotype_ids_with_pedigree",
+      "pedigree_only_ids",
+      "founders",
+      "nonfounders",
+      "known_sire_links",
+      "known_dam_links",
+      "missing_known_parent_ids",
+      "duplicate_pedigree_ids",
+      "self_parent_rows",
+      "same_known_parent_rows"
+    ),
+    count = c(
+      nrow(pedigree),
+      length(pedigree_ids),
+      length(intersect(phenotype_ids, pedigree_ids)),
+      length(setdiff(pedigree_ids, phenotype_ids)),
+      sum(founders),
+      sum(!founders),
+      sum(!is.na(sire)),
+      sum(!is.na(dam)),
+      length(missing_parents),
+      length(duplicate_ids),
+      sum(self_parent),
+      sum(same_known_parent)
     ),
     stringsAsFactors = FALSE
   )

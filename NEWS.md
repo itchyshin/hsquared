@@ -11,7 +11,7 @@
 * Added an optional Mrode9/nadiv pedigree-Ainv comparator fixture. When `nadiv` and a sibling `HSquared.jl` checkout are available, local tests compare Julia `pedigree_inverse()` with `nadiv::makeAinv()` for the Mrode9 pedigree (#7).
 * Expanded `hs_control()` to preserve planned backend and accelerator vocabulary for CPU threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface placeholders only; GPU execution remains planned (#3).
 * Added `backend_info()` so users and developers can inspect planned backend names while seeing that backend execution is not available yet.
-* `data_status()` now gives users a direct diagnostic view of `hs_data()` component presence, ID overlap, and marker-map/genotype-marker alignment status. It is a status helper only and does not fit models (#8).
+* `data_status()` now gives users a direct diagnostic view of `hs_data()` component presence, ID overlap, pedigree coverage, and marker-map/genotype-marker alignment status. It is a status helper only and does not fit models (#8).
 * Added `formula_status()` so users and developers can inspect parsed, reserved, and planned formula grammar without reading the full roadmap.
 * Added `model_spec()` so users and developers can preview the parsed v0.1 animal-model contract, fixed-effect design columns, sparse animal-effect design dimensions, normalized pedigree ordering, and Julia targets without fitting a model.
 * Added inert planned formula markers for `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`. The parser now rejects these terms with explicit planned-not-implemented errors instead of treating them as fixed effects.
@@ -22,6 +22,7 @@
 * Added a local-only experimental JuliaCall smoke path for the tiny v0.1 payload when a sibling `HSquared.jl` checkout is available. This validates bridge shape against Julia `pedigree_inverse()` and `fit_animal_model()` but is not yet the public `hsquared()` fitting path (#6).
 * Added the first `hsquared_fit` object and extractor contract, including `variance_components()`, `heritability()`, `breeding_values()`, `fixef()`, `ranef()`, `logLik()`, `AIC()`, `predict()`, and `summary()` methods over internal fit objects. These are contract plumbing only until the Julia engine returns real fits (#5).
 * Added `hs_data()` as a lightweight R data container for phenotype, pedigree, genotype, marker, expression, annotation, and environment inputs. It records ID maps for future integrated genomic/QTL/eQTL workflows, but does not fit models (#8).
+* `summary(hs_data(...))` now includes pedigree coverage and parent-link diagnostics when a pedigree component is supplied (#8).
 * `summary(hs_data(...))` now includes an ID overlap table with phenotype, pedigree, genotype, expression, and mismatch counts (#8).
 * `summary(hs_data(...))` now includes marker-map and genotype-marker alignment diagnostics when marker or genotype components are supplied (#8).
 * `hs_data()` now validates supplied marker maps for marker ID, chromosome, and non-negative numeric position columns. This is metadata validation only; genomic and QTL/eQTL fitting remain planned (#8).

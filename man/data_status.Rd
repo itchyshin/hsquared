@@ -15,6 +15,7 @@ An \code{"hs_data_status"} object.
 \description{
 \code{data_status()} gives a direct user-facing view of the checks stored in an
 \code{\link[=hs_data]{hs_data()}} object. It reports component presence, ID overlap diagnostics,
-and marker-map/genotype-marker alignment diagnostics when those inputs are
-supplied. It does not fit models or build genomic relationship matrices.
+pedigree diagnostics, and marker-map/genotype-marker alignment diagnostics
+when those inputs are supplied. It does not fit models or build genomic
+relationship matrices.
 }

@@ -65,6 +65,29 @@ test_that("hs_data stores phenotype, pedigree, and genotype ID maps", {
     c(2L, 3L, 2L, 0L, 0L, 1L, 1L, 2L, 0L)
   )
 
+  pedigree_status <- summary(data)$pedigree_status
+  expect_equal(
+    pedigree_status$metric,
+    c(
+      "pedigree_rows",
+      "pedigree_ids",
+      "phenotype_ids_with_pedigree",
+      "pedigree_only_ids",
+      "founders",
+      "nonfounders",
+      "known_sire_links",
+      "known_dam_links",
+      "missing_known_parent_ids",
+      "duplicate_pedigree_ids",
+      "self_parent_rows",
+      "same_known_parent_rows"
+    )
+  )
+  expect_equal(
+    pedigree_status$count,
+    c(3L, 3L, 2L, 1L, 2L, 1L, 1L, 1L, 0L, 0L, 0L, 0L)
+  )
+
   marker_status <- summary(data)$marker_status
   expect_equal(
     marker_status$metric,
@@ -129,11 +152,35 @@ test_that("summary.hs_data reports partial marker diagnostics", {
   )
 
   phenotype_only <- hs_data(phenotypes = phenotypes)
+  expect_null(summary(phenotype_only)$pedigree_status)
   expect_null(summary(phenotype_only)$marker_status)
+})
+
+test_that("summary.hs_data reports pedigree warning diagnostics", {
+  data <- hs_data(
+    phenotypes = data.frame(id = "a", y = 1),
+    pedigree = data.frame(
+      id = c("a", "b", "b", "c"),
+      sire = c(NA, "ghost", NA, "a"),
+      dam = c(NA, "a", NA, "a")
+    )
+  )
+
+  status <- summary(data)$pedigree_status
+  expect_equal(status$count[status$metric == "pedigree_rows"], 4L)
+  expect_equal(status$count[status$metric == "pedigree_ids"], 3L)
+  expect_equal(status$count[status$metric == "missing_known_parent_ids"], 1L)
+  expect_equal(status$count[status$metric == "duplicate_pedigree_ids"], 1L)
+  expect_equal(status$count[status$metric == "same_known_parent_rows"], 1L)
 })
 
 test_that("data_status exposes hs_data diagnostics directly", {
   phenotypes <- data.frame(id = c("a", "b"), y = c(1, 2))
+  pedigree <- data.frame(
+    id = c("a", "b"),
+    sire = c(NA, NA),
+    dam = c(NA, NA)
+  )
   genotypes <- matrix(
     0,
     nrow = 2,
@@ -142,6 +189,7 @@ test_that("data_status exposes hs_data diagnostics directly", {
   )
   data <- hs_data(
     phenotypes = phenotypes,
+    pedigree = pedigree,
     genotypes = genotypes,
     markers = data.frame(
       marker = c("m1", "m2"),
@@ -153,8 +201,12 @@ test_that("data_status exposes hs_data diagnostics directly", {
   status <- data_status(data)
 
   expect_s3_class(status, "hs_data_status")
-  expect_equal(status$components, c("phenotypes", "genotypes", "markers"))
+  expect_equal(
+    status$components,
+    c("phenotypes", "pedigree", "genotypes", "markers")
+  )
   expect_equal(status$id_overlap$count[[1L]], 2L)
+  expect_equal(status$pedigree_status$count[[5L]], 2L)
   expect_equal(status$marker_status$value[[7L]], "checked")
   expect_match(capture.output(print(status))[[1L]], "<hs_data_status>")
 })

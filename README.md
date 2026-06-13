@@ -96,10 +96,11 @@ bundle <- hs_data(
 ```
 
 The marker-map check is metadata validation only. Genomic and QTL/eQTL models
-remain planned. When both `genotypes` and `markers` are supplied, genotype
-marker column names must match marker-map IDs exactly. `summary(bundle)` reports
-the marker-map size, genotype marker-column count, chromosome count, coordinate
-range, and whether the genotype-marker alignment was checked.
+remain planned. `summary(bundle)` and `data_status(bundle)` report pedigree
+coverage, founder and parent-link counts, marker-map size, genotype
+marker-column count, chromosome count, coordinate range, and whether the
+genotype-marker alignment was checked. When both `genotypes` and `markers` are
+supplied, genotype marker column names must match marker-map IDs exactly.
 
 The interface rule is deliberately simple: easy, easy, easy. Applied users are
 gold; the package should make the common quantitative-genetic model feel

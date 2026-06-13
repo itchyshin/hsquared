@@ -1148,3 +1148,40 @@ with private memory.
   - Public wording says `data_status()` is a diagnostic helper only.
   - Public wording does not claim fitting, genotype parsing, relationship
     matrix construction, marker scanning, genomic fitting, or QTL/eQTL fitting.
+
+## 2026-06-13 hs_data pedigree-status diagnostics
+
+- Goal: expose pedigree coverage and parent-link diagnostics through
+  `summary(hs_data(...))` and `data_status()`.
+- Active lenses: Emmy, Henderson, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Scout:
+  - Searched local `drmTMB`, `gllvmTMB`, `DRM.jl`, and `GLLVM.jl` for
+    relationship, parent, pedigree, and precision patterns.
+  - Recorded `docs/dev-log/scout/2026-06-13-pedigree-status-scout.md`.
+- Implementation evidence:
+  - Added `pedigree_status` to `summary.hs_data()`.
+  - Added pedigree-status printing to `print.summary_hs_data()` and
+    `print.hs_data_status()`.
+  - `data_status()` now includes pedigree diagnostics alongside ID and marker
+    diagnostics.
+  - Updated tests, README, model-status article, capability status, validation
+    debt, claims register, NEWS, and roxygen docs.
+- Local checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `hs_data.Rd` and `data_status.Rd`.
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `55 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `263 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says pedigree diagnostics only.
+  - Public wording does not claim pedigree inverse construction, Ainv support,
+    animal-model fitting, genomic fitting, or QTL/eQTL fitting.

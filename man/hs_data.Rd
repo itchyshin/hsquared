@@ -50,7 +50,7 @@ multi-omics workflows. It does not fit models. The v0.1 parser can use an
 formula terms.
 }
 \details{
-\code{summary(hs_data(...))} reports ID overlap diagnostics and, when genotype
-or marker components are supplied, marker-map and genotype-column alignment
-diagnostics.
+\code{summary(hs_data(...))} reports ID overlap diagnostics, pedigree diagnostics,
+and, when genotype or marker components are supplied, marker-map and
+genotype-column alignment diagnostics.
 }

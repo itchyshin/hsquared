@@ -31,7 +31,8 @@
 | 2026-06-13 | R | Emmy/Jason/Pat/Rose | main | `hs_data()` marker-map validation | pushed; CI/pkgdown/Pages passed | metadata validation only | no Julia action required |
 | 2026-06-13 | R | Emmy/Jason/Pat/Rose | main | `hs_data()` genotype-marker alignment | pushed; CI/pkgdown/Pages passed | alignment validation only | no Julia action required |
 | 2026-06-13 | R | Emmy/Jason/Pat/Rose/Grace | main | `summary.hs_data()` marker-status diagnostics | pushed; CI/pkgdown/Pages passed | diagnostic only | no Julia action required |
-| 2026-06-13 | R | Emmy/Pat/Rose/Grace | main | `data_status()` diagnostic helper | local checks passed | diagnostic only | commit, push, and watch CI/pkgdown |
+| 2026-06-13 | R | Emmy/Pat/Rose/Grace | main | `data_status()` diagnostic helper | pushed; CI/pkgdown/Pages passed | diagnostic only | no Julia action required |
+| 2026-06-13 | R | Emmy/Henderson/Pat/Rose/Grace | main | `summary.hs_data()` pedigree-status diagnostics | local checks passed | diagnostic only | commit, push, and watch CI/pkgdown |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
