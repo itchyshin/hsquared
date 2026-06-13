@@ -1238,6 +1238,10 @@ with private memory.
   - Public wording does not claim variance-component estimation, log-likelihood
     support, AI-REML, Mrode fitted-output validation, ASReml parity, production
     sparse reliability, or speedup.
+- Remote checks for commit `1489185`:
+  - GitHub Actions R-CMD-check `27462976668`: passed in 1m29s.
+  - GitHub Actions pkgdown `27462976666`: passed.
+  - GitHub Pages build/deploy `27463009993`: passed.
   - `Rscript -e "devtools::check()"`
   - Result: `0 errors | 0 warnings | 0 notes`.
 - Rose wording sweep:
