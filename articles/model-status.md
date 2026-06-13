@@ -25,8 +25,9 @@ This page separates what exists from what is planned.
   reports
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   component presence, ID overlap, and pedigree, expression-feature,
-  marker-map/genotype-marker alignment, annotation-feature, and
-  environment-key diagnostics without implying fitted support.
+  genotype-column, marker-map/genotype-marker alignment,
+  annotation-feature, and environment-key diagnostics without implying
+  fitted support.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   previews the parsed v0.1 animal-model contract, including fixed-effect
   design columns, sparse animal-effect design dimensions, normalized

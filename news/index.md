@@ -207,6 +207,13 @@
   counts, unnamed feature columns, duplicate feature IDs, and expression
   component type without fitting eQTL or omics models
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- `summary(hs_data(...))` and
+  [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
+  now report genotype row counts, genotype ID counts, marker-column
+  counts, unnamed marker columns, duplicate marker columns, missing
+  genotype value counts, and genotype component type without fitting
+  genomic, marker-scan, or QTL models
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - `summary(hs_data(...))` now includes pedigree coverage and parent-link
   diagnostics when a pedigree component is supplied
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
