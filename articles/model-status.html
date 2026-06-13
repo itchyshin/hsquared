@@ -146,6 +146,9 @@ components.</li>
 <code><a href="../reference/hs_data.html">hs_data()</a></code> validates supplied marker maps for marker ID,
 chromosome, and non-negative numeric position columns. This is metadata
 validation only.</li>
+<li>When both <code>genotypes</code> and <code>markers</code> are
+supplied, <code><a href="../reference/hs_data.html">hs_data()</a></code> checks that genotype marker columns
+match marker-map IDs exactly.</li>
 <li>
 <code><a href="../reference/model_spec.html">model_spec()</a></code> and <code><a href="../reference/hsquared.html">hsquared()</a></code> can use an
 <code><a href="../reference/hs_data.html">hs_data()</a></code> object for the v0.1 animal-model parser, reading

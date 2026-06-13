@@ -35,7 +35,9 @@ hs_data(
 
 - genotypes:
 
-  Optional genotype matrix or data frame.
+  Optional genotype matrix or data frame. Matrix row names or data-frame
+  ID values identify individuals. When `markers` is supplied, genotype
+  marker column names must match marker-map IDs exactly.
 
 - markers:
 

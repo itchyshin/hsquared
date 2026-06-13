@@ -138,6 +138,10 @@
   non-negative numeric position columns. This is metadata validation
   only; genomic and QTL/eQTL fitting remain planned
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  now checks that genotype marker column names match marker-map IDs
+  exactly when both `genotypes` and `markers` are supplied
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)

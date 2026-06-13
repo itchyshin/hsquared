@@ -71,6 +71,8 @@
 <li>
 <code><a href="../reference/hs_data.html">hs_data()</a></code> now validates supplied marker maps for marker ID, chromosome, and non-negative numeric position columns. This is metadata validation only; genomic and QTL/eQTL fitting remain planned (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
 <li>
+<code><a href="../reference/hs_data.html">hs_data()</a></code> now checks that genotype marker column names match marker-map IDs exactly when both <code>genotypes</code> and <code>markers</code> are supplied (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
+<li>
 <code><a href="../reference/model_spec.html">model_spec()</a></code> and <code><a href="../reference/hsquared.html">hsquared()</a></code> can now use an <code><a href="../reference/hs_data.html">hs_data()</a></code> object directly for the v0.1 parser, reading model variables from <code>phenotypes</code> and resolving formula components such as <code>pedigree = pedigree</code> from the bundle (<a href="https://github.com/itchyshin/hsquared/issues/8" class="external-link">#8</a>).</li>
 <li>Added Phase 0 project operating documentation, an honest placeholder <code><a href="../reference/hsquared.html">hsquared()</a></code> entry point, and <code><a href="../reference/hs_control.html">hs_control()</a></code> for planned engine controls.</li>
 </ul></div>

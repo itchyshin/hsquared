@@ -76,6 +76,9 @@ This page separates what exists from what is planned.
   validates supplied marker maps for marker ID, chromosome, and
   non-negative numeric position columns. This is metadata validation
   only.
+- When both `genotypes` and `markers` are supplied,
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  checks that genotype marker columns match marker-map IDs exactly.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
