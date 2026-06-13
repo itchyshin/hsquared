@@ -9,11 +9,11 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   rhs_terms <- hs_split_additive_rhs(formula[[3L]])
   planned_pos <- which(vapply(
     rhs_terms,
-    hs_is_planned_genomic_marker_call,
+    hs_is_planned_marker_call,
     logical(1L)
   ))
   if (length(planned_pos) > 0L) {
-    hs_stop_planned_genomic_marker(rhs_terms[[planned_pos[[1L]]]])
+    hs_stop_planned_marker(rhs_terms[[planned_pos[[1L]]]])
   }
 
   animal_pos <- which(vapply(rhs_terms, hs_is_animal_call, logical(1L)))
@@ -432,25 +432,50 @@ hs_is_animal_call <- function(expr) {
   hs_is_call(expr, "animal")
 }
 
-hs_is_planned_genomic_marker_call <- function(expr) {
+hs_is_planned_marker_call <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   is.call(expr) &&
-    as.character(expr[[1L]]) %in% hs_planned_genomic_marker_names()
+    as.character(expr[[1L]]) %in% hs_planned_marker_names()
+}
+
+hs_planned_marker_names <- function() {
+  c(
+    hs_planned_genomic_marker_names(),
+    hs_planned_qg_effect_marker_names()
+  )
 }
 
 hs_planned_genomic_marker_names <- function() {
   c("genomic", "single_step", "markers", "marker_scan", "qtl_scan")
 }
 
-hs_stop_planned_genomic_marker <- function(expr) {
+hs_planned_qg_effect_marker_names <- function() {
+  c(
+    "permanent",
+    "common_env",
+    "maternal_genetic",
+    "maternal_env",
+    "paternal_genetic",
+    "paternal_env",
+    "cytoplasmic",
+    "imprinting",
+    "dominance",
+    "epistasis",
+    "relmat",
+    "precision"
+  )
+}
+
+hs_stop_planned_marker <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   marker <- as.character(expr[[1L]])
   stop(
     "`",
     marker,
     "()` is planned, not implemented. The v0.1 parser currently accepts ",
-    "only `animal(1 | id, pedigree = ped)`. Genomic, marker-scan, ",
-    "single-step, and QTL/eQTL terms are tracked in the roadmap.",
+    "only `animal(1 | id, pedigree = ped)`. Standard quantitative-genetic, ",
+    "parental, inheritance-kernel, genomic, marker-scan, single-step, and ",
+    "QTL/eQTL terms are tracked in the roadmap.",
     call. = FALSE
   )
 }

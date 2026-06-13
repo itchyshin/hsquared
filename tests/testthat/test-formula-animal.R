@@ -10,6 +10,21 @@ test_that("planned genomic and QTL markers are inert formula markers", {
   expect_null(qtl_scan(position, genotype_probs = probs))
 })
 
+test_that("planned quantitative-genetic effect markers are inert", {
+  expect_null(permanent(1 | id))
+  expect_null(common_env(1 | litter))
+  expect_null(maternal_genetic(1 | dam, pedigree = ped))
+  expect_null(maternal_env(1 | dam))
+  expect_null(paternal_genetic(1 | sire, pedigree = ped))
+  expect_null(paternal_env(1 | sire))
+  expect_null(cytoplasmic(1 | maternal_line))
+  expect_null(imprinting(1 | id, pedigree = ped, parent = "maternal"))
+  expect_null(dominance(1 | id, pedigree = ped, Dinv = Dinv))
+  expect_null(epistasis(1 | id, pedigree = ped, Einv = Einv))
+  expect_null(relmat(1 | id, K = K))
+  expect_null(precision(1 | id, Q = Q))
+})
+
 test_that("hs_build_model_spec parses the v0.1 animal contract", {
   ped <- data.frame(
     animal = c("a", "b", "c", "d"),
@@ -95,6 +110,61 @@ test_that("formula parser rejects planned genomic and QTL syntax honestly", {
       REML = TRUE
     ),
     "`marker_scan()` is planned, not implemented.",
+    fixed = TRUE
+  )
+})
+
+test_that("formula parser rejects planned quantitative-genetic effects honestly", {
+  ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
+  dat <- data.frame(
+    y = c(1, 2),
+    id = c("a", "b"),
+    litter = c("l1", "l1"),
+    dam = c("d1", "d2")
+  )
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "`permanent()` is planned, not implemented.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "`common_env()` is planned, not implemented.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) +
+        maternal_genetic(1 | dam, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "`maternal_genetic()` is planned, not implemented.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + relmat(1 | id, Q = Q),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "`relmat()` is planned, not implemented.",
     fixed = TRUE
   )
 })

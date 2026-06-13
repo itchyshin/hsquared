@@ -33,6 +33,7 @@ reference:
       - backend_info
       - animal
       - genomic_markers
+      - qg_effect_markers
   - title: Extractor contract
     desc: Extractor names for future fitted objects; ordinary hsquared calls do not fit models yet.
     contents:

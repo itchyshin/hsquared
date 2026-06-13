@@ -18,6 +18,11 @@ and summaries, with PEV/reliability waiting on Julia result-payload fields. A
 lightweight `hs_data()` container now records phenotype, pedigree, genotype,
 expression, marker, annotation, and environment inputs for future integrated
 workflows.
+The package also reserves planned formula markers for genomic/QTL terms and
+standard quantitative-genetic extensions such as permanent environment,
+maternal/paternal effects, dominance, epistasis, cytoplasmic inheritance,
+imprinting, and custom relationship or precision matrices. Those markers are
+syntax reservations only and currently abort as planned, not implemented.
 
 The intended two-package shape is:
 

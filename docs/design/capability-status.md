@@ -8,6 +8,7 @@
 | `backend_info()` | partial | local tests | Reports planned backend rows and marks execution unavailable for every backend. |
 | `animal()` formula marker | partial | local parser tests | Inert syntax marker; not a standalone modelling helper. |
 | Genomic/QTL formula markers | partial | local tests | `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()` are inert markers that the parser rejects as planned, not implemented. |
+| Quantitative-genetic effect markers | partial | local tests | `permanent()`, `common_env()`, maternal/paternal, dominance/epistasis, cytoplasmic/imprinting, `relmat()`, and `precision()` markers are inert and rejected as planned, not implemented. |
 | `hsquared()` fit entry point | partial | local tests parse v0.1 animal contract, build bridge payload, stop by default, and fit tiny examples with opt-in Julia engine | General fitting remains planned. |
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Production bridge execution and general fitting remain planned. |
 | R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | Tiny live smoke exists separately; production bridge execution remains planned. |

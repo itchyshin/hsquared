@@ -38,12 +38,22 @@ Current bridge-payload limits:
 ```r
 genomic(1 | id, Ginv = Ginv)
 single_step(1 | id, Hinv = Hinv)
-maternal(1 | dam, pedigree = ped)
 permanent(1 | id)
 common_env(1 | litter)
-relmat(1 | id, Kinv = custom_Kinv)
-kernel(1 | id, precision = Q_custom)
+maternal_genetic(1 | dam, pedigree = ped)
+maternal_env(1 | dam)
+paternal_genetic(1 | sire, pedigree = ped)
+paternal_env(1 | sire)
+dominance(1 | id, pedigree = ped)
+epistasis(1 | id, pedigree = ped)
+cytoplasmic(1 | maternal_line)
+imprinting(1 | id, pedigree = ped, parent = "maternal")
+relmat(1 | id, K = custom_K)
+precision(1 | id, Q = custom_Q)
 ```
+
+The R package now exports these later markers and rejects them explicitly as
+planned, not implemented. They are not fitting helpers yet.
 
 ## Later Covariance Grammar
 

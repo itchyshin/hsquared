@@ -645,3 +645,53 @@ with private memory.
   - Result: R-CMD-check `27458338370` passed in GitHub Actions.
   - Result: pkgdown `27458338374` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27458374477` passed.
+
+## 2026-06-13 Planned standard QG and inheritance formula markers
+
+- Goal: reserve readable Phase 2+ formula vocabulary for permanent
+  environment, common environment, parental effects, inheritance kernels, and
+  custom relationship/precision terms while rejecting it honestly until
+  implementation exists.
+- Active lenses: Boole, Jason, Darwin, Emmy, Rose, Pat.
+- Spawned subagents: none.
+- Scout input:
+  - Read local `gllvmTMB` animal keyword conventions.
+  - Read local `drmTMB` structured-effect status patterns.
+  - Read local `DRM.jl` parse-time `relmat()`/`animal()` marker pattern.
+  - Read local `GLLVM.jl` structured precision and performance design notes.
+  - Useful local lesson: formula vocabulary should be explicit and
+    discoverable, but parser support must not imply fitted model support.
+- Implementation evidence:
+  - Added inert `permanent()`, `common_env()`, `maternal_genetic()`,
+    `maternal_env()`, `paternal_genetic()`, `paternal_env()`,
+    `cytoplasmic()`, `imprinting()`, `dominance()`, `epistasis()`,
+    `relmat()`, and `precision()` functions.
+  - Generalized parser planned-marker detection so those markers fail before
+    model-frame construction.
+  - Added planned-not-implemented parser tests and pkgdown reference topic.
+  - Updated NEWS, README, formula grammar, public claims, capability status,
+    validation debt, model-status article, and scout notes.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated documentation; `man/qg_effect_markers.Rd` exists.
+  - `Rscript -e "devtools::test(filter = 'formula-animal')"`
+  - Result: passed with `33 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `174 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says inert planned markers and planned-not-implemented
+    parser errors.
+  - Public wording does not claim permanent environment, common environment,
+    maternal/paternal, dominance, epistasis, custom relationship/precision,
+    cytoplasmic, or imprinting models are fitted.
+- Remote checks:
+  - Pending first push for this slice.

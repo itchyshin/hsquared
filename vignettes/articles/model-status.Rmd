@@ -21,6 +21,11 @@ This page separates what exists from what is planned.
   execution unavailable.
 - `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`
   reserve planned formula vocabulary and currently error as not implemented.
+- `permanent()`, `common_env()`, `maternal_genetic()`, `maternal_env()`,
+  `paternal_genetic()`, `paternal_env()`, `cytoplasmic()`, `imprinting()`,
+  `dominance()`, `epistasis()`, `relmat()`, and `precision()` reserve standard
+  quantitative-genetic and inheritance-kernel vocabulary and currently error
+  as not implemented.
 - `animal()` as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`, method,
@@ -55,8 +60,9 @@ This page separates what exists from what is planned.
 - File-backed genotype/omics loading or streaming computation.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
-- QTL-style effects, selfing, clonal inheritance, haplodiploidy, polyploidy,
-  cytoplasmic inheritance, dominance, epistasis, and GLLVM-style models.
+- Permanent environment, common environment, maternal/paternal, dominance,
+  epistasis, custom relationship/precision, QTL-style, selfing, clonal,
+  haplodiploid, polyploid, cytoplasmic, imprinting, and GLLVM-style models.
 - GPU execution.
 
 ## Comparator targets
