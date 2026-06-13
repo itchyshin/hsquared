@@ -49,6 +49,10 @@ Scout note:
   `1 note` for local time verification; rerun had `0 errors`, `0 warnings`,
   `0 notes`.
 - `git diff --check`: clean.
+- GitHub Actions R-CMD-check `27465212098`: passed in 1m30s.
+- GitHub Actions pkgdown `27465212092`: passed.
+- GitHub Pages build/deploy `27465247244`: passed, with the existing upstream
+  Node 20 deprecation annotation for Pages actions.
 
 ## Claim Boundary
 
@@ -58,8 +62,7 @@ execution. It exposes diagnostics for result payloads that already exist.
 
 ## Next Actions
 
-1. Push and watch R-CMD-check, pkgdown, and Pages.
-2. Notify issue #5 and the Julia twin that the R side now has a diagnostics
+1. Notify issue #5 and the Julia twin that the R side now has a diagnostics
    extractor over the existing result payload.
-3. Consider a Julia-side matching `fit_diagnostics()` or `diagnostics()`
+2. Consider a Julia-side matching `fit_diagnostics()` or `diagnostics()`
    helper only if the twin wants parallel vocabulary.

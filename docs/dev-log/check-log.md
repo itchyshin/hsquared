@@ -1770,6 +1770,13 @@ with private memory.
     result payloads.
   - No public wording claims new model-fitting support, production sparse
     reliability, ASReml parity, or GPU/backend execution.
+- Remote checks for commit `908288d`:
+  - GitHub Actions R-CMD-check `27465212098`: passed in 1m30s.
+  - GitHub Actions pkgdown `27465212092`: passed.
+  - GitHub Pages build/deploy `27465247244`: passed.
+  - Pages emitted the upstream Node 20 actions deprecation annotation for
+    `actions/checkout@v4` and `actions/upload-artifact@v4`; package checks and
+    deployment succeeded.
 
 ## 2026-06-13 Henderson MME bridge PEV/reliability parity
 
