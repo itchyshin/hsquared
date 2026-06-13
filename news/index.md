@@ -50,6 +50,16 @@
   [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
   so users and developers can inspect planned backend names while seeing
   that backend execution is not available yet.
+- Added inert planned formula markers for
+  [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  and
+  [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md).
+  The parser now rejects these terms with explicit
+  planned-not-implemented errors instead of treating them as fixed
+  effects.
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`

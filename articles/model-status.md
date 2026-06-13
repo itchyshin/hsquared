@@ -15,6 +15,14 @@ This page separates what exists from what is planned.
 - [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
   reports the planned backend vocabulary and marks backend execution
   unavailable.
+- [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  and
+  [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  reserve planned formula vocabulary and currently error as not
+  implemented.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.

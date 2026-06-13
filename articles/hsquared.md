@@ -45,8 +45,10 @@ The parser currently accepts:
 - numeric Gaussian responses.
 
 Unsupported syntax is still important because it defines the roadmap.
-Terms such as `cov = fa(K = 2)`, `genomic()`, `single_step()`, QTL
-effects, selfing, polyploidy, haplodiploidy, and GLLVM-style latent
+Terms such as `cov = fa(K = 2)`,
+[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+QTL effects, selfing, polyploidy, haplodiploidy, and GLLVM-style latent
 genetic axes are planned lanes, not current fitting features.
 
 ## Twin-package flow

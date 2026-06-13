@@ -93,7 +93,7 @@ benchmarked claims rather than slogans.</p>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
-<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu">genomic</span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span>,</span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">pheno</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -101,8 +101,8 @@ benchmarked claims rather than slogans.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span></span>
-<span>    <span class="fu">genomic</span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">marker_scan</span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span>, leave_one_chr_out <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="../reference/genomic_markers.html">marker_scan</a></span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span>, leave_one_chr_out <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">pheno</span>,</span>
 <span>  genotypes <span class="op">=</span> <span class="va">geno</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span></span>

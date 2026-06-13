@@ -14,6 +14,12 @@ Current parser entry points and planned fitting controls.
   : Inspect planned compute backends
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   : Animal-model formula marker
+- [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  : Planned genomic and QTL formula markers
 
 ## Extractor contract
 
