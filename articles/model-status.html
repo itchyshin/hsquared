@@ -159,6 +159,17 @@ when a sibling <code>HSquared.jl</code> checkout is available.</li>
 effects, EBVs, fitted values, PEV, reliability, h2, ML log-likelihood,
 and dense/sparse REML log-likelihood against independent R references
 and the sibling Julia engine when available.</li>
+<li>An experimental, opt-in sparse REML estimator bridge. With
+<code>control = hs_control(engine = "julia", engine_control = list(target = "sparse_reml"))</code>,
+R surfaces the Julia-owned <code>HSquared.fit_sparse_reml()</code>
+REML-only optimizer for tiny local examples and records
+<code>variance_components_source = "estimated_sparse_reml"</code>. It is
+opt-in only (the default <code><a href="../reference/hsquared.html">hsquared()</a></code> still validates and
+stops), the estimator is Julia-owned (R only surfaces it), and it is not
+variance-component estimation in the public R interface, production
+sparse fitting, AI-REML, or ASReml parity. It is cross-checked on the
+Mrode fixture against the dense REML optimizer and an independent pure-R
+REML optimum.</li>
 <li>The first fitted-object/extractor contract over internal
 <code>hsquared_fit</code> objects and mocked Julia result fields,
 including variance components, heritability, EBV/BLUP aliases, PEV,
