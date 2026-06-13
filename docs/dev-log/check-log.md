@@ -694,4 +694,8 @@ with private memory.
     maternal/paternal, dominance, epistasis, custom relationship/precision,
     cytoplasmic, or imprinting models are fitted.
 - Remote checks:
-  - Pending first push for this slice.
+  - Commit: `14e5781 Add planned quantitative genetics markers`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27458665520` passed in GitHub Actions.
+  - Result: pkgdown `27458665528` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27458695360` passed.

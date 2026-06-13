@@ -83,7 +83,11 @@ Local checks:
 
 Remote checks:
 
-- Pending first push for this slice.
+- R-CMD-check `27458665520`: passed on commit
+  `14e5781 Add planned quantitative genetics markers`.
+- pkgdown `27458665528`: passed on commit
+  `14e5781 Add planned quantitative genetics markers`.
+- GitHub Pages build and deployment `27458695360`: passed.
 
 ## Rose Audit
 
