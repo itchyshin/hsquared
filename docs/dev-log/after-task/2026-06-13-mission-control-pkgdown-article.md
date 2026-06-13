@@ -58,8 +58,14 @@ Blocked wording:
   article block.
 - `Rscript -e "devtools::check()"`: passed with `0 errors`, `0 warnings`, and
   `0 notes`.
+- GitHub Actions R-CMD-check `27466195166`: passed in 1m48s for commit
+  `aca35df`.
+- GitHub Actions pkgdown `27466195171`: passed in 1m54s for commit `aca35df`.
+- GitHub Pages build/deploy `27466236586`: passed. Pages emitted the upstream
+  Node 20 actions deprecation annotation for `actions/checkout@v4` and
+  `actions/upload-artifact@v4`; deployment still succeeded.
 
 ## Next Actions
 
-1. Push after checks pass and record remote evidence.
-2. Verify the live pkgdown article after Pages deploys.
+1. Use the dashboard as the R-side status entry point during future handoffs.
+2. Choose the next Phase 1 validation or bridge atom.

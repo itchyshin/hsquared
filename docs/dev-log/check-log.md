@@ -1921,3 +1921,10 @@ with private memory.
   - Documentation dashboard only.
   - No new fitting, bridge, validation, backend, GPU, QTL/eQTL, GLLVM, or
     performance claim.
+- Remote checks for commit `aca35df`:
+  - GitHub Actions R-CMD-check `27466195166`: passed in 1m48s.
+  - GitHub Actions pkgdown `27466195171`: passed in 1m54s.
+  - GitHub Pages build/deploy `27466236586`: passed.
+  - Pages emitted the upstream Node 20 actions deprecation annotation for
+    `actions/checkout@v4` and `actions/upload-artifact@v4`; package checks and
+    deployment succeeded.
