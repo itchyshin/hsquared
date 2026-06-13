@@ -46,7 +46,7 @@
 | 2026-06-13 | R | Emmy/Pat/Fisher/Rose/Grace | main | `fitted()` and `residuals()` for `hsquared_fit` | pushed; CI/pkgdown/Pages passed | extractor ergonomics only; no new fitting | notify issue #5 |
 | 2026-06-13 | R | Emmy/Falconer/Fisher/Pat/Rose/Grace | main | `EBV()`, `BLUP()`, and `accuracy()` extractors | complete; CI/pkgdown/Pages passed; issue #5 notified | aliases/derived extractor only; no new inference | choose next Phase 1 R/Julia bridge or validation slice |
 | 2026-06-13 | R | Emmy/Hopper/Jason/Pat/Rose/Grace | main | `fit_diagnostics()` for `hsquared_fit` | complete; CI/pkgdown/Pages passed | diagnostic only; no new fitting | notify issue #5 and Julia twin |
-| 2026-06-13 | R | Emmy/Pat/Rose/Grace | main | `coef()` and `nobs()` for `hsquared_fit` | local checks passed | S3 ergonomics only; no new fitting | push, watch CI, notify issue #5 |
+| 2026-06-13 | R | Emmy/Pat/Rose/Grace | main | `coef()` and `nobs()` for `hsquared_fit` | complete; CI/pkgdown/Pages passed | S3 ergonomics only; no new fitting | notify issue #5 |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

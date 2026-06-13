@@ -1814,6 +1814,13 @@ with private memory.
   - `coef()` and `nobs()` are S3 ergonomics over existing payload fields.
   - No public wording claims new fitting, variance-component estimation,
     production sparse PEV/reliability, or comparator parity.
+- Remote checks for commit `64b6c89`:
+  - GitHub Actions R-CMD-check `27465482460`: passed in 1m31s.
+  - GitHub Actions pkgdown `27465482452`: passed.
+  - GitHub Pages build/deploy `27465520405`: passed.
+  - Pages emitted the upstream Node 20 actions deprecation annotation for
+    `actions/checkout@v4` and `actions/upload-artifact@v4`; package checks and
+    deployment succeeded.
 
 ## 2026-06-13 Henderson MME bridge PEV/reliability parity
 

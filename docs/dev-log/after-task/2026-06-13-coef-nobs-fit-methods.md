@@ -36,6 +36,10 @@ changing the fitting boundary.
 - `Rscript -e "devtools::check()"` after the import fix: `0 errors`,
   `0 warnings`, `0 notes`.
 - `git diff --check`: clean.
+- GitHub Actions R-CMD-check `27465482460`: passed in 1m31s.
+- GitHub Actions pkgdown `27465482452`: passed.
+- GitHub Pages build/deploy `27465520405`: passed, with the existing upstream
+  Node 20 deprecation annotation for Pages actions.
 
 ## Claim Boundary
 
@@ -45,5 +49,4 @@ validation, ASReml parity, or backend execution.
 
 ## Next Actions
 
-1. Push and watch R-CMD-check, pkgdown, and Pages.
-2. Notify issue #5 with the namespace lesson and final CI evidence.
+1. Notify issue #5 with the namespace lesson and final CI evidence.
