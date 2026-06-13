@@ -90,7 +90,10 @@ This page separates what exists from what is planned.
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBV/BLUP aliases, PEV, reliability,
   accuracy, fixed effects, random effects, log-likelihood, AIC,
-  prediction, fitted values, residuals, and summaries.
+  prediction, fitted values, residuals, summaries, and
+  [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
+  for convergence, optimizer, target, iteration, and
+  dense-validation-path metadata.
 - Reserved marker/QTL/eQTL extractor names:
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),

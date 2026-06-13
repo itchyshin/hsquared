@@ -60,6 +60,8 @@ not fit models yet.
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
   [`accuracy()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
   : Extract reliability and accuracy estimates
+- [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
+  : Inspect fitted-model diagnostics
 - [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)

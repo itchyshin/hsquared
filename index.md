@@ -24,8 +24,10 @@ validation extractors, the target also attaches PEV and reliability
 fields. The fitted-object extractor contract now includes variance
 components, heritability, EBVs/BLUPs, PEV, reliability, accuracy, fixed
 effects, random effects, log-likelihood, AIC, prediction, fitted values,
-residuals, and summaries. In the experimental local bridge,
-PEV/reliability are enriched from exported `HSquared.jl` dense
+residuals, summaries, and
+[`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
+for convergence and optimizer metadata. In the experimental local
+bridge, PEV/reliability are enriched from exported `HSquared.jl` dense
 validation extractors when available; this is still not production
 sparse reliability or general animal-model support. A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
