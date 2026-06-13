@@ -44,6 +44,41 @@ Standing Phase 1+ rule: check local sister packages and relevant
 statistical literature before changing grammar, engine contracts,
 validation claims, or roadmap promises.
 
+### Next work queue (R lane, Phase 1 frontier)
+
+The active R-lane frontier is surfacing the Julia twin’s experimental
+sparse REML estimator (`HSquared.fit_sparse_reml`) through R behind an
+opt-in fence, reusing existing local sister-package code rather than
+reinventing it:
+
+- B2 — opt-in fenced sparse-REML bridge path (`engine = "julia"`,
+  `engine_control = list(target = "sparse_reml", ...)`); default
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  still validates-and-stops. Adapt the R-to-Julia bridge discipline
+  already proven in `gllvmTMB/R/julia-bridge.R` and
+  `drmTMB/R/julia-bridge.R`.
+- B3 — estimated-vs-supplied variance provenance in
+  [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
+  and
+  [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md).
+- B4 — sparse REML estimate-recovery validation fixture (optimizer
+  improves the REML objective over a known start; not data-generating
+  recovery). Reuse the comparator discipline in
+  `DRM.jl/src/comparison.jl`.
+- B5 — record the sparse-REML bridge contract in
+  `03-engine-contract.md`.
+
+Sister-package leads for later sparse PEV/reliability and production
+sparse fitting: `GLLVM.jl` / `DRM.jl` `structured_schur.jl` and
+`takahashi_selinv.jl` (selected inverse), `GLLVM.jl/src/likelihood.jl`.
+Adapt architecture and process patterns and record provenance; do not
+copy statistical claims without independent validation.
+
+B2 activates as the public-facing path only once the twin’s
+[`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
+marks `fit_sparse_reml` green; until then it ships fenced and
+skip-guarded.
+
 ## Phase 2: Standard Quantitative-Genetic Models
 
 Status: planned.
