@@ -43,11 +43,11 @@ fit <- hsquared(
 That syntax is parsed and validated as the first contract. The R side
 now constructs the intended `y`, `X`, sparse `Z`, method, family, ID,
 and normalized pedigree metadata payload. With
-`control = hs_control(engine = "julia")`, internal tests can smoke the
-tiny payload through Julia-side `Ainv` construction and the current
-dense validation target when a local sibling `HSquared.jl` checkout is
-available. General public fitting waits for sparse marshalling, a
-production bridge, and validation-canon evidence.
+`control = hs_control(engine = "julia")`, internal tests can send the
+sparse `Z` design through Julia CSC slots, build Julia-side `Ainv`, and
+run the current validation target when a local sibling `HSquared.jl`
+checkout is available. General public fitting waits for a production
+bridge and validation-canon evidence.
 
 The interface rule is deliberately simple: easy, easy, easy. Applied
 users are gold; the package should make the common quantitative-genetic

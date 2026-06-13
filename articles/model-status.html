@@ -87,9 +87,10 @@ bridge examples.</li>
 normalized pedigree metadata, and Julia target metadata.</li>
 <li>An experimental opt-in
 <code>control = hs_control(engine = "julia")</code> path that can send
-the tiny payload into a sibling <code>HSquared.jl</code> checkout and
-normalize the returned Julia result into the internal
-<code>hsquared_fit</code> contract.</li>
+the tiny payload into a sibling <code>HSquared.jl</code> checkout,
+marshal sparse <code>Z</code> through CSC slots, and normalize the
+returned Julia result into the internal <code>hsquared_fit</code>
+contract.</li>
 <li>The first fitted-object/extractor contract over internal
 <code>hsquared_fit</code> objects and mocked Julia result fields,
 including variance components, heritability, EBVs, PEV, reliability,

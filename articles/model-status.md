@@ -16,9 +16,9 @@ This page separates what exists from what is planned.
   method, family, encoded IDs, normalized pedigree metadata, and Julia
   target metadata.
 - An experimental opt-in `control = hs_control(engine = "julia")` path
-  that can send the tiny payload into a sibling `HSquared.jl` checkout
-  and normalize the returned Julia result into the internal
-  `hsquared_fit` contract.
+  that can send the tiny payload into a sibling `HSquared.jl` checkout,
+  marshal sparse `Z` through CSC slots, and normalize the returned Julia
+  result into the internal `hsquared_fit` contract.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBVs, PEV, reliability, fixed

@@ -47,8 +47,7 @@ hs_control(
 - engine_control:
 
   A named list for engine-specific controls. The current experimental
-  Julia bridge recognizes `julia_project`, `initial`, and
-  `max_dense_cells`.
+  Julia bridge recognizes `julia_project` and `initial`.
 
 ## Value
 
