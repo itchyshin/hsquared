@@ -13,15 +13,17 @@ pedigree ordering, and Julia targets without fitting a model. The default call
 validates and stops, while an experimental opt-in
 `control = hs_control(engine = "julia")` path can send a tiny v0.1 payload to a
 sibling `HSquared.jl` checkout through JuliaCall. This is still a narrow local
-validation path, not general animal-model support. The fitted-object extractor
-contract now includes variance components, heritability, EBVs, PEV,
-reliability, fixed effects, random effects, log-likelihood, AIC, prediction,
-and summaries. In the experimental local bridge, PEV/reliability are enriched
-from exported `HSquared.jl` dense validation extractors when available; this is
-still not production sparse reliability or general animal-model support. A
-lightweight `hs_data()` container now records phenotype, pedigree, genotype,
-expression, marker, annotation, and environment inputs for future integrated
-workflows.
+validation path, not general animal-model support. The same opt-in bridge can
+also call `HSquared.jl::henderson_mme()` at explicitly supplied variance
+components for tiny validation examples. That path does not estimate variance
+components or provide a log-likelihood. The fitted-object extractor contract
+now includes variance components, heritability, EBVs, PEV, reliability, fixed
+effects, random effects, log-likelihood, AIC, prediction, and summaries. In
+the experimental local bridge, PEV/reliability are enriched from exported
+`HSquared.jl` dense validation extractors when available; this is still not
+production sparse reliability or general animal-model support. A lightweight
+`hs_data()` container now records phenotype, pedigree, genotype, expression,
+marker, annotation, and environment inputs for future integrated workflows.
 The package also reserves planned formula markers for genomic/QTL terms and
 standard quantitative-genetic extensions such as permanent environment,
 maternal/paternal effects, dominance, epistasis, cytoplasmic inheritance,
@@ -57,6 +59,25 @@ internal tests can send the sparse `Z` design through Julia CSC slots, build
 Julia-side `Ainv`, and run the current validation target when a local sibling
 `HSquared.jl` checkout is available. General public fitting waits for a
 production bridge and validation-canon evidence.
+For supplied-variance MME checks, use:
+
+```r
+fit_mme <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = FALSE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(
+      target = "henderson_mme",
+      variance_components = c(sigma_a2 = 1.2, sigma_e2 = 0.8)
+    )
+  )
+)
+```
+
+This is a validation bridge target with supplied variances, not an optimizer.
 Current validation atoms include tiny deterministic `Ainv` checks, an optional
 Mrode9/nadiv pedigree-Ainv comparator, and a supplied-variance Henderson MME
 fixture that compares R reference fixed effects, EBVs, fitted values, and h2

@@ -16,7 +16,10 @@
 #' @param save Planned fitted-object storage mode. One of `"minimal"`,
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
-#'   experimental Julia bridge recognizes `julia_project` and `initial`.
+#'   experimental Julia bridge recognizes `julia_project`, `initial`, `target`,
+#'   and `variance_components`. `target = "henderson_mme"` is a
+#'   supplied-variance validation path and requires `variance_components` with
+#'   named `sigma_a2` and `sigma_e2` values.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

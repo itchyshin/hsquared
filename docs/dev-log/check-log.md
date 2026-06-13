@@ -1375,3 +1375,54 @@ with private memory.
   - GitHub Actions R-CMD-check `27462369055`: passed in 1m51s.
   - GitHub Actions pkgdown `27462369052`: passed in 1m40s.
   - GitHub Pages build/deploy `27462402877`: passed.
+
+## 2026-06-13 supplied-variance Henderson MME bridge target
+
+- Goal: expose an explicit opt-in R-to-Julia bridge target for
+  supplied-variance Henderson MME validation.
+- Active lenses: Hopper, Lovelace, Henderson, Fisher, Rose, Grace.
+- Spawned subagents: none.
+- Skills used:
+  - `bridge-contract-review`: kept the target under `engine_control` and mapped
+    Julia result fields back to the R S3 object contract.
+  - `engine-contract-review`: kept the payload within the v0.1 animal-model
+    contract and avoided log-likelihood or optimizer claims.
+- Implementation evidence:
+  - Added `engine_control$target` validation for `"fit_animal_model"` and
+    `"henderson_mme"`.
+  - Added required `engine_control$variance_components` validation for
+    `target = "henderson_mme"`.
+  - Added `hs_fit_julia_henderson_mme_payload()`.
+  - Added an R normalizer for the Julia `henderson_mme()` result shape.
+  - `hsquared()` now dispatches to `henderson_mme()` only when explicitly
+    requested through the experimental Julia engine.
+  - Added live tests against the existing Henderson MME validation fixture.
+  - Updated README, model-status article, v0.1 contract, engine contract,
+    capability status, validation debt, public claims, NEWS, roxygen docs, and
+    coordination board.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'julia-bridge|phase0-api')"`
+  - Result: docs updated, formatting completed, focused tests passed with
+    `111 pass`, `0 fail`, `0 warnings`, and `0 skips`; live Julia bridge
+    activated sibling `HSquared.jl`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `327 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - First run result: `0 errors | 0 warnings | 1 note`; note was
+    `unable to verify current time` from timestamp verification.
+  - `Rscript -e "devtools::check()"`
+  - Rerun result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "henderson_mme.*estimate|henderson_mme.*logLik|supplied-variance.*log-likelihood|general animal-model support|production sparse fitting|AI-REML|ASReml parity|fit.*Mrode|optimizer" README.md R man tests vignettes docs/design docs/dev-log NEWS.md`.
+  - Result: hits were planned, blocked, negated, or the intended
+    `optimizer_status = "not_run"` diagnostic.
+  - Public wording says supplied-variance validation bridge target only.
+  - Public wording does not claim variance-component estimation, log-likelihood
+    support, AI-REML, Mrode fitted-output validation, ASReml parity, or
+    production sparse fitting.

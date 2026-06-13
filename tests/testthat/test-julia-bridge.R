@@ -183,3 +183,129 @@ test_that("experimental Julia bridge uses sparse Z marshalling", {
   expect_equal(prediction_error_variance(fit)$id, c("sire", "dam", "calf"))
   expect_equal(reliability(fit)$id, c("sire", "dam", "calf"))
 })
+
+test_that("Julia bridge validates target control", {
+  expect_equal(
+    hsquared:::hs_validate_julia_target("fit_animal_model"),
+    "fit_animal_model"
+  )
+  expect_equal(
+    hsquared:::hs_validate_julia_target("henderson_mme"),
+    "henderson_mme"
+  )
+  expect_error(
+    hsquared:::hs_validate_julia_target("AI_REML"),
+    "`engine_control\\$target` must be either",
+    fixed = FALSE
+  )
+})
+
+test_that("Julia Henderson MME bridge requires supplied variance components", {
+  expect_error(
+    hsquared:::hs_validate_supplied_variances(NULL),
+    "`engine_control$variance_components` is required",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_supplied_variances(c(sigma_a2 = 1)),
+    "must include `sigma_a2` and `sigma_e2`",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_supplied_variances(c(sigma_a2 = 1, sigma_e2 = 0)),
+    "must be positive and finite",
+    fixed = TRUE
+  )
+  expect_equal(
+    hsquared:::hs_validate_supplied_variances(c(
+      sigma_a2 = 1.2,
+      sigma_e2 = 0.8
+    )),
+    c(sigma_a2 = 1.2, sigma_e2 = 0.8)
+  )
+})
+
+test_that("experimental Julia Henderson MME bridge matches validation fixture", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live Henderson MME bridge validation."
+  )
+
+  fixture <- hsquared:::hs_henderson_mme_validation_fixture()
+  spec <- hsquared:::hs_build_model_spec(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = FALSE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  fit <- hsquared:::hs_fit_julia_henderson_mme_payload(
+    payload,
+    variance_components = c(
+      sigma_a2 = fixture$sigma_a2,
+      sigma_e2 = fixture$sigma_e2
+    )
+  )
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_true(fit$result$converged)
+  expect_equal(fit$result$diagnostics$target, "henderson_mme")
+  expect_equal(
+    variance_components(fit)$estimate,
+    c(fixture$sigma_a2, fixture$sigma_e2),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    fixef(fit),
+    fixture$expected$fixed_effects,
+    tolerance = 1e-10,
+    ignore_attr = TRUE
+  )
+  expect_equal(
+    breeding_values(fit),
+    fixture$expected$breeding_values,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    predict(fit),
+    fixture$expected$fitted,
+    tolerance = 1e-10
+  )
+  expect_equal(heritability(fit)$estimate, fixture$expected$heritability)
+  expect_error(
+    stats::logLik(fit),
+    "does not contain log-likelihood",
+    fixed = TRUE
+  )
+})
+
+test_that("hsquared can use the opt-in supplied-variance Henderson MME bridge", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live Henderson MME bridge validation."
+  )
+
+  fixture <- hsquared:::hs_henderson_mme_validation_fixture()
+  fit <- hsquared(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = FALSE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "henderson_mme",
+        variance_components = c(
+          sigma_a2 = fixture$sigma_a2,
+          sigma_e2 = fixture$sigma_e2
+        )
+      )
+    )
+  )
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$spec$target, "henderson_mme")
+  expect_equal(breeding_values(fit), fixture$expected$breeding_values)
+})

@@ -53,6 +53,27 @@ hsquared <- function(
   )
   payload <- hs_build_bridge_payload(spec)
   if (identical(control$engine, "julia")) {
+    target <- hs_validate_julia_target(hs_engine_control_value(
+      control,
+      "target",
+      "fit_animal_model"
+    ))
+    if (identical(target, "henderson_mme")) {
+      return(hs_fit_julia_henderson_mme_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        variance_components = hs_engine_control_value(
+          control,
+          "variance_components",
+          NULL
+        )
+      ))
+    }
+
     return(hs_fit_julia_payload(
       payload,
       project = hs_engine_control_value(

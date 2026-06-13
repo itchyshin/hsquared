@@ -30,7 +30,10 @@ payload validation. \code{"julia"} uses the experimental local JuliaCall bridge.
 \code{"full"}, or \code{"tiny"}.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
-experimental Julia bridge recognizes \code{julia_project} and \code{initial}.}
+experimental Julia bridge recognizes \code{julia_project}, \code{initial}, \code{target},
+and \code{variance_components}. \code{target = "henderson_mme"} is a
+supplied-variance validation path and requires \code{variance_components} with
+named \code{sigma_a2} and \code{sigma_e2} values.}
 }
 \value{
 An object of class \code{"hs_control"}.

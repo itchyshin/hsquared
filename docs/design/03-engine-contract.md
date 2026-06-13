@@ -29,6 +29,23 @@ R-side `Matrix::dgCMatrix` random-effect designs through sparse CSC slots using
 Julia's `sparse_csc_matrix()` helper. It is for local cross-repo contract
 testing and is not yet a production bridge.
 
+The same opt-in bridge has an explicit supplied-variance validation target:
+
+```r
+hs_control(
+  engine = "julia",
+  engine_control = list(
+    target = "henderson_mme",
+    variance_components = c(sigma_a2 = 1.2, sigma_e2 = 0.8)
+  )
+)
+```
+
+That path calls Julia `henderson_mme()` after building `Ainv`. It returns fixed
+effects, EBVs/BLUPs, fitted values, variance components, and h2 for tiny
+validation examples. It does not optimize variance components, does not return
+a log-likelihood, and is not a production sparse fitting claim.
+
 ## Initial Julia Result
 
 ```text
@@ -59,6 +76,22 @@ before returning a fitted object. The R extractor contract also includes
 tiny opt-in Julia results by calling exported Julia dense validation extractors
 when those functions exist, while Julia's base `result_payload()` remains
 stable.
+
+The supplied-variance Henderson MME bridge returns a smaller result shape:
+
+```text
+variance_components
+heritability
+fixed_effects
+breeding_values
+random_effects
+predictions
+nobs
+diagnostics
+converged
+```
+
+It deliberately omits `loglik`, `df`, PEV, and reliability.
 
 ## Storage Policy
 

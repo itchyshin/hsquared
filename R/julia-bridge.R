@@ -73,6 +73,69 @@ hs_fit_julia_payload <- function(
   )
 }
 
+hs_fit_julia_henderson_mme_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  variance_components
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  variance_components <- hs_validate_supplied_variances(variance_components)
+  hs_julia_setup(project)
+  hs_julia_assign_payload(payload, variance_components)
+  JuliaCall::julia_assign(
+    "hsq_supplied_sigma_a2",
+    unname(variance_components[["sigma_a2"]])
+  )
+  JuliaCall::julia_assign(
+    "hsq_supplied_sigma_e2",
+    unname(variance_components[["sigma_e2"]])
+  )
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_spec = HSquared.animal_model_spec(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+    "ids = hsq_ped.ids, method = Symbol(hsq_method));",
+    "hsq_mme = HSquared.henderson_mme(",
+    "hsq_spec, hsq_supplied_sigma_a2, hsq_supplied_sigma_e2);",
+    "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
+    "hsq_mme_raw = Dict(",
+    "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
+    "\"animal_ids\" => hsq_mme_bv.ids,",
+    "\"animal_effects\" => hsq_mme_bv.values,",
+    "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+    "\"nobs\" => length(hsq_y)",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_mme_raw")
+  result <- hs_normalize_julia_henderson_mme_result(
+    raw,
+    payload,
+    variance_components
+  )
+  hs_new_fit(
+    spec = list(
+      method = payload$method,
+      family = list(family = payload$family, link = "identity"),
+      target = "henderson_mme"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
   if (
@@ -173,6 +236,53 @@ hs_validate_initial_variances <- function(initial) {
   out
 }
 
+hs_validate_julia_target <- function(target) {
+  if (!is.character(target) || length(target) != 1L || is.na(target)) {
+    stop(
+      "`engine_control$target` must be a single string.",
+      call. = FALSE
+    )
+  }
+  if (!target %in% c("fit_animal_model", "henderson_mme")) {
+    stop(
+      "`engine_control$target` must be either \"fit_animal_model\" or ",
+      "\"henderson_mme\".",
+      call. = FALSE
+    )
+  }
+  target
+}
+
+hs_validate_supplied_variances <- function(variance_components) {
+  if (is.null(variance_components)) {
+    stop(
+      "`engine_control$variance_components` is required when ",
+      "`target = \"henderson_mme\"`.",
+      call. = FALSE
+    )
+  }
+  if (
+    is.null(names(variance_components)) ||
+      !all(c("sigma_a2", "sigma_e2") %in% names(variance_components))
+  ) {
+    stop(
+      "`engine_control$variance_components` must include `sigma_a2` and ",
+      "`sigma_e2`.",
+      call. = FALSE
+    )
+  }
+  out <- as.numeric(variance_components[c("sigma_a2", "sigma_e2")])
+  names(out) <- c("sigma_a2", "sigma_e2")
+  if (any(!is.finite(out)) || any(out <= 0)) {
+    stop(
+      "`engine_control$variance_components` values must be positive and ",
+      "finite.",
+      call. = FALSE
+    )
+  }
+  out
+}
+
 hs_normalize_julia_result <- function(raw, payload) {
   breeding_values <- raw$breeding_values
   animal <- raw$random_effects$animal
@@ -224,6 +334,49 @@ hs_normalize_julia_result <- function(raw, payload) {
   }
 
   result
+}
+
+hs_normalize_julia_henderson_mme_result <- function(
+  raw,
+  payload,
+  variance_components
+) {
+  fixed_effects <- as.numeric(raw$fixed_effects)
+  fixed_names <- payload$metadata$fixed_colnames
+  if (length(fixed_effects) == length(fixed_names)) {
+    names(fixed_effects) <- fixed_names
+  }
+
+  animal <- data.frame(
+    id = as.character(raw$animal_ids),
+    value = as.numeric(raw$animal_effects)
+  )
+
+  list(
+    variance_components = data.frame(
+      component = c("animal", "residual"),
+      estimate = c(
+        unname(variance_components[["sigma_a2"]]),
+        unname(variance_components[["sigma_e2"]])
+      )
+    ),
+    heritability = data.frame(
+      term = "animal",
+      estimate = unname(variance_components[["sigma_a2"]]) /
+        sum(unname(variance_components))
+    ),
+    breeding_values = animal,
+    fixed_effects = fixed_effects,
+    random_effects = list(animal = animal),
+    predictions = data.frame(.fitted = as.numeric(raw$fitted)),
+    nobs = as.integer(raw$nobs),
+    diagnostics = list(
+      target = "henderson_mme",
+      variance_components = "supplied",
+      optimizer_status = "not_run"
+    ),
+    converged = TRUE
+  )
 }
 
 hs_julia_id_values <- function(x) {
