@@ -2,8 +2,8 @@
 
 | Capability | Status | Evidence | Notes |
 | --- | --- | --- | --- |
-| R package scaffold | covered | local R-CMD-check passed after Phase 0 edits | No modelling API yet. |
-| Team operating system | partial | Phase 0 docs, skills, agents, board, and closeout report | Needs GitHub issue ledger and public readiness audit. |
+| R package scaffold | covered | local and GitHub Actions R-CMD-check passed after Phase 0 edits | No modelling API yet. |
+| Team operating system | covered | Phase 0 docs, skills, agents, board, closeout report, issues, milestones, labels | Use this before Phase 1 work. |
 | `hs_control()` | covered | local tests | Stores planned controls only. |
 | `hsquared()` fit entry point | partial | placeholder tests | Errors honestly; no fitting. |
 | simple Gaussian animal model | planned | none | Phase 1. |

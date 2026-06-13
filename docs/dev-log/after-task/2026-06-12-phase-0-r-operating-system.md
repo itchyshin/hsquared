@@ -48,6 +48,15 @@ twin thread `019ebb88-ee69-7be2-850c-0e4840c34734`; the twin owns
   `HSquared.jl` is public at `https://github.com/itchyshin/HSquared.jl`,
   clean on `main`, latest commit `079dbf2`, and latest GitHub Actions CI
   passed.
+- R remote verification:
+  commit `d956a25` is pushed to `main`; GitHub Actions R-CMD-check run
+  `27452325194` passed in 1m33s.
+- Public visibility:
+  `https://github.com/itchyshin/hsquared` and
+  `https://github.com/itchyshin/HSquared.jl` are both public.
+- GitHub ledger:
+  shared labels and Phase 0-8 milestones were installed in both repos.
+  `hsquared` issues #1-#7 and `HSquared.jl` issues #1-#7 were opened.
 
 ## Public Claim Audit
 
@@ -88,14 +97,14 @@ so the next GitHub Actions run is the required post-push runtime verification.
 - `animal()`, `fa()`, `lowrank()`, genomic, single-step, and inheritance
   helpers are not exported yet.
 - No R-to-Julia bridge exists yet.
-- No GitHub issue ledger has been created from the R lane yet.
-- The R GitHub repo still needs push, remote CI, public visibility check, and
-  final public-readiness confirmation.
+- The issue ledger is intentionally skeletal. Issue bodies should be expanded
+  as the Phase 1 contracts become concrete.
+- The R package still has no fitted model, parser, bridge, or Julia runtime
+  integration.
 
 ## Next Actions
 
-1. Commit and push the R Phase 0 scaffold.
-2. Watch the R GitHub Actions run on the pushed commit.
-3. Create labels, milestones, and initial issues.
-4. Make `itchyshin/hsquared` public after Grace/Rose checks pass.
-5. Start Phase 1 only after the R-Julia contract issue is open and assigned.
+1. Expand issue #2 into the concrete R-Julia v0.1 contract checklist.
+2. Start R formula grammar work in `hsquared` issue #4.
+3. Start Julia sparse pedigree/Ainv work in `HSquared.jl` issues #3 and #4.
+4. Keep issue status labels synchronized with repository evidence.

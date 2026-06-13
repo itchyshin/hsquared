@@ -45,3 +45,20 @@ with private memory.
 - `git diff --check`
 - Result: clean after trimming one trailing blank line in the testthat
   snapshot.
+- Committed and pushed R Phase 0 scaffold:
+  - `git commit -m "Install Phase 0 operating system"`
+  - `git push origin main`
+- Result: commit `d956a25` pushed to `main`.
+- Remote R CI:
+  - `gh run watch 27452325194 --repo itchyshin/hsquared --exit-status`
+- Result: R-CMD-check passed in GitHub Actions in 1m33s.
+- Public visibility:
+  - `gh repo edit itchyshin/hsquared --visibility public --accept-visibility-change-consequences`
+  - `gh repo view itchyshin/hsquared --json nameWithOwner,visibility,isPrivate,url,defaultBranchRef`
+  - `gh repo view itchyshin/HSquared.jl --json nameWithOwner,visibility,isPrivate,url,defaultBranchRef`
+- Result: both `itchyshin/hsquared` and `itchyshin/HSquared.jl` are public on
+  `main`.
+- GitHub ledger:
+  - Added shared labels and Phase 0-8 milestones to both repos.
+  - Opened `hsquared` issues #1-#7.
+  - Opened `HSquared.jl` issues #1-#7.

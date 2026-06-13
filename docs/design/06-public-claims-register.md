@@ -5,7 +5,7 @@ public examples.
 
 | Claim | Status | Evidence | Allowed wording |
 | --- | --- | --- | --- |
-| `hsquared` is an R package scaffold | covered | package loads; local R-CMD-check passed after Phase 0 placeholder API | implemented scaffold |
+| `hsquared` is an R package scaffold | covered | package loads; local and GitHub Actions R-CMD-check passed after Phase 0 placeholder API | implemented scaffold |
 | `hsquared` fits animal models | planned | none | planned v0.1 target |
 | `HSquared.jl` is the Julia engine package identity | covered | public repo exists; Julia package scaffold and CI green | Julia engine scaffold |
 | sparse Ainv construction | planned | none | planned |

@@ -5,7 +5,7 @@
 
 ## Phase 0: Team Operating System And Public Scaffold
 
-Status: local R edits complete; remote R CI and public visibility pending.
+Status: complete for the public scaffold.
 
 - Install repo-visible memory, team roles, local skills, coordination board,
   and claim gates.
@@ -18,8 +18,15 @@ Gate: both repos have honest READMEs, CI, team docs, and no unsupported fitting
 claims.
 
 Julia twin status: `HSquared.jl` is public and green on GitHub Actions as of
-the Phase 0 scaffold. R twin status: local checks are green; push and final
-public-readiness audit remain.
+the Phase 0 scaffold. R twin status: `hsquared` is public and green on
+GitHub Actions as of commit `d956a25`.
+
+Issue ledger:
+
+- `hsquared`: issues #1-#7 cover Phase 0 and initial Phase 1 R/coordinator
+  work.
+- `HSquared.jl`: issues #1-#7 cover Phase 0 and initial Phase 1 Julia engine
+  work.
 
 ## Phase 1: Simple Gaussian Animal Model
 
