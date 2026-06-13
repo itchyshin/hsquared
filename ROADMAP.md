@@ -142,3 +142,18 @@ honest surfacing. Reuse local sister code rather than reinventing:
 `structured_schur.jl`, `GLLVM.jl/src/likelihood.jl`. The same directive was
 given to the Julia twin; coordinate via the shared bridge contract and the
 coordination board.
+
+### Standing missing-data directive (user, 2026-06-13)
+
+Plan for model-based missing-data handling for **both** missing phenotypes
+(response) and missing covariates (predictors) in the animal/quant-gen models.
+Reuse the substantial (incomplete) work already in the sister teams rather than
+reinventing: `drmTMB` / `gllvmTMB` (R) and `DRM.jl` / `GLLVM.jl` (Julia). Core
+approach: model-based FIML / marginal ML via Laplace (not impute-then-analyze,
+not Bayesian/MCMC); missing responses kept via an observed-`y` mask (zero
+likelihood contribution, retain prediction/imputation, ASReml-like); missing
+predictors as latent variables integrated over with a level-aware covariance
+(e.g. species → pedigree/relmat). Syntax surface: an `mi(x)` formula token plus a
+`miss_control()`-style control. The integration is Julia-engine work
+(`HSquared.jl`); the R lane surfaces the syntax and validation. Important for
+`HSquared.jl` too — coordinate via shared repo memory.
