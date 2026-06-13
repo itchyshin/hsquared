@@ -469,3 +469,37 @@ with private memory.
   - Public wording does not claim Mrode validation, ASReml comparison,
     production sparse fitting, large-pedigree readiness, or genomic
     validation.
+
+## 2026-06-13 Mrode9 pedigree Ainv comparator
+
+- Goal: add the first optional Mrode-sourced pedigree `Ainv` comparator without
+  claiming fitted Mrode animal-model validation.
+- Active lenses: Curie, Fisher, Gauss, Jason, Rose, Grace.
+- Spawned subagents: none.
+- Source:
+  - `nadiv::Mrode9`, documented by `nadiv` as a pedigree adapted from example
+    9.1 of Mrode (2005).
+- Implementation evidence:
+  - Added optional `nadiv` Suggests entry.
+  - Added internal `hs_mrode9_pedigree_validation_fixture()`.
+  - Added tests that load `nadiv::Mrode9`, compute `nadiv::makeAinv()`, align
+    names, and compare with Julia `HSquared.pedigree_inverse()` when both
+    `nadiv` and the sibling Julia bridge are available.
+- Local checks:
+  - `air format . && Rscript -e "devtools::test(filter = 'mrode-validation')"`
+  - Result: passed with `8 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live comparator activated sibling `HSquared.jl`.
+  - `air format . && Rscript -e "devtools::test()"`
+  - Result: passed with `132 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated sibling `HSquared.jl`.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says Mrode9 pedigree-Ainv comparator.
+  - Public wording does not claim fitted Mrode animal-model validation,
+    ASReml/BLUPF90/DMU/WOMBAT comparison, production sparse fitting, or
+    large-pedigree readiness.

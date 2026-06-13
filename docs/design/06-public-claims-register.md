@@ -11,12 +11,13 @@ public examples.
 | opt-in experimental R-to-Julia fit path | partial | local JuliaCall tests pass when a sibling `HSquared.jl` checkout is available; CI skips when unavailable | `hs_control(engine = "julia")` tiny local examples only |
 | sparse `Z` marshalling through the R-Julia bridge | partial | local tests pass `Matrix::dgCMatrix` CSC slots into Julia `sparse_csc_matrix()` for the opt-in bridge | sparse `Z` bridge validation; not production sparse fitting |
 | tiny deterministic Ainv validation fixture | partial | local test pins R payload ordering and live Julia `pedigree_inverse()` agreement for a three-animal fixture when a sibling `HSquared.jl` checkout is available | internal tiny validation fixture; not Mrode, ASReml, or production fitting validation |
+| Mrode9 pedigree Ainv comparator | partial | optional local test compares Julia `pedigree_inverse()` with `nadiv::makeAinv()` for `nadiv::Mrode9` when `nadiv` and sibling `HSquared.jl` are available | Mrode9 pedigree-Ainv comparator only; not a fitted Mrode animal-model validation |
 | `hsquared` defines the first fitted-object/extractor contract | partial | local tests over internal `hsquared_fit` objects and mocked result fields, including PEV/reliability fields | extractor plumbing; PEV/reliability not yet returned by live bridge payload |
 | `hsquared` provides a data container for integrated inputs | partial | local tests for `hs_data()` ID maps and input validation | lightweight data container; no modelling or file-backed storage |
 | `hsquared` fits general animal models | planned | none | planned v0.1 target after validation and production bridge hardening |
 | `hsquared` supports genomic, QTL/eQTL, GLLVM, or GPU workflows | planned | none | roadmap only |
 | `HSquared.jl` is the Julia engine package identity | covered | public repo exists; Julia package scaffold and CI green | Julia engine scaffold |
-| sparse Ainv construction | partial | Julia tiny tests and R live bridge fixture cover a three-animal expected `Ainv` path | HSquared.jl tiny validation only; R-side construction and production sparse fitting remain planned |
+| sparse Ainv construction | partial | Julia tiny tests plus R live bridge fixtures cover a three-animal expected `Ainv` path and optional Mrode9/nadiv comparator | HSquared.jl validation only; R-side construction and production sparse fitting remain planned |
 | Gaussian animal model REML/ML | planned | none | planned |
 | EBVs/BLUPs and heritability extraction | partial | opt-in tiny Julia bridge tests plus internal extractor tests | experimental tiny/local only |
 | PEV and reliability extraction | partial | R extractor contract tests over mocked fields; Julia low-level dense extractors exist | not yet in live R bridge payload |

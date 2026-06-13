@@ -15,6 +15,7 @@
 | 2026-06-13 | R | Fisher/Pat/Emmy/Hopper/Rose | main | PEV/reliability extractor contract for issues #5/#6 | local checks passed | not in live payload yet | push extractor contract and watch CI/pkgdown |
 | 2026-06-13 | R | Hopper/Lovelace/Karpinski/Grace/Rose | main | sparse `Z` CSC marshalling for issue #6 | pushed; CI/pkgdown/Pages passed | production fitting still planned | start validation issue #7 |
 | 2026-06-13 | R | Curie/Fisher/Gauss/Jason/Rose | main | tiny Ainv validation fixture for issue #7 | pushed; CI/pkgdown/Pages passed | Mrode/comparator validation still planned | hand off fixture to Julia twin |
+| 2026-06-13 | R | Curie/Fisher/Gauss/Jason/Rose | main | optional Mrode9/nadiv pedigree Ainv comparator for issue #7 | local checks passed | full Mrode fit-output validation still planned | push comparator and watch CI |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
