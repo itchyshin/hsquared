@@ -30,10 +30,15 @@ payload validation. \code{"julia"} uses the experimental local JuliaCall bridge.
 \code{"full"}, or \code{"tiny"}.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
-experimental Julia bridge recognizes \code{julia_project}, \code{initial}, \code{target},
-and \code{variance_components}. \code{target = "henderson_mme"} is a
-supplied-variance validation path and requires \code{variance_components} with
-named \code{sigma_a2} and \code{sigma_e2} values.}
+experimental Julia bridge recognizes \code{julia_project}, \code{initial},
+\code{iterations}, \code{target}, and \code{variance_components}.
+\code{target = "henderson_mme"} is a supplied-variance validation path and
+requires \code{variance_components} with named \code{sigma_a2} and \code{sigma_e2} values.
+\code{target = "sparse_reml"} is an experimental, opt-in validation path that
+surfaces the Julia-owned \code{HSquared.fit_sparse_reml()} REML-only sparse
+optimizer; it accepts \code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and
+\code{iterations}. It is not the default, not production fitting, and not a
+variance-component estimation claim for the public R interface.}
 }
 \value{
 An object of class \code{"hs_control"}.

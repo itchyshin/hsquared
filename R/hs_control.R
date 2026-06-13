@@ -16,10 +16,15 @@
 #' @param save Planned fitted-object storage mode. One of `"minimal"`,
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
-#'   experimental Julia bridge recognizes `julia_project`, `initial`, `target`,
-#'   and `variance_components`. `target = "henderson_mme"` is a
-#'   supplied-variance validation path and requires `variance_components` with
-#'   named `sigma_a2` and `sigma_e2` values.
+#'   experimental Julia bridge recognizes `julia_project`, `initial`,
+#'   `iterations`, `target`, and `variance_components`.
+#'   `target = "henderson_mme"` is a supplied-variance validation path and
+#'   requires `variance_components` with named `sigma_a2` and `sigma_e2` values.
+#'   `target = "sparse_reml"` is an experimental, opt-in validation path that
+#'   surfaces the Julia-owned `HSquared.fit_sparse_reml()` REML-only sparse
+#'   optimizer; it accepts `initial` (named `sigma_a2`/`sigma_e2`) and
+#'   `iterations`. It is not the default, not production fitting, and not a
+#'   variance-component estimation claim for the public R interface.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

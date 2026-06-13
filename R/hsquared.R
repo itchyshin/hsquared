@@ -74,6 +74,27 @@ hsquared <- function(
       ))
     }
 
+    if (identical(target, "sparse_reml")) {
+      return(hs_fit_julia_sparse_reml_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          1000L
+        )
+      ))
+    }
+
     return(hs_fit_julia_payload(
       payload,
       project = hs_engine_control_value(

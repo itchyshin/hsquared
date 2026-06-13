@@ -193,10 +193,37 @@ test_that("Julia bridge validates target control", {
     hsquared:::hs_validate_julia_target("henderson_mme"),
     "henderson_mme"
   )
+  expect_equal(
+    hsquared:::hs_validate_julia_target("sparse_reml"),
+    "sparse_reml"
+  )
   expect_error(
     hsquared:::hs_validate_julia_target("AI_REML"),
-    "`engine_control\\$target` must be either",
+    "`engine_control\\$target` must be one of",
     fixed = FALSE
+  )
+})
+
+test_that("Julia bridge validates iterations control", {
+  expect_equal(hsquared:::hs_validate_iterations(500), 500L)
+  expect_equal(hsquared:::hs_validate_iterations(1000L), 1000L)
+  expect_error(
+    hsquared:::hs_validate_iterations(0),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_iterations(c(10, 20)),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
+})
+
+test_that("sparse REML payload requires an internal bridge payload", {
+  expect_error(
+    hsquared:::hs_fit_julia_sparse_reml_payload(list()),
+    "must be an internal `hs_bridge_payload`",
+    fixed = TRUE
   )
 })
 
@@ -354,4 +381,40 @@ test_that("hsquared can use the opt-in supplied-variance Henderson MME bridge", 
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "henderson_mme")
   expect_equal(breeding_values(fit), fixture$expected$breeding_values)
+})
+
+test_that("hsquared can use the opt-in experimental sparse REML estimator bridge", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live sparse REML estimator bridge validation."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  fit <- hsquared(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "sparse_reml",
+        initial = c(sigma_a2 = 1, sigma_e2 = 1),
+        iterations = 500L
+      )
+    )
+  )
+
+  # Experimental, opt-in, Julia-owned REML optimizer that R only surfaces.
+  # Honest behaviour checks only: not DGP recovery, not ASReml parity.
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$engine, "HSquared.jl")
+  expect_equal(fit$spec$target, "sparse_reml")
+  est <- variance_components(fit)$estimate
+  expect_equal(variance_components(fit)$component, c("animal", "residual"))
+  expect_true(all(is.finite(est)) && all(est > 0))
+  expect_true(is.finite(fit$result$loglik))
+  h2 <- heritability(fit)$estimate
+  expect_true(is.finite(h2) && h2 > 0 && h2 < 1)
 })
