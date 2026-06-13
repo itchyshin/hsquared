@@ -2093,3 +2093,22 @@ with private memory.
   - GitHub Actions R-CMD-check `27468654232`: passed.
   - GitHub Actions pkgdown `27468654248`: passed.
   - GitHub Pages build/deploy `27468689299`: passed.
+
+## 2026-06-13 Sparse REML estimate-recovery validation fixture (B4)
+
+- Goal: first honest behavioural evidence for the opt-in sparse REML estimator
+  without the comparator estimand trap — a start-independence check (same REML
+  optimum from two different starts), not DGP/supplied-truth recovery.
+- Active lenses: Curie, Gauss, Fisher, Mrode, Jason, Rose. Spawned subagents:
+  none (B2 scout already covered sister comparator discipline).
+- Local checks:
+  - `devtools::test()` full: `481 pass`, `0 fail`, `0 warnings`, `0 skips`; live
+    Julia bridge active (two-start test ran).
+  - `rcmdcheck::rcmdcheck()`: `0 errors`, `0 warnings`, `0 notes`.
+  - `air format .`: clean.
+- Boundary: start-independence only; not DGP recovery, supplied-truth recovery,
+  external-comparator parity, AI-REML, or production sparse fitting.
+- Remote checks for commit `8a2009a`:
+  - GitHub Actions R-CMD-check `27468842532`: passed.
+  - GitHub Actions pkgdown `27468842514`: passed.
+  - GitHub Pages build/deploy `27468886120`: passed.
