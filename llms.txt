@@ -9,7 +9,9 @@ engine.
 This repository has moved past the initial scaffold into early Phase 1
 parser and bridge-contract work. It can validate the narrow v0.1 formula
 contract and build a tested internal R-to-Julia payload shape, but it
-does not execute Julia or fit animal models yet.
+does not execute Julia or fit animal models yet. The first fitted-object
+and extractor methods are also defined over an internal `hsquared_fit`
+contract, ready for the Julia result once fitting exists.
 
 The intended two-package shape is:
 
@@ -80,6 +82,22 @@ Current parser entry points and planned fitting controls.
   : Create hsquared control options
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   : Animal-model formula marker
+
+## Extractor contract
+
+Extractor names for future fitted objects; ordinary hsquared calls do
+not fit models yet.
+
+- [`variance_components()`](https://itchyshin.github.io/hsquared/reference/variance_components.md)
+  : Extract variance components
+- [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+  : Extract heritability estimates
+- [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  : Extract breeding values
+- [`fixef()`](https://itchyshin.github.io/hsquared/reference/fixef.md) :
+  Extract fixed effects
+- [`ranef()`](https://itchyshin.github.io/hsquared/reference/ranef.md) :
+  Extract random effects
 
 ## Package
 

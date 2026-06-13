@@ -14,6 +14,8 @@ This page separates what exists from what is planned.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`,
   method, family, encoded IDs, normalized pedigree metadata, and Julia
   target metadata.
+- The first fitted-object/extractor contract over internal
+  `hsquared_fit` objects and mocked Julia result fields.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 
@@ -22,7 +24,8 @@ This page separates what exists from what is planned.
 - Model fitting.
 - R-to-Julia bridge execution.
 - R-side `Ainv` construction.
-- Variance components, heritability, EBVs, or BLUPs.
+- Real variance components, heritability, EBVs, or BLUPs from fitted
+  models.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - QTL-style effects, selfing, clonal inheritance, haplodiploidy,

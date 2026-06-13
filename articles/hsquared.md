@@ -19,7 +19,10 @@ fit <- hsquared(
 Current status: this formula is parsed and validated, and the R side
 builds the first tested internal bridge payload. Model fitting and live
 Julia execution are not implemented yet. The package stops at the
-planned Julia bridge boundary.
+planned Julia bridge boundary. The first extractor functions exist for
+future `hsquared_fit` objects, but
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+does not return fitted objects yet.
 
 The interface rule is: easy, easy, easy. Users are gold. The common
 animal model should be obvious before the package exposes genomic,
@@ -52,6 +55,7 @@ R formula + data
 -> R bridge payload: y, X, sparse Z, method, IDs, pedigree metadata
 -> HSquared.jl sparse engine
 -> compact result
+-> hsquared_fit object
 -> R summaries, extractors, plots, and diagnostics
 ```
 
