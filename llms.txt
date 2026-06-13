@@ -64,7 +64,9 @@ bridge and validation-canon evidence. Current validation atoms include
 tiny deterministic `Ainv` checks, an optional Mrode9/nadiv pedigree-Ainv
 comparator, and a supplied-variance Henderson MME fixture that compares
 R reference fixed effects, EBVs, fitted values, and h2 with Julia when
-available.
+available. Use
+[`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
+to inspect validation evidence and planned comparator lanes from R.
 
 ``` r
 
@@ -170,6 +172,8 @@ Current parser entry points and planned fitting controls.
   : Inspect planned compute backends
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   : Inspect formula grammar status
+- [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
+  : Inspect validation evidence status
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   : Inspect a parsed hsquared model specification
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)

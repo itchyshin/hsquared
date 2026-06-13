@@ -62,6 +62,10 @@
   [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
   so users and developers can inspect planned backend names while seeing
   that backend execution is not available yet.
+- Added
+  [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
+  so users and developers can inspect current validation atoms, planned
+  comparator lanes, and claim boundaries from R.
 - [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
   now gives users a direct diagnostic view of
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)

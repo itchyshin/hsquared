@@ -18,6 +18,9 @@ This page separates what exists from what is planned.
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   reports parsed, reserved, and planned grammar terms without implying
   fitted support.
+- [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
+  reports current validation atoms and planned comparator lanes without
+  running checks or implying fitted support.
 - [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
   reports
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
