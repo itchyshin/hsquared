@@ -2112,3 +2112,16 @@ with private memory.
   - GitHub Actions R-CMD-check `27468842532`: passed.
   - GitHub Actions pkgdown `27468842514`: passed.
   - GitHub Pages build/deploy `27468886120`: passed.
+
+## 2026-06-13 Sparse REML bridge contract memory (B5)
+
+- Goal: record the sparse-REML bridge contract in `03-engine-contract.md`,
+  closing the Phase B surfacing arc (B2 path -> B3 provenance -> B4
+  estimate-recovery -> B5 contract memory).
+- Active lenses: Shannon, Hopper, Lovelace, Rose, Pat. Spawned subagents: none.
+- Local checks: `git diff --check` clean (documentation-only, coordinator lane).
+- Boundary: documents the contract B2-B4 implement; no new capability or claim.
+- Remote checks for commit `9e12821`:
+  - GitHub Actions R-CMD-check `27468956169`: passed.
+  - GitHub Actions pkgdown `27468956186`: passed.
+  - GitHub Pages build/deploy `27468994647`: passed.
