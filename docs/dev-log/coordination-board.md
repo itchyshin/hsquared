@@ -59,6 +59,7 @@
 | 2026-06-13 | R + twin | Curie/Gauss/Fisher/Hopper/Rose | main | sparse-vs-dense REML optimizer agreement (internal comparator) | pushed; CI/pkgdown/Pages passed | internal cross-check only; no external comparator/DGP-recovery/production claim | external comparator rung (sommer/pedigreemm if available); then await twin green |
 | 2026-06-13 | R | Curie/Gauss/Fisher/Rose | main | independent pure-R REML optimizer cross-check (`hs_reml_estimate_reference`) | pushed; CI/pkgdown/Pages passed | independent same-estimand check; pure-R optimizer runs on CI; no external comparator/production claim | DECISION: add Suggests REML comparator (sommer/pedigreemm)?; fitted-Mrode/production = twin-gated |
 | 2026-06-13 | coordinator/docs | Pat/Rose/Grace | main | user-docs honesty pass (surface opt-in `sparse_reml` in model-status; refresh 00-vision status) | pushed; CI/pkgdown/Pages passed | docs match capability; no new claim | maintainer decision: external comparator dep vs await twin engine |
+| 2026-06-13 | R | Jason/Fisher/Curie/Gauss/Rose | main | external REML comparator (pedigreemm) on a replicated dataset; Suggests pedigreemm/lme4/withr | pushed; CI/pkgdown/Pages passed (after lme4 Suggests fix `dcef460`) | hsquared at least as good as pedigreemm by REML logLik; pedigreemm sub-optimal + cannot fit saturated Mrode; not ASReml parity/DGP recovery | next: await twin green; heavier comparator/production = twin engine |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

@@ -2165,6 +2165,32 @@ with private memory.
   - GitHub Actions pkgdown `27469532270`: passed.
   - GitHub Pages build/deploy `27469579694`: passed.
 
+## 2026-06-13 External REML comparator: pedigreemm (B9, follow-on)
+
+- Goal: first external comparator — `pedigreemm` (lme4-based REML animal model)
+  vs hsquared's REML solution on a deterministic replicated dataset.
+- Active lenses: Jason, Fisher, Curie, Gauss, Rose. Spawned subagents: none.
+- Finding: hsquared/the pure-R reference reach the true REML optimum (verified by
+  multi-start + grid on the common verified objective); `pedigreemm` lands
+  slightly worse and cannot fit the saturated Mrode fixture. Honest claim:
+  hsquared is at least as good as `pedigreemm` by REML logLik (not a tight
+  point-estimate match; not ASReml parity; not DGP recovery).
+- Local checks:
+  - `devtools::test()` full: `492 pass`, `0 fail`, `0 warnings`, `0 skips`; live
+    Julia + pedigreemm.
+  - `rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))`: `0 errors`,
+    `0 warnings`, `1 note` (benign new-submission/dev-version note).
+- CI break + fix: first push `9b2af4e` FAILED R-CMD-check (`27470213036`) with
+  `unstated dependencies in 'tests' ... WARNING: '::' import not declared from
+  'lme4'` under `--as-cran` (workflow `error-on: "warning"`). My earlier local
+  gate omitted `--as-cran` and missed it. Fix `dcef460`: declared `lme4` in
+  Suggests; re-verified with `--as-cran` (0 warnings). LESSON: gate with
+  `--as-cran` locally to match CI.
+- Remote checks for commit `dcef460`:
+  - GitHub Actions R-CMD-check `27470343823`: passed.
+  - GitHub Actions pkgdown `27470343838`: passed.
+  - GitHub Pages build/deploy `27470387166`: passed.
+
 ## 2026-06-13 User-docs honesty pass for the sparse REML path (B8)
 
 - Goal: keep user-facing docs in sync with capability — surface the opt-in
