@@ -897,3 +897,44 @@ with private memory.
     bridge examples only.
   - Public wording does not claim production sparse PEV/reliability, Mrode
     fitted-output validation, or general animal-model fitting.
+
+## 2026-06-13 Model specification preview helper
+
+- Goal: add a user-facing `model_spec()` inspector for the parsed v0.1 animal
+  model contract without widening fitting claims.
+- Active lenses: Emmy, Hopper, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `model_spec()` and `"hs_model_spec"` / `"summary_hs_model_spec"`
+    methods.
+  - The inspector validates `animal(1 | id, pedigree = ped)`, builds the same
+    internal bridge payload as `hsquared()`, and reports response, family,
+    method, fixed columns, sparse `Z` dimensions, animal IDs, pedigree
+    founders, and Julia targets.
+  - Added tests for preview fields, compact summaries, no fitted result field,
+    and planned-marker error reuse.
+  - Updated README, model-status article, pkgdown reference index, capability
+    status, claims register, coordination board, and NEWS.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `NAMESPACE` and `man/model_spec.Rd`.
+  - `Rscript -e "devtools::test(filter = 'model-spec-inspect')"`
+  - Result: passed with `24 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `219 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - First result: failed because `_pkgdown.yml` was missing the new
+    `model_spec` topic.
+  - Fix: added `model_spec` to the Start here reference index.
+  - Second result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Public wording says `model_spec()` previews the parsed contract and does
+    not fit a model.
+  - Public wording does not claim general animal-model fitting.

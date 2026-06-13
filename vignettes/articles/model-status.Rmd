@@ -21,6 +21,10 @@ This page separates what exists from what is planned.
   execution unavailable.
 - `formula_status()` reports parsed, reserved, and planned grammar terms
   without implying fitted support.
+- `model_spec()` previews the parsed v0.1 animal-model contract, including
+  fixed-effect design columns, sparse animal-effect design dimensions,
+  normalized pedigree ordering, and Julia target metadata. It does not fit a
+  model.
 - `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`
   reserve planned formula vocabulary and currently error as not implemented.
 - `permanent()`, `common_env()`, `maternal_genetic()`, `maternal_env()`,

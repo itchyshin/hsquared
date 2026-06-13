@@ -7,8 +7,10 @@ eventually the bridge to the `HSquared.jl` engine.
 
 This repository has moved past the initial scaffold into early Phase 1 parser
 and bridge-contract work. It can validate the narrow v0.1 formula contract and
-build a tested internal R-to-Julia payload shape. The default call validates
-and stops, while an experimental opt-in
+build a tested internal R-to-Julia payload shape. Use `model_spec()` to preview
+the parsed fixed-effect design, sparse animal-effect design, normalized
+pedigree ordering, and Julia targets without fitting a model. The default call
+validates and stops, while an experimental opt-in
 `control = hs_control(engine = "julia")` path can send a tiny v0.1 payload to a
 sibling `HSquared.jl` checkout through JuliaCall. This is still a narrow local
 validation path, not general animal-model support. The fitted-object extractor
@@ -53,6 +55,16 @@ internal tests can send the sparse `Z` design through Julia CSC slots, build
 Julia-side `Ainv`, and run the current validation target when a local sibling
 `HSquared.jl` checkout is available. General public fitting waits for a
 production bridge and validation-canon evidence.
+
+```r
+spec <- model_spec(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian()
+)
+
+summary(spec)
+```
 
 The interface rule is deliberately simple: easy, easy, easy. Applied users are
 gold; the package should make the common quantitative-genetic model feel
