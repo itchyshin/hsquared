@@ -26,7 +26,8 @@ are enriched from exported `HSquared.jl` dense validation extractors when
 available; this is still not production sparse reliability or general
 animal-model support. A lightweight
 `hs_data()` container now records phenotype, pedigree, genotype, expression,
-marker, annotation, and environment inputs for future integrated workflows.
+marker, annotation, and environment inputs for future integrated workflows,
+including optional environment-key diagnostics through `environment_id`.
 The package also reserves planned formula markers for genomic/QTL terms and
 standard quantitative-genetic extensions such as permanent environment,
 maternal/paternal effects, dominance, epistasis, cytoplasmic inheritance,
@@ -127,12 +128,26 @@ bundle <- hs_data(
 )
 ```
 
-The marker-map check is metadata validation only. Genomic and QTL/eQTL models
-remain planned. `summary(bundle)` and `data_status(bundle)` report pedigree
-coverage, founder and parent-link counts, marker-map size, genotype
-marker-column count, chromosome count, coordinate range, and whether the
-genotype-marker alignment was checked. When both `genotypes` and `markers` are
-supplied, genotype marker column names must match marker-map IDs exactly.
+Environment metadata can be keyed to phenotype records without fitting an
+environmental model:
+
+```r
+bundle <- hs_data(
+  phenotypes = dat,
+  pedigree = ped,
+  environment = env,
+  environment_id = "site"
+)
+```
+
+The marker-map and environment-key checks are metadata validation only.
+Genomic, QTL/eQTL, and environment-effect models remain planned.
+`summary(bundle)` and `data_status(bundle)` report pedigree coverage, founder
+and parent-link counts, marker-map size, genotype marker-column count,
+chromosome count, coordinate range, whether the genotype-marker alignment was
+checked, and environment metadata coverage when `environment_id` is supplied.
+When both `genotypes` and `markers` are supplied, genotype marker column names
+must match marker-map IDs exactly.
 The animal-model parser uses the bundle pedigree by default, so
 `animal(1 | id)` is equivalent to spelling `animal(1 | id, pedigree = pedigree)`
 for `data = bundle`.

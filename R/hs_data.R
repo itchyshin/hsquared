@@ -20,6 +20,9 @@
 #' @param expression Optional expression matrix or data frame.
 #' @param annotation Optional annotation data frame.
 #' @param environment Optional environment/covariate data frame.
+#' @param environment_id Optional column name used to match `environment` rows
+#'   to phenotype records. When supplied, the column must exist in both
+#'   `phenotypes` and `environment`.
 #' @param id Name of the individual ID column in `phenotypes`.
 #'
 #' @return An `hs_data` object.
@@ -27,7 +30,8 @@
 #' @details
 #' `summary(hs_data(...))` reports ID overlap diagnostics, pedigree diagnostics,
 #' and, when genotype or marker components are supplied, marker-map and
-#' genotype-column alignment diagnostics.
+#' genotype-column alignment diagnostics. When `environment_id` is supplied, it
+#' also reports environment metadata coverage diagnostics.
 #' @export
 hs_data <- function(
   phenotypes,
@@ -37,6 +41,7 @@ hs_data <- function(
   expression = NULL,
   annotation = NULL,
   environment = NULL,
+  environment_id = NULL,
   id = "id"
 ) {
   if (!is.data.frame(phenotypes)) {
@@ -61,7 +66,11 @@ hs_data <- function(
     marker_spec
   )
   hs_validate_optional_data_frame(annotation, "`annotation`")
-  hs_validate_optional_data_frame(environment, "`environment`")
+  environment_spec <- hs_validate_environment(
+    environment,
+    phenotypes,
+    environment_id
+  )
 
   structure(
     list(
@@ -74,6 +83,8 @@ hs_data <- function(
       expression = expression,
       annotation = annotation,
       environment = environment,
+      environment_id = environment_id,
+      environment_spec = environment_spec,
       id = id,
       id_map = list(
         phenotype_ids = unique(phenotype_ids),
@@ -122,8 +133,9 @@ print.hs_data <- function(x, ...) {
 #' `data_status()` gives a direct user-facing view of the checks stored in an
 #' [hs_data()] object. It reports component presence, ID overlap diagnostics,
 #' pedigree diagnostics, and marker-map/genotype-marker alignment diagnostics
-#' when those inputs are supplied. It does not fit models or build genomic
-#' relationship matrices.
+#' when those inputs are supplied. When `environment_id` is supplied, it also
+#' reports environment metadata coverage diagnostics. It does not fit models,
+#' build genomic relationship matrices, or add environment-effect terms.
 #'
 #' @param data An [hs_data()] object.
 #'
@@ -149,7 +161,8 @@ data_status.hs_data <- function(data) {
       components = out$components,
       id_overlap = out$id_overlap,
       pedigree_status = out$pedigree_status,
-      marker_status = out$marker_status
+      marker_status = out$marker_status,
+      environment_status = out$environment_status
     ),
     class = "hs_data_status"
   )
@@ -173,6 +186,12 @@ print.hs_data_status <- function(x, ...) {
     cat("  marker status:\n", sep = "")
     print.data.frame(x$marker_status, row.names = FALSE)
   }
+  if (is.null(x$environment_status)) {
+    cat("  environment status: not available\n", sep = "")
+  } else {
+    cat("  environment status:\n", sep = "")
+    print.data.frame(x$environment_status, row.names = FALSE)
+  }
   invisible(x)
 }
 
@@ -195,7 +214,8 @@ summary.hs_data <- function(object, ...) {
       id_map = object$id_map,
       id_overlap = hs_data_id_overlap(object$id_map),
       pedigree_status = hs_data_pedigree_status(object),
-      marker_status = hs_data_marker_status(object)
+      marker_status = hs_data_marker_status(object),
+      environment_status = hs_data_environment_status(object)
     ),
     class = "summary_hs_data"
   )
@@ -215,6 +235,10 @@ print.summary_hs_data <- function(x, ...) {
   if (!is.null(x$marker_status)) {
     cat("  marker status:\n", sep = "")
     print.data.frame(x$marker_status, row.names = FALSE)
+  }
+  if (!is.null(x$environment_status)) {
+    cat("  environment status:\n", sep = "")
+    print.data.frame(x$environment_status, row.names = FALSE)
   }
   invisible(x)
 }
@@ -364,6 +388,61 @@ hs_data_marker_status <- function(object) {
   )
 }
 
+hs_data_environment_status <- function(object) {
+  if (is.null(object$environment)) {
+    return(NULL)
+  }
+
+  if (is.null(object$environment_spec)) {
+    return(data.frame(
+      metric = c(
+        "environment_rows",
+        "environment_key",
+        "environment_ids",
+        "phenotype_environment_ids",
+        "phenotype_environment_ids_with_metadata",
+        "environment_only_ids",
+        "phenotype_environment_ids_without_metadata",
+        "duplicate_environment_ids"
+      ),
+      value = c(
+        as.character(nrow(object$environment)),
+        "not_checked_no_environment_id",
+        rep("not_available", 6L)
+      ),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  spec <- object$environment_spec
+  data.frame(
+    metric = c(
+      "environment_rows",
+      "environment_key",
+      "environment_ids",
+      "phenotype_environment_ids",
+      "phenotype_environment_ids_with_metadata",
+      "environment_only_ids",
+      "phenotype_environment_ids_without_metadata",
+      "duplicate_environment_ids"
+    ),
+    value = c(
+      as.character(nrow(object$environment)),
+      spec$key,
+      as.character(length(spec$environment_ids)),
+      as.character(length(spec$phenotype_environment_ids)),
+      as.character(length(intersect(
+        spec$phenotype_environment_ids,
+        spec$environment_ids
+      ))),
+      as.character(length(spec$environment_without_phenotypes)),
+      as.character(length(spec$phenotypes_without_environment)),
+      as.character(length(spec$duplicate_environment_ids))
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
 hs_data_summary_genotype_marker_ids <- function(object) {
   if (is.null(object$genotypes)) {
     return(character())
@@ -487,6 +566,96 @@ hs_validate_optional_data_frame <- function(x, label) {
     stop(label, " must be a data frame when supplied.", call. = FALSE)
   }
   invisible(TRUE)
+}
+
+hs_validate_environment <- function(environment, phenotypes, environment_id) {
+  hs_validate_optional_data_frame(environment, "`environment`")
+
+  if (is.null(environment)) {
+    if (!is.null(environment_id)) {
+      stop(
+        "`environment_id` can be supplied only when `environment` is supplied.",
+        call. = FALSE
+      )
+    }
+    return(NULL)
+  }
+  if (is.null(environment_id)) {
+    return(NULL)
+  }
+  if (
+    !is.character(environment_id) ||
+      length(environment_id) != 1L ||
+      is.na(environment_id) ||
+      environment_id == ""
+  ) {
+    stop(
+      "`environment_id` must be one non-empty column name when supplied.",
+      call. = FALSE
+    )
+  }
+  if (!environment_id %in% names(phenotypes)) {
+    stop(
+      "`environment_id` column `",
+      environment_id,
+      "` was not found in `phenotypes`.",
+      call. = FALSE
+    )
+  }
+  if (!environment_id %in% names(environment)) {
+    stop(
+      "`environment_id` column `",
+      environment_id,
+      "` was not found in `environment`.",
+      call. = FALSE
+    )
+  }
+
+  phenotype_environment_ids <- hs_checked_component_keys(
+    phenotypes[[environment_id]],
+    "`phenotypes`",
+    environment_id
+  )
+  environment_ids <- hs_checked_component_keys(
+    environment[[environment_id]],
+    "`environment`",
+    environment_id
+  )
+  duplicate_environment_ids <- unique(environment_ids[
+    duplicated(environment_ids)
+  ])
+
+  structure(
+    list(
+      key = environment_id,
+      phenotype_environment_ids = unique(phenotype_environment_ids),
+      environment_ids = unique(environment_ids),
+      phenotypes_without_environment = setdiff(
+        unique(phenotype_environment_ids),
+        unique(environment_ids)
+      ),
+      environment_without_phenotypes = setdiff(
+        unique(environment_ids),
+        unique(phenotype_environment_ids)
+      ),
+      duplicate_environment_ids = duplicate_environment_ids
+    ),
+    class = "hs_environment_spec"
+  )
+}
+
+hs_checked_component_keys <- function(x, label, key) {
+  values <- as.character(x)
+  if (any(is.na(values) | values == "")) {
+    stop(
+      label,
+      " column `",
+      key,
+      "` cannot contain missing or empty values.",
+      call. = FALSE
+    )
+  }
+  values
 }
 
 hs_validate_marker_map <- function(markers) {

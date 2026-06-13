@@ -211,6 +211,69 @@ test_that("data_status exposes hs_data diagnostics directly", {
   expect_match(capture.output(print(status))[[1L]], "<hs_data_status>")
 })
 
+test_that("hs_data reports environment key diagnostics", {
+  phenotypes <- data.frame(
+    id = c("a", "b", "c"),
+    env = c("E1", "E1", "E3"),
+    y = c(1, 2, 3)
+  )
+  environment <- data.frame(
+    env = c("E1", "E2", "E2"),
+    temperature = c(18, 20, 21)
+  )
+
+  data <- hs_data(
+    phenotypes = phenotypes,
+    environment = environment,
+    environment_id = "env"
+  )
+
+  expect_s3_class(data$environment_spec, "hs_environment_spec")
+  expect_equal(data$environment_spec$phenotype_environment_ids, c("E1", "E3"))
+  expect_equal(data$environment_spec$environment_ids, c("E1", "E2"))
+  expect_equal(data$environment_spec$phenotypes_without_environment, "E3")
+  expect_equal(data$environment_spec$environment_without_phenotypes, "E2")
+  expect_equal(data$environment_spec$duplicate_environment_ids, "E2")
+
+  environment_status <- summary(data)$environment_status
+  expect_equal(
+    environment_status$metric,
+    c(
+      "environment_rows",
+      "environment_key",
+      "environment_ids",
+      "phenotype_environment_ids",
+      "phenotype_environment_ids_with_metadata",
+      "environment_only_ids",
+      "phenotype_environment_ids_without_metadata",
+      "duplicate_environment_ids"
+    )
+  )
+  expect_equal(
+    environment_status$value,
+    c("3", "env", "2", "2", "1", "1", "1", "1")
+  )
+
+  status <- data_status(data)
+  expect_equal(status$environment_status$value[[2L]], "env")
+  expect_equal(status$environment_status$value[[7L]], "1")
+})
+
+test_that("hs_data reports unkeyed environment tables without overchecking", {
+  data <- hs_data(
+    phenotypes = data.frame(id = "a", y = 1),
+    environment = data.frame(env = "E1", rainfall = 4)
+  )
+
+  environment_status <- summary(data)$environment_status
+  expect_equal(environment_status$value[[1L]], "1")
+  expect_equal(
+    environment_status$value[[2L]],
+    "not_checked_no_environment_id"
+  )
+  expect_equal(environment_status$value[[3L]], "not_available")
+})
+
 test_that("hs_data accepts expression IDs from an ID column", {
   phenotypes <- data.frame(sample = c("s1", "s2"), y = c(1, 2))
   expression <- data.frame(sample = c("s2", "s3"), gene1 = c(10, 20))
@@ -268,6 +331,66 @@ test_that("hs_data rejects unsupported component shapes", {
       markers = matrix(1)
     ),
     "`markers` must be a data frame",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", y = 1),
+      environment = matrix(1)
+    ),
+    "`environment` must be a data frame",
+    fixed = TRUE
+  )
+})
+
+test_that("hs_data validates environment key inputs", {
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", y = 1),
+      environment_id = "env"
+    ),
+    "`environment_id` can be supplied only when `environment` is supplied",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", y = 1),
+      environment = data.frame(env = "E1"),
+      environment_id = ""
+    ),
+    "`environment_id` must be one non-empty column name",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", y = 1),
+      environment = data.frame(env = "E1"),
+      environment_id = "env"
+    ),
+    "`environment_id` column `env` was not found in `phenotypes`",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", env = "E1", y = 1),
+      environment = data.frame(site = "E1"),
+      environment_id = "env"
+    ),
+    "`environment_id` column `env` was not found in `environment`",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hs_data(
+      phenotypes = data.frame(id = "a", env = NA, y = 1),
+      environment = data.frame(env = "E1"),
+      environment_id = "env"
+    ),
+    "`phenotypes` column `env` cannot contain missing or empty values",
     fixed = TRUE
   )
 })

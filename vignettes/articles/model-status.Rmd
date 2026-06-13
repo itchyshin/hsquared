@@ -24,8 +24,8 @@ This page separates what exists from what is planned.
 - `validation_status()` reports current validation atoms and planned comparator
   lanes without running checks or implying fitted support.
 - `data_status()` reports `hs_data()` component presence, ID overlap, and
-  pedigree and marker-map/genotype-marker alignment diagnostics without
-  implying fitted support.
+  pedigree, marker-map/genotype-marker alignment, and environment-key
+  diagnostics without implying fitted support.
 - `model_spec()` previews the parsed v0.1 animal-model contract, including
   fixed-effect design columns, sparse animal-effect design dimensions,
   normalized pedigree ordering, and Julia target metadata. It does not fit a
@@ -85,6 +85,9 @@ This page separates what exists from what is planned.
   non-negative numeric position columns. This is metadata validation only.
 - When both `genotypes` and `markers` are supplied, `hs_data()` checks that
   genotype marker columns match marker-map IDs exactly.
+- `hs_data(environment = ..., environment_id = ...)` checks environment
+  metadata coverage against phenotype records and reports duplicate or
+  unmatched environment keys. This is metadata validation only.
 - `model_spec()` and `hsquared()` can use an `hs_data()` object for the v0.1
   animal-model parser, reading model variables from `phenotypes` and using the
   bundle pedigree by default when `animal(1 | id)` omits `pedigree =`.
@@ -106,6 +109,8 @@ This page separates what exists from what is planned.
 - File-backed genotype/omics loading or streaming computation.
 - Automatic model construction from genotype, marker, expression, annotation,
   or environment components in `hs_data()`.
+- Environmental random effects or multi-environment model terms from
+  `environment` metadata.
 - Allele coding, marker imputation, PLINK/VCF parsing, or marker scanning from
   marker maps.
 - Marker, QTL, GWAS, or eQTL result generation.

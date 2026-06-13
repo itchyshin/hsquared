@@ -1339,6 +1339,43 @@ with private memory.
   - Issue #5 updated:
     <https://github.com/itchyshin/hsquared/issues/5#issuecomment-4698196423>.
 
+## 2026-06-13 hs_data environment-key diagnostics
+
+- Goal: add `hs_data()` diagnostics for environment/covariate metadata keyed
+  to phenotype records.
+- Active lenses: Emmy, Darwin, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `environment_id` to `hs_data()`.
+  - Added `hs_environment_spec` metadata for keyed environment tables.
+  - Added `summary(hs_data(...))$environment_status`.
+  - Added `data_status(...)$environment_status` and print support.
+  - Added tests for keyed coverage, unkeyed environment tables, and invalid
+    environment-key inputs.
+  - Updated README, model-status article, capability status, validation debt,
+    public claims, NEWS, roxygen docs, and board.
+- Local checks:
+  - `Rscript -e "devtools::document()" && air format . && Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: documentation updated, formatting completed, and focused tests
+    passed with `74 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `368 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live Julia bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "environment.*model|environment.*fit|multi-environment.*support|environment_id.*fit|environment_id.*model|genomic.*implemented|QTL.*implemented|eQTL.*implemented|GLLVM.*implemented|GPU.*implemented|supports genomic|supports QTL|supports eQTL|ASReml parity|speedup|fast|faster" README.md NEWS.md R man tests vignettes docs/design docs/dev-log _pkgdown.yml`.
+  - Result: hits were planned, blocked, negated, or prior scan/report records.
+  - Public wording says environment-key diagnostics only.
+  - Public wording does not claim environmental model terms,
+    multi-environment animal models, automatic environment joins, genomic/QTL
+    fitting, GLLVM support, GPU execution, ASReml parity, or speedup.
+
 ## 2026-06-13 supplied-variance Henderson MME validation fixture
 
 - Goal: add an internal supplied-variance Henderson mixed-model-equation

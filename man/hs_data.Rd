@@ -12,6 +12,7 @@ hs_data(
   expression = NULL,
   annotation = NULL,
   environment = NULL,
+  environment_id = NULL,
   id = "id"
 )
 }
@@ -35,6 +36,10 @@ marker ID, chromosome, and position columns. Recognized aliases include
 
 \item{environment}{Optional environment/covariate data frame.}
 
+\item{environment_id}{Optional column name used to match \code{environment} rows
+to phenotype records. When supplied, the column must exist in both
+\code{phenotypes} and \code{environment}.}
+
 \item{id}{Name of the individual ID column in \code{phenotypes}.}
 }
 \value{
@@ -52,5 +57,6 @@ formula terms.
 \details{
 \code{summary(hs_data(...))} reports ID overlap diagnostics, pedigree diagnostics,
 and, when genotype or marker components are supplied, marker-map and
-genotype-column alignment diagnostics.
+genotype-column alignment diagnostics. When \code{environment_id} is supplied, it
+also reports environment metadata coverage diagnostics.
 }
