@@ -419,3 +419,45 @@ with private memory.
   - Public wording says sparse `Z` marshalling, not production sparse fitting.
   - Public wording does not claim large-data readiness, Mrode validation, or
     production bridge performance.
+
+## 2026-06-13 Tiny Ainv validation fixture
+
+- Goal: add the first tiny deterministic validation atom for issue #7 without
+  claiming Mrode, ASReml, or production sparse fitting coverage.
+- Active lenses: Curie, Fisher, Gauss, Jason, Rose, Grace.
+- Spawned subagents: none.
+- Scout evidence:
+  - Read local `drmTMB` animal-relatedness and Julia-bridge tests.
+  - Read local `gllvmTMB` sparse pedigree `Ainv` tests, validation register,
+    cross-package validation article, and Gaussian REML pilot report.
+  - Checked Henderson, Mrode, AGHmatrix, and nadiv public sources for the
+    validation ladder.
+  - Persisted lessons in
+    `docs/dev-log/scout/2026-06-13-validation-fixtures.md`.
+- Implementation evidence:
+  - Added internal `hs_tiny_animal_validation_fixture()`.
+  - Added tests that pin R payload ID ordering, parent indices, sparse `Z`,
+    and live Julia `pedigree_inverse()` agreement for the three-animal
+    fixture when a sibling `HSquared.jl` checkout is available.
+  - Updated capability status, validation debt, public claims register,
+    NEWS, and model-status article.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'validation-fixtures')"`
+  - Result: passed with `8 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live fixture activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `124 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says tiny deterministic Ainv validation fixture.
+  - Public wording does not claim Mrode validation, ASReml comparison,
+    production sparse fitting, large-pedigree readiness, or genomic
+    validation.

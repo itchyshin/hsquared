@@ -10,10 +10,11 @@
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Production bridge execution and general fitting remain planned. |
 | R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | Tiny live smoke exists separately; production bridge execution remains planned. |
 | opt-in experimental Julia engine | partial | local JuliaCall tests against sibling `HSquared.jl` return variance components, EBVs, h², logLik, and fitted values for a tiny example | Requires `hs_control(engine = "julia")`; sparse `Z` CSC marshalling now used, production bridge still planned. |
+| tiny deterministic Ainv validation fixture | partial | local tests pin R payload ordering, sparse `Z`, and live Julia `pedigree_inverse()` agreement when `HSquared.jl` is available | Internal validation atom only; not Mrode or production fitting coverage. |
 | `hsquared_fit` object/extractors | partial | local tests over internal mock fit results and opt-in tiny Julia result | PEV/reliability extractor contract exists; current live bridge payload does not return those fields yet. |
 | `hs_data()` container | partial | local tests over phenotype, pedigree, genotype, expression, and marker inputs | No file-backed storage or modelling integration yet. |
 | simple Gaussian animal model | planned | none | Phase 1. |
-| sparse Ainv | planned | none | Julia lane. |
+| sparse Ainv | partial | Julia lane has tiny `pedigree_inverse()` tests; R live validation fixture checks the three-animal bridge path when Julia is available | R-side construction and production sparse fitting remain planned. |
 | EBVs/BLUPs | partial | opt-in tiny Julia bridge returns breeding values | Experimental tiny/local only. |
 | PEV/reliability | partial | R extractor contract tests over mocked `hsquared_fit` fields | Current live bridge payload does not return PEV/reliability yet. |
 | multivariate G matrices | planned | none | Phase 3. |
