@@ -117,3 +117,11 @@ with private memory.
     with direct `expect_error()` checks after snapshot update tooling created
     noisy EOF/diff prompts. The formula parser keeps focused snapshots for
     unsupported syntax.
+- Remote GitHub Actions after push:
+  - `gh run watch 27455226958 --repo itchyshin/hsquared --exit-status`
+  - Result: R-CMD-check passed in 1m55s.
+  - `gh run watch 27455226953 --repo itchyshin/hsquared --exit-status`
+  - Result: initial pkgdown workflow failed while initializing `gh-pages`
+    because the runner had no git author identity.
+  - Fix: added a `Configure git identity` step to
+    `.github/workflows/pkgdown.yaml`.

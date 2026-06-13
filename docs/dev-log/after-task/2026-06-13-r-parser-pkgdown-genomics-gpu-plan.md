@@ -66,6 +66,10 @@ Current lane: R, with coordinator updates.
   `pkgdown-site/`.
 - `Rscript -e "pkgdown::check_pkgdown()"`: no problems found.
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
+- GitHub Actions R-CMD-check on pushed commit `1eb5872`: passed in 1m55s.
+- First GitHub Actions pkgdown deployment on pushed commit `1eb5872`: failed
+  because `pkgdown::deploy_to_branch()` needed an explicit git author identity
+  before creating `gh-pages`; the workflow was patched with a bot identity step.
 
 ## Public Claim Audit
 
