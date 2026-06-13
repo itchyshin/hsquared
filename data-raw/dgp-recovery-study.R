@@ -225,4 +225,72 @@ for (h2g in c(0.1, 0.2, 0.4, 0.6)) {
     100 * mean(gr[, "s2a"] < 0.01, na.rm = TRUE)
   ))
 }
+
+# FIXED-EFFECT recovery (y ~ x + animal), matching the v0.1 contract structure
+# (one binary covariate, true coefficient b_x = 1.0). Exercises the multi-column
+# X code path. RECORDED RESULT (2026-06-13, 100 reps, 100% converged): s2a bias
+# +0.0083 (MCSE 0.0100), h2_hat 0.4014 (bias +0.0014, MCSE 0.0081), EBV acc
+# 0.738, b_x recovered 0.9896 vs 1.0 -- near-unbiased VC recovery AND the fixed
+# effect is recovered.
+b_x <- 1.0
+set.seed(7L)
+xcov <- stats::rbinom(n, 1L, 0.5)
+set.seed(20240613L)
+fseeds <- sample.int(.Machine$integer.max, 100L)
+fres <- matrix(
+  NA_real_,
+  100L,
+  5,
+  dimnames = list(NULL, c("s2a", "s2e", "h2", "acc", "bx"))
+)
+fconv <- 0L
+for (r in seq_len(100L)) {
+  set.seed(fseeds[r])
+  sim <- hs_sim_animal_phenotypes(U, s2a, s2e, mu = mu)
+  dat <- data.frame(
+    id = ped$id,
+    y = sim$y + b_x * xcov,
+    x = xcov,
+    stringsAsFactors = FALSE
+  )
+  fit <- tryCatch(
+    hsquared(
+      y ~ x + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "ai_reml",
+          initial = c(sigma_a2 = 0.5, sigma_e2 = 0.5),
+          iterations = 500L
+        )
+      )
+    ),
+    error = function(e) NULL
+  )
+  if (!is.null(fit)) {
+    vc <- variance_components(fit)$estimate
+    ebv <- breeding_values(fit)
+    ebv <- ebv$value[match(ped$id, ebv$id)]
+    fe <- fit$result$fixed_effects
+    fres[r, ] <- c(
+      vc[1],
+      vc[2],
+      vc[1] / sum(vc),
+      stats::cor(ebv, sim$u),
+      if (length(fe) >= 2) as.numeric(fe[2]) else NA_real_
+    )
+    fconv <- fconv + isTRUE(fit$result$converged)
+  }
+}
+cat(sprintf(
+  "fixef (y~x+animal): h2_hat=%.4f bias=%+.4f acc=%.3f b_x=%.4f conv=%d/100\n",
+  mean(fres[, "h2"], na.rm = TRUE),
+  mean(fres[, "h2"], na.rm = TRUE) - s2a,
+  mean(fres[, "acc"], na.rm = TRUE),
+  mean(fres[, "bx"], na.rm = TRUE),
+  fconv
+))
 utils::sessionInfo()

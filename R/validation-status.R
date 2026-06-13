@@ -128,8 +128,10 @@ hs_validation_status_evidence <- function() {
       "and the engine matches the independent pure-R reference to machine",
       "precision. Recovery is near-unbiased across an h2 grid (0.2/0.4/0.6); the",
       "near-boundary cell (h2 = 0.1) shows mild upward bias, 94% convergence, and",
-      "5% boundary pinning. A skip-guarded pure-R regression test guards a",
-      "small-N case."
+      "5% boundary pinning. Recovery also holds for the contract model with a",
+      "fixed effect (y ~ x + animal): h2 near-unbiased and the fixed effect",
+      "recovered (b_x 0.99 vs 1.0). A skip-guarded pure-R regression test guards",
+      "a small-N case."
     ),
     "None yet.",
     "None yet.",
