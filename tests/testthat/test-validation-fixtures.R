@@ -513,3 +513,55 @@ test_that("Mrode-style supplied-variance fixture matches Julia when available", 
     )
   }
 })
+
+test_that("sparse REML optimizer reaches the same REML optimum from different starts", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live sparse REML estimate-recovery validation."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  fit_from <- function(init) {
+    hsquared(
+      fixture$formula,
+      data = fixture$data,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "sparse_reml",
+          initial = init,
+          iterations = 1000L
+        )
+      )
+    )
+  }
+
+  # Estimate-recovery discipline (see 04-validation-canon comparator rule): the
+  # REML objective optimum is start-independent. This validates the experimental
+  # optimizer, NOT data-generating recovery, supplied-truth recovery, or ASReml
+  # parity. Both fits optimize the SAME estimand (the REML objective).
+  fit_a <- fit_from(c(sigma_a2 = 0.5, sigma_e2 = 0.5))
+  fit_b <- fit_from(c(sigma_a2 = 3.0, sigma_e2 = 1.5))
+
+  la <- fit_a$result$loglik
+  lb <- fit_b$result$loglik
+  expect_true(is.finite(la) && is.finite(lb))
+  # Same REML optimum from different starts (loglik is flat near the optimum, so
+  # compare it tightly and the variance estimates a little more loosely).
+  expect_equal(la, lb, tolerance = 1e-3)
+  expect_equal(
+    variance_components(fit_a)$estimate,
+    variance_components(fit_b)$estimate,
+    tolerance = 1e-2
+  )
+  expect_true(all(variance_components(fit_a)$estimate > 0))
+  expect_equal(
+    fit_diagnostics(fit_a)$value[
+      fit_diagnostics(fit_a)$metric == "variance_components_source"
+    ],
+    "estimated_sparse_reml"
+  )
+})

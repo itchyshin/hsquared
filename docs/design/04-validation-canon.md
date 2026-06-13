@@ -51,3 +51,12 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   reliability, h2, ML log-likelihood, and dense/sparse REML log-likelihood at
   supplied variance components. This is not variance-component estimation or
   full Mrode fitted-output validation.
+- Sparse REML estimate-recovery check: an optional live test runs the opt-in
+  Julia-owned `fit_sparse_reml()` optimizer from two different starting variance
+  components and verifies it reaches the same REML optimum (start-independence)
+  with positive estimated variances. It compares the same estimand (the REML
+  objective) across starts; it is NOT data-generating recovery, supplied-truth
+  recovery, an external comparator, or an ASReml-parity claim. When an external
+  comparator (ASReml/BLUPF90/DMU/WOMBAT) is added later, the comparator
+  discipline above (confirm DGP, fitted model, estimator, scale, missing-data
+  handling before calling a difference an engine bug) governs it.
