@@ -55,8 +55,10 @@ compact result list. Extractor methods are already defined for
 `converged`. The experimental Julia engine path can normalize the current Julia
 result into this shape for a tiny example; default `hsquared()` calls still stop
 before returning a fitted object. The R extractor contract also includes
-`prediction_error_variance` and `reliability`, but the current live Julia
-`result_payload()` does not return those fields yet.
+`prediction_error_variance` and `reliability`. The current R bridge enriches
+tiny opt-in Julia results by calling exported Julia dense validation extractors
+when those functions exist, while Julia's base `result_payload()` remains
+stable.
 
 ## Storage Policy
 

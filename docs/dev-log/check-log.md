@@ -849,3 +849,51 @@ with private memory.
   - Result: R-CMD-check `27459396773` passed in GitHub Actions.
   - Result: pkgdown `27459396771` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27459433476` passed.
+
+## 2026-06-13 Opt-in bridge PEV/reliability enrichment
+
+- Goal: enrich the experimental local R-to-Julia bridge with dense
+  validation-path prediction-error-variance and reliability fields when the
+  sibling `HSquared.jl` checkout exposes exported extractors.
+- Active lenses: Hopper, Lovelace, Fisher, Emmy, Rose, Grace.
+- Spawned subagents: none.
+- Bridge review:
+  - Read `docs/design/01-v0.1-contract.md` and
+    `docs/design/03-engine-contract.md`.
+  - Inspected R bridge code and tests.
+  - Inspected sibling `HSquared.jl` state on clean `main` at `5960af1`, where
+    `prediction_error_variance(fit)` and `reliability(fit)` exist as dense
+    validation-path functions but base `result_payload(fit)` remains stable.
+- Implementation evidence:
+  - Updated `hs_fit_julia_payload()` to merge optional
+    `prediction_error_variance` and `reliability` fields into the R-side raw
+    result by calling exported Julia dense validation extractors when they are
+    defined.
+  - Added a Julia-free normalizer test for optional PEV/reliability fields.
+  - Updated live Julia bridge smoke tests to assert PEV/reliability IDs and
+    finite values.
+  - Updated README, model-status article, v0.1 and engine contracts,
+    capability status, validation debt, claims register, NEWS, and
+    coordination board.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'julia-bridge')"`
+  - Result: passed with `34 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The test activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `195 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `rg -n "PEV/reliability waiting|does not return them yet|not yet in live R bridge|PEV or reliability through the current live|waiting on Julia result-payload|current Julia bridge payload does not" README.md NEWS.md vignettes docs R tests`
+  - Result: no stale wording matches.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says dense validation-path enrichment for tiny opt-in local
+    bridge examples only.
+  - Public wording does not claim production sparse PEV/reliability, Mrode
+    fitted-output validation, or general animal-model fitting.

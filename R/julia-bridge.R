@@ -48,7 +48,14 @@ hs_fit_julia_payload <- function(
     "initial = (sigma_a2 = hsq_initial_sigma_a2,",
     "sigma_e2 = hsq_initial_sigma_e2)",
     ");",
-    "hsq_result = HSquared.result_payload(hsq_fit);"
+    "hsq_result = HSquared.result_payload(hsq_fit);",
+    "if isdefined(HSquared, :prediction_error_variance) &&",
+    "isdefined(HSquared, :reliability);",
+    "hsq_result = merge(hsq_result, (",
+    "prediction_error_variance =",
+    "HSquared.prediction_error_variance(hsq_fit),",
+    "reliability = HSquared.reliability(hsq_fit)));",
+    "end;"
   ))
 
   raw <- JuliaCall::julia_eval(
