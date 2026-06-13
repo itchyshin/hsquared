@@ -730,4 +730,8 @@ with private memory.
   - Public wording says the article is a grammar map and that planned markers
     are syntax reservations only.
 - Remote checks:
-  - Pending first push for this article slice.
+  - Commit: `92c1d12 Add formula grammar roadmap article`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27458831298` passed in GitHub Actions.
+  - Result: pkgdown `27458831294` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27458861190` passed.

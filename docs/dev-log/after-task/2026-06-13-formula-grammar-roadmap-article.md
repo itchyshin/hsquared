@@ -40,7 +40,11 @@ Local checks:
 
 Remote checks:
 
-- Pending first push for this article slice.
+- R-CMD-check `27458831298`: passed on commit
+  `92c1d12 Add formula grammar roadmap article`.
+- pkgdown `27458831294`: passed on commit
+  `92c1d12 Add formula grammar roadmap article`.
+- GitHub Pages build and deployment `27458861190`: passed.
 
 ## Rose Audit
 
