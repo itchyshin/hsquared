@@ -9,12 +9,19 @@ algorithm choices before the Julia engine has a stable control surface.
 response: numeric vector y
 fixed_design: matrix X
 random_design: sparse matrix Z
-ainv: sparse precision matrix Ainv
+Ainv: NULL on the current R side; sparse precision matrix after Julia build
 method: :REML or :ML
 family: gaussian only
 ids: encoded animal IDs
-metadata: original names, levels, pedigree map
+pedigree: normalized id, sire, dam, parent indices, original order
+metadata: original names, fixed columns, observed ID map, bridge targets
 ```
+
+The current R payload builder creates `y`, `X`, sparse `Z`, method, family,
+encoded IDs, normalized pedigree metadata, and a Julia target string. It does
+not create `Ainv`; the first Julia execution path should call
+`normalize_pedigree()`, `pedigree_inverse()`, `animal_model_spec()`, and then
+`fit_animal_model(spec)`.
 
 ## Initial Julia Result
 

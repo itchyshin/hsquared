@@ -16,6 +16,8 @@ URL: https://itchyshin.github.io/hsquared/,
 BugReports: https://github.com/itchyshin/hsquared/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Imports:
+    Matrix
 Suggests: 
     knitr,
     pkgdown,

@@ -192,6 +192,7 @@ hs_parse_animal_call <- function(call, data, env) {
     term = hs_deparse(call),
     design = "intercept",
     group = group,
+    values = as.character(data[[group]]),
     relationship = "pedigree",
     covariance = "scalar",
     pedigree = pedigree_spec
@@ -276,17 +277,16 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
     )
   }
 
+  normalized <- hs_topological_pedigree(ids, sire, dam)
+
   structure(
     list(
-      data = data.frame(
-        id = ids,
-        sire = sire,
-        dam = dam,
-        stringsAsFactors = FALSE
-      ),
+      data = normalized$data,
       columns = cols,
-      ids = ids,
-      observed_ids = unique(observed_ids)
+      ids = normalized$data$id,
+      observed_ids = unique(observed_ids),
+      parent_index = normalized$parent_index,
+      original_order = normalized$original_order
     ),
     class = "hs_pedigree_spec"
   )
@@ -334,6 +334,68 @@ hs_normalize_parent <- function(x) {
   x <- as.character(x)
   x[is.na(x) | x == "" | x == "0"] <- NA_character_
   x
+}
+
+hs_topological_pedigree <- function(ids, sire, dam) {
+  sire_index <- match(sire, ids)
+  dam_index <- match(dam, ids)
+  sire_index[is.na(sire_index)] <- 0L
+  dam_index[is.na(dam_index)] <- 0L
+
+  state <- integer(length(ids))
+  order <- integer()
+
+  visit <- function(index) {
+    if (state[[index]] == 2L) {
+      return(invisible(NULL))
+    }
+    if (state[[index]] == 1L) {
+      stop(
+        "`pedigree` contains a parent-offspring cycle involving ID `",
+        ids[[index]],
+        "`.",
+        call. = FALSE
+      )
+    }
+
+    state[[index]] <<- 1L
+    if (sire_index[[index]] != 0L) {
+      visit(sire_index[[index]])
+    }
+    if (dam_index[[index]] != 0L) {
+      visit(dam_index[[index]])
+    }
+    state[[index]] <<- 2L
+    order <<- c(order, index)
+    invisible(NULL)
+  }
+
+  for (index in seq_along(ids)) {
+    visit(index)
+  }
+
+  sorted_position <- integer(length(ids))
+  sorted_position[order] <- seq_along(order)
+  sorted_sire_index <- sire_index[order]
+  sorted_dam_index <- dam_index[order]
+  known_sire <- sorted_sire_index != 0L
+  known_dam <- sorted_dam_index != 0L
+  sorted_sire_index[known_sire] <- sorted_position[sorted_sire_index[known_sire]]
+  sorted_dam_index[known_dam] <- sorted_position[sorted_dam_index[known_dam]]
+
+  list(
+    data = data.frame(
+      id = ids[order],
+      sire = sire[order],
+      dam = dam[order],
+      stringsAsFactors = FALSE
+    ),
+    parent_index = list(
+      sire = sorted_sire_index,
+      dam = sorted_dam_index
+    ),
+    original_order = order
+  )
 }
 
 hs_split_additive_rhs <- function(expr) {

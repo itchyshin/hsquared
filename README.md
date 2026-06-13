@@ -5,9 +5,10 @@ quantitative-genetic modelling system. The R package owns the applied-user
 surface: formula syntax, data validation, summaries, extractors, examples, and
 eventually the bridge to the `HSquared.jl` engine.
 
-This repository has moved past the initial scaffold into the first Phase 1
-parser slice. It can validate the narrow v0.1 formula contract, but it does not
-fit animal models yet.
+This repository has moved past the initial scaffold into early Phase 1 parser
+and bridge-contract work. It can validate the narrow v0.1 formula contract and
+build a tested internal R-to-Julia payload shape, but it does not execute Julia
+or fit animal models yet.
 
 The intended two-package shape is:
 
@@ -27,8 +28,10 @@ fit <- hsquared(
 )
 ```
 
-That syntax is parsed and validated as the first contract. Fitting waits for the
-HSquared.jl engine bridge and Gaussian animal-model solver.
+That syntax is parsed and validated as the first contract. The R side now
+constructs the intended `y`, `X`, sparse `Z`, method, family, ID, and normalized
+pedigree metadata payload. Fitting waits for Julia-side `Ainv` construction,
+bridge execution, and the Gaussian animal-model solver.
 
 The interface rule is deliberately simple: easy, easy, easy. Applied users are
 gold; the package should make the common quantitative-genetic model feel

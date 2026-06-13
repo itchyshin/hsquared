@@ -141,3 +141,38 @@ with private memory.
   - Result: Pages build and deployment passed.
   - `curl -L --max-time 20 -I https://itchyshin.github.io/hsquared/`
   - Result: live site returned `HTTP/2 200`.
+
+## 2026-06-13 R bridge payload slice
+
+- Rehydrated local state before edit:
+  - `git status --short --branch`
+  - Result: on `main`, tracking `origin/main`, with a clean worktree before
+    the bridge-payload slice.
+- Local implementation checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: documentation regenerated; `man/hsquared-package.Rd` updated with
+    package URLs.
+  - `Rscript -e "devtools::test()"`
+  - Result after payload and test hardening: `49 pass`, `0 fail`.
+  - `git diff --check`
+  - Result after removing a trailing snapshot blank line and deleting brittle
+    snapshots: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - First `Rscript -e "devtools::check()"`
+  - Result: failed in tests because an ordinary error snapshot differed between
+    interactive and built-package contexts.
+  - Fix: replaced formula-error snapshots with direct `expect_error()`
+    assertions and removed the obsolete `_snaps` fixture.
+  - Final `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Bridge/API evidence:
+  - Added internal `hs_build_bridge_payload()`.
+  - Tests cover numeric `y`, dense fixed `X`, sparse animal-incidence `Z`,
+    normalized parent-before-offspring pedigree order, parent index metadata,
+    method/family payload fields, cycle rejection, and the current
+    `HSquared.animal_model_spec()` stop-boundary wording.
+- Rose wording sweep:
+  - README, vignettes, and design docs say internal bridge payload only.
+  - No public wording claims Julia execution, `Ainv` construction, or fitted
+    animal models as implemented.

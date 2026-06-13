@@ -1,7 +1,8 @@
 # Formula Grammar
 
 The R package now parses the narrow v0.1 animal-model syntax. It does not yet
-fit the model or execute the Julia bridge. Later grammar remains planned.
+fit the model or execute the Julia bridge. It does build the first tested
+internal bridge payload for this syntax. Later grammar remains planned.
 
 ## V0.1 Parsed Syntax
 
@@ -21,6 +22,15 @@ Current parser limits:
 - Gaussian identity-link response only;
 - unsupported `cov =`, trait, genomic, single-step, selfing, QTL, and
   non-Gaussian syntax aborts before marshalling.
+
+Current bridge-payload limits:
+
+- `X` is built with base R model-matrix semantics.
+- `Z` is a sparse animal-incidence matrix with one row per observation.
+- pedigree IDs are normalized to parent-before-offspring order;
+- the payload records parent indices for Julia-side sparse `Ainv`
+  construction;
+- live Julia execution remains planned.
 
 ## Later Relationship Terms
 

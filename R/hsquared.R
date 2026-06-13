@@ -42,12 +42,16 @@ hsquared <- function(
     family = family,
     REML = REML
   )
-  force(spec)
+  payload <- hs_build_bridge_payload(spec)
+  force(payload)
 
   stop(
     "`hsquared()` parsed the v0.1 animal-model contract, but model ",
-    "fitting is not implemented yet. The next bridge target is ",
-    "`HSquared.fit_animal_model(y, X, Z, Ainv; method = :REML)`.",
+    "fitting is not implemented yet. The next bridge target is to build ",
+    "`Ainv` in HSquared.jl, validate ",
+    "`HSquared.animal_model_spec(y, X, Z, Ainv; ids = ids, method = :",
+    payload$method,
+    ")`, and then call `HSquared.fit_animal_model(spec)`.",
     call. = FALSE
   )
 }

@@ -21,8 +21,10 @@ fit <- hsquared(
 )
 ```
 
-Current status: this formula is parsed and validated, but model fitting is not
-implemented yet. The package stops at the planned Julia bridge boundary.
+Current status: this formula is parsed and validated, and the R side builds the
+first tested internal bridge payload. Model fitting and live Julia execution
+are not implemented yet. The package stops at the planned Julia bridge
+boundary.
 
 The interface rule is: easy, easy, easy. Users are gold. The common animal
 model should be obvious before the package exposes genomic, multivariate,
@@ -49,6 +51,7 @@ The intended flow is:
 ```text
 R formula + data
 -> R validation and model specification
+-> R bridge payload: y, X, sparse Z, method, IDs, pedigree metadata
 -> HSquared.jl sparse engine
 -> compact result
 -> R summaries, extractors, plots, and diagnostics

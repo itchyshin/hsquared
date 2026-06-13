@@ -16,7 +16,9 @@ formula contract. It does not fit models yet.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://itchyshin.github.io/hsquared/}
   \item \url{https://github.com/itchyshin/hsquared}
+  \item \url{https://github.com/itchyshin/HSquared.jl}
   \item Report bugs at \url{https://github.com/itchyshin/hsquared/issues}
 }
 

@@ -41,23 +41,27 @@ test_that("formula parser rejects unsupported animal syntax", {
   )
   dat <- data.frame(y = c(1, 2), id = c("a", "b"), trait = c("x", "y"))
 
-  expect_snapshot(error = TRUE, {
+  expect_error(
     hsquared:::hs_build_model_spec(
       y ~ animal(trait | id, pedigree = ped),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
-    )
-  })
+    ),
+    "Only random-intercept syntax",
+    fixed = TRUE
+  )
 
-  expect_snapshot(error = TRUE, {
+  expect_error(
     hsquared:::hs_build_model_spec(
       y ~ animal(1 | id, pedigree = ped, cov = us()),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
-    )
-  })
+    ),
+    "`animal()` argument `cov` is planned, not implemented in v0.1.",
+    fixed = TRUE
+  )
 })
 
 test_that("formula parser validates pedigree and observed IDs", {
@@ -68,12 +72,14 @@ test_that("formula parser validates pedigree and observed IDs", {
   )
   dat <- data.frame(y = c(1, 2), id = c("a", "z"))
 
-  expect_snapshot(error = TRUE, {
+  expect_error(
     hsquared:::hs_build_model_spec(
       y ~ animal(1 | id, pedigree = ped),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
-    )
-  })
+    ),
+    "`data` column `id` contains ID not present in `pedigree`: z.",
+    fixed = TRUE
+  )
 })
