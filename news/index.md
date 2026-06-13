@@ -17,6 +17,12 @@
   pedigree metadata, and the validated Julia `animal_model_spec()`
   target, but still does not execute Julia or fit models
   ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- Added a local-only experimental JuliaCall smoke path for the tiny v0.1
+  payload when a sibling `HSquared.jl` checkout is available. This
+  validates bridge shape against Julia `pedigree_inverse()` and
+  `fit_animal_model()` but is not yet the public
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  fitting path ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - Added the first `hsquared_fit` object and extractor contract,
   including
   [`variance_components()`](https://itchyshin.github.io/hsquared/reference/variance_components.md),

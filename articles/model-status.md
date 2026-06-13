@@ -14,6 +14,9 @@ This page separates what exists from what is planned.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`,
   method, family, encoded IDs, normalized pedigree metadata, and Julia
   target metadata.
+- A local-only experimental JuliaCall smoke path that can send the tiny
+  payload into a sibling `HSquared.jl` checkout and normalize the
+  returned Julia result into the internal `hsquared_fit` contract.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
@@ -25,7 +28,8 @@ This page separates what exists from what is planned.
 ## Not implemented yet
 
 - Model fitting.
-- R-to-Julia bridge execution.
+- User-facing R-to-Julia bridge execution through
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md).
 - R-side `Ainv` construction.
 - Real variance components, heritability, EBVs, or BLUPs from fitted
   models.

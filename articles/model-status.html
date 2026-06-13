@@ -84,6 +84,10 @@ controls.</li>
 <li>A tested internal R-to-Julia payload shape with <code>y</code>,
 <code>X</code>, sparse <code>Z</code>, method, family, encoded IDs,
 normalized pedigree metadata, and Julia target metadata.</li>
+<li>A local-only experimental JuliaCall smoke path that can send the
+tiny payload into a sibling <code>HSquared.jl</code> checkout and
+normalize the returned Julia result into the internal
+<code>hsquared_fit</code> contract.</li>
 <li>The first fitted-object/extractor contract over internal
 <code>hsquared_fit</code> objects and mocked Julia result fields.</li>
 <li>
@@ -99,7 +103,8 @@ pedigree/data ID checks.</li>
 </h2>
 <ul>
 <li>Model fitting.</li>
-<li>R-to-Julia bridge execution.</li>
+<li>User-facing R-to-Julia bridge execution through
+<code><a href="../reference/hsquared.html">hsquared()</a></code>.</li>
 <li>R-side <code>Ainv</code> construction.</li>
 <li>Real variance components, heritability, EBVs, or BLUPs from fitted
 models.</li>

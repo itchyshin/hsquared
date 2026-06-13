@@ -8,10 +8,14 @@ engine.
 
 This repository has moved past the initial scaffold into early Phase 1
 parser and bridge-contract work. It can validate the narrow v0.1 formula
-contract and build a tested internal R-to-Julia payload shape, but it
-does not execute Julia or fit animal models yet. The first fitted-object
-and extractor methods are also defined over an internal `hsquared_fit`
-contract, ready for the Julia result once fitting exists. A lightweight
+contract and build a tested internal R-to-Julia payload shape. A
+local-only internal JuliaCall smoke path can send the tiny payload to a
+sibling `HSquared.jl` checkout, but ordinary
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+calls still do not execute Julia or fit animal models yet. The first
+fitted-object and extractor methods are also defined over an internal
+`hsquared_fit` contract, ready for the Julia result once user-facing
+fitting exists. A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows.
@@ -37,9 +41,11 @@ fit <- hsquared(
 
 That syntax is parsed and validated as the first contract. The R side
 now constructs the intended `y`, `X`, sparse `Z`, method, family, ID,
-and normalized pedigree metadata payload. Fitting waits for Julia-side
-`Ainv` construction, bridge execution, and the Gaussian animal-model
-solver.
+and normalized pedigree metadata payload. Internal tests can smoke the
+tiny payload through Julia-side `Ainv` construction and the current
+dense validation target when a local sibling `HSquared.jl` checkout is
+available. Public fitting waits for a proper user-facing bridge, sparse
+production path, and validation canon.
 
 The interface rule is deliberately simple: easy, easy, easy. Applied
 users are gold; the package should make the common quantitative-genetic
