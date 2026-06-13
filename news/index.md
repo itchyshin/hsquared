@@ -12,6 +12,15 @@
   bridge boundary
   ([\#4](https://github.com/itchyshin/hsquared/issues/4),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  and
+  [`BLUP()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  now alias
+  [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  for `hsquared_fit` objects, and
+  [`accuracy()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  derives square-root reliability when reliability estimates are present
+  ([\#5](https://github.com/itchyshin/hsquared/issues/5)).
 - [`fitted()`](https://rdrr.io/r/stats/fitted.values.html) and
   [`residuals()`](https://rdrr.io/r/stats/residuals.html) now work for
   `hsquared_fit` objects that contain fitted-value predictions and

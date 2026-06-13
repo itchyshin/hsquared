@@ -22,12 +22,12 @@ That path does not estimate variance components or provide a
 log-likelihood. When the sibling Julia checkout exposes applicable dense
 validation extractors, the target also attaches PEV and reliability
 fields. The fitted-object extractor contract now includes variance
-components, heritability, EBVs, PEV, reliability, fixed effects, random
-effects, log-likelihood, AIC, prediction, fitted values, residuals, and
-summaries. In the experimental local bridge, PEV/reliability are
-enriched from exported `HSquared.jl` dense validation extractors when
-available; this is still not production sparse reliability or general
-animal-model support. A lightweight
+components, heritability, EBVs/BLUPs, PEV, reliability, accuracy, fixed
+effects, random effects, log-likelihood, AIC, prediction, fitted values,
+residuals, and summaries. In the experimental local bridge,
+PEV/reliability are enriched from exported `HSquared.jl` dense
+validation extractors when available; this is still not production
+sparse reliability or general animal-model support. A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows. The
@@ -244,11 +244,14 @@ not fit models yet.
 - [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
   : Extract heritability estimates
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  [`BLUP()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   : Extract breeding values
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
-  : Extract reliability estimates
+  [`accuracy()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  : Extract reliability and accuracy estimates
 - [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)

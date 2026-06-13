@@ -52,11 +52,14 @@ not fit models yet.
 - [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
   : Extract heritability estimates
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
+  [`BLUP()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   : Extract breeding values
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
-  : Extract reliability estimates
+  [`accuracy()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
+  : Extract reliability and accuracy estimates
 - [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
