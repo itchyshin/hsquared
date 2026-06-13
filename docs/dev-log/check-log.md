@@ -2125,3 +2125,22 @@ with private memory.
   - GitHub Actions R-CMD-check `27468956169`: passed.
   - GitHub Actions pkgdown `27468956186`: passed.
   - GitHub Pages build/deploy `27468994647`: passed.
+
+## 2026-06-13 Sparse-vs-dense REML optimizer agreement (B6, follow-on)
+
+- Goal: cross-check the sparse REML optimizer against the dense REML optimizer
+  on the same Mrode fixture (same estimand, different linear algebra).
+- Active lenses: Curie, Gauss, Fisher, Hopper, Rose. Spawned subagents: none.
+- Local checks:
+  - `devtools::test()` full: `486 pass`, `0 fail`, `0 warnings`, `0 skips`; live
+    Julia bridge active (both optimizers ran and agreed).
+  - `rcmdcheck::rcmdcheck()`: `0 errors`, `0 warnings`, `0 notes`.
+  - `air format .`: clean.
+- Finding: sparse and dense REML optimizers reach the same REML optimum (matching
+  logLik and variance estimates) on the Mrode fixture.
+- Boundary: internal cross-check only; not an external comparator, DGP recovery,
+  or production-fitting claim.
+- Remote checks for commit `f84b959`:
+  - GitHub Actions R-CMD-check `27469342270`: passed.
+  - GitHub Actions pkgdown `27469342263`: passed.
+  - GitHub Pages build/deploy `27469378298`: passed.
