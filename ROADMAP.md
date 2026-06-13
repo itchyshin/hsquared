@@ -129,3 +129,16 @@ Status: planned.
 
 - Disk-backed workflows, PCG/preconditioners, GPU-aware dense/factor models,
   and million-record benchmarks.
+
+### Standing performance directive (user, 2026-06-13)
+
+Find the fastest REML and ML algorithms for the engine — be creative; try
+different combinations (AI-REML, EM, Newton / Fisher-scoring, sparse Cholesky vs
+PCG/preconditioners, selected inverse, etc.). Optimize CPU first (establish the
+best CPU baseline before GPU), then report the winner. Engine speed is
+Julia-lane-led (`HSquared.jl`); the R lane provides the benchmarking harness and
+honest surfacing. Reuse local sister code rather than reinventing:
+`DRM.jl` / `GLLVM.jl` `takahashi_selinv.jl` (selected inverse),
+`structured_schur.jl`, `GLLVM.jl/src/likelihood.jl`. The same directive was
+given to the Julia twin; coordinate via the shared bridge contract and the
+coordination board.
