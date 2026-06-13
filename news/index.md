@@ -46,6 +46,10 @@
   threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface
   placeholders only; GPU execution remains planned
   ([\#3](https://github.com/itchyshin/hsquared/issues/3)).
+- Added
+  [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
+  so users and developers can inspect planned backend names while seeing
+  that backend execution is not available yet.
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`

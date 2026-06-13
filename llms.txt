@@ -93,6 +93,8 @@ Current parser entry points and planned fitting controls.
   : Fit a quantitative-genetic model
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   : Create hsquared control options
+- [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
+  : Inspect planned compute backends
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   : Animal-model formula marker
 

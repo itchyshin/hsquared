@@ -12,6 +12,9 @@ This page separates what exists from what is planned.
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   stores planned CPU-thread, CUDA, AMDGPU, Metal, and oneAPI backend
   names as control metadata.
+- [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
+  reports the planned backend vocabulary and marks backend execution
+  unavailable.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.
