@@ -72,6 +72,8 @@ This page separates what exists from what is planned.
   genotype, expression, marker, annotation, and environment inputs.
 - `summary(hs_data(...))` reports ID overlap and mismatch counts for
   phenotype, pedigree, genotype, and expression components.
+- `summary(hs_data(...))` reports marker-map and genotype-marker
+  alignment diagnostics when marker or genotype components are supplied.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   validates supplied marker maps for marker ID, chromosome, and
   non-negative numeric position columns. This is metadata validation
