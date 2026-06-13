@@ -106,7 +106,12 @@ requires <code>variance_components</code> with named <code>sigma_a2</code> and <
 surfaces the Julia-owned <code>HSquared.fit_sparse_reml()</code> REML-only sparse
 optimizer; it accepts <code>initial</code> (named <code>sigma_a2</code>/<code>sigma_e2</code>) and
 <code>iterations</code>. It is not the default, not production fitting, and not a
-variance-component estimation claim for the public R interface.</p></dd>
+variance-component estimation claim for the public R interface.
+<code>target = "ai_reml"</code> is an experimental, opt-in validation path that
+surfaces the Julia-owned <code>HSquared.fit_ai_reml()</code> average-information REML
+optimizer; like <code>sparse_reml</code> it accepts <code>initial</code> and <code>iterations</code>, is not
+the default, and is not a variance-component estimation claim for the
+public R interface.</p></dd>
 
 </dl></div>
     <div class="section level2">

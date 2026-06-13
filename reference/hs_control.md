@@ -57,6 +57,11 @@ hs_control(
   it accepts `initial` (named `sigma_a2`/`sigma_e2`) and `iterations`.
   It is not the default, not production fitting, and not a
   variance-component estimation claim for the public R interface.
+  `target = "ai_reml"` is an experimental, opt-in validation path that
+  surfaces the Julia-owned `HSquared.fit_ai_reml()` average-information
+  REML optimizer; like `sparse_reml` it accepts `initial` and
+  `iterations`, is not the default, and is not a variance-component
+  estimation claim for the public R interface.
 
 ## Value
 
