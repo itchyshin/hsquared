@@ -670,3 +670,42 @@ hs_gaussian_loglik_reference <- function(
 
   list(loglik = loglik, beta = as.numeric(beta))
 }
+
+# Independent pure-R REML/ML variance-component optimizer used only as a
+# validation reference: it maximizes the same dense Gaussian objective as
+# hs_gaussian_loglik_reference() over log-variances, with no Julia involvement.
+hs_reml_estimate_reference <- function(
+  y,
+  X,
+  Z,
+  Ainv,
+  method = c("REML", "ML"),
+  initial = c(sigma_a2 = 1, sigma_e2 = 1)
+) {
+  method <- match.arg(method)
+  objective <- function(log_theta) {
+    -hs_gaussian_loglik_reference(
+      y,
+      X,
+      Z,
+      Ainv,
+      exp(log_theta[[1]]),
+      exp(log_theta[[2]]),
+      method = method
+    )$loglik
+  }
+  opt <- stats::optim(
+    log(as.numeric(initial[c("sigma_a2", "sigma_e2")])),
+    objective,
+    method = "Nelder-Mead",
+    control = list(reltol = 1e-10, maxit = 1000L)
+  )
+  estimate <- exp(opt$par)
+  names(estimate) <- c("sigma_a2", "sigma_e2")
+  list(
+    estimate = estimate,
+    loglik = -opt$value,
+    convergence = opt$convergence,
+    method = method
+  )
+}

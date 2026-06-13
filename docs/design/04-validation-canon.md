@@ -67,3 +67,11 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   REML optimum (matching log-likelihood and variance estimates). This is an
   internal cross-check between two engines of the same estimand; it is not an
   external comparator or a production-fitting claim.
+- Independent pure-R REML optimizer cross-check: a pure-R reference
+  (`hs_reml_estimate_reference()`, an `optim()` wrapper over the dense Gaussian
+  REML objective with no Julia involvement) is optimized on the Mrode fixture;
+  its REML variance estimate is verified positive and finite (this part runs on
+  CI), and, when the sibling checkout is available, it is matched against the
+  Julia `fit_sparse_reml()` estimate. A fully independent (non-Julia)
+  implementation of the same estimand; not an external comparator or a
+  production-fitting claim.

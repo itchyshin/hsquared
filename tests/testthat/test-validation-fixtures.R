@@ -608,3 +608,53 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
     tolerance = 5e-2
   )
 })
+
+test_that("independent pure-R REML optimizer matches the Julia sparse REML estimate", {
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  spec <- hsquared:::hs_build_model_spec(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  ref <- hsquared:::hs_reml_estimate_reference(
+    payload$y,
+    payload$X,
+    as.matrix(payload$Z),
+    fixture$expected$Ainv,
+    method = "REML"
+  )
+
+  # Independent pure-R REML optimization (no Julia) — always runs, including CI.
+  expect_equal(ref$convergence, 0L)
+  expect_true(all(is.finite(ref$estimate)) && all(ref$estimate > 0))
+  expect_true(is.finite(ref$loglik))
+
+  # Cross-check: the Julia sparse REML estimate matches the independent pure-R
+  # optimum (same estimand, fully independent implementation). Skip-guarded.
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live sparse REML cross-check."
+  )
+  fit <- hsquared(
+    fixture$formula,
+    data = fixture$data,
+    family = stats::gaussian(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "sparse_reml",
+        initial = c(sigma_a2 = 1, sigma_e2 = 1),
+        iterations = 1000L
+      )
+    )
+  )
+  expect_equal(
+    unname(variance_components(fit)$estimate),
+    unname(ref$estimate),
+    tolerance = 5e-2
+  )
+})
