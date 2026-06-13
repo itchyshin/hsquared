@@ -36,7 +36,9 @@ This page separates what exists from what is planned.
   quantitative-genetic and inheritance-kernel vocabulary and currently error
   as not implemented.
 - `animal()` as an inert formula marker.
-- A v0.1 parser for `animal(1 | id, pedigree = ped)`.
+- A v0.1 parser for `animal(1 | id, pedigree = ped)`, and for
+  `animal(1 | id)` when `data` is an `hs_data()` bundle with a pedigree
+  component.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`, method,
   family, encoded IDs, normalized pedigree metadata, and Julia target metadata.
 - An experimental opt-in `control = hs_control(engine = "julia")` path that can
@@ -67,8 +69,8 @@ This page separates what exists from what is planned.
 - When both `genotypes` and `markers` are supplied, `hs_data()` checks that
   genotype marker columns match marker-map IDs exactly.
 - `model_spec()` and `hsquared()` can use an `hs_data()` object for the v0.1
-  animal-model parser, reading model variables from `phenotypes` and formula
-  components such as `pedigree = pedigree` from the bundle.
+  animal-model parser, reading model variables from `phenotypes` and using the
+  bundle pedigree by default when `animal(1 | id)` omits `pedigree =`.
 - Local tests for accepted syntax, rejected future syntax, and pedigree/data ID
   checks.
 

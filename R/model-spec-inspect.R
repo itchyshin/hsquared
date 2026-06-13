@@ -5,11 +5,14 @@
 #' payload. It is a preview and diagnostics helper: it does not fit a model.
 #'
 #' @param formula A model formula. The current implemented grammar is
-#'   `y ~ fixed + animal(1 | id, pedigree = ped)`.
+#'   `y ~ fixed + animal(1 | id, pedigree = ped)`, or
+#'   `y ~ fixed + animal(1 | id)` when `data` is an [hs_data()] object with a
+#'   pedigree component.
 #' @param data A data frame containing model variables, or an [hs_data()]
 #'   object whose `phenotypes` component contains the model variables. When
 #'   `data` is an `hs_data` object, formula arguments such as
-#'   `pedigree = pedigree` can refer to named components in the bundle.
+#'   `pedigree = pedigree` can refer to named components in the bundle, and
+#'   `animal(1 | id)` uses the bundle pedigree by default.
 #' @param family A response family. The current parser accepts only
 #'   `gaussian()`.
 #' @param REML Logical; whether the target Gaussian animal model would use
@@ -76,6 +79,7 @@ hs_new_model_spec <- function(spec, payload) {
         group = animal$group,
         relationship = animal$relationship,
         covariance = animal$covariance,
+        pedigree_source = animal$pedigree_source,
         ids = payload$ids,
         observed_ids = payload$metadata$observed_ids,
         observed_id_index = payload$metadata$observed_id_index,
@@ -158,6 +162,7 @@ summary.hs_model_spec <- function(object, ...) {
         group = object$animal$group,
         relationship = object$animal$relationship,
         covariance = object$animal$covariance,
+        pedigree_source = object$animal$pedigree_source,
         ainv_status = object$julia$ainv_status,
         stringsAsFactors = FALSE
       ),

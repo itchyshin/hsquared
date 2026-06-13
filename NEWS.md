@@ -28,4 +28,5 @@
 * `hs_data()` now validates supplied marker maps for marker ID, chromosome, and non-negative numeric position columns. This is metadata validation only; genomic and QTL/eQTL fitting remain planned (#8).
 * `hs_data()` now checks that genotype marker column names match marker-map IDs exactly when both `genotypes` and `markers` are supplied (#8).
 * `model_spec()` and `hsquared()` can now use an `hs_data()` object directly for the v0.1 parser, reading model variables from `phenotypes` and resolving formula components such as `pedigree = pedigree` from the bundle (#8).
+* `model_spec()` and `hsquared()` now allow `animal(1 | id)` to use the pedigree stored in `data = hs_data(..., pedigree = ped)`, while ordinary data frames still require explicit `pedigree = ped` (#4, #8).
 * Added Phase 0 project operating documentation, an honest placeholder `hsquared()` entry point, and `hs_control()` for planned engine controls.

@@ -75,7 +75,7 @@ summary(bundle)
 data_status(bundle)
 
 spec <- model_spec(
-  y ~ sex + age + animal(1 | id, pedigree = pedigree),
+  y ~ sex + age + animal(1 | id),
   data = bundle
 )
 ```
@@ -101,6 +101,9 @@ coverage, founder and parent-link counts, marker-map size, genotype
 marker-column count, chromosome count, coordinate range, and whether the
 genotype-marker alignment was checked. When both `genotypes` and `markers` are
 supplied, genotype marker column names must match marker-map IDs exactly.
+The animal-model parser uses the bundle pedigree by default, so
+`animal(1 | id)` is equivalent to spelling `animal(1 | id, pedigree = pedigree)`
+for `data = bundle`.
 
 The interface rule is deliberately simple: easy, easy, easy. Applied users are
 gold; the package should make the common quantitative-genetic model feel

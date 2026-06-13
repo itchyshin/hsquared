@@ -1,5 +1,6 @@
 test_that("animal is an inert formula marker", {
   expect_null(animal(1 | id, pedigree = ped))
+  expect_null(animal(1 | id))
 })
 
 test_that("planned genomic and QTL markers are inert formula markers", {
@@ -185,6 +186,58 @@ test_that("formula parser validates pedigree and observed IDs", {
       REML = TRUE
     ),
     "`data` column `id` contains ID not present in `pedigree`: z.",
+    fixed = TRUE
+  )
+})
+
+test_that("animal parser uses hs_data pedigree by default", {
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    y = c(1, 2),
+    age = c(4, 5),
+    id = c("a", "c")
+  )
+  bundle <- hs_data(phenotypes = dat, pedigree = ped)
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ age + animal(1 | id),
+    data = bundle,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  expect_equal(spec$random$animal$pedigree_source, "hs_data")
+  expect_equal(spec$random$animal$pedigree$ids, c("a", "b", "c"))
+  expect_equal(spec$random$animal$pedigree$parent_index$sire, c(0L, 0L, 1L))
+  expect_equal(spec$random$animal$pedigree$parent_index$dam, c(0L, 0L, 2L))
+})
+
+test_that("animal parser requires a pedigree source", {
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"))
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "unless `data` is an `hs_data()` object with a pedigree component",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id),
+      data = hs_data(dat),
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "unless `data` is an `hs_data()` object with a pedigree component",
     fixed = TRUE
   )
 })

@@ -7,11 +7,14 @@
 #' bridge examples when a sibling `HSquared.jl` checkout is available.
 #'
 #' @param formula A model formula. The first planned v0.1 syntax is
-#'   `y ~ fixed + animal(1 | id, pedigree = ped)`.
+#'   `y ~ fixed + animal(1 | id, pedigree = ped)`, with
+#'   `animal(1 | id)` also accepted when `data` is an [hs_data()] object with a
+#'   pedigree component.
 #' @param data A data frame containing model variables, or an [hs_data()]
 #'   object whose `phenotypes` component contains the model variables. When
 #'   `data` is an `hs_data` object, formula arguments such as
-#'   `pedigree = pedigree` can refer to named components in the bundle.
+#'   `pedigree = pedigree` can refer to named components in the bundle, and
+#'   `animal(1 | id)` uses the bundle pedigree by default.
 #' @param family A response family. The v0.1 parser accepts only
 #'   `gaussian()`.
 #' @param REML Logical; whether the Gaussian animal model should use REML when

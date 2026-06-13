@@ -15,12 +15,15 @@ hsquared(
 }
 \arguments{
 \item{formula}{A model formula. The first planned v0.1 syntax is
-\code{y ~ fixed + animal(1 | id, pedigree = ped)}.}
+\code{y ~ fixed + animal(1 | id, pedigree = ped)}, with
+\code{animal(1 | id)} also accepted when \code{data} is an \code{\link[=hs_data]{hs_data()}} object with a
+pedigree component.}
 
 \item{data}{A data frame containing model variables, or an \code{\link[=hs_data]{hs_data()}}
 object whose \code{phenotypes} component contains the model variables. When
 \code{data} is an \code{hs_data} object, formula arguments such as
-\code{pedigree = pedigree} can refer to named components in the bundle.}
+\code{pedigree = pedigree} can refer to named components in the bundle, and
+\code{animal(1 | id)} uses the bundle pedigree by default.}
 
 \item{family}{A response family. The v0.1 parser accepts only
 \code{gaussian()}.}

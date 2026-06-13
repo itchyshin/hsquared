@@ -1185,3 +1185,49 @@ with private memory.
   - Public wording says pedigree diagnostics only.
   - Public wording does not claim pedigree inverse construction, Ainv support,
     animal-model fitting, genomic fitting, or QTL/eQTL fitting.
+
+## 2026-06-13 hs_data pedigree shorthand for animal()
+
+- Goal: let `animal(1 | id)` use the pedigree stored in
+  `data = hs_data(..., pedigree = ped)`, while keeping explicit
+  `animal(1 | id, pedigree = ped)` as the canonical portable contract.
+- Active lenses: Ada, Shannon, Boole, Noether, Emmy, Hopper, Grace, Rose, Pat.
+- Spawned subagents: none.
+- Scout:
+  - Checked local `gllvmTMB`, `DRM.jl`, and `GLLVM.jl` guidance for formula
+    parity, one-engine data-shape conversion, R-Julia bridge ownership, and
+    verify-before-claim discipline.
+  - Recorded
+    `docs/dev-log/scout/2026-06-13-hs-data-pedigree-shorthand-scout.md`.
+- Implementation evidence:
+  - `hs_build_model_spec()` now passes the original `hs_data()` context to the
+    animal parser.
+  - `animal(1 | id)` resolves to the bundle pedigree only when `data` is an
+    `hs_data()` object with a pedigree component.
+  - Plain data frames and `hs_data()` objects without a pedigree still error
+    clearly and require an explicit pedigree source.
+  - `model_spec()` summaries now record whether the pedigree came from the
+    formula or the `hs_data()` bundle.
+  - `formula_status()` reports the bundle shorthand as parsed today.
+  - Updated tests, README, formula/status articles, capability status,
+    validation debt, claims register, NEWS, and roxygen docs.
+- Local checks:
+  - `Rscript -e "devtools::test(filter = 'formula-animal|model-spec-inspect|phase0-api')"`
+  - Result: passed with `122 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `animal.Rd`, `hsquared.Rd`, and `model_spec.Rd`.
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `276 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: passed with no output.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says this is parser/data-container ergonomics only.
+  - Public wording does not claim new animal-model fitting, R-side Ainv
+    construction, genomic fitting, QTL/eQTL fitting, or GPU execution.

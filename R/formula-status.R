@@ -24,7 +24,8 @@ formula_status <- function() {
 #' @export
 print.hs_formula_status <- function(x, ...) {
   cat("<hs_formula_status>\n")
-  cat("  parsed today: animal(1 | id, pedigree = ped)\n")
+  cat("  parsed today: animal(1 | id, pedigree = ped); ")
+  cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: general model fitting remains planned\n")
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
@@ -38,6 +39,7 @@ print.hs_formula_status <- function(x, ...) {
 hs_formula_status_terms <- function() {
   c(
     "animal(1 | id, pedigree = ped)",
+    "animal(1 | id) with data = hs_data(..., pedigree = ped)",
     "permanent(1 | id)",
     "common_env(1 | group)",
     "maternal_genetic(1 | dam, pedigree = ped)",
@@ -62,7 +64,7 @@ hs_formula_status_terms <- function() {
 
 hs_formula_status_categories <- function() {
   c(
-    "v0.1 animal model",
+    rep("v0.1 animal model", 2L),
     rep("standard quantitative genetics", 6L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 5L),
@@ -72,7 +74,7 @@ hs_formula_status_categories <- function() {
 
 hs_formula_status_phases <- function() {
   c(
-    "Phase 1",
+    rep("Phase 1", 2L),
     rep("Phase 2", 6L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 5L),
@@ -82,7 +84,7 @@ hs_formula_status_phases <- function() {
 
 hs_formula_status_syntax <- function() {
   c(
-    "parsed",
+    rep("parsed", 2L),
     rep("reserved", 17L),
     rep("planned", 2L)
   )
@@ -90,7 +92,7 @@ hs_formula_status_syntax <- function() {
 
 hs_formula_status_fitting <- function() {
   c(
-    "experimental tiny bridge only",
+    rep("experimental tiny bridge only", 2L),
     rep("not available", 19L)
   )
 }
@@ -100,6 +102,10 @@ hs_formula_status_behavior <- function() {
     paste(
       "Validated by the R parser; default hsquared() stops before general",
       "fitting."
+    ),
+    paste(
+      "Validated only when data is an hs_data() bundle with a pedigree",
+      "component; default hsquared() stops before general fitting."
     ),
     rep(
       paste(

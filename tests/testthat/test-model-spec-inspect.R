@@ -101,3 +101,26 @@ test_that("model_spec can read phenotypes and pedigree from hs_data", {
   expect_equal(spec$payload$pedigree$sire_index, c(0L, 0L, 1L))
   expect_equal(spec$payload$pedigree$dam_index, c(0L, 0L, 2L))
 })
+
+test_that("model_spec uses the hs_data pedigree when animal omits pedigree", {
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    y = c(1, 2),
+    age = c(4, 5),
+    id = c("a", "c")
+  )
+  bundle <- hs_data(phenotypes = dat, pedigree = ped)
+
+  spec <- model_spec(y ~ age + animal(1 | id), data = bundle)
+  out <- summary(spec)
+
+  expect_equal(spec$animal$pedigree_source, "hs_data")
+  expect_equal(out$animal$pedigree_source, "hs_data")
+  expect_equal(spec$animal$ids, c("a", "b", "c"))
+  expect_equal(spec$payload$pedigree$sire_index, c(0L, 0L, 1L))
+  expect_equal(spec$payload$pedigree$dam_index, c(0L, 0L, 2L))
+})

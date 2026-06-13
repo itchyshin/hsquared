@@ -39,7 +39,8 @@ The parser currently accepts:
 
 - one `animal()` term;
 - random-intercept syntax: `1 | id`;
-- `pedigree = ped`;
+- `pedigree = ped`, or `animal(1 | id)` when `data` is an `hs_data()` bundle
+  with a pedigree component;
 - numeric Gaussian responses.
 
 Unsupported syntax is still important because it defines the roadmap. Terms

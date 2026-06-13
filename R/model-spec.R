@@ -36,7 +36,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     )
   }
 
-  animal_spec <- hs_parse_animal_call(rhs_terms[[animal_pos]], data, env)
+  animal_spec <- hs_parse_animal_call(
+    rhs_terms[[animal_pos]],
+    data,
+    env,
+    model_data = model_data
+  )
   fixed_terms <- rhs_terms[-animal_pos]
   fixed_formula <- formula
   fixed_formula[[3L]] <- hs_rebuild_additive_rhs(fixed_terms)
@@ -90,7 +95,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
 
 hs_model_data_context <- function(data, env) {
   if (!inherits(data, "hs_data")) {
-    return(list(data = data, env = env))
+    return(list(
+      data = data,
+      env = env,
+      is_hs_data = FALSE,
+      components = list()
+    ))
   }
   if (!is.data.frame(data$phenotypes)) {
     stop(
@@ -113,7 +123,9 @@ hs_model_data_context <- function(data, env) {
 
   list(
     data = data$phenotypes,
-    env = list2env(components, parent = env)
+    env = list2env(components, parent = env),
+    is_hs_data = TRUE,
+    components = components
   )
 }
 
@@ -146,7 +158,7 @@ hs_validate_model_inputs <- function(formula, data, family, REML) {
   invisible(TRUE)
 }
 
-hs_parse_animal_call <- function(call, data, env) {
+hs_parse_animal_call <- function(call, data, env, model_data) {
   call <- hs_unwrap_parentheses(call)
   args <- as.list(call)[-1L]
   arg_names <- names(args)
@@ -214,16 +226,14 @@ hs_parse_animal_call <- function(call, data, env) {
       call. = FALSE
     )
   }
-  if (!"pedigree" %in% names(named_args)) {
-    stop(
-      "`animal()` requires `pedigree = ped` in the v0.1 parser.",
-      call. = FALSE
-    )
-  }
-
-  pedigree <- hs_eval_pedigree(named_args$pedigree, data, env)
+  pedigree_input <- hs_resolve_animal_pedigree(
+    named_args,
+    data,
+    env,
+    model_data
+  )
   pedigree_spec <- hs_validate_pedigree(
-    pedigree,
+    pedigree_input$data,
     data_ids = data[[group]],
     group = group
   )
@@ -236,7 +246,33 @@ hs_parse_animal_call <- function(call, data, env) {
     values = as.character(data[[group]]),
     relationship = "pedigree",
     covariance = "scalar",
+    pedigree_source = pedigree_input$source,
     pedigree = pedigree_spec
+  )
+}
+
+hs_resolve_animal_pedigree <- function(named_args, data, env, model_data) {
+  if ("pedigree" %in% names(named_args)) {
+    return(list(
+      data = hs_eval_pedigree(named_args$pedigree, data, env),
+      source = "formula"
+    ))
+  }
+
+  if (
+    isTRUE(model_data$is_hs_data) &&
+      !is.null(model_data$components$pedigree)
+  ) {
+    return(list(
+      data = model_data$components$pedigree,
+      source = "hs_data"
+    ))
+  }
+
+  stop(
+    "`animal()` requires `pedigree = ped` in the v0.1 parser, unless ",
+    "`data` is an `hs_data()` object with a pedigree component.",
+    call. = FALSE
   )
 }
 

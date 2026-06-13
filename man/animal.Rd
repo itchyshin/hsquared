@@ -4,13 +4,15 @@
 \alias{animal}
 \title{Animal-model formula marker}
 \usage{
-animal(formula, pedigree, ...)
+animal(formula, pedigree = NULL, ...)
 }
 \arguments{
 \item{formula}{A random-effect expression. The v0.1 parser accepts
 \code{1 | id}.}
 
-\item{pedigree}{A pedigree data frame with individual, sire, and dam columns.}
+\item{pedigree}{A pedigree data frame with individual, sire, and dam columns.
+Optional only when the enclosing \code{\link[=hsquared]{hsquared()}} or \code{\link[=model_spec]{model_spec()}} call uses
+\code{data = hs_data(..., pedigree = ...)}.}
 
 \item{...}{Reserved for future syntax such as \verb{cov =}.}
 }
@@ -20,8 +22,9 @@ appears inside a model formula.
 }
 \description{
 \code{animal()} marks an additive-genetic random effect in an \code{hsquared()}
-formula. The first implemented parser contract accepts only
-\code{animal(1 | id, pedigree = ped)}. General fitting still waits for the
-production Julia engine bridge, so this function is a syntax marker rather
-than a standalone modelling helper.
+formula. The first implemented parser contract accepts
+\code{animal(1 | id, pedigree = ped)}, or \code{animal(1 | id)} when \code{data} is an
+\code{\link[=hs_data]{hs_data()}} object with a pedigree component. General fitting still waits
+for the production Julia engine bridge, so this function is a syntax marker
+rather than a standalone modelling helper.
 }

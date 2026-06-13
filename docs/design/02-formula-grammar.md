@@ -10,6 +10,13 @@ internal bridge payload for this syntax. Later grammar remains planned.
 y ~ fixed + animal(1 | id, pedigree = ped)
 ```
 
+With `data = hs_data(..., pedigree = ped)`, users may omit the repeated
+pedigree argument:
+
+```r
+y ~ fixed + animal(1 | id)
+```
+
 `animal()` means an additive genetic random effect whose relationship structure
 comes from a pedigree. The Julia engine should use sparse Ainv rather than
 constructing and inverting dense A.
@@ -18,7 +25,9 @@ Current parser limits:
 
 - exactly one `animal()` term;
 - random-intercept syntax only: `1 | id`;
-- `pedigree = ped` required;
+- `pedigree = ped` required for plain data frames;
+- omitted `pedigree =` allowed only when `data` is an `hs_data()` bundle with a
+  pedigree component;
 - Gaussian identity-link response only;
 - unsupported `cov =`, trait, genomic, single-step, selfing, QTL, and
   non-Gaussian syntax aborts before marshalling.
