@@ -16,6 +16,7 @@ public examples.
 | `hsquared` provides a data container for integrated inputs | partial | local tests for `hs_data()` ID maps and input validation | lightweight data container; no modelling or file-backed storage |
 | `hs_control()` stores planned backend names | partial | local control-validation tests for `threads`, `cuda`, `amdgpu`, `metal`, and `oneapi` | control vocabulary only; no CPU/GPU execution |
 | `backend_info()` reports backend status | partial | local tests check planned backend rows and `execution_available = FALSE` | diagnostic table only; no backend execution or benchmarking |
+| Genomic/QTL formula markers exist | partial | local tests check inert markers and planned-not-implemented parser errors | syntax reservation only; no genomic, marker-scan, QTL, or eQTL fitting |
 | `hsquared` fits general animal models | planned | none | planned v0.1 target after validation and production bridge hardening |
 | `hsquared` supports genomic, QTL/eQTL, GLLVM, or GPU workflows | planned | none | roadmap only |
 | `HSquared.jl` is the Julia engine package identity | covered | public repo exists; Julia package scaffold and CI green | Julia engine scaffold |

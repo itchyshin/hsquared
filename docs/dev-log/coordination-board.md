@@ -18,6 +18,7 @@
 | 2026-06-13 | R | Curie/Fisher/Gauss/Jason/Rose | main | optional Mrode9/nadiv pedigree Ainv comparator for issue #7 | pushed; CI/pkgdown/Pages passed | full Mrode fit-output validation still planned | hand off comparator to Julia twin |
 | 2026-06-13 | R | Lovelace/Karpinski/Grace/Rose/Pat | main | planned backend vocabulary in `hs_control()` | pushed; CI/pkgdown/Pages passed | no backend execution yet | Julia twin to mirror vocabulary as non-execution controls |
 | 2026-06-13 | R | Lovelace/Karpinski/Grace/Rose/Pat | main | `backend_info()` backend status diagnostics | pushed; CI/pkgdown/Pages passed | no backend execution yet | Julia twin can mirror typed backend status later |
+| 2026-06-13 | R | Boole/Jason/Lovelace/Rose/Pat | main | planned genomic/QTL formula markers | local checks passed | no genomic/QTL fitting yet | push markers and watch CI/pkgdown |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

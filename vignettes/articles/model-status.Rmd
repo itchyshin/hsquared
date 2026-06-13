@@ -19,6 +19,8 @@ This page separates what exists from what is planned.
   backend names as control metadata.
 - `backend_info()` reports the planned backend vocabulary and marks backend
   execution unavailable.
+- `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and `qtl_scan()`
+  reserve planned formula vocabulary and currently error as not implemented.
 - `animal()` as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.
 - A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`, method,

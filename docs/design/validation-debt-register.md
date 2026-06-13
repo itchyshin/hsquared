@@ -6,6 +6,7 @@
 | `hs_control()` validation | partial | local tests planned in current slice | Emmy/Grace | Phase 0 control object only. |
 | `hs_control()` backend vocabulary | partial | local tests for CPU threads, CUDA, AMDGPU, Metal, and oneAPI names | Lovelace/Karpinski/Rose | Control metadata only; no backend execution. |
 | `backend_info()` status diagnostics | partial | local tests check requested backend flags and `execution_available = FALSE` | Lovelace/Karpinski/Rose | Diagnostic only; no runtime backend probe or benchmark. |
+| Genomic/QTL formula markers | partial | local tests check inert marker return values and planned-not-implemented parser errors | Boole/Jason/Rose | Syntax reservation only; no genomic/QTL fitting. |
 | R formula parser | partial | local parser tests for v0.1 syntax and unsupported errors | Boole/Noether | General fitting remains planned. |
 | R-to-Julia bridge payload | partial | local tests for `y`, `X`, sparse `Z`, normalized pedigree order, parent indices, method, family, and target metadata | Hopper/Lovelace | Production bridge execution remains planned. |
 | opt-in experimental Julia engine | partial | local JuliaCall tests over tiny payload; skipped when Julia/JuliaCall/sibling `HSquared.jl` is unavailable | Hopper/Lovelace/Grace | Sparse `Z` CSC marshalling now used; not production bridge or general fitting. |

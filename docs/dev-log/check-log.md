@@ -598,3 +598,44 @@ with private memory.
   - Result: R-CMD-check `27458148965` passed in GitHub Actions.
   - Result: pkgdown `27458148970` passed in GitHub Actions.
   - Result: GitHub Pages build and deployment `27458179717` passed.
+
+## 2026-06-13 Planned genomic and QTL formula markers
+
+- Goal: reserve readable genomics/QTL formula vocabulary while rejecting it
+  honestly until implementation exists.
+- Active lenses: Boole, Jason, Lovelace, Rose, Pat.
+- Spawned subagents: none.
+- Scout input:
+  - Read local sibling formula-marker patterns in `gllvmTMB` and `DRM.jl`.
+  - Useful local lesson: reserve readable markers, but keep parser and engine
+    support explicit so decorative formula terms do not imply computation.
+- Implementation evidence:
+  - Added inert `genomic()`, `single_step()`, `markers()`, `marker_scan()`,
+    and `qtl_scan()` functions.
+  - Added parser detection for those markers before model-frame construction.
+  - Added planned-not-implemented errors for genomic, marker-scan, single-step,
+    and QTL/eQTL terms.
+  - Added tests and a pkgdown reference topic.
+  - Updated NEWS, public claims, capability status, validation debt, and the
+    model-status article.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `NAMESPACE` and `man/genomic_markers.Rd`.
+  - `Rscript -e "devtools::test(filter = 'formula-animal')"`
+  - Result: passed with `17 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `158 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says inert planned markers and planned-not-implemented
+    parser errors.
+  - Public wording does not claim genomic prediction, marker scanning,
+    QTL/eQTL analysis, single-step fitting, or marker-effect estimation.
