@@ -23,11 +23,11 @@ log-likelihood. When the sibling Julia checkout exposes applicable dense
 validation extractors, the target also attaches PEV and reliability
 fields. The fitted-object extractor contract now includes variance
 components, heritability, EBVs, PEV, reliability, fixed effects, random
-effects, log-likelihood, AIC, prediction, and summaries. In the
-experimental local bridge, PEV/reliability are enriched from exported
-`HSquared.jl` dense validation extractors when available; this is still
-not production sparse reliability or general animal-model support. A
-lightweight
+effects, log-likelihood, AIC, prediction, fitted values, residuals, and
+summaries. In the experimental local bridge, PEV/reliability are
+enriched from exported `HSquared.jl` dense validation extractors when
+available; this is still not production sparse reliability or general
+animal-model support. A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows. The

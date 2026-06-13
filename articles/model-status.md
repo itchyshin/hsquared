@@ -88,8 +88,8 @@ This page separates what exists from what is planned.
 - The first fitted-object/extractor contract over internal
   `hsquared_fit` objects and mocked Julia result fields, including
   variance components, heritability, EBVs, PEV, reliability, fixed
-  effects, random effects, log-likelihood, AIC, prediction, and
-  summaries.
+  effects, random effects, log-likelihood, AIC, prediction, fitted
+  values, residuals, and summaries.
 - Reserved marker/QTL/eQTL extractor names:
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),

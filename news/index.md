@@ -12,6 +12,11 @@
   bridge boundary
   ([\#4](https://github.com/itchyshin/hsquared/issues/4),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- [`fitted()`](https://rdrr.io/r/stats/fitted.values.html) and
+  [`residuals()`](https://rdrr.io/r/stats/residuals.html) now work for
+  `hsquared_fit` objects that contain fitted-value predictions and
+  response values
+  ([\#5](https://github.com/itchyshin/hsquared/issues/5)).
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   now has an experimental `engine = "julia"` option that lets local
   developers run the tiny v0.1 animal-model payload through a sibling
