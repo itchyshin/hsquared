@@ -51,6 +51,10 @@ documented.
 - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`:
   articles rebuilt and no pkgdown problems found.
 - `Rscript -e "devtools::check()"`: 0 errors, 0 warnings, 0 notes.
+- Remote GitHub checks for commit `74eef82`:
+  - R-CMD-check `27461541666`: passed in 1m36s.
+  - pkgdown `27461541639`: passed in 1m41s.
+  - Pages `27461576199`: passed in 22s.
 
 ## Claim Boundary
 
@@ -85,5 +89,5 @@ marker maps, or future relationship-matrix components.
 
 ## Next Actions
 
-Push the slice, watch R-CMD-check/pkgdown/Pages, update issues #4 and #8 if
-remote checks pass, and send the Julia twin a closeout note.
+Update issues #4 and #8, send the Julia twin a closeout note, and continue the
+next Phase 1 slice without changing the Julia engine API from the R lane.

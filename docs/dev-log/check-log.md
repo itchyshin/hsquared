@@ -1231,3 +1231,8 @@ with private memory.
   - Public wording says this is parser/data-container ergonomics only.
   - Public wording does not claim new animal-model fitting, R-side Ainv
     construction, genomic fitting, QTL/eQTL fitting, or GPU execution.
+- Remote checks for commit `74eef82`:
+  - `gh run list --limit 4`
+  - Result: R-CMD-check `27461541666` passed in 1m36s.
+  - Result: pkgdown `27461541639` passed in 1m41s.
+  - Result: Pages `27461576199` passed in 22s.
