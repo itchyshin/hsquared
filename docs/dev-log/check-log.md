@@ -1891,3 +1891,7 @@ with private memory.
   - Blocked: sparse optimizer, AI-REML, fitted Mrode output validation,
     production sparse fitting, general animal-model support, ASReml parity,
     GPU execution, or speedup.
+- Remote checks for commit `49ce975`:
+  - GitHub Actions R-CMD-check `27465915349`: passed in 1m38s.
+  - GitHub Actions pkgdown `27465915342`: passed in 1m26s.
+  - GitHub Pages build/deploy `27465944575`: passed.
