@@ -39,5 +39,8 @@ An \code{hs_data} object.
 \code{hs_data()} collects phenotype, pedigree, genotype, marker, expression,
 annotation, and environment inputs into one checked container. It is a
 lightweight data-contract object for future genomic, QTL/eQTL, and
-multi-omics workflows. It does not fit models.
+multi-omics workflows. It does not fit models. The v0.1 parser can use an
+\code{hs_data} object directly as \code{data}, reading model variables from
+\code{phenotypes} and making named components such as \code{pedigree} available to
+formula terms.
 }

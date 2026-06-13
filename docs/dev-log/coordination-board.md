@@ -26,6 +26,7 @@
 | 2026-06-13 | coordinator/docs | Ada/Jason/Karpinski/Pat/Rose | main | expanded genomics/QTL/GLLVM/GPU plan | pushed; CI/pkgdown/Pages passed | roadmap only; no implementation | hand off plan to Julia twin |
 | 2026-06-13 | R | Hopper/Lovelace/Fisher/Emmy/Rose | main | opt-in bridge PEV/reliability enrichment | pushed; CI/pkgdown/Pages passed | dense validation path only | Julia twin notified; keep result payload boundary stable |
 | 2026-06-13 | R | Emmy/Hopper/Pat/Rose | main | `model_spec()` preview helper | local checks passed | preview only; no fitting | commit, push, and watch CI/pkgdown |
+| 2026-06-13 | R | Emmy/Pat/Hopper/Rose | main | `hs_data()` parser integration | local checks passed | phenotype/pedigree only | commit, push, and watch CI/pkgdown |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.

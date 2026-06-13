@@ -73,3 +73,31 @@ test_that("model_spec uses the same honest planned-marker errors", {
     fixed = TRUE
   )
 })
+
+test_that("model_spec can read phenotypes and pedigree from hs_data", {
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    y = c(1, 2),
+    age = c(4, 5),
+    id = c("a", "c")
+  )
+  bundle <- hs_data(
+    phenotypes = dat,
+    pedigree = ped
+  )
+
+  spec <- model_spec(
+    y ~ age + animal(1 | id, pedigree = pedigree),
+    data = bundle
+  )
+
+  expect_equal(spec$dimensions$observations, 2L)
+  expect_equal(spec$animal$ids, c("a", "b", "c"))
+  expect_equal(spec$animal$observed_id_index, c(1L, 3L))
+  expect_equal(spec$payload$pedigree$sire_index, c(0L, 0L, 1L))
+  expect_equal(spec$payload$pedigree$dam_index, c(0L, 0L, 2L))
+})

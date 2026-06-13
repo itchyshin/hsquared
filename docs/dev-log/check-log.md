@@ -938,3 +938,41 @@ with private memory.
   - Public wording says `model_spec()` previews the parsed contract and does
     not fit a model.
   - Public wording does not claim general animal-model fitting.
+
+## 2026-06-13 hs_data parser integration
+
+- Goal: let the v0.1 R parser use an `hs_data()` bundle directly for the
+  phenotype/pedigree path.
+- Active lenses: Emmy, Pat, Hopper, Rose, Grace.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added internal `hs_model_data_context()` to unwrap `hs_data()` into
+    `phenotypes` plus a formula environment containing named components such as
+    `pedigree`, `genotypes`, `markers`, `expression`, `annotation`, and
+    `environment`.
+  - `model_spec()` and `hsquared()` can now parse
+    `animal(1 | id, pedigree = pedigree)` when `data` is an `hs_data()` object
+    with a pedigree component.
+  - Updated tests, README, model-status article, v0.1 contract, status tables,
+    claims register, NEWS, and roxygen docs.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `hs_data.Rd`, `hsquared.Rd`, and `model_spec.Rd`.
+  - `Rscript -e "devtools::test(filter = 'hs-data')"`
+  - Result: passed with `17 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test(filter = 'model-spec-inspect')"`
+  - Result: passed with `29 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `225 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says `hs_data()` integration is for the v0.1
+    phenotype/pedigree parser path.
+  - Public wording does not claim file-backed storage, automatic genotype/omics
+    model construction, or broader fitting support.

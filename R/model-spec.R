@@ -1,10 +1,13 @@
 hs_build_model_spec <- function(formula, data, family, REML) {
-  hs_validate_model_inputs(formula, data, family, REML)
-
   env <- environment(formula)
   if (is.null(env)) {
     env <- parent.frame()
   }
+  model_data <- hs_model_data_context(data, env)
+  data <- model_data$data
+  env <- model_data$env
+
+  hs_validate_model_inputs(formula, data, family, REML)
 
   rhs_terms <- hs_split_additive_rhs(formula[[3L]])
   planned_pos <- which(vapply(
@@ -82,6 +85,35 @@ hs_build_model_spec <- function(formula, data, family, REML) {
       engine = "HSquared.jl",
       target = "fit_animal_model(y, X, Z, Ainv; method = :REML)"
     )
+  )
+}
+
+hs_model_data_context <- function(data, env) {
+  if (!inherits(data, "hs_data")) {
+    return(list(data = data, env = env))
+  }
+  if (!is.data.frame(data$phenotypes)) {
+    stop(
+      "`data` is an `hs_data` object, but `data$phenotypes` is not a ",
+      "data frame.",
+      call. = FALSE
+    )
+  }
+
+  components <- list(
+    phenotypes = data$phenotypes,
+    pedigree = data$pedigree,
+    genotypes = data$genotypes,
+    markers = data$markers,
+    expression = data$expression,
+    annotation = data$annotation,
+    environment = data$environment
+  )
+  components <- components[!vapply(components, is.null, logical(1L))]
+
+  list(
+    data = data$phenotypes,
+    env = list2env(components, parent = env)
   )
 }
 

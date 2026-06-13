@@ -89,3 +89,25 @@ test_that("hs_data rejects unsupported component shapes", {
     fixed = TRUE
   )
 })
+
+test_that("hsquared can validate the v0.1 formula from an hs_data bundle", {
+  pedigree <- data.frame(
+    id = c("a", "b"),
+    sire = c(NA, NA),
+    dam = c(NA, NA)
+  )
+  phenotypes <- data.frame(y = c(1, 2), id = c("a", "b"))
+  bundle <- hs_data(
+    phenotypes = phenotypes,
+    pedigree = pedigree
+  )
+
+  expect_error(
+    hsquared(
+      y ~ animal(1 | id, pedigree = pedigree),
+      data = bundle
+    ),
+    "parsed the v0.1 animal-model contract",
+    fixed = TRUE
+  )
+})

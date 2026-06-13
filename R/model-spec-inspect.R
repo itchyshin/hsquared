@@ -6,7 +6,10 @@
 #'
 #' @param formula A model formula. The current implemented grammar is
 #'   `y ~ fixed + animal(1 | id, pedigree = ped)`.
-#' @param data A data frame containing model variables.
+#' @param data A data frame containing model variables, or an [hs_data()]
+#'   object whose `phenotypes` component contains the model variables. When
+#'   `data` is an `hs_data` object, formula arguments such as
+#'   `pedigree = pedigree` can refer to named components in the bundle.
 #' @param family A response family. The current parser accepts only
 #'   `gaussian()`.
 #' @param REML Logical; whether the target Gaussian animal model would use

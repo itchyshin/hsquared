@@ -66,6 +66,18 @@ spec <- model_spec(
 summary(spec)
 ```
 
+For integrated workflows, the same parser can read phenotypes and pedigree
+from an `hs_data()` bundle:
+
+```r
+bundle <- hs_data(phenotypes = dat, pedigree = ped)
+
+spec <- model_spec(
+  y ~ sex + age + animal(1 | id, pedigree = pedigree),
+  data = bundle
+)
+```
+
 The interface rule is deliberately simple: easy, easy, easy. Applied users are
 gold; the package should make the common quantitative-genetic model feel
 obvious before it exposes specialist machinery.

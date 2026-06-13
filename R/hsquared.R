@@ -8,7 +8,10 @@
 #'
 #' @param formula A model formula. The first planned v0.1 syntax is
 #'   `y ~ fixed + animal(1 | id, pedigree = ped)`.
-#' @param data A data frame containing model variables.
+#' @param data A data frame containing model variables, or an [hs_data()]
+#'   object whose `phenotypes` component contains the model variables. When
+#'   `data` is an `hs_data` object, formula arguments such as
+#'   `pedigree = pedigree` can refer to named components in the bundle.
 #' @param family A response family. The v0.1 parser accepts only
 #'   `gaussian()`.
 #' @param REML Logical; whether the Gaussian animal model should use REML when

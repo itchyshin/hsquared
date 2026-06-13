@@ -10,7 +10,10 @@ model_spec(formula, data, family = stats::gaussian(), REML = TRUE, ...)
 \item{formula}{A model formula. The current implemented grammar is
 \code{y ~ fixed + animal(1 | id, pedigree = ped)}.}
 
-\item{data}{A data frame containing model variables.}
+\item{data}{A data frame containing model variables, or an \code{\link[=hs_data]{hs_data()}}
+object whose \code{phenotypes} component contains the model variables. When
+\code{data} is an \code{hs_data} object, formula arguments such as
+\code{pedigree = pedigree} can refer to named components in the bundle.}
 
 \item{family}{A response family. The current parser accepts only
 \code{gaussian()}.}
