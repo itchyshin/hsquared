@@ -86,16 +86,28 @@ third-party-reproduced numbers and EM-vs-AI divergence at n=6. So the realistic
 anchor is a published-data + independent-software pairing.
 
 1. **`V1-MRODE-FIT` anchor — recommended: the gryphon birth-weight univariate
-   animal model.** Data via `sommer::DT_gryphon`/`A_gryphon`; published REML from
-   Wilson et al. (2010, *J. Anim. Ecol.* 79:13–26): VA=3.3954, VE=3.8286,
-   h2=0.470 (SE 0.0765). The scout **independently confirmed locally** that
-   `sommer::mmes(BWT ~ 1, random = ~vsm(ism(ANIMAL), Gu = A_gryphon))` reproduces
-   VA=3.395393, VE=3.828605, h2=0.4700 (4 dp). Caveats: gryphon is a
-   teaching/simulated population and Wilson 2010 is paywalled — confirm the
-   headline numbers against the paper/an ASReml run before promotion; do NOT use
-   `pedigreemm::editPed` on the 1309-row pedigree (deep-recursion stack overflow)
-   — use `A_gryphon` directly or `nadiv::makeAinv`. Keep Mrode 3.1 strictly for
-   the supplied-variance `henderson_mme`/BLUP cross-check, never as estimation.
+   animal model.** Data via **`enhancer::DT_gryphon`/`A_gryphon`/`P_gryphon`**
+   (correction: the scout said `sommer::DT_gryphon`, but the dataset ships in
+   package `enhancer`, ~854 phenotyped of 1309 pedigree animals; `sommer` is the
+   fitter, not the data source). Published REML from Wilson et al. (2010,
+   *J. Anim. Ecol.* 79:13–26): VA=3.3954, VE=3.8286, h2=0.470 (SE 0.0765).
+   **Independently verified in this session (triple agreement):** `sommer::mmes(BWT ~ 1,
+   random = ~vsm(ism(ANIMAL), Gu = A_gryphon))` returns VA=3.3954, VE=3.8286, and
+   hsquared's OWN pure-R REML reference (`hs_reml_estimate_reference`) recovers
+   VA=3.3953, VE=3.8287, h2=0.4700 (converged in ~4 s) — both matching the
+   published values to ~4 dp. So the recommended anchor is recoverable by
+   hsquared's own math, and `sommer` is a clean-converging agreement comparator.
+   Caveats: gryphon is a teaching/simulated population and Wilson 2010 is paywalled
+   — confirm the headline numbers against the paper/an ASReml run before promotion;
+   do NOT use `pedigreemm::editPed` on the 1309-row pedigree (deep-recursion stack
+   overflow) — use `A_gryphon` directly or `nadiv::makeAinv`. Keep Mrode 3.1
+   strictly for the supplied-variance `henderson_mme`/BLUP cross-check, never as
+   estimation.
+
+   NOTE: this verification was run locally only; it was NOT committed as a test
+   and NO dependency (`enhancer`/`sommer`) was added — building the committed
+   `V1-MRODE-FIT` / `V1-COMPARATORS` atom waits on maintainer sign-off of the
+   anchor, comparator, and tolerance band, and the row flip is twin-owned.
 2. **`V1-COMPARATORS` comparator — recommended: sommer via `mmes()`** (
    `random = ~vsm(ism(animal), Gu = A)`) on the same normalized pedigree, gated
    behind a clean-convergence precondition; two-sided agreement, CRAN, no license
