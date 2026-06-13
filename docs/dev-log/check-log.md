@@ -2144,3 +2144,23 @@ with private memory.
   - GitHub Actions R-CMD-check `27469342270`: passed.
   - GitHub Actions pkgdown `27469342263`: passed.
   - GitHub Pages build/deploy `27469378298`: passed.
+
+## 2026-06-13 Independent pure-R REML optimizer cross-check (B7, follow-on)
+
+- Goal: a fully independent (non-Julia) check on the surfaced sparse REML
+  estimator via a pure-R `optim()` over the dense REML objective (a clean
+  external REML comparator is not installed; MCMCglmm is Bayesian, excluded).
+- Active lenses: Curie, Gauss, Fisher, Rose. Spawned subagents: none.
+- Local checks:
+  - `devtools::test()` full: `490 pass`, `0 fail`, `0 warnings`, `0 skips`; live
+    Julia bridge active (pure-R optimum and Julia estimate agreed).
+  - `rcmdcheck::rcmdcheck()`: `0 errors`, `0 warnings`, `0 notes`.
+  - `air format .`: clean.
+- Finding: Julia `fit_sparse_reml()` estimate matches an independent pure-R REML
+  optimum on the Mrode fixture. The pure-R optimizer test runs on CI (no Julia).
+- Boundary: independent same-estimand cross-check only; not an external
+  comparator, DGP recovery, or production-fitting claim.
+- Remote checks for commit `1d576c8`:
+  - GitHub Actions R-CMD-check `27469532263`: passed.
+  - GitHub Actions pkgdown `27469532270`: passed.
+  - GitHub Pages build/deploy `27469579694`: passed.

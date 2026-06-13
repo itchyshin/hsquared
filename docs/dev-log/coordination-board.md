@@ -57,6 +57,7 @@
 | 2026-06-13 | R | Curie/Gauss/Fisher/Mrode/Jason/Rose | main | sparse REML estimate-recovery fixture (two-start same-REML-optimum / start-independence) | pushed; CI/pkgdown/Pages passed | start-independence only; no DGP-recovery, comparator, or ASReml-parity claim | B5 engine-contract memory; notify #7 + twin |
 | 2026-06-13 | coordinator | Shannon/Hopper/Lovelace/Rose/Pat | main | sparse REML bridge contract recorded in `03-engine-contract.md` (Phase B arc complete) | pushed; CI/pkgdown/Pages passed | contract memory only; no new capability/claim | notify issues #6/#7 + Julia twin; open next frontier (fitted-Mrode + comparator) when ready |
 | 2026-06-13 | R + twin | Curie/Gauss/Fisher/Hopper/Rose | main | sparse-vs-dense REML optimizer agreement (internal comparator) | pushed; CI/pkgdown/Pages passed | internal cross-check only; no external comparator/DGP-recovery/production claim | external comparator rung (sommer/pedigreemm if available); then await twin green |
+| 2026-06-13 | R | Curie/Gauss/Fisher/Rose | main | independent pure-R REML optimizer cross-check (`hs_reml_estimate_reference`) | pushed; CI/pkgdown/Pages passed | independent same-estimand check; pure-R optimizer runs on CI; no external comparator/production claim | DECISION: add Suggests REML comparator (sommer/pedigreemm)?; fitted-Mrode/production = twin-gated |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
