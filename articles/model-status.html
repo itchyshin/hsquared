@@ -138,6 +138,11 @@ summaries.</li>
 <code><a href="../reference/hs_data.html">hs_data()</a></code> as a lightweight input container with ID maps
 for phenotype, pedigree, genotype, expression, marker, annotation, and
 environment inputs.</li>
+<li>
+<code><a href="../reference/model_spec.html">model_spec()</a></code> and <code><a href="../reference/hsquared.html">hsquared()</a></code> can use an
+<code><a href="../reference/hs_data.html">hs_data()</a></code> object for the v0.1 animal-model parser, reading
+model variables from <code>phenotypes</code> and formula components such
+as <code>pedigree = pedigree</code> from the bundle.</li>
 <li>Local tests for accepted syntax, rejected future syntax, and
 pedigree/data ID checks.</li>
 </ul>
@@ -156,6 +161,8 @@ models.</li>
 <li>Full Mrode animal-model fit-output validation.</li>
 <li>ASReml, BLUPF90, DMU, or WOMBAT comparator validation.</li>
 <li>File-backed genotype/omics loading or streaming computation.</li>
+<li>Automatic model construction from genotype, marker, expression,
+annotation, or environment components in <code><a href="../reference/hs_data.html">hs_data()</a></code>.</li>
 <li>Genomic and single-step models.</li>
 <li>Multivariate and factor-analytic G matrices.</li>
 <li>Permanent environment, common environment, maternal/paternal,

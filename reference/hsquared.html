@@ -79,7 +79,10 @@ bridge examples when a sibling <code>HSquared.jl</code> checkout is available.</
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A data frame containing model variables.</p></dd>
+<dd><p>A data frame containing model variables, or an <code><a href="hs_data.html">hs_data()</a></code>
+object whose <code>phenotypes</code> component contains the model variables. When
+<code>data</code> is an <code>hs_data</code> object, formula arguments such as
+<code>pedigree = pedigree</code> can refer to named components in the bundle.</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>

@@ -29,7 +29,11 @@ hsquared(
 
 - data:
 
-  A data frame containing model variables.
+  A data frame containing model variables, or an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  object whose `phenotypes` component contains the model variables. When
+  `data` is an `hs_data` object, formula arguments such as
+  `pedigree = pedigree` can refer to named components in the bundle.
 
 - family:
 

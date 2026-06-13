@@ -130,6 +130,15 @@
   marker, expression, annotation, and environment inputs. It records ID
   maps for future integrated genomic/QTL/eQTL workflows, but does not
   fit models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
+  and
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  can now use an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  object directly for the v0.1 parser, reading model variables from
+  `phenotypes` and resolving formula components such as
+  `pedigree = pedigree` from the bundle
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - Added Phase 0 project operating documentation, an honest placeholder
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   entry point, and

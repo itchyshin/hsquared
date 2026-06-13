@@ -70,6 +70,14 @@ This page separates what exists from what is planned.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.
+- [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
+  and
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  can use an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  object for the v0.1 animal-model parser, reading model variables from
+  `phenotypes` and formula components such as `pedigree = pedigree` from
+  the bundle.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 
@@ -85,6 +93,9 @@ This page separates what exists from what is planned.
 - Full Mrode animal-model fit-output validation.
 - ASReml, BLUPF90, DMU, or WOMBAT comparator validation.
 - File-backed genotype/omics loading or streaming computation.
+- Automatic model construction from genotype, marker, expression,
+  annotation, or environment components in
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md).
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.
 - Permanent environment, common environment, maternal/paternal,
