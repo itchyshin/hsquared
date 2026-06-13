@@ -60,8 +60,9 @@
 - [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
   now gives users a direct diagnostic view of
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
-  component presence, ID overlap, and marker-map/genotype-marker
-  alignment status. It is a status helper only and does not fit models
+  component presence, ID overlap, pedigree coverage, and
+  marker-map/genotype-marker alignment status. It is a status helper
+  only and does not fit models
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - Added
   [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
@@ -136,6 +137,9 @@
   marker, expression, annotation, and environment inputs. It records ID
   maps for future integrated genomic/QTL/eQTL workflows, but does not
   fit models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- `summary(hs_data(...))` now includes pedigree coverage and parent-link
+  diagnostics when a pedigree component is supplied
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - `summary(hs_data(...))` now includes an ID overlap table with
   phenotype, pedigree, genotype, expression, and mismatch counts
   ([\#8](https://github.com/itchyshin/hsquared/issues/8)).

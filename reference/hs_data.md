@@ -68,6 +68,6 @@ An `hs_data` object.
 
 ## Details
 
-`summary(hs_data(...))` reports ID overlap diagnostics and, when
-genotype or marker components are supplied, marker-map and
-genotype-column alignment diagnostics.
+`summary(hs_data(...))` reports ID overlap diagnostics, pedigree
+diagnostics, and, when genotype or marker components are supplied,
+marker-map and genotype-column alignment diagnostics.

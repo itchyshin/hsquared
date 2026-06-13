@@ -103,7 +103,7 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <span>    pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>The marker-map check is metadata validation only. Genomic and QTL/eQTL models remain planned. When both <code>genotypes</code> and <code>markers</code> are supplied, genotype marker column names must match marker-map IDs exactly. <code>summary(bundle)</code> reports the marker-map size, genotype marker-column count, chromosome count, coordinate range, and whether the genotype-marker alignment was checked.</p>
+<p>The marker-map check is metadata validation only. Genomic and QTL/eQTL models remain planned. <code>summary(bundle)</code> and <code>data_status(bundle)</code> report pedigree coverage, founder and parent-link counts, marker-map size, genotype marker-column count, chromosome count, coordinate range, and whether the genotype-marker alignment was checked. When both <code>genotypes</code> and <code>markers</code> are supplied, genotype marker column names must match marker-map IDs exactly.</p>
 <p>The interface rule is deliberately simple: easy, easy, easy. Applied users are gold; the package should make the common quantitative-genetic model feel obvious before it exposes specialist machinery.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
