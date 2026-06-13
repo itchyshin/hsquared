@@ -2266,3 +2266,32 @@ with private memory.
   - GitHub Actions R-CMD-check `27473795597`: passed.
   - GitHub Actions pkgdown `27473795603`: passed.
   - GitHub Pages build/deploy `27473836594`: passed.
+
+## 2026-06-13 Gryphon external published-REML recovery atom
+
+- Goal: first externally-anchored REML-recovery atom in the R lane —
+  hsquared's pure-R REML reference recovers the published gryphon variance
+  components/h2 (Wilson et al. 2010), optionally agreeing with sommer. Built
+  under the standing finish-directive; mirrors the pedigreemm precedent.
+- Active lenses: Curie, Fisher, Jason, Rose. Spawned subagents: none (built on
+  scout `wo62dphp0` + local verification).
+- Finding (triple agreement): published VA=3.3954/VE=3.8286/h2=0.470 ↔ sommer
+  ↔ hsquared pure-R reference VA=3.3953/VE=3.8287/h2=0.4700 (~4 s).
+- Files: `R/validation-fixtures.R` (`hs_gryphon_published_reml()`),
+  `tests/testthat/test-validation-fixtures.R` (skip-guarded test),
+  `DESCRIPTION` (Suggests: enhancer, sommer), `R/validation-status.R` +
+  `test-phase0-api.R` (15 rows), capability-status + validation-debt registers.
+- Local checks:
+  - `devtools::test()` (NOT_CRAN): the gryphon test ran and passed.
+  - `rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))`: 0 errors,
+    0 warnings, 1 note (benign).
+  - `air format .`: clean.
+- Boundary: external-anchor cross-check of the R reference optimizer only; not
+  the production fit path; does not satisfy the twin `V1-MRODE-FIT` gate;
+  gryphon is teaching/simulated data. Autonomous-under-delegation; maintainer
+  may re-point the anchor.
+- Remote checks for commit `952075b`:
+  - GitHub Actions R-CMD-check `27474821889`: passed (gryphon test ran on CI
+    with sommer/enhancer installed).
+  - GitHub Actions pkgdown `27474821893`: passed.
+  - GitHub Pages build/deploy `27474859398`: passed.
