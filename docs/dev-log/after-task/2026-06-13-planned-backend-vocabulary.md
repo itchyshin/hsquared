@@ -43,6 +43,14 @@ Local checks:
 - `Rscript -e "pkgdown::check_pkgdown()"`: `No problems found.`
 - `Rscript -e "devtools::check()"`: `0 errors | 0 warnings | 0 notes`.
 
+Remote checks:
+
+- R-CMD-check `27457948686`: passed on commit
+  `5feac1f Expand planned backend controls`.
+- pkgdown `27457948693`: passed on commit
+  `5feac1f Expand planned backend controls`.
+- GitHub Pages build and deployment `27457985141`: passed.
+
 ## Rose Audit
 
 Verdict: clean with limitations.
@@ -65,3 +73,9 @@ Blocked wording:
    types.
 2. Add backend availability diagnostics before any user-facing execution path.
 3. Add CPU/GPU comparison tests only after a real accelerator path exists.
+
+## Coordination
+
+Julia twin thread `019ebb88-ee69-7be2-850c-0e4840c34734` was handed the exact R
+backend vocabulary and the Rose guardrail: vocabulary only, no backend
+execution claim.

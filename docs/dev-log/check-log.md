@@ -546,3 +546,9 @@ with private memory.
   - Public wording says planned backend/control vocabulary only.
   - Public wording does not claim CPU/GPU execution, Metal/CUDA/AMDGPU/oneAPI
     availability, backend benchmarking, or CPU/GPU numerical agreement.
+- Remote checks:
+  - Commit: `5feac1f Expand planned backend controls`.
+  - `gh run list --limit 8`
+  - Result: R-CMD-check `27457948686` passed in GitHub Actions.
+  - Result: pkgdown `27457948693` passed in GitHub Actions.
+  - Result: GitHub Pages build and deployment `27457985141` passed.
