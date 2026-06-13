@@ -29,6 +29,11 @@
 - The experimental Julia bridge now sends sparse `Matrix::dgCMatrix`
   random-effect designs through Julia CSC slots instead of densifying
   `Z` ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- Added an internal tiny animal-model validation fixture that pins R
+  payload ordering, sparse `Z` construction, and live Julia
+  `pedigree_inverse()` agreement for a three-animal Henderson-style
+  pedigree when a sibling `HSquared.jl` checkout is available
+  ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`
