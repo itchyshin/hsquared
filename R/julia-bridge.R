@@ -22,8 +22,7 @@ hs_julia_bridge_available <- function(project = hs_default_julia_project()) {
 hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
-  initial = c(sigma_a2 = 1, sigma_e2 = 1),
-  max_dense_cells = 10000L
+  initial = c(sigma_a2 = 1, sigma_e2 = 1)
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -36,20 +35,8 @@ hs_fit_julia_payload <- function(
     )
   }
 
-  initial <- hs_validate_initial_variances(initial)
-  max_dense_cells <- hs_validate_max_dense_cells(max_dense_cells)
-  dense_cells <- prod(dim(payload$Z))
-  if (dense_cells > max_dense_cells) {
-    stop(
-      "The experimental Julia bridge currently densifies `Z` for the tiny ",
-      "validation path. The payload has ",
-      dense_cells,
-      " cells, which exceeds `max_dense_cells`.",
-      call. = FALSE
-    )
-  }
-
   hs_julia_setup(project)
+  initial <- hs_validate_initial_variances(initial)
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
@@ -101,7 +88,7 @@ hs_julia_setup <- function(project) {
 hs_julia_assign_payload <- function(payload, initial) {
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
-  JuliaCall::julia_assign("hsq_Z", as.matrix(payload$Z))
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
   JuliaCall::julia_assign(
     "hsq_sire",
@@ -112,6 +99,44 @@ hs_julia_assign_payload <- function(payload, initial) {
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   invisible(TRUE)
+}
+
+hs_julia_assign_sparse_csc <- function(name, x) {
+  slots <- hs_sparse_csc_slots(x)
+  JuliaCall::julia_assign(paste0(name, "_nrow"), slots$nrow)
+  JuliaCall::julia_assign(paste0(name, "_ncol"), slots$ncol)
+  JuliaCall::julia_assign(paste0(name, "_colptr"), slots$colptr)
+  JuliaCall::julia_assign(paste0(name, "_rowval"), slots$rowval)
+  JuliaCall::julia_assign(paste0(name, "_nzval"), slots$nzval)
+  JuliaCall::julia_command(paste0(
+    name,
+    " = HSquared.sparse_csc_matrix(",
+    name,
+    "_nrow, ",
+    name,
+    "_ncol, ",
+    name,
+    "_colptr, ",
+    name,
+    "_rowval, ",
+    name,
+    "_nzval; index_base = :zero);"
+  ))
+  invisible(TRUE)
+}
+
+hs_sparse_csc_slots <- function(x) {
+  if (!inherits(x, "dgCMatrix")) {
+    stop("`x` must be a `Matrix::dgCMatrix` object.", call. = FALSE)
+  }
+
+  list(
+    nrow = as.integer(nrow(x)),
+    ncol = as.integer(ncol(x)),
+    colptr = as.integer(x@p),
+    rowval = as.integer(x@i),
+    nzval = as.numeric(x@x)
+  )
 }
 
 hs_parent_for_julia <- function(x) {
@@ -139,21 +164,6 @@ hs_validate_initial_variances <- function(initial) {
     )
   }
   out
-}
-
-hs_validate_max_dense_cells <- function(max_dense_cells) {
-  if (
-    length(max_dense_cells) != 1L ||
-      !is.numeric(max_dense_cells) ||
-      !is.finite(max_dense_cells) ||
-      max_dense_cells < 1
-  ) {
-    stop(
-      "`max_dense_cells` must be a positive finite number.",
-      call. = FALSE
-    )
-  }
-  as.integer(max_dense_cells)
 }
 
 hs_normalize_julia_result <- function(raw, payload) {

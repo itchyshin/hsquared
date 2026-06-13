@@ -9,7 +9,7 @@
 | `hsquared()` fit entry point | partial | local tests parse v0.1 animal contract, build bridge payload, stop by default, and fit tiny examples with opt-in Julia engine | General fitting remains planned. |
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Production bridge execution and general fitting remain planned. |
 | R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | Tiny live smoke exists separately; production bridge execution remains planned. |
-| opt-in experimental Julia engine | partial | local JuliaCall tests against sibling `HSquared.jl` return variance components, EBVs, h², logLik, and fitted values for a tiny example | Requires `hs_control(engine = "julia")`; dense guarded validation path only. |
+| opt-in experimental Julia engine | partial | local JuliaCall tests against sibling `HSquared.jl` return variance components, EBVs, h², logLik, and fitted values for a tiny example | Requires `hs_control(engine = "julia")`; sparse `Z` CSC marshalling now used, production bridge still planned. |
 | `hsquared_fit` object/extractors | partial | local tests over internal mock fit results and opt-in tiny Julia result | PEV/reliability extractor contract exists; current live bridge payload does not return those fields yet. |
 | `hs_data()` container | partial | local tests over phenotype, pedigree, genotype, expression, and marker inputs | No file-backed storage or modelling integration yet. |
 | simple Gaussian animal model | planned | none | Phase 1. |

@@ -58,11 +58,6 @@ hsquared <- function(
         control,
         "initial",
         c(sigma_a2 = 1, sigma_e2 = 1)
-      ),
-      max_dense_cells = hs_engine_control_value(
-        control,
-        "max_dense_cells",
-        10000L
       )
     ))
   }

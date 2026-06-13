@@ -16,8 +16,7 @@
 #' @param save Planned fitted-object storage mode. One of `"minimal"`,
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
-#'   experimental Julia bridge recognizes `julia_project`, `initial`, and
-#'   `max_dense_cells`.
+#'   experimental Julia bridge recognizes `julia_project` and `initial`.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

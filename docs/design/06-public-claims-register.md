@@ -9,9 +9,10 @@ public examples.
 | `hsquared` parses the first animal-model formula contract | partial | local tests for `animal(1 \| id, pedigree = ped)` parser and unsupported-syntax errors | early parser; fitting only through separate opt-in tiny engine path |
 | `hsquared` builds the first internal R-to-Julia payload shape | partial | local tests for `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and target metadata | internal bridge payload; no Julia execution |
 | opt-in experimental R-to-Julia fit path | partial | local JuliaCall tests pass when a sibling `HSquared.jl` checkout is available; CI skips when unavailable | `hs_control(engine = "julia")` tiny local examples only |
+| sparse `Z` marshalling through the R-Julia bridge | partial | local tests pass `Matrix::dgCMatrix` CSC slots into Julia `sparse_csc_matrix()` for the opt-in bridge | sparse `Z` bridge validation; not production sparse fitting |
 | `hsquared` defines the first fitted-object/extractor contract | partial | local tests over internal `hsquared_fit` objects and mocked result fields, including PEV/reliability fields | extractor plumbing; PEV/reliability not yet returned by live bridge payload |
 | `hsquared` provides a data container for integrated inputs | partial | local tests for `hs_data()` ID maps and input validation | lightweight data container; no modelling or file-backed storage |
-| `hsquared` fits general animal models | planned | none | planned v0.1 target after sparse marshalling and validation |
+| `hsquared` fits general animal models | planned | none | planned v0.1 target after validation and production bridge hardening |
 | `hsquared` supports genomic, QTL/eQTL, GLLVM, or GPU workflows | planned | none | roadmap only |
 | `HSquared.jl` is the Julia engine package identity | covered | public repo exists; Julia package scaffold and CI green | Julia engine scaffold |
 | sparse Ainv construction | planned | none | planned |

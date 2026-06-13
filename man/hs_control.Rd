@@ -30,8 +30,7 @@ payload validation. \code{"julia"} uses the experimental local JuliaCall bridge.
 \code{"full"}, or \code{"tiny"}.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
-experimental Julia bridge recognizes \code{julia_project}, \code{initial}, and
-\code{max_dense_cells}.}
+experimental Julia bridge recognizes \code{julia_project} and \code{initial}.}
 }
 \value{
 An object of class \code{"hs_control"}.

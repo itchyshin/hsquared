@@ -24,9 +24,10 @@ not create `Ainv` on the R side.
 An experimental JuliaCall path now validates the tiny payload against a sibling
 `HSquared.jl` checkout by calling `normalize_pedigree()`,
 `pedigree_inverse()`, `fit_animal_model()`, and `result_payload()`. That path
-is reachable only with `control = hs_control(engine = "julia")`, densifies `Z`
-under a strict tiny-payload guard, and is for local cross-repo contract testing.
-It is not yet a production bridge.
+is reachable only with `control = hs_control(engine = "julia")` and sends
+R-side `Matrix::dgCMatrix` random-effect designs through sparse CSC slots using
+Julia's `sparse_csc_matrix()` helper. It is for local cross-repo contract
+testing and is not yet a production bridge.
 
 ## Initial Julia Result
 

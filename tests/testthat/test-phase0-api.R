@@ -13,11 +13,11 @@ test_that("hs_control stores validated defaults", {
 test_that("hs_control validates engine selection", {
   control <- hs_control(
     engine = "julia",
-    engine_control = list(max_dense_cells = 10L)
+    engine_control = list(initial = c(sigma_a2 = 1, sigma_e2 = 1))
   )
 
   expect_equal(control$engine, "julia")
-  expect_equal(control$engine_control$max_dense_cells, 10L)
+  expect_equal(control$engine_control$initial, c(sigma_a2 = 1, sigma_e2 = 1))
 
   expect_error(
     hs_control(engine = "not-an-engine"),

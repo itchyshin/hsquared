@@ -375,3 +375,38 @@ with private memory.
   - Public wording says R extractor contract only.
   - Public wording does not claim current live bridge PEV/reliability,
     production sparse PEV/reliability, or comparator validation.
+
+## 2026-06-13 R sparse Z bridge marshalling
+
+- Goal: use the Julia twin's `sparse_csc_matrix()` helper so the opt-in R
+  bridge sends sparse `Matrix::dgCMatrix` slots instead of densifying `Z`.
+- Active lenses: Hopper, Lovelace, Karpinski, Grace, Rose.
+- Spawned subagents: none.
+- Julia handoff:
+  - `HSquared.jl` commit `6b530e4 Add sparse CSC bridge marshalling`.
+  - Julia CI, Documenter, and Pages were green before the R slice started.
+- Implementation evidence:
+  - Removed dense `Z` conversion from `hs_julia_assign_payload()`.
+  - Added `hs_sparse_csc_slots()` to expose `nrow`, `ncol`, zero-based
+    `colptr`, zero-based `rowval`, and numeric `nzval`.
+  - Added `hs_julia_assign_sparse_csc()` to construct Julia
+    `SparseMatrixCSC` objects through `HSquared.sparse_csc_matrix()`.
+  - Removed `max_dense_cells` from the active engine-control surface.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::document()"`
+  - Result: regenerated `hs_control` Rd.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `116 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge activated the sibling `HSquared.jl` checkout.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Rose wording sweep:
+  - Public wording says sparse `Z` marshalling, not production sparse fitting.
+  - Public wording does not claim large-data readiness, Mrode validation, or
+    production bridge performance.
