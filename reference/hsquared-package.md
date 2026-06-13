@@ -13,7 +13,11 @@ formula contract. It does not fit models yet.
 
 Useful links:
 
+- <https://itchyshin.github.io/hsquared/>
+
 - <https://github.com/itchyshin/hsquared>
+
+- <https://github.com/itchyshin/HSquared.jl>
 
 - Report bugs at <https://github.com/itchyshin/hsquared/issues>
 

@@ -11,6 +11,9 @@ This page separates what exists from what is planned.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`.
+- A tested internal R-to-Julia payload shape with `y`, `X`, sparse `Z`,
+  method, family, encoded IDs, normalized pedigree metadata, and Julia
+  target metadata.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 
@@ -18,6 +21,7 @@ This page separates what exists from what is planned.
 
 - Model fitting.
 - R-to-Julia bridge execution.
+- R-side `Ainv` construction.
 - Variance components, heritability, EBVs, or BLUPs.
 - Genomic and single-step models.
 - Multivariate and factor-analytic G matrices.

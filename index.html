@@ -59,7 +59,7 @@
 <div class="page-header"><h1 id="hsquared">hsquared<a class="anchor" aria-label="anchor" href="#hsquared"></a>
 </h1></div>
 <p><code>hsquared</code> is the planned R interface for an open, Julia-backed quantitative-genetic modelling system. The R package owns the applied-user surface: formula syntax, data validation, summaries, extractors, examples, and eventually the bridge to the <code>HSquared.jl</code> engine.</p>
-<p>This repository has moved past the initial scaffold into the first Phase 1 parser slice. It can validate the narrow v0.1 formula contract, but it does not fit animal models yet.</p>
+<p>This repository has moved past the initial scaffold into early Phase 1 parser and bridge-contract work. It can validate the narrow v0.1 formula contract and build a tested internal R-to-Julia payload shape, but it does not execute Julia or fit animal models yet.</p>
 <p>The intended two-package shape is:</p>
 <pre class="text"><code>hsquared       R package: friendly modelling interface for applied users
 HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
@@ -71,7 +71,7 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  REML <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>That syntax is parsed and validated as the first contract. Fitting waits for the HSquared.jl engine bridge and Gaussian animal-model solver.</p>
+<p>That syntax is parsed and validated as the first contract. The R side now constructs the intended <code>y</code>, <code>X</code>, sparse <code>Z</code>, method, family, ID, and normalized pedigree metadata payload. Fitting waits for Julia-side <code>Ainv</code> construction, bridge execution, and the Gaussian animal-model solver.</p>
 <p>The interface rule is deliberately simple: easy, easy, easy. Applied users are gold; the package should make the common quantitative-genetic model feel obvious before it exposes specialist machinery.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>

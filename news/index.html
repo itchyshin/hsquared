@@ -45,6 +45,7 @@
 <h3 id="new-features-0-0-0-9000">New features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-9000"></a></h3>
 <ul><li>
 <code><a href="../reference/animal.html">animal()</a></code> is now exported as an inert formula marker, and <code><a href="../reference/hsquared.html">hsquared()</a></code> now parses the narrow v0.1 formula contract <code>animal(1 | id, pedigree = ped)</code> before stopping at the planned Julia bridge boundary (<a href="https://github.com/itchyshin/hsquared/issues/4" class="external-link">#4</a>, <a href="https://github.com/itchyshin/hsquared/issues/6" class="external-link">#6</a>).</li>
+<li>Added an internal R-to-Julia bridge payload builder for the v0.1 animal-model contract. It creates <code>y</code>, <code>X</code>, sparse <code>Z</code>, normalized pedigree metadata, and the validated Julia <code>animal_model_spec()</code> target, but still does not execute Julia or fit models (<a href="https://github.com/itchyshin/hsquared/issues/6" class="external-link">#6</a>).</li>
 <li>Added Phase 0 project operating documentation, an honest placeholder <code><a href="../reference/hsquared.html">hsquared()</a></code> entry point, and <code><a href="../reference/hs_control.html">hs_control()</a></code> for planned engine controls.</li>
 </ul></div>
 </div>

@@ -79,9 +79,10 @@ quantitative-genetic modelling system. Its partner package,
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  REML <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Current status: this formula is parsed and validated, but model
-fitting is not implemented yet. The package stops at the planned Julia
-bridge boundary.</p>
+<p>Current status: this formula is parsed and validated, and the R side
+builds the first tested internal bridge payload. Model fitting and live
+Julia execution are not implemented yet. The package stops at the
+planned Julia bridge boundary.</p>
 <p>The interface rule is: easy, easy, easy. Users are gold. The common
 animal model should be obvious before the package exposes genomic,
 multivariate, factor-analytic, non-Gaussian, or unusual-inheritance
@@ -109,6 +110,7 @@ not current fitting features.</p>
 <p>The intended flow is:</p>
 <pre class="text"><code>R formula + data
 -&gt; R validation and model specification
+-&gt; R bridge payload: y, X, sparse Z, method, IDs, pedigree metadata
 -&gt; HSquared.jl sparse engine
 -&gt; compact result
 -&gt; R summaries, extractors, plots, and diagnostics</code></pre>
