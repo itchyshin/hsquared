@@ -2366,3 +2366,17 @@ with private memory.
   - GitHub Actions R-CMD-check `27476335755`: passed.
   - GitHub Actions pkgdown `27476335754`: passed.
   - GitHub Pages build/deploy `27476377904`: passed.
+
+## 2026-06-13 Maintainer v0.1 gate sign-off
+
+- Recorded the maintainer sign-off (gryphon anchor + sommer comparator band +
+  DGP thresholds) as binding targets in 01-v0.1-contract.md; tightened the
+  gryphon comparator test to the signed-off band (VC ~1-2%, h2 ~0.01-0.02) +
+  added an h2-agreement check; updated the gate handoff + board.
+- Local checks: `air format` clean; live `test-validation-fixtures.R` (juliaup
+  on PATH, NOT_CRAN) pass incl. the tightened gryphon band; `rcmdcheck(--as-cran)`
+  0 errors, 0 warnings, 1 note (benign).
+- Remote checks for commit `03bd62e`:
+  - GitHub Actions R-CMD-check `27476877537`: passed.
+  - GitHub Actions pkgdown: passed.
+  - GitHub Pages build/deploy `27476923025`: passed.
