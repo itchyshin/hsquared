@@ -37,6 +37,14 @@
   eQTL fitting remain planned
   ([\#5](https://github.com/itchyshin/hsquared/issues/5),
   [\#9](https://github.com/itchyshin/hsquared/issues/9)).
+- Added an explicit supplied-variance Julia bridge target for Henderson
+  MME validation.
+  `hs_control(engine = "julia", engine_control = list(target = "henderson_mme", variance_components = c(sigma_a2 = ..., sigma_e2 = ...)))`
+  calls Julia `henderson_mme()` for tiny validation examples, returning
+  fixed effects, EBVs, fitted values, variance components, and h²
+  without claiming variance-component estimation or production fitting
+  ([\#6](https://github.com/itchyshin/hsquared/issues/6),
+  [\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - The experimental local Julia bridge now enriches tiny `hsquared_fit`
   results with dense validation-path PEV and reliability fields when the
   sibling `HSquared.jl` checkout exposes

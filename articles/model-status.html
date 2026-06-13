@@ -132,6 +132,11 @@ returned Julia result into the internal <code>hsquared_fit</code>
 contract. When the sibling Julia package exposes dense validation
 extractors, this path also enriches the result with PEV/reliability
 fields.</li>
+<li>An explicit supplied-variance bridge target,
+<code>engine_control = list(target = "henderson_mme", variance_components = ...)</code>,
+that calls Julia <code>henderson_mme()</code> for tiny validation
+examples. It does not estimate variance components and does not provide
+a log-likelihood.</li>
 <li>An internal tiny validation fixture that pins R payload ordering,
 sparse <code>Z</code>, and live Julia <code>pedigree_inverse()</code>
 agreement for a three-animal pedigree when the local Julia bridge is
@@ -197,6 +202,8 @@ pedigree/data ID checks.</li>
 <li>R-side <code>Ainv</code> construction.</li>
 <li>General estimated variance components, heritability, EBVs, or BLUPs
 from fitted models.</li>
+<li>Log-likelihood or information criteria for supplied-variance
+Henderson MME bridge results.</li>
 <li>Production sparse PEV or reliability.</li>
 <li>Full Mrode animal-model fit-output validation.</li>
 <li>ASReml, BLUPF90, DMU, or WOMBAT comparator validation.</li>

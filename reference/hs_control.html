@@ -97,7 +97,10 @@ payload validation. <code>"julia"</code> uses the experimental local JuliaCall b
 
 <dt id="arg-engine-control">engine_control<a class="anchor" aria-label="anchor" href="#arg-engine-control"></a></dt>
 <dd><p>A named list for engine-specific controls. The current
-experimental Julia bridge recognizes <code>julia_project</code> and <code>initial</code>.</p></dd>
+experimental Julia bridge recognizes <code>julia_project</code>, <code>initial</code>, <code>target</code>,
+and <code>variance_components</code>. <code>target = "henderson_mme"</code> is a
+supplied-variance validation path and requires <code>variance_components</code> with
+named <code>sigma_a2</code> and <code>sigma_e2</code> values.</p></dd>
 
 </dl></div>
     <div class="section level2">
