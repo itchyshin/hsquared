@@ -50,6 +50,23 @@ pedigree's data pathologies). Built under the standing finish-directive.
 This is statistical-correctness (recovery) evidence — distinct from the
 optimizer-reproducibility checks already in the suite.
 
+### Generality grid (secondary aim)
+
+Recovery across an h² grid (engine `ai_reml`, 100 reps/cell, n=420):
+
+| h² | ĥ² | h² bias (MCSE) | EBV acc | converged | near-boundary (σ²ₐ<0.01) |
+| --- | --- | --- | --- | --- | --- |
+| 0.10 | 0.1093 | +0.0093 (0.0064) | 0.473 | 94/100 | 5% |
+| 0.20 | 0.2042 | +0.0042 (0.0075) | 0.596 | 100/100 | 0% |
+| 0.40 | 0.4007 | +0.0007 (0.0081) | 0.738 | 100/100 | 0% |
+| 0.60 | 0.5985 | −0.0015 (0.0076) | 0.833 | 100/100 | 0% |
+
+Near-unbiased across the interior (0.2–0.6); EBV accuracy rises with h² as
+expected. The near-boundary cell (h²=0.1) shows the expected mild upward bias,
+94% convergence, and 5% boundary pinning — an honest characterization that
+informs predicate item 4 (boundary/identifiability) but does NOT claim the
+engine surfaces a boundary diagnostic (that is twin engine work).
+
 ## Files
 
 - `data-raw/dgp-recovery-study.R` — reproducible full study + ADEMP design +

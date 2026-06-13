@@ -56,6 +56,19 @@
 #   optimizer reproducibility. It is R-lane evidence produced via the read-only
 #   bridge; the twin (HSquared.jl) owns flipping its V1-SPARSE-REML-OPT /
 #   V1-AI-REML validation_status rows to cite it.
+#
+# GENERALITY GRID (2026-06-13, engine ai_reml, 100 reps/cell, n = 420):
+#   h2    h2_hat   h2 bias (MCSE)   s2a bias   EBV acc   conv     near-bdry(s2a<.01)
+#   0.10  0.1093   +0.0093 (.0064)  +0.0106    0.473     94/100   5%
+#   0.20  0.2042   +0.0042 (.0075)  +0.0073    0.596    100/100   0%
+#   0.40  0.4007   +0.0007 (.0081)  +0.0075    0.738    100/100   0%
+#   0.60  0.5985   -0.0015 (.0076)  +0.0092    0.833    100/100   0%
+#   Recovery is near-unbiased across the interior (0.2-0.6); EBV accuracy rises
+#   with h2 as expected. The near-boundary cell (h2 = 0.1) shows the expected
+#   mild upward bias, 94% convergence, and 5% boundary pinning -- honest
+#   characterization that informs the predicate's boundary/identifiability item
+#   (item 4); it does NOT claim the engine surfaces a boundary diagnostic (that
+#   is twin engine work). See the grid loop at the end of this script.
 
 suppressMessages(devtools::load_all(".", quiet = TRUE))
 stopifnot(requireNamespace("nadiv", quietly = TRUE))
@@ -158,4 +171,58 @@ cat(sprintf(
   mean(pur[, 3]),
   max(abs(eng[seq_len(N_PURER), "h2"] - pur[, "h2"]), na.rm = TRUE)
 ))
+
+# GENERALITY GRID: recovery across h2 settings (engine ai_reml, 100 reps/cell).
+for (h2g in c(0.1, 0.2, 0.4, 0.6)) {
+  ga <- h2g
+  ge <- 1 - h2g
+  set.seed(20240613L)
+  gseeds <- sample.int(.Machine$integer.max, 100L)
+  gr <- matrix(
+    NA_real_,
+    100L,
+    4,
+    dimnames = list(NULL, c("s2a", "s2e", "h2", "acc"))
+  )
+  gconv <- 0L
+  for (r in seq_len(100L)) {
+    set.seed(gseeds[r])
+    sim <- hs_sim_animal_phenotypes(U, ga, ge, mu = mu)
+    dat <- data.frame(id = ped$id, y = sim$y, stringsAsFactors = FALSE)
+    fit <- tryCatch(
+      hsquared(
+        y ~ 1 + animal(1 | id, pedigree = ped),
+        data = dat,
+        family = stats::gaussian(),
+        REML = TRUE,
+        control = hs_control(
+          engine = "julia",
+          engine_control = list(
+            target = "ai_reml",
+            initial = c(sigma_a2 = 0.5, sigma_e2 = 0.5),
+            iterations = 500L
+          )
+        )
+      ),
+      error = function(e) NULL
+    )
+    if (!is.null(fit)) {
+      vc <- variance_components(fit)$estimate
+      ebv <- breeding_values(fit)
+      ebv <- ebv$value[match(ped$id, ebv$id)]
+      gr[r, ] <- c(vc[1], vc[2], vc[1] / sum(vc), stats::cor(ebv, sim$u))
+      gconv <- gconv + isTRUE(fit$result$converged)
+    }
+  }
+  cat(sprintf(
+    "h2=%.2f h2_hat=%.4f bias=%+.4f (MCSE %.4f) acc=%.3f conv=%d/100 near-bdry=%.0f%%\n",
+    h2g,
+    mean(gr[, "h2"], na.rm = TRUE),
+    mean(gr[, "h2"], na.rm = TRUE) - h2g,
+    mcse(gr[, "h2"]),
+    mean(gr[, "acc"], na.rm = TRUE),
+    gconv,
+    100 * mean(gr[, "s2a"] < 0.01, na.rm = TRUE)
+  ))
+}
 utils::sessionInfo()

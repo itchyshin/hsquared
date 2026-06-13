@@ -126,7 +126,10 @@ hs_validation_status_evidence <- function() {
       "near-unbiased (0 within bias +/- 2*MCSE for sigma_a2, sigma_e2, h2 over",
       "120 reps, 100% converged), EBVs track true breeding values (acc ~0.74),",
       "and the engine matches the independent pure-R reference to machine",
-      "precision. A skip-guarded pure-R regression test guards a small-N case."
+      "precision. Recovery is near-unbiased across an h2 grid (0.2/0.4/0.6); the",
+      "near-boundary cell (h2 = 0.1) shows mild upward bias, 94% convergence, and",
+      "5% boundary pinning. A skip-guarded pure-R regression test guards a",
+      "small-N case."
     ),
     "None yet.",
     "None yet.",
