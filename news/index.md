@@ -76,6 +76,9 @@
   [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md).
   They reserve Phase 2+ vocabulary only and currently abort as planned,
   not implemented.
+- Added a pkgdown formula grammar roadmap article that separates parsed
+  v0.1 syntax from planned quantitative-genetic, genomic, multivariate,
+  and inheritance syntax.
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`

@@ -1,0 +1,133 @@
+# Formula grammar roadmap
+
+This page is a map of the modelling language. It separates syntax that
+is parsed today from syntax that is reserved for later phases.
+
+## Parsed today
+
+The current parser contract is intentionally narrow:
+
+``` r
+
+fit <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE
+)
+```
+
+The R side validates the formula, data, response, pedigree columns, and
+animal IDs. It builds the internal bridge payload for `HSquared.jl`. The
+default call still stops at the planned bridge boundary, so this is not
+general fitted animal-model support.
+
+## Standard quantitative-genetic extensions
+
+These names are reserved so future models read like the biological
+question:
+
+``` r
+
+y ~ sex + age +
+  animal(1 | id, pedigree = ped) +
+  permanent(1 | id) +
+  common_env(1 | litter)
+
+y ~ sex + age +
+  animal(1 | id, pedigree = ped) +
+  maternal_genetic(1 | dam, pedigree = ped) +
+  maternal_env(1 | dam) +
+  paternal_genetic(1 | sire, pedigree = ped) +
+  paternal_env(1 | sire)
+```
+
+Current status: these markers are exported but inert. If they appear in
+an
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+formula, the parser errors with planned-not-implemented wording.
+
+## Inheritance and relationship kernels
+
+Later phases should treat inheritance systems as relationship or
+precision kernels, not as one-off special cases:
+
+``` r
+
+y ~ animal(1 | id, pedigree = ped) +
+  dominance(1 | id, pedigree = ped) +
+  epistasis(1 | id, pedigree = ped)
+
+y ~ animal(1 | id, pedigree = ped) +
+  cytoplasmic(1 | maternal_line) +
+  imprinting(1 | id, pedigree = ped, parent = "maternal")
+
+y ~ relmat(1 | id, K = K_custom)
+y ~ precision(1 | id, Q = Q_custom)
+```
+
+Current status: syntax reservation only. The engine does not consume
+these relationship or precision matrices yet.
+
+## Genomic and marker terms
+
+The genomic vocabulary follows the same rule: readable terms first,
+fitting only after the R-Julia contract and validation exist.
+
+``` r
+
+y ~ sex + batch + genomic(1 | id, Ginv = Ginv)
+
+y ~ sex + batch +
+  genomic(1 | id, Ginv = Ginv) +
+  marker_scan(M, map = marker_map)
+
+y ~ sex + batch + single_step(1 | id, Hinv = Hinv)
+```
+
+Current status:
+[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+[`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+[`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+and
+[`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+are planned markers. They do not fit genomic, QTL, or eQTL models yet.
+
+## Multivariate and factor-analytic grammar
+
+The multivariate ladder is planned to connect ordinary G matrices and
+GLLVM-style latent genetic structure:
+
+``` r
+
+y ~ trait + trait:sex +
+  animal(trait | id, pedigree = ped, cov = us()) +
+  residual(trait | unit, cov = us())
+
+y ~ trait + trait:sex +
+  animal(trait | id, pedigree = ped, cov = fa(K = 2)) +
+  residual(trait | unit, cov = fa(K = 1))
+```
+
+Planned covariance meanings:
+
+- `cov = us()`: full unstructured covariance.
+- `cov = diag()`: trait-specific variances only.
+- `cov = lowrank(K)`: `G = Lambda Lambda'`.
+- `cov = fa(K)`: `G = Lambda Lambda' + Psi`.
+
+Current status: not parsed by the v0.1 parser.
+
+## Error rule
+
+Unsupported terms should fail early and plainly. The current expected
+shape is:
+
+``` text
+`marker()` is planned, not implemented. The v0.1 parser currently accepts only
+`animal(1 | id, pedigree = ped)`.
+```
+
+That error is part of the user interface. It tells users the idea is on
+the roadmap without pretending that the model has been fitted.
