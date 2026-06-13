@@ -84,6 +84,7 @@ HSquared.jl    Julia package: sparse quantitative-genetic engine</code></pre>
 <p>For integrated workflows, the same parser can read phenotypes and pedigree from an <code><a href="reference/hs_data.html">hs_data()</a></code> bundle:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bundle</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hs_data.html">hs_data</a></span><span class="op">(</span>phenotypes <span class="op">=</span> <span class="va">dat</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">bundle</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">pedigree</span><span class="op">)</span>,</span>

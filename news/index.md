@@ -130,6 +130,9 @@
   marker, expression, annotation, and environment inputs. It records ID
   maps for future integrated genomic/QTL/eQTL workflows, but does not
   fit models ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
+- `summary(hs_data(...))` now includes an ID overlap table with
+  phenotype, pedigree, genotype, expression, and mismatch counts
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)

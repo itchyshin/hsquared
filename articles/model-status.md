@@ -70,6 +70,8 @@ This page separates what exists from what is planned.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.
+- `summary(hs_data(...))` reports ID overlap and mismatch counts for
+  phenotype, pedigree, genotype, and expression components.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
