@@ -2073,3 +2073,23 @@ with private memory.
   - GitHub Actions R-CMD-check `27468442096`: passed.
   - GitHub Actions pkgdown `27468442094`: passed.
   - GitHub Pages build/deploy `27468475645`: passed.
+
+## 2026-06-13 Estimated-vs-supplied variance provenance (B3)
+
+- Goal: distinguish an estimated-variance fit from a supplied-variance fit. The
+  sparse-REML path tags `variance_components = "estimated_sparse_reml"` (Henderson
+  MME stays `"supplied"`); `fit_diagnostics()` surfaces `variance_components_source`.
+  New `validation_status()` row "experimental sparse REML estimator (opt-in)"
+  (Phase 1, partial); table now 13 rows.
+- Active lenses: Emmy, Fisher, Rose, Pat. Spawned subagents: none.
+- Local checks:
+  - `devtools::test()` full: `476 pass`, `0 fail`, `0 warnings`, `0 skips`; live
+    Julia bridge active (provenance assertions ran).
+  - `rcmdcheck::rcmdcheck()`: `0 errors`, `0 warnings`, `0 notes`.
+  - `air format .`: clean.
+- Boundary: provenance labelling only; not an accuracy, recovery,
+  production-fitting, or comparator claim.
+- Remote checks for commit `503734e`:
+  - GitHub Actions R-CMD-check `27468654232`: passed.
+  - GitHub Actions pkgdown `27468654248`: passed.
+  - GitHub Pages build/deploy `27468689299`: passed.

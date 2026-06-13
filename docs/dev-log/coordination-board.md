@@ -53,6 +53,7 @@
 | 2026-06-13 | R | Ada/Shannon/Grace/Rose | main | Claude agent roster + readiness (.claude/agents x21, .claude/skills x11, CLAUDE.md) | pushed; CI/pkgdown/Pages passed | tooling/readiness only; no package or claim change | proceed to Phase B frontier (B1) |
 | 2026-06-13 | coordinator | Ada/Shannon/Rose | main | Phase B frontier: sparse-REML surfacing arc (B2-B5) + sister-repo reuse leads (gllvmTMB/drmTMB/DRM.jl/GLLVM.jl) | recorded; pushed | bookkeeping only; no capability change | B2 scout sisters + fenced sparse-REML bridge |
 | 2026-06-13 | R + twin | Jason/Hopper/Lovelace/Gauss/Fisher/Curie/Rose | main | fenced opt-in `target="sparse_reml"` bridge surfacing twin `fit_sparse_reml()` | pushed; CI/pkgdown/Pages passed; review clean | experimental/opt-in/REML-only/Julia-owned; gated on twin validation_status; not default/estimation/production | notify issues #6/#7 + twin; then B3 provenance |
+| 2026-06-13 | R | Emmy/Fisher/Rose/Pat | main | estimated-vs-supplied variance provenance (`variance_components_source`) in `fit_diagnostics()` + `validation_status()` row | pushed; CI/pkgdown/Pages passed | provenance labelling only; no accuracy/recovery/production claim | B4 sparse REML estimate-recovery fixture |
 
 Shared files are one-lane-at-a-time edits. The Julia twin should not edit this
 R repository unless Ada/Shannon explicitly reassign the lane.
