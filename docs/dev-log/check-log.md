@@ -1287,3 +1287,44 @@ with private memory.
   - GitHub Actions pkgdown `27461936446`: passed in 1m36s.
   - GitHub Pages build/deploy `27461969071`: passed; Node.js 20 deprecation
     warning is from the Pages action stack, not this package code.
+
+## 2026-06-13 validation_status evidence diagnostics
+
+- Goal: add a user-facing validation evidence status helper for issue #7.
+- Active lenses: Curie, Fisher, Pat, Rose, Grace.
+- Spawned subagents: none.
+- Skill used:
+  - `validation-canon-review`: read current validation canon and validation
+    debt register before editing.
+- Implementation evidence:
+  - Added exported `validation_status()`.
+  - Added `print.hs_validation_status()`.
+  - The helper reports current partial validation atoms and planned comparator
+    lanes with claim-boundary wording.
+  - Added tests, roxygen docs, pkgdown reference entry, README/model-status
+    wording, capability status, validation debt, public claims, NEWS, and board
+    updates.
+- Local checks:
+  - `air format .`
+  - Result: completed.
+  - `Rscript -e "devtools::test(filter = 'phase0-api')"`
+  - Result: passed with `56 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+  - `Rscript -e "devtools::document()"`
+  - Result: completed; wrote `NAMESPACE` and `validation_status.Rd`.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `295 pass`, `0 fail`, `0 warnings`, and `0 skips`;
+    live bridge activated sibling `HSquared.jl`.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`
+  - Result: articles rebuilt and `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+  - `git diff --check`
+  - Result: clean.
+- Rose wording sweep:
+  - Overclaim scan:
+    `rg -n "validation_status\\(\\).*fit|validation_status\\(\\).*run|validation_status\\(\\).*covered|ASReml parity|GPU speedup|general animal-model fitting is implemented|production sparse fitting is validated" README.md R man tests vignettes docs/design docs/dev-log NEWS.md _pkgdown.yml`.
+  - Result: hits were planned, blocked, or negated wording only.
+  - Public wording says `validation_status()` is a diagnostic helper only.
+  - Public wording does not claim checks are run, fitting is available,
+    validation rows are covered, ASReml parity, GPU speedup, or production
+    sparse fitting.

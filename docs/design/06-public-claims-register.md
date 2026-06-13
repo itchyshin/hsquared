@@ -19,6 +19,7 @@ public examples.
 | `hs_control()` stores planned backend names | partial | local control-validation tests for `threads`, `cuda`, `amdgpu`, `metal`, and `oneapi` | control vocabulary only; no CPU/GPU execution |
 | `backend_info()` reports backend status | partial | local tests check planned backend rows and `execution_available = FALSE` | diagnostic table only; no backend execution or benchmarking |
 | `formula_status()` reports grammar status | partial | local tests check parsed, reserved, planned, and `hs_data()` shorthand rows | diagnostic table only; no formula expansion or fitting |
+| `validation_status()` reports validation status | partial | local tests check current validation atoms, planned comparator lanes, and claim-boundary wording | diagnostic table only; does not run checks, fit models, or promote any validation row to covered |
 | `model_spec()` previews the parsed v0.1 model contract | partial | local tests inspect dimensions, fixed columns, sparse `Z`, normalized IDs, and Julia targets | model preview only; no fitting |
 | Genomic/QTL formula markers exist | partial | local tests check inert markers and planned-not-implemented parser errors | syntax reservation only; no genomic, marker-scan, QTL, or eQTL fitting |
 | Standard quantitative-genetic formula markers exist | partial | local tests check inert markers and planned-not-implemented parser errors | syntax reservation only; no permanent, common-environment, maternal/paternal, dominance, epistasis, custom-kernel, cytoplasmic, or imprinting fitting |

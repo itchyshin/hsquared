@@ -35,6 +35,7 @@ reference:
       - hs_control
       - backend_info
       - formula_status
+      - validation_status
       - model_spec
       - animal
       - genomic_markers

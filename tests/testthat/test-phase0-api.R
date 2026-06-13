@@ -104,6 +104,39 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   )
 })
 
+test_that("validation_status separates evidence from planned validation", {
+  status <- validation_status()
+
+  expect_s3_class(status, "hs_validation_status")
+  expect_equal(nrow(status), 10L)
+  expect_true(all(
+    c("capability", "phase", "status", "evidence", "claim_boundary") %in%
+      names(status)
+  ))
+  expect_equal(
+    status$status[
+      status$capability == "supplied-variance Henderson MME fixture"
+    ],
+    "partial"
+  )
+  expect_equal(
+    status$status[status$capability == "ASReml comparison policy"],
+    "planned"
+  )
+  expect_match(
+    status$claim_boundary[
+      status$capability == "CPU/GPU backend comparison"
+    ],
+    "no backend execution",
+    fixed = TRUE
+  )
+  expect_match(capture.output(print(status))[[1L]], "<hs_validation_status>")
+  expect_match(
+    paste(capture.output(print(status)), collapse = "\n"),
+    "supplied-variance Henderson MME fixture"
+  )
+})
+
 test_that("hs_control validates engine_control", {
   expect_error(
     hs_control(engine_control = "not-a-list"),

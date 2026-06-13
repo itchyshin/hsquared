@@ -7,6 +7,7 @@
 | `hs_control()` | covered | local tests | Default `engine = "validate"`; experimental `engine = "julia"` is tiny/local only. Backend vocabulary includes planned CPU threads, CUDA, AMDGPU, Metal, and oneAPI controls but does not execute those backends. |
 | `backend_info()` | partial | local tests | Reports planned backend rows and marks execution unavailable for every backend. |
 | `formula_status()` | partial | local tests | Reports parsed, reserved, and planned grammar rows, including the `hs_data()` pedigree shorthand; diagnostic only. |
+| `validation_status()` | partial | local tests | Reports current validation atoms and planned comparator lanes; diagnostic only. |
 | `data_status()` | partial | local tests over `hs_data()` diagnostics | Reports data-container component, ID-overlap, pedigree-status, and marker-status diagnostics; no fitting. |
 | `model_spec()` | partial | local tests inspect dimensions, fixed columns, sparse `Z`, normalized IDs, and Julia targets | Preview helper only; does not fit models. |
 | `animal()` formula marker | partial | local parser tests | Inert syntax marker; accepts optional `pedigree` only as parsed formula context; not a standalone modelling helper. |

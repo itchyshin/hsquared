@@ -21,6 +21,8 @@ This page separates what exists from what is planned.
   execution unavailable.
 - `formula_status()` reports parsed, reserved, and planned grammar terms
   without implying fitted support.
+- `validation_status()` reports current validation atoms and planned comparator
+  lanes without running checks or implying fitted support.
 - `data_status()` reports `hs_data()` component presence, ID overlap, and
   pedigree and marker-map/genotype-marker alignment diagnostics without
   implying fitted support.

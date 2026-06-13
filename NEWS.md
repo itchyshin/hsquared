@@ -12,6 +12,7 @@
 * Added an internal supplied-variance Henderson mixed-model-equation validation fixture that compares R reference fixed effects, EBVs, fitted values, and h2 with Julia `henderson_mme()` when a sibling `HSquared.jl` checkout is available (#7).
 * Expanded `hs_control()` to preserve planned backend and accelerator vocabulary for CPU threads, CUDA, AMDGPU, Metal, and oneAPI. These are control-surface placeholders only; GPU execution remains planned (#3).
 * Added `backend_info()` so users and developers can inspect planned backend names while seeing that backend execution is not available yet.
+* Added `validation_status()` so users and developers can inspect current validation atoms, planned comparator lanes, and claim boundaries from R.
 * `data_status()` now gives users a direct diagnostic view of `hs_data()` component presence, ID overlap, pedigree coverage, and marker-map/genotype-marker alignment status. It is a status helper only and does not fit models (#8).
 * Added `formula_status()` so users and developers can inspect parsed, reserved, and planned formula grammar without reading the full roadmap.
 * Added `model_spec()` so users and developers can preview the parsed v0.1 animal-model contract, fixed-effect design columns, sparse animal-effect design dimensions, normalized pedigree ordering, and Julia targets without fitting a model.

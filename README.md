@@ -58,7 +58,8 @@ production bridge and validation-canon evidence.
 Current validation atoms include tiny deterministic `Ainv` checks, an optional
 Mrode9/nadiv pedigree-Ainv comparator, and a supplied-variance Henderson MME
 fixture that compares R reference fixed effects, EBVs, fitted values, and h2
-with Julia when available.
+with Julia when available. Use `validation_status()` to inspect validation
+evidence and planned comparator lanes from R.
 
 ```r
 spec <- model_spec(
