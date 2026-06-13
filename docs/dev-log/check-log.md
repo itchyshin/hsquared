@@ -2324,3 +2324,16 @@ with private memory.
   - GitHub Actions R-CMD-check `27475342941`: passed (DGP test ran on CI with nadiv).
   - GitHub Actions pkgdown `27475342963`: passed.
   - GitHub Pages build/deploy `27475387456`: passed.
+
+## 2026-06-13 DGP generality grid + v0.1 identifiability statement
+
+- Grid (`c15345c`): extended the recovery study with an h2 grid (0.1/0.2/0.4/0.6,
+  100 engine reps/cell). Near-unbiased across the interior (0.2/0.4/0.6); the
+  near-boundary cell (h2=0.1) shows mild upward bias, 94% convergence, and 5%
+  boundary pinning (expected; informs predicate item 4). Updated the recovery
+  atom evidence + `data-raw/dgp-recovery-study.R`. `rcmdcheck(--as-cran)`: 0/0/1.
+  - Remote: R-CMD-check `27475621343`, Pages `27475670567`: passed.
+- Identifiability (`564448a`): added the v0.1 estimable-quantities / identifiability
+  statement to `01-v0.1-contract.md` (predicate item 4 docs half; textbook-grounded
+  proposal). Docs only.
+  - Remote: R-CMD-check `27475739750`, Pages `27475776217`: passed.
