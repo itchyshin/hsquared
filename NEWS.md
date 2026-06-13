@@ -3,6 +3,7 @@
 ## New features
 
 * `animal()` is now exported as an inert formula marker, and `hsquared()` now parses the narrow v0.1 formula contract `animal(1 | id, pedigree = ped)` before stopping at the planned Julia bridge boundary (#4, #6).
+* `fitted()` and `residuals()` now work for `hsquared_fit` objects that contain fitted-value predictions and response values (#5).
 * `hs_control()` now has an experimental `engine = "julia"` option that lets local developers run the tiny v0.1 animal-model payload through a sibling `HSquared.jl` checkout via JuliaCall. The default engine remains validation-only, and general fitted animal-model support is still planned (#6).
 * `prediction_error_variance()` and `reliability()` are now part of the R fitted-object extractor contract. They work for `hsquared_fit` objects containing those result fields (#5, #6).
 * Added reserved marker/QTL/eQTL extractor names: `marker_effects()`, `marker_variance_explained()`, `qtl_table()`, `gwas_table()`, `eqtl_table()`, and `lod_scores()`. These are output-vocabulary placeholders only; marker, QTL, GWAS, and eQTL fitting remain planned (#5, #9).

@@ -338,3 +338,33 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 predict.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "predictions", "predictions")
 }
+
+#' @export
+fitted.hsquared_fit <- function(object, ...) {
+  predictions <- stats::predict(object, ...)
+  if (is.data.frame(predictions) && ".fitted" %in% names(predictions)) {
+    return(predictions$.fitted)
+  }
+  predictions
+}
+
+#' @export
+residuals.hsquared_fit <- function(object, ...) {
+  response <- object$payload$y
+  if (is.null(response)) {
+    stop(
+      "This `hsquared_fit` object does not contain response values.",
+      call. = FALSE
+    )
+  }
+  fitted_values <- as.numeric(stats::fitted(object, ...))
+  response <- as.numeric(response)
+  if (length(response) != length(fitted_values)) {
+    stop(
+      "Response and fitted values must have the same length to compute ",
+      "residuals.",
+      call. = FALSE
+    )
+  }
+  response - fitted_values
+}

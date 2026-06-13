@@ -25,7 +25,7 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
     loglik = -12.5,
     df = 4L,
     nobs = 10L,
-    predictions = data.frame(.fitted = c(1.1, 1.2)),
+    predictions = data.frame(.fitted = seq_len(10) + 0.5),
     diagnostics = list(gradient_norm = 0.001),
     converged = TRUE
   )
@@ -55,6 +55,8 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(fixef(fit), result$fixed_effects)
   expect_equal(ranef(fit), result$random_effects)
   expect_equal(predict(fit), result$predictions)
+  expect_equal(fitted(fit), result$predictions$.fitted)
+  expect_equal(residuals(fit), seq_len(10) - result$predictions$.fitted)
   expect_equal(as.numeric(logLik(fit)), -12.5)
   expect_equal(attr(logLik(fit), "df"), 4L)
   expect_equal(attr(logLik(fit), "nobs"), 10L)
@@ -130,6 +132,45 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     qtl_table(fit),
     "does not contain QTL table",
+    fixed = TRUE
+  )
+  expect_error(
+    fitted(fit),
+    "does not contain predictions",
+    fixed = TRUE
+  )
+  expect_error(
+    residuals(fit),
+    "does not contain predictions",
+    fixed = TRUE
+  )
+})
+
+test_that("hsquared_fit residuals require response values", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(),
+    result = list(predictions = data.frame(.fitted = c(1, 2)))
+  )
+
+  expect_equal(fitted(fit), c(1, 2))
+  expect_error(
+    residuals(fit),
+    "does not contain response values",
+    fixed = TRUE
+  )
+})
+
+test_that("hsquared_fit residuals check fitted length", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = c(1, 2, 3)),
+    result = list(predictions = data.frame(.fitted = c(1, 2)))
+  )
+
+  expect_error(
+    residuals(fit),
+    "same length",
     fixed = TRUE
   )
 })

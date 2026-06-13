@@ -78,7 +78,8 @@ before returning a fitted object. The R extractor contract also includes
 `prediction_error_variance` and `reliability`. The current R bridge enriches
 tiny opt-in Julia results by calling exported Julia dense validation extractors
 when those functions exist, while Julia's base `result_payload()` remains
-stable.
+stable. R `fitted()` and `residuals()` methods use the normalized
+`predictions` field and stored response vector when both are available.
 
 The supplied-variance Henderson MME bridge returns a smaller result shape:
 
