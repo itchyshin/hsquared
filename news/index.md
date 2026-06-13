@@ -57,6 +57,12 @@
   [`backend_info()`](https://itchyshin.github.io/hsquared/reference/backend_info.md)
   so users and developers can inspect planned backend names while seeing
   that backend execution is not available yet.
+- [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
+  now gives users a direct diagnostic view of
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  component presence, ID overlap, and marker-map/genotype-marker
+  alignment status. It is a status helper only and does not fit models
+  ([\#8](https://github.com/itchyshin/hsquared/issues/8)).
 - Added
   [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   so users and developers can inspect parsed, reserved, and planned

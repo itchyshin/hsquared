@@ -18,6 +18,11 @@ This page separates what exists from what is planned.
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   reports parsed, reserved, and planned grammar terms without implying
   fitted support.
+- [`data_status()`](https://itchyshin.github.io/hsquared/reference/data_status.md)
+  reports
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  component presence, ID overlap, and marker-map/genotype-marker
+  alignment diagnostics without implying fitted support.
 - [`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
   previews the parsed v0.1 animal-model contract, including fixed-effect
   design columns, sparse animal-effect design dimensions, normalized
