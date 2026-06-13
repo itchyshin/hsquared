@@ -176,3 +176,18 @@ with private memory.
   - README, vignettes, and design docs say internal bridge payload only.
   - No public wording claims Julia execution, `Ainv` construction, or fitted
     animal models as implemented.
+- Remote GitHub Actions after push:
+  - `git push origin main`
+  - Result: commit `c5c348e` pushed to `origin/main`.
+  - `gh run watch 27455845170 --repo itchyshin/hsquared --exit-status`
+  - Result: R-CMD-check passed in 1m24s.
+  - `gh run watch 27455845181 --repo itchyshin/hsquared --exit-status`
+  - Result: pkgdown passed in 1m20s and deployed the site.
+  - `gh run watch 27455874827 --repo itchyshin/hsquared --exit-status`
+  - Result: Pages build and deployment passed. GitHub emitted a
+    non-blocking Node.js 20 deprecation annotation for Pages actions.
+  - `curl -L --max-time 20 -I https://itchyshin.github.io/hsquared/`
+  - Result: live site returned `HTTP/2 200`.
+  - `gh issue comment 6 --repo itchyshin/hsquared --body ...`
+  - Result: issue #6 updated with evidence at
+    `https://github.com/itchyshin/hsquared/issues/6#issuecomment-4697408730`.

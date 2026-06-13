@@ -34,6 +34,14 @@ tested internal R-to-Julia payload shape without claiming live Julia execution.
   testthat snapshot differed in built-package context.
 - Final `Rscript -e "devtools::check()"`: passed with `0 errors`,
   `0 warnings`, `0 notes`.
+- `gh run watch 27455845170 --repo itchyshin/hsquared --exit-status`:
+  R-CMD-check passed in 1m24s for commit `c5c348e`.
+- `gh run watch 27455845181 --repo itchyshin/hsquared --exit-status`:
+  pkgdown passed in 1m20s for commit `c5c348e`.
+- `gh run watch 27455874827 --repo itchyshin/hsquared --exit-status`:
+  Pages build and deployment passed.
+- `curl -L --max-time 20 -I https://itchyshin.github.io/hsquared/`:
+  live site returned `HTTP/2 200`.
 
 ## Public Claim Audit
 
@@ -76,8 +84,7 @@ direct `expect_error()` assertions for stable one-line errors.
 
 ## Next Actions
 
-1. Push the R bridge-payload commit and watch R-CMD-check/pkgdown CI.
-2. Coordinate the Julia twin to align `animal_model_spec()` tests/docs with the
+1. Coordinate the Julia twin to align `animal_model_spec()` tests/docs with the
    R payload.
-3. Start the first live bridge execution slice only after the Julia target is
+2. Start the first live bridge execution slice only after the Julia target is
    stable on its side.
