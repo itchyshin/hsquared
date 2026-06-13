@@ -47,6 +47,11 @@
   [`nadiv::makeAinv()`](https://rdrr.io/pkg/nadiv/man/makeAinv.html) for
   the Mrode9 pedigree
   ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
+- Added an internal supplied-variance Henderson mixed-model-equation
+  validation fixture that compares R reference fixed effects, EBVs,
+  fitted values, and h2 with Julia `henderson_mme()` when a sibling
+  `HSquared.jl` checkout is available
+  ([\#7](https://github.com/itchyshin/hsquared/issues/7)).
 - Expanded
   [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   to preserve planned backend and accelerator vocabulary for CPU
