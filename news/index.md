@@ -12,10 +12,16 @@
   bridge boundary
   ([\#4](https://github.com/itchyshin/hsquared/issues/4),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
+- [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
+  now has an experimental `engine = "julia"` option that lets local
+  developers run the tiny v0.1 animal-model payload through a sibling
+  `HSquared.jl` checkout via JuliaCall. The default engine remains
+  validation-only, and general fitted animal-model support is still
+  planned ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - Added an internal R-to-Julia bridge payload builder for the v0.1
   animal-model contract. It creates `y`, `X`, sparse `Z`, normalized
   pedigree metadata, and the validated Julia `animal_model_spec()`
-  target, but still does not execute Julia or fit models
+  target used by the experimental Julia engine
   ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - Added a local-only experimental JuliaCall smoke path for the tiny v0.1
   payload when a sibling `HSquared.jl` checkout is available. This

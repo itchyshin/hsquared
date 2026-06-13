@@ -76,16 +76,18 @@
 <li>R package scaffold and CI.</li>
 <li>Team operating memory and claim registers.</li>
 <li>
-<code><a href="../reference/hs_control.html">hs_control()</a></code> for planned execution/storage
-controls.</li>
+<code><a href="../reference/hs_control.html">hs_control()</a></code> with default validation-only behavior and
+an experimental <code>engine = "julia"</code> option for tiny local
+bridge examples.</li>
 <li>
 <code><a href="../reference/animal.html">animal()</a></code> as an inert formula marker.</li>
 <li>A v0.1 parser for <code>animal(1 | id, pedigree = ped)</code>.</li>
 <li>A tested internal R-to-Julia payload shape with <code>y</code>,
 <code>X</code>, sparse <code>Z</code>, method, family, encoded IDs,
 normalized pedigree metadata, and Julia target metadata.</li>
-<li>A local-only experimental JuliaCall smoke path that can send the
-tiny payload into a sibling <code>HSquared.jl</code> checkout and
+<li>An experimental opt-in
+<code>control = hs_control(engine = "julia")</code> path that can send
+the tiny payload into a sibling <code>HSquared.jl</code> checkout and
 normalize the returned Julia result into the internal
 <code>hsquared_fit</code> contract.</li>
 <li>The first fitted-object/extractor contract over internal
@@ -102,8 +104,8 @@ pedigree/data ID checks.</li>
 <h2 id="not-implemented-yet">Not implemented yet<a class="anchor" aria-label="anchor" href="#not-implemented-yet"></a>
 </h2>
 <ul>
-<li>Model fitting.</li>
-<li>User-facing R-to-Julia bridge execution through
+<li>General model fitting.</li>
+<li>Default R-to-Julia bridge execution through
 <code><a href="../reference/hsquared.html">hsquared()</a></code>.</li>
 <li>R-side <code>Ainv</code> construction.</li>
 <li>Real variance components, heritability, EBVs, or BLUPs from fitted

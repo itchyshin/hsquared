@@ -2,8 +2,10 @@
 
 `hsquared()` is the planned R entry point for heritability,
 breeding-value, G-matrix, and inheritance-structured mixed models. The
-current parser validates the narrow v0.1 animal-model contract and stops
-before fitting.
+current parser validates the narrow v0.1 animal-model contract. The
+default control path stops after validation; the experimental Julia
+engine can fit tiny local bridge examples when a sibling `HSquared.jl`
+checkout is available.
 
 ## Usage
 
@@ -36,8 +38,8 @@ hsquared(
 
 - REML:
 
-  Logical; whether the planned Gaussian animal model should use REML.
-  This is recorded for the future v0.1 contract only.
+  Logical; whether the Gaussian animal model should use REML when the
+  experimental Julia engine is selected.
 
 - control:
 
@@ -50,4 +52,5 @@ hsquared(
 
 ## Value
 
-The current scaffold always errors before returning a fit.
+A `"hsquared_fit"` object for the experimental Julia engine, or an
+informative error for the default validation-only path.

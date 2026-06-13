@@ -3,9 +3,9 @@
 `animal()` marks an additive-genetic random effect in an
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 formula. The first implemented parser contract accepts only
-`animal(1 | id, pedigree = ped)`. Fitting still waits for the Julia
-engine bridge, so this function is a syntax marker rather than a
-standalone modelling helper.
+`animal(1 | id, pedigree = ped)`. General fitting still waits for the
+production Julia engine bridge, so this function is a syntax marker
+rather than a standalone modelling helper.
 
 ## Usage
 
