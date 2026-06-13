@@ -18,6 +18,8 @@ navbar:
       menu:
         - text: Getting started
           href: articles/hsquared.html
+        - text: Mission control
+          href: articles/mission-control.html
         - text: Model status
           href: articles/model-status.html
         - text: Formula grammar roadmap
@@ -60,6 +62,7 @@ articles:
   - title: Start here
     contents:
       - hsquared
+      - articles/mission-control
       - articles/model-status
       - articles/formula-grammar
       - articles/genomics-gpu-roadmap

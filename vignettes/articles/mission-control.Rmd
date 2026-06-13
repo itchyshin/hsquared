@@ -1,0 +1,328 @@
+---
+title: "Mission control"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mission control}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This page is the R-side mission-control board for the `hsquared` /
+`HSquared.jl` twin project. It is static and repo-versioned. The source of
+truth remains the tests, GitHub Actions, issue ledger, check log, and public
+claims register.
+
+```{=html}
+<style>
+.hs-mission {
+  --ink: #172026;
+  --muted: #5a6670;
+  --line: #d7dde2;
+  --panel: #f8fafb;
+  --blue: #245b73;
+  --green: #2f6f5e;
+  --amber: #8b641d;
+  --red: #9d3f3f;
+  --violet: #5d568f;
+  color: var(--ink);
+}
+.hs-mission * { box-sizing: border-box; }
+.hs-hero {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 22px;
+  margin: 16px 0 20px;
+  background: linear-gradient(135deg, #f8fbfc 0%, #eef5f1 54%, #f7f7fb 100%);
+}
+.hs-kicker {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hs-hero h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+.hs-hero p {
+  max-width: 78ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+.hs-grid {
+  display: grid;
+  gap: 12px;
+}
+.hs-grid.metrics {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 0 0 18px;
+}
+.hs-grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-bottom: 14px;
+}
+.hs-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+}
+.hs-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+.hs-metric {
+  min-height: 106px;
+}
+.hs-metric strong {
+  display: block;
+  font-size: 1.45rem;
+  line-height: 1;
+  margin-bottom: 7px;
+}
+.hs-metric span,
+.hs-card p,
+.hs-card li {
+  color: var(--muted);
+}
+.hs-tagrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.hs-tag {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  background: var(--panel);
+}
+.hs-tag.done {
+  border-color: #a7c8bb;
+  color: var(--green);
+  background: #eff8f5;
+}
+.hs-tag.partial {
+  border-color: #d9c491;
+  color: var(--amber);
+  background: #fff8e8;
+}
+.hs-tag.plan {
+  border-color: #c5c3dd;
+  color: var(--violet);
+  background: #f5f4fb;
+}
+.hs-tag.block {
+  border-color: #dfb3b3;
+  color: var(--red);
+  background: #fff1f1;
+}
+.hs-road {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.hs-phase {
+  display: grid;
+  grid-template-columns: minmax(78px, 112px) 1fr;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.hs-phase b {
+  color: var(--blue);
+}
+.hs-phase span {
+  color: var(--muted);
+}
+.hs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.hs-table th,
+.hs-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 8px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+.hs-table th {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.hs-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+.hs-lenses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.hs-lens {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px;
+  background: var(--panel);
+}
+.hs-lens b { display: block; }
+.hs-lens span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+@media (max-width: 620px) {
+  .hs-hero { padding: 16px; }
+  .hs-hero h2 { font-size: 1.35rem; }
+  .hs-phase { grid-template-columns: 1fr; }
+}
+</style>
+<div class="hs-mission">
+  <section class="hs-hero" aria-labelledby="hs-mission-title">
+    <p class="hs-kicker">hsquared / HSquared.jl mission control</p>
+    <h2 id="hs-mission-title">One easy R interface, one Julia engine, one evidence gate.</h2>
+    <p>
+      This board tracks the R lane and its contract with the Julia twin. It
+      separates implemented package surfaces, experimental validation paths,
+      and roadmap capabilities that are deliberately still planned.
+    </p>
+    <div class="hs-tagrow" aria-label="current status tags">
+      <span class="hs-tag done">Phase 0 public scaffold complete</span>
+      <span class="hs-tag partial">Phase 1 parser and validation active</span>
+      <span class="hs-tag partial">Julia bridge opt-in and tiny/local</span>
+      <span class="hs-tag block">No production fitting claim</span>
+    </div>
+  </section>
+
+  <section class="hs-grid metrics" aria-label="top metrics">
+    <article class="hs-card hs-metric">
+      <strong>1</strong>
+      <span>public formula contract parsed today: <code>animal(1 | id, pedigree = ped)</code></span>
+    </article>
+    <article class="hs-card hs-metric">
+      <strong>11</strong>
+      <span>validation-status rows separating partial and planned evidence</span>
+    </article>
+    <article class="hs-card hs-metric">
+      <strong>6</strong>
+      <span>planned backend names recorded: CPU, threads, CUDA, AMDGPU, Metal, oneAPI</span>
+    </article>
+    <article class="hs-card hs-metric">
+      <strong>0</strong>
+      <span>production GPU, QTL/eQTL, GLLVM, or AI-REML claims</span>
+    </article>
+  </section>
+
+  <section class="hs-grid two" aria-label="lane status">
+    <article class="hs-card">
+      <h3>R Interface Lane</h3>
+      <p>Current focus: make the first animal-model contract obvious, tested, and honest.</p>
+      <ul class="hs-list">
+        <li>Implemented: package scaffold, pkgdown, parser diagnostics, data-container diagnostics, fitted-object extractor contract.</li>
+        <li>Experimental: opt-in local Julia bridge for tiny validation paths and supplied-variance Henderson MME checks.</li>
+        <li>Planned: default production fitting, genomic models, QTL/eQTL, GLLVMs, unusual inheritance, and real backend execution.</li>
+      </ul>
+    </article>
+    <article class="hs-card">
+      <h3>Julia Twin Boundary</h3>
+      <p><code>HSquared.jl</code> owns engine utilities and performance work. R owns the applied user language.</p>
+      <ul class="hs-list">
+        <li>Bridge payload: <code>y</code>, <code>X</code>, sparse <code>Z</code>, method, family, encoded IDs, and pedigree metadata.</li>
+        <li>Result contract: compact fields that R can turn into summaries, extractors, and diagnostics.</li>
+        <li>Rule: no public R claim moves from planned to working until the Julia path and R bridge are both validated.</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="hs-card" aria-label="phase board">
+    <h3>Phase Board</h3>
+    <div class="hs-road">
+      <div class="hs-phase"><b>Phase 0</b><span>Operating system, public memory, pkgdown, GitHub Actions, claim gates.</span></div>
+      <div class="hs-phase"><b>Phase 1</b><span>Simple Gaussian animal model: parser, Ainv, likelihood, MME, EBVs, h2, validation fixtures.</span></div>
+      <div class="hs-phase"><b>Phase 2</b><span>Repeatability, permanent environment, maternal/paternal effects, common environment, dominance, custom kernels.</span></div>
+      <div class="hs-phase"><b>Phase 3</b><span>Multivariate Gaussian animal models, G/R/P matrices, genetic correlations, missing trait records.</span></div>
+      <div class="hs-phase"><b>Phase 4</b><span>Factor-analytic G matrices with <code>diag()</code>, <code>lowrank(K)</code>, and <code>fa(K)</code> covariance structures.</span></div>
+      <div class="hs-phase"><b>Phase 5</b><span>GBLUP, SNP-BLUP, single-step, APY, marker effects, QTL/GWAS/eQTL scans.</span></div>
+      <div class="hs-phase"><b>Phase 6</b><span>GLLVM-style high-dimensional animal models, non-Gaussian responses, omics, ordination.</span></div>
+      <div class="hs-phase"><b>Phase 7</b><span>Selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting, epistasis, unusual inheritance.</span></div>
+      <div class="hs-phase"><b>Phase 8</b><span>Accelerator-aware and HPC scaling: CPU default, optional GPU backends, checkpoints, benchmarks.</span></div>
+    </div>
+  </section>
+
+  <section class="hs-grid two" aria-label="evidence and gates">
+    <article class="hs-card">
+      <h3>Evidence Now</h3>
+      <table class="hs-table">
+        <thead><tr><th>Surface</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>Formula parser</td><td><span class="hs-tag partial">partial</span></td><td><code>animal(1 | id, pedigree = ped)</code> and <code>hs_data()</code> pedigree shorthand parse and validate.</td></tr>
+          <tr><td>Bridge payload</td><td><span class="hs-tag partial">partial</span></td><td>Tests pin <code>y</code>, <code>X</code>, sparse <code>Z</code>, IDs, method, family, pedigree metadata.</td></tr>
+          <tr><td>Validation atoms</td><td><span class="hs-tag partial">partial</span></td><td>Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, and sparse REML identity checks.</td></tr>
+          <tr><td>Fit object</td><td><span class="hs-tag partial">partial</span></td><td>Extractor contract exists for objects that contain matching result fields.</td></tr>
+          <tr><td>Data container</td><td><span class="hs-tag partial">partial</span></td><td><code>hs_data()</code> checks phenotype, pedigree, genotype, marker, expression, annotation, and environment metadata.</td></tr>
+          <tr><td>Backends</td><td><span class="hs-tag plan">planned</span></td><td><code>hs_control()</code> stores planned names; <code>backend_info()</code> marks execution unavailable.</td></tr>
+        </tbody>
+      </table>
+    </article>
+    <article class="hs-card">
+      <h3>Blocked Claims</h3>
+      <ul class="hs-list">
+        <li>No general fitted animal-model support from the default R call.</li>
+        <li>No variance-component estimation claim for supplied-variance Henderson MME.</li>
+        <li>No sparse optimizer, AI-REML, fitted Mrode output validation, or ASReml parity claim.</li>
+        <li>No genomic prediction, marker scan, QTL/eQTL, GLLVM, or unusual-inheritance fitting claim.</li>
+        <li>No CPU/GPU execution, backend benchmark, or speedup claim.</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="hs-card" aria-label="review lenses">
+    <h3>Review Lenses</h3>
+    <p>These are review perspectives, not automatically running agents.</p>
+    <div class="hs-lenses">
+      <div class="hs-lens"><b>Ada</b><span>programme integration</span></div>
+      <div class="hs-lens"><b>Shannon</b><span>lane coordination</span></div>
+      <div class="hs-lens"><b>Boole</b><span>formula grammar</span></div>
+      <div class="hs-lens"><b>Noether</b><span>math consistency</span></div>
+      <div class="hs-lens"><b>Gauss</b><span>numerical engine</span></div>
+      <div class="hs-lens"><b>Fisher</b><span>inference and estimands</span></div>
+      <div class="hs-lens"><b>Curie</b><span>validation canon</span></div>
+      <div class="hs-lens"><b>Pat</b><span>applied user reading</span></div>
+      <div class="hs-lens"><b>Rose</b><span>public claim audit</span></div>
+      <div class="hs-lens"><b>Grace</b><span>CI and release gates</span></div>
+      <div class="hs-lens"><b>Hopper</b><span>R-Julia bridge</span></div>
+      <div class="hs-lens"><b>Karpinski</b><span>Julia performance</span></div>
+    </div>
+  </section>
+</div>
+```
+
+## Recovery Pointers
+
+Before a substantial resumed slice, run the rehydrate commands in `AGENTS.md`,
+then read:
+
+- `docs/dev-log/coordination-board.md`;
+- `docs/dev-log/check-log.md`;
+- newest `docs/dev-log/after-task/*.md`;
+- `docs/design/01-v0.1-contract.md`;
+- `docs/design/06-public-claims-register.md`.
+
+The short rule is still the one in the project memory:
+
+```text
+Private memory routes us.
+Repository memory governs us.
+Live repo state verifies us.
+```

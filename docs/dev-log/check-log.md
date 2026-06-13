@@ -1895,3 +1895,29 @@ with private memory.
   - GitHub Actions R-CMD-check `27465915349`: passed in 1m38s.
   - GitHub Actions pkgdown `27465915342`: passed in 1m26s.
   - GitHub Pages build/deploy `27465944575`: passed.
+
+## 2026-06-13 mission-control pkgdown article
+
+- Goal: add an R-facing dashboard article matching the twin operating style
+  without implying new modelling support.
+- Active lenses: Ada, Shannon, Boole, Hopper, Emmy, Grace, Rose, Pat.
+- Spawned subagents: none.
+- Implementation evidence:
+  - Added `vignettes/articles/mission-control.Rmd`.
+  - Added the article to `_pkgdown.yml`.
+  - Linked the dashboard from README and NEWS.
+- Local checks:
+  - `git diff --check`: clean.
+  - `Rscript -e "pkgdown::build_articles(lazy = FALSE); pkgdown::check_pkgdown()"`:
+    articles rebuilt, including `articles/mission-control.html`; pkgdown
+    reported `No problems found.`
+  - Rendered article spot-check:
+    `rg -n "Mission control|One R interface|&lt;article|<pre><code>&lt;article|Blocked Claims|Julia Engine Boundary" pkgdown-site/articles/mission-control.html`
+    found the page title, menu link, dashboard content, and no escaped
+    dashboard article block.
+  - `Rscript -e "devtools::check()"`: passed with `0 errors`, `0 warnings`,
+    and `0 notes`.
+- Boundary:
+  - Documentation dashboard only.
+  - No new fitting, bridge, validation, backend, GPU, QTL/eQTL, GLLVM, or
+    performance claim.
