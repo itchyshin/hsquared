@@ -252,3 +252,52 @@ with private memory.
   - Public wording says lightweight data container and ID maps only.
   - No public wording claims file-backed genomics, streaming, QTL/eQTL scans,
     or model fitting.
+
+## 2026-06-13 R live Julia bridge smoke slice
+
+- Rehydrated state before closeout:
+  - `git status --short --branch`
+  - `gh run list --repo itchyshin/hsquared --limit 5`
+  - `git status --short --branch` in sibling `HSquared.jl`
+  - `gh run list --repo itchyshin/HSquared.jl --limit 5`
+- Result:
+  - `hsquared` was clean at `644c75e` before the bridge-smoke edit.
+  - `HSquared.jl` was clean at `798cfb7` after the twin committed the
+    `HSData` mirror; Julia CI, Documenter, and Pages had passed.
+- Local implementation checks:
+  - `Rscript -e "devtools::document()"`
+  - Result: completed after loading `hsquared`.
+  - `git diff --check`
+  - Result: clean.
+  - `Rscript -e "devtools::test()"`
+  - Result: passed with `93 pass`, `0 fail`, `0 warnings`, and `0 skips`.
+    The live bridge test activated the sibling project at
+    `~/Dropbox/Github Local/HSquared.jl` and returned an internal
+    `hsquared_fit`.
+  - `Rscript -e "pkgdown::check_pkgdown()"`
+  - Result: `No problems found.`
+  - `Rscript -e "devtools::check()"`
+  - Result: `0 errors | 0 warnings | 0 notes`.
+- Bridge/API evidence:
+  - Added internal `hs_fit_julia_payload()`.
+  - The tiny smoke path checks for Julia, `JuliaCall`, and a sibling
+    `HSquared.jl` project before running.
+  - The bridge sends `y`, `X`, dense guarded `Z`, pedigree IDs/parents,
+    method, and initial variance values into Julia.
+  - Julia builds `Ainv` through `pedigree_inverse()`, calls
+    `fit_animal_model()`, returns `result_payload()`, and R normalizes the
+    result into the existing internal `hsquared_fit` contract.
+  - Tests assert convergence, finite log-likelihood, variance components,
+    breeding-value IDs, fixed-effect naming, heritability, and `logLik()`.
+  - A dense-size guard refuses payloads above `max_dense_cells`.
+- Cross-repo learning:
+  - The first live smoke exposed a Julia-side type-order issue where
+    `HSData` referenced `HSDataIDMap` before it was defined.
+  - The sibling Julia lane fixed and committed that work in
+    `798cfb7 Add HSData input container`; local Julia `Pkg.test()` and
+    Documenter checks were verified from the R/coordinator lane.
+- Rose wording sweep:
+  - README, model status, engine contract, capability status, validation debt,
+    and public claims register now say local internal bridge smoke only.
+  - Public wording still says ordinary `hsquared()` calls do not fit models and
+    production/user-facing bridge execution remains planned.

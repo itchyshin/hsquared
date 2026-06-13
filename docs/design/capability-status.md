@@ -8,7 +8,8 @@
 | `animal()` formula marker | partial | local parser tests | Inert syntax marker; not a standalone modelling helper. |
 | `hsquared()` fit entry point | partial | local tests parse v0.1 animal contract, build bridge payload, and stop at bridge boundary | No fitting or Julia execution. |
 | R formula parser | partial | local tests parse `animal(1 \| id, pedigree = ped)` and reject unsupported future syntax | Bridge execution and fitting are not implemented. |
-| R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | `Ainv` construction and live Julia execution remain planned. |
+| R-to-Julia bridge payload | partial | local tests build `y`, `X`, sparse `Z`, normalized pedigree parent indices, method, family, and Julia target metadata | Tiny live smoke exists separately; production bridge execution remains planned. |
+| internal R-to-Julia live smoke | partial | local JuliaCall smoke test against sibling `HSquared.jl` returns variance components, EBVs, h², logLik, and fitted values for a tiny example | Internal tiny validation path only; `hsquared()` still does not fit models. |
 | `hsquared_fit` object/extractors | partial | local tests over internal mock fit results | `hsquared()` does not return fitted objects yet. |
 | `hs_data()` container | partial | local tests over phenotype, pedigree, genotype, expression, and marker inputs | No file-backed storage or modelling integration yet. |
 | simple Gaussian animal model | planned | none | Phase 1. |

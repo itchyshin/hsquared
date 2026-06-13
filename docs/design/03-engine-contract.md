@@ -19,9 +19,13 @@ metadata: original names, fixed columns, observed ID map, bridge targets
 
 The current R payload builder creates `y`, `X`, sparse `Z`, method, family,
 encoded IDs, normalized pedigree metadata, and a Julia target string. It does
-not create `Ainv`; the first Julia execution path should call
-`normalize_pedigree()`, `pedigree_inverse()`, `animal_model_spec()`, and then
-`fit_animal_model(spec)`.
+not create `Ainv` on the R side.
+
+An internal experimental JuliaCall smoke path now validates the tiny payload
+against a sibling `HSquared.jl` checkout by calling `normalize_pedigree()`,
+`pedigree_inverse()`, `fit_animal_model()`, and `result_payload()`. That path
+densifies `Z` under a strict tiny-payload guard and is for cross-repo contract
+testing only. It is not yet the public `hsquared()` fitting path.
 
 ## Initial Julia Result
 
@@ -44,8 +48,9 @@ The R fitted-object contract currently expects these fields to arrive as a
 compact result list. Extractor methods are already defined for
 `variance_components`, `heritability`, `breeding_values`, `fixed_effects`,
 `random_effects`, `loglik`, `df`, `nobs`, `predictions`, `diagnostics`, and
-`converged`, but the package does not create real fitted objects until Julia
-execution exists.
+`converged`. The local smoke path can normalize the current Julia result into
+this shape for a tiny example; ordinary `hsquared()` calls still stop before
+returning a fitted object.
 
 ## Storage Policy
 

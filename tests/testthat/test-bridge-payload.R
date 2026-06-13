@@ -105,7 +105,7 @@ test_that("hsquared error describes the validated Julia target", {
       data = dat,
       family = stats::gaussian()
     ),
-    "HSquared.animal_model_spec",
+    "HSquared.fit_animal_model",
     fixed = TRUE
   )
 })
