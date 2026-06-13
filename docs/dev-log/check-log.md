@@ -2207,3 +2207,31 @@ with private memory.
   - GitHub Actions R-CMD-check `27469723178`: passed.
   - GitHub Actions pkgdown `27469723172`: passed.
   - GitHub Pages build/deploy `27469763549`: passed.
+
+## 2026-06-13 Opt-in AI-REML estimator bridge (target = "ai_reml")
+
+- Goal: surface the twin's average-information REML estimator
+  (`HSquared.fit_ai_reml`) through R behind the existing opt-in fence, mirroring
+  `target = "sparse_reml"`. Default still validates-and-stops; no new public
+  claim. Serves the standing performance directive (fastest REML/ML).
+- Active lenses: Hopper, Lovelace, Gauss, Fisher, Curie, Rose. Spawned
+  subagents: none.
+- TDD: RED (target rejected; `hs_fit_julia_ai_reml_payload` absent) → GREEN
+  (four minimal edits: bridge fn, target validator, dispatch, control docs).
+- Local checks:
+  - `devtools::test()` full with the live Julia bridge (juliaup on PATH,
+    `NOT_CRAN=true`): 508 pass, 0 fail, 0 warnings, 0 skips; the AI-REML live
+    tests ran and passed.
+  - `rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))`: 0 errors,
+    0 warnings, 1 note (benign new-submission/dev-version). The first `--as-cran`
+    run caught a stale `validation_status()` row-count assertion (13 → 14), fixed
+    before commit. Lesson reaffirmed: gate with `--as-cran` locally to match CI.
+  - `air format .`: clean.
+- Finding: AI-REML and the sparse NelderMead REML optimizer reach the same REML
+  optimum on the Mrode fixture (logLik diff 1.3e-8, variance components 2.7e-4).
+- Boundary: experimental opt-in path; estimator is Julia-owned and R surfaces
+  it; gated on twin `validation_status()`; not default/production/ASReml/DGP.
+- Remote checks for commit `eba8711`:
+  - GitHub Actions R-CMD-check `27473026734`: passed.
+  - GitHub Actions pkgdown `27473026735`: passed.
+  - GitHub Pages build/deploy `27473061867`: passed.
