@@ -96,9 +96,21 @@ are planned.
 
 ## Phase 3: Multivariate Gaussian Animal Models
 
-Status: planned.
+Status: planned (engine support is in progress on the twin). The Julia engine
+`HSquared.fit_multivariate_reml` (estimating the `t × t` genetic `G0` and
+residual `R0` covariances by REML, with missing-trait records, genetic
+correlations, per-trait h2, and cross-trait EBVs) exists on the twin branch
+`phase4-multivariate-reml` but is **not yet on Julia `main`**, so nothing is
+surfaceable from R yet. The R-side surfacing — a `cbind(...)` multi-trait
+grammar, the `Y`-matrix bridge payload, an opt-in `target = "multivariate"`
+fence mirroring the twin `V4-MV-REML` gate, and genetic-correlation / G /
+per-trait-h2 / cross-trait-EBV extractors — is designed against that engine
+contract in
+[`docs/design/09-multivariate-plan.md`](docs/design/09-multivariate-plan.md)
+(status: planned; every grammar/estimand choice is a proposal awaiting the twin
+landing on `main` plus maintainer sign-off).
 
-- Long-format trait grammar.
+- `cbind(...)` multi-trait response grammar.
 - Full G and R matrices.
 - Missing trait records.
 - Genetic correlations and cross-trait EBVs.
