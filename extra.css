@@ -1,0 +1,39 @@
+.navbar {
+  background: #0ea5e9 !important;
+  background-color: #0ea5e9 !important;
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-text,
+.navbar .nav-link,
+.navbar .fab,
+.navbar .fa {
+  color: #ffffff !important;
+}
+
+.navbar .version,
+.navbar .nav-text.text-muted {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-link.active,
+.navbar .show > .nav-link {
+  color: #e0f2fe !important;
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.navbar .form-control {
+  background-color: #ffffff;
+  border-color: #bae6fd;
+  color: #172a36;
+}
+
+.navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.navbar .navbar-toggler-icon {
+  filter: invert(1) grayscale(1) brightness(2);
+}
