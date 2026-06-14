@@ -1,6 +1,8 @@
 .navbar {
-  background: #0ea5e9 !important;
-  background-color: #0ea5e9 !important;
+  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%) !important;
+  background-color: #e0f2fe !important;
+  border-bottom: 1px solid #7dd3fc;
+  box-shadow: 0 1px 0 rgba(14, 165, 233, 0.18);
 }
 
 .navbar .navbar-brand,
@@ -8,32 +10,32 @@
 .navbar .nav-link,
 .navbar .fab,
 .navbar .fa {
-  color: #ffffff !important;
+  color: #082f49 !important;
 }
 
 .navbar .version,
 .navbar .nav-text.text-muted {
-  color: rgba(255, 255, 255, 0.78) !important;
+  color: #0369a1 !important;
 }
 
 .navbar .nav-link:hover,
 .navbar .nav-link:focus,
 .navbar .nav-link.active,
 .navbar .show > .nav-link {
-  color: #e0f2fe !important;
-  background-color: rgba(255, 255, 255, 0.16);
+  color: #075985 !important;
+  background-color: rgba(14, 165, 233, 0.16);
 }
 
 .navbar .form-control {
-  background-color: #ffffff;
-  border-color: #bae6fd;
-  color: #172a36;
+  background-color: #f8fafc;
+  border-color: #7dd3fc;
+  color: #0f2533;
 }
 
 .navbar .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.32);
+  border-color: #38bdf8;
 }
 
 .navbar .navbar-toggler-icon {
-  filter: invert(1) grayscale(1) brightness(2);
+  filter: none;
 }
