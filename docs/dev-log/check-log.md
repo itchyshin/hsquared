@@ -2494,6 +2494,10 @@ with private memory.
   this warning (a local/CI R-version divergence). Lesson: avoid `pkg::` for
   undeclared packages; the codebase already uses base `inherits()` for the same
   dgCMatrix check.
-- Fix (follow-up commit): replaced `methods::is()` with base `inherits()`
-  (matching `R/julia-bridge.R` line ~630); no `methods::` usage remains.
-  Remote checks appended after the fix push.
+- Fix (follow-up commit `9484cae`): replaced `methods::is()` with base
+  `inherits()` (matching `R/julia-bridge.R` line ~630); no `methods::` usage
+  remains.
+- Remote checks for commit `9484cae` (all green):
+  - GitHub Actions R-CMD-check `27483872069`: passed.
+  - GitHub Actions pkgdown `27483872067`: passed.
+  - GitHub Pages build/deploy `27483901956`: passed.
