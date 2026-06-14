@@ -27,7 +27,7 @@ the two lanes coordinated, without making any premature public claim.
 `partial` on that branch. **None of this is on Julia `main` yet.**
 
 ```
-fit_multivariate_reml(Y, X, Z, Ainv; initial = (G0, R0), iterations, ids, traits)
+fit_multivariate_reml(Y, X, Z, Ainv; initial = (G0 = ..., R0 = ...), iterations, ids, traits)
 ```
 
 - `Y` is `n × t` (records × traits); **missing trait records are supported**
@@ -44,6 +44,40 @@ fit_multivariate_reml(Y, X, Z, Ainv; initial = (G0, R0), iterations, ids, traits
   diagonal `G0[k,k]/(G0[k,k]+R0[k,k])`), `beta` (fixed effects),
   `breeding_values = (ids, traits, values)` (cross-trait EBVs), `loglik`,
   `converged`, `iterations`, `traits`.
+
+### Build notes from the merge-readiness review (2026-06-14)
+
+A 6-lens independent review (run `wf_113bd991-2b0`) of the engine returned
+**0 blockers** (full twin test suite passes locally; math verified live). The
+following concrete findings **must be folded into the R slice** when it is
+built:
+
+- **Missing-trait marshalling.** The engine's missing sentinel is `NaN` (or
+  Julia `missing`), not R `NA` per se. `JuliaCall::julia_assign` delivers an R
+  `NA_real_` in a numeric matrix as Julia `NaN`, which the engine masks
+  correctly — so the R bridge marshals `Y` as a plain numeric matrix and lets
+  `NA → NaN` happen by default. This is **not** already exercised by the `X`
+  path (`X` never carries `NA`); the slice must add a test that an `NA` cell
+  round-trips to a dropped trait record.
+- **`initial` is a named tuple.** The engine reads `initial.G0` / `initial.R0`,
+  so the bridge must emit Julia `(G0 = ..., R0 = ...)` (mirroring the univariate
+  `(sigma_a2 = ..., sigma_e2 = ...)`), not a bare 2-tuple.
+- **`loglik` is not always a valid REML logLik.** On a rank-deficient `X`
+  (redundant fixed effects — a common user mistake) the optimizer never finds a
+  finite REML objective, returns `converged = false`, and `loglik` falls back to
+  a non-REML value. The R bridge must **guard rank-deficient `X` up front** (R
+  `model.matrix` can produce it) and must **not** present `loglik` for LRT/AIC
+  when `converged` is false.
+- **Conditioning caveat (honesty fence).** The GLS/REML/BLUP path re-inverts the
+  supplied `Ainv` to a dense `A`; this is exact on well-conditioned pedigrees but
+  degrades on deep inbreeding (large `cond(A)`). The R validation row /
+  boundary must carry this as an experimental, dense, validation-scale caveat
+  (it is a twin-side `SHOULD-FIX`, recorded for the Julia lane).
+- **Promotion gate.** The committed twin tests do not yet include a known-truth
+  `t ≥ 2` genetic-correlation + per-trait-h2 recovery fixture (the cited
+  12-replicate sim is uncommitted), and the log-Cholesky map has no direct
+  roundtrip unit test. The R multivariate validation row must therefore stay
+  honestly `partial` (no recovery claim) until the twin adds those tests.
 
 ## Proposed R surfacing (`PROPOSAL`, awaiting maintainer + twin-on-main)
 
