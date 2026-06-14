@@ -41,6 +41,10 @@ teal/saturated navbar, while keeping the package capability wording unchanged.
   passed, "No problems found."
 - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64 /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e "devtools::check(document = FALSE, args = '--no-manual')"` -
   passed, 0 errors / 0 warnings / 0 notes.
+- Remote follow-up after commit `68101a3`: R-CMD-check `27511733994`,
+  pkgdown `27511734000`, and Pages `27511780257` all passed.
+- Live CSS check after deployment confirmed the public site serves the light sky
+  gradient and navy text.
 
 ## Public Claim Audit
 
@@ -66,13 +70,10 @@ installed. The visual smoke used system Google Chrome instead.
 
 ## Known Limitations
 
-- Remote GitHub Actions could not be checked from this shell because `gh` was
-  not on PATH.
-- The live site will not show this lighter palette until the change is pushed
-  and the pkgdown/Pages workflow deploys.
+- GitHub Pages emitted the known non-failing Node.js 20 deprecation annotation.
+- This changes only the pkgdown navbar/theme palette; it does not introduce a
+  broader brand system.
 
 ## Next Actions
 
-- Commit and push.
-- Verify R-CMD-check, pkgdown, and Pages after deployment from an environment
-  with `gh`, or by checking the GitHub web UI.
+- Continue the R-safe runway.
