@@ -4,6 +4,8 @@
 
 - [Getting started with
   hsquared](https://itchyshin.github.io/hsquared/articles/hsquared.md):
+- [Fitting quantitative-genetic
+  models](https://itchyshin.github.io/hsquared/articles/fitting-models.md):
 - [Mission
   control](https://itchyshin.github.io/hsquared/articles/mission-control.md):
 - [Model
