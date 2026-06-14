@@ -543,18 +543,28 @@ hs_is_common_env_call <- function(expr) {
   hs_is_call(expr, "common_env")
 }
 
+hs_is_maternal_genetic_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "maternal_genetic")
+}
+
 # The planned QG markers the parser now consumes as the (single) second random
-# effect of an opt-in two-effect model: `permanent()` (repeatability) and
-# `common_env()` (common-environment).
+# effect of an opt-in two-effect model: `permanent()` (repeatability),
+# `common_env()` (IID common-environment), and `maternal_genetic()` (a
+# pedigree-related maternal genetic effect).
 hs_is_second_effect_call <- function(expr) {
-  hs_is_permanent_call(expr) || hs_is_common_env_call(expr)
+  hs_is_permanent_call(expr) ||
+    hs_is_common_env_call(expr) ||
+    hs_is_maternal_genetic_call(expr)
 }
 
 hs_parse_second_effect_call <- function(call, data, animal_spec) {
   if (hs_is_permanent_call(call)) {
     hs_parse_permanent_call(call, data, animal_spec)
-  } else {
+  } else if (hs_is_common_env_call(call)) {
     hs_parse_common_env_call(call, data)
+  } else {
+    hs_parse_maternal_genetic_call(call, data, animal_spec)
   }
 }
 
@@ -631,6 +641,98 @@ hs_parse_common_env_call <- function(call, data) {
     values = as.character(data[[group]]),
     levels = unique(as.character(data[[group]])),
     relationship = "identity",
+    covariance = "scalar"
+  )
+}
+
+# Parse `maternal_genetic(1 | dam)` as the maternal genetic effect of the opt-in
+# two-effect model: a random intercept expressed through the dam, carrying the
+# SAME pedigree relationship as the direct animal effect (A2 = pedigree A). The
+# grouping column holds dam ids, which must be animals in the `animal()`
+# pedigree; the maternal effect is predicted for every pedigree animal.
+hs_parse_maternal_genetic_call <- function(call, data, animal_spec) {
+  call <- hs_unwrap_parentheses(call)
+  args <- as.list(call)[-1L]
+  arg_names <- names(args)
+  if (is.null(arg_names)) {
+    arg_names <- rep("", length(args))
+  }
+
+  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if (length(bar_candidates) != 1L) {
+    stop(
+      "`maternal_genetic()` must have one random-effect expression, for ",
+      "example `maternal_genetic(1 | dam)`.",
+      call. = FALSE
+    )
+  }
+
+  bar <- hs_unwrap_parentheses(args[[bar_candidates]])
+  if (!hs_is_call(bar, "|") || length(bar) != 3L) {
+    stop(
+      "The `maternal_genetic()` argument must be a random-effect expression ",
+      "such as `1 | dam`.",
+      call. = FALSE
+    )
+  }
+
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  if (!hs_is_one(lhs)) {
+    stop(
+      "Only random-intercept syntax `maternal_genetic(1 | dam)` is implemented. ",
+      "Maternal slopes are planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.symbol(group_expr)) {
+    stop(
+      "The grouping variable in `maternal_genetic()` must be a bare column name.",
+      call. = FALSE
+    )
+  }
+
+  named_args <- args[arg_names != ""]
+  if (length(named_args) > 0L) {
+    stop(
+      "`maternal_genetic()` takes no extra arguments in the v0.1 two-effect ",
+      "model (the dam relationships come from the animal() pedigree).",
+      call. = FALSE
+    )
+  }
+
+  group <- as.character(group_expr)
+  if (!group %in% names(data)) {
+    stop(
+      "`maternal_genetic()` grouping variable `",
+      group,
+      "` was not found in `data`.",
+      call. = FALSE
+    )
+  }
+
+  dam_values <- as.character(data[[group]])
+  ped_ids <- animal_spec$pedigree$ids
+  unknown <- setdiff(unique(dam_values), ped_ids)
+  if (length(unknown) > 0L) {
+    shown <- unknown[seq_len(min(5L, length(unknown)))]
+    stop(
+      "`maternal_genetic()` dams must be animals in the `animal()` pedigree. ",
+      "Dam(s) not in the pedigree: ",
+      paste(sprintf("`%s`", shown), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  list(
+    type = "maternal_genetic",
+    term = hs_deparse(call),
+    design = "intercept",
+    group = group,
+    values = dam_values,
+    levels = ped_ids,
+    relationship = "pedigree",
     covariance = "scalar"
   )
 }

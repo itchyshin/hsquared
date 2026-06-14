@@ -93,16 +93,16 @@ test_that("only one second random effect is supported", {
 
 test_that("other planned QG markers are still rejected", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
-  dat <- data.frame(y = c(1, 2), id = c("a", "b"), dam = c("d1", "d2"))
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"))
 
   expect_error(
     hsquared:::hs_build_model_spec(
-      y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
+      y ~ animal(1 | id, pedigree = ped) + dominance(1 | id),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "`maternal_genetic()` is planned, not implemented.",
+    "`dominance()` is planned, not implemented.",
     fixed = TRUE
   )
 })

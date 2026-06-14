@@ -43,7 +43,7 @@ hs_validation_status_capabilities <- function() {
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
     "experimental repeatability estimator (opt-in)",
-    "experimental common-environment estimator (opt-in)",
+    "experimental two-effect estimator (opt-in: common-env, maternal)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
@@ -122,13 +122,14 @@ hs_validation_status_evidence <- function() {
       "permanent-environment effect shares the animal incidence (A2 = I)."
     ),
     paste(
-      "Pure-R control/validator tests plus a skip-guarded live test running",
-      "Julia fit_two_effect_reml() through the opt-in target = \"two_effect\"",
-      "bridge on `animal(1 | id) + common_env(1 | group)`; checks three positive",
-      "estimated variance components (animal, common_env, residual), heritability",
-      "in [0, 1), the common-environment effects, and finite REML logLik; fit",
-      "provenance tagged variance_components_source = \"estimated_two_effect_reml\".",
-      "The common-environment effect is IID (A2 = I) on a separate Z2."
+      "Pure-R control/validator tests plus skip-guarded live tests running Julia",
+      "fit_two_effect_reml() through the opt-in target = \"two_effect\" bridge on",
+      "`animal(1 | id) + common_env(1 | group)` (IID environment, A2 = I) and on",
+      "`animal(1 | id) + maternal_genetic(1 | dam)` (maternal genetic effect, A2 =",
+      "pedigree A); each checks three positive estimated variance components",
+      "(animal, second effect, residual), heritability in [0, 1), the second-effect",
+      "predictions, and finite REML logLik; fit provenance tagged",
+      "variance_components_source = \"estimated_two_effect_reml\"."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -210,8 +211,10 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned REML-only two-effect optimizer",
       "that R surfaces; mirrors the twin V3-TWOEFFECT-REML gate (partial). Not",
       "the default, not ML, not production fitting, and not a comparator-validated",
-      "or known-truth-recovery claim. Two independent random effects (additive +",
-      "IID common environment); correlated direct-maternal (2x2 G) is planned."
+      "or known-truth-recovery claim. Two INDEPENDENT random effects (additive +",
+      "either an IID common-environment effect via common_env() or a pedigree",
+      "maternal genetic effect via maternal_genetic()); the correlated",
+      "direct-maternal (2x2 G) model is planned."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",

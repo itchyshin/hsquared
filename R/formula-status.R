@@ -28,7 +28,7 @@ print.hs_formula_status <- function(x, ...) {
   cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
   cat(
-    "permanent()/common_env() fit opt-in (two-effect); other terms parse-only\n"
+    "permanent()/common_env()/maternal_genetic() fit opt-in; others parse-only\n"
   )
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
@@ -87,8 +87,8 @@ hs_formula_status_phases <- function() {
 
 hs_formula_status_syntax <- function() {
   c(
-    rep("parsed", 4L),
-    rep("reserved", 15L),
+    rep("parsed", 5L),
+    rep("reserved", 14L),
     rep("planned", 2L)
   )
 }
@@ -98,7 +98,8 @@ hs_formula_status_fitting <- function() {
     rep("fitted (v0.1 default)", 2L),
     "fitted (opt-in repeatability)",
     "fitted (opt-in common-environment)",
-    rep("not available", 17L)
+    "fitted (opt-in maternal)",
+    rep("not available", 16L)
   )
 }
 
@@ -121,12 +122,17 @@ hs_formula_status_behavior <- function() {
       "Common-environment effect of the opt-in, experimental two-effect model;",
       "requires an animal() term and engine = \"julia\", target = \"two_effect\"."
     ),
+    paste(
+      "Maternal genetic effect of the opt-in, experimental two-effect model (A2 =",
+      "pedigree A via the dam); requires an animal() term and engine = \"julia\",",
+      "target = \"two_effect\"."
+    ),
     rep(
       paste(
         "Exported as an inert marker; hsquared() errors as planned, not",
         "implemented."
       ),
-      15L
+      14L
     ),
     rep(
       paste(

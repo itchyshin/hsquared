@@ -138,6 +138,35 @@ common_env_effects.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "common_env_effects", "common-environment effects")
 }
 
+#' Extract maternal genetic effects
+#'
+#' `maternal_effects()` returns the predicted maternal genetic effects of the
+#' opt-in, experimental maternal two-effect model
+#' (`target = "two_effect"` with a `maternal_genetic()` term).
+#'
+#' @inheritParams variance_components
+#'
+#' @return Maternal genetic effect results for maternal `hsquared_fit` objects.
+#' @export
+maternal_effects <- function(object, ...) {
+  UseMethod("maternal_effects")
+}
+
+#' @export
+maternal_effects.default <- function(object, ...) {
+  stop(
+    "`maternal_effects()` requires an `hsquared_fit` object from the opt-in ",
+    "maternal two-effect model (`target = \"two_effect\"` with a ",
+    "`maternal_genetic()` term).",
+    call. = FALSE
+  )
+}
+
+#' @export
+maternal_effects.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "maternal_effects", "maternal genetic effects")
+}
+
 #' Extract breeding values
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It

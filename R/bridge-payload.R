@@ -21,26 +21,31 @@ hs_build_bridge_payload <- function(spec) {
     dimnames = list(NULL, ids)
   )
 
-  # Second design matrix `Z2` for the opt-in common-environment effect: an IID
-  # incidence of records on the environmental grouping levels (relationship I).
+  # Second design matrix `Z2` for the opt-in two-effect model: a record incidence
+  # on the second effect's levels. `common_env` levels are the environmental
+  # groups with an identity relationship; `maternal_genetic` levels are the
+  # pedigree animals (dams expressed through `Z2`) with the pedigree relationship.
   Z2 <- NULL
   effect2 <- NULL
-  common_env <- spec$random$common_env
-  if (!is.null(common_env)) {
-    env_levels <- common_env$levels
-    env_index <- match(common_env$values, env_levels)
+  second <- spec$random$common_env
+  if (is.null(second)) {
+    second <- spec$random$maternal_genetic
+  }
+  if (!is.null(second)) {
+    levels2 <- second$levels
+    index2 <- match(second$values, levels2)
     Z2 <- Matrix::sparseMatrix(
-      i = seq_along(env_index),
-      j = env_index,
+      i = seq_along(index2),
+      j = index2,
       x = 1,
-      dims = c(length(env_index), length(env_levels)),
-      dimnames = list(NULL, env_levels)
+      dims = c(length(index2), length(levels2)),
+      dimnames = list(NULL, levels2)
     )
     effect2 <- list(
-      type = "common_env",
-      group = common_env$group,
-      levels = env_levels,
-      relationship = "identity"
+      type = second$type,
+      group = second$group,
+      levels = levels2,
+      relationship = second$relationship
     )
   }
 

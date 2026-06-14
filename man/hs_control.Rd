@@ -54,11 +54,12 @@ surfaces the Julia-owned \code{HSquared.fit_repeatability_reml()} REML-only
 optimizer (three-component \code{initial} with \code{sigma_a2}/\code{sigma_pe2}/\code{sigma_e2}).
 It is REML only, not the default, and the additive and permanent-environment
 variances are identifiable only with repeated records per individual.
-\code{target = "two_effect"} is an experimental, opt-in path for the
-common-environment model. It requires
-\code{animal(1 | id, pedigree = ped) + common_env(1 | group)} and surfaces the
-Julia-owned \code{HSquared.fit_two_effect_reml()} REML-only optimizer (additive
-genetic effect plus an IID common-environment effect; three-component
+\code{target = "two_effect"} is an experimental, opt-in path for two-effect
+models. It requires \code{animal(1 | id, pedigree = ped)} plus a second random
+effect — \code{common_env(1 | group)} (an IID common-environment effect) or
+\code{maternal_genetic(1 | dam)} (a maternal genetic effect carrying the pedigree
+relationship) — and surfaces the Julia-owned
+\code{HSquared.fit_two_effect_reml()} REML-only optimizer (three-component
 \code{initial} with \code{sigma_a2}/\code{sigma_c2}/\code{sigma_e2}). It is REML only and not
 the default.}
 }

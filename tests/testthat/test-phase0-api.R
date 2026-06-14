@@ -126,7 +126,8 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_equal(
     status$status[
-      status$capability == "experimental common-environment estimator (opt-in)"
+      status$capability ==
+        "experimental two-effect estimator (opt-in: common-env, maternal)"
     ],
     "partial"
   )

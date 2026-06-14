@@ -456,21 +456,37 @@ hs_fit_julia_two_effect_payload <- function(
   hs_julia_setup(project)
   hs_julia_assign_payload(payload, initial)
   hs_julia_assign_sparse_csc("hsq_Z2", payload$Z2)
-  JuliaCall::julia_assign("hsq_env_levels", payload$effect2$levels)
   JuliaCall::julia_assign("hsq_initial_sigma_c2", unname(initial[["sigma_c2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
+
+  if (identical(payload$effect2$relationship, "pedigree")) {
+    # Maternal genetic effect: effect 2 shares the pedigree relationship; its
+    # columns are the pedigree animals (dams expressed through Z2).
+    ainv2_cmd <- "hsq_Ainv2 = hsq_Ainv;"
+    ids2_cmd <- "ids2 = hsq_ped.ids"
+  } else {
+    # IID effect (e.g. common environment): identity relationship over levels.
+    JuliaCall::julia_assign("hsq_env_levels", payload$effect2$levels)
+    ainv2_cmd <- paste(
+      "hsq_n2 = size(hsq_Z2, 2);",
+      "hsq_Ainv2 = sparse(collect(1:hsq_n2), collect(1:hsq_n2),",
+      "ones(Float64, hsq_n2), hsq_n2, hsq_n2);"
+    )
+    ids2_cmd <- "ids2 = hsq_env_levels"
+  }
+
   JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_n2 = size(hsq_Z2, 2);",
-    "hsq_Ainv2 = sparse(collect(1:hsq_n2), collect(1:hsq_n2),",
-    "ones(Float64, hsq_n2), hsq_n2, hsq_n2);",
+    ainv2_cmd,
     "hsq_fit = HSquared.fit_two_effect_reml(",
     "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
     "initial = (sigma1 = hsq_initial_sigma_a2,",
     "sigma2 = hsq_initial_sigma_c2,",
     "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations, ids1 = hsq_ped.ids, ids2 = hsq_env_levels);"
+    "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
+    ids2_cmd,
+    ");"
   ))
 
   raw <- JuliaCall::julia_eval(paste(
@@ -513,14 +529,15 @@ hs_normalize_two_effect_result <- function(raw, payload) {
     value = as.numeric(raw$animal_values),
     stringsAsFactors = FALSE
   )
-  env_eff <- data.frame(
+  type2 <- payload$effect2$type
+  second_eff <- data.frame(
     id = as.character(raw$env_ids),
     value = as.numeric(raw$env_values),
     stringsAsFactors = FALSE
   )
-  list(
+  result <- list(
     variance_components = data.frame(
-      component = c("animal", "common_env", "residual"),
+      component = c("animal", type2, "residual"),
       estimate = c(
         as.numeric(raw$sigma_a2),
         as.numeric(raw$sigma_c2),
@@ -532,19 +549,29 @@ hs_normalize_two_effect_result <- function(raw, payload) {
       term = "animal",
       estimate = as.numeric(raw$heritability)
     ),
-    common_env_proportion = data.frame(
-      term = "common_env",
-      estimate = as.numeric(raw$c2)
-    ),
     breeding_values = animal_bv,
-    common_env_effects = env_eff,
-    random_effects = list(animal = animal_bv, common_env = env_eff),
+    random_effects = list(animal = animal_bv),
     fixed_effects = fixed_effects,
     loglik = as.numeric(raw$loglik),
     nobs = length(payload$y),
     converged = isTRUE(raw$converged),
     diagnostics = list(variance_components = "estimated_two_effect_reml")
   )
+  result$random_effects[[type2]] <- second_eff
+  if (identical(type2, "common_env")) {
+    result$common_env_effects <- second_eff
+    result$common_env_proportion <- data.frame(
+      term = "common_env",
+      estimate = as.numeric(raw$c2)
+    )
+  } else {
+    result$maternal_effects <- second_eff
+    result$maternal_proportion <- data.frame(
+      term = "maternal_genetic",
+      estimate = as.numeric(raw$c2)
+    )
+  }
+  result
 }
 
 hs_validate_two_effect_initial <- function(initial) {
@@ -709,6 +736,7 @@ hs_second_effect_target <- function(type) {
     type,
     permanent = "repeatability",
     common_env = "two_effect",
+    maternal_genetic = "two_effect",
     stop("Unknown second random effect type: ", type, call. = FALSE)
   )
 }

@@ -230,10 +230,14 @@ hsquared <- function(
     }
 
     if (identical(target, "two_effect")) {
-      if (is.null(spec$random$common_env)) {
+      if (
+        is.null(spec$random$common_env) &&
+          is.null(spec$random$maternal_genetic)
+      ) {
         stop(
-          "`target = \"two_effect\"` requires a `common_env(1 | group)` term ",
-          "alongside `animal(1 | id, ...)` in the formula.",
+          "`target = \"two_effect\"` requires a `common_env(1 | group)` term, ",
+          "or a `maternal_genetic(1 | dam)` term, alongside ",
+          "`animal(1 | id, ...)` in the formula.",
           call. = FALSE
         )
       }

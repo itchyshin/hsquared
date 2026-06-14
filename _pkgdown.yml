@@ -51,6 +51,7 @@ reference:
       - repeatability
       - permanent_effects
       - common_env_effects
+      - maternal_effects
       - prediction_error_variance
       - reliability
       - fit_diagnostics
