@@ -4004,3 +4004,12 @@ Remote follow-up for committed slice `774284f`:
   - QTL, GWAS, eQTL, marker scanning, p-values, LOD scores, fine mapping,
     causal marker-variance claims, and production genomic prediction remain
     planned or blocked unless future engine evidence exists.
+- Remote follow-up for committed slice `27a7054`:
+  - `git push origin main` - pushed `93ff682..27a7054`.
+  - `/opt/homebrew/bin/gh run watch 27509522006 --exit-status` -
+    R-CMD-check passed in 1m54s.
+  - `/opt/homebrew/bin/gh run watch 27509522007 --exit-status` - pkgdown
+    passed in 1m55s and deployed the site.
+  - `/opt/homebrew/bin/gh run watch 27509571640 --exit-status` - Pages build
+    and deployment passed. GitHub emitted the known non-failing Node.js 20
+    deprecation annotation for Pages actions.

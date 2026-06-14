@@ -58,6 +58,8 @@ claims blocked.
 - `git diff --check` - passed before closeout.
 - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64 /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e "pkgdown::check_pkgdown()"` - passed, "No problems found."
 - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64 /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0 errors / 0 warnings / 0 notes.
+- Remote follow-up after commit `27a7054`: R-CMD-check `27509522006`,
+  pkgdown `27509522007`, and Pages `27509571640` all passed.
 
 ## Public Claim Audit
 
