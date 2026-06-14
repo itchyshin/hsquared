@@ -190,10 +190,10 @@
   covariance grammar remain planned.
 - [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now fences the reserved multivariate
-  `engine_control$genetic_structure` field: `"unstructured"` is accepted
-  for the current opt-in multivariate bridge, while `"diagonal"`,
-  `"lowrank"`, and `"factor_analytic"` error as planned rather than
-  being silently ignored.
+  `engine_control$genetic_structure` and `engine_control$rank` fields:
+  `"unstructured"` is accepted for the current opt-in multivariate
+  bridge, while `"diagonal"`, `"lowrank"`, `"factor_analytic"`, and
+  `rank` error as planned rather than being silently ignored.
 - Multivariate [`cbind()`](https://rdrr.io/r/base/cbind.html) responses
   now require unique, non-empty trait names before fitting, so G/R
   matrices, per-trait h², EBVs, comparator files, and future wide/long
