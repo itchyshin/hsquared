@@ -52,6 +52,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
   claims/capability/debt tables now carve out the opt-in experimental
   `permanent()`, `common_env()`, and `maternal_genetic()` paths instead of
   describing all such markers as planned-only.
+- Non-Gaussian family planned errors: `poisson()`, `binomial()`, and other
+  non-Gaussian families now error with the requested family name and point users
+  back to the live `family = gaussian()` v0.1 path.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway

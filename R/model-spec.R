@@ -346,8 +346,12 @@ hs_validate_model_inputs <- function(formula, data, family, REML) {
     !identical(family$family, "gaussian") || !identical(family$link, "identity")
   ) {
     stop(
-      "The v0.1 parser supports only `family = gaussian()` with identity ",
-      "link. Other families are planned, not implemented.",
+      "The requested family `",
+      hs_family_label(family),
+      "` is planned, not implemented. Current fitted paths require ",
+      "`family = gaussian()` with identity link; use the v0.1 Gaussian animal ",
+      "model path or `model_spec()` with `family = gaussian()` to inspect the ",
+      "contract without fitting.",
       call. = FALSE
     )
   }
@@ -356,6 +360,18 @@ hs_validate_model_inputs <- function(formula, data, family, REML) {
   }
 
   invisible(TRUE)
+}
+
+hs_family_label <- function(family) {
+  family_name <- family$family
+  link_name <- family$link
+  if (is.null(family_name) || !nzchar(family_name)) {
+    family_name <- "<unknown>"
+  }
+  if (is.null(link_name) || !nzchar(link_name)) {
+    link_name <- "<unknown>"
+  }
+  paste0(family_name, "(", link_name, ")")
 }
 
 hs_parse_animal_call <- function(call, data, env, model_data) {

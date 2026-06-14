@@ -98,6 +98,36 @@ test_that("formula parser rejects unsupported animal syntax", {
   )
 })
 
+test_that("family errors name the planned non-Gaussian path", {
+  ped <- data.frame(
+    id = c("a", "b"),
+    sire = c(NA, NA),
+    dam = c(NA, NA)
+  )
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"), sex = c("f", "m"))
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::poisson(),
+      REML = TRUE
+    ),
+    "poisson\\(log\\).*planned, not implemented.*family = gaussian\\(\\)",
+    perl = TRUE
+  )
+
+  expect_error(
+    model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::binomial()
+    ),
+    "binomial\\(logit\\).*Current fitted paths require",
+    perl = TRUE
+  )
+})
+
 test_that("formula parser rejects bare (... | group) random effects", {
   ped <- data.frame(
     id = c("a", "b", "c"),

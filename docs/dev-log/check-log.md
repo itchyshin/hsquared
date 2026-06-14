@@ -2840,6 +2840,36 @@ with private memory.
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
 
+## 2026-06-14 Non-Gaussian family planned errors
+
+- Updated the family validation error in `R/model-spec.R` so non-Gaussian
+  families name the requested family/link and point users to the live
+  `family = gaussian()` v0.1 path or `model_spec()` preview path.
+- Added focused tests for `poisson(log)` and `binomial(logit)` planned errors.
+- Formatting: `command -v air` returned no `air` binary on PATH.
+- Focused tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'formula-animal')"` — passed, 0 failures /
+  0 warnings / 0 skips / 43 passes.
+- `git diff --check` — passed.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  614 passes.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
+- Remote checks for `3d3935f` (all green):
+  - GitHub Actions R-CMD-check `27501775236`: passed.
+  - GitHub Actions pkgdown `27501775239`: passed.
+  - GitHub Pages build/deployment `27501820927`: passed.
+
 ## 2026-06-14 Standard QG marker claim audit
 
 - Rose audit command:
