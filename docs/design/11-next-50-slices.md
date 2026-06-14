@@ -104,6 +104,12 @@ check-log evidence, an after-task report, and an updated claim boundary.
   how current `cbind(...)`, future `traits(...)`, future long data, Julia
   payloads, extractors, and comparator scripts should preserve user-declared
   trait order.
+- Structured covariance R-control contract: `docs/design/
+  18-structured-covariance-r-control.md` records the planned expert
+  `engine_control$genetic_structure` bridge for `diagonal`, `lowrank`, and
+  `factor_analytic` genetic covariance, while keeping `cov = diag()` /
+  `lowrank()` / `fa()` formula grammar planned until the Julia branch reaches
+  main and R bridge tests exist.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -128,7 +134,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 13 | R | Add examples for `genetic_covariance()` / `genetic_correlation()` in extractor docs. | R examples stay non-running or skip-safe. |
 | 14 | coordinator | Open/update GitHub issues linking V4 partial gates to R issue ledger. | done: R follow-up comments posted to #6/#7/#5; #7 labelled `status:partial`. |
 | 15 | Julia | Surface structured multivariate `genetic_structure = :diagonal` through stable engine tests. | Twin gate stays partial until recovery. |
-| 16 | R | Design R control syntax for diagonal multivariate G, without default exposure. | Formula/API signoff. |
+| 16 | R | Design R control syntax for diagonal multivariate G, without default exposure. | done: `docs/design/18-structured-covariance-r-control.md`; control contract only, no live bridge or formula grammar |
 | 17 | Julia | Stabilize low-rank multivariate REML tests and diagnostics. | PSD and logLik checks green. |
 | 18 | R | Design `cov = lowrank(K)` grammar against the Julia structure. | Roadmap-only until engine gate. |
 | 19 | Julia | Stabilize factor-analytic `G = Lambda Lambda' + Psi` engine output names. | Loadings/uniqueness extraction tests green. |
@@ -191,7 +197,7 @@ coordinate without guessing.
 | 18 | Ask R lane to consume same fixture | done: R consumed the local twin fixture copy in ordinary CI-safe tests |
 | 19 | Define multivariate R grammar | partial: simple `cbind()` live; structured grammar planned |
 | 20 | Define long/wide trait ordering | done: `docs/design/17-trait-ordering-contract.md`; current live invariant is `cbind()` left-to-right, future `traits(...)` and long-data rules remain planned |
-| 21 | Define covariance vocabulary: us, diag, fa, low-rank | planned |
+| 21 | Define covariance vocabulary: us, diag, fa, low-rank | partial: R-side control contract and future formula vocabulary recorded; no live R grammar |
 | 22 | Define multivariate result payload shape | partial: unstructured G/R live |
 | 23 | Draft Julia result payload shape without bridge change | pending |
 | 24 | Get R issue contract ack | pending |

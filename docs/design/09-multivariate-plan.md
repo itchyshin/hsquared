@@ -16,7 +16,10 @@ This is Phase 3 of [`ROADMAP.md`](../../ROADMAP.md) (multivariate Gaussian
 animal models). The first R slice deliberately stays narrow: ordinary
 `cbind()` multi-trait responses with one additive `animal()` term. Long-format
 `animal(trait | id, cov = ...)`, factor-analytic covariance structures, external
-comparators, and recovery promotion remain future gates.
+comparators, and recovery promotion remain future gates. The planned interim R
+control surface for structured genetic covariance is recorded in
+`docs/design/18-structured-covariance-r-control.md`; it is a contract only until
+the Julia structured-covariance branch lands on main and R bridge tests exist.
 
 ## Engine contract
 

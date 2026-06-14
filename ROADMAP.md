@@ -115,7 +115,12 @@ twin adds committed recovery/comparator evidence. See
 
 ## Phase 4: Factor-Analytic G Matrices
 
-Status: planned.
+Status: planned. The R-side expert-control contract for the first structured
+multivariate bridge is recorded in
+[`docs/design/18-structured-covariance-r-control.md`](docs/design/18-structured-covariance-r-control.md).
+It keeps the current `cbind(...)` response grammar and reserves
+`engine_control$genetic_structure` for a future opt-in bridge after the Julia
+structured-covariance branch reaches `main` and R bridge tests exist.
 
 - `cov = diag()`.
 - `cov = lowrank(K)`.

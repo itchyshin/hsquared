@@ -41,6 +41,10 @@ MME, recovery, comparator, and memory gates pass.
 The factor-analytic G-matrix interpretation and rotation plan is recorded in
 `docs/design/14-factor-analytic-production-plan.md`.
 
+The planned first R bridge surface for structured genetic covariance is
+recorded in `docs/design/18-structured-covariance-r-control.md`. It is an
+expert-control contract, not live formula grammar or a capability claim.
+
 ## Phase 5
 
 Add genomic and single-step models: GBLUP, SNP-BLUP, HBLUP, APY, Ginv, Hinv,

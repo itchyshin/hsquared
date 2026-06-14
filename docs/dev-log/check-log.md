@@ -3653,3 +3653,36 @@ with private memory.
   - GitHub Actions R-CMD-check `27506205627`: passed.
   - GitHub Actions pkgdown `27506205628`: passed.
   - GitHub Pages build/deployment `27506257631`: passed.
+
+## 2026-06-14 Structured covariance R-control contract
+
+- Added `docs/design/18-structured-covariance-r-control.md`, defining the
+  planned expert `engine_control$genetic_structure` bridge for future
+  `diagonal`, `lowrank`, and `factor_analytic` multivariate genetic covariance
+  without exposing live R formula grammar.
+- Added `docs/dev-log/scout/2026-06-14-structured-covariance-r-control-scout.md`
+  after checking local `hsquared`, `gllvmTMB`, `GLLVM.jl`, and `HSquared.jl`
+  feature-branch patterns plus external sommer, ASReml-R, and gllvm
+  documentation.
+- Updated `ROADMAP.md`, `docs/design/05-roadmap.md`,
+  `docs/design/09-multivariate-plan.md`,
+  `docs/design/11-next-50-slices.md`, and
+  `docs/design/14-factor-analytic-production-plan.md`.
+- `git diff --check` - passed.
+- Rose claim grep:
+  `rg -n 'supports `cov|fits factor-analytic|diagonal multivariate model implemented|ASReml-style structured covariance|factor-analytic G matrices are implemented|structured covariance support' ...`
+  - matched only the scout note's high-risk wording list and the after-task
+    report line describing that grep.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `73f5738` (all green):
+  - GitHub Actions R-CMD-check `27506408866`: passed.
+  - GitHub Actions pkgdown `27506408863`: passed.
+  - GitHub Pages build/deployment `27506468140`: passed.

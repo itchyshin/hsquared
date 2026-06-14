@@ -73,6 +73,13 @@ animal(trait | id, pedigree = ped, cov = lowrank(K = 2))
 animal(trait | id, pedigree = ped, cov = fa(K = 2))
 ```
 
+The first R-side bridge should not start with this long-format grammar. The
+interim expert-control contract is recorded in
+`docs/design/18-structured-covariance-r-control.md`: keep the current
+`cbind(...)` response grammar and, only after the Julia structured-covariance
+surface is on `main`, pass `engine_control$genetic_structure` to the
+multivariate target.
+
 Definitions:
 
 ```text
@@ -270,4 +277,3 @@ Before any R-facing `fa(K)` claim:
    stronger than partial.
 4. R: reserve extractor names only if they error with rotation-aware planned
    wording.
-
