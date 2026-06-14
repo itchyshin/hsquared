@@ -112,8 +112,8 @@ check-log evidence, an after-task report, and an updated claim boundary.
   main and R bridge tests exist.
 - Structured covariance control guardrail: the R bridge now accepts only
   `genetic_structure = "unstructured"` for the current opt-in multivariate
-  target and errors for `diagonal`, `lowrank`, and `factor_analytic` rather
-  than silently ignoring planned controls.
+  target and errors for `diagonal`, `lowrank`, `factor_analytic`, and the
+  future `rank` control rather than silently ignoring planned controls.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway

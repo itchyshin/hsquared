@@ -75,7 +75,8 @@
 #'   reserved `genetic_structure` control accepts only `"unstructured"` on the
 #'   current R bridge; `"diagonal"`, `"lowrank"`, and `"factor_analytic"` remain
 #'   planned until the structured-covariance Julia engine surface lands on main
-#'   and R bridge tests are committed.
+#'   and R bridge tests are committed. The future `rank` control is also
+#'   reserved and currently errors instead of being ignored.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

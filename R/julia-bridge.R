@@ -1282,6 +1282,29 @@ hs_validate_genetic_structure_control <- function(control, target) {
       call. = FALSE
     )
   }
+  rank <- hs_engine_control_value(control, "rank", NULL)
+  if (!is.null(rank)) {
+    if (
+      !is.numeric(rank) ||
+        length(rank) != 1L ||
+        is.na(rank) ||
+        !is.finite(rank) ||
+        rank < 1L ||
+        rank != as.integer(rank)
+    ) {
+      stop(
+        "`engine_control$rank` must be a single positive integer.",
+        call. = FALSE
+      )
+    }
+    stop(
+      "`engine_control$rank` is reserved for future `lowrank` and ",
+      "`factor_analytic` structured covariance controls. The current ",
+      "multivariate bridge estimates unstructured G0/R0 only; remove `rank` ",
+      "until structured covariance support is available.",
+      call. = FALSE
+    )
+  }
   value
 }
 

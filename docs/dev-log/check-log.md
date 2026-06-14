@@ -3732,3 +3732,50 @@ Remote follow-up for committed slice `27bf20f`:
   /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
   "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
   errors / 0 warnings / 0 notes.
+
+Remote follow-up for committed slice `774284f`:
+
+- `/opt/homebrew/bin/gh run list --limit 5` showed all current pushed checks
+  green:
+  - GitHub Actions R-CMD-check `27507096865`: passed.
+  - GitHub Actions pkgdown `27507096881`: passed.
+  - GitHub Pages build/deployment `27507152621`: passed.
+
+## 2026-06-14 Structured covariance rank guardrail
+
+- Extended the structured covariance guard so the future `engine_control$rank`
+  field errors on the current unstructured multivariate bridge instead of being
+  silently ignored. This keeps future `lowrank` and `factor_analytic` controls
+  fenced until the engine support and R bridge tests exist.
+- Updated `R/hs_control.R`/`man/hs_control.Rd`, `NEWS.md`,
+  `docs/design/18-structured-covariance-r-control.md`, and
+  `docs/design/11-next-50-slices.md`.
+- Formatting:
+  `command -v air` - no `air` binary on PATH.
+- `git diff --check` - passed.
+- Focused tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test(filter = 'multivariate')"` - passed, 0 failures / 0 warnings /
+  3 skips / 59 passes.
+- Documentation:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::document()"` - passed; intended `hs_control.Rd` update kept and
+  incidental package-level roxygen churn reverted.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test()"` - passed, 0 failures / 0 warnings / 32 skips / 617
+  passes.
+- Rose claim grep:
+  `rg -n 'rank.*implemented|supports rank|lowrank.*implemented|factor_analytic.*implemented|structured covariance.*implemented|rank.*silently ignored' ...`
+  - matched only the intended "error rather than silently ignored" NEWS line,
+    the planned/not-implemented R error text, and prior grep records.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+  errors / 0 warnings / 0 notes.

@@ -227,6 +227,37 @@ test_that("multivariate genetic_structure control is fenced", {
     "planned, not implemented",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "unstructured",
+          rank = 0
+        )
+      ),
+      "multivariate"
+    ),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared(
+      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "unstructured",
+          rank = 1L
+        )
+      )
+    ),
+    "reserved for future `lowrank` and `factor_analytic`",
+    fixed = TRUE
+  )
 })
 
 test_that("multivariate initial values are named covariance matrices", {

@@ -204,6 +204,11 @@ Structured multivariate genetic covariance controls
 planned, not implemented in the R bridge. The current opt-in multivariate path
 estimates unstructured G0/R0 only; omit `genetic_structure` or set it to
 "unstructured".
+
+`engine_control$rank` is reserved for future `lowrank` and `factor_analytic`
+structured covariance controls. The current multivariate bridge estimates
+unstructured G0/R0 only; remove `rank` until structured covariance support is
+available.
 ```
 
 For formula-level `cov = ...`, the error should continue pointing users to the

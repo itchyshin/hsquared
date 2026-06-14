@@ -88,7 +88,8 @@ known-truth recovery and external-comparator evidence are committed. The
 reserved \code{genetic_structure} control accepts only \code{"unstructured"} on the
 current R bridge; \code{"diagonal"}, \code{"lowrank"}, and \code{"factor_analytic"} remain
 planned until the structured-covariance Julia engine surface lands on main
-and R bridge tests are committed.}
+and R bridge tests are committed. The future \code{rank} control is also
+reserved and currently errors instead of being ignored.}
 }
 \value{
 An object of class \code{"hs_control"}.
