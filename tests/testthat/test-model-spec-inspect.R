@@ -59,8 +59,20 @@ test_that("model_spec uses the same honest planned-marker errors", {
   dat <- data.frame(y = c(1, 2), id = c("a", "b"))
 
   expect_error(
-    model_spec(y ~ genomic(1 | id, Ginv = Ginv), data = dat),
-    "`genomic()` is planned, not implemented.",
+    model_spec(y ~ single_step(1 | id, Hinv = Hinv), data = dat),
+    "`single_step()` is planned, not implemented.",
+    fixed = TRUE
+  )
+
+  # `genomic()` is parsed (opt-in primary effect) but `model_spec()` previews the
+  # pedigree animal grammar only; it errors with a clear pointer to the opt-in fit.
+  ids <- c("a", "b")
+  Ginv <- diag(2)
+  dimnames(Ginv) <- list(ids, ids)
+  gdat <- data.frame(y = c(1, 2), id = ids)
+  expect_error(
+    model_spec(y ~ genomic(1 | id, Ginv = Ginv), data = gdat),
+    "previews the pedigree animal-model grammar only",
     fixed = TRUE
   )
   expect_error(

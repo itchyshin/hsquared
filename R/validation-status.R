@@ -44,6 +44,7 @@ hs_validation_status_capabilities <- function() {
     "experimental sparse REML estimator (opt-in)",
     "experimental repeatability estimator (opt-in)",
     "experimental two-effect estimator (opt-in: common-env, maternal)",
+    "experimental genomic GREML estimator (opt-in)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
@@ -61,6 +62,7 @@ hs_validation_status_phases <- function() {
   c(
     rep("Phase 1", 6L),
     rep("Phase 2", 2L),
+    "Phase 5",
     rep("Phase 1", 6L),
     rep("Phase 5+", 2L),
     "Phase 6",
@@ -70,7 +72,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 8L),
+    rep("partial", 9L),
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -130,6 +132,16 @@ hs_validation_status_evidence <- function() {
       "(animal, second effect, residual), heritability in [0, 1), the second-effect",
       "predictions, and finite REML logLik; fit provenance tagged",
       "variance_components_source = \"estimated_two_effect_reml\"."
+    ),
+    paste(
+      "Pure-R control/validator tests plus a skip-guarded live test running",
+      "Julia fit_ai_reml() on a user-supplied genomic relationship inverse (Ginv)",
+      "through the opt-in target = \"genomic\" bridge on",
+      "`genomic(1 | id, Ginv = Ginv)`; checks two positive estimated variance",
+      "components (genomic, residual), genomic heritability in (0, 1), genomic",
+      "breeding values (GEBVs), and finite REML logLik; fit provenance tagged",
+      "variance_components_source = \"estimated_genomic_ai_reml\". The user supplies",
+      "Ginv; building it from markers is planned."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -215,6 +227,14 @@ hs_validation_status_boundaries <- function() {
       "either an IID common-environment effect via common_env() or a pedigree",
       "maternal genetic effect via maternal_genetic()); the correlated",
       "direct-maternal (2x2 G) model is planned."
+    ),
+    paste(
+      "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
+      "a Ginv spec) that R surfaces; mirrors the twin V2-GREML gate (partial).",
+      "The user supplies the genomic relationship inverse; building Ginv from",
+      "markers, single-step (Hinv), low-rank m>>n solves, and",
+      "AGHmatrix/sommer/BLUPF90 comparator parity are planned. Not the default,",
+      "not ML, not production or comparator-validated."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",

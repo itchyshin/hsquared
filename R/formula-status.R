@@ -28,7 +28,7 @@ print.hs_formula_status <- function(x, ...) {
   cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
   cat(
-    "permanent()/common_env()/maternal_genetic() fit opt-in; others parse-only\n"
+    "permanent/common_env/maternal_genetic/genomic fit opt-in; others parse-only\n"
   )
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
@@ -88,7 +88,9 @@ hs_formula_status_phases <- function() {
 hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 5L),
-    rep("reserved", 14L),
+    rep("reserved", 9L),
+    "parsed",
+    rep("reserved", 4L),
     rep("planned", 2L)
   )
 }
@@ -99,7 +101,9 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in repeatability)",
     "fitted (opt-in common-environment)",
     "fitted (opt-in maternal)",
-    rep("not available", 16L)
+    rep("not available", 9L),
+    "fitted (opt-in genomic)",
+    rep("not available", 6L)
   )
 }
 
@@ -132,7 +136,18 @@ hs_formula_status_behavior <- function() {
         "Exported as an inert marker; hsquared() errors as planned, not",
         "implemented."
       ),
-      14L
+      9L
+    ),
+    paste(
+      "Primary genomic effect of the opt-in, experimental GREML model; requires",
+      "a user-supplied `Ginv` and engine = \"julia\", target = \"genomic\"."
+    ),
+    rep(
+      paste(
+        "Exported as an inert marker; hsquared() errors as planned, not",
+        "implemented."
+      ),
+      4L
     ),
     rep(
       paste(

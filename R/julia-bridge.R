@@ -594,6 +594,82 @@ hs_validate_two_effect_initial <- function(initial) {
   initial[c("sigma_a2", "sigma_c2", "sigma_e2")]
 }
 
+# Opt-in, experimental genomic GREML estimator. Surfaces the Julia-owned
+# `HSquared.fit_ai_reml()` REML optimizer on an animal_model_spec built with the
+# user-supplied genomic relationship inverse `Ginv` (in place of a pedigree
+# Ainv). Reuses the standard result normalizer, relabelling the genetic
+# component as "genomic".
+hs_fit_julia_genomic_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = c(sigma_a2 = 1, sigma_e2 = 1),
+  iterations = 100L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (is.null(payload$Ginv)) {
+    stop(
+      "Internal bridge error: the genomic payload is missing its `Ginv`.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  initial <- hs_validate_initial_variances(initial)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_Ginv", payload$Ginv)
+  JuliaCall::julia_assign("hsq_ids", payload$ids)
+  JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
+  JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_Ginvs = sparse(hsq_Ginv);",
+    "hsq_spec = HSquared.animal_model_spec(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
+    "ids = hsq_ids, method = :REML);",
+    "hsq_fit = HSquared.fit_ai_reml(",
+    "hsq_spec;",
+    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+    "sigma_e2 = hsq_initial_sigma_e2),",
+    "iterations = hsq_iterations);",
+    "hsq_result = HSquared.result_payload(hsq_fit);"
+  ))
+
+  raw <- JuliaCall::julia_eval(
+    "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
+  )
+  result <- hs_normalize_julia_result(raw, payload)
+  result$variance_components$component[
+    result$variance_components$component == "animal"
+  ] <- "genomic"
+  result$heritability$term[result$heritability$term == "animal"] <- "genomic"
+  names(result$random_effects)[
+    names(result$random_effects) == "animal"
+  ] <- "genomic"
+  result$diagnostics$variance_components <- "estimated_genomic_ai_reml"
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "genomic"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
   if (
@@ -717,13 +793,14 @@ hs_validate_julia_target <- function(target) {
         "sparse_reml",
         "ai_reml",
         "repeatability",
-        "two_effect"
+        "two_effect",
+        "genomic"
       )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
-      "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", or ",
-      "\"two_effect\".",
+      "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
+      "\"two_effect\", or \"genomic\".",
       call. = FALSE
     )
   }
@@ -731,13 +808,16 @@ hs_validate_julia_target <- function(target) {
 }
 
 # Map a parsed second random effect to the opt-in engine target that fits it.
+# Map a parsed non-default random effect (a second effect, or the genomic
+# primary effect) to the opt-in engine target that fits it.
 hs_second_effect_target <- function(type) {
   switch(
     type,
     permanent = "repeatability",
     common_env = "two_effect",
     maternal_genetic = "two_effect",
-    stop("Unknown second random effect type: ", type, call. = FALSE)
+    genomic = "genomic",
+    stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }
 

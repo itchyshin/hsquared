@@ -66,16 +66,16 @@ hsquared <- function(
         call. = FALSE
       )
     }
-    second_effect <- setdiff(names(spec$random), "animal")
-    if (length(second_effect) > 0L) {
+    opt_in_effect <- setdiff(names(spec$random), "animal")
+    if (length(opt_in_effect) > 0L) {
       stop(
-        "The two-effect (`",
-        second_effect[[1L]],
-        "`) model is experimental and opt-in; the default `engine = \"fit\"` ",
+        "The `",
+        opt_in_effect[[1L]],
+        "` model is experimental and opt-in; the default `engine = \"fit\"` ",
         "path fits the single-effect Gaussian animal model only. Use ",
         "`control = hs_control(engine = \"julia\", engine_control = list(",
         "target = \"",
-        hs_second_effect_target(second_effect[[1L]]),
+        hs_second_effect_target(opt_in_effect[[1L]]),
         "\"))`.",
         call. = FALSE
       )
@@ -257,6 +257,34 @@ hsquared <- function(
           control,
           "iterations",
           200L
+        )
+      ))
+    }
+
+    if (identical(target, "genomic")) {
+      if (is.null(spec$random$genomic)) {
+        stop(
+          "`target = \"genomic\"` requires a `genomic(1 | id, Ginv = Ginv)` ",
+          "term in the formula.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_genomic_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          100L
         )
       ))
     }

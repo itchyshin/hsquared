@@ -61,7 +61,11 @@ effect — \code{common_env(1 | group)} (an IID common-environment effect) or
 relationship) — and surfaces the Julia-owned
 \code{HSquared.fit_two_effect_reml()} REML-only optimizer (three-component
 \code{initial} with \code{sigma_a2}/\code{sigma_c2}/\code{sigma_e2}). It is REML only and not
-the default.}
+the default.
+\code{target = "genomic"} is an experimental, opt-in path for the genomic GREML
+model. It requires \code{genomic(1 | id, Ginv = Ginv)} with a user-supplied
+genomic relationship inverse and surfaces \code{HSquared.fit_ai_reml()} on a
+\code{Ginv}-based spec. It is REML only and not the default.}
 }
 \value{
 An object of class \code{"hs_control"}.

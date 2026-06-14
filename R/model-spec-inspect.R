@@ -45,6 +45,15 @@ model_spec <- function(
     family = family,
     REML = REML
   )
+  if (!is.null(spec$random$genomic)) {
+    stop(
+      "`model_spec()` previews the pedigree animal-model grammar only. The ",
+      "genomic model is experimental and opt-in; fit it with ",
+      "`hsquared(..., control = hs_control(engine = \"julia\", ",
+      "engine_control = list(target = \"genomic\")))`.",
+      call. = FALSE
+    )
+  }
   payload <- hs_build_bridge_payload(spec)
   hs_new_model_spec(spec, payload)
 }

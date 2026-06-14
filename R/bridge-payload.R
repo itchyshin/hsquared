@@ -1,4 +1,8 @@
 hs_build_bridge_payload <- function(spec) {
+  if (!is.null(spec$random$genomic)) {
+    return(hs_build_genomic_bridge_payload(spec))
+  }
+
   animal <- spec$random$animal
   pedigree <- animal$pedigree
   observed_ids <- animal$values
@@ -88,6 +92,61 @@ hs_build_bridge_payload <- function(spec) {
           ")"
         ),
         julia_fit_target = "HSquared.fit_animal_model(spec)"
+      )
+    ),
+    class = c("hs_bridge_payload", "list")
+  )
+}
+
+# Genomic primary effect: build Z from the genotyped-record incidence and carry
+# the user-supplied genomic relationship inverse `Ginv` (no pedigree). The engine
+# fits a `Ginv`-based animal_model_spec by REML (GREML).
+hs_build_genomic_bridge_payload <- function(spec) {
+  genomic <- spec$random$genomic
+  observed_ids <- genomic$values
+  ids <- genomic$ids
+  id_index <- match(observed_ids, ids)
+
+  if (anyNA(id_index)) {
+    stop(
+      "Internal bridge error: observed genomic IDs are not aligned with the ",
+      "`Ginv` dimnames.",
+      call. = FALSE
+    )
+  }
+
+  Z <- Matrix::sparseMatrix(
+    i = seq_along(id_index),
+    j = id_index,
+    x = 1,
+    dims = c(length(id_index), length(ids)),
+    dimnames = list(NULL, ids)
+  )
+
+  structure(
+    list(
+      y = as.numeric(spec$response$values),
+      X = unname(as.matrix(spec$fixed$design)),
+      Z = Z,
+      Z2 = NULL,
+      effect2 = NULL,
+      Ainv = NULL,
+      Ginv = unname(as.matrix(genomic$ginv)),
+      relationship = "genomic",
+      method = spec$method,
+      family = spec$family$family,
+      ids = ids,
+      pedigree = NULL,
+      metadata = list(
+        response = spec$response$name,
+        fixed_colnames = colnames(spec$fixed$design),
+        animal_id_column = genomic$group,
+        observed_ids = observed_ids,
+        observed_id_index = id_index,
+        fixed_terms = spec$fixed$terms,
+        contrasts = spec$fixed$contrasts,
+        relationship = "genomic",
+        julia_fit_target = "HSquared.fit_ai_reml(animal_model_spec(y, X, Z, Ginv))"
       )
     ),
     class = c("hs_bridge_payload", "list")
