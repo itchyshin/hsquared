@@ -128,8 +128,10 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
   )
 
   source <- if (is.null(primary$source)) "supplied" else primary$source
+  marker_names <- NULL
   if (identical(source, "markers")) {
     ginv <- NULL
+    marker_names <- colnames(primary$markers)
     markers <- unname(as.matrix(primary$markers))
   } else {
     ginv <- unname(as.matrix(primary$ginv))
@@ -146,6 +148,7 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
       Ainv = NULL,
       Ginv = ginv,
       markers = markers,
+      marker_names = marker_names,
       relationship_source = source,
       ridge = 0.01,
       relationship = primary$relationship,

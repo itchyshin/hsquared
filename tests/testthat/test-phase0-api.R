@@ -117,7 +117,7 @@ test_that("validation_status separates evidence from planned validation", {
   status <- validation_status()
 
   expect_s3_class(status, "hs_validation_status")
-  expect_equal(nrow(status), 19L)
+  expect_equal(nrow(status), 20L)
   expect_equal(
     status$status[
       status$capability ==

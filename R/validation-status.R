@@ -45,6 +45,7 @@ hs_validation_status_capabilities <- function() {
     "experimental repeatability estimator (opt-in)",
     "experimental two-effect estimator (opt-in: common-env, maternal)",
     "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
+    "experimental SNP-BLUP marker-effect solve (opt-in, supplied-variance)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
@@ -62,7 +63,7 @@ hs_validation_status_phases <- function() {
   c(
     rep("Phase 1", 6L),
     rep("Phase 2", 2L),
-    "Phase 5",
+    rep("Phase 5", 2L),
     rep("Phase 1", 6L),
     rep("Phase 5+", 2L),
     "Phase 6",
@@ -72,7 +73,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 9L),
+    rep("partial", 10L),
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -147,6 +148,16 @@ hs_validation_status_evidence <- function() {
       "M)`): the engine builds G (genomic_relationship_matrix) and its regularized",
       "inverse, then fits. single_step still needs a supplied Hinv; building Hinv",
       "from a pedigree and genomic relationship is planned."
+    ),
+    paste(
+      "Pure-R control/validator tests plus a skip-guarded live test running Julia",
+      "fit_snp_blup() through the opt-in target = \"snp_blup\" bridge on",
+      "`genomic(1 | id, markers = M)` at supplied variances (sigma_g2, sigma_e2);",
+      "the engine centers the markers, solves the RR-BLUP/SNP-BLUP marker model,",
+      "and returns per-marker effects (marker_effects()), per-individual genomic",
+      "breeding values, and fixed effects; fit provenance tagged",
+      "variance_components_source = \"supplied\". Mirrors the twin V2-SNPBLUP gate",
+      "(partial), whose pinned property is the GBLUP<->SNP-BLUP GEBV equivalence."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -241,6 +252,15 @@ hs_validation_status_boundaries <- function() {
       "step needs a supplied Hinv (building it from a pedigree + G is planned).",
       "Low-rank m>>n solves and AGHmatrix/sommer/BLUPF90 comparator parity are",
       "planned. Not the default, not ML, not production or comparator-validated."
+    ),
+    paste(
+      "Experimental opt-in path only; Julia-owned supplied-variance marker model",
+      "(fit_snp_blup) that R surfaces; mirrors the twin V2-SNPBLUP gate (partial).",
+      "Supplied-variance VanRaden method-1 marker solve only: the user supplies",
+      "sigma_g2 and sigma_e2 (e.g. from a prior GREML fit); REML estimation of the",
+      "marker variance, weighted/Bayesian marker priors, low-rank m>>n Woodbury",
+      "solves, and JWAS/sommer/BLUPF90 comparator parity are planned. Not the",
+      "default, not a variance-component estimation claim, not comparator-validated."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",

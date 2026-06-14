@@ -116,27 +116,35 @@ hsquared <- function(
     # ML estimation is not implemented in v0.1. The estimation targets either
     # run the ML optimizer (`fit_animal_model`) or are REML-only
     # (`sparse_reml`/`ai_reml`, which would otherwise silently ignore the ML
-    # request). Reject `REML = FALSE` for all of them. `henderson_mme` solves at
-    # supplied variances, so its method label is cosmetic and is exempt.
-    if (!isTRUE(REML) && !identical(target, "henderson_mme")) {
+    # request). Reject `REML = FALSE` for all of them. `henderson_mme` and
+    # `snp_blup` solve at supplied variances, so their method label is cosmetic
+    # and they are exempt.
+    supplied_variance_targets <- c("henderson_mme", "snp_blup")
+    if (!isTRUE(REML) && !target %in% supplied_variance_targets) {
       stop(
         "ML estimation (`REML = FALSE`) is not implemented; the v0.1 fit path ",
         "estimates variance components by REML. Use `REML = TRUE`.",
         call. = FALSE
       )
     }
-    # A second random effect only fits through its two-effect target; the
-    # single-effect estimators would silently ignore it.
+    # A non-default random effect only fits through one of its opt-in targets;
+    # the single-effect estimators would silently ignore it.
     second_effect <- setdiff(names(spec$random), "animal")
     if (length(second_effect) > 0L) {
-      required <- hs_second_effect_target(second_effect[[1L]])
-      if (!identical(target, required)) {
+      allowed <- hs_effect_targets(second_effect[[1L]])
+      if (!target %in% allowed) {
         stop(
           "The formula has a `",
           second_effect[[1L]],
           "(...)` term, so it needs `target = \"",
-          required,
-          "\"`. The `",
+          allowed[[1L]],
+          "\"`",
+          if (length(allowed) > 1L) {
+            paste0(" (or \"", allowed[[2L]], "\")")
+          } else {
+            ""
+          },
+          ". The `",
           target,
           "` target fits the single additive-genetic effect only.",
           call. = FALSE
@@ -258,6 +266,33 @@ hsquared <- function(
           "iterations",
           200L
         )
+      ))
+    }
+
+    if (identical(target, "snp_blup")) {
+      genomic_effect <- spec$random$genomic
+      if (
+        is.null(genomic_effect) ||
+          !identical(genomic_effect$source, "markers")
+      ) {
+        stop(
+          "`target = \"snp_blup\"` requires a `genomic(1 | id, markers = M)` ",
+          "term (a raw marker matrix). SNP-BLUP estimates marker effects, so ",
+          "a precomputed `Ginv` cannot be used.",
+          call. = FALSE
+        )
+      }
+      vc <- hs_validate_snp_blup_variances(
+        hs_engine_control_value(control, "variance_components", NULL)
+      )
+      return(hs_fit_julia_snp_blup_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        variance_components = vc
       ))
     }
 

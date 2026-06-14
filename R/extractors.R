@@ -459,10 +459,12 @@ hs_diagnostic_value <- function(x) {
 
 #' Extract planned marker, QTL, GWAS, and eQTL results
 #'
-#' These extractor names are reserved for future genomic, QTL, GWAS, and eQTL
-#' fitted results. They return values only when an `hsquared_fit` object
-#' contains the corresponding result field. The current package does not fit
-#' marker-scan, QTL, GWAS, or eQTL models.
+#' These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
+#' They return values only when an `hsquared_fit` object contains the
+#' corresponding result field. `marker_effects()` is populated by the opt-in
+#' SNP-BLUP path (`target = "snp_blup"`); the remaining names are reserved for
+#' future results. The current package does not fit marker-scan, QTL, GWAS, or
+#' eQTL models.
 #'
 #' @inheritParams variance_components
 #'

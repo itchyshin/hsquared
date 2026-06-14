@@ -32,8 +32,10 @@ The requested marker or scan result for \code{hsquared_fit} objects that
 contain the corresponding field.
 }
 \description{
-These extractor names are reserved for future genomic, QTL, GWAS, and eQTL
-fitted results. They return values only when an \code{hsquared_fit} object
-contains the corresponding result field. The current package does not fit
-marker-scan, QTL, GWAS, or eQTL models.
+These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
+They return values only when an \code{hsquared_fit} object contains the
+corresponding result field. \code{marker_effects()} is populated by the opt-in
+SNP-BLUP path (\code{target = "snp_blup"}); the remaining names are reserved for
+future results. The current package does not fit marker-scan, QTL, GWAS, or
+eQTL models.
 }

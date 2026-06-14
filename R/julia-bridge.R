@@ -694,6 +694,136 @@ hs_fit_julia_genomic_payload <- function(
   )
 }
 
+hs_fit_julia_snp_blup_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  variance_components = NULL
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (
+    !identical(payload$relationship_source, "markers") ||
+      is.null(payload$markers)
+  ) {
+    stop(
+      "Internal bridge error: SNP-BLUP requires a marker-matrix genomic ",
+      "payload.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  variance_components <- hs_validate_snp_blup_variances(variance_components)
+  sigma_g2 <- unname(variance_components[["sigma_g2"]])
+  sigma_e2 <- unname(variance_components[["sigma_e2"]])
+
+  markers_ind <- payload$markers
+  # Per-record marker design: each record carries its individual's genotype.
+  # `Z` maps records to the `ids` order that the `markers` rows are in, so
+  # `Z %*% markers` aligns the marker rows with the response `y`.
+  markers_rec <- as.matrix(payload$Z %*% markers_ind)
+
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  JuliaCall::julia_assign("hsq_markers_rec", markers_rec)
+  JuliaCall::julia_assign("hsq_markers_ind", unname(markers_ind))
+  JuliaCall::julia_assign("hsq_sigma_g2", sigma_g2)
+  JuliaCall::julia_assign("hsq_sigma_e2", sigma_e2)
+  JuliaCall::julia_command(paste(
+    "hsq_snp = HSquared.fit_snp_blup(",
+    "hsq_y, hsq_X, hsq_markers_rec, hsq_sigma_g2, hsq_sigma_e2);",
+    # Per-individual GEBV at the same allele-frequency centering as the fit.
+    "hsq_Wind = HSquared.centered_markers(",
+    "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
+    "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
+    "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
+    "hsq_snp_raw = Dict(",
+    "\"marker_effects\" => hsq_snp.marker_effects,",
+    "\"gebv\" => hsq_gebv_ind,",
+    "\"beta\" => hsq_snp.beta,",
+    "\"fitted\" => hsq_fitted,",
+    "\"k\" => hsq_snp.k,",
+    "\"nobs\" => length(hsq_y)",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_snp_raw")
+  result <- hs_normalize_julia_snp_blup_result(
+    raw,
+    payload,
+    variance_components
+  )
+  hs_new_fit(
+    spec = list(
+      method = payload$method,
+      family = list(family = payload$family, link = "identity"),
+      target = "snp_blup"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_julia_snp_blup_result <- function(
+  raw,
+  payload,
+  variance_components
+) {
+  sigma_g2 <- unname(variance_components[["sigma_g2"]])
+  sigma_e2 <- unname(variance_components[["sigma_e2"]])
+
+  fixed_effects <- as.numeric(raw$beta)
+  fixed_names <- payload$metadata$fixed_colnames
+  if (length(fixed_effects) == length(fixed_names)) {
+    names(fixed_effects) <- fixed_names
+  }
+
+  ids <- as.character(payload$ids)
+  genomic_bv <- data.frame(id = ids, value = as.numeric(raw$gebv))
+
+  effects <- as.numeric(raw$marker_effects)
+  marker_labels <- payload$marker_names
+  if (is.null(marker_labels) || length(marker_labels) != length(effects)) {
+    marker_labels <- as.character(seq_along(effects))
+  }
+
+  list(
+    variance_components = data.frame(
+      component = c("genomic", "residual"),
+      estimate = c(sigma_g2, sigma_e2)
+    ),
+    heritability = data.frame(
+      term = "genomic",
+      estimate = sigma_g2 / (sigma_g2 + sigma_e2)
+    ),
+    breeding_values = genomic_bv,
+    fixed_effects = fixed_effects,
+    marker_effects = data.frame(
+      marker = as.character(marker_labels),
+      effect = effects
+    ),
+    random_effects = list(genomic = genomic_bv),
+    predictions = data.frame(.fitted = as.numeric(raw$fitted)),
+    nobs = as.integer(raw$nobs),
+    diagnostics = list(
+      target = "snp_blup",
+      variance_components = "supplied",
+      optimizer_status = "not_run",
+      n_markers = length(effects)
+    ),
+    converged = TRUE
+  )
+}
+
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
   if (
@@ -819,17 +949,33 @@ hs_validate_julia_target <- function(target) {
         "repeatability",
         "two_effect",
         "genomic",
-        "single_step"
+        "single_step",
+        "snp_blup"
       )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"two_effect\", \"genomic\", or \"single_step\".",
+      "\"two_effect\", \"genomic\", \"single_step\", or \"snp_blup\".",
       call. = FALSE
     )
   }
   target
+}
+
+# All opt-in engine targets that can fit a given non-default random effect. A
+# genomic marker primary fits either by GREML on the built relationship
+# (`genomic`) or as a supplied-variance marker-effect model (`snp_blup`).
+hs_effect_targets <- function(type) {
+  switch(
+    type,
+    permanent = "repeatability",
+    common_env = "two_effect",
+    maternal_genetic = "two_effect",
+    genomic = c("genomic", "snp_blup"),
+    single_step = "single_step",
+    stop("Unknown random effect type: ", type, call. = FALSE)
+  )
 }
 
 # Map a parsed second random effect to the opt-in engine target that fits it.
@@ -867,6 +1013,36 @@ hs_validate_supplied_variances <- function(variance_components) {
   }
   out <- as.numeric(variance_components[c("sigma_a2", "sigma_e2")])
   names(out) <- c("sigma_a2", "sigma_e2")
+  if (any(!is.finite(out)) || any(out <= 0)) {
+    stop(
+      "`engine_control$variance_components` values must be positive and ",
+      "finite.",
+      call. = FALSE
+    )
+  }
+  out
+}
+
+hs_validate_snp_blup_variances <- function(variance_components) {
+  if (is.null(variance_components)) {
+    stop(
+      "`engine_control$variance_components` is required when ",
+      "`target = \"snp_blup\"` (named `sigma_g2` and `sigma_e2`).",
+      call. = FALSE
+    )
+  }
+  if (
+    is.null(names(variance_components)) ||
+      !all(c("sigma_g2", "sigma_e2") %in% names(variance_components))
+  ) {
+    stop(
+      "`engine_control$variance_components` must include `sigma_g2` (genomic) ",
+      "and `sigma_e2` (residual) for `target = \"snp_blup\"`.",
+      call. = FALSE
+    )
+  }
+  out <- as.numeric(variance_components[c("sigma_g2", "sigma_e2")])
+  names(out) <- c("sigma_g2", "sigma_e2")
   if (any(!is.finite(out)) || any(out <= 0)) {
     stop(
       "`engine_control$variance_components` values must be positive and ",
