@@ -28,7 +28,10 @@ print.hs_formula_status <- function(x, ...) {
   cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
   cat(
-    "permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in; others parse-only\n"
+    "permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in\n"
+  )
+  cat(
+    "  planned grammar: rows marked planned/reserved error before fitting\n"
   )
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")

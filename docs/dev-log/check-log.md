@@ -3908,3 +3908,31 @@ Remote follow-up for committed slice `774284f`:
   - No new fitting or validation claim. This is formula-status, error-text, and
     design-memory work only; `cov = us()/diag()/lowrank()/fa()` remains planned
     long-format structured covariance grammar.
+
+## 2026-06-14 Formula status print wording
+
+- Follow-on polish after the structured covariance formula vocabulary slice:
+  `print(formula_status())` now separates default fitting, opt-in experimental
+  fitting, and planned/reserved grammar instead of saying "others parse-only".
+- Focused tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::test(filter = 'phase0-api')"` - passed, 0 failures / 0 warnings /
+    0 skips / 76 passes.
+- Full tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::test()"` - passed, 0 failures / 0 warnings / 32 skips / 623
+    passes.
+- `git diff --check` - passed.
+- Pkgdown:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+    errors / 0 warnings / 0 notes.
+- Remote follow-up for previous committed slice `406e914`:
+  - GitHub Actions R-CMD-check `27508736392`: passed in 1m54s.
+  - GitHub Actions pkgdown `27508736390`: passed in 1m48s.
+  - GitHub Pages build/deployment `27508781835`: passed.

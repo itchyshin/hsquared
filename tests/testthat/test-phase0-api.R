@@ -128,6 +128,11 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     paste(capture.output(print(status)), collapse = "\n"),
     "permanent\\(1 \\| id\\)"
   )
+  expect_match(
+    paste(capture.output(print(status)), collapse = "\n"),
+    "planned grammar: rows marked planned/reserved error before fitting",
+    fixed = TRUE
+  )
   subset <- status[
     status$category == "multivariate and factor analytic",
     c("term", "syntax_status", "fitting_status")
