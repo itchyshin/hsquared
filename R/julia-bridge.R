@@ -437,7 +437,7 @@ hs_fit_julia_two_effect_payload <- function(
       call. = FALSE
     )
   }
-  if (!methods::is(payload$Z2, "dgCMatrix")) {
+  if (!inherits(payload$Z2, "dgCMatrix")) {
     stop(
       "Internal bridge error: the two-effect Z2 must be a sparse dgCMatrix.",
       call. = FALSE

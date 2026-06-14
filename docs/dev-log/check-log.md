@@ -2486,6 +2486,14 @@ with private memory.
   clean** (run locally this time per the previous lesson); full `testthat` with
   juliaup + `NOT_CRAN` + sommer + enhancer (live two-effect fit ran) — 0 failures,
   0 warnings, 0 skipped; `rcmdcheck(--as-cran)` 0/0/1 (benign).
-- Local commit `e7026a9`. Remote checks for `e7026a9`: GitHub Actions R-CMD-check
-  `27483756304` + pkgdown `27483756310` (in progress at push; conclusions
-  appended on completion).
+- Local commit `e7026a9`. Remote checks for `e7026a9`: pkgdown `27483756310`
+  **passed** (local `check_pkgdown()` paid off); R-CMD-check `27483756304`
+  **failed** — the defensive `methods::is()` I added (from the review should-fix)
+  triggered ``'::' import not declared from: 'methods'``, and CI runs
+  `error_on = "warning"`. Local `rcmdcheck(error_on = "never")` did not surface
+  this warning (a local/CI R-version divergence). Lesson: avoid `pkg::` for
+  undeclared packages; the codebase already uses base `inherits()` for the same
+  dgCMatrix check.
+- Fix (follow-up commit): replaced `methods::is()` with base `inherits()`
+  (matching `R/julia-bridge.R` line ~630); no `methods::` usage remains.
+  Remote checks appended after the fix push.
