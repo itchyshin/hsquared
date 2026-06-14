@@ -82,6 +82,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   GREML, marker-built GREML, supplied-variance SNP-BLUP, and supplied-`Hinv`
   single-step from planned H construction, APY, QTL/GWAS/eQTL, and production
   comparator work.
+- QTL/GWAS/eQTL status article: a pkgdown article now separates the reserved
+  scan vocabulary and live SNP-BLUP `marker_effects()` output from planned
+  marker scans, QTL interval scans, GWAS/eQTL tables, scan plots, LOCO, and
+  production scale.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -126,7 +130,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 33 | Julia | Add single-marker scan kernel with kinship correction. | Tiny GWAS fixtures. |
 | 34 | R | Expose `marker_scan()` as opt-in once engine scan results are stable. | Multiple-testing and LOCO wording clear. |
 | 35 | Julia | Add LOCO support for mixed-model scans. | Chromosome holdout tests. |
-| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | Rose/Jason audit. |
+| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; no marker-scan, QTL, GWAS, eQTL, scan-plot, LOCO, or production-scale claim |
 | 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
 | 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | Ada/Rose decision recorded. |
 | 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |

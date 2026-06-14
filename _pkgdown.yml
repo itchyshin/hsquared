@@ -22,6 +22,8 @@ navbar:
           href: articles/fitting-models.html
         - text: Genomic prediction
           href: articles/genomic-prediction.html
+        - text: QTL, GWAS, and eQTL status
+          href: articles/qtl-gwas-eqtl-status.html
         - text: Multivariate Gaussian animal models
           href: articles/multivariate.html
         - text: Reading G matrices
@@ -79,6 +81,7 @@ articles:
       - hsquared
       - articles/fitting-models
       - articles/genomic-prediction
+      - articles/qtl-gwas-eqtl-status
       - articles/multivariate
       - articles/g-matrix-interpretation
       - articles/mission-control

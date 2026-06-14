@@ -3452,3 +3452,28 @@ with private memory.
   - GitHub Actions R-CMD-check `27504202880`: passed.
   - GitHub Actions pkgdown `27504202884`: passed.
   - GitHub Pages build/deployment `27504252638`: passed.
+
+## 2026-06-14 QTL/GWAS/eQTL status article
+
+- Added `vignettes/articles/qtl-gwas-eqtl-status.Rmd`, a user-facing status
+  article that separates live SNP-BLUP `marker_effects()` output and data/status
+  diagnostics from planned marker scans, QTL interval scans, GWAS/eQTL tables,
+  scan plots, LOCO, and production-scale scan claims.
+- Added `docs/dev-log/scout/2026-06-14-qtl-gwas-eqtl-status-scout.md` after
+  checking current syntax/tests, local sister-package patterns, and QTL/GWAS/eQTL
+  source anchors.
+- Updated `_pkgdown.yml`, `NEWS.md`, and `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `2923042` (all green):
+  - GitHub Actions R-CMD-check `27504500020`: passed.
+  - GitHub Actions pkgdown `27504500023`: passed.
+  - GitHub Pages build/deployment `27504554393`: passed.
