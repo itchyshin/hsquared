@@ -387,7 +387,9 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
   )
 
   expect_equal(genetic_covariance(fit), G0, tolerance = 1e-10)
+  expect_equal(G_matrix(fit), G0, tolerance = 1e-10)
   expect_equal(residual_covariance(fit), R0, tolerance = 1e-10)
+  expect_equal(R_matrix(fit), R0, tolerance = 1e-10)
   expect_equal(genetic_correlation(fit), stats::cov2cor(G0), tolerance = 1e-10)
   expect_equal(residual_correlation(fit), stats::cov2cor(R0), tolerance = 1e-10)
   expect_equal(heritability(fit)$estimate, h2$h2, tolerance = 1e-10)

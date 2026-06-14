@@ -70,6 +70,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - Reserved factor/G-matrix extractors: `loadings()`, `specific_variance()`,
   `latent_breeding_values()`, and `eigen_G()` now exist but fail for
   `hsquared_fit` with planned, rotation-aware messages.
+- G/R matrix aliases: `G_matrix()` and `R_matrix()` now mirror
+  `genetic_covariance()` and `residual_covariance()` for `hsquared_fit`
+  objects, so applied users can ask for the familiar G and R matrices without a
+  second result contract.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -102,7 +106,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | Pat/Darwin/Kirkpatrick review. |
 | 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
 | 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; dedicated issue #10 tracks full same-estimand, ASReml/BLUPF90, and recovery gates before any covered row. |
-| 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | Avoid duplicate confusing extractors. |
+| 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | done: `G_matrix()` and `R_matrix()` are aliases over the existing covariance extractors; no new `P_matrix()` estimand or capability claim |
 | 25 | Julia | Implement genomic relationship scaling/blending options. | G/GINV tests against known formulas. |
 | 26 | R | Expose marker-to-G controls with simple names and safe defaults. | Jason/Hopper review. |
 | 27 | Julia | Add single-step `Hinv` construction from A and G. | Tiny and Mrode-style H checks. |

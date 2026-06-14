@@ -3,14 +3,20 @@
 \name{multivariate_extractors}
 \alias{multivariate_extractors}
 \alias{genetic_covariance}
+\alias{G_matrix}
 \alias{residual_covariance}
+\alias{R_matrix}
 \alias{genetic_correlation}
 \alias{residual_correlation}
 \title{Extract multivariate covariance and correlation matrices}
 \usage{
 genetic_covariance(object, ...)
 
+G_matrix(object, ...)
+
 residual_covariance(object, ...)
+
+R_matrix(object, ...)
 
 genetic_correlation(object, ...)
 
@@ -28,12 +34,14 @@ requested multivariate result field.
 \description{
 These extractors return the genetic (\code{G}) and residual (\code{R}) covariance or
 correlation matrices from opt-in multivariate \code{hsquared_fit} objects
-(\code{target = "multivariate"}). Use them after checking
-\code{\link[=fit_diagnostics]{fit_diagnostics()}} because likelihood-based summaries are intentionally
-blocked when a multivariate fit has not converged.
+(\code{target = "multivariate"}). \code{G_matrix()} is an applied-workflow alias for
+\code{genetic_covariance()}, and \code{R_matrix()} is an alias for
+\code{residual_covariance()}. Use them after checking \code{\link[=fit_diagnostics]{fit_diagnostics()}} because
+likelihood-based summaries are intentionally blocked when a multivariate fit
+has not converged.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
+\dontshow{if (FALSE) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,
@@ -48,7 +56,9 @@ fit_mv <- hsquared(
 fit_diagnostics(fit_mv)
 
 genetic_covariance(fit_mv)
+G_matrix(fit_mv)
 residual_covariance(fit_mv)
+R_matrix(fit_mv)
 genetic_correlation(fit_mv)
 residual_correlation(fit_mv)
 heritability(fit_mv)

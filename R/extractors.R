@@ -57,9 +57,11 @@ heritability.hsquared_fit <- function(object, ...) {
 #'
 #' These extractors return the genetic (`G`) and residual (`R`) covariance or
 #' correlation matrices from opt-in multivariate `hsquared_fit` objects
-#' (`target = "multivariate"`). Use them after checking
-#' [fit_diagnostics()] because likelihood-based summaries are intentionally
-#' blocked when a multivariate fit has not converged.
+#' (`target = "multivariate"`). `G_matrix()` is an applied-workflow alias for
+#' `genetic_covariance()`, and `R_matrix()` is an alias for
+#' `residual_covariance()`. Use them after checking [fit_diagnostics()] because
+#' likelihood-based summaries are intentionally blocked when a multivariate fit
+#' has not converged.
 #'
 #' @inheritParams variance_components
 #'
@@ -81,7 +83,9 @@ heritability.hsquared_fit <- function(object, ...) {
 #' fit_diagnostics(fit_mv)
 #'
 #' genetic_covariance(fit_mv)
+#' G_matrix(fit_mv)
 #' residual_covariance(fit_mv)
+#' R_matrix(fit_mv)
 #' genetic_correlation(fit_mv)
 #' residual_correlation(fit_mv)
 #' heritability(fit_mv)
@@ -106,6 +110,22 @@ genetic_covariance.hsquared_fit <- function(object, ...) {
 
 #' @rdname multivariate_extractors
 #' @export
+G_matrix <- function(object, ...) {
+  UseMethod("G_matrix")
+}
+
+#' @export
+G_matrix.default <- function(object, ...) {
+  hs_multivariate_extractor_default("G_matrix")
+}
+
+#' @export
+G_matrix.hsquared_fit <- function(object, ...) {
+  genetic_covariance(object, ...)
+}
+
+#' @rdname multivariate_extractors
+#' @export
 residual_covariance <- function(object, ...) {
   UseMethod("residual_covariance")
 }
@@ -118,6 +138,22 @@ residual_covariance.default <- function(object, ...) {
 #' @export
 residual_covariance.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "residual_covariance", "residual covariance matrix")
+}
+
+#' @rdname multivariate_extractors
+#' @export
+R_matrix <- function(object, ...) {
+  UseMethod("R_matrix")
+}
+
+#' @export
+R_matrix.default <- function(object, ...) {
+  hs_multivariate_extractor_default("R_matrix")
+}
+
+#' @export
+R_matrix.hsquared_fit <- function(object, ...) {
+  residual_covariance(object, ...)
 }
 
 #' @rdname multivariate_extractors

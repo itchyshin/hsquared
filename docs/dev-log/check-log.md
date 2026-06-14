@@ -3367,3 +3367,38 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+
+## 2026-06-14 G/R matrix aliases
+
+- Added `G_matrix()` and `R_matrix()` as aliases over
+  `genetic_covariance()` and `residual_covariance()` for `hsquared_fit`
+  objects. These names improve applied multivariate ergonomics without adding a
+  new result contract or any `P_matrix()` claim.
+- Documentation:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::document()"` — passed; regenerated `NAMESPACE` and
+  `man/multivariate_extractors.Rd`.
+- Formatting:
+  `command -v air` — no `air` binary on PATH.
+- Focused tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test(filter = 'fit-object|multivariate')"` — passed, 0 failures /
+  0 warnings / 3 skips / 135 passes.
+- `git diff --check` — passed.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 32 skips / 608
+  passes.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for `a4881ea` (all green):
+  - GitHub Actions R-CMD-check `27503480493`: passed.
+  - GitHub Actions pkgdown `27503480520`: passed.
+  - GitHub Pages build/deployment `27503528014`: passed.
