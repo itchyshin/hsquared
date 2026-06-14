@@ -110,6 +110,34 @@ permanent_effects.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "permanent_effects", "permanent-environment effects")
 }
 
+#' Extract common-environment effects
+#'
+#' `common_env_effects()` returns the predicted common-environment effects of
+#' the opt-in, experimental two-effect model (`target = "two_effect"`).
+#'
+#' @inheritParams variance_components
+#'
+#' @return Common-environment effect results for two-effect `hsquared_fit`
+#'   objects.
+#' @export
+common_env_effects <- function(object, ...) {
+  UseMethod("common_env_effects")
+}
+
+#' @export
+common_env_effects.default <- function(object, ...) {
+  stop(
+    "`common_env_effects()` requires an `hsquared_fit` object from the opt-in ",
+    "two-effect (common-environment) model (`target = \"two_effect\"`).",
+    call. = FALSE
+  )
+}
+
+#' @export
+common_env_effects.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "common_env_effects", "common-environment effects")
+}
+
 #' Extract breeding values
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It

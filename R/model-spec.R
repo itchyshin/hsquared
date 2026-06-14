@@ -10,12 +10,13 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   hs_validate_model_inputs(formula, data, family, REML)
 
   rhs_terms <- hs_split_additive_rhs(formula[[3L]])
-  # `permanent()` is the one planned QG marker the parser now consumes: it is the
-  # permanent-environment effect of the opt-in, experimental repeatability model.
-  # Every other planned marker still errors as not implemented.
+  # `permanent()` and `common_env()` are the planned QG markers the parser now
+  # consumes: each is the second random effect of an opt-in, experimental
+  # two-effect model (repeatability or common-environment). Every other planned
+  # marker still errors as not implemented.
   planned_pos <- which(vapply(
     rhs_terms,
-    function(e) hs_is_planned_marker_call(e) && !hs_is_permanent_call(e),
+    function(e) hs_is_planned_marker_call(e) && !hs_is_second_effect_call(e),
     logical(1L)
   ))
   if (length(planned_pos) > 0L) {
@@ -46,23 +47,24 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     model_data = model_data
   )
 
-  permanent_pos <- which(vapply(rhs_terms, hs_is_permanent_call, logical(1L)))
-  permanent_spec <- NULL
-  if (length(permanent_pos) > 1L) {
+  second_pos <- which(vapply(rhs_terms, hs_is_second_effect_call, logical(1L)))
+  second_spec <- NULL
+  if (length(second_pos) > 1L) {
     stop(
-      "`formula` can contain only one `permanent()` term.",
+      "`formula` can contain at most one additional random effect ",
+      "(`permanent()` or `common_env()`) alongside `animal()`.",
       call. = FALSE
     )
   }
-  if (length(permanent_pos) == 1L) {
-    permanent_spec <- hs_parse_permanent_call(
-      rhs_terms[[permanent_pos]],
+  if (length(second_pos) == 1L) {
+    second_spec <- hs_parse_second_effect_call(
+      rhs_terms[[second_pos]],
       data,
       animal_spec
     )
   }
 
-  fixed_terms <- rhs_terms[-c(animal_pos, permanent_pos)]
+  fixed_terms <- rhs_terms[-c(animal_pos, second_pos)]
   fixed_formula <- formula
   fixed_formula[[3L]] <- hs_rebuild_additive_rhs(fixed_terms)
   environment(fixed_formula) <- env
@@ -94,13 +96,14 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   fixed_design <- stats::model.matrix(fixed_terms_obj, data = model_frame)
 
   random <- list(animal = animal_spec)
-  if (!is.null(permanent_spec)) {
-    random$permanent <- permanent_spec
-  }
-  bridge_target <- if (is.null(permanent_spec)) {
-    "fit_animal_model(y, X, Z, Ainv; method = :REML)"
-  } else {
-    "fit_repeatability_reml(y, X, Z, Ainv; method = :REML)"
+  bridge_target <- "fit_animal_model(y, X, Z, Ainv; method = :REML)"
+  if (!is.null(second_spec)) {
+    random[[second_spec$type]] <- second_spec
+    bridge_target <- if (identical(second_spec$type, "permanent")) {
+      "fit_repeatability_reml(y, X, Z, Ainv; method = :REML)"
+    } else {
+      "fit_two_effect_reml(y, X, Z, Ainv, Z2, Ainv2; method = :REML)"
+    }
   }
 
   list(
@@ -533,6 +536,103 @@ hs_is_animal_call <- function(expr) {
 hs_is_permanent_call <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   hs_is_call(expr, "permanent")
+}
+
+hs_is_common_env_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "common_env")
+}
+
+# The planned QG markers the parser now consumes as the (single) second random
+# effect of an opt-in two-effect model: `permanent()` (repeatability) and
+# `common_env()` (common-environment).
+hs_is_second_effect_call <- function(expr) {
+  hs_is_permanent_call(expr) || hs_is_common_env_call(expr)
+}
+
+hs_parse_second_effect_call <- function(call, data, animal_spec) {
+  if (hs_is_permanent_call(call)) {
+    hs_parse_permanent_call(call, data, animal_spec)
+  } else {
+    hs_parse_common_env_call(call, data)
+  }
+}
+
+# Parse `common_env(1 | group)` as the common-environment effect of the opt-in
+# two-effect model: a random intercept on an environmental grouping (e.g. litter
+# or cage) carrying an identity relationship (each level an independent IID
+# effect). Unlike `permanent()`, the grouping is a separate environmental column,
+# not the animal id.
+hs_parse_common_env_call <- function(call, data) {
+  call <- hs_unwrap_parentheses(call)
+  args <- as.list(call)[-1L]
+  arg_names <- names(args)
+  if (is.null(arg_names)) {
+    arg_names <- rep("", length(args))
+  }
+
+  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if (length(bar_candidates) != 1L) {
+    stop(
+      "`common_env()` must have one random-effect expression, for example ",
+      "`common_env(1 | litter)`.",
+      call. = FALSE
+    )
+  }
+
+  bar <- hs_unwrap_parentheses(args[[bar_candidates]])
+  if (!hs_is_call(bar, "|") || length(bar) != 3L) {
+    stop(
+      "The `common_env()` argument must be a random-effect expression such as ",
+      "`1 | litter`.",
+      call. = FALSE
+    )
+  }
+
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  if (!hs_is_one(lhs)) {
+    stop(
+      "Only random-intercept syntax `common_env(1 | group)` is implemented. ",
+      "Common-environment slopes are planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.symbol(group_expr)) {
+    stop(
+      "The grouping variable in `common_env()` must be a bare column name.",
+      call. = FALSE
+    )
+  }
+
+  named_args <- args[arg_names != ""]
+  if (length(named_args) > 0L) {
+    stop(
+      "`common_env()` takes no extra arguments in the v0.1 two-effect model.",
+      call. = FALSE
+    )
+  }
+
+  group <- as.character(group_expr)
+  if (!group %in% names(data)) {
+    stop(
+      "`common_env()` grouping variable `",
+      group,
+      "` was not found in `data`.",
+      call. = FALSE
+    )
+  }
+
+  list(
+    type = "common_env",
+    term = hs_deparse(call),
+    design = "intercept",
+    group = group,
+    values = as.character(data[[group]]),
+    levels = unique(as.character(data[[group]])),
+    relationship = "identity",
+    covariance = "scalar"
+  )
 }
 
 # Parse `permanent(1 | id)` as the permanent-environment effect of the opt-in

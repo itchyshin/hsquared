@@ -73,7 +73,7 @@ test_that("permanent() must share the animal grouping and be intercept-only", {
   )
 })
 
-test_that("only one permanent() term is supported", {
+test_that("only one second random effect is supported", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
   dat <- data.frame(y = c(1, 2), id = c("a", "b"))
 
@@ -86,23 +86,23 @@ test_that("only one permanent() term is supported", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "one `permanent()` term",
+    "at most one additional random effect",
     fixed = TRUE
   )
 })
 
 test_that("other planned QG markers are still rejected", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
-  dat <- data.frame(y = c(1, 2), id = c("a", "b"), litter = c("l1", "l1"))
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"), dam = c("d1", "d2"))
 
   expect_error(
     hsquared:::hs_build_model_spec(
-      y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+      y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "`common_env()` is planned, not implemented.",
+    "`maternal_genetic()` is planned, not implemented.",
     fixed = TRUE
   )
 })

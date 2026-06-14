@@ -124,19 +124,9 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
     dam = c("d1", "d2")
   )
 
-  # `permanent()` is now parsed as the repeatability permanent-environment
-  # effect (see test-repeatability.R); the other planned QG markers still error.
-  expect_error(
-    hsquared:::hs_build_model_spec(
-      y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
-      data = dat,
-      family = stats::gaussian(),
-      REML = TRUE
-    ),
-    "`common_env()` is planned, not implemented.",
-    fixed = TRUE
-  )
-
+  # `permanent()` (repeatability) and `common_env()` (common-environment) are now
+  # parsed opt-in second random effects (see test-repeatability.R /
+  # test-common-env.R); the other planned QG markers still error.
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ animal(1 | id, pedigree = ped) +

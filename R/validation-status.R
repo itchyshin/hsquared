@@ -43,6 +43,7 @@ hs_validation_status_capabilities <- function() {
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
     "experimental repeatability estimator (opt-in)",
+    "experimental common-environment estimator (opt-in)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
@@ -59,7 +60,7 @@ hs_validation_status_capabilities <- function() {
 hs_validation_status_phases <- function() {
   c(
     rep("Phase 1", 6L),
-    "Phase 2",
+    rep("Phase 2", 2L),
     rep("Phase 1", 6L),
     rep("Phase 5+", 2L),
     "Phase 6",
@@ -69,7 +70,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 7L),
+    rep("partial", 8L),
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -119,6 +120,15 @@ hs_validation_status_evidence <- function() {
       "effects, and finite REML logLik; fit provenance tagged",
       "variance_components_source = \"estimated_repeatability_reml\". The",
       "permanent-environment effect shares the animal incidence (A2 = I)."
+    ),
+    paste(
+      "Pure-R control/validator tests plus a skip-guarded live test running",
+      "Julia fit_two_effect_reml() through the opt-in target = \"two_effect\"",
+      "bridge on `animal(1 | id) + common_env(1 | group)`; checks three positive",
+      "estimated variance components (animal, common_env, residual), heritability",
+      "in [0, 1), the common-environment effects, and finite REML logLik; fit",
+      "provenance tagged variance_components_source = \"estimated_two_effect_reml\".",
+      "The common-environment effect is IID (A2 = I) on a separate Z2."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -195,6 +205,13 @@ hs_validation_status_boundaries <- function() {
       "comparator-validated or known-truth-recovery claim. The additive (Va) and",
       "permanent-environment (Vpe) variances are only identifiable with repeated",
       "records per individual."
+    ),
+    paste(
+      "Experimental opt-in path only; Julia-owned REML-only two-effect optimizer",
+      "that R surfaces; mirrors the twin V3-TWOEFFECT-REML gate (partial). Not",
+      "the default, not ML, not production fitting, and not a comparator-validated",
+      "or known-truth-recovery claim. Two independent random effects (additive +",
+      "IID common environment); correlated direct-maternal (2x2 G) is planned."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",

@@ -21,11 +21,36 @@ hs_build_bridge_payload <- function(spec) {
     dimnames = list(NULL, ids)
   )
 
+  # Second design matrix `Z2` for the opt-in common-environment effect: an IID
+  # incidence of records on the environmental grouping levels (relationship I).
+  Z2 <- NULL
+  effect2 <- NULL
+  common_env <- spec$random$common_env
+  if (!is.null(common_env)) {
+    env_levels <- common_env$levels
+    env_index <- match(common_env$values, env_levels)
+    Z2 <- Matrix::sparseMatrix(
+      i = seq_along(env_index),
+      j = env_index,
+      x = 1,
+      dims = c(length(env_index), length(env_levels)),
+      dimnames = list(NULL, env_levels)
+    )
+    effect2 <- list(
+      type = "common_env",
+      group = common_env$group,
+      levels = env_levels,
+      relationship = "identity"
+    )
+  }
+
   structure(
     list(
       y = as.numeric(spec$response$values),
       X = unname(as.matrix(spec$fixed$design)),
       Z = Z,
+      Z2 = Z2,
+      effect2 = effect2,
       Ainv = NULL,
       method = spec$method,
       family = spec$family$family,

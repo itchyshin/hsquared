@@ -117,10 +117,16 @@ test_that("validation_status separates evidence from planned validation", {
   status <- validation_status()
 
   expect_s3_class(status, "hs_validation_status")
-  expect_equal(nrow(status), 17L)
+  expect_equal(nrow(status), 18L)
   expect_equal(
     status$status[
       status$capability == "experimental repeatability estimator (opt-in)"
+    ],
+    "partial"
+  )
+  expect_equal(
+    status$status[
+      status$capability == "experimental common-environment estimator (opt-in)"
     ],
     "partial"
   )

@@ -415,6 +415,158 @@ hs_validate_repeatability_initial <- function(initial) {
   initial[c("sigma_a2", "sigma_pe2", "sigma_e2")]
 }
 
+# Opt-in, experimental two-effect (common-environment) estimator. Surfaces the
+# Julia-owned `HSquared.fit_two_effect_reml()` REML-only optimizer: effect 1 is
+# the additive-genetic animal effect (Z, pedigree Ainv); effect 2 is the
+# common-environment effect (Z2 from the environmental grouping, identity
+# relationship). Returns three variance components (animal, common_env,
+# residual).
+hs_fit_julia_two_effect_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = c(sigma_a2 = 1, sigma_c2 = 1, sigma_e2 = 1),
+  iterations = 200L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (is.null(payload$Z2) || is.null(payload$effect2)) {
+    stop(
+      "Internal bridge error: the two-effect payload is missing its second ",
+      "design matrix.",
+      call. = FALSE
+    )
+  }
+  if (!methods::is(payload$Z2, "dgCMatrix")) {
+    stop(
+      "Internal bridge error: the two-effect Z2 must be a sparse dgCMatrix.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  initial <- hs_validate_two_effect_initial(initial)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  hs_julia_assign_payload(payload, initial)
+  hs_julia_assign_sparse_csc("hsq_Z2", payload$Z2)
+  JuliaCall::julia_assign("hsq_env_levels", payload$effect2$levels)
+  JuliaCall::julia_assign("hsq_initial_sigma_c2", unname(initial[["sigma_c2"]]))
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_n2 = size(hsq_Z2, 2);",
+    "hsq_Ainv2 = sparse(collect(1:hsq_n2), collect(1:hsq_n2),",
+    "ones(Float64, hsq_n2), hsq_n2, hsq_n2);",
+    "hsq_fit = HSquared.fit_two_effect_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
+    "initial = (sigma1 = hsq_initial_sigma_a2,",
+    "sigma2 = hsq_initial_sigma_c2,",
+    "sigma_e2 = hsq_initial_sigma_e2),",
+    "iterations = hsq_iterations, ids1 = hsq_ped.ids, ids2 = hsq_env_levels);"
+  ))
+
+  raw <- JuliaCall::julia_eval(paste(
+    "Dict(",
+    "\"sigma_a2\" => hsq_fit.variance_components.sigma1,",
+    "\"sigma_c2\" => hsq_fit.variance_components.sigma2,",
+    "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
+    "\"heritability\" => hsq_fit.ratio1,",
+    "\"c2\" => hsq_fit.ratio2,",
+    "\"beta\" => collect(Float64, hsq_fit.beta),",
+    "\"animal_ids\" => string.(collect(hsq_fit.effect1.ids)),",
+    "\"animal_values\" => collect(Float64, hsq_fit.effect1.values),",
+    "\"env_ids\" => string.(collect(hsq_fit.effect2.ids)),",
+    "\"env_values\" => collect(Float64, hsq_fit.effect2.values),",
+    "\"loglik\" => hsq_fit.loglik,",
+    "\"converged\" => hsq_fit.converged)"
+  ))
+
+  result <- hs_normalize_two_effect_result(raw, payload)
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "two_effect"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_two_effect_result <- function(raw, payload) {
+  fixed_effects <- as.numeric(raw$beta)
+  fixed_names <- payload$metadata$fixed_colnames
+  if (length(fixed_effects) == length(fixed_names)) {
+    names(fixed_effects) <- fixed_names
+  }
+  animal_bv <- data.frame(
+    id = as.character(raw$animal_ids),
+    value = as.numeric(raw$animal_values),
+    stringsAsFactors = FALSE
+  )
+  env_eff <- data.frame(
+    id = as.character(raw$env_ids),
+    value = as.numeric(raw$env_values),
+    stringsAsFactors = FALSE
+  )
+  list(
+    variance_components = data.frame(
+      component = c("animal", "common_env", "residual"),
+      estimate = c(
+        as.numeric(raw$sigma_a2),
+        as.numeric(raw$sigma_c2),
+        as.numeric(raw$sigma_e2)
+      ),
+      stringsAsFactors = FALSE
+    ),
+    heritability = data.frame(
+      term = "animal",
+      estimate = as.numeric(raw$heritability)
+    ),
+    common_env_proportion = data.frame(
+      term = "common_env",
+      estimate = as.numeric(raw$c2)
+    ),
+    breeding_values = animal_bv,
+    common_env_effects = env_eff,
+    random_effects = list(animal = animal_bv, common_env = env_eff),
+    fixed_effects = fixed_effects,
+    loglik = as.numeric(raw$loglik),
+    nobs = length(payload$y),
+    converged = isTRUE(raw$converged),
+    diagnostics = list(variance_components = "estimated_two_effect_reml")
+  )
+}
+
+hs_validate_two_effect_initial <- function(initial) {
+  if (
+    !is.numeric(initial) ||
+      !setequal(names(initial), c("sigma_a2", "sigma_c2", "sigma_e2"))
+  ) {
+    stop(
+      "`initial` for the two-effect target must be a named numeric vector ",
+      "with `sigma_a2`, `sigma_c2`, and `sigma_e2`.",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(initial)) || any(initial <= 0)) {
+    stop(
+      "`initial` variance components must be finite and positive.",
+      call. = FALSE
+    )
+  }
+  initial[c("sigma_a2", "sigma_c2", "sigma_e2")]
+}
+
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
   if (
@@ -537,16 +689,28 @@ hs_validate_julia_target <- function(target) {
         "henderson_mme",
         "sparse_reml",
         "ai_reml",
-        "repeatability"
+        "repeatability",
+        "two_effect"
       )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
-      "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", or \"repeatability\".",
+      "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", or ",
+      "\"two_effect\".",
       call. = FALSE
     )
   }
   target
+}
+
+# Map a parsed second random effect to the opt-in engine target that fits it.
+hs_second_effect_target <- function(type) {
+  switch(
+    type,
+    permanent = "repeatability",
+    common_env = "two_effect",
+    stop("Unknown second random effect type: ", type, call. = FALSE)
+  )
 }
 
 hs_validate_supplied_variances <- function(variance_components) {
