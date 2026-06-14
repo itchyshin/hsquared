@@ -46,7 +46,14 @@ variance-component estimation claim for the public R interface.
 (\code{HSquared.fit_ai_reml()}) that the default \code{engine = "fit"} path uses,
 with explicit \code{initial} and \code{iterations} control. This is the validated
 v0.1 estimator for the univariate Gaussian animal model; the \code{engine = "fit"}
-default is the ordinary way to reach it.}
+default is the ordinary way to reach it.
+\code{target = "repeatability"} is an experimental, opt-in path for the
+repeatability (permanent-environment) model. It requires
+\code{animal(1 | id, pedigree = ped) + permanent(1 | id)} in the formula and
+surfaces the Julia-owned \code{HSquared.fit_repeatability_reml()} REML-only
+optimizer (three-component \code{initial} with \code{sigma_a2}/\code{sigma_pe2}/\code{sigma_e2}).
+It is REML only, not the default, and the additive and permanent-environment
+variances are identifiable only with repeated records per individual.}
 }
 \value{
 An object of class \code{"hs_control"}.

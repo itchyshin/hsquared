@@ -27,7 +27,7 @@ print.hs_formula_status <- function(x, ...) {
   cat("  parsed today: animal(1 | id, pedigree = ped); ")
   cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
-  cat("other terms are parse-only and general fitting remains planned\n")
+  cat("permanent(1 | id) fits opt-in (repeatability); other terms parse-only\n")
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
   print.data.frame(
@@ -85,8 +85,8 @@ hs_formula_status_phases <- function() {
 
 hs_formula_status_syntax <- function() {
   c(
-    rep("parsed", 2L),
-    rep("reserved", 17L),
+    rep("parsed", 3L),
+    rep("reserved", 16L),
     rep("planned", 2L)
   )
 }
@@ -94,7 +94,8 @@ hs_formula_status_syntax <- function() {
 hs_formula_status_fitting <- function() {
   c(
     rep("fitted (v0.1 default)", 2L),
-    rep("not available", 19L)
+    "fitted (opt-in repeatability)",
+    rep("not available", 18L)
   )
 }
 
@@ -108,12 +109,17 @@ hs_formula_status_behavior <- function() {
       "Fitted by the default v0.1 path when data is an hs_data() bundle with a",
       "pedigree component (Gaussian animal model, REML)."
     ),
+    paste(
+      "Permanent-environment effect of the opt-in, experimental repeatability",
+      "model; requires an animal() term, repeated records, and",
+      "engine = \"julia\", target = \"repeatability\"."
+    ),
     rep(
       paste(
         "Exported as an inert marker; hsquared() errors as planned, not",
         "implemented."
       ),
-      17L
+      16L
     ),
     rep(
       paste(

@@ -272,6 +272,149 @@ hs_fit_julia_ai_reml_payload <- function(
   )
 }
 
+# Opt-in, experimental repeatability (permanent-environment) estimator. Surfaces
+# the Julia-owned `HSquared.fit_repeatability_reml()` REML-only optimizer through
+# the bridge. The permanent-environment effect shares the animal incidence `Z`
+# (the engine carries an identity relationship for it), so the existing payload
+# is sufficient. Variance components σ²a and σ²pe are only identifiable with
+# repeated records per individual.
+hs_fit_julia_repeatability_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1),
+  iterations = 200L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  initial <- hs_validate_repeatability_initial(initial)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  hs_julia_assign_payload(payload, initial)
+  JuliaCall::julia_assign(
+    "hsq_initial_sigma_pe2",
+    unname(initial[["sigma_pe2"]])
+  )
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_fit = HSquared.fit_repeatability_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+    "sigma_pe2 = hsq_initial_sigma_pe2,",
+    "sigma_e2 = hsq_initial_sigma_e2),",
+    "iterations = hsq_iterations, ids = hsq_ped.ids);"
+  ))
+
+  raw <- JuliaCall::julia_eval(paste(
+    "Dict(",
+    "\"sigma_a2\" => hsq_fit.variance_components.sigma_a2,",
+    "\"sigma_pe2\" => hsq_fit.variance_components.sigma_pe2,",
+    "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
+    "\"repeatability\" => hsq_fit.repeatability,",
+    "\"heritability\" => hsq_fit.heritability,",
+    "\"beta\" => collect(Float64, hsq_fit.beta),",
+    "\"animal_ids\" => string.(collect(hsq_fit.animal_effects.ids)),",
+    "\"animal_values\" => collect(Float64, hsq_fit.animal_effects.values),",
+    "\"pe_ids\" => string.(collect(hsq_fit.permanent_effects.ids)),",
+    "\"pe_values\" => collect(Float64, hsq_fit.permanent_effects.values),",
+    "\"loglik\" => hsq_fit.loglik,",
+    "\"converged\" => hsq_fit.converged)"
+  ))
+
+  result <- hs_normalize_repeatability_result(raw, payload)
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "repeatability"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_repeatability_result <- function(raw, payload) {
+  fixed_effects <- as.numeric(raw$beta)
+  fixed_names <- payload$metadata$fixed_colnames
+  if (length(fixed_effects) == length(fixed_names)) {
+    names(fixed_effects) <- fixed_names
+  }
+  animal_bv <- data.frame(
+    id = as.character(raw$animal_ids),
+    value = as.numeric(raw$animal_values),
+    stringsAsFactors = FALSE
+  )
+  list(
+    variance_components = data.frame(
+      component = c("animal", "permanent", "residual"),
+      estimate = c(
+        as.numeric(raw$sigma_a2),
+        as.numeric(raw$sigma_pe2),
+        as.numeric(raw$sigma_e2)
+      ),
+      stringsAsFactors = FALSE
+    ),
+    heritability = data.frame(
+      term = "animal",
+      estimate = as.numeric(raw$heritability)
+    ),
+    repeatability = data.frame(
+      term = "individual",
+      estimate = as.numeric(raw$repeatability)
+    ),
+    breeding_values = animal_bv,
+    permanent_effects = data.frame(
+      id = as.character(raw$pe_ids),
+      value = as.numeric(raw$pe_values),
+      stringsAsFactors = FALSE
+    ),
+    random_effects = list(
+      animal = animal_bv,
+      permanent = data.frame(
+        id = as.character(raw$pe_ids),
+        value = as.numeric(raw$pe_values),
+        stringsAsFactors = FALSE
+      )
+    ),
+    fixed_effects = fixed_effects,
+    loglik = as.numeric(raw$loglik),
+    nobs = length(payload$y),
+    converged = isTRUE(raw$converged),
+    diagnostics = list(variance_components = "estimated_repeatability_reml")
+  )
+}
+
+hs_validate_repeatability_initial <- function(initial) {
+  if (
+    !is.numeric(initial) ||
+      !setequal(names(initial), c("sigma_a2", "sigma_pe2", "sigma_e2"))
+  ) {
+    stop(
+      "`initial` for the repeatability target must be a named numeric vector ",
+      "with `sigma_a2`, `sigma_pe2`, and `sigma_e2`.",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(initial)) || any(initial <= 0)) {
+    stop(
+      "`initial` variance components must be finite and positive.",
+      call. = FALSE
+    )
+  }
+  initial[c("sigma_a2", "sigma_pe2", "sigma_e2")]
+}
+
 hs_julia_setup <- function(project) {
   project <- normalizePath(project, winslash = "/", mustWork = TRUE)
   if (
@@ -389,11 +532,17 @@ hs_validate_julia_target <- function(target) {
   }
   if (
     !target %in%
-      c("fit_animal_model", "henderson_mme", "sparse_reml", "ai_reml")
+      c(
+        "fit_animal_model",
+        "henderson_mme",
+        "sparse_reml",
+        "ai_reml",
+        "repeatability"
+      )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
-      "\"henderson_mme\", \"sparse_reml\", or \"ai_reml\".",
+      "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", or \"repeatability\".",
       call. = FALSE
     )
   }

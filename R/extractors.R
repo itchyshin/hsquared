@@ -53,6 +53,63 @@ heritability.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "heritability", "heritability estimates")
 }
 
+#' Extract repeatability estimates
+#'
+#' `repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
+#' opt-in, experimental repeatability (permanent-environment) model. It works
+#' for `hsquared_fit` objects fitted with
+#' `engine_control = list(target = "repeatability")`.
+#'
+#' @inheritParams variance_components
+#'
+#' @return Repeatability results for repeatability `hsquared_fit` objects.
+#' @export
+repeatability <- function(object, ...) {
+  UseMethod("repeatability")
+}
+
+#' @export
+repeatability.default <- function(object, ...) {
+  stop(
+    "`repeatability()` requires an `hsquared_fit` object from the opt-in ",
+    "repeatability model (`target = \"repeatability\"`).",
+    call. = FALSE
+  )
+}
+
+#' @export
+repeatability.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "repeatability", "repeatability estimates")
+}
+
+#' Extract permanent-environment effects
+#'
+#' `permanent_effects()` returns the predicted permanent-environment effects of
+#' the opt-in, experimental repeatability model.
+#'
+#' @inheritParams variance_components
+#'
+#' @return Permanent-environment effect results for repeatability
+#'   `hsquared_fit` objects.
+#' @export
+permanent_effects <- function(object, ...) {
+  UseMethod("permanent_effects")
+}
+
+#' @export
+permanent_effects.default <- function(object, ...) {
+  stop(
+    "`permanent_effects()` requires an `hsquared_fit` object from the opt-in ",
+    "repeatability model (`target = \"repeatability\"`).",
+    call. = FALSE
+  )
+}
+
+#' @export
+permanent_effects.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "permanent_effects", "permanent-environment effects")
+}
+
 #' Extract breeding values
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It

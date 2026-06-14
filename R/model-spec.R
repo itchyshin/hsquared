@@ -10,9 +10,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   hs_validate_model_inputs(formula, data, family, REML)
 
   rhs_terms <- hs_split_additive_rhs(formula[[3L]])
+  # `permanent()` is the one planned QG marker the parser now consumes: it is the
+  # permanent-environment effect of the opt-in, experimental repeatability model.
+  # Every other planned marker still errors as not implemented.
   planned_pos <- which(vapply(
     rhs_terms,
-    hs_is_planned_marker_call,
+    function(e) hs_is_planned_marker_call(e) && !hs_is_permanent_call(e),
     logical(1L)
   ))
   if (length(planned_pos) > 0L) {
@@ -42,7 +45,24 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     env,
     model_data = model_data
   )
-  fixed_terms <- rhs_terms[-animal_pos]
+
+  permanent_pos <- which(vapply(rhs_terms, hs_is_permanent_call, logical(1L)))
+  permanent_spec <- NULL
+  if (length(permanent_pos) > 1L) {
+    stop(
+      "`formula` can contain only one `permanent()` term.",
+      call. = FALSE
+    )
+  }
+  if (length(permanent_pos) == 1L) {
+    permanent_spec <- hs_parse_permanent_call(
+      rhs_terms[[permanent_pos]],
+      data,
+      animal_spec
+    )
+  }
+
+  fixed_terms <- rhs_terms[-c(animal_pos, permanent_pos)]
   fixed_formula <- formula
   fixed_formula[[3L]] <- hs_rebuild_additive_rhs(fixed_terms)
   environment(fixed_formula) <- env
@@ -73,6 +93,16 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   fixed_terms_obj <- stats::terms(fixed_formula)
   fixed_design <- stats::model.matrix(fixed_terms_obj, data = model_frame)
 
+  random <- list(animal = animal_spec)
+  if (!is.null(permanent_spec)) {
+    random$permanent <- permanent_spec
+  }
+  bridge_target <- if (is.null(permanent_spec)) {
+    "fit_animal_model(y, X, Z, Ainv; method = :REML)"
+  } else {
+    "fit_repeatability_reml(y, X, Z, Ainv; method = :REML)"
+  }
+
   list(
     formula = formula,
     fixed_formula = fixed_formula,
@@ -84,11 +114,11 @@ hs_build_model_spec <- function(formula, data, family, REML) {
       design = fixed_design,
       contrasts = attr(fixed_design, "contrasts")
     ),
-    random = list(animal = animal_spec),
+    random = random,
     bridge = list(
       status = "planned",
       engine = "HSquared.jl",
-      target = "fit_animal_model(y, X, Z, Ainv; method = :REML)"
+      target = bridge_target
     )
   )
 }
@@ -498,6 +528,91 @@ hs_rebuild_additive_rhs <- function(terms) {
 hs_is_animal_call <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   hs_is_call(expr, "animal")
+}
+
+hs_is_permanent_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "permanent")
+}
+
+# Parse `permanent(1 | id)` as the permanent-environment effect of the opt-in
+# repeatability model. It must be a random intercept on the SAME grouping
+# variable as `animal()`, because the engine shares the animal incidence matrix
+# `Z` between the additive-genetic and permanent-environment effects (the PE
+# effect carries an identity relationship, A2 = I).
+hs_parse_permanent_call <- function(call, data, animal_spec) {
+  call <- hs_unwrap_parentheses(call)
+  args <- as.list(call)[-1L]
+  arg_names <- names(args)
+  if (is.null(arg_names)) {
+    arg_names <- rep("", length(args))
+  }
+
+  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if (length(bar_candidates) != 1L) {
+    stop(
+      "`permanent()` must have one random-effect expression, for example ",
+      "`permanent(1 | id)`.",
+      call. = FALSE
+    )
+  }
+
+  bar <- hs_unwrap_parentheses(args[[bar_candidates]])
+  if (!hs_is_call(bar, "|") || length(bar) != 3L) {
+    stop(
+      "The `permanent()` argument must be a random-effect expression such as ",
+      "`1 | id`.",
+      call. = FALSE
+    )
+  }
+
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  if (!hs_is_one(lhs)) {
+    stop(
+      "Only random-intercept syntax `permanent(1 | id)` is implemented. ",
+      "Permanent-environment slopes are planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.symbol(group_expr)) {
+    stop(
+      "The grouping variable in `permanent()` must be a bare column name.",
+      call. = FALSE
+    )
+  }
+
+  named_args <- args[arg_names != ""]
+  if (length(named_args) > 0L) {
+    stop(
+      "`permanent()` takes no extra arguments in the v0.1 repeatability model.",
+      call. = FALSE
+    )
+  }
+
+  group <- as.character(group_expr)
+  if (!identical(group, animal_spec$group)) {
+    stop(
+      "`permanent()` must use the same grouping variable as `animal()` ",
+      "(the permanent-environment effect shares the animal incidence). Got ",
+      "`permanent(1 | ",
+      group,
+      ")` with `animal(1 | ",
+      animal_spec$group,
+      ")`.",
+      call. = FALSE
+    )
+  }
+
+  list(
+    type = "permanent",
+    term = hs_deparse(call),
+    design = "intercept",
+    group = group,
+    values = as.character(data[[group]]),
+    relationship = "identity",
+    covariance = "scalar"
+  )
 }
 
 hs_is_planned_marker_call <- function(expr) {

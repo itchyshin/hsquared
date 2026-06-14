@@ -34,6 +34,13 @@
 #'   with explicit `initial` and `iterations` control. This is the validated
 #'   v0.1 estimator for the univariate Gaussian animal model; the `engine = "fit"`
 #'   default is the ordinary way to reach it.
+#'   `target = "repeatability"` is an experimental, opt-in path for the
+#'   repeatability (permanent-environment) model. It requires
+#'   `animal(1 | id, pedigree = ped) + permanent(1 | id)` in the formula and
+#'   surfaces the Julia-owned `HSquared.fit_repeatability_reml()` REML-only
+#'   optimizer (three-component `initial` with `sigma_a2`/`sigma_pe2`/`sigma_e2`).
+#'   It is REML only, not the default, and the additive and permanent-environment
+#'   variances are identifiable only with repeated records per individual.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

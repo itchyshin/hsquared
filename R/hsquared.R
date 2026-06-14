@@ -66,6 +66,16 @@ hsquared <- function(
         call. = FALSE
       )
     }
+    if (!is.null(spec$random$permanent)) {
+      stop(
+        "The repeatability (permanent-environment) model is experimental and ",
+        "opt-in; the default `engine = \"fit\"` path fits the single-effect ",
+        "Gaussian animal model only. Use `control = hs_control(engine = ",
+        "\"julia\", engine_control = list(target = \"repeatability\"))` to fit ",
+        "`animal(1 | id) + permanent(1 | id)`.",
+        call. = FALSE
+      )
+    }
     project <- hs_engine_control_value(
       control,
       "julia_project",
@@ -108,6 +118,19 @@ hsquared <- function(
       stop(
         "ML estimation (`REML = FALSE`) is not implemented; the v0.1 fit path ",
         "estimates variance components by REML. Use `REML = TRUE`.",
+        call. = FALSE
+      )
+    }
+    # A `permanent()` term only fits through the repeatability target; the
+    # single-effect estimators would silently ignore it.
+    if (
+      !is.null(spec$random$permanent) && !identical(target, "repeatability")
+    ) {
+      stop(
+        "The formula has a `permanent(1 | id)` term, so it needs ",
+        "`target = \"repeatability\"`. The `",
+        target,
+        "` target fits the single additive-genetic effect only.",
         call. = FALSE
       )
     }
@@ -165,6 +188,34 @@ hsquared <- function(
           control,
           "iterations",
           100L
+        )
+      ))
+    }
+
+    if (identical(target, "repeatability")) {
+      if (is.null(spec$random$permanent)) {
+        stop(
+          "`target = \"repeatability\"` requires a `permanent(1 | id)` term ",
+          "alongside `animal(1 | id, ...)` in the formula.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_repeatability_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          200L
         )
       ))
     }
