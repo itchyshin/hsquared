@@ -30,6 +30,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   slice for G0, diag(R0), and diagonal-target h2 on the shared Phase 4 fixture.
   This is a partial external check only; it does not validate full residual
   covariance.
+- Manual ASReml/BLUPF90 comparator skeletons: added in the manual-gate slice
+  under `inst/comparator-scripts/`, with dry-run checks and a `docs/dev-log/
+  comparator-runs/` provenance folder. They are templates/manual gates only, not
+  run evidence.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway

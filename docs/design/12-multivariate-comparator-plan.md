@@ -139,10 +139,11 @@ structure are aligned.
 
 ## Manual Comparator Scripts
 
-ASReml-R and BLUPF90/AIREMLF90 should live as scripts or design artifacts, not
-ordinary CI gates:
+ASReml-R and BLUPF90/AIREMLF90 live as manual scripts/templates, not ordinary CI
+gates:
 
 - `inst/comparator-scripts/asreml/multivariate-animal.R`
+- `inst/comparator-scripts/blupf90/prepare-multivariate-animal.R`
 - `inst/comparator-scripts/blupf90/multivariate-animal.renf90`
 - `inst/comparator-scripts/blupf90/multivariate-animal.par`
 - recorded outputs under `docs/dev-log/comparator-runs/` only when actually

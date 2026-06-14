@@ -2794,6 +2794,38 @@ with private memory.
   - GitHub Actions R-CMD-check `27500382900`: passed.
   - GitHub Actions pkgdown `27500382897`: passed.
   - GitHub Pages build/deployment `27500426971`: passed.
+
+## 2026-06-14 ASReml/BLUPF90 manual comparator skeletons
+
+- Added manual comparator skeletons:
+  - `inst/comparator-scripts/README.md`;
+  - `inst/comparator-scripts/asreml/multivariate-animal.R`;
+  - `inst/comparator-scripts/blupf90/prepare-multivariate-animal.R`;
+  - `inst/comparator-scripts/blupf90/multivariate-animal.renf90`;
+  - `inst/comparator-scripts/blupf90/multivariate-animal.par`;
+  - `docs/dev-log/comparator-runs/README.md`.
+- ASReml dry-run:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript inst/comparator-scripts/asreml/multivariate-animal.R --dry-run`
+  — passed; prepared 160 long-format records, 2 traits, and 20 animals without
+  requiring ASReml.
+- BLUPF90 dry-run:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript inst/comparator-scripts/blupf90/prepare-multivariate-animal.R`
+  — passed; prepared 80 data rows and 20 pedigree rows without writing files.
+- BLUPF90 temp write smoke:
+  `tmpdir=$(mktemp -d); /Library/Frameworks/R.framework/Resources/bin/Rscript inst/comparator-scripts/blupf90/prepare-multivariate-animal.R --write="$tmpdir"; find "$tmpdir" -maxdepth 1 -type f -print | sort; sed -n '1,80p' "$tmpdir/multivariate-animal.renf90"; rm -rf "$tmpdir"`
+  — passed; wrote README, data, pedigree, `.renf90`, and `.par` files to a temp
+  directory and substituted the data/pedigree filenames into the template.
+- `git diff --check` — passed.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e "devtools::test()"`
+  — passed, 0 failures / 0 warnings / 27 live-Julia skips / 585 passes.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 - Remote checks for `c3e5a26` (all green):
   - GitHub Actions R-CMD-check `27500073218`: passed.
   - GitHub Actions pkgdown `27500073217`: passed.
