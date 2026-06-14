@@ -92,8 +92,9 @@
 </ul></div>
 <div class="section level2">
 <h2 id="phase-3-multivariate-gaussian-animal-models">Phase 3: Multivariate Gaussian Animal Models<a class="anchor" aria-label="anchor" href="#phase-3-multivariate-gaussian-animal-models"></a></h2>
-<p>Status: planned.</p>
-<ul><li>Long-format trait grammar.</li>
+<p>Status: planned (engine support is in progress on the twin). The Julia engine <code>HSquared.fit_multivariate_reml</code> (estimating the <code>t × t</code> genetic <code>G0</code> and residual <code>R0</code> covariances by REML, with missing-trait records, genetic correlations, per-trait h2, and cross-trait EBVs) exists on the twin branch <code>phase4-multivariate-reml</code> but is <strong>not yet on Julia <code>main</code></strong>, so nothing is surfaceable from R yet. The R-side surfacing — a <code>cbind(...)</code> multi-trait grammar, the <code>Y</code>-matrix bridge payload, an opt-in <code>target = "multivariate"</code> fence mirroring the twin <code>V4-MV-REML</code> gate, and genetic-correlation / G / per-trait-h2 / cross-trait-EBV extractors — is designed against that engine contract in <a href="docs/design/09-multivariate-plan.html"><code>docs/design/09-multivariate-plan.md</code></a> (status: planned; every grammar/estimand choice is a proposal awaiting the twin landing on <code>main</code> plus maintainer sign-off).</p>
+<ul><li>
+<code>cbind(...)</code> multi-trait response grammar.</li>
 <li>Full G and R matrices.</li>
 <li>Missing trait records.</li>
 <li>Genetic correlations and cross-trait EBVs.</li>
