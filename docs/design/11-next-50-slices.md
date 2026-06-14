@@ -74,6 +74,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   `genetic_covariance()` and `residual_covariance()` for `hsquared_fit`
   objects, so applied users can ask for the familiar G and R matrices without a
   second result contract.
+- G-matrix interpretation article: a pkgdown article now explains how to read
+  the current G/R matrices, correlations, heritabilities, and cross-trait EBVs
+  while fencing `P_matrix()`, factor-analytic loadings, evolvability, and
+  selection-response tools as future gated work.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -103,7 +107,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 18 | R | Design `cov = lowrank(K)` grammar against the Julia structure. | Roadmap-only until engine gate. |
 | 19 | Julia | Stabilize factor-analytic `G = Lambda Lambda' + Psi` engine output names. | Loadings/uniqueness extraction tests green. |
 | 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | done: names exist with planned/rotation-aware errors; no fitting or interpretation claim |
-| 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | Pat/Darwin/Kirkpatrick review. |
+| 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | done: `articles/g-matrix-interpretation` teaches invariant G/R summaries and fences `P_matrix()`, FA loadings, evolvability, and selection-response claims |
 | 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
 | 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; dedicated issue #10 tracks full same-estimand, ASReml/BLUPF90, and recovery gates before any covered row. |
 | 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | done: `G_matrix()` and `R_matrix()` are aliases over the existing covariance extractors; no new `P_matrix()` estimand or capability claim |

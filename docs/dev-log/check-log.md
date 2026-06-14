@@ -3402,3 +3402,28 @@ with private memory.
   - GitHub Actions R-CMD-check `27503480493`: passed.
   - GitHub Actions pkgdown `27503480520`: passed.
   - GitHub Pages build/deployment `27503528014`: passed.
+
+## 2026-06-14 G-matrix interpretation article
+
+- Added `vignettes/articles/g-matrix-interpretation.Rmd`, a reader-facing
+  article explaining how to interpret the current opt-in multivariate G/R
+  matrices, genetic and residual correlations, per-trait h2, cross-trait EBVs,
+  and current gates around `P_matrix()`, factor-analytic loadings,
+  evolvability, and selection-response claims.
+- Added `docs/dev-log/scout/2026-06-14-g-matrix-interpretation-scout.md` after
+  checking local sister/twin docs and classical G-matrix anchors.
+- Updated `_pkgdown.yml`, `NEWS.md`, and `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for `7e4cce3` (all green):
+  - GitHub Actions R-CMD-check `27503967568`: passed.
+  - GitHub Actions pkgdown `27503967586`: passed.
+  - GitHub Pages build/deployment `27504011650`: passed.
