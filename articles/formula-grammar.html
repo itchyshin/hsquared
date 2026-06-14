@@ -185,6 +185,10 @@ matrices and GLLVM-style latent genetic structure:</p>
 <span>  <span class="fu">residual</span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">unit</span>, cov <span class="op">=</span> <span class="fu">us</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">y</span> <span class="op">~</span> <span class="va">trait</span> <span class="op">+</span> <span class="va">trait</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span>, cov <span class="op">=</span> <span class="fu">lowrank</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">residual</span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">unit</span>, cov <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">y</span> <span class="op">~</span> <span class="va">trait</span> <span class="op">+</span> <span class="va">trait</span><span class="op">:</span><span class="va">sex</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span>, cov <span class="op">=</span> <span class="fu">fa</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">residual</span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">unit</span>, cov <span class="op">=</span> <span class="fu">fa</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Planned covariance meanings:</p>
@@ -199,7 +203,10 @@ matrices and GLLVM-style latent genetic structure:</p>
 <code>cov = fa(K)</code>:
 <code>G = Lambda Lambda' + Psi</code>.</li>
 </ul>
-<p>Current status: not parsed by the v0.1 parser.</p>
+<p>Current status: the opt-in <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> multivariate
+animal-model path is parsed and fitted experimentally. The long-format
+<code>animal(trait | id, cov = ...)</code> grammar and residual
+structured covariance grammar are planned, not parsed or fitted.</p>
 </div>
 <div class="section level2">
 <h2 id="error-rule">Error rule<a class="anchor" aria-label="anchor" href="#error-rule"></a>

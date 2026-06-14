@@ -137,6 +137,10 @@ y ~ trait + trait:sex +
   residual(trait | unit, cov = us())
 
 y ~ trait + trait:sex +
+  animal(trait | id, pedigree = ped, cov = lowrank(K = 2)) +
+  residual(trait | unit, cov = diag())
+
+y ~ trait + trait:sex +
   animal(trait | id, pedigree = ped, cov = fa(K = 2)) +
   residual(trait | unit, cov = fa(K = 1))
 ```
@@ -148,7 +152,11 @@ Planned covariance meanings:
 - `cov = lowrank(K)`: `G = Lambda Lambda'`.
 - `cov = fa(K)`: `G = Lambda Lambda' + Psi`.
 
-Current status: not parsed by the v0.1 parser.
+Current status: the opt-in
+[`cbind()`](https://rdrr.io/r/base/cbind.html) multivariate animal-model
+path is parsed and fitted experimentally. The long-format
+`animal(trait | id, cov = ...)` grammar and residual structured
+covariance grammar are planned, not parsed or fitted.
 
 ## Error rule
 

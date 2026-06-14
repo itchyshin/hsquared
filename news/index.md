@@ -194,6 +194,11 @@
   `"unstructured"` is accepted for the current opt-in multivariate
   bridge, while `"diagonal"`, `"lowrank"`, `"factor_analytic"`, and
   `rank` error as planned rather than being silently ignored.
+- [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
+  and structured-covariance error messages now list the full planned
+  covariance vocabulary (`cov = us()`, `cov = diag()`,
+  `cov = lowrank(K)`, and `cov = fa(K)`) while keeping it planned, not
+  fitted.
 - Multivariate [`cbind()`](https://rdrr.io/r/base/cbind.html) responses
   now require unique, non-empty trait names before fitting, so G/R
   matrices, per-trait h², EBVs, comparator files, and future wide/long
