@@ -74,6 +74,24 @@
   ASReml-parity claim
   ([\#6](https://github.com/itchyshin/hsquared/issues/6),
   [\#7](https://github.com/itchyshin/hsquared/issues/7)).
+- **Experimental, opt-in repeatability (permanent-environment) model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now parses `animal(1 | id, pedigree = ped) + permanent(1 | id)` and
+  fits it through `engine_control = list(target = "repeatability")`,
+  surfacing the Julia-owned `HSquared.fit_repeatability_reml()`
+  REML-only optimizer. It returns three variance components (animal,
+  permanent, residual),
+  [`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md),
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md),
+  breeding values, and
+  [`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md).
+  The default `engine = "fit"` path stays single-effect and rejects
+  [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  with a pointer to the opt-in target. This is experimental and
+  REML-only; the additive (σ²a) and permanent-environment (σ²pe)
+  variances are identifiable only with repeated records per individual.
+  It is not the default, not ML, and not yet a production or
+  comparator-validated claim.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

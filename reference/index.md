@@ -44,8 +44,13 @@ Current parser entry points and planned fitting controls.
 
 ## Extractor contract
 
-Extractor names for future fitted objects; ordinary hsquared calls do
-not fit models yet.
+Extractors for fitted `hsquared_fit` objects. The default
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+call fits the v0.1 Gaussian animal model;
+[`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md)
+and
+[`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
+come from the opt-in, experimental repeatability model.
 
 - [`variance_components()`](https://itchyshin.github.io/hsquared/reference/variance_components.md)
   : Extract variance components
@@ -55,6 +60,10 @@ not fit models yet.
   [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   [`BLUP()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   : Extract breeding values
+- [`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md)
+  : Extract repeatability estimates
+- [`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
+  : Extract permanent-environment effects
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

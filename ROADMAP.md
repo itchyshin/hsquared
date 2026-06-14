@@ -88,11 +88,16 @@ skip-guarded.
 
 ## Phase 2: Standard Quantitative-Genetic Models
 
-Status: planned.
+Status: started (opt-in). The repeatability / permanent-environment
+model is surfaced opt-in and experimental
+(`engine = "julia", target = "repeatability"`, mirroring the twin
+`V3-REPEAT-REML` partial gate); the remaining standard models are
+planned.
 
-- Repeatability.
-- Permanent environment.
-- Maternal and common environment.
+- Repeatability / permanent environment — opt-in, experimental (REML,
+  needs repeated records).
+- Maternal and common environment (two-effect engine exists; R surface
+  planned).
 - Sire models.
 - Groups and unknown parent groups.
 - Inbreeding coefficients.
