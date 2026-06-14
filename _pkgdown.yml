@@ -2,11 +2,15 @@ url: https://itchyshin.github.io/hsquared/
 destination: pkgdown-site
 template:
   bootstrap: 5
-  bootswatch: flatly
   bslib:
-    primary: "#38a8df"
-    headings-color: "#173141"
-    link-color: "#126f9b"
+    bg: "#ffffff"
+    fg: "#172a36"
+    primary: "#0ea5e9"
+    secondary: "#475569"
+    headings-color: "#102a3b"
+    link-color: "#0369a1"
+    link-hover-color: "#075985"
+    border-color: "#dbeafe"
 
 navbar:
   structure:

@@ -3779,3 +3779,56 @@ Remote follow-up for committed slice `774284f`:
   /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
   "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
   errors / 0 warnings / 0 notes.
+
+## 2026-06-14 Sky-blue pkgdown theme refresh
+
+- Rehydrated R repo:
+  - `git status --short --branch` - clean `main` tracking `origin/main`
+    before edits.
+  - `git remote -v` - `origin` is `https://github.com/itchyshin/hsquared.git`.
+  - `git log --oneline --decorate -5` - latest commit was `3e12fa1`.
+  - `gh run list --limit 5` - unavailable on this shell (`gh: command not
+    found`); live CSS was checked with `curl` instead.
+- Live site CSS probe:
+  - `curl -L --max-time 20 -s https://itchyshin.github.io/hsquared/` found
+    `deps/bootstrap-5.3.8/bootstrap.min.css`.
+  - The live Bootstrap CSS already contained `--bs-primary: #38A8DF` and
+    `.navbar ... background:#38A8DF`, but Flatly still contributed the heavier
+    Bootswatch palette and green/turquoise accents.
+- Theme changes:
+  - Removed `bootswatch: flatly` from `_pkgdown.yml`.
+  - Set a cleaner sky palette in `_pkgdown.yml`: primary `#0ea5e9`, link
+    `#0369a1`, link hover `#075985`, headings `#102a3b`, border `#dbeafe`.
+  - Added `pkgdown/extra.css` so the navbar is explicitly sky-blue even when
+    pkgdown emits `bg-light`.
+  - Added `^pkgdown$` to `.Rbuildignore` so the site source directory is not
+    bundled into the R package tarball.
+- `git diff --check` - passed.
+- Pkgdown build:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::build_site()"` - passed; output copied `pkgdown/extra.css` to
+    `pkgdown-site/extra.css` and finished without problems.
+- Generated-site CSS/HTML checks:
+  - `rg -n "extra.css|#0ea5e9|navbar\\.bg-primary|bootswatch|flatly"
+    pkgdown-site/index.html pkgdown-site/extra.css _pkgdown.yml` confirmed
+    `extra.css` is linked from the built homepage and the sky colors are
+    present.
+  - Node/Playwright using system Chrome rendered the local built site. Final
+    computed styles: desktop navbar background `rgb(14, 165, 233)`, navbar
+    version text `rgba(255, 255, 255, 0.78)`, main link color
+    `rgb(3, 105, 161)`, `extraCssLinked = true`; mobile navbar background
+    `rgb(14, 165, 233)`, toggler filter `invert(1) grayscale(1) brightness(2)`,
+    `extraCssLinked = true`.
+- Pkgdown check:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  - First `devtools::check(document = FALSE, args = "--no-manual")` passed
+    with one NOTE because top-level `pkgdown/` was not yet in `.Rbuildignore`.
+  - After adding `^pkgdown$`, the rerun
+    `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` passed, 0
+    errors / 0 warnings / 0 notes.
