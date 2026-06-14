@@ -244,6 +244,7 @@ hs_build_response_spec <- function(lhs, response) {
     if (length(trait_names) != ncol(values)) {
       trait_names <- paste0("trait", seq_len(ncol(values)))
     }
+    hs_validate_multivariate_trait_names(trait_names)
     colnames(values) <- trait_names
     return(list(
       name = hs_deparse(lhs),
@@ -276,6 +277,37 @@ hs_build_response_spec <- function(lhs, response) {
     values = as.numeric(response),
     trait_names = NULL,
     multivariate = FALSE
+  )
+}
+
+hs_validate_multivariate_trait_names <- function(trait_names) {
+  missing_names <- is.na(trait_names) | !nzchar(trait_names)
+  duplicate_names <- duplicated(trait_names) |
+    duplicated(trait_names, fromLast = TRUE)
+
+  if (!any(missing_names) && !any(duplicate_names)) {
+    return(invisible(trait_names))
+  }
+
+  detail <- character()
+  if (any(missing_names)) {
+    detail <- c(detail, "empty or missing names")
+  }
+  if (any(duplicate_names)) {
+    duplicates <- unique(trait_names[duplicate_names & !missing_names])
+    detail <- c(
+      detail,
+      paste0("duplicate names: ", paste(duplicates, collapse = ", "))
+    )
+  }
+
+  stop(
+    "Multivariate `cbind()` responses require unique, non-empty trait names",
+    if (length(detail) > 0L) {
+      paste0(" (", paste(detail, collapse = "; "), ")")
+    },
+    ". Rename or wrap response columns before fitting.",
+    call. = FALSE
   )
 }
 

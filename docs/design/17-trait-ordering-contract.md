@@ -219,8 +219,10 @@ Multivariate `cbind()` responses require unique, non-empty trait names. Rename
 or wrap response columns before fitting.
 ```
 
-The current implementation has not yet added the unique-name guard, so this is a
-future hardening item rather than a current claim.
+The current implementation enforces this for evaluated multivariate response
+names. Recoverable blank names from ordinary `cbind()` evaluation are repaired
+from the formula symbols; unrecoverable empty names and duplicate names fail
+before fitting.
 
 ## Validation Gates
 

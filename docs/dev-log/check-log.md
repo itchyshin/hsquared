@@ -3591,3 +3591,33 @@ with private memory.
   - GitHub Actions R-CMD-check `27505661085`: passed.
   - GitHub Actions pkgdown `27505661091`: passed.
   - GitHub Pages build/deployment `27505705113`: passed.
+
+## 2026-06-14 Multivariate trait-name guard
+
+- Added a parser guard so multivariate `cbind()` responses require unique,
+  non-empty trait names before fitting.
+- Added focused tests for duplicate `cbind()` names and unrecoverable blank
+  trait names.
+- Updated `NEWS.md` and `docs/design/17-trait-ordering-contract.md`.
+- `git diff --check` — passed.
+- Focused tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test(filter = 'multivariate')"` — passed, 0 failures / 0 warnings /
+  3 skips / 52 passes.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 32 skips / 610
+  passes.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `bd53ebd` (all green):
+  - GitHub Actions R-CMD-check `27505906421`: passed.
+  - GitHub Actions pkgdown `27505906424`: passed.
+  - GitHub Pages build/deployment `27505963691`: passed.

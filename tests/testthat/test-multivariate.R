@@ -30,6 +30,36 @@ test_that("multivariate cbind response builds Y payload and preserves NA cells",
   expect_s4_class(payload$Z, "dgCMatrix")
 })
 
+test_that("multivariate cbind response requires unique non-empty trait names", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf1", "calf2"),
+    sire = c(NA, NA, "sire", "sire"),
+    dam = c(NA, NA, "dam", "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3, 4),
+    y2 = c(1.5, 2.5, 3.5, 4.5),
+    id = ped$id
+  )
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      cbind(y1, y1) ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "duplicate names: y1",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared:::hs_validate_multivariate_trait_names(c("y1", "")),
+    "empty or missing names",
+    fixed = TRUE
+  )
+})
+
 test_that("multivariate parser rejects fixed-effect NA and rank-deficient X", {
   ped <- data.frame(
     id = c("a", "b", "c", "d"),
