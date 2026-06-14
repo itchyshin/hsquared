@@ -3832,3 +3832,19 @@ Remote follow-up for committed slice `774284f`:
     /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
     "devtools::check(document = FALSE, args = '--no-manual')"` passed, 0
     errors / 0 warnings / 0 notes.
+- Remote follow-up for committed slice `6fa5548`:
+  - `git push origin main` - pushed `3e12fa1..6fa5548`.
+  - `/opt/homebrew/bin/gh run watch 27508145805 --exit-status` - R-CMD-check
+    passed in 1m49s.
+  - `/opt/homebrew/bin/gh run watch 27508145793 --exit-status` - pkgdown
+    passed in 1m46s and deployed to `gh-pages`.
+  - `/opt/homebrew/bin/gh run watch 27508191234 --exit-status` - Pages build
+    and deployment passed.
+  - `curl -L --max-time 20 -s https://itchyshin.github.io/hsquared/index.html`
+    confirmed the live homepage links `extra.css`.
+  - `curl -L --max-time 20 -s https://itchyshin.github.io/hsquared/extra.css`
+    confirmed the deployed CSS contains `#0ea5e9`, `.nav-text.text-muted`, and
+    `.navbar-toggler`.
+  - Node/Playwright using system Chrome rendered the live site. Computed live
+    styles: navbar background `rgb(14, 165, 233)`, version text
+    `rgba(255, 255, 255, 0.78)`, and `extraCssLinked = true`.

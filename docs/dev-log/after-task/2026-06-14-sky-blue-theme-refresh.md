@@ -47,6 +47,12 @@ Make the pkgdown site read more clearly as sky-blue rather than teal/Flatly.
   `rgb(14, 165, 233)`, version text `rgba(255, 255, 255, 0.78)`,
   `extraCssLinked = true`, and mobile toggler filter
   `invert(1) grayscale(1) brightness(2)`.
+- Post-push remote checks for commit `6fa5548`: R-CMD-check passed in 1m49s,
+  pkgdown passed in 1m46s, Pages build/deployment passed, and the live site
+  linked the deployed `extra.css`.
+- Node/Playwright with system Chrome rendered the live public site and confirmed
+  navbar background `rgb(14, 165, 233)`, version text
+  `rgba(255, 255, 255, 0.78)`, and `extraCssLinked = true`.
 
 ## Public Claim Audit
 
@@ -72,7 +78,8 @@ caught the grey navbar before commit.
 
 ## Known Limitations
 
-- GitHub Pages still needs to rebuild after push before the public URL changes.
+- Future browser caches may need a hard refresh if they held the old Bootstrap
+  CSS, but the live page now links the deployed `extra.css`.
 - The package version text remains intentionally lighter than the brand label,
   not pure white.
 
