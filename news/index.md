@@ -188,6 +188,11 @@
   This is opt-in, dense validation-scale, and partial; t\>=2 known-truth
   recovery, external comparator parity, and long-format/structured
   covariance grammar remain planned.
+- Multivariate [`cbind()`](https://rdrr.io/r/base/cbind.html) responses
+  now require unique, non-empty trait names before fitting, so G/R
+  matrices, per-trait h², EBVs, comparator files, and future wide/long
+  response paths share an unambiguous trait-order contract
+  ([\#10](https://github.com/itchyshin/hsquared/issues/10)).
 - [`G_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   and
   [`R_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
