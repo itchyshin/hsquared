@@ -2,7 +2,9 @@
 
 These extractors return the genetic (`G`) and residual (`R`) covariance
 or correlation matrices from opt-in multivariate `hsquared_fit` objects
-(`target = "multivariate"`). Use them after checking
+(`target = "multivariate"`). `G_matrix()` is an applied-workflow alias
+for `genetic_covariance()`, and `R_matrix()` is an alias for
+`residual_covariance()`. Use them after checking
 [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
 because likelihood-based summaries are intentionally blocked when a
 multivariate fit has not converged.
@@ -12,7 +14,11 @@ multivariate fit has not converged.
 ``` r
 genetic_covariance(object, ...)
 
+G_matrix(object, ...)
+
 residual_covariance(object, ...)
+
+R_matrix(object, ...)
 
 genetic_correlation(object, ...)
 
@@ -52,7 +58,9 @@ fit_mv <- hsquared(
 fit_diagnostics(fit_mv)
 
 genetic_covariance(fit_mv)
+G_matrix(fit_mv)
 residual_covariance(fit_mv)
+R_matrix(fit_mv)
 genetic_correlation(fit_mv)
 residual_correlation(fit_mv)
 heritability(fit_mv)

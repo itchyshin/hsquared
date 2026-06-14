@@ -102,6 +102,9 @@ fit, plus trait covariance matrices:
 genetic_covariance(fit_mv)
 residual_covariance(fit_mv)
 
+G_matrix(fit_mv)
+R_matrix(fit_mv)
+
 genetic_correlation(fit_mv)
 residual_correlation(fit_mv)
 

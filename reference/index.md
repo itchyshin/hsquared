@@ -55,7 +55,9 @@ experimental targets.
 - [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
   : Extract heritability estimates
 - [`genetic_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  [`G_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`residual_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  [`R_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`genetic_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`residual_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   : Extract multivariate covariance and correlation matrices

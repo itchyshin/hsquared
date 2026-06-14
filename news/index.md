@@ -188,6 +188,15 @@
   This is opt-in, dense validation-scale, and partial; t\>=2 known-truth
   recovery, external comparator parity, and long-format/structured
   covariance grammar remain planned.
+- [`G_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  and
+  [`R_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  now alias
+  [`genetic_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  and
+  [`residual_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  for `hsquared_fit` objects, giving multivariate users the familiar G/R
+  matrix names without changing the underlying extractor contract.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
