@@ -2501,3 +2501,29 @@ with private memory.
   - GitHub Actions R-CMD-check `27483872069`: passed.
   - GitHub Actions pkgdown `27483872067`: passed.
   - GitHub Pages build/deploy `27483901956`: passed.
+
+## 2026-06-13 Opt-in maternal-genetic two-effect model (Phase 2)
+
+- Goal: third Phase 2 increment — surface the maternal-genetic model (direct
+  additive + maternal genetic effect via the dam, both pedigree A) behind the
+  opt-in `two_effect` fence, reusing the common-environment infrastructure. Twin
+  gate `V3-TWOEFFECT-REML` is `partial`.
+- Active lenses: Ada, Hopper, Henderson, Emmy, Curie, Rose, Falconer. Spawned
+  subagents: review `wrgi3zo2o` (hopper-alignment + rose-honesty), 0 blocking,
+  0 should-fix; the Z2/Ainv2 pedigree-alignment concern verified correct.
+- `maternal_genetic(1 | dam)` parsed with `relationship = "pedigree"`; the
+  two-effect bridge branches on relationship (pedigree → `Ainv2 = hsq_Ainv`,
+  `ids2 = hsq_ped.ids`; identity → sparse identity). New `maternal_effects()`
+  extractor. The two-effect validation row was broadened (still 18 rows).
+- Files: `R/{model-spec,bridge-payload,julia-bridge,hsquared,extractors,
+  formula-status,validation-status,hs_control}.R`, `NAMESPACE`, `man/*`,
+  `NEWS.md`, `ROADMAP.md`, `_pkgdown.yml`,
+  `docs/design/{capability-status,06-public-claims-register}.md`,
+  `tests/testthat/{test-maternal,test-repeatability,test-formula-animal,
+  test-phase0-api}.R`.
+- Local checks: `air format`; `devtools::document()`; **`pkg::`-vs-Imports grep**
+  (lesson applied) + **`check_pkgdown()` clean**; full `testthat` with juliaup +
+  `NOT_CRAN` + sommer + enhancer (live maternal fit ran) — 0/0/0;
+  `rcmdcheck(--as-cran)` 0/0/1 (benign).
+- Local commit `803793d`. Remote checks for `803793d`: GitHub Actions R-CMD-check
+  `27484321173` + pkgdown `27484321186` (in progress; appended on completion).
