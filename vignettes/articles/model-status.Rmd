@@ -108,8 +108,10 @@ advanced opt-in engine controls.
 - Marker/QTL/eQTL extractor names: `marker_effects()`,
   `marker_variance_explained()`, `qtl_table()`, `gwas_table()`, `eqtl_table()`,
   and `lod_scores()`. `marker_effects()` returns the per-marker effects of an
-  opt-in SNP-BLUP fit (see above); the rest are still reserved and only return
-  values for future `hsquared_fit` objects that contain matching result fields.
+  opt-in SNP-BLUP fit, and `marker_variance_explained()` returns descriptive
+  fitted-marker shares for that same path (see above). Scan tables and LOD
+  outputs are still reserved and only return values for future `hsquared_fit`
+  objects that contain matching result fields.
 - `hs_data()` as a lightweight input container with ID maps for phenotype,
   pedigree, genotype, expression, marker, annotation, and environment inputs.
 - `summary(hs_data(...))` reports ID overlap and mismatch counts for

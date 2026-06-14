@@ -83,6 +83,50 @@ test_that("snp_blup variance components must be named sigma_g2 / sigma_e2", {
   )
 })
 
+test_that("snp_blup normalizer reports descriptive marker variance shares", {
+  markers <- matrix(
+    c(
+      0, 1, 2,
+      0, 0, 2,
+      1, 1, 1
+    ),
+    nrow = 3,
+    ncol = 3
+  )
+  payload <- list(
+    ids = paste0("g", 1:3),
+    markers = markers,
+    marker_names = c("m1", "m2", "m3"),
+    y = c(1, 2, 3),
+    metadata = list(fixed_colnames = "(Intercept)")
+  )
+  raw <- list(
+    beta = 1,
+    gebv = c(0.1, -0.2, 0.3),
+    marker_effects = c(1, 2, 3),
+    p = colMeans(markers) / 2,
+    fitted = c(1.1, 1.8, 3.3),
+    nobs = 3
+  )
+
+  result <- hsquared:::hs_normalize_julia_snp_blup_result(
+    raw,
+    payload,
+    c(sigma_g2 = 1, sigma_e2 = 2)
+  )
+  mve <- result$marker_variance_explained
+  centered <- sweep(markers, 2, colMeans(markers), check.margin = FALSE)
+  expected_contribution <- colMeans(centered^2) * raw$marker_effects^2
+
+  expect_equal(mve$marker, c("m1", "m2", "m3"))
+  expect_equal(mve$effect, raw$marker_effects)
+  expect_equal(result$marker_allele_frequencies, raw$p)
+  expect_equal(mve$contribution, expected_contribution)
+  expect_equal(sum(mve$proportion, na.rm = TRUE), 1)
+  expect_equal(mve$contribution[3], 0)
+  expect_equal(mve$proportion[3], 0)
+})
+
 test_that("hsquared fits opt-in SNP-BLUP marker effects from a marker matrix", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
@@ -120,6 +164,14 @@ test_that("hsquared fits opt-in SNP-BLUP marker effects from a marker matrix", {
   expect_equal(nrow(me), m)
   expect_true(all(is.finite(me$effect)))
   expect_equal(me$marker[1], "snp1")
+
+  # Descriptive fitted-marker shares: not scan p-values or QTL evidence.
+  mve <- marker_variance_explained(fit)
+  expect_equal(nrow(mve), m)
+  expect_equal(mve$marker[1], "snp1")
+  expect_true(all(is.finite(mve$contribution)))
+  expect_true(all(mve$contribution >= 0))
+  expect_equal(sum(mve$proportion, na.rm = TRUE), 1, tolerance = 1e-8)
 
   # Per-individual genomic breeding values: one per genotyped individual.
   bv <- breeding_values(fit)

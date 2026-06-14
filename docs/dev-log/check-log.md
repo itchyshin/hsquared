@@ -3936,3 +3936,71 @@ Remote follow-up for committed slice `774284f`:
   - GitHub Actions R-CMD-check `27508736392`: passed in 1m54s.
   - GitHub Actions pkgdown `27508736390`: passed in 1m48s.
   - GitHub Pages build/deployment `27508781835`: passed.
+
+## 2026-06-14 SNP-BLUP marker variance explained
+
+- Rehydrated R repo:
+  - `git status --short --branch` - `main` tracking `origin/main`, with
+    the open SNP-BLUP marker-variance slice in the working tree.
+  - `/opt/homebrew/bin/gh run list --limit 8` - latest remote R-CMD-check,
+    pkgdown, and Pages runs were green for `93ff682`.
+- Theme check prompted by maintainer screenshot:
+  - `curl -L --max-time 20 -s https://itchyshin.github.io/hsquared/extra.css`
+    confirmed the deployed CSS already pins the navbar to sky blue
+    `#0ea5e9`.
+  - No theme files were edited in this slice.
+- Jason scout:
+  - Checked local `HSquared.jl/src/genomic.jl`, where `centered_markers()`
+    defines `W = M - 2p` and `fit_snp_blup()` fits marker effects at supplied
+    variances.
+  - Checked local `HSquared.jl/docs/src/genomic-models.md` and the twin
+    SNP-BLUP after-task report for the supplied-variance boundary.
+  - Checked VanRaden (2008), "Efficient Methods to Compute Genomic
+    Predictions", DOI `10.3168/jds.2007-0980`, and Meuwissen, Hayes, and
+    Goddard (2001), "Prediction of Total Genetic Value Using Genome-Wide Dense
+    Marker Maps", DOI `10.1093/genetics/157.4.1819`.
+  - Recorded persistent notes in
+    `docs/dev-log/scout/2026-06-14-snp-blup-marker-variance-explained-scout.md`.
+- Implementation:
+  - The SNP-BLUP Julia bridge now requests the marker allele-frequency vector
+    `p` from `HSquared.fit_snp_blup()`.
+  - `hs_normalize_julia_snp_blup_result()` now stores
+    `marker_allele_frequencies` and a `marker_variance_explained` result.
+  - `marker_variance_explained()` now returns a live result for opt-in
+    SNP-BLUP fits, with fallback derivation from the stored payload if needed.
+  - The contribution is descriptive:
+    `effect^2 * centered_marker_variance`, normalized across fitted markers.
+    It is not a marker scan, p-value, LOD score, QTL result, or causal
+    decomposition under linkage disequilibrium.
+- Formatting:
+  - `command -v air || true` - no `air` binary on PATH.
+- Documentation:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::document()"` - passed; `man/marker_extractors.Rd` regenerated.
+    Unrelated roxygen metadata churn was trimmed before closeout.
+- Focused tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::test(filter = 'snp-blup|fit-object')"` - passed, 0 failures /
+    0 warnings / 1 skip / 100 passes.
+- Full tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::test()"` - passed, 0 failures / 0 warnings / 32 skips / 632
+    passes.
+- `git diff --check` - passed before closeout.
+- Pkgdown:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+    errors / 0 warnings / 0 notes. The check reported INFO for optional
+    suggested packages not available locally (`enhancer`, `nadiv`, and
+    `pedigreemm`).
+- Rose claim check:
+  - Public wording now allows live `marker_effects()` and
+    `marker_variance_explained()` only for opt-in supplied-variance SNP-BLUP.
+  - QTL, GWAS, eQTL, marker scanning, p-values, LOD scores, fine mapping,
+    causal marker-variance claims, and production genomic prediction remain
+    planned or blocked unless future engine evidence exists.

@@ -83,9 +83,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
   single-step from planned H construction, APY, QTL/GWAS/eQTL, and production
   comparator work.
 - QTL/GWAS/eQTL status article: a pkgdown article now separates the reserved
-  scan vocabulary and live SNP-BLUP `marker_effects()` output from planned
-  marker scans, QTL interval scans, GWAS/eQTL tables, scan plots, LOCO, and
-  production scale.
+  scan vocabulary and live SNP-BLUP `marker_effects()` /
+  `marker_variance_explained()` output from planned marker scans, QTL interval
+  scans, GWAS/eQTL tables, scan plots, LOCO, and production scale.
 - QTL extension boundary: `hsquared` keeps simple formula/status/result
   vocabulary; high-throughput QTL/GWAS/eQTL execution, file-backed scan
   infrastructure, plots, fine-mapping, and GPU/HPC scan kernels belong in
@@ -158,7 +158,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 29 | Julia | Add APY approximation prototype. | Numerical agreement and memory benchmarks. |
 | 30 | R/docs | Add genomic prediction vignette: GBLUP, SNP-BLUP, supplied variances, and boundaries. | done: article added; no JWAS/ASReml replacement, APY, marker-scan, H-construction, or production-comparator claim |
 | 31 | Julia | Add marker-effect REML or AI-REML variance estimation for SNP-BLUP. | Supplied-variance status can move only after recovery. |
-| 32 | R | Add `marker_variance_explained()` for real marker-effect fits. | Output validated. |
+| 32 | R | Add `marker_variance_explained()` for real marker-effect fits. | done: opt-in SNP-BLUP fits now return descriptive fitted-marker shares; no scan/QTL/p-value claim |
 | 33 | Julia | Add single-marker scan kernel with kinship correction. | Tiny GWAS fixtures. |
 | 34 | R | Expose `marker_scan()` as opt-in once engine scan results are stable. | Multiple-testing and LOCO wording clear. |
 | 35 | Julia | Add LOCO support for mixed-model scans. | Chromosome holdout tests. |

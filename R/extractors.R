@@ -748,10 +748,14 @@ hs_diagnostic_value <- function(x) {
 #'
 #' These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
 #' They return values only when an `hsquared_fit` object contains the
-#' corresponding result field. `marker_effects()` is populated by the opt-in
-#' SNP-BLUP path (`target = "snp_blup"`); the remaining names are reserved for
-#' future results. The current package does not fit marker-scan, QTL, GWAS, or
-#' eQTL models.
+#' corresponding result field. `marker_effects()` and
+#' `marker_variance_explained()` are populated by the opt-in SNP-BLUP path
+#' (`target = "snp_blup"`). The variance-explained table is a descriptive
+#' fitted-marker share, computed as effect squared times centered marker
+#' variance and normalized across markers; it is not a marker-scan p-value,
+#' QTL statistic, or causal decomposition under linkage disequilibrium. The
+#' remaining names are reserved for future results. The current package does
+#' not fit marker-scan, QTL, GWAS, or eQTL models.
 #'
 #' @inheritParams variance_components
 #'
@@ -789,6 +793,30 @@ marker_variance_explained.default <- function(object, ...) {
 
 #' @export
 marker_variance_explained.hsquared_fit <- function(object, ...) {
+  if (!is.null(object$result$marker_variance_explained)) {
+    return(object$result$marker_variance_explained)
+  }
+  if (
+    identical(object$spec$target, "snp_blup") &&
+      !is.null(object$result$marker_effects) &&
+      !is.null(object$payload$markers)
+  ) {
+    marker_design <- if (!is.null(object$payload$Z)) {
+      as.matrix(object$payload$Z %*% object$payload$markers)
+    } else {
+      object$payload$markers
+    }
+    allele_frequencies <- object$result$marker_allele_frequencies
+    if (length(allele_frequencies) == 0L) {
+      allele_frequencies <- NULL
+    }
+    return(hs_marker_variance_explained_from_snp_blup(
+      effects = object$result$marker_effects$effect,
+      markers = marker_design,
+      marker_labels = object$result$marker_effects$marker,
+      allele_frequencies = allele_frequencies
+    ))
+  }
   hs_fit_result(
     object,
     "marker_variance_explained",
@@ -864,9 +892,11 @@ hs_marker_extractor_default <- function(name) {
   stop(
     "`",
     name,
-    "()` requires an `hsquared_fit` object with future marker/QTL/eQTL ",
-    "results. The current package reserves this extractor name but does not ",
-    "fit marker-scan, QTL, GWAS, or eQTL models yet.",
+    "()` requires an `hsquared_fit` object with marker/QTL/eQTL results. ",
+    "`marker_effects()` and `marker_variance_explained()` are populated only ",
+    "by opt-in SNP-BLUP fits; the current package reserves the other marker ",
+    "extractor names but does not fit marker-scan, QTL, GWAS, or eQTL models ",
+    "yet.",
     call. = FALSE
   )
 }

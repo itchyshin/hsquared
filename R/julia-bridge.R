@@ -1029,6 +1029,7 @@ hs_fit_julia_snp_blup_payload <- function(
     "\"marker_effects\" => hsq_snp.marker_effects,",
     "\"gebv\" => hsq_gebv_ind,",
     "\"beta\" => hsq_snp.beta,",
+    "\"p\" => hsq_snp.p,",
     "\"fitted\" => hsq_fitted,",
     "\"k\" => hsq_snp.k,",
     "\"nobs\" => length(hsq_y)",
@@ -1075,6 +1076,12 @@ hs_normalize_julia_snp_blup_result <- function(
   if (is.null(marker_labels) || length(marker_labels) != length(effects)) {
     marker_labels <- as.character(seq_along(effects))
   }
+  markers_rec <- if (!is.null(payload$Z)) {
+    as.matrix(payload$Z %*% payload$markers)
+  } else {
+    payload$markers
+  }
+  marker_allele_frequencies <- if (!is.null(raw$p)) as.numeric(raw$p) else NULL
 
   list(
     variance_components = data.frame(
@@ -1091,6 +1098,13 @@ hs_normalize_julia_snp_blup_result <- function(
       marker = as.character(marker_labels),
       effect = effects
     ),
+    marker_allele_frequencies = marker_allele_frequencies,
+    marker_variance_explained = hs_marker_variance_explained_from_snp_blup(
+      effects = effects,
+      markers = markers_rec,
+      marker_labels = marker_labels,
+      allele_frequencies = marker_allele_frequencies
+    ),
     random_effects = list(genomic = genomic_bv),
     predictions = data.frame(.fitted = as.numeric(raw$fitted)),
     nobs = as.integer(raw$nobs),
@@ -1101,6 +1115,84 @@ hs_normalize_julia_snp_blup_result <- function(
       n_markers = length(effects)
     ),
     converged = TRUE
+  )
+}
+
+hs_marker_variance_explained_from_snp_blup <- function(
+  effects,
+  markers,
+  marker_labels = NULL,
+  allele_frequencies = NULL
+) {
+  effects <- as.numeric(effects)
+  markers <- as.matrix(markers)
+
+  if (!is.numeric(markers) || ncol(markers) != length(effects)) {
+    stop(
+      "Internal bridge error: marker effects and marker matrix columns are ",
+      "not aligned.",
+      call. = FALSE
+    )
+  }
+  if (nrow(markers) < 1L || ncol(markers) < 1L) {
+    stop("Internal bridge error: marker matrix is empty.", call. = FALSE)
+  }
+  if (any(!is.finite(effects)) || any(!is.finite(markers))) {
+    stop(
+      "Internal bridge error: marker variance explained requires finite ",
+      "marker effects and marker dosages.",
+      call. = FALSE
+    )
+  }
+  if (!is.null(allele_frequencies)) {
+    allele_frequencies <- as.numeric(allele_frequencies)
+    if (
+      length(allele_frequencies) != ncol(markers) ||
+        any(!is.finite(allele_frequencies))
+    ) {
+      stop(
+        "Internal bridge error: allele frequencies must align with marker ",
+        "columns.",
+        call. = FALSE
+      )
+    }
+    if (any(allele_frequencies < 0 | allele_frequencies > 1)) {
+      stop(
+        "Internal bridge error: allele frequencies must lie in [0, 1].",
+        call. = FALSE
+      )
+    }
+  }
+
+  if (is.null(marker_labels) || length(marker_labels) != length(effects)) {
+    marker_labels <- colnames(markers)
+  }
+  if (is.null(marker_labels) || length(marker_labels) != length(effects)) {
+    marker_labels <- as.character(seq_along(effects))
+  }
+
+  center <- if (is.null(allele_frequencies)) {
+    colMeans(markers)
+  } else {
+    2 * allele_frequencies
+  }
+  centered <- sweep(markers, 2L, center, check.margin = FALSE)
+  centered_marker_variance <- colMeans(centered^2)
+  contribution <- centered_marker_variance * effects^2
+  total <- sum(contribution)
+  proportion <- if (isTRUE(total > 0)) {
+    contribution / total
+  } else {
+    rep(NA_real_, length(contribution))
+  }
+
+  data.frame(
+    marker = as.character(marker_labels),
+    effect = effects,
+    centered_marker_variance = as.numeric(centered_marker_variance),
+    contribution = as.numeric(contribution),
+    proportion = as.numeric(proportion),
+    stringsAsFactors = FALSE
   )
 }
 

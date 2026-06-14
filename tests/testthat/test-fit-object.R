@@ -187,6 +187,11 @@ test_that("extractor defaults do not imply fitted model support", {
     fixed = TRUE
   )
   expect_error(
+    marker_variance_explained(list()),
+    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    fixed = TRUE
+  )
+  expect_error(
     qtl_table(list()),
     "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
     fixed = TRUE
@@ -328,6 +333,11 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     qtl_table(fit),
     "does not contain QTL table",
+    fixed = TRUE
+  )
+  expect_error(
+    marker_variance_explained(fit),
+    "does not contain marker variance explained",
     fixed = TRUE
   )
   expect_error(
