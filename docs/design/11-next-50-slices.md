@@ -34,6 +34,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
   under `inst/comparator-scripts/`, with dry-run checks and a `docs/dev-log/
   comparator-runs/` provenance folder. They are templates/manual gates only, not
   run evidence.
+- Dedicated multivariate validation issue ledger: opened as
+  `hsquared#10` and cross-linked from validation canon issue #7. Status remains
+  `partial`.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -65,7 +68,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | Placeholders do not imply fitting. |
 | 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | Pat/Darwin/Kirkpatrick review. |
 | 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
-| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; a separate covered comparator row waits for full same-estimand or manual ASReml/BLUPF90 evidence. |
+| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; dedicated issue #10 tracks full same-estimand, ASReml/BLUPF90, and recovery gates before any covered row. |
 | 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | Avoid duplicate confusing extractors. |
 | 25 | Julia | Implement genomic relationship scaling/blending options. | G/GINV tests against known formulas. |
 | 26 | R | Expose marker-to-G controls with simple names and safe defaults. | Jason/Hopper review. |

@@ -2790,6 +2790,32 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `d7fe473` (all green):
+  - GitHub Actions R-CMD-check `27500692937`: passed.
+  - GitHub Actions pkgdown `27500692932`: passed.
+  - GitHub Pages build/deployment `27500735239`: passed.
+
+## 2026-06-14 Multivariate validation issue ledger
+
+- Created focused GitHub issue:
+  `https://github.com/itchyshin/hsquared/issues/10`
+  (`Multivariate validation: comparator and recovery gates`), labelled
+  `validation`, `roadmap`, `r-package`, `julia-engine`, and `status:partial`.
+- Cross-linked from validation canon issue #7:
+  `https://github.com/itchyshin/hsquared/issues/7#issuecomment-4701935017`.
+- Verification:
+  - `/opt/homebrew/bin/gh issue view 10 --repo itchyshin/hsquared --json number,title,labels,url,state`
+    showed issue #10 open with the expected labels.
+  - `/opt/homebrew/bin/gh issue view 7 --repo itchyshin/hsquared --comments --json comments --jq '.comments[-1].url'`
+    returned the #7 cross-link comment URL above.
+- `git diff --check` — passed.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 - Remote checks for `9b9a11d` (all green):
   - GitHub Actions R-CMD-check `27500382900`: passed.
   - GitHub Actions pkgdown `27500382897`: passed.
