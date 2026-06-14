@@ -86,6 +86,11 @@ check-log evidence, an after-task report, and an updated claim boundary.
   scan vocabulary and live SNP-BLUP `marker_effects()` output from planned
   marker scans, QTL interval scans, GWAS/eQTL tables, scan plots, LOCO, and
   production scale.
+- QTL extension boundary: `hsquared` keeps simple formula/status/result
+  vocabulary; high-throughput QTL/GWAS/eQTL execution, file-backed scan
+  infrastructure, plots, fine-mapping, and GPU/HPC scan kernels belong in
+  optional future `hsquaredQTL` / `HSquaredQTL.jl` extensions unless a tiny
+  core scan target is dependency-light and fully validated.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -132,7 +137,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 35 | Julia | Add LOCO support for mixed-model scans. | Chromosome holdout tests. |
 | 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; no marker-scan, QTL, GWAS, eQTL, scan-plot, LOCO, or production-scale claim |
 | 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
-| 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | Ada/Rose decision recorded. |
+| 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | done: core keeps simple vocabulary/result contract; heavy scans, file-backed data, plots, fine-mapping, and accelerator scan kernels are extension-bound |
 | 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |
 | 40 | R | Design wide-response matrix syntax without crowding the core animal model. | Pat/Boole signoff. |
 | 41 | Julia | Add Poisson / negative-binomial Laplace prototype. | Non-Gaussian validation fixture. |

@@ -3477,3 +3477,27 @@ with private memory.
   - GitHub Actions R-CMD-check `27504500020`: passed.
   - GitHub Actions pkgdown `27504500023`: passed.
   - GitHub Pages build/deployment `27504554393`: passed.
+
+## 2026-06-14 QTL extension boundary decision
+
+- Added `docs/design/15-qtl-extension-boundary.md`, recording the boundary that
+  core `hsquared` owns simple formula/status/result vocabulary while heavy
+  QTL/GWAS/eQTL scan execution, file-backed scan infrastructure, plotting,
+  fine-mapping, and accelerator/HPC scan kernels belong in optional future
+  `hsquaredQTL` / `HSquaredQTL.jl` extensions unless a tiny core scan target is
+  dependency-light and fully validated.
+- Updated `docs/design/05-roadmap.md` and `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `1dfbaa0` (all green):
+  - GitHub Actions R-CMD-check `27504816062`: passed.
+  - GitHub Actions pkgdown `27504816046`: passed.
+  - GitHub Pages build/deployment `27504863586`: passed.

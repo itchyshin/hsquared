@@ -48,6 +48,10 @@ marker-derived genomic relationships, and first QTL-style feature effects.
 XSim.jl-style simulation should become part of the validation canon before
 public genomic claims are widened.
 
+The QTL/GWAS/eQTL boundary between the core package and optional future
+extensions is recorded in
+`docs/design/15-qtl-extension-boundary.md`.
+
 ## Phase 6
 
 Add non-Gaussian and GLLVM-style animal models.
