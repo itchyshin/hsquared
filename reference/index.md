@@ -46,16 +46,19 @@ Current parser entry points and planned fitting controls.
 
 Extractors for fitted `hsquared_fit` objects. The default
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-call fits the v0.1 Gaussian animal model;
-[`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md)/[`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
-and
-[`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md)
-come from the opt-in, experimental two-effect models.
+call fits the v0.1 Gaussian animal model; repeatability, two-effect,
+genomic, SNP-BLUP, and multivariate outputs come from opt-in
+experimental targets.
 
 - [`variance_components()`](https://itchyshin.github.io/hsquared/reference/variance_components.md)
   : Extract variance components
 - [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
   : Extract heritability estimates
+- [`genetic_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  [`residual_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  [`genetic_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  [`residual_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  : Extract multivariate covariance and correlation matrices
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   [`BLUP()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)

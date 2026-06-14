@@ -57,10 +57,11 @@
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   has an `engine = "julia"` option that exposes advanced engine targets
   (supplied-variance Henderson MME, the opt-in sparse REML optimizer,
-  and explicit `ai_reml` control) through a sibling `HSquared.jl`
-  checkout via JuliaCall. The default `engine = "fit"` already fits the
-  v0.1 model via `ai_reml`; general (multivariate/genomic/non-Gaussian)
-  fitted-model support is still planned
+  explicit `ai_reml` control, repeatability/two-effect/genomic/SNP-BLUP
+  targets, and the opt-in multivariate target) through a sibling
+  `HSquared.jl` checkout via JuliaCall. The default `engine = "fit"`
+  already fits the v0.1 model via `ai_reml`; non-Gaussian fitted-model
+  support is still planned
   ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   now recognizes an experimental, opt-in
@@ -164,6 +165,29 @@
   `V2-SNPBLUP` gate (the GBLUP↔︎SNP-BLUP genomic-breeding-value
   equivalence). REML estimation of the marker variance,
   weighted/Bayesian marker priors, and comparator parity remain planned.
+- **Experimental, opt-in multivariate Gaussian animal model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now parses
+  `cbind(trait1, trait2, ...) ~ fixed + animal(1 | id, pedigree = ped)`
+  and fits it through `engine_control = list(target = "multivariate")`,
+  surfacing the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
+  dense estimator. It returns G/R covariance matrices, genetic and
+  residual correlations, per-trait heritability, and cross-trait EBVs
+  through
+  [`genetic_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md),
+  [`residual_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md),
+  [`genetic_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md),
+  [`residual_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md),
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md),
+  and
+  [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md).
+  Missing trait cells are accepted as `NA` and marshal to Julia `NaN`;
+  rank-deficient fixed-effect designs are rejected up front;
+  non-converged fits do not expose
+  [`logLik()`](https://rdrr.io/r/stats/logLik.html)/[`AIC()`](https://rdrr.io/r/stats/AIC.html).
+  This is opt-in, dense validation-scale, and partial; t\>=2 known-truth
+  recovery, external comparator parity, and long-format/structured
+  covariance grammar remain planned.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

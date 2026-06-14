@@ -37,8 +37,10 @@ honest.
   the HSquared.jl engine), package scaffold, pkgdown, parser
   diagnostics, data-container diagnostics, fitted-object extractors.
 - Experimental: opt-in local Julia bridge targets for supplied-variance
-  Henderson MME checks and the REML-only sparse optimizer.
-- Planned: multivariate/genomic production fitting, QTL/eQTL, GLLVMs,
+  Henderson MME checks, REML optimizers,
+  repeatability/two-effect/genomic/SNP-BLUP paths, and multivariate
+  REML.
+- Planned: production multivariate/genomic fitting, QTL/eQTL, GLLVMs,
   unusual inheritance, ML estimation, and real backend execution.
 
 ### Julia Twin Boundary
@@ -88,7 +90,7 @@ backends, checkpoints, benchmarks.
 | Surface | Status | Evidence |
 |----|----|----|
 | Formula parser | partial | `animal(1 | id, pedigree = ped)` and [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md) pedigree shorthand parse and validate. |
-| Bridge payload | partial | Tests pin `y`, `X`, sparse `Z`, IDs, method, family, pedigree metadata. |
+| Bridge payload | partial | Tests pin `y` or multivariate `Y`, `X`, sparse `Z`, IDs, method, family, pedigree metadata. |
 | Validation atoms | partial | Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, sparse REML identity, and Mrode-style supplied-variance output checks. |
 | Fit object | partial | Extractor contract exists for objects that contain matching result fields. |
 | Data container | partial | [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md) checks phenotype, pedigree, genotype, marker, expression, annotation, and environment metadata. |
@@ -96,15 +98,16 @@ backends, checkpoints, benchmarks.
 
 ### Blocked Claims
 
-- No fitting beyond the v0.1 univariate Gaussian animal model (the
-  default fits that model; multivariate, genomic, factor-analytic, and
-  non-Gaussian models remain planned).
+- No production fitting beyond the v0.1 univariate Gaussian animal
+  model. Genomic, repeatability, two-effect, SNP-BLUP, and multivariate
+  targets are opt-in experimental; factor-analytic and non-Gaussian
+  models remain planned.
 - No standard errors / confidence intervals for variance components or
   h2 (out of v0.1 scope).
 - No ASReml/BLUPF90-family multi-package parity or large-scale (\>10k)
   production-fitting claim; the v0.1 fit is validated to gryphon scale
   (~1300 animals) and on clean simulated pedigrees.
-- No genomic prediction, marker scan, QTL/eQTL, GLLVM, or
+- No production genomic prediction, marker scan, QTL/eQTL, GLLVM, or
   unusual-inheritance fitting claim.
 - No CPU/GPU execution, backend benchmark, or speedup claim.
 

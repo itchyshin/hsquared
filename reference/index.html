@@ -130,7 +130,7 @@
       </dl></div><div class="section level2">
       <h2 id="extractor-contract">Extractor contract<a class="anchor" aria-label="anchor" href="#extractor-contract"></a></h2>
 
-      <div class="section-desc"><p>Extractors for fitted <code>hsquared_fit</code> objects. The default <code><a href="../reference/hsquared.html">hsquared()</a></code> call fits the v0.1 Gaussian animal model; <code><a href="../reference/repeatability.html">repeatability()</a></code>/<code><a href="../reference/permanent_effects.html">permanent_effects()</a></code> and <code><a href="../reference/common_env_effects.html">common_env_effects()</a></code> come from the opt-in, experimental two-effect models.</p></div>
+      <div class="section-desc"><p>Extractors for fitted <code>hsquared_fit</code> objects. The default <code><a href="../reference/hsquared.html">hsquared()</a></code> call fits the v0.1 Gaussian animal model; repeatability, two-effect, genomic, SNP-BLUP, and multivariate outputs come from opt-in experimental targets.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -150,6 +150,13 @@
 
         </dt>
         <dd>Extract heritability estimates</dd>
+
+        <dt>
+
+          <code><a href="multivariate_extractors.html">genetic_covariance()</a></code> <code><a href="multivariate_extractors.html">residual_covariance()</a></code> <code><a href="multivariate_extractors.html">genetic_correlation()</a></code> <code><a href="multivariate_extractors.html">residual_correlation()</a></code>
+
+        </dt>
+        <dd>Extract multivariate covariance and correlation matrices</dd>
 
         <dt>
 

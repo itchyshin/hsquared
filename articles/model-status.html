@@ -291,6 +291,12 @@ Returns per-marker effects via <code><a href="../reference/marker_extractors.htm
 per-individual genomic breeding values at the supplied variances (it
 does not estimate them). Mirrors the twin <code>V2-SNPBLUP</code>
 gate.</li>
+<li>Multivariate Gaussian animal model —
+<code>cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)</code>,
+<code>target = "multivariate"</code>. Returns G/R covariance and
+correlation matrices, per-trait h2, and cross-trait EBVs; missing trait
+cells may be <code>NA</code>. Dense validation-scale only; t&gt;=2
+recovery and external-comparator evidence remain planned.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -322,9 +328,11 @@ planned-not-implemented, and a bare lme4-style
 effects above (it is never silently absorbed into the fixed
 effects).</li>
 <li>
-<strong>One response (univariate).</strong> A single numeric
-response; multi-trait <code>cbind(...)</code> responses are planned
-(Phase 3, engine work in progress on the twin).</li>
+<strong>One default response, plus opt-in
+<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code>.</strong> The default path is a single numeric
+response. Multi-trait <code>cbind(...)</code> responses fit only through
+the experimental <code>engine = "julia", target = "multivariate"</code>
+path.</li>
 <li>
 <strong>Gaussian identity link only.</strong> Other families are
 planned, not implemented.</li>
@@ -347,8 +355,8 @@ names each unsupported form rather than guessing.</p>
 </h2>
 <ul>
 <li>General default model fitting beyond the v0.1 univariate Gaussian
-animal model (multivariate, non-Gaussian, and the reserved inheritance
-kernels). The standard two-effect, repeatability, genomic, and
+animal model (non-Gaussian and the reserved inheritance kernels). The
+multivariate, standard two-effect, repeatability, genomic, SNP-BLUP, and
 single-step models fit only opt-in and experimentally (see above).</li>
 <li>ML estimation on the fit path (<code>REML = FALSE</code> is
 rejected; only REML is implemented).</li>

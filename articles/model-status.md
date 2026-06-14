@@ -214,6 +214,12 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   plus per-individual genomic breeding values at the supplied variances
   (it does not estimate them). Mirrors the twin `V2-SNPBLUP` gate.
+- Multivariate Gaussian animal model —
+  `cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)`,
+  `target = "multivariate"`. Returns G/R covariance and correlation
+  matrices, per-trait h2, and cross-trait EBVs; missing trait cells may
+  be `NA`. Dense validation-scale only; t\>=2 recovery and
+  external-comparator evidence remain planned.
 
 ## Current limits
 
@@ -236,9 +242,11 @@ deliberately narrow; these are the structural limits (not yet
   lme4-style `(... | group)` term is rejected with a pointer to the
   named effects above (it is never silently absorbed into the fixed
   effects).
-- **One response (univariate).** A single numeric response; multi-trait
-  `cbind(...)` responses are planned (Phase 3, engine work in progress
-  on the twin).
+- **One default response, plus opt-in
+  [`cbind()`](https://rdrr.io/r/base/cbind.html).** The default path is
+  a single numeric response. Multi-trait `cbind(...)` responses fit only
+  through the experimental `engine = "julia", target = "multivariate"`
+  path.
 - **Gaussian identity link only.** Other families are planned, not
   implemented.
 - **REML only on the fit path.** `REML = FALSE` (ML) is rejected; the
@@ -254,9 +262,9 @@ names each unsupported form rather than guessing.
 ## Not implemented yet
 
 - General default model fitting beyond the v0.1 univariate Gaussian
-  animal model (multivariate, non-Gaussian, and the reserved inheritance
-  kernels). The standard two-effect, repeatability, genomic, and
-  single-step models fit only opt-in and experimentally (see above).
+  animal model (non-Gaussian and the reserved inheritance kernels). The
+  multivariate, standard two-effect, repeatability, genomic, SNP-BLUP,
+  and single-step models fit only opt-in and experimentally (see above).
 - ML estimation on the fit path (`REML = FALSE` is rejected; only REML
   is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).

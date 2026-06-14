@@ -109,9 +109,11 @@ fit <- hsquared(
 )
 ```
 
-The marker-scan, multi-term, and multivariate examples above are syntax
-targets only and do not fit models today. The single genomic and
-single-step effects do fit opt-in (see “Fitting models”).
+The marker-scan, multi-term, and high-dimensional multivariate examples
+above are syntax targets only and do not fit models today. The single
+genomic, single-step, SNP-BLUP, and simple
+[`cbind()`](https://rdrr.io/r/base/cbind.html) multivariate animal-model
+paths fit only opt-in and experimentally (see “Fitting models”).
 
 ## Planned multivariate and GLLVM path
 

@@ -7,7 +7,9 @@ univariate Gaussian animal model
 `HSquared.jl` engine. The default `control` fits when a local Julia and
 `HSquared.jl` are available and otherwise errors with install guidance;
 `hs_control(engine = "validate")` validates the contract without
-fitting. Multivariate, genomic, and non-Gaussian models remain planned.
+fitting. Genomic, repeatability, two-effect, marker-effect, and
+multivariate models are opt-in experimental paths; non-Gaussian models
+remain planned.
 
 ## Usage
 

@@ -5,13 +5,15 @@ Gaussian animal model y ~ fixed + animal(1 | id, pedigree = ped) by REML
 through the HSquared.jl engine. The default control fits when a local
 Julia and HSquared.jl are available and otherwise errors with install
 guidance; hs_control(engine = "validate") validates the contract without
-fitting. Multivariate, genomic, and non-Gaussian models remain planned.'><meta property="og:description" content='hsquared() is the R entry point for heritability, breeding-value,
+fitting. Genomic, repeatability, two-effect, marker-effect, and multivariate
+models are opt-in experimental paths; non-Gaussian models remain planned.'><meta property="og:description" content='hsquared() is the R entry point for heritability, breeding-value,
 G-matrix, and inheritance-structured mixed models. v0.1 fits the univariate
 Gaussian animal model y ~ fixed + animal(1 | id, pedigree = ped) by REML
 through the HSquared.jl engine. The default control fits when a local
 Julia and HSquared.jl are available and otherwise errors with install
 guidance; hs_control(engine = "validate") validates the contract without
-fitting. Multivariate, genomic, and non-Gaussian models remain planned.'></head><body>
+fitting. Genomic, repeatability, two-effect, marker-effect, and multivariate
+models are opt-in experimental paths; non-Gaussian models remain planned.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -62,7 +64,8 @@ Gaussian animal model <code>y ~ fixed + animal(1 | id, pedigree = ped)</code> by
 through the <code>HSquared.jl</code> engine. The default <code>control</code> fits when a local
 Julia and <code>HSquared.jl</code> are available and otherwise errors with install
 guidance; <code>hs_control(engine = "validate")</code> validates the contract without
-fitting. Multivariate, genomic, and non-Gaussian models remain planned.</p>
+fitting. Genomic, repeatability, two-effect, marker-effect, and multivariate
+models are opt-in experimental paths; non-Gaussian models remain planned.</p>
     </div>
 
     <div class="section level2">

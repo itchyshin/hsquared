@@ -119,8 +119,16 @@ gate).
 
 ## Multivariate and factor-analytic grammar
 
-The multivariate ladder is planned to connect ordinary G matrices and
-GLLVM-style latent genetic structure:
+The first multivariate surface is the opt-in
+[`cbind()`](https://rdrr.io/r/base/cbind.html) animal-model path:
+
+``` r
+
+cbind(weight, height) ~ sex + animal(1 | id, pedigree = ped)
+```
+
+The longer multivariate ladder is planned to connect ordinary G matrices
+and GLLVM-style latent genetic structure:
 
 ``` r
 

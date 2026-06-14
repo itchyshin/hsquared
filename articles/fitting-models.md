@@ -181,7 +181,7 @@ formula_status()
 
     ## <hs_formula_status>
     ##   parsed today: animal(1 | id, pedigree = ped); animal(1 | id) with an hs_data pedigree
-    ##   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic fit opt-in; others parse-only
+    ##   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in; others parse-only
     ##                                                     term     phase
     ##                           animal(1 | id, pedigree = ped)   Phase 1
     ##  animal(1 | id) with data = hs_data(..., pedigree = ped)   Phase 1
@@ -202,6 +202,7 @@ formula_status()
     ##                             markers(M, model = "random")   Phase 5
     ##                         marker_scan(M, map = marker_map)   Phase 5
     ##               qtl_scan(position, genotype_probs = probs)   Phase 5
+    ##   cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped) Phase 3-4
     ##           animal(trait | id, pedigree = ped, cov = us()) Phase 3-4
     ##      animal(trait | id, pedigree = ped, cov = fa(K = 2)) Phase 3-4
     ##  syntax_status                     fitting_status
@@ -224,6 +225,7 @@ formula_status()
     ##       reserved                      not available
     ##       reserved                      not available
     ##       reserved                      not available
+    ##         parsed       fitted (opt-in multivariate)
     ##        planned                      not available
     ##        planned                      not available
 
@@ -246,6 +248,7 @@ validation_status()
     ##             experimental two-effect estimator (opt-in: common-env, maternal)
     ##  experimental supplied-relationship estimator (opt-in: genomic, single-step)
     ##        experimental SNP-BLUP marker-effect solve (opt-in, supplied-variance)
+    ##                            experimental multivariate REML estimator (opt-in)
     ##                 univariate Gaussian animal-model fit (default path, AI-REML)
     ##                      external published-REML recovery (gryphon, R reference)
     ##                    known-truth DGP variance-component recovery (R reference)
@@ -267,6 +270,7 @@ validation_status()
     ##   Phase 2 partial
     ##   Phase 5 partial
     ##   Phase 5 partial
+    ##   Phase 3 partial
     ##   Phase 1 covered
     ##   Phase 1 covered
     ##   Phase 1 covered

@@ -107,19 +107,19 @@ planned.
 
 ## Phase 3: Multivariate Gaussian Animal Models
 
-Status: planned (engine support is in progress on the twin). The Julia
-engine `HSquared.fit_multivariate_reml` (estimating the `t × t` genetic
-`G0` and residual `R0` covariances by REML, with missing-trait records,
-genetic correlations, per-trait h2, and cross-trait EBVs) exists on the
-twin branch `phase4-multivariate-reml` but is **not yet on Julia
-`main`**, so nothing is surfaceable from R yet. The R-side surfacing — a
-`cbind(...)` multi-trait grammar, the `Y`-matrix bridge payload, an
-opt-in `target = "multivariate"` fence mirroring the twin `V4-MV-REML`
-gate, and genetic-correlation / G / per-trait-h2 / cross-trait-EBV
-extractors — is designed against that engine contract in
-[`docs/design/09-multivariate-plan.md`](https://itchyshin.github.io/hsquared/docs/design/09-multivariate-plan.md)
-(status: planned; every grammar/estimand choice is a proposal awaiting
-the twin landing on `main` plus maintainer sign-off).
+Status: partial. The Julia engine `HSquared.fit_multivariate_reml`
+(estimating the `t × t` genetic `G0` and residual `R0` covariances by
+REML, with missing-trait records, genetic correlations, per-trait h2,
+and cross-trait EBVs) is on Julia `main`, and the R package surfaces it
+through an opt-in experimental
+`engine = "julia", target = "multivariate"` path. The R surface uses a
+`cbind(...)` multi-trait response grammar, an NA-preserving `Y` matrix
+payload, and genetic-correlation / G / per-trait-h2 / cross-trait-EBV
+extractors. This remains dense validation-scale and `partial`: no
+ASReml-style production multi-trait claim and no t\>=2 known-truth
+recovery claim until the twin adds committed recovery/comparator
+evidence. See
+[`docs/design/09-multivariate-plan.md`](https://itchyshin.github.io/hsquared/docs/design/09-multivariate-plan.md).
 
 - `cbind(...)` multi-trait response grammar.
 - Full G and R matrices.
