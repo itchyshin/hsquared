@@ -95,8 +95,15 @@ provide the performance-oriented engine, with speed and scale treated as
 benchmarked claims rather than slogans.</p>
 </div>
 <div class="section level2">
-<h2 id="planned-genomic-syntax">Planned genomic syntax<a class="anchor" aria-label="anchor" href="#planned-genomic-syntax"></a>
+<h2 id="genomic-syntax">Genomic syntax<a class="anchor" aria-label="anchor" href="#genomic-syntax"></a>
 </h2>
+<p>The basic genomic GREML effect above is the eventual default form.
+Today it fits through an opt-in, experimental control
+(<code>engine = "julia"</code>, <code>target = "genomic"</code>; a raw
+<code>markers = M</code> matrix and a SNP-BLUP
+<code>target = "snp_blup"</code> path are also available) — see the
+“Fitting models” article. The default <code>engine = "fit"</code> call
+shown here is the planned future surface.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span>,</span>
@@ -158,8 +165,9 @@ combine marker scans, sample factors, and genomic relatedness:</p>
 <span>  genotypes <span class="op">=</span> <span class="va">geno</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>These examples are syntax targets only. They do not fit models
-today.</p>
+<p>The marker-scan, multi-term, and multivariate examples above are
+syntax targets only and do not fit models today. The single genomic and
+single-step effects do fit opt-in (see “Fitting models”).</p>
 </div>
 <div class="section level2">
 <h2 id="planned-multivariate-and-gllvm-path">Planned multivariate and GLLVM path<a class="anchor" aria-label="anchor" href="#planned-multivariate-and-gllvm-path"></a>

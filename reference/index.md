@@ -27,7 +27,7 @@ Current parser entry points and planned fitting controls.
   [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-  : Planned genomic and QTL formula markers
+  : Genomic and QTL formula markers
 - [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
@@ -40,7 +40,7 @@ Current parser entry points and planned fitting controls.
   [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-  : Planned quantitative-genetic formula markers
+  : Quantitative-genetic formula markers
 
 ## Extractor contract
 

@@ -27,7 +27,14 @@ The R package should keep this easy to say. The Julia package should
 provide the performance-oriented engine, with speed and scale treated as
 benchmarked claims rather than slogans.
 
-## Planned genomic syntax
+## Genomic syntax
+
+The basic genomic GREML effect above is the eventual default form. Today
+it fits through an opt-in, experimental control (`engine = "julia"`,
+`target = "genomic"`; a raw `markers = M` matrix and a SNP-BLUP
+`target = "snp_blup"` path are also available) — see the “Fitting
+models” article. The default `engine = "fit"` call shown here is the
+planned future surface.
 
 ``` r
 
@@ -102,7 +109,9 @@ fit <- hsquared(
 )
 ```
 
-These examples are syntax targets only. They do not fit models today.
+The marker-scan, multi-term, and multivariate examples above are syntax
+targets only and do not fit models today. The single genomic and
+single-step effects do fit opt-in (see “Fitting models”).
 
 ## Planned multivariate and GLLVM path
 

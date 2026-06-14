@@ -104,13 +104,18 @@ y ~ sex + batch + single_step(1 | id, Hinv = Hinv)
 ```
 
 Current status:
-[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
-[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
 [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
 [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
 and
 [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-are planned markers. They do not fit genomic, QTL, or eQTL models yet.
+are planned markers and do not fit yet.
+[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+and
+[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+now fit through an opt-in, experimental engine path (`engine = "julia"`,
+`target = "genomic"` / `"single_step"` / `"snp_blup"`; REML-only or
+supplied-variance, not the default, mirroring a `partial` validation
+gate).
 
 ## Multivariate and factor-analytic grammar
 

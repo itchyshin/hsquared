@@ -101,7 +101,7 @@ and agreement with the <code>sommer</code> package.
 marker, expression, annotation, and environment inputs into a checked
 container for future integrated workflows.</p>
 <p>The interface rule is: easy, easy, easy. Users are gold. The common
-animal model should be obvious before the package exposes genomic,
+animal model should be obvious before users reach for genomic,
 multivariate, factor-analytic, non-Gaussian, or unusual-inheritance
 machinery.</p>
 <div class="section level2">
@@ -117,10 +117,15 @@ machinery.</p>
 component;</li>
 <li>numeric Gaussian responses.</li>
 </ul>
-<p>Unsupported syntax is still important because it defines the roadmap.
-Terms such as <code>cov = fa(K = 2)</code>, <code><a href="../reference/genomic_markers.html">genomic()</a></code>,
-<code><a href="../reference/genomic_markers.html">single_step()</a></code>, QTL effects, <code><a href="../reference/qg_effect_markers.html">permanent()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">common_env()</a></code>, <code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>,
+<p>Several terms beyond the default contract now fit through an opt-in,
+experimental engine path (<code>engine = "julia"</code>, not the
+default, each mirroring a <code>partial</code> validation gate):
+<code><a href="../reference/qg_effect_markers.html">permanent()</a></code>, <code><a href="../reference/qg_effect_markers.html">common_env()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>, <code><a href="../reference/genomic_markers.html">genomic()</a></code> (GREML or
+SNP-BLUP), and <code><a href="../reference/genomic_markers.html">single_step()</a></code>. See the “Fitting models”
+article for the opt-in calls.</p>
+<p>The remaining grammar is still important because it defines the
+roadmap. Terms such as <code>cov = fa(K = 2)</code>, QTL effects,
 <code><a href="../reference/qg_effect_markers.html">paternal_genetic()</a></code>, <code><a href="../reference/qg_effect_markers.html">dominance()</a></code>,
 <code><a href="../reference/qg_effect_markers.html">epistasis()</a></code>, <code><a href="../reference/qg_effect_markers.html">relmat()</a></code>,
 <code><a href="../reference/qg_effect_markers.html">precision()</a></code>, selfing, polyploidy, haplodiploidy, and

@@ -20,7 +20,7 @@ genomic, GPU still planned
 **1** public formula contract parsed today:
 `animal(1 | id, pedigree = ped)`
 
-**16** validation-status rows separating covered, partial, and planned
+**20** validation-status rows separating covered, partial, and planned
 evidence
 
 **1** model fitted by default: the v0.1 univariate Gaussian animal model

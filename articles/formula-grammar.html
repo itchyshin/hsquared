@@ -156,10 +156,13 @@ fitting only after the R-Julia contract and validation exist.</p>
 <span>  <span class="fu"><a href="../reference/genomic_markers.html">marker_scan</a></span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">single_step</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Hinv <span class="op">=</span> <span class="va">Hinv</span><span class="op">)</span></span></code></pre></div>
-<p>Current status: <code><a href="../reference/genomic_markers.html">genomic()</a></code>, <code><a href="../reference/genomic_markers.html">single_step()</a></code>,
-<code><a href="../reference/genomic_markers.html">markers()</a></code>, <code><a href="../reference/genomic_markers.html">marker_scan()</a></code>, and
-<code><a href="../reference/genomic_markers.html">qtl_scan()</a></code> are planned markers. They do not fit genomic,
-QTL, or eQTL models yet.</p>
+<p>Current status: <code><a href="../reference/genomic_markers.html">markers()</a></code>, <code><a href="../reference/genomic_markers.html">marker_scan()</a></code>,
+and <code><a href="../reference/genomic_markers.html">qtl_scan()</a></code> are planned markers and do not fit yet.
+<code><a href="../reference/genomic_markers.html">genomic()</a></code> and <code><a href="../reference/genomic_markers.html">single_step()</a></code> now fit through an
+opt-in, experimental engine path (<code>engine = "julia"</code>,
+<code>target = "genomic"</code> / <code>"single_step"</code> /
+<code>"snp_blup"</code>; REML-only or supplied-variance, not the
+default, mirroring a <code>partial</code> validation gate).</p>
 </div>
 <div class="section level2">
 <h2 id="multivariate-and-factor-analytic-grammar">Multivariate and factor-analytic grammar<a class="anchor" aria-label="anchor" href="#multivariate-and-factor-analytic-grammar"></a>

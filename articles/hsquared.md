@@ -36,7 +36,7 @@ annotation, and environment inputs into a checked container for future
 integrated workflows.
 
 The interface rule is: easy, easy, easy. Users are gold. The common
-animal model should be obvious before the package exposes genomic,
+animal model should be obvious before users reach for genomic,
 multivariate, factor-analytic, non-Gaussian, or unusual-inheritance
 machinery.
 
@@ -53,14 +53,19 @@ The parser currently accepts:
   bundle with a pedigree component;
 - numeric Gaussian responses.
 
-Unsupported syntax is still important because it defines the roadmap.
-Terms such as `cov = fa(K = 2)`,
-[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
-[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
-QTL effects,
+Several terms beyond the default contract now fit through an opt-in,
+experimental engine path (`engine = "julia"`, not the default, each
+mirroring a `partial` validation gate):
 [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+(GREML or SNP-BLUP), and
+[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md).
+See the “Fitting models” article for the opt-in calls.
+
+The remaining grammar is still important because it defines the roadmap.
+Terms such as `cov = fa(K = 2)`, QTL effects,
 [`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),

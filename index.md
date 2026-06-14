@@ -48,11 +48,15 @@ container now records phenotype, pedigree, genotype, expression, marker,
 annotation, and environment inputs for future integrated workflows,
 including optional expression-feature annotation diagnostics through
 `annotation_id` and environment-key diagnostics through
-`environment_id`. The package also reserves planned formula markers for
-genomic/QTL terms and standard quantitative-genetic extensions such as
-permanent environment, maternal/paternal effects, dominance, epistasis,
-cytoplasmic inheritance, imprinting, and custom relationship or
-precision matrices. Those markers are syntax reservations only and
+`environment_id`. The package also provides readable formula vocabulary
+for genomic/QTL terms and standard quantitative-genetic extensions.
+Several now fit through an opt-in, experimental engine path
+(`engine = "julia"`, REML-only or supplied-variance, not the default,
+each mirroring a `partial` validation gate): permanent environment,
+common environment, maternal-genetic, genomic (GREML or SNP-BLUP), and
+single-step effects. The rest — paternal effects, dominance, epistasis,
+cytoplasmic inheritance, imprinting, custom relationship or precision
+matrices, and marker/QTL scans — are syntax reservations only and
 currently abort as planned, not implemented. Use
 [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
 to inspect the parsed, reserved, and planned formula grammar from R.
@@ -60,11 +64,12 @@ Output extractor names such as
 [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
 [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
 [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
-[`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
 [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
 and
 [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-are also reserved for future fitted marker/QTL/eQTL results.
+are reserved for future fitted marker/QTL/eQTL results;
+[`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+is live for the opt-in SNP-BLUP path.
 
 The intended two-package shape is:
 
@@ -88,8 +93,10 @@ fit <- hsquared(
 This fits by default: the R side builds the `y`, `X`, sparse `Z`, and
 normalized pedigree payload, the `HSquared.jl` engine builds `Ainv`,
 estimates the variance components by REML, and returns an `hsquared_fit`
-object. Multivariate, genomic, factor-analytic, and non-Gaussian models
-remain planned. For supplied-variance MME checks, use:
+object. A genomic GREML / SNP-BLUP effect and single-step also fit
+through the opt-in, experimental `engine = "julia"` path (not the
+default); multivariate, factor-analytic, and non-Gaussian models remain
+planned. For supplied-variance MME checks, use:
 
 ``` r
 

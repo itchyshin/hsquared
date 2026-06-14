@@ -187,7 +187,7 @@ formula_status()
     ##  animal(1 | id) with data = hs_data(..., pedigree = ped)   Phase 1
     ##                                        permanent(1 | id)   Phase 2
     ##                                    common_env(1 | group)   Phase 2
-    ##                maternal_genetic(1 | dam, pedigree = ped)   Phase 2
+    ##                                maternal_genetic(1 | dam)   Phase 2
     ##                                    maternal_env(1 | dam)   Phase 2
     ##               paternal_genetic(1 | sire, pedigree = ped)   Phase 2
     ##                                   paternal_env(1 | sire)   Phase 2
