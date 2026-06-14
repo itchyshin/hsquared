@@ -205,6 +205,10 @@
   current opt-in supplied-`Ginv`, marker-built GREML, SNP-BLUP, and
   supplied-`Hinv` single-step paths from planned genomic construction,
   APY, GWAS/QTL/eQTL, and production-comparator work.
+- Added a “QTL, GWAS, and eQTL status” pkgdown article that explains the
+  current reserved scan vocabulary, live SNP-BLUP marker effects, scale
+  caveats, and validation gates before marker-scan, QTL, GWAS, or eQTL
+  output can be claimed.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

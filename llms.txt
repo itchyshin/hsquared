@@ -402,6 +402,8 @@ experimental targets.
   models](https://itchyshin.github.io/hsquared/articles/fitting-models.md):
 - [Genomic
   prediction](https://itchyshin.github.io/hsquared/articles/genomic-prediction.md):
+- [QTL, GWAS, and eQTL
+  status](https://itchyshin.github.io/hsquared/articles/qtl-gwas-eqtl-status.md):
 - [Multivariate Gaussian animal
   models](https://itchyshin.github.io/hsquared/articles/multivariate.md):
 - [Reading G
