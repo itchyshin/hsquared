@@ -223,7 +223,8 @@ formula_status()
 
     ## <hs_formula_status>
     ##   parsed today: animal(1 | id, pedigree = ped); animal(1 | id) with an hs_data pedigree
-    ##   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in; others parse-only
+    ##   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in
+    ##   planned grammar: rows marked planned/reserved error before fitting
     ##                                                      term     phase
     ##                            animal(1 | id, pedigree = ped)   Phase 1
     ##   animal(1 | id) with data = hs_data(..., pedigree = ped)   Phase 1
