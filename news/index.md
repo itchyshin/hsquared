@@ -201,6 +201,10 @@
   G/R matrix extractors, genetic and residual correlations, per-trait
   h2, cross-trait EBVs, and the boundaries around `P_matrix()`,
   factor-analytic loadings, and selection-response claims.
+- Added a “Genomic prediction” pkgdown article that separates the
+  current opt-in supplied-`Ginv`, marker-built GREML, SNP-BLUP, and
+  supplied-`Hinv` single-step paths from planned genomic construction,
+  APY, GWAS/QTL/eQTL, and production-comparator work.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
