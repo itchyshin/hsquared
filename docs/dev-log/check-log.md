@@ -2839,6 +2839,42 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+
+## 2026-06-14 Standard QG marker claim audit
+
+- Rose audit command:
+  `rg -n "fits|estimates|fast|ASReml-level|implemented|supports|Julia speed|production|validated|covered" README.md DESCRIPTION ROADMAP.md docs vignettes R man`
+  found stale ledger wording for the standard quantitative-genetic marker row:
+  `docs/design/06-public-claims-register.md`,
+  `docs/design/capability-status.md`, and
+  `docs/design/validation-debt-register.md` still described all permanent,
+  common-environment, and maternal markers as planned-only.
+- Confirmed `R/qg-effects.R` and `man/qg_effect_markers.Rd` already carve out
+  the opt-in `permanent()`, `common_env()`, and `maternal_genetic()` paths.
+- Updated the three ledger rows so:
+  - `permanent()`, `common_env()`, and `maternal_genetic()` are opt-in
+    experimental paths only;
+  - paternal, maternal-environment, dominance, epistasis, custom-kernel,
+    cytoplasmic, and imprinting syntax remains planned-only;
+  - no row promotes those opt-in paths beyond `partial`.
+- Remote checks for `08a7545` (all green):
+  - GitHub Actions R-CMD-check `27501546666`: passed.
+  - GitHub Actions pkgdown `27501546680`: passed.
+  - GitHub Pages build/deployment `27501593161`: passed.
+- `git diff --check` — passed.
+- Row verification:
+  `rg -n "Standard quantitative-genetic formula markers exist|Quantitative-genetic effect markers" docs/design/06-public-claims-register.md docs/design/capability-status.md docs/design/validation-debt-register.md`
+  — passed; the three rows now carve out the opt-in paths and keep remaining
+  markers planned-only.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 - Remote checks for `a75b099` (all green):
   - GitHub Actions R-CMD-check `27501031338`: passed.
   - GitHub Actions pkgdown `27501031343`: passed.

@@ -48,6 +48,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   TEMPLATE.md` now gives future ASReml/BLUPF90/DMU/WOMBAT/sommer/JWAS runs a
   standard provenance, estimand-match, result-table, and reviewer-verdict
   surface.
+- Rose public-claim audit: the standard quantitative-genetic marker rows in the
+  claims/capability/debt tables now carve out the opt-in experimental
+  `permanent()`, `common_env()`, and `maternal_genetic()` paths instead of
+  describing all such markers as planned-only.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
