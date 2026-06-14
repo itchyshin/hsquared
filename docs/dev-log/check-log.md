@@ -2658,3 +2658,28 @@ with private memory.
   - GitHub Actions pkgdown `27486713006`: passed.
 - Remote checks for `d510e8e` (docs-only) were superseded by `df7bc42`'s run on
   the same tree state; both pushed and green.
+
+## 2026-06-13 Overnight honesty sweep (stale planned/inert claims for opt-in models)
+
+- Audit (Workflow `wf_158f535d-1c2`, 26 agents): 6 parallel audit dimensions
+  (claims-honesty, validation-evidence, cross-doc, vignette-accuracy,
+  export-integrity, opt-in-wiring) → adversarial refutation of every candidate →
+  16 confirmed defects (from 20). All one class: stale "planned/inert/not
+  implemented" wording for now-opt-in models, in surfaces the per-slice reviews
+  did not revisit. ZERO over-claims; critical dimensions CLEAN (opt-in wiring
+  complete, multivariate not claimed anywhere, register well-formed, the 3
+  covered rows correctly backed).
+- Sweep (commit `7b3c3d9`, docs/strings only): README, DESCRIPTION,
+  genomic-markers.R / qg-effects.R roxygen (man/*), capability-status.md,
+  06-public-claims-register.md, and four vignettes carve the opt-in fitted models
+  out of the "planned/inert" wording with the experimental/opt-in/not-default
+  fence; fixed a real bug (formula_status advertised `maternal_genetic(1 | dam,
+  pedigree = ped)`, which the parser rejects → `maternal_genetic(1 | dam)`);
+  trimmed the "finite REML logLik" evidence over-statement from three
+  validation_status rows; mission-control "16" rows → 20.
+- Local checks: `air format`; `devtools::document()`; `pkg::`-grep clean (no new
+  deps); `check_pkgdown()` clean; full `testthat` with juliaup + `NOT_CRAN` +
+  sommer + enhancer — 0/0/0; `rcmdcheck(--as-cran)` 0/0/1 (benign).
+- Remote checks for `7b3c3d9` (all green):
+  - GitHub Actions R-CMD-check `27487099560`: passed.
+  - GitHub Actions pkgdown `27487099551`: passed.
