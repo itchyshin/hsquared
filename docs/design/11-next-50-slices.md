@@ -91,6 +91,11 @@ check-log evidence, an after-task report, and an updated claim boundary.
   infrastructure, plots, fine-mapping, and GPU/HPC scan kernels belong in
   optional future `hsquaredQTL` / `HSquaredQTL.jl` extensions unless a tiny
   core scan target is dependency-light and fully validated.
+- Inheritance systems roadmap examples: a pkgdown article now shows how
+  selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting,
+  dominance, epistasis, and custom kernels should enter as relationship or
+  precision kernels, while keeping every such feature planned until kernels and
+  validation exist.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -147,7 +152,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 45 | Julia | Add dominance relationship prototype. | AGHmatrix/nadiv comparison where possible. |
 | 46 | R | Add dominance syntax once relationship semantics are tested. | No inheritance overclaim. |
 | 47 | Julia | Add selfing/clonal/haplodiploid relationship kernels as separate prototypes. | Mendel/Darwin review. |
-| 48 | R/docs | Add inheritance-systems roadmap examples with hard fences. | Planned wording only until kernels validate. |
+| 48 | R/docs | Add inheritance-systems roadmap examples with hard fences. | done: article added; all selfing/clonal/haplodiploid/polyploid/cytoplasmic/imprinting/dominance/epistasis/custom-kernel examples remain planned until kernels validate |
 | 49 | Julia | Add CPU backend benchmarking harness for current Phase 1-4 fits. | Benchmark outputs reproducible. |
 | 50 | Julia/R | Add first accelerator feasibility probe (Metal locally, CUDA for HPC later) for dense multivariate/GLLVM pieces. | CPU remains trusted default; no speedup claim without benchmark evidence. |
 

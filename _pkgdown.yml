@@ -28,6 +28,8 @@ navbar:
           href: articles/multivariate.html
         - text: Reading G matrices
           href: articles/g-matrix-interpretation.html
+        - text: Inheritance systems roadmap
+          href: articles/inheritance-systems.html
         - text: Mission control
           href: articles/mission-control.html
         - text: Model status
@@ -84,6 +86,7 @@ articles:
       - articles/qtl-gwas-eqtl-status
       - articles/multivariate
       - articles/g-matrix-interpretation
+      - articles/inheritance-systems
       - articles/mission-control
       - articles/model-status
       - articles/formula-grammar

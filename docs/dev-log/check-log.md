@@ -3501,3 +3501,35 @@ with private memory.
   - GitHub Actions R-CMD-check `27504816062`: passed.
   - GitHub Actions pkgdown `27504816046`: passed.
   - GitHub Pages build/deployment `27504863586`: passed.
+
+## 2026-06-14 Inheritance systems roadmap article
+
+- Added `vignettes/articles/inheritance-systems.Rmd`, a user-facing roadmap
+  article that keeps the current v0.1 additive animal model and opt-in
+  permanent/common/maternal-genetic stepping stones separate from planned
+  selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting,
+  dominance, epistasis, and custom-kernel models.
+- Added `docs/dev-log/scout/2026-06-14-inheritance-systems-roadmap-scout.md`
+  after checking current R vocabulary, roadmap docs, local sister-package
+  patterns, and `nadiv`/`AGHmatrix` literature anchors.
+- Updated `_pkgdown.yml`, `NEWS.md`, and `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Formatting:
+  `command -v air` — no `air` binary on PATH.
+- Rose claim grep:
+  `rg -n "supports selfing|polyploid model|dominance model|custom kernels work|cytoplasmic inheritance fit|imprinting support|fits selfing|fits clonal|fits haplodiploid|fits polyploid" vignettes/articles/inheritance-systems.Rmd docs/dev-log/scout/2026-06-14-inheritance-systems-roadmap-scout.md NEWS.md docs/design/11-next-50-slices.md`
+  — only the scout note's explicit high-risk phrase list matched; the public
+  article did not match these over-claim forms after the wording patch.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `984fbd3` (all green):
+  - GitHub Actions R-CMD-check `27505026686`: passed.
+  - GitHub Actions pkgdown `27505026688`: passed.
+  - GitHub Pages build/deployment `27505072608`: passed.
