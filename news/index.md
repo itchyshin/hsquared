@@ -197,6 +197,10 @@
   [`residual_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   for `hsquared_fit` objects, giving multivariate users the familiar G/R
   matrix names without changing the underlying extractor contract.
+- Added a “Reading G matrices” pkgdown article that explains the current
+  G/R matrix extractors, genetic and residual correlations, per-trait
+  h2, cross-trait EBVs, and the boundaries around `P_matrix()`,
+  factor-analytic loadings, and selection-response claims.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

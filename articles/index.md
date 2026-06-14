@@ -8,6 +8,8 @@
   models](https://itchyshin.github.io/hsquared/articles/fitting-models.md):
 - [Multivariate Gaussian animal
   models](https://itchyshin.github.io/hsquared/articles/multivariate.md):
+- [Reading G
+  matrices](https://itchyshin.github.io/hsquared/articles/g-matrix-interpretation.md):
 - [Mission
   control](https://itchyshin.github.io/hsquared/articles/mission-control.md):
 - [Model
