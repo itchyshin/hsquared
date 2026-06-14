@@ -165,6 +165,37 @@ marker_effects(fit_snp)         # one effect per marker
 breeding_values(fit_snp)        # per-individual GEBVs
 ```
 
+## Multivariate Gaussian animal model
+
+The opt-in multivariate path uses a
+[`cbind()`](https://rdrr.io/r/base/cbind.html) response and estimates
+trait-by-trait genetic and residual covariance matrices for the animal
+effect. Missing response cells are allowed; missing fixed-effect cells
+are rejected.
+
+``` r
+
+fit_mv <- hsquared(
+  cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "multivariate")
+  )
+)
+
+genetic_covariance(fit_mv)
+genetic_correlation(fit_mv)
+heritability(fit_mv)            # per-trait h2
+breeding_values(fit_mv)         # animal-by-trait EBVs
+```
+
+The future long-format grammar
+`animal(trait | id, pedigree = ped, cov = us())` is planned, not fitted
+yet. See the multivariate article for the current claim boundary.
+
 ## What is fitted, and what is planned
 
 [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
@@ -286,5 +317,6 @@ Only rows marked `covered` in
 [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
 may be relied on as working; the opt-in models above are deliberately
 `partial` until their `HSquared.jl` gates and external comparators are
-signed off. Multivariate, factor-analytic, non-Gaussian/GLLVM,
-unusual-inheritance, and GPU models remain on the roadmap.
+signed off. Structured/factor-analytic multivariate covariance,
+non-Gaussian/GLLVM, unusual-inheritance, and GPU models remain on the
+roadmap.

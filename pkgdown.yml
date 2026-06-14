@@ -8,7 +8,8 @@ articles:
   hsquared: hsquared.html
   articles/mission-control: mission-control.html
   articles/model-status: model-status.html
-last_built: 2026-06-14T12:14Z
+  articles/multivariate: multivariate.html
+last_built: 2026-06-14T12:29Z
 urls:
   reference: https://itchyshin.github.io/hsquared/reference
   article: https://itchyshin.github.io/hsquared/articles
