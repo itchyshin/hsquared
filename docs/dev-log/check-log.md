@@ -2556,3 +2556,24 @@ with private memory.
 - Local commit `8930323`. Remote checks for `8930323` (all green):
   - GitHub Actions R-CMD-check `27484947202`: passed.
   - GitHub Actions pkgdown `27484947207`: passed.
+
+## 2026-06-13 "Fitting models" vignette + opt-in single-step model (Phase 5)
+
+- Vignette `vignettes/articles/fitting-models.Rmd` (commit `cada073`): a
+  worked-examples capstone for every model hsquared fits (v0.1 default +
+  repeatability, common-environment, maternal, genomic, single-step), with the
+  formula/target/extractors per model; `check_pkgdown()` clean (added to navbar +
+  index). Remote checks for `cada073` (green): R-CMD-check `27485056735`, pkgdown
+  `27485056726`.
+- Single-step model (commit `bbd527d`): `single_step(1 | id, Hinv = Hinv)` fits by
+  REML on a user-supplied single-step relationship inverse, reusing the genomic
+  `fit_ai_reml`-on-a-supplied-inverse path (the genomic parser was generalised to
+  a shared supplied-relationship-inverse primary). Twin gate `V2-SSHINV` partial.
+  Spawned subagents: one Explore review — clean (0 blocking; refactor verified
+  non-regressive). The supplied-relationship validation_status row was broadened
+  (still 19 rows).
+- Local checks: `air format`; `devtools::document()`; `pkg::`-grep + `check_pkgdown()`
+  clean; full `testthat` with juliaup + `NOT_CRAN` + sommer + enhancer (live
+  single-step fit ran) — 0/0/0; `rcmdcheck(--as-cran)` 0/0/1 (benign).
+- Remote checks for `bbd527d`: GitHub Actions R-CMD-check `27485346107` + pkgdown
+  `27485346095` (in progress; appended on completion).
