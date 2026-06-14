@@ -2843,6 +2843,32 @@ with private memory.
   - GitHub Actions R-CMD-check `27501031338`: passed.
   - GitHub Actions pkgdown `27501031343`: passed.
   - GitHub Pages build/deployment `27501072754`: passed.
+
+## 2026-06-14 Manual comparator-run report template
+
+- Added `docs/dev-log/comparator-runs/TEMPLATE.md` for future manual external
+  comparator runs. The template captures purpose, claim boundary, tool/version,
+  environment, input checksums, model/estimand match, covariance/h2/logLik
+  result table, convergence diagnostics, file redistribution constraints, and
+  Rose/Fisher/Curie verdicts.
+- Updated `docs/dev-log/comparator-runs/README.md` to point contributors to the
+  template.
+- Remote checks for `e623006` (all green):
+  - GitHub Actions R-CMD-check `27501369523`: passed.
+  - GitHub Actions pkgdown `27501369525`: passed.
+  - GitHub Pages build/deployment `27501417156`: passed. GitHub emitted a
+    non-failing hosted-actions warning about Node.js 20 deprecation in Pages
+    actions.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 - Remote checks for `5f84bbd` (all green):
   - GitHub Actions R-CMD-check `27500857518`: passed.
   - GitHub Actions pkgdown `27500857520`: passed.

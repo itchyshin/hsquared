@@ -44,6 +44,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   temp-write paths are now ordinary CI-safe tests, including the built-package
   template lookup used by `R CMD check`. This hardens the manual gates without
   creating ASReml/BLUPF90 run evidence.
+- Manual comparator-run report template: `docs/dev-log/comparator-runs/
+  TEMPLATE.md` now gives future ASReml/BLUPF90/DMU/WOMBAT/sommer/JWAS runs a
+  standard provenance, estimand-match, result-table, and reviewer-verdict
+  surface.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
