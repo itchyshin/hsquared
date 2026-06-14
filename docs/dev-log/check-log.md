@@ -3232,3 +3232,36 @@ with private memory.
   - GitHub Actions R-CMD-check `27502155981`: passed.
   - GitHub Actions pkgdown `27502155965`: passed.
   - GitHub Pages build/deployment `27502205152`: passed.
+- Remote checks for `3122d3c` (all green):
+  - GitHub Actions R-CMD-check `27502457364`: passed.
+  - GitHub Actions pkgdown `27502457363`: passed.
+  - GitHub Pages build/deployment `27502500423`: passed.
+
+## 2026-06-14 Sparse multivariate production design note
+
+- Jason scout question: what should the production sparse multivariate path
+  learn from local twin/sister packages before any R syntax or public claim is
+  widened?
+- Sources checked:
+  - `.agents/skills/quantgen-scout/references/packages.md`.
+  - `HSquared.jl/ROADMAP.md` Phase 4 / 4B status and current limitations.
+  - `HSquared.jl/docs/design/00-ecosystem-lessons.md`.
+  - `GLLVM.jl/src/fit_phylo.jl` Woodbury / sparse Cholesky pattern.
+  - `DRM.jl/src/location_only.jl` sparse marginal likelihood, profiled fixed
+    effects, and Takahashi-trace pattern.
+- Added `docs/design/13-sparse-multivariate-production-plan.md` with target
+  model equations, dense-vs-sparse boundaries, sparse MME ladder, structured
+  `G0` constraints, matrix-free/iterative extension, R contract, diagnostics,
+  validation gates, and CPU/GPU boundary.
+- Updated `docs/design/05-roadmap.md` and `docs/design/11-next-50-slices.md`
+  to link the design note and mark next-50 row 33 as done.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.

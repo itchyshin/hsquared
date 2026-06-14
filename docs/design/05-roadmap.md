@@ -33,6 +33,11 @@ lowrank(K)
 fa(K) = Lambda Lambda' + Psi
 ```
 
+The production sparse path for multivariate and factor-analytic G matrices is
+tracked in `docs/design/13-sparse-multivariate-production-plan.md`. Current
+Phase 4 / 4B surfaces remain experimental and validation-scale until sparse
+MME, recovery, comparator, and memory gates pass.
+
 ## Phase 5
 
 Add genomic and single-step models: GBLUP, SNP-BLUP, HBLUP, APY, Ginv, Hinv,

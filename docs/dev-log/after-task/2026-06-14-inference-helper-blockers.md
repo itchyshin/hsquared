@@ -57,6 +57,8 @@ Current lane: R.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"`: passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for commit `3122d3c`: GitHub Actions R-CMD-check
+  `27502457364`, pkgdown `27502457363`, and Pages `27502500423` all passed.
 
 ## Public claim audit
 
@@ -99,7 +101,5 @@ LRT guidance surface.
 
 ## Next actions
 
-- Commit and push.
-- Watch R-CMD-check/pkgdown/Pages.
 - Continue the R-safe runway while Julia owns structured covariance recovery
   and engine hardening.

@@ -59,6 +59,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   now fail explicitly for `hsquared_fit` objects, fencing standard errors,
   confidence intervals, profile likelihoods, and likelihood-ratio guidance as
   planned until validated evidence exists.
+- Sparse multivariate production design note: `docs/design/
+  13-sparse-multivariate-production-plan.md` records the dense-validation to
+  sparse-MME ladder, structured-G constraints, diagnostics, CPU/GPU boundary,
+  and promotion gates.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -158,7 +162,7 @@ coordinate without guessing.
 | 30 | Add more structured covariance boundary tests | pending |
 | 31 | Add SEs or explicitly block them | done in R: `vcov()` and `confint()` now error with planned/not-implemented scope for `hsquared_fit` |
 | 32 | Add LRT guidance or explicitly block it | done in R: `anova()` and `profile()` now error with planned/not-implemented scope for `hsquared_fit` |
-| 33 | Add sparse multivariate design note | pending |
+| 33 | Add sparse multivariate design note | done: `docs/design/13-sparse-multivariate-production-plan.md` |
 | 34 | Add production-sparse FA design note | pending |
 | 35 | Add repeatability recovery/comparator evidence | pending |
 | 36 | Promote repeatability after Rose audit | pending |
