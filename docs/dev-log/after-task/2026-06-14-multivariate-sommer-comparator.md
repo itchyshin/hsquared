@@ -51,6 +51,8 @@ Current lane: R.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `9b9a11d`: R-CMD-check `27500382900`, pkgdown
+  `27500382897`, and Pages `27500426971` all passed.
 
 ## Public claim audit
 
