@@ -134,10 +134,12 @@ relationship) — and surfaces the Julia-owned
 <code>HSquared.fit_two_effect_reml()</code> REML-only optimizer (three-component
 <code>initial</code> with <code>sigma_a2</code>/<code>sigma_c2</code>/<code>sigma_e2</code>). It is REML only and not
 the default.
-<code>target = "genomic"</code> is an experimental, opt-in path for the genomic GREML
-model. It requires <code>genomic(1 | id, Ginv = Ginv)</code> with a user-supplied
-genomic relationship inverse and surfaces <code>HSquared.fit_ai_reml()</code> on a
-<code>Ginv</code>-based spec. It is REML only and not the default.</p></dd>
+<code>target = "genomic"</code> and <code>target = "single_step"</code> are experimental, opt-in
+paths that fit a single effect whose relationship is a user-supplied inverse:
+<code>genomic(1 | id, Ginv = Ginv)</code> (a genomic relationship inverse) and
+<code>single_step(1 | id, Hinv = Hinv)</code> (a single-step relationship inverse). Both
+surface <code>HSquared.fit_ai_reml()</code> on the supplied inverse. They are REML only
+and not the default.</p></dd>
 
 </dl></div>
     <div class="section level2">

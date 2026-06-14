@@ -131,11 +131,13 @@ on a user-supplied `Ginv`) is surfaced opt-in and experimental
 (`genomic(1 | id, Ginv = Ginv)`, `target = "genomic"`, mirroring the
 twin `V2-GREML` partial gate). The rest is planned.
 
-- Genomic GREML on a supplied `Ginv` — opt-in, experimental (REML).
-- Building `Ginv`/`G` from markers, SNP-BLUP, `Hinv`/single-step HBLUP,
-  APY, low-rank m≫n solves, genomic feature/QTL-style effects,
-  comparator parity (AGHmatrix/sommer/BLUPF90), and simulation
-  validation — planned.
+- Genomic GREML on a supplied `Ginv`, and single-step on a supplied
+  `Hinv` — opt-in, experimental (REML), mirroring the twin `V2-GREML` /
+  `V2-SSHINV` gates.
+- Building `Ginv`/`G` and `Hinv` from markers/pedigree, SNP-BLUP,
+  single-step HBLUP construction, APY, low-rank m≫n solves, genomic
+  feature/QTL-style effects, comparator parity
+  (AGHmatrix/sommer/BLUPF90), and simulation validation — planned.
 
 ## Phase 6: Non-Gaussian And GLLVM Animal Models
 

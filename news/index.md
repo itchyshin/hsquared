@@ -134,8 +134,18 @@
   and genomic breeding values (GEBVs). The default `engine = "fit"` path
   is the pedigree animal model;
   [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-  is opt-in. Experimental and REML-only; building `Ginv` from markers,
-  single-step (`Hinv`), and comparator validation remain planned.
+  is opt-in. Experimental and REML-only; building `Ginv` from markers
+  and comparator validation remain planned.
+- **Experimental, opt-in single-step model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now parses `single_step(1 | id, Hinv = Hinv)` — a primary effect with
+  a user-supplied single-step relationship inverse — and fits it through
+  `engine_control = list(target = "single_step")`, reusing the same
+  `fit_ai_reml`-on-a-supplied-inverse path as
+  [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md).
+  Experimental and REML-only; building `Hinv` from a pedigree and
+  genomic relationship (single-step HBLUP construction) and comparator
+  validation remain planned.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

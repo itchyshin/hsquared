@@ -112,8 +112,8 @@
 <div class="section level2">
 <h2 id="phase-5-genomic-and-single-step-models">Phase 5: Genomic And Single-Step Models<a class="anchor" aria-label="anchor" href="#phase-5-genomic-and-single-step-models"></a></h2>
 <p>Status: started (opt-in). Genomic GREML (variance-component estimation on a user-supplied <code>Ginv</code>) is surfaced opt-in and experimental (<code>genomic(1 | id, Ginv = Ginv)</code>, <code>target = "genomic"</code>, mirroring the twin <code>V2-GREML</code> partial gate). The rest is planned.</p>
-<ul><li>Genomic GREML on a supplied <code>Ginv</code> — opt-in, experimental (REML).</li>
-<li>Building <code>Ginv</code>/<code>G</code> from markers, SNP-BLUP, <code>Hinv</code>/single-step HBLUP, APY, low-rank m≫n solves, genomic feature/QTL-style effects, comparator parity (AGHmatrix/sommer/BLUPF90), and simulation validation — planned.</li>
+<ul><li>Genomic GREML on a supplied <code>Ginv</code>, and single-step on a supplied <code>Hinv</code> — opt-in, experimental (REML), mirroring the twin <code>V2-GREML</code> / <code>V2-SSHINV</code> gates.</li>
+<li>Building <code>Ginv</code>/<code>G</code> and <code>Hinv</code> from markers/pedigree, SNP-BLUP, single-step HBLUP construction, APY, low-rank m≫n solves, genomic feature/QTL-style effects, comparator parity (AGHmatrix/sommer/BLUPF90), and simulation validation — planned.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="phase-6-non-gaussian-and-gllvm-animal-models">Phase 6: Non-Gaussian And GLLVM Animal Models<a class="anchor" aria-label="anchor" href="#phase-6-non-gaussian-and-gllvm-animal-models"></a></h2>

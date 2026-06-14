@@ -188,7 +188,7 @@ formula_status()
     ##       reserved                      not available
     ##       reserved                      not available
     ##         parsed            fitted (opt-in genomic)
-    ##       reserved                      not available
+    ##         parsed        fitted (opt-in single-step)
     ##       reserved                      not available
     ##       reserved                      not available
     ##       reserved                      not available
@@ -203,46 +203,46 @@ validation_status()
     ## <hs_validation_status>
     ##   validation: status table only; checks are run by tests and CI
     ##   public claims: only `covered` rows may be advertised as working
-    ##                                                        capability    phase
-    ##                                   tiny deterministic Ainv fixture  Phase 1
-    ##                                   Mrode9 pedigree Ainv comparator  Phase 1
-    ##                           supplied-variance Henderson MME fixture  Phase 1
-    ##                                   sparse REML likelihood identity  Phase 1
-    ##                             Mrode-style supplied-variance outputs  Phase 1
-    ##                       experimental sparse REML estimator (opt-in)  Phase 1
-    ##                     experimental repeatability estimator (opt-in)  Phase 2
-    ##  experimental two-effect estimator (opt-in: common-env, maternal)  Phase 2
-    ##                     experimental genomic GREML estimator (opt-in)  Phase 5
-    ##      univariate Gaussian animal-model fit (default path, AI-REML)  Phase 1
-    ##           external published-REML recovery (gryphon, R reference)  Phase 1
-    ##         known-truth DGP variance-component recovery (R reference)  Phase 1
-    ##                                 Mrode fitted animal-model outputs  Phase 1
-    ##                                          ASReml comparison policy  Phase 1
-    ##                              BLUPF90/DMU/WOMBAT comparison policy  Phase 1
-    ##                                             XSim simulation truth Phase 5+
-    ##                                   genomic and QTL/eQTL validation Phase 5+
-    ##                               GLLVM-style multivariate validation  Phase 6
-    ##                                        CPU/GPU backend comparison Phase 7+
-    ##   status
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  partial
-    ##  covered
-    ##  covered
-    ##  covered
-    ##  planned
-    ##  planned
-    ##  planned
-    ##  planned
-    ##  planned
-    ##  planned
-    ##  planned
+    ##                                                                   capability
+    ##                                              tiny deterministic Ainv fixture
+    ##                                              Mrode9 pedigree Ainv comparator
+    ##                                      supplied-variance Henderson MME fixture
+    ##                                              sparse REML likelihood identity
+    ##                                        Mrode-style supplied-variance outputs
+    ##                                  experimental sparse REML estimator (opt-in)
+    ##                                experimental repeatability estimator (opt-in)
+    ##             experimental two-effect estimator (opt-in: common-env, maternal)
+    ##  experimental supplied-relationship estimator (opt-in: genomic, single-step)
+    ##                 univariate Gaussian animal-model fit (default path, AI-REML)
+    ##                      external published-REML recovery (gryphon, R reference)
+    ##                    known-truth DGP variance-component recovery (R reference)
+    ##                                            Mrode fitted animal-model outputs
+    ##                                                     ASReml comparison policy
+    ##                                         BLUPF90/DMU/WOMBAT comparison policy
+    ##                                                        XSim simulation truth
+    ##                                              genomic and QTL/eQTL validation
+    ##                                          GLLVM-style multivariate validation
+    ##                                                   CPU/GPU backend comparison
+    ##     phase  status
+    ##   Phase 1 partial
+    ##   Phase 1 partial
+    ##   Phase 1 partial
+    ##   Phase 1 partial
+    ##   Phase 1 partial
+    ##   Phase 1 partial
+    ##   Phase 2 partial
+    ##   Phase 2 partial
+    ##   Phase 5 partial
+    ##   Phase 1 covered
+    ##   Phase 1 covered
+    ##   Phase 1 covered
+    ##   Phase 1 planned
+    ##   Phase 1 planned
+    ##   Phase 1 planned
+    ##  Phase 5+ planned
+    ##  Phase 5+ planned
+    ##   Phase 6 planned
+    ##  Phase 7+ planned
 
 Only rows marked `covered` in
 [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)
