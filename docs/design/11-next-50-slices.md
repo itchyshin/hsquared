@@ -4,6 +4,19 @@ This is the practical runway after the opt-in multivariate R bridge. It is not a
 claim that all items are implemented. Each slice should end with tests,
 check-log evidence, an after-task report, and an updated claim boundary.
 
+## Current Status
+
+- R multivariate bridge slice: done on `hsquared` main (`835e8c2`), with local
+  package checks and remote R-CMD-check/pkgdown/Pages green.
+- Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
+  the opt-in structured covariance recovery harness.
+- R lane next safe bite: keep the user API easy by improving structured
+  multivariate grammar errors and docs so users know `cbind()` is live today
+  while `animal(trait | id, cov = ...)` remains the structured-covariance
+  roadmap.
+
+## Programme Board
+
 | # | Lane | Slice | Gate before widening claims |
 | --- | --- | --- | --- |
 | 1 | coordinator | Close orphaned Julia PRs whose commits are already on `HSquared.jl` main. | GitHub issue/PR ledger clean. |
@@ -56,3 +69,61 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 48 | R/docs | Add inheritance-systems roadmap examples with hard fences. | Planned wording only until kernels validate. |
 | 49 | Julia | Add CPU backend benchmarking harness for current Phase 1-4 fits. | Benchmark outputs reproducible. |
 | 50 | Julia/R | Add first accelerator feasibility probe (Metal locally, CUDA for HPC later) for dense multivariate/GLLVM pieces. | CPU remains trusted default; no speedup claim without benchmark evidence. |
+
+## Twin Phase 4B Board
+
+Reported by the Julia twin on 2026-06-14. This is recorded here so the R lane can
+coordinate without guessing.
+
+| # | Slice | Status |
+| --- | --- | --- |
+| 1 | Review Phase 4B diff | done |
+| 2 | Run Julia tests | done |
+| 3 | Run docs build | done |
+| 4 | Commit Phase 4B | done |
+| 5 | Push Phase 4B branch | done |
+| 6 | Open draft PR | done: `HSquared.jl#17` |
+| 7 | Check PR CI | done, green |
+| 8 | Cross-link R bridge issue | done |
+| 9 | Address PR review/CI failures | pending if any appear |
+| 10 | Merge Phase 4B | human approval only |
+| 11 | Add non-CI structured covariance recovery script | next real bite |
+| 12 | Record recovery results | pending |
+| 13 | Decide loading sign convention | pending |
+| 14 | Decide rotation convention | pending |
+| 15 | Add shared deterministic multi-trait fixture | pending |
+| 16 | Serialize fixture for both repos | pending |
+| 17 | Add Julia fixture reader/tests | pending |
+| 18 | Ask R lane to consume same fixture | pending |
+| 19 | Define multivariate R grammar | partial: simple `cbind()` live; structured grammar planned |
+| 20 | Define long/wide trait ordering | pending |
+| 21 | Define covariance vocabulary: us, diag, fa, low-rank | planned |
+| 22 | Define multivariate result payload shape | partial: unstructured G/R live |
+| 23 | Draft Julia result payload shape without bridge change | pending |
+| 24 | Get R issue contract ack | pending |
+| 25 | Plan R sommer comparator | pending |
+| 26 | Plan ASReml comparator if available | pending |
+| 27 | Plan BLUPF90/AIREMLF90 comparator if practical | pending |
+| 28 | Promote only rows with comparator evidence | always-on Rose rule |
+| 29 | Harden multivariate initialization | partial: R named G0/R0 guard live |
+| 30 | Add more structured covariance boundary tests | pending |
+| 31 | Add SEs or explicitly block them | pending |
+| 32 | Add LRT guidance or explicitly block it | pending |
+| 33 | Add sparse multivariate design note | pending |
+| 34 | Add production-sparse FA design note | pending |
+| 35 | Add repeatability recovery/comparator evidence | pending |
+| 36 | Promote repeatability after Rose audit | pending |
+| 37 | Add two-effect recovery/comparator evidence | pending |
+| 38 | Promote two-effect after Rose audit | pending |
+| 39 | Add genomic inverse / GBLUP bridge slice | done in R for supplied `Ginv` and marker-built G; broader bridge pending |
+| 40 | Add single-step H inverse validation | pending beyond supplied `Hinv` surface |
+| 41 | Add APY design/evidence gate | pending |
+| 42 | Add standard QG comparator fixtures | pending |
+| 43 | Tighten validation-status public table | ongoing |
+| 44 | Finish docs-cleanup PR/work | ongoing |
+| 45 | Audit README claims | ongoing |
+| 46 | Audit package docs claims | ongoing |
+| 47 | Coordinate R package public wording | ongoing |
+| 48 | Run full local Julia + R checks | per slice |
+| 49 | Open final release-readiness audit issues | pending |
+| 50 | Cut release only after CI/docs/claims agree | pending |

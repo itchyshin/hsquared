@@ -2737,3 +2737,7 @@ with private memory.
     /Library/Frameworks/R.framework/Resources/bin/Rscript -e
     "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
     errors / 0 warnings / 0 notes.
+- Remote checks for `835e8c2` (all green):
+  - GitHub Actions R-CMD-check `27498306285`: passed.
+  - GitHub Actions pkgdown `27498306288`: passed.
+  - GitHub Pages build/deployment `27498349567`: passed.

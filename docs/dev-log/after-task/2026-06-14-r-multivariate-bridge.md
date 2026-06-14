@@ -67,6 +67,9 @@ Current lane: R.
 - `git diff --check`: passed.
 - `devtools::check(document = FALSE, args = '--no-manual')` with
   `RSTUDIO_PANDOC` set: 0 errors / 0 warnings / 0 notes.
+- Remote checks for commit `835e8c2`: GitHub Actions R-CMD-check
+  `27498306285` passed, pkgdown `27498306288` passed, and Pages deployment
+  `27498349567` passed.
 
 ## Public claim audit
 
