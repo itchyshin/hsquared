@@ -78,6 +78,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   the current G/R matrices, correlations, heritabilities, and cross-trait EBVs
   while fencing `P_matrix()`, factor-analytic loadings, evolvability, and
   selection-response tools as future gated work.
+- Genomic prediction article: a pkgdown article now separates supplied-`Ginv`
+  GREML, marker-built GREML, supplied-variance SNP-BLUP, and supplied-`Hinv`
+  single-step from planned H construction, APY, QTL/GWAS/eQTL, and production
+  comparator work.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -116,7 +120,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 27 | Julia | Add single-step `Hinv` construction from A and G. | Tiny and Mrode-style H checks. |
 | 28 | R | Expose `single_step(..., pedigree = ped, genotypes = ...)` only after Hinv is engine-covered. | No supplied-Hinv confusion. |
 | 29 | Julia | Add APY approximation prototype. | Numerical agreement and memory benchmarks. |
-| 30 | R/docs | Add genomic prediction vignette: GBLUP, SNP-BLUP, supplied variances, and boundaries. | No JWAS/ASReml replacement claim. |
+| 30 | R/docs | Add genomic prediction vignette: GBLUP, SNP-BLUP, supplied variances, and boundaries. | done: article added; no JWAS/ASReml replacement, APY, marker-scan, H-construction, or production-comparator claim |
 | 31 | Julia | Add marker-effect REML or AI-REML variance estimation for SNP-BLUP. | Supplied-variance status can move only after recovery. |
 | 32 | R | Add `marker_variance_explained()` for real marker-effect fits. | Output validated. |
 | 33 | Julia | Add single-marker scan kernel with kinship correction. | Tiny GWAS fixtures. |

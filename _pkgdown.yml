@@ -20,6 +20,8 @@ navbar:
           href: articles/hsquared.html
         - text: Fitting models
           href: articles/fitting-models.html
+        - text: Genomic prediction
+          href: articles/genomic-prediction.html
         - text: Multivariate Gaussian animal models
           href: articles/multivariate.html
         - text: Reading G matrices
@@ -76,6 +78,7 @@ articles:
     contents:
       - hsquared
       - articles/fitting-models
+      - articles/genomic-prediction
       - articles/multivariate
       - articles/g-matrix-interpretation
       - articles/mission-control

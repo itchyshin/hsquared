@@ -3427,3 +3427,28 @@ with private memory.
   - GitHub Actions R-CMD-check `27503967568`: passed.
   - GitHub Actions pkgdown `27503967586`: passed.
   - GitHub Pages build/deployment `27504011650`: passed.
+
+## 2026-06-14 Genomic prediction article
+
+- Added `vignettes/articles/genomic-prediction.Rmd`, a user-facing article that
+  separates the current opt-in supplied-`Ginv` GREML, marker-built GREML,
+  supplied-variance SNP-BLUP, and supplied-`Hinv` single-step paths from planned
+  H construction, APY, marker scans, QTL/GWAS/eQTL, and production comparator
+  work.
+- Added `docs/dev-log/scout/2026-06-14-genomic-prediction-vignette-scout.md`
+  after checking current tests/status docs and genomic prediction anchors.
+- Updated `_pkgdown.yml`, `NEWS.md`, and `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for `381cf60` (all green):
+  - GitHub Actions R-CMD-check `27504202880`: passed.
+  - GitHub Actions pkgdown `27504202884`: passed.
+  - GitHub Pages build/deployment `27504252638`: passed.
