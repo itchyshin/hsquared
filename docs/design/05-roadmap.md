@@ -38,6 +38,9 @@ tracked in `docs/design/13-sparse-multivariate-production-plan.md`. Current
 Phase 4 / 4B surfaces remain experimental and validation-scale until sparse
 MME, recovery, comparator, and memory gates pass.
 
+The factor-analytic G-matrix interpretation and rotation plan is recorded in
+`docs/design/14-factor-analytic-production-plan.md`.
+
 ## Phase 5
 
 Add genomic and single-step models: GBLUP, SNP-BLUP, HBLUP, APY, Ginv, Hinv,

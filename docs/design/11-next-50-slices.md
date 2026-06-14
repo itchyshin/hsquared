@@ -63,6 +63,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   13-sparse-multivariate-production-plan.md` records the dense-validation to
   sparse-MME ladder, structured-G constraints, diagnostics, CPU/GPU boundary,
   and promotion gates.
+- Factor-analytic G-matrix production design note: `docs/design/
+  14-factor-analytic-production-plan.md` records planned `diag()`/`lowrank()`/
+  `fa()` syntax, loading/rotation boundaries, invariant-first extractors, and
+  production gates.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -163,7 +167,7 @@ coordinate without guessing.
 | 31 | Add SEs or explicitly block them | done in R: `vcov()` and `confint()` now error with planned/not-implemented scope for `hsquared_fit` |
 | 32 | Add LRT guidance or explicitly block it | done in R: `anova()` and `profile()` now error with planned/not-implemented scope for `hsquared_fit` |
 | 33 | Add sparse multivariate design note | done: `docs/design/13-sparse-multivariate-production-plan.md` |
-| 34 | Add production-sparse FA design note | pending |
+| 34 | Add production-sparse FA design note | done: `docs/design/14-factor-analytic-production-plan.md` |
 | 35 | Add repeatability recovery/comparator evidence | pending |
 | 36 | Promote repeatability after Rose audit | pending |
 | 37 | Add two-effect recovery/comparator evidence | pending |

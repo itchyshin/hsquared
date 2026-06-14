@@ -2843,6 +2843,40 @@ with private memory.
   - GitHub Actions R-CMD-check `27502628759`: passed.
   - GitHub Actions pkgdown `27502628772`: passed.
   - GitHub Pages build/deployment `27502672768`: passed.
+- Remote checks for `4d6d09d` (all green):
+  - GitHub Actions R-CMD-check `27502737484`: passed.
+  - GitHub Actions pkgdown `27502737487`: passed.
+  - GitHub Pages build/deployment `27502782595`: passed.
+
+## 2026-06-14 Factor-analytic G-matrix production design note
+
+- Boole/Noether review: planned syntax remains
+  `animal(trait | id, pedigree = ped, cov = diag() / lowrank(K) / fa(K))`;
+  no parser change was made.
+- Engine-contract review: future result fields should keep `genetic_covariance`
+  and `genetic_correlation` primary; loadings, uniqueness, rotation method, and
+  latent breeding values are deferred metadata until rotation and validation
+  gates pass.
+- Sources checked:
+  - `docs/design/02-formula-grammar.md`.
+  - `docs/design/01-v0.1-contract.md`.
+  - `docs/design/13-sparse-multivariate-production-plan.md`.
+  - `HSquared.jl/docs/dev-log/decisions/2026-06-14-loading-rotation-identifiability.md`.
+  - `HSquared.jl/test/runtests.jl` structured covariance tests.
+  - `GLLVM.jl/src/postfit.jl` rotation-aware extraction pattern.
+  - `gllvmTMB/R/diagnose.R` rotation-identifiability advisory pattern.
+  - Meyer/Hill multivariate AI-REML reduced-rank PDF.
+- Added `docs/design/14-factor-analytic-production-plan.md`.
+- `git diff --check` — passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 
 ## 2026-06-14 Non-Gaussian family planned errors
 
