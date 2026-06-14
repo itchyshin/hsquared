@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 22L)
+  expect_equal(nrow(status), 24L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -111,12 +111,29 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     ],
     "fitted (opt-in multivariate)"
   )
+  expect_true(all(
+    c(
+      "animal(trait | id, pedigree = ped, cov = us())",
+      "animal(trait | id, pedigree = ped, cov = diag())",
+      "animal(trait | id, pedigree = ped, cov = lowrank(K = 2))",
+      "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
+    ) %in% status$term
+  ))
+  expect_true(all(
+    status$syntax_status[grepl("cov =", status$term, fixed = TRUE)] == "planned"
+  ))
   expect_true(any(status$syntax_status == "planned"))
   expect_match(capture.output(print(status))[[1L]], "<hs_formula_status>")
   expect_match(
     paste(capture.output(print(status)), collapse = "\n"),
     "permanent\\(1 \\| id\\)"
   )
+  subset <- status[
+    status$category == "multivariate and factor analytic",
+    c("term", "syntax_status", "fitting_status")
+  ]
+  expect_s3_class(subset, "hs_formula_status")
+  expect_output(print(subset), "cov = lowrank")
 })
 
 test_that("validation_status separates evidence from planned validation", {

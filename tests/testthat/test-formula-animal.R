@@ -88,6 +88,16 @@ test_that("formula parser rejects unsupported animal syntax", {
   )
   expect_error(
     hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped, cov = lowrank(K = 2)),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "cov = lowrank(K = 2)",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
       y ~ animal(trait | id, pedigree = ped, cov = fa(K = 2)),
       data = dat,
       family = stats::gaussian(),

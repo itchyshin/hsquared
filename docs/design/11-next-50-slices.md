@@ -114,6 +114,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   `genetic_structure = "unstructured"` for the current opt-in multivariate
   target and errors for `diagonal`, `lowrank`, `factor_analytic`, and the
   future `rank` control rather than silently ignoring planned controls.
+- Structured covariance formula vocabulary: `formula_status()` and planned
+  `animal(..., cov = ...)` errors now name the complete planned grammar
+  (`us`, `diag`, `lowrank`, `fa`) while keeping those long-format structured
+  covariance terms non-executable.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -140,7 +144,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 15 | Julia | Surface structured multivariate `genetic_structure = :diagonal` through stable engine tests. | Twin gate stays partial until recovery. |
 | 16 | R | Design R control syntax for diagonal multivariate G, without default exposure. | done: `docs/design/18-structured-covariance-r-control.md`; control contract only, no live bridge or formula grammar |
 | 17 | Julia | Stabilize low-rank multivariate REML tests and diagnostics. | PSD and logLik checks green. |
-| 18 | R | Design `cov = lowrank(K)` grammar against the Julia structure. | Roadmap-only until engine gate. |
+| 18 | R | Design `cov = lowrank(K)` grammar against the Julia structure. | done: formula/status/errors now reserve `us`, `diag`, `lowrank`, and `fa`; no live formula grammar or bridge |
 | 19 | Julia | Stabilize factor-analytic `G = Lambda Lambda' + Psi` engine output names. | Loadings/uniqueness extraction tests green. |
 | 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | done: names exist with planned/rotation-aware errors; no fitting or interpretation claim |
 | 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | done: `articles/g-matrix-interpretation` teaches invariant G/R summaries and fences `P_matrix()`, FA loadings, evolvability, and selection-response claims |

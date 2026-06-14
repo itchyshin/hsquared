@@ -3848,3 +3848,63 @@ Remote follow-up for committed slice `774284f`:
   - Node/Playwright using system Chrome rendered the live site. Computed live
     styles: navbar background `rgb(14, 165, 233)`, version text
     `rgba(255, 255, 255, 0.78)`, and `extraCssLinked = true`.
+
+## 2026-06-14 Structured covariance formula vocabulary
+
+- Rehydrated R repo:
+  - `git status --short --branch` - clean `main` tracking `origin/main`
+    before edits.
+  - `git remote -v` - `origin` is `https://github.com/itchyshin/hsquared.git`.
+  - `git log --oneline --decorate -5` - latest commit was `cbf303e`.
+  - `/opt/homebrew/bin/gh run list --limit 8` - latest R-CMD-check, pkgdown,
+    and Pages runs were all green.
+- Jason scout:
+  - Read `.agents/skills/quantgen-scout/references/packages.md`.
+  - Checked local `HSquared.jl` docs/tests/roadmap for `diag`, `lowrank`,
+    `factor_analytic`, loadings, uniqueness, and structured covariance rows.
+  - Checked local `gllvmTMB` latent-factor/loadings/covariance examples for
+    invariant covariance-first interpretation.
+  - Recorded persistent lessons in
+    `docs/dev-log/scout/2026-06-14-structured-covariance-formula-vocabulary-scout.md`.
+- Implementation:
+  - `formula_status()` now has separate planned rows for
+    `cov = us()`, `cov = diag()`, `cov = lowrank(K = 2)`, and
+    `cov = fa(K = 2)`.
+  - The planned `animal(..., cov = ...)` error now names all four covariance
+    forms and points users back to the current opt-in `cbind()` multivariate
+    path.
+  - `docs/design/02-formula-grammar.md` and `docs/design/01-v0.1-contract.md`
+    now distinguish the covered v0.1 default fit and opt-in experimental
+    surfaces from planned structured covariance grammar.
+  - Claims/capability/validation-debt rows now mention the structured
+    covariance vocabulary without promoting support.
+- Formatting:
+  - `command -v air || true` - no `air` binary on PATH.
+- Focused tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::test(filter = 'phase0-api|formula-animal')"` - passed, 0
+    failures / 0 warnings / 0 skips / 119 passes.
+- Full tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::test()"` - passed, 0 failures / 0 warnings / 32 skips / 620
+    passes on the first run, then 622 passes after adding the
+    `formula_status()` subset-print regression.
+- Status-table smoke:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    'devtools::load_all(quiet = TRUE); s <- formula_status(); stopifnot(nrow(s) == 24L); ss <- s[s$category == "multivariate and factor analytic", c("term", "syntax_status", "fitting_status")]; print(ss)'`
+    - passed and printed the parsed `cbind()` row plus planned `us`, `diag`,
+    `lowrank`, and `fa` rows.
+- `git diff --check` - passed.
+- Pkgdown:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+    errors / 0 warnings / 0 notes.
+- Rose claim check:
+  - No new fitting or validation claim. This is formula-status, error-text, and
+    design-memory work only; `cov = us()/diag()/lowrank()/fa()` remains planned
+    long-format structured covariance grammar.

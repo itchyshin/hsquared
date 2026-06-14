@@ -6,7 +6,7 @@
 | Team operating system | covered | Phase 0 docs, skills, agents, board, closeout report, issues, milestones, labels | Use this before Phase 1 work. |
 | `hs_control()` | covered | local tests | Default `engine = "fit"` fits the v0.1 univariate Gaussian animal model when Julia is available; `engine = "validate"` previews the contract; `engine = "julia"` exposes opt-in experimental targets. Backend vocabulary includes planned CPU threads, CUDA, AMDGPU, Metal, and oneAPI controls but does not execute those backends. |
 | `backend_info()` | partial | local tests | Reports planned backend rows and marks execution unavailable for every backend. |
-| `formula_status()` | partial | local tests | Reports parsed, reserved, and planned grammar rows, including the `hs_data()` pedigree shorthand; diagnostic only. |
+| `formula_status()` | partial | local tests | Reports parsed, reserved, and planned grammar rows, including the `hs_data()` pedigree shorthand and planned `cov = us()/diag()/lowrank()/fa()` structured-covariance rows; diagnostic only. |
 | `validation_status()` | partial | local tests | Reports current validation atoms and planned comparator lanes; diagnostic only. |
 | `data_status()` | partial | local tests over `hs_data()` diagnostics | Reports data-container component, ID-overlap, pedigree-status, expression-status, genotype-status, marker-status, annotation-feature, and environment-key diagnostics; no fitting. |
 | `model_spec()` | partial | local tests inspect dimensions, fixed columns, sparse `Z`, normalized IDs, and Julia targets | Preview helper only; does not fit models. |

@@ -32,8 +32,15 @@ print.hs_formula_status <- function(x, ...) {
   )
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
+  display_cols <- intersect(
+    c("term", "phase", "syntax_status", "fitting_status"),
+    names(out)
+  )
+  if (length(display_cols) == 0L) {
+    display_cols <- names(out)
+  }
   print.data.frame(
-    out[c("term", "phase", "syntax_status", "fitting_status")],
+    out[display_cols],
     row.names = FALSE
   )
   invisible(x)
@@ -62,6 +69,8 @@ hs_formula_status_terms <- function() {
     "qtl_scan(position, genotype_probs = probs)",
     "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)",
     "animal(trait | id, pedigree = ped, cov = us())",
+    "animal(trait | id, pedigree = ped, cov = diag())",
+    "animal(trait | id, pedigree = ped, cov = lowrank(K = 2))",
     "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
   )
 }
@@ -72,7 +81,7 @@ hs_formula_status_categories <- function() {
     rep("standard quantitative genetics", 6L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 5L),
-    rep("multivariate and factor analytic", 3L)
+    rep("multivariate and factor analytic", 5L)
   )
 }
 
@@ -82,7 +91,7 @@ hs_formula_status_phases <- function() {
     rep("Phase 2", 6L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 5L),
-    rep("Phase 3-4", 3L)
+    rep("Phase 3-4", 5L)
   )
 }
 
@@ -93,7 +102,7 @@ hs_formula_status_syntax <- function() {
     rep("parsed", 2L),
     rep("reserved", 3L),
     "parsed",
-    rep("planned", 2L)
+    rep("planned", 4L)
   )
 }
 
@@ -108,7 +117,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in single-step)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
-    rep("not available", 2L)
+    rep("not available", 4L)
   )
 }
 
@@ -165,10 +174,11 @@ hs_formula_status_behavior <- function() {
     ),
     rep(
       paste(
-        "Roadmap syntax; the v0.1 animal() parser rejects trait and cov",
-        "arguments."
+        "Roadmap syntax for long-format structured covariance; the current",
+        "parser rejects trait and `cov` arguments and points users to the",
+        "opt-in `cbind()` multivariate path."
       ),
-      2L
+      4L
     )
   )
 }

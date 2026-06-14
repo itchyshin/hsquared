@@ -516,8 +516,8 @@ hs_stop_animal_covariance_arg <- function() {
     "opt-in multivariate animal model, put traits on the left-hand side as ",
     "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
     "`engine_control = list(target = \"multivariate\")`. Structured covariance ",
-    "grammar such as `animal(trait | id, cov = us())` or `cov = fa(K = 2)` ",
-    "is planned.",
+    "grammar such as `cov = us()`, `cov = diag()`, `cov = lowrank(K = 2)`, ",
+    "or `cov = fa(K = 2)` is planned, not implemented.",
     call. = FALSE
   )
 }

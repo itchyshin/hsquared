@@ -1,8 +1,10 @@
 # Formula Grammar
 
-The R package now parses the narrow v0.1 animal-model syntax. It does not yet
-fit the model or execute the Julia bridge. It does build the first tested
-internal bridge payload for this syntax. Later grammar remains planned.
+The R package now parses and fits the narrow v0.1 animal-model syntax through
+the `HSquared.jl` engine when local Julia, `JuliaCall`, and the sibling checkout
+are available. It also builds a tested internal bridge payload for contract
+preview and validation. Later grammar remains planned unless explicitly marked
+as opt-in and experimental.
 
 ## V0.1 Parsed Syntax
 
@@ -21,7 +23,7 @@ y ~ fixed + animal(1 | id)
 comes from a pedigree. The Julia engine should use sparse Ainv rather than
 constructing and inverting dense A.
 
-Current parser limits:
+Current default-fit limits:
 
 - exactly one `animal()` term;
 - random-intercept syntax only: `1 | id`;
@@ -29,18 +31,23 @@ Current parser limits:
 - omitted `pedigree =` allowed only when `data` is an `hs_data()` bundle with a
   pedigree component;
 - Gaussian identity-link response only;
-- unsupported `cov =`, trait, genomic, single-step, selfing, QTL, and
-  non-Gaussian syntax aborts before marshalling.
+- `cov =`, long-format trait syntax, marker scans, selfing, QTL, and
+  non-Gaussian syntax aborts before marshalling;
+- repeatability, two-effect, genomic, single-step, SNP-BLUP, and multivariate
+  models are parsed only through opt-in experimental targets, not the default
+  v0.1 fit path.
 
-Current bridge-payload limits:
+Current bridge-payload notes:
 
 - `X` is built with base R model-matrix semantics.
 - `Z` is a sparse animal-incidence matrix with one row per observation.
 - pedigree IDs are normalized to parent-before-offspring order;
 - the payload records parent indices for Julia-side sparse `Ainv`
   construction;
-- production Julia execution remains planned; only the experimental tiny local
-  bridge path exists.
+- the default fit path is the v0.1 univariate Gaussian animal model; genomic,
+  repeatability, two-effect, SNP-BLUP, and multivariate paths are opt-in and
+  experimental; non-Gaussian, QTL/GWAS/eQTL, structured covariance grammar, and
+  unusual inheritance remain planned.
 
 ## Later Relationship Terms
 
@@ -61,8 +68,11 @@ relmat(1 | id, K = custom_K)
 precision(1 | id, Q = custom_Q)
 ```
 
-The R package now exports these later markers and rejects them explicitly as
-planned, not implemented. They are not fitting helpers yet.
+Some later markers are now opt-in experimental (`genomic()`, `single_step()`,
+`permanent()`, `common_env()`, and `maternal_genetic()` in their gated targets).
+The rest are exported or reserved vocabulary that errors explicitly as planned,
+not implemented. None of the later markers changes the default v0.1 animal-model
+fit path.
 
 ## Later Covariance Grammar
 
