@@ -162,6 +162,37 @@ a `partial` gate in the `HSquared.jl` twin.
   the supplied variances (it does not estimate them). Mirrors the twin
   `V2-SNPBLUP` gate.
 
+## Current limits
+
+How many of each term can a formula carry today? The grammar is deliberately
+narrow; these are the structural limits (not yet "arbitrary" random effects):
+
+- **Exactly one primary effect.** A formula carries exactly one of
+  `animal(1 | id, pedigree = ped)` (a pedigree additive effect) or a
+  supplied-relationship primary (`genomic(1 | id, ...)` /
+  `single_step(1 | id, Hinv = ...)`). Two primary effects is an error.
+- **At most one additional random effect,** and only alongside an `animal()`
+  primary: one of `permanent(1 | id)`, `common_env(1 | group)`, or
+  `maternal_genetic(1 | dam)` (each opt-in/experimental). There is no support
+  yet for a third random effect or for several independent grouping factors.
+- **Random intercepts only.** Only `1 | group` is parsed. Random slopes
+  (`x | id`) are rejected as planned-not-implemented, and a bare lme4-style
+  `(... | group)` term is rejected with a pointer to the named effects above
+  (it is never silently absorbed into the fixed effects).
+- **One response (univariate).** A single numeric response; multi-trait
+  `cbind(...)` responses are planned (Phase 3, engine work in progress on the
+  twin).
+- **Gaussian identity link only.** Other families are planned, not implemented.
+- **REML only on the fit path.** `REML = FALSE` (ML) is rejected; the
+  supplied-variance paths (`henderson_mme`, `snp_blup`) solve at given
+  variances rather than estimating them.
+- **Fixed effects are unrestricted** otherwise: any number of ordinary
+  fixed-effect terms (`sex + age + ...`) on the right-hand side is fine.
+
+Arbitrary numbers of random effects and slopes, multiple correlated random
+terms, and multi-trait responses are on the roadmap; the parser names each
+unsupported form rather than guessing.
+
 ## Not implemented yet
 
 - General default model fitting beyond the v0.1 univariate Gaussian animal

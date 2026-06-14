@@ -88,6 +88,40 @@ test_that("formula parser rejects unsupported animal syntax", {
   )
 })
 
+test_that("formula parser rejects bare (... | group) random effects", {
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(y = c(1, 2, 3), x = c(0.1, 0.2, 0.3), id = c("a", "b", "c"))
+
+  # A bare lme4-style random effect must be named, not silently absorbed into
+  # the fixed-effect design.
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + (1 | x),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "Unsupported random-effect term",
+    fixed = TRUE
+  )
+
+  # The same applies when the bar term is the only random-effect-like term.
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + (x | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "Unsupported random-effect term",
+    fixed = TRUE
+  )
+})
+
 test_that("formula parser rejects planned genomic and QTL syntax honestly", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
   dat <- data.frame(y = c(1, 2), id = c("a", "b"), sex = c("f", "m"))

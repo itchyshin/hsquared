@@ -95,6 +95,19 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     )
   }
 
+  # Any leftover bar term (a bare `(... | group)` random effect that is not a
+  # recognized named effect) would otherwise be silently swallowed into the
+  # fixed-effect design; reject it with a pointer to the named effects.
+  leftover_pos <- setdiff(seq_along(rhs_terms), c(primary_pos, second_pos))
+  bar_pos <- leftover_pos[vapply(
+    rhs_terms[leftover_pos],
+    hs_is_bar_expr,
+    logical(1L)
+  )]
+  if (length(bar_pos) > 0L) {
+    hs_stop_unsupported_random_effect(rhs_terms[[bar_pos[[1L]]]])
+  }
+
   fixed_terms <- rhs_terms[-c(primary_pos, second_pos)]
   fixed_formula <- formula
   fixed_formula[[3L]] <- hs_rebuild_additive_rhs(fixed_terms)
@@ -1195,4 +1208,24 @@ hs_unwrap_parentheses <- function(expr) {
 
 hs_deparse <- function(expr) {
   paste(deparse(expr, width.cutoff = 500L), collapse = " ")
+}
+
+# A bare grouping/random-effect expression like `(1 | x)` or `x | id` — i.e. a
+# top-level `|` call that is not wrapped in a recognized effect function such as
+# `animal()`/`permanent()`. These must be named, not silently absorbed into the
+# fixed-effect design.
+hs_is_bar_expr <- function(expr) {
+  hs_is_call(hs_unwrap_parentheses(expr), "|")
+}
+
+hs_stop_unsupported_random_effect <- function(term) {
+  stop(
+    "Unsupported random-effect term `",
+    hs_deparse(term),
+    "`. hsquared does not parse bare `(... | group)` random effects. Name the ",
+    "effect instead: `animal(1 | id, pedigree = ped)` for the additive ",
+    "genetic effect, or an opt-in second effect such as `permanent(1 | id)`, ",
+    "`common_env(1 | group)`, or `maternal_genetic(1 | dam)`.",
+    call. = FALSE
+  )
 }
