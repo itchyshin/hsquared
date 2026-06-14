@@ -2756,3 +2756,37 @@ with private memory.
   "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
   561 passes.
 - `git diff --check` — passed.
+
+## 2026-06-14 Multivariate fitting article
+
+- Added a dedicated pkgdown article for the opt-in multivariate Gaussian animal
+  model: `vignettes/articles/multivariate.Rmd`. It documents the live `cbind()`
+  response grammar, missing response cells, G/R covariance and correlation
+  extractors, per-trait h2, cross-trait EBVs, named `initial = list(G0 = ...,
+  R0 = ...)`, and the claim boundary around structured covariance syntax.
+- Updated `vignettes/articles/fitting-models.Rmd` to include the multivariate
+  fit in the model tour and to stop saying multivariate as a whole remains only
+  on the roadmap; the roadmap boundary is now structured/factor-analytic
+  covariance, non-Gaussian/GLLVM, unusual inheritance, and GPU execution.
+- Updated `_pkgdown.yml` so the multivariate article appears in the Articles
+  menu and Start here article index.
+- Jason scout: checked local sister documentation patterns in `gllvmTMB`
+  (`covariance-correlation.Rmd`, `animal-model.Rmd`) and `drmTMB`
+  (`phylogenetic-spatial.Rmd`) for purpose-first examples, syntax/equation
+  pairing, and explicit fitted-vs-planned boundaries.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Public-claim scan: `rg -n
+  "Multivariate, factor-analytic|multivariate.*remain on the roadmap|ASReml-style production|t>=2|target = \"multivariate\"|cov = us|cov = fa"
+  README.md DESCRIPTION ROADMAP.md docs vignettes R tests` — no stale
+  "multivariate remains on the roadmap" wording; remaining hits are intentional
+  opt-in/partial/planned-boundary language.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  561 passes.
+- `git diff --check` — passed.
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.

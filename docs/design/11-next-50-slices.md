@@ -8,12 +8,16 @@ check-log evidence, an after-task report, and an updated claim boundary.
 
 - R multivariate bridge slice: done on `hsquared` main (`835e8c2`), with local
   package checks and remote R-CMD-check/pkgdown/Pages green.
+- R structured multivariate error ergonomics: done on `hsquared` main
+  (`6a4fdf4`), with remote R-CMD-check/pkgdown/Pages green.
+- R multivariate fitting article: done locally in this slice; it documents the
+  live `cbind()` path, missing response cells, extractors, and the structured
+  covariance boundary. Commit/push and remote CI are the remaining bookkeeping.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
-- R lane next safe bite: keep the user API easy by improving structured
-  multivariate grammar errors and docs so users know `cbind()` is live today
-  while `animal(trait | id, cov = ...)` remains the structured-covariance
-  roadmap.
+- R lane next safe bite: add extractor-documentation examples for
+  `genetic_covariance()` / `genetic_correlation()`, or consume a shared
+  deterministic multivariate fixture after the Julia twin writes it.
 
 ## Programme Board
 

@@ -1,0 +1,190 @@
+---
+title: "Multivariate Gaussian animal models"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Multivariate Gaussian animal models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+Use the multivariate path when the same animals have two or more quantitative
+traits and the question is about genetic covariance: which traits share
+additive-genetic variation, what are the genetic correlations, and what are the
+trait-specific heritabilities?
+
+This path is experimental and opt-in. It is useful for tiny validation-scale
+Gaussian examples, but it is not yet an ASReml-style production multi-trait
+claim and not yet supported by a committed known-truth recovery fixture. The
+examples are not run when this page is built because they require a local Julia,
+`JuliaCall`, and a sibling `HSquared.jl` checkout.
+
+## Model
+
+For two traits measured on animal records, the fitted model is
+
+\[
+\mathrm{vec}(\mathbf a) \sim
+\mathrm{MVN}\left(\mathbf 0, \mathbf G_0 \otimes \mathbf A\right),
+\qquad
+\mathrm{vec}(\mathbf e) \sim
+\mathrm{MVN}\left(\mathbf 0, \mathbf R_0 \otimes \mathbf I\right).
+\]
+
+Here `A` is the pedigree additive relationship matrix, `G0` is the trait-by-trait
+additive-genetic covariance matrix, and `R0` is the trait-by-trait residual
+covariance matrix. `hsquared` sends an NA-preserving response matrix to
+`HSquared.jl`; missing response cells are masked by the engine. Missing
+fixed-effect values are still rejected before fitting.
+
+## Current syntax
+
+The current live grammar uses a `cbind()` response and the ordinary animal-model
+random intercept:
+
+```{r}
+fit_mv <- hsquared(
+  cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "multivariate")
+  )
+)
+```
+
+Read this as one additive animal effect shared across traits. The trait
+covariances live in `G0`; the residual covariances live in `R0`.
+
+## Missing trait cells
+
+Trait cells may be missing in the `cbind()` response. For example, this is a
+valid data shape for the multivariate target:
+
+```{r}
+dat <- data.frame(
+  id = c("sire", "dam", "calf1", "calf2"),
+  sex = c("m", "f", "f", "m"),
+  age = c(4, 4, 1, 1),
+  weight = c(72, 65, 31, 35),
+  length = c(110, NA, 72, 76)
+)
+
+ped <- data.frame(
+  id = c("sire", "dam", "calf1", "calf2"),
+  sire = c(NA, NA, "sire", "sire"),
+  dam = c(NA, NA, "dam", "dam")
+)
+
+fit_mv <- hsquared(
+  cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "multivariate")
+  )
+)
+```
+
+The missing `length` value is allowed because it is a response cell. A missing
+`sex`, `age`, or `id` value would be rejected because those variables define the
+fixed-effect and random-effect design matrices.
+
+## Extracting results
+
+The multivariate fit returns the same kind of object as the univariate fit, plus
+trait covariance matrices:
+
+```{r}
+genetic_covariance(fit_mv)
+residual_covariance(fit_mv)
+
+genetic_correlation(fit_mv)
+residual_correlation(fit_mv)
+
+heritability(fit_mv)
+breeding_values(fit_mv)
+fit_diagnostics(fit_mv)
+```
+
+`heritability(fit_mv)` is per trait. `breeding_values(fit_mv)` returns EBVs by
+animal and trait. `fit_diagnostics(fit_mv)` is the first place to look before
+interpreting likelihood-based summaries; `logLik()` and `AIC()` are intentionally
+blocked for non-converged multivariate fits.
+
+## Initial values
+
+If you supply starting values, use a named list. The names are part of the bridge
+contract:
+
+```{r}
+fit_mv <- hsquared(
+  cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(
+      target = "multivariate",
+      initial = list(
+        G0 = diag(1, 2),
+        R0 = diag(1, 2)
+      )
+    )
+  )
+)
+```
+
+A bare two-element list is rejected because it is too easy to swap genetic and
+residual covariance starts by accident.
+
+## Planned structured grammar
+
+The long-format structured covariance grammar is planned, not implemented:
+
+```{r}
+# Planned, not fitted yet:
+y ~ trait + sex + age +
+  animal(trait | id, pedigree = ped, cov = us())
+
+# Planned, not fitted yet:
+y ~ trait + sex + age +
+  animal(trait | id, pedigree = ped, cov = fa(K = 2))
+```
+
+Use the `cbind()` path above for the current opt-in multivariate model. The
+structured grammar is reserved for later unstructured, diagonal, low-rank, and
+factor-analytic covariance models.
+
+## Claim boundary
+
+This page describes a partial capability:
+
+- fitted only through `engine = "julia"` and `target = "multivariate"`;
+- Gaussian and REML-only;
+- animal-model-only;
+- dense validation-scale;
+- missing response cells allowed, missing fixed-effect cells rejected;
+- no `cov = us()`, `cov = diag()`, `cov = lowrank(K)`, or `cov = fa(K)` grammar
+  yet;
+- no external comparator or committed `t >= 2` known-truth recovery claim yet.
+
+Use `validation_status()` and the model-status article before treating any
+multivariate result as more than an experimental fit.

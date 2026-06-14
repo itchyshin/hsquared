@@ -20,6 +20,8 @@ navbar:
           href: articles/hsquared.html
         - text: Fitting models
           href: articles/fitting-models.html
+        - text: Multivariate Gaussian animal models
+          href: articles/multivariate.html
         - text: Mission control
           href: articles/mission-control.html
         - text: Model status
@@ -70,6 +72,7 @@ articles:
     contents:
       - hsquared
       - articles/fitting-models
+      - articles/multivariate
       - articles/mission-control
       - articles/model-status
       - articles/formula-grammar
