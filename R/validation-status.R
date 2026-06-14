@@ -142,8 +142,11 @@ hs_validation_status_evidence <- function() {
       "each checks two positive estimated variance components (effect, residual),",
       "heritability in (0, 1), breeding values, and finite REML logLik; fit",
       "provenance tagged variance_components_source =",
-      "\"estimated_<genomic|single_step>_ai_reml\". The user supplies the inverse;",
-      "building it from markers/pedigree is planned."
+      "\"estimated_<genomic|single_step>_ai_reml\". For genomic, a skip-guarded",
+      "live test also fits from a raw marker matrix (`genomic(1 | id, markers =",
+      "M)`): the engine builds G (genomic_relationship_matrix) and its regularized",
+      "inverse, then fits. single_step still needs a supplied Hinv; building Hinv",
+      "from a pedigree and genomic relationship is planned."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -232,10 +235,11 @@ hs_validation_status_boundaries <- function() {
     ),
     paste(
       "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
-      "a relationship-inverse spec) that R surfaces; mirrors the twin V2-GREML",
-      "(genomic) and V2-SSHINV (single-step) gates (partial). The user supplies",
-      "the genomic Ginv / single-step Hinv; building them from markers/pedigree,",
-      "low-rank m>>n solves, and AGHmatrix/sommer/BLUPF90 comparator parity are",
+      "a relationship-inverse spec) that R surfaces; mirrors the twin V2-GREML /",
+      "V2-GRM / V2-GINV (genomic) and V2-SSHINV (single-step) gates (partial).",
+      "Genomic accepts a supplied Ginv or a marker matrix (engine-built G); single",
+      "step needs a supplied Hinv (building it from a pedigree + G is planned).",
+      "Low-rank m>>n solves and AGHmatrix/sommer/BLUPF90 comparator parity are",
       "planned. Not the default, not ML, not production or comparator-validated."
     ),
     paste(

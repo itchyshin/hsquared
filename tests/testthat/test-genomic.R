@@ -158,3 +158,134 @@ test_that("hsquared fits the opt-in genomic GREML model", {
     "estimated_genomic_ai_reml"
   )
 })
+
+test_that("genomic() accepts a marker matrix to build the relationship", {
+  ids <- paste0("g", 1:5)
+  set.seed(4)
+  M <- matrix(stats::rbinom(5 * 20, 2, 0.3), 5, 20)
+  rownames(M) <- ids
+  dat <- data.frame(y = c(1, 2, 3, 4, 5), id = ids)
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  expect_equal(spec$random$genomic$type, "genomic")
+  expect_equal(spec$random$genomic$source, "markers")
+  expect_equal(spec$random$genomic$ids, ids)
+  expect_true(is.matrix(spec$random$genomic$markers))
+  expect_null(spec$random$genomic$ginv)
+  expect_match(spec$bridge$target, "genomic_relationship_inverse", fixed = TRUE)
+})
+
+test_that("marker-based genomic builds a markers bridge payload", {
+  ids <- paste0("g", 1:5)
+  set.seed(4)
+  M <- matrix(stats::rbinom(5 * 20, 2, 0.3), 5, 20)
+  rownames(M) <- ids
+  dat <- data.frame(y = c(1, 2, 3, 4, 5), id = ids)
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_equal(payload$relationship_source, "markers")
+  expect_null(payload$Ginv)
+  expect_true(is.matrix(payload$markers))
+  expect_equal(dim(payload$markers), c(5L, 20L))
+})
+
+test_that("supplied-Ginv genomic still builds a supplied bridge payload", {
+  ids <- paste0("g", 1:3)
+  Ginv <- hs_test_ginv(ids)
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_equal(payload$relationship_source, "supplied")
+  expect_null(payload$markers)
+  expect_true(is.matrix(payload$Ginv))
+})
+
+test_that("genomic() takes exactly one of Ginv or markers", {
+  ids <- paste0("g", 1:3)
+  Ginv <- hs_test_ginv(ids)
+  M <- matrix(0, 3, 5)
+  rownames(M) <- ids
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ genomic(1 | id, Ginv = Ginv, markers = M),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "exactly one of `Ginv` or `markers`",
+    fixed = TRUE
+  )
+})
+
+test_that("genomic() marker ids must cover the data ids", {
+  ids <- paste0("g", 1:3)
+  M <- matrix(0, 3, 5)
+  rownames(M) <- ids
+  dat <- data.frame(y = c(1, 2), id = c("g1", "ghost"))
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ genomic(1 | id, markers = M),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "not in the `markers`",
+    fixed = TRUE
+  )
+})
+
+test_that("hsquared fits the opt-in genomic model from a marker matrix", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live marker GREML."
+  )
+
+  set.seed(6)
+  na <- 10
+  ids <- paste0("g", seq_len(na))
+  M <- matrix(stats::rbinom(na * 80, 2, 0.3), na, 80)
+  rownames(M) <- ids
+
+  n <- 30
+  rec <- rep(ids, length.out = n)
+  dat <- data.frame(y = 3 + stats::rnorm(n, 0, 1), id = rec)
+
+  fit <- hsquared(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$spec$target, "genomic")
+  vc <- variance_components(fit)
+  expect_equal(vc$component, c("genomic", "residual"))
+  expect_true(all(is.finite(vc$estimate)) && all(vc$estimate > 0))
+  expect_equal(nrow(breeding_values(fit)), na)
+})

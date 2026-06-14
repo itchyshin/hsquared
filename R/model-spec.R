@@ -129,10 +129,18 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   random <- list()
   random[[primary_type]] <- primary_spec
   bridge_target <- if (primary_type %in% c("genomic", "single_step")) {
-    sprintf(
-      "fit_ai_reml(y, X, Z, %s; method = :REML)",
-      if (identical(primary_type, "genomic")) "Ginv" else "Hinv"
-    )
+    if (identical(primary_spec$source, "markers")) {
+      paste0(
+        "fit_ai_reml(y, X, Z, ",
+        "genomic_relationship_inverse(genomic_relationship_matrix(markers)); ",
+        "method = :REML)"
+      )
+    } else {
+      sprintf(
+        "fit_ai_reml(y, X, Z, %s; method = :REML)",
+        if (identical(primary_type, "genomic")) "Ginv" else "Hinv"
+      )
+    }
   } else {
     "fit_animal_model(y, X, Z, Ainv; method = :REML)"
   }
@@ -569,8 +577,12 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
     )
   }
 
+  # `genomic()` accepts either a supplied `Ginv` or a marker matrix `markers`
+  # (the engine builds the genomic relationship from markers); `single_step()`
+  # accepts a supplied `Hinv`.
+  accepted <- if (identical(term, "genomic")) c("Ginv", "markers") else arg_name
   named_args <- args[arg_names != ""]
-  unsupported <- setdiff(names(named_args), arg_name)
+  unsupported <- setdiff(names(named_args), accepted)
   if (length(unsupported) > 0L) {
     stop(
       "`",
@@ -578,29 +590,80 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
       "()` argument",
       if (length(unsupported) > 1L) "s " else " ",
       paste(sprintf("`%s`", unsupported), collapse = ", "),
-      " are planned, not implemented (building a relationship from markers is ",
-      "planned).",
+      " are planned, not implemented.",
       call. = FALSE
     )
   }
-  if (!(arg_name %in% names(named_args))) {
+  supplied <- intersect(accepted, names(named_args))
+  if (length(supplied) == 0L) {
+    extra <- if (identical(term, "genomic")) {
+      " (or `markers` to build one)"
+    } else {
+      ""
+    }
     stop(
       "`",
       term,
       "()` requires a `",
       arg_name,
-      "` argument (a relationship inverse with id dimnames). Building `",
-      arg_name,
-      "` from markers is planned, not implemented.",
+      "` argument (a relationship inverse with id dimnames)",
+      extra,
+      ".",
       call. = FALSE
     )
   }
-
-  relinv <- hs_eval_genomic_ginv(named_args[[arg_name]], data, env)
-  relinv <- hs_validate_genomic_ginv(relinv)
-  relinv_ids <- rownames(relinv)
+  if (length(supplied) > 1L) {
+    stop(
+      "`genomic()` takes exactly one of `Ginv` or `markers`.",
+      call. = FALSE
+    )
+  }
+  arg_used <- supplied[[1L]]
 
   observed_ids <- as.character(data[[group]])
+
+  if (identical(arg_used, "markers")) {
+    markers <- hs_eval_genomic_ginv(
+      named_args$markers,
+      data,
+      env,
+      what = "markers"
+    )
+    markers <- hs_validate_genomic_markers(markers)
+    ids <- rownames(markers)
+    unknown <- setdiff(unique(observed_ids), ids)
+    if (length(unknown) > 0L) {
+      shown <- unknown[seq_len(min(5L, length(unknown)))]
+      stop(
+        "`genomic()` ids must be present in the `markers` row names. ID(s) not ",
+        "in the `markers`: ",
+        paste(sprintf("`%s`", shown), collapse = ", "),
+        ".",
+        call. = FALSE
+      )
+    }
+    return(list(
+      type = term,
+      term = hs_deparse(call),
+      design = "intercept",
+      group = group,
+      values = observed_ids,
+      ids = ids,
+      markers = markers,
+      source = "markers",
+      relationship = term,
+      covariance = "scalar"
+    ))
+  }
+
+  relinv <- hs_eval_genomic_ginv(
+    named_args[[arg_used]],
+    data,
+    env,
+    what = arg_used
+  )
+  relinv <- hs_validate_genomic_ginv(relinv)
+  relinv_ids <- rownames(relinv)
   unknown <- setdiff(unique(observed_ids), relinv_ids)
   if (length(unknown) > 0L) {
     shown <- unknown[seq_len(min(5L, length(unknown)))]
@@ -608,9 +671,9 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
       "`",
       term,
       "()` ids must be present in the `",
-      arg_name,
+      arg_used,
       "` dimnames. ID(s) not in the `",
-      arg_name,
+      arg_used,
       "`: ",
       paste(sprintf("`%s`", shown), collapse = ", "),
       ".",
@@ -626,20 +689,22 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
     values = observed_ids,
     ids = relinv_ids,
     ginv = relinv,
+    source = "supplied",
     relationship = term,
     covariance = "scalar"
   )
 }
 
-hs_eval_genomic_ginv <- function(expr, data, env) {
+hs_eval_genomic_ginv <- function(expr, data, env, what = "Ginv") {
   tryCatch(
     eval(expr, envir = data, enclos = env),
     error = function(err) {
       stop(
-        "Could not evaluate `Ginv = ",
+        "Could not evaluate the `",
+        what,
+        "` argument (`",
         hs_deparse(expr),
-        "`. Provide a genomic relationship inverse matrix in the formula ",
-        "environment.",
+        "`). Provide it as a matrix in the formula environment.",
         call. = FALSE
       )
     }
@@ -668,6 +733,24 @@ hs_validate_genomic_ginv <- function(ginv) {
     stop("`Ginv` row and column names must match.", call. = FALSE)
   }
   ginv
+}
+
+hs_validate_genomic_markers <- function(markers) {
+  if (inherits(markers, "Matrix")) {
+    markers <- as.matrix(markers)
+  }
+  if (!is.matrix(markers) || !is.numeric(markers)) {
+    stop("`markers` must be a numeric marker matrix.", call. = FALSE)
+  }
+  ids <- rownames(markers)
+  if (is.null(ids) || any(is.na(ids)) || anyDuplicated(ids) > 0L) {
+    stop(
+      "`markers` must have unique, non-missing row names matching the ids ",
+      "(one row per genotyped individual).",
+      call. = FALSE
+    )
+  }
+  markers
 }
 
 hs_normalize_parent <- function(x) {

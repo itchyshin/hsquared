@@ -127,6 +127,15 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
     dimnames = list(NULL, ids)
   )
 
+  source <- if (is.null(primary$source)) "supplied" else primary$source
+  if (identical(source, "markers")) {
+    ginv <- NULL
+    markers <- unname(as.matrix(primary$markers))
+  } else {
+    ginv <- unname(as.matrix(primary$ginv))
+    markers <- NULL
+  }
+
   structure(
     list(
       y = as.numeric(spec$response$values),
@@ -135,7 +144,10 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
       Z2 = NULL,
       effect2 = NULL,
       Ainv = NULL,
-      Ginv = unname(as.matrix(primary$ginv)),
+      Ginv = ginv,
+      markers = markers,
+      relationship_source = source,
+      ridge = 0.01,
       relationship = primary$relationship,
       method = spec$method,
       family = spec$family$family,

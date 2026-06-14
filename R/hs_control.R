@@ -51,10 +51,11 @@
 #'   the default.
 #'   `target = "genomic"` and `target = "single_step"` are experimental, opt-in
 #'   paths that fit a single effect whose relationship is a user-supplied inverse:
-#'   `genomic(1 | id, Ginv = Ginv)` (a genomic relationship inverse) and
-#'   `single_step(1 | id, Hinv = Hinv)` (a single-step relationship inverse). Both
-#'   surface `HSquared.fit_ai_reml()` on the supplied inverse. They are REML only
-#'   and not the default.
+#'   `genomic(1 | id, Ginv = Ginv)` (a genomic relationship inverse) or
+#'   `genomic(1 | id, markers = M)` (a marker matrix the engine turns into a
+#'   genomic relationship), and `single_step(1 | id, Hinv = Hinv)` (a single-step
+#'   relationship inverse). All surface `HSquared.fit_ai_reml()`. They are REML
+#'   only and not the default.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

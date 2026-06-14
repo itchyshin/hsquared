@@ -116,13 +116,16 @@ Status: planned.
 ## Phase 5: Genomic And Single-Step Models
 
 Status: started (opt-in). Genomic GREML (variance-component estimation on a
-user-supplied `Ginv`) is surfaced opt-in and experimental
-(`genomic(1 | id, Ginv = Ginv)`, `target = "genomic"`, mirroring the twin
-`V2-GREML` partial gate). The rest is planned.
+user-supplied `Ginv`, or a marker matrix the engine turns into a genomic
+relationship) is surfaced opt-in and experimental
+(`genomic(1 | id, Ginv = Ginv)` or `genomic(1 | id, markers = M)`,
+`target = "genomic"`, mirroring the twin `V2-GREML` partial gate). The rest is
+planned.
 
-- Genomic GREML on a supplied `Ginv`, and single-step on a supplied `Hinv` —
-  opt-in, experimental (REML), mirroring the twin `V2-GREML` / `V2-SSHINV` gates.
-- Building `Ginv`/`G` and `Hinv` from markers/pedigree, SNP-BLUP, single-step
+- Genomic GREML on a supplied `Ginv` or a marker matrix (engine-built G), and
+  single-step on a supplied `Hinv` — opt-in, experimental (REML), mirroring the
+  twin `V2-GREML` / `V2-GRM` / `V2-GINV` / `V2-SSHINV` gates.
+- Weighted/standardized-marker G variants, building `Hinv` from a pedigree + G, SNP-BLUP, single-step
   HBLUP construction, APY, low-rank m≫n solves, genomic feature/QTL-style
   effects, comparator parity (AGHmatrix/sommer/BLUPF90), and simulation
   validation — planned.

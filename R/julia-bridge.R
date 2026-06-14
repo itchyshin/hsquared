@@ -608,9 +608,16 @@ hs_fit_julia_genomic_payload <- function(
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
   }
-  if (is.null(payload$Ginv)) {
+  from_markers <- identical(payload$relationship_source, "markers")
+  if (is.null(payload$Ginv) && !from_markers) {
     stop(
       "Internal bridge error: the genomic payload is missing its `Ginv`.",
+      call. = FALSE
+    )
+  }
+  if (from_markers && is.null(payload$markers)) {
+    stop(
+      "Internal bridge error: the genomic payload is missing its `markers`.",
       call. = FALSE
     )
   }
@@ -628,13 +635,25 @@ hs_fit_julia_genomic_payload <- function(
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
   hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
-  JuliaCall::julia_assign("hsq_Ginv", payload$Ginv)
   JuliaCall::julia_assign("hsq_ids", payload$ids)
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  if (from_markers) {
+    # Build the genomic relationship inverse from the marker matrix in Julia.
+    JuliaCall::julia_assign("hsq_markers", payload$markers)
+    JuliaCall::julia_assign("hsq_ridge", payload$ridge)
+    relinv_cmd <- paste(
+      "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+      "hsq_Ginvs = sparse(HSquared.genomic_relationship_inverse(",
+      "hsq_G; ridge = hsq_ridge));"
+    )
+  } else {
+    JuliaCall::julia_assign("hsq_Ginv", payload$Ginv)
+    relinv_cmd <- "hsq_Ginvs = sparse(hsq_Ginv);"
+  }
   JuliaCall::julia_command(paste(
-    "hsq_Ginvs = sparse(hsq_Ginv);",
+    relinv_cmd,
     "hsq_spec = HSquared.animal_model_spec(",
     "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
     "ids = hsq_ids, method = :REML);",
