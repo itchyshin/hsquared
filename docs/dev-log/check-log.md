@@ -2553,5 +2553,6 @@ with private memory.
   + enhancer (live GREML fit ran) — 0/0/0; `rcmdcheck(--as-cran)` 0/0/1 (benign).
   Lesson: `--as-cran` (installed-package tests) caught a model-spec test
   divergence that `test_dir(load_all)` did not — `--as-cran` is authoritative.
-- Local commit `8930323`. Remote checks for `8930323`: GitHub Actions R-CMD-check
-  `27484947202` + pkgdown `27484947207` (in progress; appended on completion).
+- Local commit `8930323`. Remote checks for `8930323` (all green):
+  - GitHub Actions R-CMD-check `27484947202`: passed.
+  - GitHub Actions pkgdown `27484947207`: passed.
