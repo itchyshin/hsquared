@@ -92,7 +92,7 @@ sommer::mmes(
 ```
 
 This pilot reproduced the Julia target genetic covariance and residual
-variances at the printed precision:
+variances within a tight deterministic smoke-test tolerance:
 
 ```text
 G0 =

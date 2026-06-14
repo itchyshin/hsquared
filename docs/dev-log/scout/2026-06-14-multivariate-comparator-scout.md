@@ -67,8 +67,10 @@ sommer::mmes(
 
 Pilot outcome:
 
-- Genetic covariance matched the serialized Julia target at printed precision.
-- Residual variances matched the serialized Julia target at printed precision.
+- Genetic covariance matched the serialized Julia target within a tight
+  deterministic smoke-test tolerance.
+- Residual variances matched the serialized Julia target within a tight
+  deterministic smoke-test tolerance.
 - The model is not a full residual-covariance comparator, because
   `dsm(trait)` constrains the residual covariance to zero.
 

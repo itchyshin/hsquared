@@ -421,3 +421,83 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
     "unstructured"
   )
 })
+
+test_that("optional sommer comparator matches the Phase 4 diagonal-residual target", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("sommer")
+  testthat::skip_if_not_installed("nadiv")
+
+  ped <- hs_read_phase4_fixture("pedigree.csv")
+  pheno <- hs_read_phase4_fixture("phenotypes.csv")
+  G0 <- hs_phase4_matrix("expected_genetic_covariance.csv")
+  R0 <- hs_phase4_matrix("expected_residual_covariance.csv")
+  h2 <- hs_read_phase4_fixture("expected_heritability.csv")
+
+  ped_a <- ped
+  names(ped_a)[names(ped_a) == "animal"] <- "id"
+  ped_a$sire[ped_a$sire == "0"] <- NA
+  ped_a$dam[ped_a$dam == "0"] <- NA
+  A <- suppressWarnings(
+    as.matrix(nadiv::makeA(ped_a[, c("id", "sire", "dam")]))
+  )
+  A <- A[ped$animal, ped$animal]
+
+  long <- stats::reshape(
+    pheno[c("record", "animal", "x", "trait1", "trait2")],
+    varying = c("trait1", "trait2"),
+    v.names = "value",
+    timevar = "trait",
+    times = c("trait1", "trait2"),
+    idvar = "record",
+    direction = "long"
+  )
+  long$trait <- factor(long$trait, levels = c("trait1", "trait2"))
+  long$animal <- factor(long$animal, levels = ped$animal)
+  long$.record_index <- match(long$record, pheno$record)
+  long <- long[with(long, order(trait, .record_index)), ]
+  row.names(long) <- NULL
+
+  fit <- tryCatch(
+    sommer::mmes(
+      value ~ trait + trait:x - 1,
+      random = ~ sommer::vsm(
+        sommer::usm(trait),
+        sommer::ism(animal),
+        Gu = A
+      ),
+      rcov = ~ sommer::vsm(sommer::dsm(trait), sommer::ism(units)),
+      data = long,
+      verbose = FALSE,
+      dateWarning = FALSE,
+      nIters = 80L
+    ),
+    error = function(e) e
+  )
+  if (inherits(fit, "error")) {
+    testthat::skip(paste(
+      "sommer multivariate comparator API did not fit this fixture:",
+      conditionMessage(fit)
+    ))
+  }
+  expect_true(isTRUE(fit$convergence))
+
+  genetic_i <- grep("animal", names(fit$theta), fixed = TRUE)
+  residual_i <- match("units", names(fit$theta))
+  if (length(genetic_i) != 1L || is.na(residual_i)) {
+    testthat::skip("sommer theta layout changed; comparator extraction needs review.")
+  }
+
+  Ghat <- as.matrix(fit$theta[[genetic_i]])
+  Rhat <- as.matrix(fit$theta[[residual_i]])
+  dimnames(Ghat) <- dimnames(G0)
+  dimnames(Rhat) <- dimnames(R0)
+
+  expect_equal(Ghat, G0, tolerance = 5e-4)
+  expect_equal(diag(Rhat), diag(R0), tolerance = 5e-4)
+  expect_equal(
+    unname(diag(Ghat) / (diag(Ghat) + diag(Rhat))),
+    unname(h2$h2),
+    tolerance = 5e-4
+  )
+  expect_equal(Rhat[upper.tri(Rhat)], 0, tolerance = 1e-12)
+})

@@ -42,7 +42,8 @@ Pre-edit scout commands:
 - Comparator executable check returned no `asreml`, `airemlf90`, `blupf90`,
   `renumf90`, `dmuai`, or `wombat` executable on `PATH`.
 - `sommer` diagonal-residual pilot on the shared fixture fit successfully and
-  matched serialized Julia `G0` and `diag(R0)` at printed precision.
+  matched serialized Julia `G0` and `diag(R0)` within a tight deterministic
+  smoke-test tolerance.
 - `sommer` full-residual `usm(trait)` pilot failed with
   `Mat::operator(): index out of bounds`.
 - `sommer` wide `cbind()` pilot failed under the installed 4.4.5 API.

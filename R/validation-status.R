@@ -170,8 +170,11 @@ hs_validation_status_evidence <- function() {
       "cells as Julia NaN, and returns G0/R0 covariance matrices, genetic and",
       "residual correlations, per-trait h2, cross-trait EBVs, and convergence",
       "diagnostics; fit provenance tagged variance_components_source =",
-      "\"estimated_multivariate_reml\". Mirrors the twin V4-MULTIVARIATE /",
-      "V4-MV-REML gates (partial)."
+      "\"estimated_multivariate_reml\". The shared Phase 4 fixture pins R",
+      "payload/extractor parity against serialized Julia targets, and an",
+      "optional sommer comparator checks the same fixture's G0, diag(R0), and",
+      "diagonal-target h2. Mirrors the twin V4-MULTIVARIATE / V4-MV-REML gates",
+      "(partial)."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -280,10 +283,12 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned dense/validation-scale",
       "multivariate REML estimator that R surfaces; mirrors the twin V4 rows",
       "(partial). `cbind()` responses with missing trait cells are supported,",
-      "but this is REML-only, animal-model-only, not the default, not external-",
-      "comparator-validated, and not a known-truth t>=2 recovery claim. The",
-      "Julia engine currently inverts Ainv internally, so deep-inbreeding or",
-      "high-condition-number pedigrees remain a twin-side hardening item."
+      "but this is REML-only, animal-model-only, not the default, not full",
+      "external-comparator validated, and not a known-truth t>=2 recovery claim.",
+      "The optional sommer check is diagonal-residual only, so it does not",
+      "validate the off-diagonal residual covariance. The Julia engine currently",
+      "inverts Ainv internally, so deep-inbreeding or high-condition-number",
+      "pedigrees remain a twin-side hardening item."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",

@@ -2795,6 +2795,51 @@ with private memory.
   - GitHub Actions pkgdown `27500073217`: passed.
   - GitHub Pages build/deployment `27500113544`: passed.
 
+## 2026-06-14 Optional sommer comparator for multivariate fixture
+
+- Added a skip-safe optional `sommer` comparator test to
+  `tests/testthat/test-multivariate.R`.
+- The test reads the shared Phase 4 fixture, builds `A` with `nadiv::makeA()`,
+  reshapes the response to sommer's long format, and fits a diagonal-residual
+  multivariate animal model:
+  `value ~ trait + trait:x - 1`,
+  `random = ~ vsm(usm(trait), ism(animal), Gu = A)`,
+  `rcov = ~ vsm(dsm(trait), ism(units))`.
+- Assertions:
+  - `sommer` reports convergence.
+  - G0 matches the serialized Julia target within `5e-4`.
+  - `diag(R0)` matches the serialized Julia target within `5e-4`.
+  - diagonal-target h2 matches within `5e-4`.
+  - the sommer residual off-diagonal is exactly zero, making the partial
+    comparator boundary explicit.
+- Updated `validation_status()`, `capability-status.md`, and the validation debt
+  register to state that the `sommer` comparator is partial/diagonal-residual
+  only.
+- Formatting: `command -v air || true` returned no `air` binary on PATH.
+- First focused run:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'multivariate|phase0-api')"` — failed because the
+  new test incorrectly called `utils::reshape()`; fixed to `stats::reshape()`.
+- Second focused run:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'multivariate|phase0-api')"` — passed, 0 failures /
+  0 warnings / 2 live-Julia skips / 124 passes.
+- Documentation:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::document()"` — passed; no generated Rd changes.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  585 passes.
+- `git diff --check` — passed.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
+
 ## 2026-06-14 Multivariate comparator scout and plan
 
 - Added `docs/design/12-multivariate-comparator-plan.md` to define the
@@ -2812,8 +2857,8 @@ with private memory.
   - Built `A` from the fixture pedigree with `nadiv::makeA()`.
   - `sommer::mmes(value ~ trait + trait:x - 1, random = ~ vsm(usm(trait), ism(animal), Gu = A), rcov = ~ vsm(dsm(trait), ism(units)))`
     fit successfully.
-  - The printed `sommer` genetic covariance and residual variances matched the
-    serialized Julia target:
+  - The `sommer` genetic covariance and residual variances matched the
+    serialized Julia target within a tight deterministic smoke-test tolerance:
     `G0 = [[0.6036285, 0.1119503], [0.1119503, 0.2703534]]`,
     `diag(R0) = [0.2631124, 0.0906582]`.
   - `rcov = ~ vsm(usm(trait), ism(units))` failed locally with

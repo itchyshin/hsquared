@@ -26,6 +26,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   feasible optional comparator is `sommer` on the shared fixture with diagonal
   residuals; ASReml-R and BLUPF90/AIREMLF90 remain manual gates until installed
   or licensed evidence exists. No validation row is promoted.
+- Multivariate optional `sommer` comparator: added in the optional-comparator
+  slice for G0, diag(R0), and diagonal-target h2 on the shared Phase 4 fixture.
+  This is a partial external check only; it does not validate full residual
+  covariance.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -57,7 +61,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | Placeholders do not imply fitting. |
 | 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | Pat/Darwin/Kirkpatrick review. |
 | 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
-| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | Rose audit clean. |
+| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; a separate covered comparator row waits for full same-estimand or manual ASReml/BLUPF90 evidence. |
 | 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | Avoid duplicate confusing extractors. |
 | 25 | Julia | Implement genomic relationship scaling/blending options. | G/GINV tests against known formulas. |
 | 26 | R | Expose marker-to-G controls with simple names and safe defaults. | Jason/Hopper review. |
