@@ -387,12 +387,7 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
-      "Only random-intercept syntax `animal(1 | id, pedigree = ped)` is ",
-      "implemented. Animal slopes and trait terms are planned, not ",
-      "implemented.",
-      call. = FALSE
-    )
+    hs_stop_animal_non_intercept()
   }
   if (!is.symbol(group_expr)) {
     stop(
@@ -414,6 +409,9 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
   named_args <- args[arg_names != ""]
   unsupported <- setdiff(names(named_args), "pedigree")
   if (length(unsupported) > 0L) {
+    if ("cov" %in% unsupported) {
+      hs_stop_animal_covariance_arg()
+    }
     stop(
       "`animal()` argument",
       if (length(unsupported) > 1L) "s " else " ",
@@ -448,6 +446,31 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     covariance = "scalar",
     pedigree_source = pedigree_input$source,
     pedigree = pedigree_spec
+  )
+}
+
+hs_stop_animal_non_intercept <- function() {
+  stop(
+    "Only random-intercept syntax `animal(1 | id, pedigree = ped)` is ",
+    "implemented inside `animal()`. For the current opt-in multivariate animal ",
+    "model, put traits on the left-hand side as ",
+    "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
+    "`engine_control = list(target = \"multivariate\")`. Long-format ",
+    "`animal(trait | id, cov = ...)` and random-slope syntax are planned, not ",
+    "implemented.",
+    call. = FALSE
+  )
+}
+
+hs_stop_animal_covariance_arg <- function() {
+  stop(
+    "`animal()` argument `cov` is planned, not implemented. For the current ",
+    "opt-in multivariate animal model, put traits on the left-hand side as ",
+    "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
+    "`engine_control = list(target = \"multivariate\")`. Structured covariance ",
+    "grammar such as `animal(trait | id, cov = us())` or `cov = fa(K = 2)` ",
+    "is planned.",
+    call. = FALSE
   )
 }
 

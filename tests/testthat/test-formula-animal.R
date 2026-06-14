@@ -72,7 +72,7 @@ test_that("formula parser rejects unsupported animal syntax", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "Only random-intercept syntax",
+    "cbind(trait1, trait2)",
     fixed = TRUE
   )
 
@@ -83,7 +83,17 @@ test_that("formula parser rejects unsupported animal syntax", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "`animal()` argument `cov` is planned, not implemented in v0.1.",
+    "`animal()` argument `cov` is planned, not implemented.",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(trait | id, pedigree = ped, cov = fa(K = 2)),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "Long-format `animal(trait | id, cov = ...)`",
     fixed = TRUE
   )
 })

@@ -2741,3 +2741,18 @@ with private memory.
   - GitHub Actions R-CMD-check `27498306285`: passed.
   - GitHub Actions pkgdown `27498306288`: passed.
   - GitHub Pages build/deployment `27498349567`: passed.
+
+## 2026-06-14 Structured multivariate grammar error ergonomics
+
+- Implemented the next R-safe bite from `docs/design/11-next-50-slices.md`:
+  `animal(trait | id, ...)` and `animal(..., cov = ...)` errors now point users
+  to the live opt-in `cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree =
+  ped)` multivariate path and clearly label long-format/structured covariance
+  grammar (`cov = us()`, `cov = fa(K = 2)`) as planned.
+- Focused tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'formula-animal')"` — passed, 0 failures / 0
+  warnings / 0 skips / 41 passes.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  561 passes.
+- `git diff --check` — passed.
