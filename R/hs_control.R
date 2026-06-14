@@ -64,6 +64,14 @@
 #'   It estimates per-marker effects (`marker_effects()`) and per-individual
 #'   genomic breeding values at the supplied variances; it does not estimate the
 #'   variance components and is not the default.
+#'   `target = "multivariate"` is an experimental, opt-in path for the
+#'   multivariate Gaussian animal model. It requires a
+#'   `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ped)`,
+#'   surfaces the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
+#'   optimizer, and returns G/R covariance matrices, genetic and residual
+#'   correlations, per-trait heritability, and cross-trait breeding values. It is
+#'   not the default and remains a `partial` validation claim until t>=2
+#'   known-truth recovery and external-comparator evidence are committed.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

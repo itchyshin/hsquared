@@ -53,6 +53,93 @@ heritability.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "heritability", "heritability estimates")
 }
 
+#' Extract multivariate covariance and correlation matrices
+#'
+#' These extractors return the genetic (`G`) and residual (`R`) covariance or
+#' correlation matrices from opt-in multivariate `hsquared_fit` objects
+#' (`target = "multivariate"`).
+#'
+#' @inheritParams variance_components
+#'
+#' @return A numeric matrix for `hsquared_fit` objects that contain the
+#'   requested multivariate result field.
+#' @name multivariate_extractors
+NULL
+
+#' @rdname multivariate_extractors
+#' @export
+genetic_covariance <- function(object, ...) {
+  UseMethod("genetic_covariance")
+}
+
+#' @export
+genetic_covariance.default <- function(object, ...) {
+  hs_multivariate_extractor_default("genetic_covariance")
+}
+
+#' @export
+genetic_covariance.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "genetic_covariance", "genetic covariance matrix")
+}
+
+#' @rdname multivariate_extractors
+#' @export
+residual_covariance <- function(object, ...) {
+  UseMethod("residual_covariance")
+}
+
+#' @export
+residual_covariance.default <- function(object, ...) {
+  hs_multivariate_extractor_default("residual_covariance")
+}
+
+#' @export
+residual_covariance.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "residual_covariance", "residual covariance matrix")
+}
+
+#' @rdname multivariate_extractors
+#' @export
+genetic_correlation <- function(object, ...) {
+  UseMethod("genetic_correlation")
+}
+
+#' @export
+genetic_correlation.default <- function(object, ...) {
+  hs_multivariate_extractor_default("genetic_correlation")
+}
+
+#' @export
+genetic_correlation.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "genetic_correlation", "genetic correlation matrix")
+}
+
+#' @rdname multivariate_extractors
+#' @export
+residual_correlation <- function(object, ...) {
+  UseMethod("residual_correlation")
+}
+
+#' @export
+residual_correlation.default <- function(object, ...) {
+  hs_multivariate_extractor_default("residual_correlation")
+}
+
+#' @export
+residual_correlation.hsquared_fit <- function(object, ...) {
+  hs_fit_result(object, "residual_correlation", "residual correlation matrix")
+}
+
+hs_multivariate_extractor_default <- function(name) {
+  stop(
+    "`",
+    name,
+    "()` requires an `hsquared_fit` object from the opt-in multivariate model ",
+    "(`target = \"multivariate\"`).",
+    call. = FALSE
+  )
+}
+
 #' Extract repeatability estimates
 #'
 #' `repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
@@ -645,6 +732,13 @@ ranef.hsquared_fit <- function(object, ...) {
 
 #' @export
 logLik.hsquared_fit <- function(object, ...) {
+  if (identical(object$result$converged, FALSE)) {
+    stop(
+      "Log-likelihood is unavailable because this `hsquared_fit` object did ",
+      "not converge.",
+      call. = FALSE
+    )
+  }
   value <- hs_fit_result(object, "loglik", "log-likelihood")
   out <- value
   class(out) <- "logLik"

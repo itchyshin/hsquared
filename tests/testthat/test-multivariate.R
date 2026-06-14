@@ -1,0 +1,306 @@
+test_that("multivariate cbind response builds Y payload and preserves NA cells", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf1", "calf2"),
+    sire = c(NA, NA, "sire", "sire"),
+    dam = c(NA, NA, "dam", "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3, 4),
+    y2 = c(1.5, NA, 3.5, 4.5),
+    sex = c("m", "f", "f", "m"),
+    id = ped$id
+  )
+
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(y1, y2) ~ sex + animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_true(spec$response$multivariate)
+  expect_equal(spec$response$trait_names, c("y1", "y2"))
+  expect_match(spec$bridge$target, "fit_multivariate_reml", fixed = TRUE)
+  expect_null(payload$y)
+  expect_equal(dim(payload$Y), c(4L, 2L))
+  expect_true(is.na(payload$Y[2, 2]))
+  expect_equal(payload$metadata$response_type, "multivariate")
+  expect_equal(payload$metadata$trait_names, c("y1", "y2"))
+  expect_s4_class(payload$Z, "dgCMatrix")
+})
+
+test_that("multivariate parser rejects fixed-effect NA and rank-deficient X", {
+  ped <- data.frame(
+    id = c("a", "b", "c", "d"),
+    sire = c(NA, NA, "a", "a"),
+    dam = c(NA, NA, "b", "b")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3, 4),
+    y2 = c(1.5, 2.5, 3.5, 4.5),
+    x = c(0, 1, 0, 1),
+    x_dup = c(0, 1, 0, 1),
+    id = ped$id
+  )
+  dat_na <- dat
+  dat_na$x[2] <- NA
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      cbind(y1, y2) ~ x + animal(1 | id, pedigree = ped),
+      data = dat_na,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "Missing values in fixed-effect variables",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      cbind(y1, y2) ~ x + x_dup + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "rank deficient",
+    fixed = TRUE
+  )
+})
+
+test_that("multivariate target is explicitly opt-in and cbind-only", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3),
+    y2 = c(1.5, 2.5, 3.5),
+    id = ped$id
+  )
+
+  expect_error(
+    hsquared(
+      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+      data = dat
+    ),
+    "experimental and opt-in",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared(
+      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(engine = "julia")
+    ),
+    "requires the opt-in `target = \"multivariate\"`",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared(
+      y1 ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "multivariate")
+      )
+    ),
+    "requires a `cbind",
+    fixed = TRUE
+  )
+  expect_equal(
+    hsquared:::hs_validate_julia_target("multivariate"),
+    "multivariate"
+  )
+})
+
+test_that("multivariate initial values are named covariance matrices", {
+  expect_equal(
+    hsquared:::hs_validate_multivariate_initial(NULL, 2L),
+    list(G0 = diag(1, 2L), R0 = diag(1, 2L))
+  )
+  expect_error(
+    hsquared:::hs_validate_multivariate_initial(list(diag(2), diag(2)), 2L),
+    "named list",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_multivariate_initial(
+      list(G0 = diag(2), R0 = matrix(1, 2, 2)),
+      2L
+    ),
+    "positive definite",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_fit_julia_multivariate_payload(list()),
+    "must be an internal `hs_bridge_payload`",
+    fixed = TRUE
+  )
+})
+
+test_that("multivariate result normalizer exposes G, R, h2, and cross-trait EBVs", {
+  payload <- list(
+    Y = matrix(c(1, 2, 3, 4, 1.5, NA, 3.5, 4.5), nrow = 4),
+    X = matrix(c(1, 1, 1, 1, 0, 1, 0, 1), nrow = 4),
+    ids = c("sire", "dam", "calf1", "calf2"),
+    family = "gaussian",
+    metadata = list(
+      fixed_colnames = c("(Intercept)", "sexm"),
+      trait_names = c("y1", "y2")
+    )
+  )
+  raw <- list(
+    genetic_covariance = matrix(c(1.0, 0.2, 0.2, 1.5), 2),
+    residual_covariance = matrix(c(2.0, 0.1, 0.1, 2.5), 2),
+    genetic_correlation = matrix(c(1.0, 0.1633, 0.1633, 1.0), 2),
+    residual_correlation = matrix(c(1.0, 0.0447, 0.0447, 1.0), 2),
+    heritability = c(1 / 3, 1.5 / 4),
+    beta = matrix(c(1, 0.5, 2, 0.7), nrow = 2),
+    breeding_ids = payload$ids,
+    breeding_traits = c("y1", "y2"),
+    breeding_values = matrix(seq(0.1, 0.8, length.out = 8), nrow = 4),
+    loglik = -22.5,
+    converged = TRUE,
+    iterations = 18L,
+    traits = c("y1", "y2"),
+    genetic_structure = "unstructured"
+  )
+
+  result <- hsquared:::hs_normalize_multivariate_result(raw, payload)
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = payload,
+    result = result
+  )
+
+  expect_equal(dimnames(genetic_covariance(fit)), list(c("y1", "y2"), c("y1", "y2")))
+  expect_equal(residual_covariance(fit), result$residual_covariance)
+  expect_equal(genetic_correlation(fit), result$genetic_correlation)
+  expect_equal(residual_correlation(fit), result$residual_correlation)
+  expect_equal(nrow(heritability(fit)), 2L)
+  expect_equal(nrow(breeding_values(fit)), 8L)
+  expect_equal(stats::nobs(fit), 7L)
+  expect_s3_class(stats::logLik(fit), "logLik")
+})
+
+test_that("non-converged multivariate fits do not expose logLik or AIC", {
+  payload <- list(
+    Y = matrix(1:4, nrow = 2),
+    X = matrix(1, nrow = 2, ncol = 1),
+    ids = c("a", "b"),
+    metadata = list(fixed_colnames = "(Intercept)", trait_names = c("y1", "y2"))
+  )
+  raw <- list(
+    genetic_covariance = diag(2),
+    residual_covariance = diag(2),
+    genetic_correlation = diag(2),
+    residual_correlation = diag(2),
+    heritability = c(0.5, 0.5),
+    beta = matrix(c(1, 2), nrow = 1),
+    breeding_ids = c("a", "b"),
+    breeding_traits = c("y1", "y2"),
+    breeding_values = matrix(0, 2, 2),
+    loglik = -1,
+    converged = FALSE,
+    iterations = 10L,
+    traits = c("y1", "y2"),
+    genetic_structure = "unstructured"
+  )
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = payload,
+    result = hsquared:::hs_normalize_multivariate_result(raw, payload)
+  )
+
+  expect_error(stats::logLik(fit), "did not converge", fixed = TRUE)
+  expect_error(AIC(fit), "did not converge", fixed = TRUE)
+})
+
+test_that("JuliaCall sends multivariate response NA cells as NaN", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
+  )
+
+  ped <- data.frame(
+    id = c("sire", "dam", "calf1", "calf2"),
+    sire = c(NA, NA, "sire", "sire"),
+    dam = c(NA, NA, "dam", "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3, 4),
+    y2 = c(1.5, NA, 3.5, 4.5),
+    id = ped$id
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  JuliaCall::julia_assign("hsq_Y_roundtrip", payload$Y)
+
+  expect_equal(
+    JuliaCall::julia_eval("sum(isnan.(hsq_Y_roundtrip))"),
+    1L
+  )
+})
+
+test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live multivariate bridge smoke."
+  )
+
+  ped <- data.frame(
+    id = c("s1", "d1", "s2", "d2", "a", "b", "c", "d"),
+    sire = c(NA, NA, NA, NA, "s1", "s1", "s2", "s2"),
+    dam = c(NA, NA, NA, NA, "d1", "d1", "d2", "d2")
+  )
+  dat <- data.frame(
+    y1 = c(1.0, 1.8, 1.2, 2.0, 3.0, 3.4, 2.8, 3.2),
+    y2 = c(2.1, 1.5, 2.2, 1.7, 3.1, NA, 3.0, 2.8),
+    id = ped$id
+  )
+
+  fit <- hsquared(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "multivariate", iterations = 400L)
+    )
+  )
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$spec$target, "multivariate")
+  expect_equal(dim(genetic_covariance(fit)), c(2L, 2L))
+  expect_equal(dim(residual_covariance(fit)), c(2L, 2L))
+  expect_equal(dim(genetic_correlation(fit)), c(2L, 2L))
+  expect_equal(dim(residual_correlation(fit)), c(2L, 2L))
+  expect_equal(heritability(fit)$trait, c("y1", "y2"))
+  expect_equal(nrow(breeding_values(fit)), 16L)
+  expect_equal(stats::nobs(fit), 15L)
+  expect_equal(
+    fit_diagnostics(fit)$value[
+      fit_diagnostics(fit)$metric == "variance_components_source"
+    ],
+    "estimated_multivariate_reml"
+  )
+})

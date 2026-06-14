@@ -120,24 +120,27 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     drop.unused.levels = FALSE
   )
 
-  if (anyNA(model_frame)) {
+  response_pos <- attr(stats::terms(fixed_formula), "response")
+  fixed_frame <- model_frame
+  if (!is.null(response_pos) && response_pos > 0L) {
+    fixed_frame <- model_frame[-response_pos]
+  }
+  if (length(fixed_frame) > 0L && anyNA(fixed_frame)) {
     stop(
-      "Missing values in the response or fixed-effect variables are not ",
-      "implemented for the v0.1 parser.",
+      "Missing values in fixed-effect variables are not implemented. ",
+      "For multivariate responses, use `NA` only inside the `cbind()` ",
+      "response matrix to mark missing trait records.",
       call. = FALSE
     )
   }
 
-  response <- stats::model.response(model_frame)
-  if (!is.numeric(response)) {
-    stop(
-      "The v0.1 parser supports numeric Gaussian responses only.",
-      call. = FALSE
-    )
-  }
+  response <- hs_build_response_spec(formula[[2L]], stats::model.response(
+    model_frame
+  ))
 
   fixed_terms_obj <- stats::terms(fixed_formula)
   fixed_design <- stats::model.matrix(fixed_terms_obj, data = model_frame)
+  hs_validate_fixed_design(fixed_design)
 
   random <- list()
   random[[primary_type]] <- primary_spec
@@ -165,13 +168,25 @@ hs_build_model_spec <- function(formula, data, family, REML) {
       "fit_two_effect_reml(y, X, Z, Ainv, Z2, Ainv2; method = :REML)"
     }
   }
+  if (isTRUE(response$multivariate)) {
+    if (!identical(primary_type, "animal") || !is.null(second_spec)) {
+      stop(
+        "The opt-in multivariate path currently supports only ",
+        "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
+        "Multivariate genomic, single-step, and second-effect models are ",
+        "planned, not implemented.",
+        call. = FALSE
+      )
+    }
+    bridge_target <- "fit_multivariate_reml(Y, X, Z, Ainv; method = :REML)"
+  }
 
   list(
     formula = formula,
     fixed_formula = fixed_formula,
     family = list(family = family$family, link = family$link),
     method = if (isTRUE(REML)) "REML" else "ML",
-    response = list(name = all.vars(formula[[2L]])[1L], values = response),
+    response = response,
     fixed = list(
       terms = attr(fixed_terms_obj, "term.labels"),
       design = fixed_design,
@@ -184,6 +199,98 @@ hs_build_model_spec <- function(formula, data, family, REML) {
       target = bridge_target
     )
   )
+}
+
+hs_build_response_spec <- function(lhs, response) {
+  multivariate <- is.matrix(response)
+  if (multivariate && !hs_is_call(hs_unwrap_parentheses(lhs), "cbind")) {
+    stop(
+      "Multivariate responses must use `cbind(trait1, trait2, ...)` on the ",
+      "left-hand side.",
+      call. = FALSE
+    )
+  }
+
+  if (multivariate) {
+    values <- unname(as.matrix(response))
+    if (!is.numeric(values)) {
+      stop("Multivariate `cbind()` responses must be numeric.", call. = FALSE)
+    }
+    if (ncol(values) < 2L) {
+      stop(
+        "Multivariate `cbind()` responses require at least two trait columns.",
+        call. = FALSE
+      )
+    }
+    observed <- !is.na(values)
+    if (any(observed & !is.finite(values))) {
+      stop(
+        "Observed multivariate response values must be finite. Use `NA` for ",
+        "missing trait records.",
+        call. = FALSE
+      )
+    }
+    if (any(colSums(observed) == 0L)) {
+      stop(
+        "Each trait in a multivariate `cbind()` response must have at least ",
+        "one observed value.",
+        call. = FALSE
+      )
+    }
+    trait_names <- colnames(response)
+    if (is.null(trait_names) || anyNA(trait_names) || any(!nzchar(trait_names))) {
+      trait_names <- all.vars(lhs)
+    }
+    if (length(trait_names) != ncol(values)) {
+      trait_names <- paste0("trait", seq_len(ncol(values)))
+    }
+    colnames(values) <- trait_names
+    return(list(
+      name = hs_deparse(lhs),
+      values = values,
+      trait_names = trait_names,
+      multivariate = TRUE
+    ))
+  }
+
+  if (!is.numeric(response)) {
+    stop(
+      "The v0.1 parser supports numeric Gaussian responses only.",
+      call. = FALSE
+    )
+  }
+  if (anyNA(response)) {
+    stop(
+      "Missing values in the response are not implemented for univariate ",
+      "models. Use a multivariate `cbind()` response only when missing trait ",
+      "records are intended.",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(response))) {
+    stop("Response values must be finite.", call. = FALSE)
+  }
+
+  list(
+    name = all.vars(lhs)[1L],
+    values = as.numeric(response),
+    trait_names = NULL,
+    multivariate = FALSE
+  )
+}
+
+hs_validate_fixed_design <- function(fixed_design) {
+  if (ncol(fixed_design) == 0L) {
+    return(invisible(TRUE))
+  }
+  if (qr(fixed_design)$rank < ncol(fixed_design)) {
+    stop(
+      "The fixed-effect design matrix is rank deficient. Remove redundant ",
+      "fixed-effect columns before fitting.",
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
 }
 
 hs_model_data_context <- function(data, env) {

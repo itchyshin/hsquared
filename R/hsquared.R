@@ -6,7 +6,8 @@
 #' through the `HSquared.jl` engine. The default `control` fits when a local
 #' Julia and `HSquared.jl` are available and otherwise errors with install
 #' guidance; `hs_control(engine = "validate")` validates the contract without
-#' fitting. Multivariate, genomic, and non-Gaussian models remain planned.
+#' fitting. Genomic, repeatability, two-effect, marker-effect, and multivariate
+#' models are opt-in experimental paths; non-Gaussian models remain planned.
 #'
 #' @param formula A model formula. The first planned v0.1 syntax is
 #'   `y ~ fixed + animal(1 | id, pedigree = ped)`, with
@@ -58,6 +59,15 @@ hsquared <- function(
   payload <- hs_build_bridge_payload(spec)
 
   if (identical(control$engine, "fit")) {
+    if (isTRUE(spec$response$multivariate)) {
+      stop(
+        "The multivariate animal model is experimental and opt-in; the ",
+        "default `engine = \"fit\"` path fits the univariate Gaussian animal ",
+        "model only. Use `control = hs_control(engine = \"julia\", ",
+        "engine_control = list(target = \"multivariate\"))`.",
+        call. = FALSE
+      )
+    }
     if (!isTRUE(REML)) {
       stop(
         "The v0.1 default fit path estimates variance components by REML ",
@@ -113,6 +123,22 @@ hsquared <- function(
       "target",
       "fit_animal_model"
     ))
+    if (isTRUE(spec$response$multivariate) && !identical(target, "multivariate")) {
+      stop(
+        "A `cbind(...)` multivariate response requires the opt-in ",
+        "`target = \"multivariate\"` Julia engine path. The `",
+        target,
+        "` target fits a univariate response.",
+        call. = FALSE
+      )
+    }
+    if (identical(target, "multivariate") && !isTRUE(spec$response$multivariate)) {
+      stop(
+        "`target = \"multivariate\"` requires a `cbind(trait1, trait2, ...)` ",
+        "response with `animal(1 | id, pedigree = ped)`.",
+        call. = FALSE
+      )
+    }
     # ML estimation is not implemented in v0.1. The estimation targets either
     # run the ML optimizer (`fit_animal_model`) or are REML-only
     # (`sparse_reml`/`ai_reml`, which would otherwise silently ignore the ML
@@ -150,6 +176,22 @@ hsquared <- function(
           call. = FALSE
         )
       }
+    }
+    if (identical(target, "multivariate")) {
+      return(hs_fit_julia_multivariate_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          2000L
+        )
+      ))
     }
     if (identical(target, "henderson_mme")) {
       return(hs_fit_julia_henderson_mme_payload(

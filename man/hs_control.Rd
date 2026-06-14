@@ -76,7 +76,15 @@ the SNP-BLUP / RR-BLUP marker-effect model. It requires
 (residual) values, and surfaces the Julia-owned \code{HSquared.fit_snp_blup()}.
 It estimates per-marker effects (\code{marker_effects()}) and per-individual
 genomic breeding values at the supplied variances; it does not estimate the
-variance components and is not the default.}
+variance components and is not the default.
+\code{target = "multivariate"} is an experimental, opt-in path for the
+multivariate Gaussian animal model. It requires a
+\code{cbind(trait1, trait2, ...)} response with \code{animal(1 | id, pedigree = ped)},
+surfaces the Julia-owned \code{HSquared.fit_multivariate_reml()} REML-only
+optimizer, and returns G/R covariance matrices, genetic and residual
+correlations, per-trait heritability, and cross-trait breeding values. It is
+not the default and remains a \code{partial} validation claim until t>=2
+known-truth recovery and external-comparator evidence are committed.}
 }
 \value{
 An object of class \code{"hs_control"}.

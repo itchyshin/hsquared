@@ -230,8 +230,8 @@ claims register.
       <p>Current focus: make the first animal-model contract obvious, tested, and honest.</p>
       <ul class="hs-list">
         <li>Implemented: default fit of the v0.1 Gaussian animal model (REML via the HSquared.jl engine), package scaffold, pkgdown, parser diagnostics, data-container diagnostics, fitted-object extractors.</li>
-        <li>Experimental: opt-in local Julia bridge targets for supplied-variance Henderson MME checks and the REML-only sparse optimizer.</li>
-        <li>Planned: multivariate/genomic production fitting, QTL/eQTL, GLLVMs, unusual inheritance, ML estimation, and real backend execution.</li>
+        <li>Experimental: opt-in local Julia bridge targets for supplied-variance Henderson MME checks, REML optimizers, repeatability/two-effect/genomic/SNP-BLUP paths, and multivariate REML.</li>
+        <li>Planned: production multivariate/genomic fitting, QTL/eQTL, GLLVMs, unusual inheritance, ML estimation, and real backend execution.</li>
       </ul>
     </article>
     <article class="hs-card">
@@ -267,7 +267,7 @@ claims register.
         <thead><tr><th>Surface</th><th>Status</th><th>Evidence</th></tr></thead>
         <tbody>
           <tr><td>Formula parser</td><td><span class="hs-tag partial">partial</span></td><td><code>animal(1 | id, pedigree = ped)</code> and <code>hs_data()</code> pedigree shorthand parse and validate.</td></tr>
-          <tr><td>Bridge payload</td><td><span class="hs-tag partial">partial</span></td><td>Tests pin <code>y</code>, <code>X</code>, sparse <code>Z</code>, IDs, method, family, pedigree metadata.</td></tr>
+          <tr><td>Bridge payload</td><td><span class="hs-tag partial">partial</span></td><td>Tests pin <code>y</code> or multivariate <code>Y</code>, <code>X</code>, sparse <code>Z</code>, IDs, method, family, pedigree metadata.</td></tr>
           <tr><td>Validation atoms</td><td><span class="hs-tag partial">partial</span></td><td>Tiny Ainv, Mrode9/nadiv Ainv comparator, Henderson MME, sparse REML identity, and Mrode-style supplied-variance output checks.</td></tr>
           <tr><td>Fit object</td><td><span class="hs-tag partial">partial</span></td><td>Extractor contract exists for objects that contain matching result fields.</td></tr>
           <tr><td>Data container</td><td><span class="hs-tag partial">partial</span></td><td><code>hs_data()</code> checks phenotype, pedigree, genotype, marker, expression, annotation, and environment metadata.</td></tr>
@@ -278,10 +278,10 @@ claims register.
     <article class="hs-card">
       <h3>Blocked Claims</h3>
       <ul class="hs-list">
-        <li>No fitting beyond the v0.1 univariate Gaussian animal model (the default fits that model; multivariate, genomic, factor-analytic, and non-Gaussian models remain planned).</li>
+        <li>No production fitting beyond the v0.1 univariate Gaussian animal model. Genomic, repeatability, two-effect, SNP-BLUP, and multivariate targets are opt-in experimental; factor-analytic and non-Gaussian models remain planned.</li>
         <li>No standard errors / confidence intervals for variance components or h2 (out of v0.1 scope).</li>
         <li>No ASReml/BLUPF90-family multi-package parity or large-scale (&gt;10k) production-fitting claim; the v0.1 fit is validated to gryphon scale (~1300 animals) and on clean simulated pedigrees.</li>
-        <li>No genomic prediction, marker scan, QTL/eQTL, GLLVM, or unusual-inheritance fitting claim.</li>
+        <li>No production genomic prediction, marker scan, QTL/eQTL, GLLVM, or unusual-inheritance fitting claim.</li>
         <li>No CPU/GPU execution, backend benchmark, or speedup claim.</li>
       </ul>
     </article>

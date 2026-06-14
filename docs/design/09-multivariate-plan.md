@@ -1,30 +1,28 @@
-# Multivariate (Multi-Trait) Animal Model Plan (PLANNED)
+# Multivariate (Multi-Trait) Animal Model Plan (PARTIAL)
 
-Status: **planned, not implemented in the R lane, and not yet surfaceable. No
-capability is claimed.** There is no multivariate code in `hsquared` (no
-multi-trait grammar, bridge payload, or extractors). The Julia engine support
-(`HSquared.fit_multivariate_reml`) **exists but is branch-only** — it is on the
-twin branch `phase4-multivariate-reml`, **not on Julia `main`** (`100adbe`).
-This note records the engine contract (read-only, as observed on that branch)
-and a proposed R-side surfacing so the eventual slice is well-scoped the moment
-the twin lands multivariate on `main`. Every concrete grammar/control/estimand
-choice below is a **proposal for maintainer sign-off**, flagged `PROPOSAL`.
+Status: **implemented as an opt-in, experimental R surface; still partial.**
+`hsquared` now parses a `cbind(...)` multivariate response, builds an
+NA-preserving `Y` bridge payload, surfaces Julia
+`HSquared.fit_multivariate_reml()` through `engine = "julia", target =
+"multivariate"`, and exposes G/R covariance and correlation matrices,
+per-trait heritability, and cross-trait EBVs. The Julia engine is on
+`HSquared.jl` `main` (`f9da6bb`). This is not the default path, not
+ASReml-style production multi-trait parity, not an external-comparator claim,
+and not a t>=2 known-truth recovery claim.
 
 ## Why this note
 
 This is Phase 3 of [`ROADMAP.md`](../../ROADMAP.md) (multivariate Gaussian
-animal models), currently a one-line "planned". With the R lane having surfaced
-every model on Julia `main` (the v0.1 default fit plus six opt-in experimental
-models), multivariate is the next substantial capability, and the twin is
-actively building it. Recording the bridge contract now — from the twin's
-actual in-progress API rather than a guess — de-risks the integration and keeps
-the two lanes coordinated, without making any premature public claim.
+animal models). The first R slice deliberately stays narrow: ordinary
+`cbind()` multi-trait responses with one additive `animal()` term. Long-format
+`animal(trait | id, cov = ...)`, factor-analytic covariance structures, external
+comparators, and recovery promotion remain future gates.
 
-## Engine contract (observed read-only on twin `phase4-multivariate-reml`)
+## Engine contract
 
 `src/multivariate.jl` exports `fit_multivariate_reml`, `multivariate_mme`, and
 `genetic_correlation`. Gate rows `V4-MULTIVARIATE` and `V4-MV-REML` are
-`partial` on that branch. **None of this is on Julia `main` yet.**
+`partial` on Julia `main`.
 
 ```
 fit_multivariate_reml(Y, X, Z, Ainv; initial = (G0 = ..., R0 = ...), iterations, ids, traits)
@@ -79,9 +77,9 @@ built:
   roundtrip unit test. The R multivariate validation row must therefore stay
   honestly `partial` (no recovery claim) until the twin adds those tests.
 
-## Proposed R surfacing (`PROPOSAL`, awaiting maintainer + twin-on-main)
+## R surfacing
 
-### Grammar (`PROPOSAL` — Boole / Ada to sign off)
+### Grammar
 
 A multi-trait response via the standard R `cbind()` idiom on the LHS, reusing
 the existing `animal()` primary unchanged:
@@ -103,7 +101,7 @@ hsquared(
   terms are parsed exactly as in the univariate path.
 - Trait labels come from the `cbind` column names and flow to `traits`.
 
-### Bridge payload (`PROPOSAL` — Hopper / Noether)
+### Bridge payload
 
 The only new payload piece is `Y` (an `n × t` numeric matrix, `NA`-preserving)
 plus `trait_names`. `X`, sparse `Z` (CSC), `Ainv`, and the pedigree path are
@@ -112,7 +110,7 @@ reused verbatim from the univariate animal model. The R→Julia marshalling of
 alignment invariant (Z columns, `Ainv`, and `ids` share one id order) is
 unchanged.
 
-### Target and fence (`PROPOSAL`)
+### Target and fence
 
 Surface first as opt-in/experimental — `engine = "julia", target =
 "multivariate"` — mirroring the twin `V4-MV-REML` gate (`partial`), REML only,
@@ -122,7 +120,7 @@ signs off recovery thresholds (a multivariate analogue of the v0.1 promotion
 predicate: genetic-correlation recovery, per-trait h2 recovery, convergence
 rate, boundary behaviour at |r_g| → 1).
 
-### Extractors (`PROPOSAL` — Emmy / Kirkpatrick / Falconer)
+### Extractors
 
 - `genetic_correlation(fit)` and `genetic_covariance(fit)` (the G matrix);
   `residual_correlation(fit)`.
@@ -131,24 +129,18 @@ rate, boundary behaviour at |r_g| → 1).
 - Kirkpatrick-lens tools (eigenstructure of G, evolvability) are a later
   factor-analytic-G concern (Phase 4), not this slice.
 
-## Gating (hard preconditions before any R surfacing)
+## Promotion gates
 
-1. The twin lands `fit_multivariate_reml` (and the `V4` gate rows) on Julia
-   `main` — currently branch-only on `phase4-multivariate-reml`. Until then the
-   R lane must not surface multivariate, even fenced, because it would not work
-   against the engine a user installs.
-2. Maintainer signs off the `cbind` grammar (Boole/Ada) and the multivariate
-   estimand/identifiability statement (Noether/Henderson).
-3. A skip-guarded live parity test (R bridge vs. the engine, and a
-   known-truth genetic-correlation recovery fixture) before any claim moves off
-   `partial`.
+Before any claim moves off `partial`, the twin must add committed t>=2
+known-truth genetic-correlation and per-trait-h2 recovery evidence, and the
+programme needs external-comparator policy for multi-trait fits. The R lane
+already has the opt-in grammar/payload/bridge/extractor smoke tests, including
+an NA-to-NaN missing-trait marshalling check.
 
 ## Lane / coordination
 
-This is coordinator-lane planning only. The engine work is the Julia lane's
-(twin); the R lane owns the grammar, bridge, and validation surfacing. Do not
-edit `HSquared.jl` from this repo. When the twin lands multivariate on `main`,
-the R slice is: `cbind` LHS parser → `Y` payload → `target = "multivariate"`
-bridge → genetic-correlation/G/per-trait-h2/cross-trait-EBV extractors → opt-in
-fence mirroring `V4-MV-REML`. Recorded for the twin via the coordination board
-and the issue ledger (#7).
+The engine work is the Julia lane's (twin); the R lane owns the grammar, bridge,
+and validation surfacing. Do not edit `HSquared.jl` from this repo. The current
+R slice is: `cbind` LHS parser -> `Y` payload -> `target = "multivariate"`
+bridge -> genetic-correlation/G/per-trait-h2/cross-trait-EBV extractors ->
+opt-in fence mirroring `V4-MV-REML`.

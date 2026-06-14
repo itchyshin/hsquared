@@ -28,7 +28,7 @@ print.hs_formula_status <- function(x, ...) {
   cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
   cat(
-    "permanent/common_env/maternal_genetic/genomic fit opt-in; others parse-only\n"
+    "permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in; others parse-only\n"
   )
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
@@ -60,6 +60,7 @@ hs_formula_status_terms <- function() {
     "markers(M, model = \"random\")",
     "marker_scan(M, map = marker_map)",
     "qtl_scan(position, genotype_probs = probs)",
+    "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)",
     "animal(trait | id, pedigree = ped, cov = us())",
     "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
   )
@@ -71,7 +72,7 @@ hs_formula_status_categories <- function() {
     rep("standard quantitative genetics", 6L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 5L),
-    rep("multivariate and factor analytic", 2L)
+    rep("multivariate and factor analytic", 3L)
   )
 }
 
@@ -81,7 +82,7 @@ hs_formula_status_phases <- function() {
     rep("Phase 2", 6L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 5L),
-    rep("Phase 3-4", 2L)
+    rep("Phase 3-4", 3L)
   )
 }
 
@@ -91,6 +92,7 @@ hs_formula_status_syntax <- function() {
     rep("reserved", 9L),
     rep("parsed", 2L),
     rep("reserved", 3L),
+    "parsed",
     rep("planned", 2L)
   )
 }
@@ -104,7 +106,9 @@ hs_formula_status_fitting <- function() {
     rep("not available", 9L),
     "fitted (opt-in genomic)",
     "fitted (opt-in single-step)",
-    rep("not available", 5L)
+    rep("not available", 3L),
+    "fitted (opt-in multivariate)",
+    rep("not available", 2L)
   )
 }
 
@@ -153,6 +157,11 @@ hs_formula_status_behavior <- function() {
         "implemented."
       ),
       3L
+    ),
+    paste(
+      "Experimental multivariate Gaussian animal model; requires a `cbind()`",
+      "response, an `animal()` term, and engine = \"julia\", target =",
+      "\"multivariate\". Missing trait cells are allowed as `NA`."
     ),
     rep(
       paste(

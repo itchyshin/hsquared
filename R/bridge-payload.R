@@ -59,7 +59,16 @@ hs_build_bridge_payload <- function(spec) {
 
   structure(
     list(
-      y = as.numeric(spec$response$values),
+      y = if (isTRUE(spec$response$multivariate)) {
+        NULL
+      } else {
+        as.numeric(spec$response$values)
+      },
+      Y = if (isTRUE(spec$response$multivariate)) {
+        unname(as.matrix(spec$response$values))
+      } else {
+        NULL
+      },
       X = unname(as.matrix(spec$fixed$design)),
       Z = Z,
       Z2 = Z2,
@@ -78,6 +87,12 @@ hs_build_bridge_payload <- function(spec) {
       ),
       metadata = list(
         response = spec$response$name,
+        response_type = if (isTRUE(spec$response$multivariate)) {
+          "multivariate"
+        } else {
+          "univariate"
+        },
+        trait_names = spec$response$trait_names,
         fixed_colnames = colnames(spec$fixed$design),
         animal_id_column = animal$group,
         observed_ids = observed_ids,
@@ -141,6 +156,7 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
   structure(
     list(
       y = as.numeric(spec$response$values),
+      Y = NULL,
       X = unname(as.matrix(spec$fixed$design)),
       Z = Z,
       Z2 = NULL,
@@ -158,6 +174,8 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
       pedigree = NULL,
       metadata = list(
         response = spec$response$name,
+        response_type = "univariate",
+        trait_names = NULL,
         fixed_colnames = colnames(spec$fixed$design),
         animal_id_column = primary$group,
         observed_ids = observed_ids,

@@ -1,0 +1,58 @@
+# Next 50 Slices
+
+This is the practical runway after the opt-in multivariate R bridge. It is not a
+claim that all items are implemented. Each slice should end with tests,
+check-log evidence, an after-task report, and an updated claim boundary.
+
+| # | Lane | Slice | Gate before widening claims |
+| --- | --- | --- | --- |
+| 1 | coordinator | Close orphaned Julia PRs whose commits are already on `HSquared.jl` main. | GitHub issue/PR ledger clean. |
+| 2 | Julia | Delete merged Phase 4 multivariate branches. | Main contains the commits and CI is green. |
+| 3 | Julia | Sync hand-maintained Julia validation-status docs to live V4 rows. | Julia docs and `validation_status()` agree. |
+| 4 | Julia | Add `_cov_to_chol_params` / `_chol_params_to_cov` roundtrip tests for `t >= 3`. | Parameter-order regression test green. |
+| 5 | Julia | Reject rank-deficient multivariate `X` inside the engine too. | Engine and R guards agree. |
+| 6 | Julia | Document and test the dense `inv(Ainv)` conditioning caveat. | Failure mode is visible, not silent. |
+| 7 | Julia | Harden `genetic_correlation()` for invalid user-supplied covariance matrices. | PSD/PD guard tests green. |
+| 8 | Julia | Commit deterministic `t >= 2` known-truth multivariate recovery fixture. | Recovery thresholds signed off by Fisher/Curie. |
+| 9 | R | Promote multivariate evidence wording only as far as the twin recovery fixture allows. | `validation_status()` remains honest. |
+| 10 | R/docs | Add a short multivariate fitting vignette with `cbind()` and missing trait cells. | Pkgdown clean; no production wording. |
+| 11 | R | Improve `animal(trait | id, cov = ...)` errors to point users to the current `cbind()` path. | Boole/Pat wording review. |
+| 12 | Julia | Add `multivariate_mme()` examples to Documenter. | Documenter green. |
+| 13 | R | Add examples for `genetic_covariance()` / `genetic_correlation()` in extractor docs. | R examples stay non-running or skip-safe. |
+| 14 | coordinator | Open/update GitHub issues linking V4 partial gates to R issue ledger. | Issues reflect lane ownership. |
+| 15 | Julia | Surface structured multivariate `genetic_structure = :diagonal` through stable engine tests. | Twin gate stays partial until recovery. |
+| 16 | R | Design R control syntax for diagonal multivariate G, without default exposure. | Formula/API signoff. |
+| 17 | Julia | Stabilize low-rank multivariate REML tests and diagnostics. | PSD and logLik checks green. |
+| 18 | R | Design `cov = lowrank(K)` grammar against the Julia structure. | Roadmap-only until engine gate. |
+| 19 | Julia | Stabilize factor-analytic `G = Lambda Lambda' + Psi` engine output names. | Loadings/uniqueness extraction tests green. |
+| 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | Placeholders do not imply fitting. |
+| 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | Pat/Darwin/Kirkpatrick review. |
+| 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
+| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | Rose audit clean. |
+| 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | Avoid duplicate confusing extractors. |
+| 25 | Julia | Implement genomic relationship scaling/blending options. | G/GINV tests against known formulas. |
+| 26 | R | Expose marker-to-G controls with simple names and safe defaults. | Jason/Hopper review. |
+| 27 | Julia | Add single-step `Hinv` construction from A and G. | Tiny and Mrode-style H checks. |
+| 28 | R | Expose `single_step(..., pedigree = ped, genotypes = ...)` only after Hinv is engine-covered. | No supplied-Hinv confusion. |
+| 29 | Julia | Add APY approximation prototype. | Numerical agreement and memory benchmarks. |
+| 30 | R/docs | Add genomic prediction vignette: GBLUP, SNP-BLUP, supplied variances, and boundaries. | No JWAS/ASReml replacement claim. |
+| 31 | Julia | Add marker-effect REML or AI-REML variance estimation for SNP-BLUP. | Supplied-variance status can move only after recovery. |
+| 32 | R | Add `marker_variance_explained()` for real marker-effect fits. | Output validated. |
+| 33 | Julia | Add single-marker scan kernel with kinship correction. | Tiny GWAS fixtures. |
+| 34 | R | Expose `marker_scan()` as opt-in once engine scan results are stable. | Multiple-testing and LOCO wording clear. |
+| 35 | Julia | Add LOCO support for mixed-model scans. | Chromosome holdout tests. |
+| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | Rose/Jason audit. |
+| 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
+| 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | Ada/Rose decision recorded. |
+| 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |
+| 40 | R | Design wide-response matrix syntax without crowding the core animal model. | Pat/Boole signoff. |
+| 41 | Julia | Add Poisson / negative-binomial Laplace prototype. | Non-Gaussian validation fixture. |
+| 42 | R | Add family-specific planned errors that name the closest implemented Gaussian path. | User-friendly error tests. |
+| 43 | Julia | Add maternal/paternal correlated 2x2 G effect. | Henderson/Noether signoff. |
+| 44 | R | Expose correlated direct-maternal grammar only after engine coverage. | Distinguish from current independent two-effect path. |
+| 45 | Julia | Add dominance relationship prototype. | AGHmatrix/nadiv comparison where possible. |
+| 46 | R | Add dominance syntax once relationship semantics are tested. | No inheritance overclaim. |
+| 47 | Julia | Add selfing/clonal/haplodiploid relationship kernels as separate prototypes. | Mendel/Darwin review. |
+| 48 | R/docs | Add inheritance-systems roadmap examples with hard fences. | Planned wording only until kernels validate. |
+| 49 | Julia | Add CPU backend benchmarking harness for current Phase 1-4 fits. | Benchmark outputs reproducible. |
+| 50 | Julia/R | Add first accelerator feasibility probe (Metal locally, CUDA for HPC later) for dense multivariate/GLLVM pieces. | CPU remains trusted default; no speedup claim without benchmark evidence. |

@@ -46,6 +46,7 @@ hs_validation_status_capabilities <- function() {
     "experimental two-effect estimator (opt-in: common-env, maternal)",
     "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
     "experimental SNP-BLUP marker-effect solve (opt-in, supplied-variance)",
+    "experimental multivariate REML estimator (opt-in)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
@@ -64,6 +65,7 @@ hs_validation_status_phases <- function() {
     rep("Phase 1", 6L),
     rep("Phase 2", 2L),
     rep("Phase 5", 2L),
+    "Phase 3",
     rep("Phase 1", 6L),
     rep("Phase 5+", 2L),
     "Phase 6",
@@ -73,7 +75,7 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 10L),
+    rep("partial", 11L),
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -160,6 +162,16 @@ hs_validation_status_evidence <- function() {
       "breeding values, and fixed effects; fit provenance tagged",
       "variance_components_source = \"supplied\". Mirrors the twin V2-SNPBLUP gate",
       "(partial), whose pinned property is the GBLUP<->SNP-BLUP GEBV equivalence."
+    ),
+    paste(
+      "Pure-R parser/validator tests plus skip-guarded live bridge tests for the",
+      "Julia fit_multivariate_reml() target: `cbind(y1, y2) ~ animal(1 | id,",
+      "pedigree = ped)` builds an NA-preserving Y matrix, sends missing trait",
+      "cells as Julia NaN, and returns G0/R0 covariance matrices, genetic and",
+      "residual correlations, per-trait h2, cross-trait EBVs, and convergence",
+      "diagnostics; fit provenance tagged variance_components_source =",
+      "\"estimated_multivariate_reml\". Mirrors the twin V4-MULTIVARIATE /",
+      "V4-MV-REML gates (partial)."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -265,10 +277,21 @@ hs_validation_status_boundaries <- function() {
       "default, not a variance-component estimation claim, not comparator-validated."
     ),
     paste(
+      "Experimental opt-in path only; Julia-owned dense/validation-scale",
+      "multivariate REML estimator that R surfaces; mirrors the twin V4 rows",
+      "(partial). `cbind()` responses with missing trait cells are supported,",
+      "but this is REML-only, animal-model-only, not the default, not external-",
+      "comparator-validated, and not a known-truth t>=2 recovery claim. The",
+      "Julia engine currently inverts Ainv internally, so deep-inbreeding or",
+      "high-condition-number pedigrees remain a twin-side hardening item."
+    ),
+    paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
-      "REML only (ML is rejected on the fit path); multivariate, genomic,",
-      "repeated-records, and non-Gaussian fitting remain planned. Mirrors the",
-      "twin-owned V1-AI-REML gate (covered); not ASReml multi-trait parity."
+      "REML only (ML is rejected on the fit path). Genomic, repeatability,",
+      "two-effect, marker-effect, and multivariate fitting are separate opt-in",
+      "experimental targets, not the default; non-Gaussian fitting remains",
+      "planned. Mirrors the twin-owned V1-AI-REML gate (covered); not ASReml",
+      "multi-trait parity."
     ),
     paste(
       "Published-anchor recovery within the maintainer-signed-off band (not",

@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 21L)
+  expect_equal(nrow(status), 22L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -105,6 +105,12 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   ))
   expect_true("permanent(1 | id)" %in% status$term)
   expect_true("genomic(1 | id, Ginv = Ginv)" %in% status$term)
+  expect_equal(
+    status$fitting_status[
+      status$term == "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)"
+    ],
+    "fitted (opt-in multivariate)"
+  )
   expect_true(any(status$syntax_status == "planned"))
   expect_match(capture.output(print(status))[[1L]], "<hs_formula_status>")
   expect_match(
@@ -117,7 +123,7 @@ test_that("validation_status separates evidence from planned validation", {
   status <- validation_status()
 
   expect_s3_class(status, "hs_validation_status")
-  expect_equal(nrow(status), 20L)
+  expect_equal(nrow(status), 21L)
   expect_equal(
     status$status[
       status$capability ==
@@ -128,6 +134,12 @@ test_that("validation_status separates evidence from planned validation", {
   expect_equal(
     status$status[
       status$capability == "experimental repeatability estimator (opt-in)"
+    ],
+    "partial"
+  )
+  expect_equal(
+    status$status[
+      status$capability == "experimental multivariate REML estimator (opt-in)"
     ],
     "partial"
   )

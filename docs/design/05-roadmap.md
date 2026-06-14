@@ -18,7 +18,10 @@ models, groups, inbreeding, and a first random-regression slice.
 
 ## Phase 3
 
-Add long-format multivariate Gaussian animal models with full G and R matrices.
+Surface the first multivariate Gaussian animal model through a simple
+`cbind(...)` response and opt-in `target = "multivariate"` bridge. Long-format
+`trait` grammar, structured G/R matrices, and promotion beyond `partial` require
+the later recovery/comparator gates.
 
 ## Phase 4
 

@@ -33,8 +33,7 @@ values, residuals, `summary()`, `coef()`, `nobs()`, and `fit_diagnostics()`
 and confidence intervals for variance components and heritability are out of v0.1
 scope. The advanced `control = hs_control(engine = "julia")` path exposes
 explicit engine targets (supplied-variance Henderson MME, sparse REML). A
-lightweight
-`hs_data()` container now records phenotype, pedigree, genotype, expression,
+lightweight `hs_data()` container now records phenotype, pedigree, genotype, expression,
 marker, annotation, and environment inputs for future integrated workflows,
 including optional expression-feature annotation diagnostics through
 `annotation_id` and environment-key diagnostics through `environment_id`.
@@ -43,10 +42,11 @@ standard quantitative-genetic extensions. Several now fit through an opt-in,
 experimental engine path (`engine = "julia"`, REML-only or supplied-variance,
 not the default, each mirroring a `partial` validation gate): permanent
 environment, common environment, maternal-genetic, genomic (GREML or SNP-BLUP),
-and single-step effects. The rest — paternal effects, dominance, epistasis,
-cytoplasmic inheritance, imprinting, custom relationship or precision matrices,
-and marker/QTL scans — are syntax reservations only and currently abort as
-planned, not implemented.
+single-step effects, and the multivariate Gaussian animal model via a `cbind()`
+response. The rest — paternal effects, dominance, epistasis, cytoplasmic
+inheritance, imprinting, custom relationship or precision matrices, and
+marker/QTL scans — are syntax reservations only and currently abort as planned,
+not implemented.
 Use `formula_status()` to inspect the parsed, reserved, and planned formula
 grammar from R. Output extractor names such as `qtl_table()`, `gwas_table()`,
 `eqtl_table()`, `marker_variance_explained()`, and `lod_scores()` are reserved
@@ -74,9 +74,33 @@ fit <- hsquared(
 This fits by default: the R side builds the `y`, `X`, sparse `Z`, and normalized
 pedigree payload, the `HSquared.jl` engine builds `Ainv`, estimates the variance
 components by REML, and returns an `hsquared_fit` object. A genomic GREML /
-SNP-BLUP effect and single-step also fit through the opt-in, experimental
-`engine = "julia"` path (not the default); multivariate, factor-analytic, and
-non-Gaussian models remain planned.
+SNP-BLUP effect, single-step, and the multivariate Gaussian animal model also
+fit through the opt-in, experimental `engine = "julia"` path (not the default);
+factor-analytic and non-Gaussian models remain planned.
+For the multivariate Gaussian path, use:
+
+```r
+fit_mv <- hsquared(
+  cbind(weight, height) ~ sex + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "multivariate")
+  )
+)
+
+genetic_covariance(fit_mv)
+genetic_correlation(fit_mv)
+heritability(fit_mv)
+breeding_values(fit_mv)
+```
+
+This multivariate path is REML-only, animal-model-only, dense validation-scale,
+and `partial`: it returns G/R covariance and correlation matrices, per-trait
+h2, and cross-trait EBVs, but it is not yet an ASReml-style production
+multi-trait claim or a t>=2 known-truth recovery claim.
 For supplied-variance MME checks, use:
 
 ```r

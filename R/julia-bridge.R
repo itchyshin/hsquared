@@ -574,6 +574,286 @@ hs_normalize_two_effect_result <- function(raw, payload) {
   result
 }
 
+hs_fit_julia_multivariate_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = NULL,
+  iterations = 2000L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (is.null(payload$Y) || !is.matrix(payload$Y)) {
+    stop(
+      "Internal bridge error: the multivariate payload is missing its `Y` ",
+      "response matrix.",
+      call. = FALSE
+    )
+  }
+  if (is.null(payload$pedigree)) {
+    stop(
+      "Internal bridge error: the multivariate target requires a pedigree ",
+      "animal-model payload.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  ntraits <- ncol(payload$Y)
+  initial <- hs_validate_multivariate_initial(initial, ntraits)
+  iterations <- hs_validate_iterations(iterations)
+  traits <- payload$metadata$trait_names %||% colnames(payload$Y)
+  if (is.null(traits)) {
+    traits <- paste0("trait", seq_len(ntraits))
+  }
+
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_Y", payload$Y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  JuliaCall::julia_assign("hsq_traits", as.character(traits))
+  JuliaCall::julia_assign("hsq_initial_G0", initial$G0)
+  JuliaCall::julia_assign("hsq_initial_R0", initial$R0)
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_fit = HSquared.fit_multivariate_reml(",
+    "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
+    "initial = (G0 = hsq_initial_G0, R0 = hsq_initial_R0),",
+    "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits);",
+    "hsq_mv_raw = Dict(",
+    "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
+    "\"residual_covariance\" => Matrix{Float64}(hsq_fit.residual_covariance),",
+    "\"genetic_correlation\" => Matrix{Float64}(hsq_fit.genetic_correlation),",
+    "\"residual_correlation\" => Matrix{Float64}(hsq_fit.residual_correlation),",
+    "\"heritability\" => collect(Float64, hsq_fit.heritability),",
+    "\"beta\" => Matrix{Float64}(hsq_fit.beta),",
+    "\"breeding_ids\" => string.(collect(hsq_fit.breeding_values.ids)),",
+    "\"breeding_traits\" => string.(collect(hsq_fit.breeding_values.traits)),",
+    "\"breeding_values\" => Matrix{Float64}(hsq_fit.breeding_values.values),",
+    "\"loglik\" => hsq_fit.loglik,",
+    "\"converged\" => hsq_fit.converged,",
+    "\"iterations\" => hsq_fit.iterations,",
+    "\"traits\" => string.(collect(hsq_fit.traits)),",
+    "\"genetic_structure\" => string(hsq_fit.genetic_structure)",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_mv_raw")
+  result <- hs_normalize_multivariate_result(raw, payload)
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "multivariate"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_multivariate_result <- function(raw, payload) {
+  traits <- as.character(raw$traits %||% payload$metadata$trait_names)
+  if (length(traits) == 0L) {
+    traits <- paste0("trait", seq_len(ncol(payload$Y)))
+  }
+  ntraits <- length(traits)
+  fixed_names <- payload$metadata$fixed_colnames
+  ids <- as.character(raw$breeding_ids %||% payload$ids)
+
+  G0 <- hs_matrix_from_julia(
+    raw$genetic_covariance,
+    ntraits,
+    ntraits,
+    "genetic covariance"
+  )
+  R0 <- hs_matrix_from_julia(
+    raw$residual_covariance,
+    ntraits,
+    ntraits,
+    "residual covariance"
+  )
+  Gcor <- hs_matrix_from_julia(
+    raw$genetic_correlation,
+    ntraits,
+    ntraits,
+    "genetic correlation"
+  )
+  Rcor <- hs_matrix_from_julia(
+    raw$residual_correlation,
+    ntraits,
+    ntraits,
+    "residual correlation"
+  )
+  dimnames(G0) <- dimnames(R0) <- dimnames(Gcor) <- dimnames(Rcor) <-
+    list(traits, traits)
+
+  beta <- hs_matrix_from_julia(
+    raw$beta,
+    length(fixed_names),
+    ntraits,
+    "fixed effects"
+  )
+  fixed_effects <- data.frame(
+    term = rep(fixed_names, times = ntraits),
+    trait = rep(traits, each = length(fixed_names)),
+    estimate = as.vector(beta),
+    stringsAsFactors = FALSE
+  )
+
+  bv <- hs_matrix_from_julia(
+    raw$breeding_values,
+    length(ids),
+    ntraits,
+    "breeding values"
+  )
+  breeding_values <- hs_long_matrix(bv, ids = ids, traits = traits)
+
+  converged <- isTRUE(raw$converged)
+  p <- ncol(payload$X)
+  n_covariance_parameters <- ntraits * (ntraits + 1L)
+
+  result <- list(
+    variance_components = data.frame(
+      component = rep(c("genetic", "residual"), each = ntraits),
+      trait = rep(traits, times = 2L),
+      estimate = c(diag(G0), diag(R0)),
+      stringsAsFactors = FALSE
+    ),
+    heritability = data.frame(
+      term = traits,
+      trait = traits,
+      estimate = as.numeric(raw$heritability),
+      stringsAsFactors = FALSE
+    ),
+    genetic_covariance = G0,
+    residual_covariance = R0,
+    genetic_correlation = Gcor,
+    residual_correlation = Rcor,
+    breeding_values = breeding_values,
+    fixed_effects = fixed_effects,
+    random_effects = list(animal = breeding_values),
+    nobs = as.integer(sum(!is.na(payload$Y))),
+    converged = converged,
+    diagnostics = list(
+      target = "multivariate",
+      variance_components = "estimated_multivariate_reml",
+      optimizer_status = if (converged) "converged" else "not_converged",
+      iterations = as.integer(raw$iterations),
+      n_traits = ntraits,
+      n_records = nrow(payload$Y),
+      n_observed_trait_records = sum(!is.na(payload$Y)),
+      dense_validation_path = TRUE,
+      conditioning_caveat = paste(
+        "Experimental dense validation-scale path; the Julia engine inverts",
+        "Ainv internally, so deep-inbreeding/high-condition-number pedigrees",
+        "remain a twin-side hardening item."
+      ),
+      genetic_structure = raw$genetic_structure %||% "unstructured"
+    )
+  )
+  if (converged) {
+    result$loglik <- as.numeric(raw$loglik)
+    result$df <- as.integer(p * ntraits + n_covariance_parameters)
+  }
+  result
+}
+
+hs_validate_multivariate_initial <- function(initial, ntraits) {
+  if (is.null(initial)) {
+    initial <- list(G0 = diag(1, ntraits), R0 = diag(1, ntraits))
+  }
+  if (
+    !is.list(initial) ||
+      is.null(names(initial)) ||
+      !all(c("G0", "R0") %in% names(initial))
+  ) {
+    stop(
+      "`initial` for the multivariate target must be a named list with ",
+      "`G0` and `R0` covariance matrices.",
+      call. = FALSE
+    )
+  }
+  list(
+    G0 = hs_validate_initial_covariance(initial$G0, "initial$G0", ntraits),
+    R0 = hs_validate_initial_covariance(initial$R0, "initial$R0", ntraits)
+  )
+}
+
+hs_validate_initial_covariance <- function(x, name, ntraits) {
+  x <- as.matrix(x)
+  if (!is.numeric(x) || !identical(dim(x), c(ntraits, ntraits))) {
+    stop(
+      "`",
+      name,
+      "` must be a numeric ",
+      ntraits,
+      " x ",
+      ntraits,
+      " covariance matrix.",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(x))) {
+    stop("`", name, "` must contain only finite values.", call. = FALSE)
+  }
+  if (!isTRUE(all.equal(x, t(x), tolerance = 1e-8, check.attributes = FALSE))) {
+    stop("`", name, "` must be symmetric.", call. = FALSE)
+  }
+  pd <- tryCatch(
+    {
+      chol((x + t(x)) / 2)
+      TRUE
+    },
+    error = function(e) FALSE
+  )
+  if (!isTRUE(pd)) {
+    stop("`", name, "` must be positive definite.", call. = FALSE)
+  }
+  unname(x)
+}
+
+hs_matrix_from_julia <- function(x, nrow, ncol, label) {
+  out <- as.matrix(x)
+  storage.mode(out) <- "double"
+  if (!identical(dim(out), c(nrow, ncol))) {
+    if (length(out) == nrow * ncol) {
+      out <- matrix(as.numeric(out), nrow = nrow, ncol = ncol)
+    } else {
+      stop(
+        "The Julia multivariate result returned ",
+        label,
+        " with unexpected dimensions.",
+        call. = FALSE
+      )
+    }
+  }
+  out
+}
+
+hs_long_matrix <- function(x, ids, traits) {
+  data.frame(
+    id = rep(as.character(ids), times = length(traits)),
+    trait = rep(as.character(traits), each = length(ids)),
+    value = as.vector(x),
+    stringsAsFactors = FALSE
+  )
+}
+
 hs_validate_two_effect_initial <- function(initial) {
   if (
     !is.numeric(initial) ||
@@ -950,13 +1230,15 @@ hs_validate_julia_target <- function(target) {
         "two_effect",
         "genomic",
         "single_step",
-        "snp_blup"
+        "snp_blup",
+        "multivariate"
       )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"two_effect\", \"genomic\", \"single_step\", or \"snp_blup\".",
+      "\"two_effect\", \"genomic\", \"single_step\", \"snp_blup\", or ",
+      "\"multivariate\".",
       call. = FALSE
     )
   }

@@ -2683,3 +2683,57 @@ with private memory.
 - Remote checks for `7b3c3d9` (all green):
   - GitHub Actions R-CMD-check `27487099560`: passed.
   - GitHub Actions pkgdown `27487099551`: passed.
+
+## 2026-06-14 R multivariate bridge slice (opt-in `target = "multivariate"`)
+
+- Implemented the R-facing multivariate Gaussian animal-model slice after the
+  Julia twin landed Phase 4 on `main` (`f9da6bb`): `cbind(trait1, trait2) ~
+  animal(1 | id, pedigree = ped)` parses into an NA-preserving `Y` matrix,
+  reuses the existing `X`/sparse-`Z`/pedigree payload, and routes through
+  `engine = "julia", engine_control = list(target = "multivariate")` to
+  `HSquared.fit_multivariate_reml()`. Added G/R covariance and correlation
+  extractors, per-trait h2, cross-trait EBVs, named `initial = list(G0 = ...,
+  R0 = ...)` validation, rank-deficient-X guard, and non-converged
+  `logLik()`/`AIC()` fence. Status stays `partial`.
+- Added `docs/design/11-next-50-slices.md` as the next-slice runway.
+- Formatting: `air` was not available on PATH (`command -v air` returned
+  empty).
+- Documentation: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::document()"` — passed; generated `NAMESPACE`,
+  `man/multivariate_extractors.Rd`, and updated control/fit docs.
+- Focused tests:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "devtools::test(filter = 'multivariate')"` — passed, 0 failures / 0
+    warnings / 2 live-Julia skips / 29 passes.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "devtools::test(filter = 'multivariate|phase0-api|fit-object|julia-bridge')"` —
+    passed, 0 failures / 0 warnings / 10 live-Julia skips / 196 passes.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  560 passes.
+- Julia bridge note: forcing Julia onto PATH with
+  `PATH="/Users/z3437171/.juliaup/bin:$PATH"` caused the local R/JuliaCall
+  process to segfault (exit 139) before live bridge checks could complete. The
+  ordinary package-test environment leaves Julia off PATH, so those live tests
+  skip safely. A direct Julia smoke against `HSquared.jl` succeeded outside
+  JuliaCall, returning the expected 2-trait covariance/EBV shapes; the short
+  100-iteration smoke did not converge, which is acceptable for that shape-only
+  probe.
+- Pkgdown:
+  - Plain `pkgdown::check_pkgdown()` failed because Pandoc was not on the shell
+    PATH.
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Claim/housekeeping scans:
+  - `rg -n "pkg::" R tests vignettes README.md DESCRIPTION NEWS.md docs/design`
+    — no matches.
+  - Stale multivariate-claim scan for branch-only / not-on-main / production
+    overclaim wording — clean; remaining hits are intentional "not production"
+    and structured/factor-analytic-planned caveats.
+  - `git diff --check` — passed.
+- Package check:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+    errors / 0 warnings / 0 notes.

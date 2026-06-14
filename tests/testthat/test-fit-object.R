@@ -5,6 +5,10 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
       estimate = c(0.4, 0.6)
     ),
     heritability = data.frame(term = "animal", estimate = 0.4),
+    genetic_covariance = matrix(0.4, 1, 1),
+    residual_covariance = matrix(0.6, 1, 1),
+    genetic_correlation = matrix(1, 1, 1),
+    residual_correlation = matrix(1, 1, 1),
     breeding_values = data.frame(id = c("a", "b"), value = c(0.1, -0.1)),
     prediction_error_variance = data.frame(
       id = c("a", "b"),
@@ -44,6 +48,10 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(variance_components(fit), result$variance_components)
   expect_equal(heritability(fit), result$heritability)
+  expect_equal(genetic_covariance(fit), result$genetic_covariance)
+  expect_equal(residual_covariance(fit), result$residual_covariance)
+  expect_equal(genetic_correlation(fit), result$genetic_correlation)
+  expect_equal(residual_correlation(fit), result$residual_correlation)
   expect_equal(breeding_values(fit), result$breeding_values)
   expect_equal(EBV(fit), result$breeding_values)
   expect_equal(BLUP(fit), result$breeding_values)
@@ -113,6 +121,16 @@ test_that("extractor defaults do not imply fitted model support", {
   )
   expect_error(
     heritability(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    genetic_covariance(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    residual_correlation(list()),
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
