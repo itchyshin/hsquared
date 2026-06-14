@@ -294,6 +294,55 @@ gate.</li>
 </ul>
 </div>
 <div class="section level2">
+<h2 id="current-limits">Current limits<a class="anchor" aria-label="anchor" href="#current-limits"></a>
+</h2>
+<p>How many of each term can a formula carry today? The grammar is
+deliberately narrow; these are the structural limits (not yet
+“arbitrary” random effects):</p>
+<ul>
+<li>
+<strong>Exactly one primary effect.</strong> A formula carries
+exactly one of <code>animal(1 | id, pedigree = ped)</code> (a pedigree
+additive effect) or a supplied-relationship primary
+(<code>genomic(1 | id, ...)</code> /
+<code>single_step(1 | id, Hinv = ...)</code>). Two primary effects is an
+error.</li>
+<li>
+<strong>At most one additional random effect,</strong> and only
+alongside an <code><a href="../reference/animal.html">animal()</a></code> primary: one of
+<code>permanent(1 | id)</code>, <code>common_env(1 | group)</code>, or
+<code>maternal_genetic(1 | dam)</code> (each opt-in/experimental). There
+is no support yet for a third random effect or for several independent
+grouping factors.</li>
+<li>
+<strong>Random intercepts only.</strong> Only <code>1 | group</code>
+is parsed. Random slopes (<code>x | id</code>) are rejected as
+planned-not-implemented, and a bare lme4-style
+<code>(... | group)</code> term is rejected with a pointer to the named
+effects above (it is never silently absorbed into the fixed
+effects).</li>
+<li>
+<strong>One response (univariate).</strong> A single numeric
+response; multi-trait <code>cbind(...)</code> responses are planned
+(Phase 3, engine work in progress on the twin).</li>
+<li>
+<strong>Gaussian identity link only.</strong> Other families are
+planned, not implemented.</li>
+<li>
+<strong>REML only on the fit path.</strong>
+<code>REML = FALSE</code> (ML) is rejected; the supplied-variance paths
+(<code>henderson_mme</code>, <code>snp_blup</code>) solve at given
+variances rather than estimating them.</li>
+<li>
+<strong>Fixed effects are unrestricted</strong> otherwise: any
+number of ordinary fixed-effect terms (<code>sex + age + ...</code>) on
+the right-hand side is fine.</li>
+</ul>
+<p>Arbitrary numbers of random effects and slopes, multiple correlated
+random terms, and multi-trait responses are on the roadmap; the parser
+names each unsupported form rather than guessing.</p>
+</div>
+<div class="section level2">
 <h2 id="not-implemented-yet">Not implemented yet<a class="anchor" aria-label="anchor" href="#not-implemented-yet"></a>
 </h2>
 <ul>
