@@ -2839,6 +2839,10 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `3ea321d` (all green):
+  - GitHub Actions R-CMD-check `27502628759`: passed.
+  - GitHub Actions pkgdown `27502628772`: passed.
+  - GitHub Pages build/deployment `27502672768`: passed.
 
 ## 2026-06-14 Non-Gaussian family planned errors
 
@@ -3249,6 +3253,10 @@ with private memory.
   - `GLLVM.jl/src/fit_phylo.jl` Woodbury / sparse Cholesky pattern.
   - `DRM.jl/src/location_only.jl` sparse marginal likelihood, profiled fixed
     effects, and Takahashi-trace pattern.
+  - PubMed page for Gilmour (2019), "Average information residual maximum
+    likelihood in practice".
+  - Meyer/Hill multivariate AI-REML reduced-rank PDF.
+  - BLUPF90 large-scale REML tutorial page by Masuda.
 - Added `docs/design/13-sparse-multivariate-production-plan.md` with target
   model equations, dense-vs-sparse boundaries, sparse MME ladder, structured
   `G0` constraints, matrix-free/iterative extension, R contract, diagnostics,

@@ -45,6 +45,21 @@ The main lessons are:
   use the sibling repos as algorithm and documentation leads, not as automatic
   copy sources.
 
+External anchors checked for this note:
+
+- Gilmour's AI-REML practice review describes why ASReml-style software leans
+  on average-information REML, parameter-space guards, sparsity, and
+  factor-analytic structures for general mixed models:
+  <https://pubmed.ncbi.nlm.nih.gov/31247685/>.
+- Meyer and Hill's multivariate AI-REML / reduced-rank animal-model paper is a
+  direct anchor for sparse tools, trait-wise simplifications, canonical
+  transformations, and reduced-rank genetic covariance estimation:
+  <https://faculty.washington.edu/tathornt/BIOST551/articles_2012/AI_Meyer.pdf>.
+- Masuda's BLUPF90 large-scale REML tutorial is a practical anchor for sparse
+  mixed-model equations, selected inverse / Takahashi traces, dense blocks in
+  multi-trait models, and solver options such as YAMS:
+  <https://masuday.github.io/blupf90_tutorial/largescale_reml.html>.
+
 ## Target Model
 
 For `n` records, `q` animals, and `t` traits:
@@ -250,3 +265,12 @@ difference, EBV difference, and tolerance.
    covariance rows have recovery evidence.
 5. R/docs: keep structured `cov = ...` examples fenced as planned.
 
+## References To Revisit Before Implementation
+
+- Gilmour, A. R. (2019). Average information residual maximum likelihood in
+  practice. <https://pubmed.ncbi.nlm.nih.gov/31247685/>
+- Meyer, K. and Hill, W. G. (1997). Average-information REML for reduced-rank
+  genetic matrices / covariance functions. Local planning copy:
+  <https://faculty.washington.edu/tathornt/BIOST551/articles_2012/AI_Meyer.pdf>
+- BLUPF90 large-scale REML tutorial:
+  <https://masuday.github.io/blupf90_tutorial/largescale_reml.html>

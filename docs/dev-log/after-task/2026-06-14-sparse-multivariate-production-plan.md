@@ -37,6 +37,8 @@ Current lane: coordinator/docs.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"`: passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for commit `3ea321d`: GitHub Actions R-CMD-check
+  `27502628759`, pkgdown `27502628772`, and Pages `27502672768` all passed.
 
 ## Public claim audit
 
@@ -64,7 +66,9 @@ agreement tests, and any structured-covariance recovery evidence.
 
 The first broad sibling `rg` search was too noisy and was interrupted. The
 useful scout was narrowed to targeted local files in `HSquared.jl`, `GLLVM.jl`,
-and `DRM.jl`.
+and `DRM.jl`, then supplemented with three external anchors: Gilmour's AI-REML
+practice review, Meyer/Hill multivariate AI-REML/reduced-rank work, and a
+BLUPF90 large-scale REML tutorial.
 
 ## Known limitations
 
