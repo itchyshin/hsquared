@@ -297,7 +297,9 @@ gate.</li>
 <code>target = "multivariate"</code>. Returns G/R covariance and
 correlation matrices, per-trait h2, and cross-trait EBVs; missing trait
 cells may be <code>NA</code>. Dense validation-scale only; t&gt;=2
-recovery and external-comparator evidence remain planned.</li>
+recovery and full same-estimand external-comparator evidence remain
+planned. A partial optional <code>sommer</code> diagonal-residual check
+exists for G0, diag(R0), and diagonal-target h2.</li>
 </ul>
 </div>
 <div class="section level2">

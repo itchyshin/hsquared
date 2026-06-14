@@ -218,8 +218,10 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
   `cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)`,
   `target = "multivariate"`. Returns G/R covariance and correlation
   matrices, per-trait h2, and cross-trait EBVs; missing trait cells may
-  be `NA`. Dense validation-scale only; t\>=2 recovery and
-  external-comparator evidence remain planned.
+  be `NA`. Dense validation-scale only; t\>=2 recovery and full
+  same-estimand external-comparator evidence remain planned. A partial
+  optional `sommer` diagonal-residual check exists for G0, diag(R0), and
+  diagonal-target h2.
 
 ## Current limits
 
