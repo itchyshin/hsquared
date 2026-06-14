@@ -2528,3 +2528,30 @@ with private memory.
 - Local commit `803793d`. Remote checks for `803793d` (all green):
   - GitHub Actions R-CMD-check `27484321173`: passed.
   - GitHub Actions pkgdown `27484321186`: passed.
+
+## 2026-06-13 Opt-in genomic GREML model (Phase 5)
+
+- Goal: fourth opt-in slice — surface genomic variance-component estimation on a
+  user-supplied genomic relationship inverse via `genomic(1 | id, Ginv = Ginv)`
+  → `fit_ai_reml` on a Ginv-based spec. Twin gate `V2-GREML` is `partial`. A
+  bridge probe confirmed the engine path before building.
+- Active lenses: Ada, Hopper, Henderson, Kirkpatrick, Emmy, Curie, Rose. Spawned
+  subagents: review `woigtw1b0` (hopper-parser-align + rose-honesty) — 1 blocking
+  (`model_spec()` crash on genomic) + 1 should-fix, both fixed; Z/Ginv/ids
+  alignment and the primary-effect generalisation verified correct.
+- Generalised the parser's PRIMARY effect (animal XOR genomic); new opt-in
+  `target = "genomic"`; `model_spec()` errors clearly on genomic.
+  `validation_status()` now 19 rows. v0.1 + repeatability + two-effect unchanged.
+- Files: `R/{model-spec,model-spec-inspect,bridge-payload,julia-bridge,hsquared,
+  formula-status,validation-status,hs_control}.R`, `NAMESPACE`, `man/*`,
+  `NEWS.md`, `ROADMAP.md`,
+  `docs/design/{capability-status,06-public-claims-register}.md`,
+  `tests/testthat/{test-genomic,test-model-spec-inspect,test-formula-animal,
+  test-phase0-api}.R`.
+- Local checks: `air format`; `devtools::document()`; **`pkg::`-grep clean** +
+  **`check_pkgdown()` clean**; full `testthat` with juliaup + `NOT_CRAN` + sommer
+  + enhancer (live GREML fit ran) — 0/0/0; `rcmdcheck(--as-cran)` 0/0/1 (benign).
+  Lesson: `--as-cran` (installed-package tests) caught a model-spec test
+  divergence that `test_dir(load_all)` did not — `--as-cran` is authoritative.
+- Local commit `8930323`. Remote checks for `8930323`: GitHub Actions R-CMD-check
+  `27484947202` + pkgdown `27484947207` (in progress; appended on completion).
