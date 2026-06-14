@@ -71,7 +71,11 @@
 #'   optimizer, and returns G/R covariance matrices, genetic and residual
 #'   correlations, per-trait heritability, and cross-trait breeding values. It is
 #'   not the default and remains a `partial` validation claim until t>=2
-#'   known-truth recovery and external-comparator evidence are committed.
+#'   known-truth recovery and external-comparator evidence are committed. The
+#'   reserved `genetic_structure` control accepts only `"unstructured"` on the
+#'   current R bridge; `"diagonal"`, `"lowrank"`, and `"factor_analytic"` remain
+#'   planned until the structured-covariance Julia engine surface lands on main
+#'   and R bridge tests are committed.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

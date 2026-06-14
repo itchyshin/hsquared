@@ -186,18 +186,24 @@ first teaching surface.
 
 ## Error Rules
 
-Until the bridge is live, R should keep failing loudly:
+Until formula-level grammar is live, R should keep failing loudly:
 
 ```text
 `animal()` argument `cov` is planned, not implemented.
 ```
 
-Once an expert control is live, unsupported structures should say:
+The R bridge now accepts the reserved expert control only for the current
+unstructured case and blocks the structured cases before Julia marshalling:
 
 ```text
-`genetic_structure = "..."` is not available for this engine target.
-Use `genetic_structure = "unstructured"` or omit it for the current
-multivariate path.
+`engine_control$genetic_structure` must be one of "unstructured", "diagonal",
+"lowrank", or "factor_analytic".
+
+Structured multivariate genetic covariance controls
+(`genetic_structure = "diagonal"`, "lowrank", or "factor_analytic") are
+planned, not implemented in the R bridge. The current opt-in multivariate path
+estimates unstructured G0/R0 only; omit `genetic_structure` or set it to
+"unstructured".
 ```
 
 For formula-level `cov = ...`, the error should continue pointing users to the

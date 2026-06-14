@@ -1245,6 +1245,46 @@ hs_validate_julia_target <- function(target) {
   target
 }
 
+hs_validate_genetic_structure_control <- function(control, target) {
+  value <- hs_engine_control_value(control, "genetic_structure", NULL)
+  if (is.null(value)) {
+    return("unstructured")
+  }
+  if (!is.character(value) || length(value) != 1L || is.na(value)) {
+    stop(
+      "`engine_control$genetic_structure` must be a single string.",
+      call. = FALSE
+    )
+  }
+  allowed <- c("unstructured", "diagonal", "lowrank", "factor_analytic")
+  if (!value %in% allowed) {
+    stop(
+      "`engine_control$genetic_structure` must be one of \"unstructured\", ",
+      "\"diagonal\", \"lowrank\", or \"factor_analytic\".",
+      call. = FALSE
+    )
+  }
+  if (!identical(target, "multivariate")) {
+    stop(
+      "`engine_control$genetic_structure` is only planned for the ",
+      "`target = \"multivariate\"` bridge. Remove `genetic_structure`, or use ",
+      "`target = \"multivariate\"` with a `cbind(...)` response.",
+      call. = FALSE
+    )
+  }
+  if (!identical(value, "unstructured")) {
+    stop(
+      "Structured multivariate genetic covariance controls ",
+      "(`genetic_structure = \"diagonal\"`, \"lowrank\", or ",
+      "\"factor_analytic\") are planned, not implemented in the R bridge. ",
+      "The current opt-in multivariate path estimates unstructured G0/R0 only; ",
+      "omit `genetic_structure` or set it to \"unstructured\".",
+      call. = FALSE
+    )
+  }
+  value
+}
+
 # All opt-in engine targets that can fit a given non-default random effect. A
 # genomic marker primary fits either by GREML on the built relationship
 # (`genomic`) or as a supplied-variance marker-effect model (`snp_blup`).

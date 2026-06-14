@@ -3686,3 +3686,49 @@ with private memory.
   - GitHub Actions R-CMD-check `27506408866`: passed.
   - GitHub Actions pkgdown `27506408863`: passed.
   - GitHub Pages build/deployment `27506468140`: passed.
+
+Remote follow-up for committed slice `27bf20f`:
+
+- `/opt/homebrew/bin/gh run list --limit 8` showed all current pushed checks
+  green:
+  - GitHub Actions R-CMD-check `27506805996`: passed.
+  - GitHub Actions pkgdown `27506806005`: passed.
+  - GitHub Pages build/deployment `27506853028`: passed.
+
+## 2026-06-14 Structured covariance control guardrail
+
+- Added a pre-marshalling guard for the reserved
+  `engine_control$genetic_structure` field. The current R bridge accepts only
+  `"unstructured"` on the opt-in multivariate target. `"diagonal"`, `"lowrank"`,
+  and `"factor_analytic"` now error as planned instead of being silently ignored.
+- Updated `R/hs_control.R`/`man/hs_control.Rd`, `NEWS.md`, and
+  `docs/design/18-structured-covariance-r-control.md`.
+- Formatting:
+  `command -v air` - no `air` binary on PATH.
+- `git diff --check` - passed.
+- Focused tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test(filter = 'multivariate')"` - passed, 0 failures / 0 warnings /
+  3 skips / 57 passes.
+- Documentation:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::document()"` - passed; intended `hs_control.Rd` update kept and
+  incidental package-level roxygen churn reverted.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::test()"` - passed, 0 failures / 0 warnings / 32 skips / 615
+  passes.
+- Rose claim grep:
+  `rg -n 'supports genetic_structure|genetic_structure.*implemented|diagonal.*implemented|lowrank.*implemented|factor_analytic.*implemented|fits diagonal|fits factor|structured covariance.*implemented|structured covariance support' ...`
+  - matched only the intended planned/not-implemented R error text and the
+    prior check-log grep record.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+  errors / 0 warnings / 0 notes.

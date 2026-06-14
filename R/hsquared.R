@@ -123,6 +123,7 @@ hsquared <- function(
       "target",
       "fit_animal_model"
     ))
+    hs_validate_genetic_structure_control(control, target)
     if (isTRUE(spec$response$multivariate) && !identical(target, "multivariate")) {
       stop(
         "A `cbind(...)` multivariate response requires the opt-in ",

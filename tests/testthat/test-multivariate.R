@@ -145,6 +145,90 @@ test_that("multivariate target is explicitly opt-in and cbind-only", {
   )
 })
 
+test_that("multivariate genetic_structure control is fenced", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3),
+    y2 = c(1.5, 2.5, 3.5),
+    id = ped$id
+  )
+
+  expect_equal(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "unstructured"
+        )
+      ),
+      "multivariate"
+    ),
+    "unstructured"
+  )
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = c("unstructured", "diagonal")
+        )
+      ),
+      "multivariate"
+    ),
+    "must be a single string",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "toeplitz"
+        )
+      ),
+      "multivariate"
+    ),
+    "must be one of",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "ai_reml",
+          genetic_structure = "unstructured"
+        )
+      ),
+      "ai_reml"
+    ),
+    "only planned for the `target = \"multivariate\"` bridge",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared(
+      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "diagonal"
+        )
+      )
+    ),
+    "planned, not implemented",
+    fixed = TRUE
+  )
+})
+
 test_that("multivariate initial values are named covariance matrices", {
   expect_equal(
     hsquared:::hs_validate_multivariate_initial(NULL, 2L),
