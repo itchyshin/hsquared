@@ -67,6 +67,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
   14-factor-analytic-production-plan.md` records planned `diag()`/`lowrank()`/
   `fa()` syntax, loading/rotation boundaries, invariant-first extractors, and
   production gates.
+- Reserved factor/G-matrix extractors: `loadings()`, `specific_variance()`,
+  `latent_breeding_values()`, and `eigen_G()` now exist but fail for
+  `hsquared_fit` with planned, rotation-aware messages.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -95,7 +98,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 17 | Julia | Stabilize low-rank multivariate REML tests and diagnostics. | PSD and logLik checks green. |
 | 18 | R | Design `cov = lowrank(K)` grammar against the Julia structure. | Roadmap-only until engine gate. |
 | 19 | Julia | Stabilize factor-analytic `G = Lambda Lambda' + Psi` engine output names. | Loadings/uniqueness extraction tests green. |
-| 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | Placeholders do not imply fitting. |
+| 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | done: names exist with planned/rotation-aware errors; no fitting or interpretation claim |
 | 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | Pat/Darwin/Kirkpatrick review. |
 | 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
 | 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; dedicated issue #10 tracks full same-estimand, ASReml/BLUPF90, and recovery gates before any covered row. |

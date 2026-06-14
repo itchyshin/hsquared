@@ -189,6 +189,66 @@ test_that("extractor defaults do not imply fitted model support", {
     "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
     fixed = TRUE
   )
+  expect_error(
+    specific_variance(list()),
+    "reserves this extractor name",
+    fixed = TRUE
+  )
+  expect_error(
+    latent_breeding_values(list()),
+    "reserves this extractor name",
+    fixed = TRUE
+  )
+  expect_error(
+    eigen_G(list()),
+    "reserves this extractor name",
+    fixed = TRUE
+  )
+  expect_null(loadings(list()))
+})
+
+test_that("reserved factor-analytic extractors fail with rotation-aware scope", {
+  fit <- hsquared:::hs_new_fit(
+    call = quote(hsquared(y ~ animal(1 | id, pedigree = ped), data = dat)),
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = c(1, 2, 3)),
+    result = list(
+      genetic_covariance = matrix(c(1, 0.2, 0.2, 1), 2, 2),
+      genetic_correlation = matrix(c(1, 0.2, 0.2, 1), 2, 2),
+      converged = TRUE
+    )
+  )
+
+  expect_error(
+    loadings(fit),
+    "planned, not implemented.*rotation-nonunique",
+    perl = TRUE
+  )
+  expect_error(
+    loadings(fit, rotate = "varimax"),
+    "rotation controls are planned, not implemented",
+    fixed = TRUE
+  )
+  expect_error(
+    specific_variance(fit),
+    "planned, not implemented.*rotation-nonunique",
+    perl = TRUE
+  )
+  expect_error(
+    latent_breeding_values(fit),
+    "planned, not implemented.*rotation-nonunique",
+    perl = TRUE
+  )
+  expect_error(
+    eigen_G(fit),
+    "planned, not implemented.*rotation-nonunique",
+    perl = TRUE
+  )
+  expect_error(
+    eigen_G(fit, effect = "residual"),
+    "effect = \"animal\"",
+    fixed = TRUE
+  )
 })
 
 test_that("unsupported inference helpers fail with explicit scope", {

@@ -52,6 +52,7 @@ reference:
       - variance_components
       - heritability
       - multivariate_extractors
+      - factor_g_extractors
       - breeding_values
       - repeatability
       - permanent_effects

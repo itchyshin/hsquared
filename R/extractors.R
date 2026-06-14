@@ -162,6 +162,148 @@ hs_multivariate_extractor_default <- function(name) {
   )
 }
 
+#' Reserved factor-analytic and G-matrix extractors
+#'
+#' These extractor names are reserved for future factor-analytic G-matrix
+#' results. The current package can report invariant covariance and correlation
+#' matrices from opt-in multivariate fits, but it does not yet expose
+#' interpreted loadings, uniqueness/specific variance, latent breeding values,
+#' or eigen-G summaries. Loading columns are rotation-nonunique until a
+#' rotation or constraint policy is validated. Future `hsquared_fit` methods
+#' reserve `effect` and rotation controls, but these controls currently error
+#' rather than implying that loading axes are interpretable.
+#'
+#' @inheritParams variance_components
+#'
+#' @return These reserved extractors currently error for `hsquared_fit` objects.
+#' @name factor_g_extractors
+NULL
+
+#' @rdname factor_g_extractors
+#' @export
+loadings <- function(object, ...) {
+  UseMethod("loadings")
+}
+
+#' @export
+loadings.default <- function(object, ...) {
+  stats::loadings(object, ...)
+}
+
+#' @export
+loadings.hsquared_fit <- function(object, effect = "animal", rotate = NULL, ...) {
+  hs_factor_g_extractor_planned(
+    "loadings",
+    "factor-analytic G-matrix loadings",
+    effect = effect,
+    rotate = rotate
+  )
+}
+
+#' @rdname factor_g_extractors
+#' @export
+specific_variance <- function(object, ...) {
+  UseMethod("specific_variance")
+}
+
+#' @export
+specific_variance.default <- function(object, ...) {
+  hs_factor_g_extractor_default("specific_variance")
+}
+
+#' @export
+specific_variance.hsquared_fit <- function(object, effect = "animal", ...) {
+  hs_factor_g_extractor_planned(
+    "specific_variance",
+    "factor-analytic G-matrix uniqueness / specific variance",
+    effect = effect
+  )
+}
+
+#' @rdname factor_g_extractors
+#' @export
+latent_breeding_values <- function(object, ...) {
+  UseMethod("latent_breeding_values")
+}
+
+#' @export
+latent_breeding_values.default <- function(object, ...) {
+  hs_factor_g_extractor_default("latent_breeding_values")
+}
+
+#' @export
+latent_breeding_values.hsquared_fit <- function(object, effect = "animal", ...) {
+  hs_factor_g_extractor_planned(
+    "latent_breeding_values",
+    "latent breeding values from a factor-analytic G matrix",
+    effect = effect
+  )
+}
+
+#' @rdname factor_g_extractors
+#' @export
+eigen_G <- function(object, ...) {
+  UseMethod("eigen_G")
+}
+
+#' @export
+eigen_G.default <- function(object, ...) {
+  hs_factor_g_extractor_default("eigen_G")
+}
+
+#' @export
+eigen_G.hsquared_fit <- function(object, effect = "animal", ...) {
+  hs_factor_g_extractor_planned(
+    "eigen_G",
+    "G-matrix eigen summaries",
+    effect = effect
+  )
+}
+
+hs_factor_g_extractor_default <- function(name) {
+  stop(
+    "`",
+    name,
+    "()` requires an `hsquared_fit` object from a future validated ",
+    "factor-analytic or G-matrix result. The current package reserves this ",
+    "extractor name but does not expose interpreted factor-analytic G-matrix ",
+    "outputs yet.",
+    call. = FALSE
+  )
+}
+
+hs_factor_g_extractor_planned <- function(name, quantity, effect, rotate = NULL) {
+  if (!identical(effect, "animal")) {
+    stop(
+      "`",
+      name,
+      "()` currently reserves only `effect = \"animal\"`; other effects are ",
+      "planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.null(rotate)) {
+    stop(
+      "`",
+      name,
+      "()` rotation controls are planned, not implemented. Loading axes need ",
+      "a validated rotation or constraint policy before interpretation.",
+      call. = FALSE
+    )
+  }
+  stop(
+    "`",
+    name,
+    "()` for ",
+    quantity,
+    " is planned, not implemented for `hsquared_fit` objects. Current ",
+    "multivariate fits report invariant `genetic_covariance()` and ",
+    "`genetic_correlation()`; loading axes remain rotation-nonunique until ",
+    "validated.",
+    call. = FALSE
+  )
+}
+
 #' Extract repeatability estimates
 #'
 #' `repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the

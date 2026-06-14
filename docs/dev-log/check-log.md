@@ -2839,6 +2839,10 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `02940a9` (all green):
+  - GitHub Actions R-CMD-check `27502951970`: passed.
+  - GitHub Actions pkgdown `27502951976`: passed.
+  - GitHub Pages build/deployment `27502995270`: passed.
 - Remote checks for `3ea321d` (all green):
   - GitHub Actions R-CMD-check `27502628759`: passed.
   - GitHub Actions pkgdown `27502628772`: passed.
@@ -2877,6 +2881,62 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+
+## 2026-06-14 Reserved factor/G-matrix extractor names
+
+- Added reserved R extractor names:
+  - `loadings()` for future factor-analytic G-matrix loadings.
+  - `specific_variance()` for future uniqueness / specific variance.
+  - `latent_breeding_values()` for future latent-axis EBVs.
+  - `eigen_G()` for future G-matrix eigen summaries.
+- These methods intentionally fail for `hsquared_fit` objects with
+  planned/not-implemented messages that point users back to invariant
+  `genetic_covariance()` and `genetic_correlation()` and warn that loading axes
+  remain rotation-nonunique.
+- `loadings.default()` falls back to `stats::loadings()` for non-`hsquared`
+  objects so the familiar stats helper is not broken by the package generic.
+- Documentation: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::document()"` — passed; regenerated `NAMESPACE` and added
+  `man/factor_g_extractors.Rd`.
+- Focused tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'fit-object')"` — passed, 0 failures / 0 warnings /
+  0 skips / 81 passes.
+- Formatting: `command -v air` returned no `air` binary on PATH.
+- `git diff --check` — passed.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  628 passes.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- First package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — failed with 1
+  warning because `man/factor_g_extractors.Rd` documented `effect` and `rotate`
+  even though the public generic usage entries do not expose those method-only
+  arguments.
+- Roxygen fix: moved the `effect` / `rotate` explanation from `@param` tags into
+  prose and reran `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::document()"` — passed; regenerated `man/factor_g_extractors.Rd`.
+- Recheck after roxygen fix:
+  - Focused tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "devtools::test(filter = 'fit-object')"` — passed, 0 failures / 0 warnings
+    / 0 skips / 81 passes.
+  - `git diff --check` — passed.
+  - Pkgdown:
+    `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "pkgdown::check_pkgdown()"` — passed, "No problems found."
+  - Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips
+    / 628 passes.
+  - Package check:
+    `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+    errors / 0 warnings / 0 notes.
 
 ## 2026-06-14 Non-Gaussian family planned errors
 
