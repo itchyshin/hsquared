@@ -42,12 +42,14 @@ fit_snp <- hsquared(
 )
 
 marker_effects(fit_snp)
+marker_variance_explained(fit_snp)
 breeding_values(fit_snp)
 ```
 
-This is a supplied-variance marker-effect solve. It does not scan
-markers for association, estimate p-values, compute LOD scores, or
-identify QTL intervals.
+This is a supplied-variance marker-effect solve. The variance-explained
+table is a descriptive fitted-marker share, not a scan statistic. This
+path does not scan markers for association, estimate p-values, compute
+LOD scores, or identify QTL intervals.
 
 Data diagnostics are also live:
 
@@ -85,9 +87,12 @@ lod_scores(fit)
 
 Only
 [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-has a live producer today, and only for SNP-BLUP. The other extractors
-return values only if a future engine target has produced the matching
-result field.
+and
+[`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+have live producers today, and only for the opt-in SNP-BLUP path. The
+variance-explained table is a descriptive fitted-marker share, not a
+scan statistic or QTL claim. The other extractors return values only if
+a future engine target has produced the matching result field.
 
 ## Planned GWAS path
 

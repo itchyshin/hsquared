@@ -118,6 +118,7 @@ fit_snp <- hsquared(
 )
 
 marker_effects(fit_snp)
+marker_variance_explained(fit_snp)
 breeding_values(fit_snp)
 heritability(fit_snp)
 fit_diagnostics(fit_snp)
@@ -125,7 +126,12 @@ fit_diagnostics(fit_snp)
 
 `marker_effects(fit_snp)` returns one effect per marker column. The
 genomic breeding values are the marker-derived predictions for each
-genotyped individual. The fitted object records
+genotyped individual. `marker_variance_explained(fit_snp)` returns a
+descriptive table with each marker’s fitted contribution, computed as
+effect squared times the centered marker variance and normalized across
+markers. Treat it as a summary of the fitted supplied-variance SNP-BLUP,
+not as a marker-scan p-value, QTL signal, or causal decomposition under
+linkage disequilibrium. The fitted object records
 `variance_components_source = "supplied"` because this target uses the
 supplied `sigma_g2` and `sigma_e2`.
 
@@ -174,6 +180,7 @@ For SNP-BLUP, also use:
 ``` r
 
 marker_effects(fit_snp)
+marker_variance_explained(fit_snp)
 ```
 
 The QTL/GWAS/eQTL output names are reserved, but they are not fitted by

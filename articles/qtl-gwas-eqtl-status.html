@@ -114,10 +114,12 @@ supplied variance components:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">marker_variance_explained</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span></code></pre></div>
-<p>This is a supplied-variance marker-effect solve. It does not scan
-markers for association, estimate p-values, compute LOD scores, or
-identify QTL intervals.</p>
+<p>This is a supplied-variance marker-effect solve. The
+variance-explained table is a descriptive fitted-marker share, not a
+scan statistic. This path does not scan markers for association,
+estimate p-values, compute LOD scores, or identify QTL intervals.</p>
 <p>Data diagnostics are also live:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bundle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hs_data.html">hs_data</a></span><span class="op">(</span></span>
@@ -145,9 +147,12 @@ become hard-to-debug scan errors later.</p>
 <span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">lod_scores</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>Only <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> has a live producer today, and
-only for SNP-BLUP. The other extractors return values only if a future
-engine target has produced the matching result field.</p>
+<p>Only <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> and
+<code><a href="../reference/marker_extractors.html">marker_variance_explained()</a></code> have live producers today, and
+only for the opt-in SNP-BLUP path. The variance-explained table is a
+descriptive fitted-marker share, not a scan statistic or QTL claim. The
+other extractors return values only if a future engine target has
+produced the matching result field.</p>
 </div>
 <div class="section level2">
 <h2 id="planned-gwas-path">Planned GWAS path<a class="anchor" aria-label="anchor" href="#planned-gwas-path"></a>

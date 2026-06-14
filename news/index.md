@@ -159,9 +159,13 @@
   extractable with
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   — together with per-individual genomic breeding values and fixed
-  effects (the engine centres the markers, VanRaden method 1). This is a
-  supplied-variance solve (it does not estimate the variance
-  components), opt-in, and not the default; it mirrors the twin
+  effects (the engine centres the markers, VanRaden method 1).
+  [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  reports a descriptive fitted-marker contribution table for this path,
+  computed from effect squared times centered marker variance and
+  normalized across markers; it is not a marker-scan, p-value, or QTL
+  claim. This is a supplied-variance solve (it does not estimate the
+  variance components), opt-in, and not the default; it mirrors the twin
   `V2-SNPBLUP` gate (the GBLUP↔︎SNP-BLUP genomic-breeding-value
   equivalence). REML estimation of the marker variance,
   weighted/Bayesian marker priors, and comparator parity remain planned.
@@ -222,9 +226,9 @@
   supplied-`Hinv` single-step paths from planned genomic construction,
   APY, GWAS/QTL/eQTL, and production-comparator work.
 - Added a “QTL, GWAS, and eQTL status” pkgdown article that explains the
-  current reserved scan vocabulary, live SNP-BLUP marker effects, scale
-  caveats, and validation gates before marker-scan, QTL, GWAS, or eQTL
-  output can be claimed.
+  current reserved scan vocabulary, live SNP-BLUP marker effects /
+  descriptive marker variance shares, scale caveats, and validation
+  gates before marker-scan, QTL, GWAS, or eQTL output can be claimed.
 - Added an “Inheritance systems roadmap” pkgdown article that gives
   selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting,
   dominance, epistasis, and custom-kernel examples as planned
@@ -247,9 +251,11 @@
   and
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md).
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-  now returns the per-marker effects of an opt-in SNP-BLUP fit; the rest
-  remain output-vocabulary placeholders, with marker-scan, QTL, GWAS,
-  and eQTL fitting still planned
+  now returns the per-marker effects of an opt-in SNP-BLUP fit, and
+  [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  reports descriptive fitted-marker shares for the same path; scan
+  tables and LOD outputs remain output-vocabulary placeholders, with
+  marker-scan, QTL, GWAS, and eQTL fitting still planned
   ([\#5](https://github.com/itchyshin/hsquared/issues/5),
   [\#9](https://github.com/itchyshin/hsquared/issues/9)).
 - Added an explicit supplied-variance Julia bridge target for Henderson

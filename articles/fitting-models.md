@@ -161,8 +161,9 @@ fit_snp <- hsquared(
   )
 )
 
-marker_effects(fit_snp)         # one effect per marker
-breeding_values(fit_snp)        # per-individual GEBVs
+marker_effects(fit_snp)              # one effect per marker
+marker_variance_explained(fit_snp)   # descriptive fitted-marker shares
+breeding_values(fit_snp)             # per-individual GEBVs
 ```
 
 ## Multivariate Gaussian animal model

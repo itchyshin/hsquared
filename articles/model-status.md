@@ -147,9 +147,12 @@ container, extractors, and advanced opt-in engine controls.
   and
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md).
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-  returns the per-marker effects of an opt-in SNP-BLUP fit (see above);
-  the rest are still reserved and only return values for future
-  `hsquared_fit` objects that contain matching result fields.
+  returns the per-marker effects of an opt-in SNP-BLUP fit, and
+  [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  returns descriptive fitted-marker shares for that same path (see
+  above). Scan tables and LOD outputs are still reserved and only return
+  values for future `hsquared_fit` objects that contain matching result
+  fields.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.
