@@ -2575,5 +2575,6 @@ with private memory.
 - Local checks: `air format`; `devtools::document()`; `pkg::`-grep + `check_pkgdown()`
   clean; full `testthat` with juliaup + `NOT_CRAN` + sommer + enhancer (live
   single-step fit ran) — 0/0/0; `rcmdcheck(--as-cran)` 0/0/1 (benign).
-- Remote checks for `bbd527d`: GitHub Actions R-CMD-check `27485346107` + pkgdown
-  `27485346095` (in progress; appended on completion).
+- Remote checks for `bbd527d` (all green):
+  - GitHub Actions R-CMD-check `27485346107`: passed.
+  - GitHub Actions pkgdown `27485346095`: passed.
