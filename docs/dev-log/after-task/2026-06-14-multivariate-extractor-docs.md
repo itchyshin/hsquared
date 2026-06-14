@@ -38,6 +38,10 @@ Current lane: R/docs.
 - `git diff --check`: passed.
 - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64 /Library/Frameworks/R.framework/Resources/bin/Rscript -e "devtools::check(document = FALSE, args = '--no-manual')"`:
   0 errors / 0 warnings / 0 notes; examples checked OK.
+- Remote checks for commit `21161a5`:
+  - GitHub Actions R-CMD-check `27499072097`: passed.
+  - GitHub Actions pkgdown `27499072089`: passed.
+  - GitHub Pages build/deployment `27499111169`: passed.
 
 ## Public claim audit
 
