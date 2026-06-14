@@ -1,0 +1,154 @@
+---
+title: "Fitting quantitative-genetic models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting quantitative-genetic models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+This article shows the models `hsquared` can fit. Fitting is computed in the
+sibling `HSquared.jl` engine, so every example needs a local Julia, the
+`JuliaCall` package, and an `HSquared.jl` checkout. The code chunks are not run
+when this page is built (the build host has no Julia).
+
+All fits are by REML. ML is not implemented; `REML = FALSE` is rejected on the
+fit path.
+
+## The default: a univariate Gaussian animal model
+
+This is the v0.1 model, fitted by the default `hsquared()` call. It estimates the
+additive-genetic and residual variances, heritability, and breeding values.
+
+```{r}
+library(hsquared)
+
+fit <- hsquared(
+  weight ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE
+)
+
+variance_components(fit)
+heritability(fit)
+breeding_values(fit)   # EBVs (aliases: EBV(), BLUP())
+summary(fit)
+```
+
+The remaining models below are **experimental and opt-in**: they are reached
+through `engine = "julia"` with an explicit `target`, and their
+`validation_status()` rows are `partial` (they mirror the corresponding
+`HSquared.jl` gates, which are still being validated). They are REML-only and are
+not yet production- or comparator-validated.
+
+## Repeatability (permanent environment)
+
+A repeated-records model with an additive-genetic effect and a
+permanent-environment effect that shares the animal grouping. The additive
+(`σ²a`) and permanent-environment (`σ²pe`) variances are only identifiable with
+repeated records per individual.
+
+```{r}
+fit_rep <- hsquared(
+  y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
+  data = repeated_dat,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "repeatability")
+  )
+)
+
+variance_components(fit_rep)    # animal, permanent, residual
+repeatability(fit_rep)          # R = (Va + Vpe) / Vp
+heritability(fit_rep)           # h2 = Va / Vp
+permanent_effects(fit_rep)
+```
+
+## Common environment
+
+A two-effect model: an additive-genetic effect plus an independent IID
+environmental effect (for example a litter or cage), grouped by a separate
+column.
+
+```{r}
+fit_ce <- hsquared(
+  y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+  data = dat,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "two_effect")
+  )
+)
+
+variance_components(fit_ce)     # animal, common_env, residual
+common_env_effects(fit_ce)
+```
+
+## Maternal genetic effects
+
+The other two-effect model: a direct additive-genetic effect plus a maternal
+genetic effect expressed through the dam. Both carry the pedigree relationship
+(the maternal effect uses `A₂ = pedigree A`), and the dams must be animals in the
+`animal()` pedigree. This is the independent (uncorrelated) direct–maternal
+model; the correlated 2×2 G version is planned.
+
+```{r}
+fit_mat <- hsquared(
+  y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
+  data = dat,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "two_effect")
+  )
+)
+
+variance_components(fit_mat)    # animal, maternal_genetic, residual
+maternal_effects(fit_mat)
+```
+
+## Genomic GREML
+
+A single genomic effect whose relationship is a user-supplied genomic
+relationship inverse `Ginv` (with id dimnames) instead of a pedigree. This
+estimates the genomic and residual variances, genomic heritability, and genomic
+breeding values (GEBVs). Building `Ginv` from markers, single-step (`Hinv`), and
+external-comparator validation are planned.
+
+```{r}
+fit_g <- hsquared(
+  y ~ genomic(1 | id, Ginv = Ginv),
+  data = dat,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "genomic")
+  )
+)
+
+variance_components(fit_g)      # genomic, residual
+heritability(fit_g)             # genomic h2
+breeding_values(fit_g)         # GEBVs
+```
+
+## What is fitted, and what is planned
+
+`formula_status()` and `validation_status()` report, from R, exactly which terms
+fit and how each capability is validated.
+
+```{r, eval = TRUE}
+library(hsquared)
+formula_status()
+```
+
+```{r, eval = TRUE}
+validation_status()
+```
+
+Only rows marked `covered` in `validation_status()` may be relied on as working;
+the opt-in models above are deliberately `partial` until their `HSquared.jl`
+gates and external comparators are signed off. Multivariate, factor-analytic,
+non-Gaussian/GLLVM, unusual-inheritance, and GPU models remain on the roadmap.
