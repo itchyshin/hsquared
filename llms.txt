@@ -363,6 +363,11 @@ experimental targets.
   : Extract reliability and accuracy estimates
 - [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
   : Inspect fitted-model diagnostics
+- [`confint(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)
+  [`vcov(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)
+  [`profile(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)
+  [`anova(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)
+  : Block unsupported likelihood-inference helpers
 - [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
