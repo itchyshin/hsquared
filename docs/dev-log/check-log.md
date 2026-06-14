@@ -3194,3 +3194,41 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+
+## 2026-06-14 Inference helper blockers
+
+- Added explicit `hsquared_fit` methods for `confint()`, `vcov()`,
+  `profile()`, and `anova()`. These methods intentionally error and state that
+  validated confidence intervals, standard-error surfaces, profile likelihoods,
+  and likelihood-ratio / ANOVA guidance are planned, not implemented.
+- Documentation: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::document()"` — passed; regenerated `NAMESPACE` and added
+  `man/inference_blocks.Rd`.
+- Focused tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'fit-object')"` — passed, 0 failures / 0 warnings /
+  0 skips / 71 passes.
+- Formatting: `command -v air` returned no `air` binary on PATH.
+- `git diff --check` — passed.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  618 passes.
+- First pkgdown check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — failed because `_pkgdown.yml` did not yet index
+  the new `inference_blocks` topic.
+- Fixed the pkgdown reference index by adding `inference_blocks` to the
+  extractor-contract section.
+- Pkgdown recheck:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
+- Remote checks for `5f3c6f1` (all green):
+  - GitHub Actions R-CMD-check `27502155981`: passed.
+  - GitHub Actions pkgdown `27502155965`: passed.
+  - GitHub Pages build/deployment `27502205152`: passed.

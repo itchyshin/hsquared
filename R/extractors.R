@@ -774,6 +774,67 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
   stats::AIC(stats::logLik(object), ..., k = k)
 }
 
+#' Block unsupported likelihood-inference helpers
+#'
+#' These methods intentionally fail with explicit scope messages. v0.1 reports
+#' point estimates, likelihood summaries for converged fits, and diagnostics,
+#' but validated standard errors, confidence intervals, profile likelihoods, and
+#' likelihood-ratio tests are deferred until they have validation evidence.
+#'
+#' @param object An `hsquared_fit` object.
+#' @param fitted An `hsquared_fit` object for [stats::profile()].
+#' @param ... Reserved for future arguments.
+#' @param parm,level Included for compatibility with [stats::confint()].
+#'
+#' @return These functions always error.
+#' @name inference_blocks
+NULL
+
+#' @rdname inference_blocks
+#' @export
+confint.hsquared_fit <- function(object, parm, level = 0.95, ...) {
+  stop(
+    "Validated confidence intervals for variance components, h2, and other ",
+    "`hsquared_fit` quantities are planned, not implemented. v0.1 reports ",
+    "point estimates only; use `variance_components()`, `heritability()`, and ",
+    "`fit_diagnostics()`.",
+    call. = FALSE
+  )
+}
+
+#' @rdname inference_blocks
+#' @export
+vcov.hsquared_fit <- function(object, ...) {
+  stop(
+    "A validated estimator variance-covariance matrix / standard-error surface ",
+    "is planned, not implemented for `hsquared_fit` objects. v0.1 reports ",
+    "point estimates only.",
+    call. = FALSE
+  )
+}
+
+#' @rdname inference_blocks
+#' @export
+profile.hsquared_fit <- function(fitted, ...) {
+  stop(
+    "Profile-likelihood intervals for `hsquared_fit` objects are planned, not ",
+    "implemented. v0.1 reports point estimates and convergence diagnostics ",
+    "only.",
+    call. = FALSE
+  )
+}
+
+#' @rdname inference_blocks
+#' @export
+anova.hsquared_fit <- function(object, ...) {
+  stop(
+    "Likelihood-ratio / ANOVA comparison for `hsquared_fit` objects is planned, ",
+    "not implemented. v0.1 exposes `logLik()` and `AIC()` for converged fits, ",
+    "but does not yet validate LRT guidance.",
+    call. = FALSE
+  )
+}
+
 #' @importFrom stats nobs
 #' @export
 nobs.hsquared_fit <- function(object, ...) {

@@ -60,6 +60,7 @@ reference:
       - prediction_error_variance
       - reliability
       - fit_diagnostics
+      - inference_blocks
       - marker_extractors
       - fixef
       - ranef

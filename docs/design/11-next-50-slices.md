@@ -55,6 +55,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - Non-Gaussian family planned errors: `poisson()`, `binomial()`, and other
   non-Gaussian families now error with the requested family name and point users
   back to the live `family = gaussian()` v0.1 path.
+- Inference helper blockers: `confint()`, `vcov()`, `profile()`, and `anova()`
+  now fail explicitly for `hsquared_fit` objects, fencing standard errors,
+  confidence intervals, profile likelihoods, and likelihood-ratio guidance as
+  planned until validated evidence exists.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -152,8 +156,8 @@ coordinate without guessing.
 | 28 | Promote only rows with comparator evidence | always-on Rose rule |
 | 29 | Harden multivariate initialization | partial: R named G0/R0 guard live |
 | 30 | Add more structured covariance boundary tests | pending |
-| 31 | Add SEs or explicitly block them | pending |
-| 32 | Add LRT guidance or explicitly block it | pending |
+| 31 | Add SEs or explicitly block them | done in R: `vcov()` and `confint()` now error with planned/not-implemented scope for `hsquared_fit` |
+| 32 | Add LRT guidance or explicitly block it | done in R: `anova()` and `profile()` now error with planned/not-implemented scope for `hsquared_fit` |
 | 33 | Add sparse multivariate design note | pending |
 | 34 | Add production-sparse FA design note | pending |
 | 35 | Add repeatability recovery/comparator evidence | pending |

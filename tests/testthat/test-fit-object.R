@@ -191,6 +191,46 @@ test_that("extractor defaults do not imply fitted model support", {
   )
 })
 
+test_that("unsupported inference helpers fail with explicit scope", {
+  fit <- hsquared:::hs_new_fit(
+    call = quote(hsquared(y ~ animal(1 | id, pedigree = ped), data = dat)),
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = c(1, 2, 3)),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.4, 0.6)
+      ),
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      loglik = -4.2,
+      df = 3L,
+      nobs = 3L,
+      converged = TRUE
+    )
+  )
+
+  expect_error(
+    stats::confint(fit),
+    "confidence intervals.*planned, not implemented",
+    perl = TRUE
+  )
+  expect_error(
+    stats::vcov(fit),
+    "standard-error surface.*planned, not implemented",
+    perl = TRUE
+  )
+  expect_error(
+    stats::profile(fit),
+    "Profile-likelihood intervals.*planned, not implemented",
+    perl = TRUE
+  )
+  expect_error(
+    stats::anova(fit),
+    "Likelihood-ratio / ANOVA comparison.*planned, not implemented",
+    perl = TRUE
+  )
+})
+
 test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   fit <- hsquared:::hs_new_fit(
     spec = list(method = "REML", family = list(family = "gaussian")),
