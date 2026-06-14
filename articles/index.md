@@ -14,6 +14,8 @@
   models](https://itchyshin.github.io/hsquared/articles/multivariate.md):
 - [Reading G
   matrices](https://itchyshin.github.io/hsquared/articles/g-matrix-interpretation.md):
+- [Inheritance systems
+  roadmap](https://itchyshin.github.io/hsquared/articles/inheritance-systems.md):
 - [Mission
   control](https://itchyshin.github.io/hsquared/articles/mission-control.md):
 - [Model

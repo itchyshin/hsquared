@@ -209,6 +209,12 @@
   current reserved scan vocabulary, live SNP-BLUP marker effects, scale
   caveats, and validation gates before marker-scan, QTL, GWAS, or eQTL
   output can be claimed.
+- Added an “Inheritance systems roadmap” pkgdown article that gives
+  selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting,
+  dominance, epistasis, and custom-kernel examples as planned
+  relationship/precision-kernel work, while keeping current support
+  limited to the v0.1 additive animal model and opt-in standard
+  two-effect slices.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
