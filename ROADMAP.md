@@ -126,11 +126,16 @@ Status: planned.
 
 ## Phase 5: Genomic And Single-Step Models
 
-Status: planned.
+Status: started (opt-in). Genomic GREML (variance-component estimation
+on a user-supplied `Ginv`) is surfaced opt-in and experimental
+(`genomic(1 | id, Ginv = Ginv)`, `target = "genomic"`, mirroring the
+twin `V2-GREML` partial gate). The rest is planned.
 
-- GBLUP, SNP-BLUP, `Ginv`, `Hinv`, single-step HBLUP, APY,
-  marker-derived genomic relationships, genomic feature/QTL-style
-  effects, and simulation validation.
+- Genomic GREML on a supplied `Ginv` — opt-in, experimental (REML).
+- Building `Ginv`/`G` from markers, SNP-BLUP, `Hinv`/single-step HBLUP,
+  APY, low-rank m≫n solves, genomic feature/QTL-style effects,
+  comparator parity (AGHmatrix/sommer/BLUPF90), and simulation
+  validation — planned.
 
 ## Phase 6: Non-Gaussian And GLLVM Animal Models
 

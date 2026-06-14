@@ -80,7 +80,11 @@ hs_control(
   pedigree relationship) — and surfaces the Julia-owned
   `HSquared.fit_two_effect_reml()` REML-only optimizer (three-component
   `initial` with `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and
-  not the default.
+  not the default. `target = "genomic"` is an experimental, opt-in path
+  for the genomic GREML model. It requires
+  `genomic(1 | id, Ginv = Ginv)` with a user-supplied genomic
+  relationship inverse and surfaces `HSquared.fit_ai_reml()` on a
+  `Ginv`-based spec. It is REML only and not the default.
 
 ## Value
 

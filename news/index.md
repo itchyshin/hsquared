@@ -123,6 +123,19 @@
   [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   pedigree. Experimental and REML-only; the correlated direct–maternal
   (2×2 G) model remains planned.
+- **Experimental, opt-in genomic GREML model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now parses `genomic(1 | id, Ginv = Ginv)` — a primary genomic effect
+  with a user-supplied genomic relationship inverse — and fits it
+  through `engine_control = list(target = "genomic")`, surfacing
+  `HSquared.fit_ai_reml()` on a Ginv-based spec (genomic REML). It
+  returns the genomic and residual variance components, genomic
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md),
+  and genomic breeding values (GEBVs). The default `engine = "fit"` path
+  is the pedigree animal model;
+  [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  is opt-in. Experimental and REML-only; building `Ginv` from markers,
+  single-step (`Hinv`), and comparator validation remain planned.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
