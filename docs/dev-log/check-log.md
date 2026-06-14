@@ -2449,5 +2449,11 @@ with private memory.
   0 failures, 0 warnings, 0 skipped; `rcmdcheck(--as-cran)` 0 errors, 0 warnings,
   1 note (benign).
 - Local commit `f408fb2`. Remote checks for `f408fb2`: GitHub Actions
-  R-CMD-check `27483238750` + pkgdown `27483238761` (in progress at push;
-  conclusions appended on completion).
+  R-CMD-check `27483238750` **passed**; pkgdown `27483238761` **failed** — the
+  two new exports (`repeatability`, `permanent_effects`) were missing from the
+  `_pkgdown.yml` reference index (the test suite and `--as-cran` do not catch
+  pkgdown-config gaps). Lesson reaffirmed: run `pkgdown::check_pkgdown()` locally
+  for slices that add exports.
+- Fix (follow-up commit): added both extractors to `_pkgdown.yml` and refreshed
+  the stale section description ("…do not fit models yet"); `pkgdown::check_pkgdown()`
+  now reports no problems locally. Remote checks appended after the fix push.

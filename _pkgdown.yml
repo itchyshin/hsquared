@@ -43,11 +43,13 @@ reference:
       - genomic_markers
       - qg_effect_markers
   - title: Extractor contract
-    desc: Extractor names for future fitted objects; ordinary hsquared calls do not fit models yet.
+    desc: Extractors for fitted `hsquared_fit` objects. The default `hsquared()` call fits the v0.1 Gaussian animal model; `repeatability()` and `permanent_effects()` come from the opt-in, experimental repeatability model.
     contents:
       - variance_components
       - heritability
       - breeding_values
+      - repeatability
+      - permanent_effects
       - prediction_error_variance
       - reliability
       - fit_diagnostics
