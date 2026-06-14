@@ -207,6 +207,17 @@ validated.
 ``` r
 
 library(hsquared)
+```
+
+    ## 
+    ## Attaching package: 'hsquared'
+
+    ## The following object is masked from 'package:stats':
+    ## 
+    ##     loadings
+
+``` r
+
 formula_status()
 ```
 
