@@ -2604,3 +2604,32 @@ with private memory.
 - Remote checks for `30ea6fa` (all green):
   - GitHub Actions R-CMD-check `27485897859`: passed.
   - GitHub Actions pkgdown `27485897877`: passed.
+
+## 2026-06-13 Opt-in SNP-BLUP marker-effect model (supplied-variance, Phase 5)
+
+- SNP-BLUP (commit `27e30c2`): `genomic(1 | id, markers = M)` with
+  `target = "snp_blup"` and supplied `variance_components = c(sigma_g2, sigma_e2)`
+  surfaces `fit_snp_blup()` — per-marker effects (`marker_effects()`) +
+  per-individual GEBVs at supplied variances (not estimation). Verified
+  read-only that `fit_snp_blup`/`centered_markers` and the `V2-SNPBLUP` gate are
+  on twin `origin/main` `100adbe`. A direct bridge probe confirmed the call,
+  result shape, and the GBLUP↔SNP-BLUP equivalence (exact at ridge 0).
+  `validation_status()` now 20 rows. `marker_effects()` (already wired) carved
+  out of the reserved-placeholder set. v0.1 + all prior opt-in models unchanged.
+- Spawned subagents: 2-agent review — `hopper-r-julia-translator`
+  (`a105f3f97181ec007`) and `rose-systems-auditor` (`ad54a93ee199c04b7`). The
+  bridge/engine logic reviewed CLEAN (per-record marker alignment
+  permutation-free; per-individual GEBV internally consistent via shared
+  `snp.p`; routing non-regressive; extractor wiring correct). Both caught the
+  SAME blocker: a botched claims-register table edit that merged the SNP-BLUP
+  row with the orphaned tail of the fitted-object/extractor row (deleting its
+  leading cells); restored to +1 net row with the fitted-object row intact.
+  Should-fix (stale "Reserved" marker_effects framing in model-status) + nit
+  (extractor roxygen) also fixed.
+- Local checks: `air format`; `devtools::document()`; `pkg::`-grep clean (only
+  declared `JuliaCall::`) + `check_pkgdown()` clean; full `testthat` with juliaup
+  + `NOT_CRAN` + sommer + enhancer (live SNP-BLUP fit ran) — 0/0/0;
+  `rcmdcheck(--as-cran)` 0/0/1 (benign).
+- Remote checks for `27e30c2` (all green):
+  - GitHub Actions R-CMD-check `27486476591`: passed.
+  - GitHub Actions pkgdown `27486476589`: passed.
