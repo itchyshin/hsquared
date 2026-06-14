@@ -72,7 +72,14 @@ hs_control(
   REML-only optimizer (three-component `initial` with
   `sigma_a2`/`sigma_pe2`/`sigma_e2`). It is REML only, not the default,
   and the additive and permanent-environment variances are identifiable
-  only with repeated records per individual.
+  only with repeated records per individual. `target = "two_effect"` is
+  an experimental, opt-in path for the common-environment model. It
+  requires `animal(1 | id, pedigree = ped) + common_env(1 | group)` and
+  surfaces the Julia-owned `HSquared.fit_two_effect_reml()` REML-only
+  optimizer (additive genetic effect plus an IID common-environment
+  effect; three-component `initial` with
+  `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and not the
+  default.
 
 ## Value
 

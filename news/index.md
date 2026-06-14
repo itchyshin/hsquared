@@ -92,6 +92,21 @@
   variances are identifiable only with repeated records per individual.
   It is not the default, not ML, and not yet a production or
   comparator-validated claim.
+- **Experimental, opt-in common-environment (two-effect) model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now parses `animal(1 | id, pedigree = ped) + common_env(1 | group)`
+  and fits it through `engine_control = list(target = "two_effect")`,
+  surfacing the Julia-owned `HSquared.fit_two_effect_reml()` REML-only
+  optimizer (additive genetic effect + an IID common-environment effect,
+  e.g. litter or cage). It returns three variance components (animal,
+  common_env, residual),
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md),
+  breeding values, and
+  [`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md).
+  The default `engine = "fit"` path stays single-effect. This is
+  experimental and REML-only; not the default, not production or
+  comparator-validated; correlated direct–maternal (2×2 G) effects
+  remain planned.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

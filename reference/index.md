@@ -47,10 +47,10 @@ Current parser entry points and planned fitting controls.
 Extractors for fitted `hsquared_fit` objects. The default
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 call fits the v0.1 Gaussian animal model;
-[`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md)
+[`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md)/[`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
 and
-[`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
-come from the opt-in, experimental repeatability model.
+[`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md)
+come from the opt-in, experimental two-effect models.
 
 - [`variance_components()`](https://itchyshin.github.io/hsquared/reference/variance_components.md)
   : Extract variance components
@@ -64,6 +64,8 @@ come from the opt-in, experimental repeatability model.
   : Extract repeatability estimates
 - [`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
   : Extract permanent-environment effects
+- [`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md)
+  : Extract common-environment effects
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
