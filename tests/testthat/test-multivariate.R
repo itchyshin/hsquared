@@ -304,3 +304,120 @@ test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
     "estimated_multivariate_reml"
   )
 })
+
+hs_phase4_fixture_path <- function(file) {
+  testthat::test_path("fixtures", "phase4_multitrait_parity", file)
+}
+
+hs_read_phase4_fixture <- function(file) {
+  utils::read.csv(
+    hs_phase4_fixture_path(file),
+    stringsAsFactors = FALSE,
+    na.strings = c("", "NA")
+  )
+}
+
+hs_phase4_matrix <- function(file) {
+  dat <- hs_read_phase4_fixture(file)
+  out <- as.matrix(dat[-1])
+  storage.mode(out) <- "double"
+  rownames(out) <- dat[[1]]
+  out
+}
+
+test_that("R consumes the shared Phase 4 multivariate parity fixture", {
+  ped <- hs_read_phase4_fixture("pedigree.csv")
+  names(ped)[names(ped) == "animal"] <- "id"
+  ped$sire[ped$sire == "0"] <- NA
+  ped$dam[ped$dam == "0"] <- NA
+
+  pheno <- hs_read_phase4_fixture("phenotypes.csv")
+  G0 <- hs_phase4_matrix("expected_genetic_covariance.csv")
+  R0 <- hs_phase4_matrix("expected_residual_covariance.csv")
+  beta <- hs_phase4_matrix("expected_beta.csv")
+  h2 <- hs_read_phase4_fixture("expected_heritability.csv")
+  ebv <- hs_read_phase4_fixture("expected_ebv.csv")
+  metadata <- stats::setNames(
+    hs_read_phase4_fixture("expected_metadata.csv")$value,
+    hs_read_phase4_fixture("expected_metadata.csv")$key
+  )
+
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(trait1, trait2) ~ x + animal(1 | animal, pedigree = ped),
+    data = pheno,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_equal(payload$metadata$response_type, "multivariate")
+  expect_equal(payload$metadata$trait_names, c("trait1", "trait2"))
+  expect_equal(payload$metadata$fixed_colnames, c("(Intercept)", "x"))
+  expect_equal(payload$metadata$observed_ids, pheno$animal)
+  expect_equal(payload$ids, ped$id)
+  expect_equal(dim(payload$Z), c(nrow(pheno), nrow(ped)))
+  expect_equal(payload$Y, unname(as.matrix(pheno[c("trait1", "trait2")])))
+  expect_equal(payload$X, unname(stats::model.matrix(~ x, data = pheno)))
+
+  raw <- list(
+    genetic_covariance = G0,
+    residual_covariance = R0,
+    genetic_correlation = stats::cov2cor(G0),
+    residual_correlation = stats::cov2cor(R0),
+    heritability = h2$h2,
+    beta = beta,
+    breeding_ids = ebv$animal,
+    breeding_traits = c("trait1", "trait2"),
+    breeding_values = as.matrix(ebv[c("trait1", "trait2")]),
+    loglik = as.numeric(metadata[["loglik"]]),
+    converged = identical(tolower(metadata[["converged"]]), "true"),
+    iterations = as.integer(metadata[["iterations"]]),
+    traits = c("trait1", "trait2"),
+    genetic_structure = "unstructured"
+  )
+  result <- hsquared:::hs_normalize_multivariate_result(raw, payload)
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = payload,
+    result = result
+  )
+
+  expect_equal(genetic_covariance(fit), G0, tolerance = 1e-10)
+  expect_equal(residual_covariance(fit), R0, tolerance = 1e-10)
+  expect_equal(genetic_correlation(fit), stats::cov2cor(G0), tolerance = 1e-10)
+  expect_equal(residual_correlation(fit), stats::cov2cor(R0), tolerance = 1e-10)
+  expect_equal(heritability(fit)$estimate, h2$h2, tolerance = 1e-10)
+
+  fixed <- fixef(fit)
+  expected_fixed <- data.frame(
+    term = rep(c("(Intercept)", "x"), times = 2L),
+    trait = rep(c("trait1", "trait2"), each = 2L),
+    estimate = as.vector(beta),
+    stringsAsFactors = FALSE
+  )
+  expect_equal(fixed, expected_fixed, tolerance = 1e-10)
+
+  expected_ebv <- data.frame(
+    id = rep(ebv$animal, times = 2L),
+    trait = rep(c("trait1", "trait2"), each = nrow(ebv)),
+    value = c(ebv$trait1, ebv$trait2),
+    stringsAsFactors = FALSE
+  )
+  expect_equal(breeding_values(fit), expected_ebv, tolerance = 1e-10)
+  expect_equal(stats::nobs(fit), nrow(pheno) * 2L)
+  expect_equal(as.numeric(stats::logLik(fit)), as.numeric(metadata[["loglik"]]))
+  expect_equal(
+    attr(stats::logLik(fit), "df"),
+    ncol(payload$X) * 2L + 2L * (2L + 1L)
+  )
+  expect_equal(
+    fit_diagnostics(fit)$value[
+      fit_diagnostics(fit)$metric == "genetic_structure"
+    ],
+    "unstructured"
+  )
+})

@@ -2827,3 +2827,32 @@ with private memory.
   - GitHub Actions R-CMD-check `27499072097`: passed.
   - GitHub Actions pkgdown `27499072089`: passed.
   - GitHub Pages build/deployment `27499111169`: passed.
+
+## 2026-06-14 Shared Phase 4 multivariate parity fixture in R tests
+
+- Copied the deterministic two-trait Phase 4 parity fixture from the sibling
+  `HSquared.jl` local checkout into
+  `tests/testthat/fixtures/phase4_multitrait_parity/`. The fixture README
+  explicitly states that it is not an external comparator and does not promote
+  any validation row to covered status.
+- Added an ordinary CI-safe R test that reads the fixture, normalizes the
+  Julia-style pedigree unknown-parent `0` values to R missing parents, builds
+  the `cbind(trait1, trait2) ~ x + animal(1 | animal, pedigree = ped)` model
+  spec, checks `Y`/`X`/`Z`/ID payload alignment, and normalizes the serialized
+  Julia REML target into an `hsquared_fit` for G/R covariance and correlation,
+  per-trait h2, fixed-effect, EBV, nobs, logLik, df, and diagnostics checks.
+- Formatting: `command -v air || true` returned no `air` binary on PATH.
+- Focused tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'multivariate')"` — passed, 0 failures / 0
+  warnings / 2 live-Julia skips / 48 passes.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  580 passes.
+- `git diff --check` — passed.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.

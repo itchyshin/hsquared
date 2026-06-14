@@ -16,11 +16,15 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - R multivariate extractor documentation examples: done locally in this slice;
   roxygen examples now show `fit_diagnostics()`, G/R covariance and correlation
   extraction, and per-trait h2 after the opt-in multivariate fit.
+- R shared deterministic multivariate fixture consumption: done locally in this
+  slice; R now carries the same Phase 4 fixture files and checks payload
+  ordering plus normalized G/R/h2/fixed-effect/EBV/logLik extractor shape
+  against the serialized Julia REML target. Commit/push and remote CI remain.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
-- R lane next safe bite: consume a shared deterministic multivariate fixture
-  after the Julia twin writes it, or open/update issue links for the V4 partial
-  gates and R docs.
+- R lane next safe bite: update issue links for the V4 partial gates and R docs,
+  then keep eating the R-safe documentation/comparator runway while Julia owns
+  structured covariance and recovery hardening.
 
 ## Programme Board
 
@@ -101,7 +105,7 @@ coordinate without guessing.
 | 15 | Add shared deterministic multi-trait fixture | pending |
 | 16 | Serialize fixture for both repos | pending |
 | 17 | Add Julia fixture reader/tests | pending |
-| 18 | Ask R lane to consume same fixture | pending |
+| 18 | Ask R lane to consume same fixture | done: R consumed the local twin fixture copy in ordinary CI-safe tests |
 | 19 | Define multivariate R grammar | partial: simple `cbind()` live; structured grammar planned |
 | 20 | Define long/wide trait ordering | pending |
 | 21 | Define covariance vocabulary: us, diag, fa, low-rank | planned |
