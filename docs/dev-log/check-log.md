@@ -2525,5 +2525,6 @@ with private memory.
   (lesson applied) + **`check_pkgdown()` clean**; full `testthat` with juliaup +
   `NOT_CRAN` + sommer + enhancer (live maternal fit ran) — 0/0/0;
   `rcmdcheck(--as-cran)` 0/0/1 (benign).
-- Local commit `803793d`. Remote checks for `803793d`: GitHub Actions R-CMD-check
-  `27484321173` + pkgdown `27484321186` (in progress; appended on completion).
+- Local commit `803793d`. Remote checks for `803793d` (all green):
+  - GitHub Actions R-CMD-check `27484321173`: passed.
+  - GitHub Actions pkgdown `27484321186`: passed.
