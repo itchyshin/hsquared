@@ -2633,3 +2633,28 @@ with private memory.
 - Remote checks for `27e30c2` (all green):
   - GitHub Actions R-CMD-check `27486476591`: passed.
   - GitHub Actions pkgdown `27486476589`: passed.
+
+## 2026-06-13 Multivariate readiness plan + bare-random-effect guard / limits doc
+
+- Multivariate R-bridge readiness plan (commit `d510e8e`): docs-only. Recorded
+  the Phase 3 surfacing design (`cbind()` grammar, `Y`-matrix payload, opt-in
+  `target = "multivariate"` fence, genetic-correlation/G/per-trait-h2 extractors)
+  against the twin's actual `fit_multivariate_reml` contract — verified read-only
+  that it is on the twin branch `phase4-multivariate-reml` and NOT on Julia main
+  (`100adbe`), so nothing is surfaceable yet. `docs/design/09-multivariate-plan.md`
+  + ROADMAP Phase 3 pointer. No capability claim, no code, no twin edit.
+- Bare-random-effect guard + limits doc (commit `df7bc42`): the parser silently
+  absorbed a bare `(1 | x)` into the fixed design (model.frame evaluated `1 | x`
+  as an all-TRUE logical column). Now `hs_is_bar_expr`/
+  `hs_stop_unsupported_random_effect` reject any leftover top-level `|` term with
+  a pointer to the named effects (TDD: watched the `(1 | x)`/`(x | id)` tests
+  fail first). Named effects unaffected. Added a "Current limits" section to the
+  model-status vignette answering the maintainer's limits question.
+- Local checks (both): `air format`; `devtools::document()`; `pkg::`-grep clean
+  (no new deps); `check_pkgdown()` clean; full `testthat` with juliaup +
+  `NOT_CRAN` + sommer + enhancer — 0/0/0; `rcmdcheck(--as-cran)` 0/0/1 (benign).
+- Remote checks for `df7bc42` (all green):
+  - GitHub Actions R-CMD-check `27486712995`: passed.
+  - GitHub Actions pkgdown `27486713006`: passed.
+- Remote checks for `d510e8e` (docs-only) were superseded by `df7bc42`'s run on
+  the same tree state; both pushed and green.
