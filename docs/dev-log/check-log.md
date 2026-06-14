@@ -2461,3 +2461,31 @@ with private memory.
   - GitHub Actions R-CMD-check `27483306182`: passed.
   - GitHub Actions pkgdown `27483306179`: passed.
   - GitHub Pages build/deploy `27483339408`: passed.
+
+## 2026-06-13 Opt-in common-environment (two-effect) model (Phase 2)
+
+- Goal: second Phase 2 increment — surface the common-environment model (animal
+  additive + IID environmental effect) behind an opt-in fence via the twin's
+  `fit_two_effect_reml`. Twin gate `V3-TWOEFFECT-REML` is `partial`, so the R
+  surface is honestly experimental.
+- Active lenses: Ada, Hopper, Boole, Emmy, Curie, Rose, Darwin. Spawned
+  subagents: review `wziz2f7mm` (hopper-bridge + rose-honesty, 0 blocking; one
+  should-fix + one nit applied).
+- Generalised the parser into a shared "second random effect" mechanism;
+  `common_env(1 | group)` parsed as an IID environmental effect; new opt-in
+  `target = "two_effect"` builds a second `Z2` + identity `Ainv2` and calls
+  `fit_two_effect_reml`; surfaces 3 components + `common_env_effects()`.
+  `validation_status()` now 18 rows. The v0.1 + repeatability paths are unchanged.
+- Files: `R/{model-spec,bridge-payload,julia-bridge,hsquared,extractors,
+  formula-status,validation-status,hs_control}.R`, `NAMESPACE`, `man/*`,
+  `NEWS.md`, `ROADMAP.md`, `_pkgdown.yml`,
+  `docs/design/{capability-status,06-public-claims-register}.md`,
+  `tests/testthat/{test-common-env,test-repeatability,test-formula-animal,
+  test-phase0-api}.R`.
+- Local checks: `air format .`; `devtools::document()`; **`pkgdown::check_pkgdown()`
+  clean** (run locally this time per the previous lesson); full `testthat` with
+  juliaup + `NOT_CRAN` + sommer + enhancer (live two-effect fit ran) — 0 failures,
+  0 warnings, 0 skipped; `rcmdcheck(--as-cran)` 0/0/1 (benign).
+- Local commit `e7026a9`. Remote checks for `e7026a9`: GitHub Actions R-CMD-check
+  `27483756304` + pkgdown `27483756310` (in progress at push; conclusions
+  appended on completion).
