@@ -211,7 +211,7 @@ claims register.
       <span>public formula contract parsed today: <code>animal(1 | id, pedigree = ped)</code></span>
     </article>
     <article class="hs-card hs-metric">
-      <strong>16</strong>
+      <strong>20</strong>
       <span>validation-status rows separating covered, partial, and planned evidence</span>
     </article>
     <article class="hs-card hs-metric">

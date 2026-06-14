@@ -7,7 +7,7 @@
 \alias{markers}
 \alias{marker_scan}
 \alias{qtl_scan}
-\title{Planned genomic and QTL formula markers}
+\title{Genomic and QTL formula markers}
 \usage{
 genomic(formula, G = NULL, Ginv = NULL, ...)
 
@@ -43,8 +43,14 @@ scans.}
 appear inside model formulas.
 }
 \description{
-These functions reserve readable formula vocabulary for later genomic,
-single-step, marker-effect, GWAS, and QTL/eQTL models. They are inert syntax
-markers today. The v0.1 parser rejects them with a planned-not-implemented
-message instead of silently treating them as ordinary fixed effects.
+These functions provide readable formula vocabulary for genomic, single-step,
+marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
+return \code{NULL}); they take meaning only inside an \code{\link[=hsquared]{hsquared()}} formula.
+\code{genomic()} and \code{single_step()} now fit through an opt-in, experimental
+engine path (\code{engine = "julia"}, REML-only or supplied-variance, not the
+default, mirroring a \code{partial} validation gate): \code{genomic(1 | id, Ginv = Ginv)}
+or \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
+\code{target = "snp_blup"}) and \code{single_step(1 | id, Hinv = Hinv)}. The remaining
+markers (\code{markers()}, \code{marker_scan()}, \code{qtl_scan()}) are still inert syntax
+reservations that the parser rejects with a planned-not-implemented message.
 }

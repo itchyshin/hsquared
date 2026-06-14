@@ -36,7 +36,7 @@ genotype, marker, expression, annotation, and environment inputs into a checked
 container for future integrated workflows.
 
 The interface rule is: easy, easy, easy. Users are gold. The common animal
-model should be obvious before the package exposes genomic, multivariate,
+model should be obvious before users reach for genomic, multivariate,
 factor-analytic, non-Gaussian, or unusual-inheritance machinery.
 
 ## Current parser contract
@@ -49,12 +49,17 @@ The parser currently accepts:
   with a pedigree component;
 - numeric Gaussian responses.
 
-Unsupported syntax is still important because it defines the roadmap. Terms
-such as `cov = fa(K = 2)`, `genomic()`, `single_step()`, QTL effects,
-`permanent()`, `common_env()`, `maternal_genetic()`, `paternal_genetic()`,
-`dominance()`, `epistasis()`, `relmat()`, `precision()`, selfing, polyploidy,
-haplodiploidy, and GLLVM-style latent genetic axes are planned lanes, not
-current fitting features.
+Several terms beyond the default contract now fit through an opt-in,
+experimental engine path (`engine = "julia"`, not the default, each mirroring a
+`partial` validation gate): `permanent()`, `common_env()`, `maternal_genetic()`,
+`genomic()` (GREML or SNP-BLUP), and `single_step()`. See the "Fitting models"
+article for the opt-in calls.
+
+The remaining grammar is still important because it defines the roadmap. Terms
+such as `cov = fa(K = 2)`, QTL effects, `paternal_genetic()`, `dominance()`,
+`epistasis()`, `relmat()`, `precision()`, selfing, polyploidy, haplodiploidy,
+and GLLVM-style latent genetic axes are planned lanes, not current fitting
+features.
 
 ## Twin-package flow
 

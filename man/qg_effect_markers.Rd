@@ -14,7 +14,7 @@
 \alias{epistasis}
 \alias{relmat}
 \alias{precision}
-\title{Planned quantitative-genetic formula markers}
+\title{Quantitative-genetic formula markers}
 \usage{
 permanent(formula, ...)
 
@@ -61,9 +61,14 @@ effects.}
 appear inside model formulas.
 }
 \description{
-These functions reserve readable formula vocabulary for later standard
-quantitative-genetic, parental, inheritance, and custom-kernel models. They
-are inert syntax markers today. The current parser rejects them with a
-planned-not-implemented message instead of treating them as ordinary fixed
-effects.
+These functions provide readable formula vocabulary for standard
+quantitative-genetic, parental, inheritance, and custom-kernel models. Called
+directly they are inert (they return \code{NULL}); they take meaning only inside an
+\code{\link[=hsquared]{hsquared()}} formula. \code{permanent()}, \code{common_env()}, and \code{maternal_genetic()}
+now fit through an opt-in, experimental engine path (\code{engine = "julia"},
+REML-only, not the default, mirroring a \code{partial} validation gate) as the
+second random effect alongside \code{animal()}. The remaining markers
+(paternal/maternal-environment, dominance, epistasis, cytoplasmic,
+imprinting, custom relationship/precision) are still inert syntax
+reservations that the parser rejects with a planned-not-implemented message.
 }

@@ -100,9 +100,11 @@ y ~ sex + batch +
 y ~ sex + batch + single_step(1 | id, Hinv = Hinv)
 ```
 
-Current status: `genomic()`, `single_step()`, `markers()`, `marker_scan()`, and
-`qtl_scan()` are planned markers. They do not fit genomic, QTL, or eQTL models
-yet.
+Current status: `markers()`, `marker_scan()`, and `qtl_scan()` are planned
+markers and do not fit yet. `genomic()` and `single_step()` now fit through an
+opt-in, experimental engine path (`engine = "julia"`, `target = "genomic"` /
+`"single_step"` / `"snp_blup"`; REML-only or supplied-variance, not the
+default, mirroring a `partial` validation gate).
 
 ## Multivariate and factor-analytic grammar
 

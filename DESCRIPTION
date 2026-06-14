@@ -8,8 +8,9 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     the univariate Gaussian animal model (y ~ fixed + animal(1 | id, pedigree =
     ped)) by restricted maximum likelihood and returns heritability, variance
     components, breeding values, and standard extractors. Fitting requires a
-    local Julia and HSquared.jl. Multivariate, genomic, factor-analytic, and
-    non-Gaussian models are planned.
+    local Julia and HSquared.jl. Genomic and single-step effects also fit
+    through an opt-in, experimental engine path; multivariate, factor-analytic,
+    and non-Gaussian models are planned.
 License: MIT + file LICENSE
 URL: https://itchyshin.github.io/hsquared/,
     https://github.com/itchyshin/hsquared,

@@ -45,7 +45,7 @@ hs_formula_status_terms <- function() {
     "animal(1 | id) with data = hs_data(..., pedigree = ped)",
     "permanent(1 | id)",
     "common_env(1 | group)",
-    "maternal_genetic(1 | dam, pedigree = ped)",
+    "maternal_genetic(1 | dam)",
     "maternal_env(1 | dam)",
     "paternal_genetic(1 | sire, pedigree = ped)",
     "paternal_env(1 | sire)",

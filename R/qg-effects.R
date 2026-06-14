@@ -1,10 +1,15 @@
-#' Planned quantitative-genetic formula markers
+#' Quantitative-genetic formula markers
 #'
-#' These functions reserve readable formula vocabulary for later standard
-#' quantitative-genetic, parental, inheritance, and custom-kernel models. They
-#' are inert syntax markers today. The current parser rejects them with a
-#' planned-not-implemented message instead of treating them as ordinary fixed
-#' effects.
+#' These functions provide readable formula vocabulary for standard
+#' quantitative-genetic, parental, inheritance, and custom-kernel models. Called
+#' directly they are inert (they return `NULL`); they take meaning only inside an
+#' [hsquared()] formula. `permanent()`, `common_env()`, and `maternal_genetic()`
+#' now fit through an opt-in, experimental engine path (`engine = "julia"`,
+#' REML-only, not the default, mirroring a `partial` validation gate) as the
+#' second random effect alongside `animal()`. The remaining markers
+#' (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
+#' imprinting, custom relationship/precision) are still inert syntax
+#' reservations that the parser rejects with a planned-not-implemented message.
 #'
 #' @param formula A random-effect expression such as `1 | id`.
 #' @param pedigree A pedigree data frame for future parental and relationship
