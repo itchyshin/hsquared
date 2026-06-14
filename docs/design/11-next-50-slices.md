@@ -13,11 +13,14 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - R multivariate fitting article: done locally in this slice; it documents the
   live `cbind()` path, missing response cells, extractors, and the structured
   covariance boundary. Commit/push and remote CI are the remaining bookkeeping.
+- R multivariate extractor documentation examples: done locally in this slice;
+  roxygen examples now show `fit_diagnostics()`, G/R covariance and correlation
+  extraction, and per-trait h2 after the opt-in multivariate fit.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
-- R lane next safe bite: add extractor-documentation examples for
-  `genetic_covariance()` / `genetic_correlation()`, or consume a shared
-  deterministic multivariate fixture after the Julia twin writes it.
+- R lane next safe bite: consume a shared deterministic multivariate fixture
+  after the Julia twin writes it, or open/update issue links for the V4 partial
+  gates and R docs.
 
 ## Programme Board
 

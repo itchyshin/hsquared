@@ -2796,3 +2796,30 @@ with private memory.
   - GitHub Pages build/deployment `27498896347`: passed. GitHub emitted a
     non-failing hosted-actions warning about Node.js 20 deprecation in Pages
     actions.
+
+## 2026-06-14 Multivariate extractor documentation examples
+
+- Added non-running roxygen examples to the multivariate extractor topic
+  (`genetic_covariance()`, `residual_covariance()`, `genetic_correlation()`,
+  `residual_correlation()`). The examples show the opt-in `cbind()` multivariate
+  fit, `fit_diagnostics()`, G/R covariance and correlation extraction, and
+  per-trait `heritability()`.
+- Formatting: `air` was not available on PATH (`command -v air` returned
+  empty).
+- Documentation: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::document()"` — passed; regenerated
+  `man/multivariate_extractors.Rd`.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Focused tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'multivariate|fit-object')"` — passed, 0 failures /
+  0 warnings / 2 live-Julia skips / 96 passes.
+- Full tests: `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  561 passes.
+- `git diff --check` — passed.
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes; examples checked OK.
