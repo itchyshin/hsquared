@@ -119,19 +119,24 @@ contract, including fixed-effect design columns, sparse animal-effect
 design dimensions, normalized pedigree ordering, and Julia target
 metadata. It does not fit a model.</li>
 <li>
-<code><a href="../reference/genomic_markers.html">genomic()</a></code>, <code><a href="../reference/genomic_markers.html">single_step()</a></code>,
-<code><a href="../reference/genomic_markers.html">markers()</a></code>, <code><a href="../reference/genomic_markers.html">marker_scan()</a></code>, and
-<code><a href="../reference/genomic_markers.html">qtl_scan()</a></code> reserve planned formula vocabulary and currently
-error as not implemented.</li>
+<code><a href="../reference/genomic_markers.html">genomic()</a></code> (supplied <code>Ginv</code> or a
+<code>markers</code> matrix), <code><a href="../reference/genomic_markers.html">single_step()</a></code> (supplied
+<code>Hinv</code>), <code><a href="../reference/qg_effect_markers.html">permanent()</a></code>, <code><a href="../reference/qg_effect_markers.html">common_env()</a></code>,
+and <code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code> parse and fit only opt-in and
+experimentally (see “Opt-in and experimental” below); the default
+<code>engine = "fit"</code> path rejects them.</li>
 <li>
-<code><a href="../reference/qg_effect_markers.html">permanent()</a></code>, <code><a href="../reference/qg_effect_markers.html">common_env()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>, <code><a href="../reference/qg_effect_markers.html">maternal_env()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">paternal_genetic()</a></code>, <code><a href="../reference/qg_effect_markers.html">paternal_env()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">cytoplasmic()</a></code>, <code><a href="../reference/qg_effect_markers.html">imprinting()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">dominance()</a></code>, <code><a href="../reference/qg_effect_markers.html">epistasis()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">relmat()</a></code>, and <code><a href="../reference/qg_effect_markers.html">precision()</a></code> reserve standard
-quantitative-genetic and inheritance-kernel vocabulary and currently
-error as not implemented.</li>
+<code><a href="../reference/genomic_markers.html">markers()</a></code>, <code><a href="../reference/genomic_markers.html">marker_scan()</a></code>, and
+<code><a href="../reference/genomic_markers.html">qtl_scan()</a></code> reserve planned genomic/QTL formula vocabulary
+and currently error as not implemented.</li>
+<li>
+<code><a href="../reference/qg_effect_markers.html">maternal_env()</a></code>, <code><a href="../reference/qg_effect_markers.html">paternal_genetic()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">paternal_env()</a></code>, <code><a href="../reference/qg_effect_markers.html">cytoplasmic()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">imprinting()</a></code>, <code><a href="../reference/qg_effect_markers.html">dominance()</a></code>,
+<code><a href="../reference/qg_effect_markers.html">epistasis()</a></code>, <code><a href="../reference/qg_effect_markers.html">relmat()</a></code>, and
+<code><a href="../reference/qg_effect_markers.html">precision()</a></code> reserve standard quantitative-genetic and
+inheritance-kernel vocabulary and currently error as not
+implemented.</li>
 <li>
 <code><a href="../reference/animal.html">animal()</a></code> as an inert formula marker.</li>
 <li>A v0.1 parser for <code>animal(1 | id, pedigree = ped)</code>, and
@@ -247,18 +252,53 @@ pedigree/data ID checks.</li>
 </ul>
 </div>
 <div class="section level2">
+<h2 id="opt-in-and-experimental-not-the-default">Opt-in and experimental (not the default)<a class="anchor" aria-label="anchor" href="#opt-in-and-experimental-not-the-default"></a>
+</h2>
+<p>These models are reachable only through
+<code>control = hs_control(engine = "julia", engine_control = list(target = ...))</code>,
+are REML only, are Julia-owned (R only surfaces them), and are
+<strong>not</strong> the default, not production, and not
+comparator/known-truth-validated. Each mirrors a <code>partial</code>
+gate in the <code>HSquared.jl</code> twin.</p>
+<ul>
+<li>Repeatability / permanent environment —
+<code>animal(1 | id) + permanent(1 | id)</code>,
+<code>target = "repeatability"</code> (needs repeated records per
+individual).</li>
+<li>Common environment —
+<code>animal(1 | id) + common_env(1 | group)</code>,
+<code>target = "two_effect"</code> (additive + IID common
+environment).</li>
+<li>Maternal genetic —
+<code>animal(1 | id) + maternal_genetic(1 | dam)</code>,
+<code>target = "two_effect"</code> (additive + pedigree maternal
+effect). The correlated direct–maternal (2×2 G) model is still
+planned.</li>
+<li>Genomic GREML — <code>genomic(1 | id, Ginv = Ginv)</code> or
+<code>genomic(1 | id, markers = M)</code> (the engine builds the genomic
+relationship from the marker matrix),
+<code>target = "genomic"</code>.</li>
+<li>Single-step — <code>single_step(1 | id, Hinv = Hinv)</code> on a
+supplied single-step inverse, <code>target = "single_step"</code>.
+Building <code>Hinv</code> from a pedigree + G is planned.</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="not-implemented-yet">Not implemented yet<a class="anchor" aria-label="anchor" href="#not-implemented-yet"></a>
 </h2>
 <ul>
-<li>General model fitting beyond the v0.1 univariate Gaussian animal
-model (multivariate, genomic, non-Gaussian, and the reserved inheritance
-kernels).</li>
+<li>General default model fitting beyond the v0.1 univariate Gaussian
+animal model (multivariate, non-Gaussian, and the reserved inheritance
+kernels). The standard two-effect, repeatability, genomic, and
+single-step models fit only opt-in and experimentally (see above).</li>
 <li>ML estimation on the fit path (<code>REML = FALSE</code> is
 rejected; only REML is implemented).</li>
 <li>R-side <code>Ainv</code> construction (the engine builds
 <code>Ainv</code> in Julia).</li>
-<li>Estimated variance components, heritability, EBVs, or BLUPs for any
-model other than the v0.1 univariate Gaussian animal model.</li>
+<li>Estimated variance components, heritability, EBVs, or BLUPs as a
+default for any model other than the v0.1 univariate Gaussian animal
+model (the opt-in experimental models above return them but are not
+validated).</li>
 <li>Log-likelihood or information criteria for supplied-variance
 Henderson MME bridge results.</li>
 <li>Production sparse PEV or reliability.</li>
@@ -275,12 +315,14 @@ annotation, or environment components in <code><a href="../reference/hs_data.htm
 <li>Allele coding, marker imputation, PLINK/VCF parsing, or marker
 scanning from marker maps.</li>
 <li>Marker, QTL, GWAS, or eQTL result generation.</li>
-<li>Genomic and single-step models.</li>
+<li>Genomic and single-step models as a default or production path (an
+opt-in experimental path exists; see above).</li>
 <li>Multivariate and factor-analytic G matrices.</li>
-<li>Permanent environment, common environment, maternal/paternal,
-dominance, epistasis, custom relationship/precision, QTL-style, selfing,
-clonal, haplodiploid, polyploid, cytoplasmic, imprinting, and
-GLLVM-style models.</li>
+<li>Paternal, dominance, epistasis, custom relationship/precision,
+QTL-style, selfing, clonal, haplodiploid, polyploid, cytoplasmic,
+imprinting, and GLLVM-style models. (Permanent environment, common
+environment, and maternal genetic effects fit opt-in and experimentally;
+see above.)</li>
 <li>GPU execution.</li>
 </ul>
 </div>

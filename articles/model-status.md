@@ -48,18 +48,23 @@ container, extractors, and advanced opt-in engine controls.
   previews the parsed v0.1 animal-model contract, including fixed-effect
   design columns, sparse animal-effect design dimensions, normalized
   pedigree ordering, and Julia target metadata. It does not fit a model.
-- [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
-  [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
-  [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+- [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  (supplied `Ginv` or a `markers` matrix),
+  [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  (supplied `Hinv`),
+  [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  and
+  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  parse and fit only opt-in and experimentally (see “Opt-in and
+  experimental” below); the default `engine = "fit"` path rejects them.
+- [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   and
   [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-  reserve planned formula vocabulary and currently error as not
-  implemented.
-- [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-  [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-  [`maternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  reserve planned genomic/QTL formula vocabulary and currently error as
+  not implemented.
+- [`maternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`paternal_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`cytoplasmic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
@@ -178,16 +183,42 @@ container, extractors, and advanced opt-in engine controls.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 
+## Opt-in and experimental (not the default)
+
+These models are reachable only through
+`control = hs_control(engine = "julia", engine_control = list(target = ...))`,
+are REML only, are Julia-owned (R only surfaces them), and are **not**
+the default, not production, and not comparator/known-truth-validated.
+Each mirrors a `partial` gate in the `HSquared.jl` twin.
+
+- Repeatability / permanent environment —
+  `animal(1 | id) + permanent(1 | id)`, `target = "repeatability"`
+  (needs repeated records per individual).
+- Common environment — `animal(1 | id) + common_env(1 | group)`,
+  `target = "two_effect"` (additive + IID common environment).
+- Maternal genetic — `animal(1 | id) + maternal_genetic(1 | dam)`,
+  `target = "two_effect"` (additive + pedigree maternal effect). The
+  correlated direct–maternal (2×2 G) model is still planned.
+- Genomic GREML — `genomic(1 | id, Ginv = Ginv)` or
+  `genomic(1 | id, markers = M)` (the engine builds the genomic
+  relationship from the marker matrix), `target = "genomic"`.
+- Single-step — `single_step(1 | id, Hinv = Hinv)` on a supplied
+  single-step inverse, `target = "single_step"`. Building `Hinv` from a
+  pedigree + G is planned.
+
 ## Not implemented yet
 
-- General model fitting beyond the v0.1 univariate Gaussian animal model
-  (multivariate, genomic, non-Gaussian, and the reserved inheritance
-  kernels).
+- General default model fitting beyond the v0.1 univariate Gaussian
+  animal model (multivariate, non-Gaussian, and the reserved inheritance
+  kernels). The standard two-effect, repeatability, genomic, and
+  single-step models fit only opt-in and experimentally (see above).
 - ML estimation on the fit path (`REML = FALSE` is rejected; only REML
   is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
-- Estimated variance components, heritability, EBVs, or BLUPs for any
-  model other than the v0.1 univariate Gaussian animal model.
+- Estimated variance components, heritability, EBVs, or BLUPs as a
+  default for any model other than the v0.1 univariate Gaussian animal
+  model (the opt-in experimental models above return them but are not
+  validated).
 - Log-likelihood or information criteria for supplied-variance Henderson
   MME bridge results.
 - Production sparse PEV or reliability.
@@ -205,12 +236,14 @@ container, extractors, and advanced opt-in engine controls.
 - Allele coding, marker imputation, PLINK/VCF parsing, or marker
   scanning from marker maps.
 - Marker, QTL, GWAS, or eQTL result generation.
-- Genomic and single-step models.
+- Genomic and single-step models as a default or production path (an
+  opt-in experimental path exists; see above).
 - Multivariate and factor-analytic G matrices.
-- Permanent environment, common environment, maternal/paternal,
-  dominance, epistasis, custom relationship/precision, QTL-style,
-  selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting, and
-  GLLVM-style models.
+- Paternal, dominance, epistasis, custom relationship/precision,
+  QTL-style, selfing, clonal, haplodiploid, polyploid, cytoplasmic,
+  imprinting, and GLLVM-style models. (Permanent environment, common
+  environment, and maternal genetic effects fit opt-in and
+  experimentally; see above.)
 - GPU execution.
 
 ## Comparator targets

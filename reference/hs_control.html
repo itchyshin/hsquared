@@ -136,10 +136,11 @@ relationship) — and surfaces the Julia-owned
 the default.
 <code>target = "genomic"</code> and <code>target = "single_step"</code> are experimental, opt-in
 paths that fit a single effect whose relationship is a user-supplied inverse:
-<code>genomic(1 | id, Ginv = Ginv)</code> (a genomic relationship inverse) and
-<code>single_step(1 | id, Hinv = Hinv)</code> (a single-step relationship inverse). Both
-surface <code>HSquared.fit_ai_reml()</code> on the supplied inverse. They are REML only
-and not the default.</p></dd>
+<code>genomic(1 | id, Ginv = Ginv)</code> (a genomic relationship inverse) or
+<code>genomic(1 | id, markers = M)</code> (a marker matrix the engine turns into a
+genomic relationship), and <code>single_step(1 | id, Hinv = Hinv)</code> (a single-step
+relationship inverse). All surface <code>HSquared.fit_ai_reml()</code>. They are REML
+only and not the default.</p></dd>
 
 </dl></div>
     <div class="section level2">

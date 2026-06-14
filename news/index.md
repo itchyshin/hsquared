@@ -131,11 +131,14 @@
   `HSquared.fit_ai_reml()` on a Ginv-based spec (genomic REML). It
   returns the genomic and residual variance components, genomic
   [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md),
-  and genomic breeding values (GEBVs). The default `engine = "fit"` path
-  is the pedigree animal model;
+  and genomic breeding values (GEBVs). You can either supply a
+  precomputed `Ginv`, or pass a raw marker matrix
+  (`genomic(1 | id, markers = M)`) and let the engine build the genomic
+  relationship and its inverse. The default `engine = "fit"` path is the
+  pedigree animal model;
   [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-  is opt-in. Experimental and REML-only; building `Ginv` from markers
-  and comparator validation remain planned.
+  is opt-in. Experimental and REML-only; comparator validation and
+  weighted/standardized-marker variants remain planned.
 - **Experimental, opt-in single-step model.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now parses `single_step(1 | id, Hinv = Hinv)` — a primary effect with
