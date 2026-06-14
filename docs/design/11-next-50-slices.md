@@ -10,12 +10,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   package checks and remote R-CMD-check/pkgdown/Pages green.
 - R structured multivariate error ergonomics: done on `hsquared` main
   (`6a4fdf4`), with remote R-CMD-check/pkgdown/Pages green.
-- R multivariate fitting article: done locally in this slice; it documents the
-  live `cbind()` path, missing response cells, extractors, and the structured
-  covariance boundary. Commit/push and remote CI are the remaining bookkeeping.
-- R multivariate extractor documentation examples: done locally in this slice;
-  roxygen examples now show `fit_diagnostics()`, G/R covariance and correlation
-  extraction, and per-trait h2 after the opt-in multivariate fit.
+- R multivariate fitting article: done on `hsquared` main (`43d83aa`), with
+  remote R-CMD-check/pkgdown/Pages green.
+- R multivariate extractor documentation examples: done on `hsquared` main
+  (`21161a5`), with remote R-CMD-check/pkgdown/Pages green.
 - R shared deterministic multivariate fixture consumption: done on `hsquared`
   main (`61a7ca3`); R now carries the same Phase 4 fixture files and checks
   payload ordering plus normalized G/R/h2/fixed-effect/EBV/logLik extractor
@@ -24,6 +22,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - V4 issue-ledger cleanup: done in this slice. R reported fixture consumption
   back to bridge issue #6, validation issue #7, and extractor issue #5; issue
   #7 now carries `status:partial` instead of stale `status:planned`.
+- Multivariate comparator planning: recorded in the comparator-plan slice. The first
+  feasible optional comparator is `sommer` on the shared fixture with diagonal
+  residuals; ASReml-R and BLUPF90/AIREMLF90 remain manual gates until installed
+  or licensed evidence exists. No validation row is promoted.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -115,9 +117,9 @@ coordinate without guessing.
 | 22 | Define multivariate result payload shape | partial: unstructured G/R live |
 | 23 | Draft Julia result payload shape without bridge change | pending |
 | 24 | Get R issue contract ack | pending |
-| 25 | Plan R sommer comparator | pending |
-| 26 | Plan ASReml comparator if available | pending |
-| 27 | Plan BLUPF90/AIREMLF90 comparator if practical | pending |
+| 25 | Plan R sommer comparator | done: partial diagonal-residual comparator path recorded in `docs/design/12-multivariate-comparator-plan.md` |
+| 26 | Plan ASReml comparator if available | done: manual licensed gate recorded in `docs/design/12-multivariate-comparator-plan.md` |
+| 27 | Plan BLUPF90/AIREMLF90 comparator if practical | done: manual executable gate recorded in `docs/design/12-multivariate-comparator-plan.md` |
 | 28 | Promote only rows with comparator evidence | always-on Rose rule |
 | 29 | Harden multivariate initialization | partial: R named G0/R0 guard live |
 | 30 | Add more structured covariance boundary tests | pending |

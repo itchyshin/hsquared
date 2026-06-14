@@ -2790,6 +2790,40 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+
+## 2026-06-14 Multivariate comparator scout and plan
+
+- Added `docs/design/12-multivariate-comparator-plan.md` to define the
+  multivariate comparator ladder and same-estimand rules.
+- Added `docs/dev-log/scout/2026-06-14-multivariate-comparator-scout.md` with
+  the local package/tool availability check and the `sommer` pilot result.
+- Local availability:
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript -e "pkgs <- c('asreml','sommer','MCMCglmm','nadiv','pedigreemm','AGHmatrix'); for (p in pkgs) cat(p, ': ', if (requireNamespace(p, quietly=TRUE)) as.character(utils::packageVersion(p)) else 'not installed', '\n', sep='')"`
+    reported `sommer` 4.4.5, `MCMCglmm` 2.36, `nadiv` 2.18.0,
+    `pedigreemm` 0.3.5; `asreml` and `AGHmatrix` were not installed.
+  - `command -v asreml || true; command -v airemlf90 || true; command -v blupf90 || true; command -v renumf90 || true; command -v dmuai || true; command -v wombat || true`
+    returned no comparator executables on `PATH`.
+- Sommer pilot:
+  - Reshaped the shared Phase 4 fixture into long format and sorted by `trait`.
+  - Built `A` from the fixture pedigree with `nadiv::makeA()`.
+  - `sommer::mmes(value ~ trait + trait:x - 1, random = ~ vsm(usm(trait), ism(animal), Gu = A), rcov = ~ vsm(dsm(trait), ism(units)))`
+    fit successfully.
+  - The printed `sommer` genetic covariance and residual variances matched the
+    serialized Julia target:
+    `G0 = [[0.6036285, 0.1119503], [0.1119503, 0.2703534]]`,
+    `diag(R0) = [0.2631124, 0.0906582]`.
+  - `rcov = ~ vsm(usm(trait), ism(units))` failed locally with
+    `Mat::operator(): index out of bounds`; the wide `cbind()` sommer pilot also
+    failed under the installed 4.4.5 API. The first comparator slice is
+    therefore partial/diagonal-residual only.
+- `git diff --check` — passed.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 - Remote checks for `61a7ca3` (all green):
   - GitHub Actions R-CMD-check `27499481337`: passed.
   - GitHub Actions pkgdown `27499481332`: passed.
