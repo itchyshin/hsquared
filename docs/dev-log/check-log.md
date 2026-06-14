@@ -4013,3 +4013,50 @@ Remote follow-up for committed slice `774284f`:
   - `/opt/homebrew/bin/gh run watch 27509571640 --exit-status` - Pages build
     and deployment passed. GitHub emitted the known non-failing Node.js 20
     deprecation annotation for Pages actions.
+
+## 2026-06-14 light sky-blue pkgdown navbar
+
+- Rehydrated R repo:
+  - `git status --short --branch` - clean `main` tracking `origin/main`.
+  - `git remote -v` - `origin` is `https://github.com/itchyshin/hsquared.git`.
+  - `git log --oneline --decorate -5` - latest commit before this slice was
+    `eec0e16` (`Record SNP-BLUP marker variance CI evidence`).
+  - `gh run list --limit 5` - unavailable in this shell (`gh: command not
+    found`), so remote CI was not live-refreshed before local edits.
+- Live-site theme check before editing:
+  - `curl -L --max-time 20 -s https://itchyshin.github.io/hsquared/extra.css`
+    confirmed the deployed site already served a sky-blue navbar rule pinned
+    to `#0ea5e9`.
+- Theme update:
+  - `_pkgdown.yml` primary/headings/body/border colours moved to a cleaner
+    navy-on-sky palette.
+  - `pkgdown/extra.css` changed the navbar from a saturated solid blue to a
+    lighter sky gradient (`#e0f2fe` to `#bae6fd`) with dark navy nav text,
+    a visible sky border, and a readable light search box.
+- Whitespace check:
+  - `git diff --check` - passed.
+- Local site build:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::build_site()"` - passed and rebuilt `pkgdown-site/`.
+- Visual smoke:
+  - A system Chrome Playwright run against
+    `file:///Users/z3437171/Dropbox/Github%20Local/hsquared/pkgdown-site/index.html`
+    confirmed desktop and mobile navbar CSS:
+    `linear-gradient(90deg, rgb(224, 242, 254) 0%, rgb(186, 230, 253) 100%)`
+    with brand text `rgb(8, 47, 73)`.
+  - Desktop and mobile screenshots were inspected, then removed from the
+    working tree.
+- Pkgdown:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Package check:
+  - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+    /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+    "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+    errors / 0 warnings / 0 notes. Optional suggested packages
+    (`enhancer`, `nadiv`, `pedigreemm`) were not available locally.
+- Rose claim check:
+  - Visual/docs configuration only. No public capability wording, API, fitting,
+    validation, or roadmap status was changed.

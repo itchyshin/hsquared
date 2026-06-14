@@ -4,13 +4,13 @@ template:
   bootstrap: 5
   bslib:
     bg: "#ffffff"
-    fg: "#172a36"
-    primary: "#0ea5e9"
+    fg: "#0f2533"
+    primary: "#0284c7"
     secondary: "#475569"
-    headings-color: "#102a3b"
+    headings-color: "#082f49"
     link-color: "#0369a1"
     link-hover-color: "#075985"
-    border-color: "#dbeafe"
+    border-color: "#bae6fd"
 
 navbar:
   structure:
