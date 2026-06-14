@@ -56,6 +56,12 @@ extensions is recorded in
 
 Add non-Gaussian and GLLVM-style animal models.
 
+The wide-response matrix syntax boundary is recorded in
+`docs/design/16-wide-response-syntax-plan.md`. Current `cbind(...)`
+multivariate animal models remain the only live multivariate R grammar;
+`traits(...)` and GLLVM/omics response-matrix syntax are planned until parser,
+bridge, engine, validation, and extractor evidence exist.
+
 ## Phase 7
 
 Add non-standard inheritance: selfing, clonal, haplodiploid, polyploid,

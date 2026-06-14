@@ -3533,3 +3533,32 @@ with private memory.
   - GitHub Actions R-CMD-check `27505026686`: passed.
   - GitHub Actions pkgdown `27505026688`: passed.
   - GitHub Pages build/deployment `27505072608`: passed.
+
+## 2026-06-14 Wide-response matrix syntax plan
+
+- Added `docs/design/16-wide-response-syntax-plan.md`, recording future
+  `traits(...)` and long stacked-cell syntax for GLLVM, omics, and community
+  response matrices while keeping the current `cbind(...)` path as the only live
+  multivariate animal-model grammar.
+- Added `docs/dev-log/scout/2026-06-14-wide-response-syntax-scout.md` after
+  checking current hsquared grammar docs, `gllvmTMB`, `GLLVM.jl`, `DRM.jl` /
+  `drmTMB`, and external `gllvm` sources.
+- Updated `docs/design/05-roadmap.md`, `docs/design/07-genomics-qtl-gpu-plan.md`,
+  and `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Rose claim grep:
+  `rg -n "traits\\(\\.\\.\\.\\) fits|GLLVM support|omics model|ordination available|per-trait families supported|wide response matrices supported|supports GLLVM|fits GLLVM|implements GLLVM" docs/design/16-wide-response-syntax-plan.md docs/dev-log/scout/2026-06-14-wide-response-syntax-scout.md docs/design/05-roadmap.md docs/design/07-genomics-qtl-gpu-plan.md docs/design/11-next-50-slices.md`
+  — only the scout note's explicit high-risk phrase list matched.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `c0a3563` (all green):
+  - GitHub Actions R-CMD-check `27505365372`: passed.
+  - GitHub Actions pkgdown `27505365382`: passed.
+  - GitHub Pages build/deployment `27505414409`: passed.

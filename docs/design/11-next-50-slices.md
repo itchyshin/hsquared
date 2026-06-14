@@ -96,6 +96,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   dominance, epistasis, and custom kernels should enter as relationship or
   precision kernels, while keeping every such feature planned until kernels and
   validation exist.
+- Wide-response matrix syntax plan: `docs/design/
+  16-wide-response-syntax-plan.md` records future `traits(...)` and long
+  stacked-cell grammar for GLLVM/omics/community models while keeping current
+  `cbind(...)` as the only live multivariate animal-model grammar.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -144,7 +148,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
 | 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | done: core keeps simple vocabulary/result contract; heavy scans, file-backed data, plots, fine-mapping, and accelerator scan kernels are extension-bound |
 | 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |
-| 40 | R | Design wide-response matrix syntax without crowding the core animal model. | Pat/Boole signoff. |
+| 40 | R/docs | Design wide-response matrix syntax without crowding the core animal model. | done: `traits(...)` and long stacked-cell grammar recorded as planned Phase 6 syntax; current `cbind(...)` remains the only live multivariate grammar |
 | 41 | Julia | Add Poisson / negative-binomial Laplace prototype. | Non-Gaussian validation fixture. |
 | 42 | R | Add family-specific planned errors that name the closest implemented Gaussian path. | User-friendly error tests. |
 | 43 | Julia | Add maternal/paternal correlated 2x2 G effect. | Henderson/Noether signoff. |

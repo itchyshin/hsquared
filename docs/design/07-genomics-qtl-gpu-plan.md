@@ -438,6 +438,12 @@ family dispatch, Laplace machinery, and structured Schur/Woodbury thinking.
 `HSquared.jl` should reuse the computational spirit while making the
 quantitative-genetic contract central.
 
+The future R syntax boundary for high-dimensional response matrices is recorded
+in `docs/design/16-wide-response-syntax-plan.md`: keep the current `cbind(...)`
+path for live small Gaussian multivariate animal models, and reserve
+`traits(...)` / long stacked-cell grammar for future GLLVM, omics, and community
+models after parser, bridge, engine, validation, and extractor evidence exist.
+
 ## 11. CPU/GPU Backend Architecture
 
 R controls:
