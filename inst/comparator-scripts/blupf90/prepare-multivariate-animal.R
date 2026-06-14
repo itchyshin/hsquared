@@ -78,7 +78,23 @@ utils::write.table(
   quote = FALSE
 )
 
-template_dir <- file.path(repo, "inst", "comparator-scripts", "blupf90")
+template_candidates <- c(
+  file.path(repo, "inst", "comparator-scripts", "blupf90"),
+  file.path(repo, "hsquared", "comparator-scripts", "blupf90"),
+  file.path(repo, "comparator-scripts", "blupf90"),
+  system.file("comparator-scripts", "blupf90", package = "hsquared")
+)
+template_candidates <- template_candidates[
+  nzchar(template_candidates) & dir.exists(template_candidates)
+]
+if (!length(template_candidates)) {
+  stop(
+    "Could not find the BLUPF90 comparator templates. Run from the hsquared ",
+    "repo root or set HSQUARED_REPO=/path/to/hsquared.",
+    call. = FALSE
+  )
+}
+template_dir <- template_candidates[[1]]
 copy_template <- function(template, destination) {
   lines <- readLines(file.path(template_dir, template), warn = FALSE)
   lines <- gsub("__DATAFILE__", basename(data_file), lines, fixed = TRUE)

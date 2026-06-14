@@ -40,6 +40,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - Rose multivariate claim sweep: public claims register and model-status article
   now acknowledge the optional `sommer` diagonal-residual comparator while
   preserving the "not full external-comparator validated" boundary.
+- Manual comparator-script smoke coverage: ASReml dry-run and BLUPF90 dry-run /
+  temp-write paths are now ordinary CI-safe tests, including the built-package
+  template lookup used by `R CMD check`. This hardens the manual gates without
+  creating ASReml/BLUPF90 run evidence.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway

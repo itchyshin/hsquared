@@ -2790,6 +2790,59 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+
+## 2026-06-14 Manual comparator-script smoke coverage
+
+- Added ordinary CI-safe smoke tests for the manual comparator scripts:
+  - ASReml-R script dry-run prepares the shared Phase 4 fixture and reports
+    160 long-format records, 2 traits, and 20 animals without requiring ASReml.
+  - BLUPF90-family script dry-run prepares 80 data rows and 20 pedigree rows.
+  - BLUPF90-family script write mode emits `.dat`, `.ped`, `.renf90`, `.par`,
+    and README files into a temporary directory; the test checks row/column
+    counts and verifies template placeholders are replaced.
+- Hardened `inst/comparator-scripts/blupf90/prepare-multivariate-animal.R` so
+  template lookup works from the source tree, the installed package layout, and
+  the `.Rcheck` package-check layout.
+- Initial focused run:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'comparator-scripts')"` — failed because
+  `system2(env = ...)` used a named vector and the repo path contains a space;
+  fixed to pass an explicit quoted `HSQUARED_REPO=...` string.
+- Second focused run:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'comparator-scripts')"` — failed because the script
+  path containing `Github Local` needed quoting; fixed by quoting script
+  arguments.
+- First package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — failed in
+  `test-comparator-scripts.R` because the built-package `.Rcheck` layout stores
+  comparator templates under `hsquared/comparator-scripts/`, not
+  `inst/comparator-scripts/`; fixed by adding multi-layout template discovery.
+- Final focused tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test(filter = 'comparator-scripts')"` — passed, 0 failures /
+  0 warnings / 0 skips / 27 passes.
+- Formatting: `command -v air` returned no `air` binary on PATH.
+- `git diff --check` — passed.
+- Full tests:
+  `/Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::test()"` — passed, 0 failures / 0 warnings / 27 live-Julia skips /
+  612 passes.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
+- Remote checks for `a75b099` (all green):
+  - GitHub Actions R-CMD-check `27501031338`: passed.
+  - GitHub Actions pkgdown `27501031343`: passed.
+  - GitHub Pages build/deployment `27501072754`: passed.
 - Remote checks for `5f84bbd` (all green):
   - GitHub Actions R-CMD-check `27500857518`: passed.
   - GitHub Actions pkgdown `27500857520`: passed.
