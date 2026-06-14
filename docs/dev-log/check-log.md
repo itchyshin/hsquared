@@ -2424,3 +2424,30 @@ with private memory.
   - GitHub Actions R-CMD-check `27482232390`: passed.
   - GitHub Actions pkgdown `27482232393`: passed.
   - GitHub Pages build/deploy `27482264882`: passed.
+
+## 2026-06-13 Opt-in repeatability (permanent-environment) model (Phase 2)
+
+- Goal: first Phase 2 increment (maintainer-authorised "build & ship opt-in"):
+  surface the repeatability model behind an opt-in, experimental fence mirroring
+  `sparse_reml`/`ai_reml`. Twin gate `V3-REPEAT-REML` is `partial`, so the R
+  surface is honestly experimental — never covered/default/production.
+- Active lenses: Ada, Hopper, Boole, Emmy, Curie, Rose, Falconer. Spawned
+  subagents: scout `w0hj6t9xq` (cancelled by an interrupt; redone inline) +
+  3-agent review `wckuklv5h` (0 blocking, all clean; one should-fix — untested
+  `REML = FALSE` rejection — now covered).
+- Parser accepts `animal(1 | id) + permanent(1 | id)` (PE effect shares the
+  animal `Z`, A2 = I); new opt-in `target = "repeatability"` calls the twin's
+  `fit_repeatability_reml`; surfaces 3 variance components + `repeatability()` +
+  `permanent_effects()`. Default `engine = "fit"` rejects `permanent()`; REML
+  only. `validation_status()` now 17 rows (repeatability `partial`).
+- Files: `R/{model-spec,julia-bridge,hsquared,extractors,formula-status,
+  validation-status,hs_control}.R`, `NAMESPACE`, `man/*`, `NEWS.md`, `ROADMAP.md`,
+  `docs/design/{capability-status,06-public-claims-register}.md`,
+  `tests/testthat/{test-repeatability,test-formula-animal,test-phase0-api}.R`.
+- Local checks: `air format .`; `devtools::document()`; full `testthat` with
+  juliaup + `NOT_CRAN` + sommer + enhancer (live repeatability fit ran) —
+  0 failures, 0 warnings, 0 skipped; `rcmdcheck(--as-cran)` 0 errors, 0 warnings,
+  1 note (benign).
+- Local commit `f408fb2`. Remote checks for `f408fb2`: GitHub Actions
+  R-CMD-check `27483238750` + pkgdown `27483238761` (in progress at push;
+  conclusions appended on completion).
