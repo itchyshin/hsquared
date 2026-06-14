@@ -37,6 +37,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - Dedicated multivariate validation issue ledger: opened as
   `hsquared#10` and cross-linked from validation canon issue #7. Status remains
   `partial`.
+- Rose multivariate claim sweep: public claims register and model-status article
+  now acknowledge the optional `sommer` diagonal-residual comparator while
+  preserving the "not full external-comparator validated" boundary.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway

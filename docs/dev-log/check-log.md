@@ -2790,6 +2790,28 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `5f84bbd` (all green):
+  - GitHub Actions R-CMD-check `27500857518`: passed.
+  - GitHub Actions pkgdown `27500857520`: passed.
+  - GitHub Pages build/deployment `27500902705`: passed.
+
+## 2026-06-14 Multivariate partial-comparator claim sweep
+
+- Updated `docs/design/06-public-claims-register.md` so the experimental
+  multivariate Gaussian animal-model row records shared R/Julia fixture parity
+  and the optional `sommer` diagonal-residual comparator for G0, diag(R0), and
+  diagonal-target h2.
+- Updated `vignettes/articles/model-status.Rmd` to say full same-estimand
+  external-comparator evidence remains planned, while the partial `sommer`
+  diagonal-residual check exists.
+- `git diff --check` — passed.
+- Pkgdown: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check: `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
+  / 0 warnings / 0 notes.
 - Remote checks for `d7fe473` (all green):
   - GitHub Actions R-CMD-check `27500692937`: passed.
   - GitHub Actions pkgdown `27500692932`: passed.
