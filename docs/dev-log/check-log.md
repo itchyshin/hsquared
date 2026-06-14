@@ -3562,3 +3562,32 @@ with private memory.
   - GitHub Actions R-CMD-check `27505365372`: passed.
   - GitHub Actions pkgdown `27505365382`: passed.
   - GitHub Pages build/deployment `27505414409`: passed.
+
+## 2026-06-14 Trait ordering contract
+
+- Added `docs/design/17-trait-ordering-contract.md`, recording the shared
+  trait-order invariant across current `cbind(...)`, future `traits(...)`,
+  future long data, Julia payloads, extractors, comparator scripts, and plots.
+- Added `docs/dev-log/scout/2026-06-14-trait-ordering-contract-scout.md` after
+  checking current R parser/payload code, multivariate tests, the multivariate
+  plan, wide-response syntax plan, `gllvmTMB`, and `GLLVM.jl` orientation notes.
+- Updated `docs/design/09-multivariate-plan.md`,
+  `docs/design/16-wide-response-syntax-plan.md`, and
+  `docs/design/11-next-50-slices.md`.
+- `git diff --check` — passed.
+- Rose claim grep:
+  `rg -n "long data supported|traits\\(\\.\\.\\.\\) supported|trait_order implemented|wide-to-long equivalence tested|comparator validated trait order|supports trait_order|implemented trait_order" docs/design/17-trait-ordering-contract.md docs/dev-log/scout/2026-06-14-trait-ordering-contract-scout.md docs/design/09-multivariate-plan.md docs/design/16-wide-response-syntax-plan.md docs/design/11-next-50-slices.md`
+  — only the scout note's explicit high-risk phrase list matched.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` — passed, "No problems found."
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `24ceb9a` (all green):
+  - GitHub Actions R-CMD-check `27505661085`: passed.
+  - GitHub Actions pkgdown `27505661091`: passed.
+  - GitHub Pages build/deployment `27505705113`: passed.

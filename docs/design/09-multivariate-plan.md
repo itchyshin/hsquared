@@ -101,6 +101,12 @@ hsquared(
   terms are parsed exactly as in the univariate path.
 - Trait labels come from the `cbind` column names and flow to `traits`.
 
+Trait order is a binding part of the payload and extractor contract. The
+standing ordering rule is recorded in
+`docs/design/17-trait-ordering-contract.md`: preserve the user-declared
+left-to-right `cbind(...)` order in `Y`, `G0`, `R0`, per-trait h2, EBVs, and
+comparator files.
+
 ### Bridge payload
 
 The only new payload piece is `Y` (an `n × t` numeric matrix, `NA`-preserving)

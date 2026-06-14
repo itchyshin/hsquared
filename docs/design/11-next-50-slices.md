@@ -100,6 +100,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
   16-wide-response-syntax-plan.md` records future `traits(...)` and long
   stacked-cell grammar for GLLVM/omics/community models while keeping current
   `cbind(...)` as the only live multivariate animal-model grammar.
+- Trait-ordering contract: `docs/design/17-trait-ordering-contract.md` records
+  how current `cbind(...)`, future `traits(...)`, future long data, Julia
+  payloads, extractors, and comparator scripts should preserve user-declared
+  trait order.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
@@ -186,7 +190,7 @@ coordinate without guessing.
 | 17 | Add Julia fixture reader/tests | pending |
 | 18 | Ask R lane to consume same fixture | done: R consumed the local twin fixture copy in ordinary CI-safe tests |
 | 19 | Define multivariate R grammar | partial: simple `cbind()` live; structured grammar planned |
-| 20 | Define long/wide trait ordering | pending |
+| 20 | Define long/wide trait ordering | done: `docs/design/17-trait-ordering-contract.md`; current live invariant is `cbind()` left-to-right, future `traits(...)` and long-data rules remain planned |
 | 21 | Define covariance vocabulary: us, diag, fa, low-rank | planned |
 | 22 | Define multivariate result payload shape | partial: unstructured G/R live |
 | 23 | Draft Julia result payload shape without bridge change | pending |

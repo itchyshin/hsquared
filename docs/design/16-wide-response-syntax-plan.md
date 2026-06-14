@@ -211,6 +211,12 @@ missing-cell count
 Per-trait family support should be a later gate. The first Phase 6 grammar can
 require one family and one link for the whole matrix.
 
+The trait-order rule is recorded in
+`docs/design/17-trait-ordering-contract.md`: preserve user-declared order by
+default (`cbind(...)` left-to-right today, future `traits(...)` left-to-right,
+future long data via factor levels / first appearance / explicit
+`trait_order`), and never sort traits silently.
+
 ## Missing Response Cells
 
 Wide `traits(...)` input:
