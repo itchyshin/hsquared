@@ -40,6 +40,11 @@ Current lane: R/docs.
 - `git diff --check`: passed.
 - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64 /Library/Frameworks/R.framework/Resources/bin/Rscript -e "devtools::check(document = FALSE, args = '--no-manual')"`:
   0 errors / 0 warnings / 0 notes.
+- Remote checks for commit `43d83aa`:
+  - GitHub Actions R-CMD-check `27498842644`: passed.
+  - GitHub Actions pkgdown `27498842650`: passed.
+  - GitHub Pages build/deployment `27498896347`: passed, with a non-failing
+    hosted-actions Node.js 20 deprecation warning.
 
 ## Public claim audit
 
@@ -106,7 +111,9 @@ evidence.
 ## What did not go smoothly
 
 No blocker. Plain `pkgdown::check_pkgdown()` still needs the RStudio Pandoc path
-in this shell.
+in this shell. GitHub Pages now warns that some Pages actions use Node.js 20;
+this did not fail the deployment, but Grace should keep it on the CI hygiene
+list before GitHub's Node 24 default switch.
 
 ## Known limitations
 

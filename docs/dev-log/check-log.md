@@ -2790,3 +2790,9 @@ with private memory.
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"` — passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `43d83aa` (all green):
+  - GitHub Actions R-CMD-check `27498842644`: passed.
+  - GitHub Actions pkgdown `27498842650`: passed.
+  - GitHub Pages build/deployment `27498896347`: passed. GitHub emitted a
+    non-failing hosted-actions warning about Node.js 20 deprecation in Pages
+    actions.
