@@ -149,6 +149,21 @@
   Experimental and REML-only; building `Hinv` from a pedigree and
   genomic relationship (single-step HBLUP construction) and comparator
   validation remain planned.
+- **Experimental, opt-in SNP-BLUP / RR-BLUP marker-effect model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now fits `genomic(1 | id, markers = M)` through
+  `engine_control = list(target = "snp_blup", variance_components = c(sigma_g2 = ..., sigma_e2 = ...))`,
+  surfacing the Julia-owned `HSquared.fit_snp_blup()`. At the supplied
+  genomic/residual variances it estimates per-marker effects —
+  extractable with
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  — together with per-individual genomic breeding values and fixed
+  effects (the engine centres the markers, VanRaden method 1). This is a
+  supplied-variance solve (it does not estimate the variance
+  components), opt-in, and not the default; it mirrors the twin
+  `V2-SNPBLUP` gate (the GBLUP↔︎SNP-BLUP genomic-breeding-value
+  equivalence). REML estimation of the marker variance,
+  weighted/Bayesian marker priors, and comparator parity remain planned.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
@@ -156,7 +171,7 @@
   `hsquared_fit` objects containing those result fields
   ([\#5](https://github.com/itchyshin/hsquared/issues/5),
   [\#6](https://github.com/itchyshin/hsquared/issues/6)).
-- Added reserved marker/QTL/eQTL extractor names:
+- Added marker/QTL/eQTL extractor names:
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
@@ -164,8 +179,10 @@
   [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   and
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md).
-  These are output-vocabulary placeholders only; marker, QTL, GWAS, and
-  eQTL fitting remain planned
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  now returns the per-marker effects of an opt-in SNP-BLUP fit; the rest
+  remain output-vocabulary placeholders, with marker-scan, QTL, GWAS,
+  and eQTL fitting still planned
   ([\#5](https://github.com/itchyshin/hsquared/issues/5),
   [\#9](https://github.com/itchyshin/hsquared/issues/9)).
 - Added an explicit supplied-variance Julia bridge target for Henderson

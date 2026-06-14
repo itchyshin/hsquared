@@ -176,9 +176,12 @@ direct–maternal model; the correlated 2×2 G version is planned.</p>
 <p>A single genomic effect whose relationship is a user-supplied genomic
 relationship inverse <code>Ginv</code> (with id dimnames) instead of a
 pedigree. This estimates the genomic and residual variances, genomic
-heritability, and genomic breeding values (GEBVs). Building
-<code>Ginv</code> from markers, single-step (<code>Hinv</code>), and
-external-comparator validation are planned.</p>
+heritability, and genomic breeding values (GEBVs). You can either supply
+a precomputed <code>Ginv</code>, or pass a raw marker matrix
+<code>M</code> (rows = individuals) as
+<code>genomic(1 | id, markers = M)</code> and let the engine build the
+genomic relationship and its inverse. Single-step (<code>Hinv</code>)
+and external-comparator validation are planned.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span>,</span>
@@ -194,12 +197,39 @@ external-comparator validation are planned.</p>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>         <span class="co"># GEBVs</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="snp-blup-rr-blup-marker-effects">SNP-BLUP / RR-BLUP marker effects<a class="anchor" aria-label="anchor" href="#snp-blup-rr-blup-marker-effects"></a>
+</h2>
+<p>A supplied-variance marker-effect model on a raw marker matrix
+<code>genomic(1 | id, markers = M)</code>. You supply the genomic and
+residual variances (for example from a prior GREML fit); the engine
+centres the markers and returns per-marker effects
+(<code><a href="../reference/marker_extractors.html">marker_effects()</a></code>) together with per-individual genomic
+breeding values. It does not estimate the variance components. REML
+estimation of the marker variance, weighted/Bayesian priors, and
+comparator parity are planned.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_snp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, markers <span class="op">=</span> <span class="va">M</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">dat</span>,</span>
+<span>  control <span class="op">=</span> <span class="fu"><a href="../reference/hs_control.html">hs_control</a></span><span class="op">(</span></span>
+<span>    engine <span class="op">=</span> <span class="st">"julia"</span>,</span>
+<span>    engine_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      target <span class="op">=</span> <span class="st">"snp_blup"</span>,</span>
+<span>      variance_components <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>sigma_g2 <span class="op">=</span> <span class="fl">1</span>, sigma_e2 <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span>         <span class="co"># one effect per marker</span></span>
+<span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span>        <span class="co"># per-individual GEBVs</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="what-is-fitted-and-what-is-planned">What is fitted, and what is planned<a class="anchor" aria-label="anchor" href="#what-is-fitted-and-what-is-planned"></a>
 </h2>
 <p><code><a href="../reference/formula_status.html">formula_status()</a></code> and <code><a href="../reference/validation_status.html">validation_status()</a></code>
 report, from R, exactly which terms fit and how each capability is
 validated.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://itchyshin.github.io/hsquared/">hsquared</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/formula_status.html">formula_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;hs_formula_status&gt;</span></span>
@@ -249,7 +279,7 @@ validated.</p>
 <span><span class="co">##       reserved                      not available</span></span>
 <span><span class="co">##        planned                      not available</span></span>
 <span><span class="co">##        planned                      not available</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/validation_status.html">validation_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;hs_validation_status&gt;</span></span>
 <span><span class="co">##   validation: status table only; checks are run by tests and CI</span></span>
@@ -264,6 +294,7 @@ validated.</p>
 <span><span class="co">##                                experimental repeatability estimator (opt-in)</span></span>
 <span><span class="co">##             experimental two-effect estimator (opt-in: common-env, maternal)</span></span>
 <span><span class="co">##  experimental supplied-relationship estimator (opt-in: genomic, single-step)</span></span>
+<span><span class="co">##        experimental SNP-BLUP marker-effect solve (opt-in, supplied-variance)</span></span>
 <span><span class="co">##                 univariate Gaussian animal-model fit (default path, AI-REML)</span></span>
 <span><span class="co">##                      external published-REML recovery (gryphon, R reference)</span></span>
 <span><span class="co">##                    known-truth DGP variance-component recovery (R reference)</span></span>
@@ -283,6 +314,7 @@ validated.</p>
 <span><span class="co">##   Phase 1 partial</span></span>
 <span><span class="co">##   Phase 2 partial</span></span>
 <span><span class="co">##   Phase 2 partial</span></span>
+<span><span class="co">##   Phase 5 partial</span></span>
 <span><span class="co">##   Phase 5 partial</span></span>
 <span><span class="co">##   Phase 1 covered</span></span>
 <span><span class="co">##   Phase 1 covered</span></span>

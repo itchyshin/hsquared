@@ -138,7 +138,7 @@ container, extractors, and advanced opt-in engine controls.
   [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
   for convergence, optimizer, target, iteration, and
   dense-validation-path metadata.
-- Reserved marker/QTL/eQTL extractor names:
+- Marker/QTL/eQTL extractor names:
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
@@ -146,8 +146,10 @@ container, extractors, and advanced opt-in engine controls.
   [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   and
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md).
-  These only return values for future `hsquared_fit` objects that
-  contain matching result fields.
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  returns the per-marker effects of an opt-in SNP-BLUP fit (see above);
+  the rest are still reserved and only return values for future
+  `hsquared_fit` objects that contain matching result fields.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.
@@ -205,6 +207,13 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
 - Single-step — `single_step(1 | id, Hinv = Hinv)` on a supplied
   single-step inverse, `target = "single_step"`. Building `Hinv` from a
   pedigree + G is planned.
+- SNP-BLUP / RR-BLUP marker effects — `genomic(1 | id, markers = M)`,
+  `target = "snp_blup"`, with supplied
+  `variance_components = c(sigma_g2 = ..., sigma_e2 = ...)`. Returns
+  per-marker effects via
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  plus per-individual genomic breeding values at the supplied variances
+  (it does not estimate them). Mirrors the twin `V2-SNPBLUP` gate.
 
 ## Not implemented yet
 
@@ -235,7 +244,10 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
   `expression` and `annotation` metadata.
 - Allele coding, marker imputation, PLINK/VCF parsing, or marker
   scanning from marker maps.
-- Marker, QTL, GWAS, or eQTL result generation.
+- QTL, GWAS, or eQTL result generation, and marker-scan /
+  marker-imputation results (the opt-in SNP-BLUP path above does return
+  marker effects via
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)).
 - Genomic and single-step models as a default or production path (an
   opt-in experimental path exists; see above).
 - Multivariate and factor-analytic G matrices.

@@ -137,10 +137,16 @@ rest is planned.
   G), and single-step on a supplied `Hinv` — opt-in, experimental
   (REML), mirroring the twin `V2-GREML` / `V2-GRM` / `V2-GINV` /
   `V2-SSHINV` gates.
+- SNP-BLUP / RR-BLUP marker effects on `genomic(1 | id, markers = M)` at
+  supplied variances (`target = "snp_blup"`,
+  [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md))
+  — opt-in, experimental, supplied-variance, mirroring the twin
+  `V2-SNPBLUP` gate.
 - Weighted/standardized-marker G variants, building `Hinv` from a
-  pedigree + G, SNP-BLUP, single-step HBLUP construction, APY, low-rank
-  m≫n solves, genomic feature/QTL-style effects, comparator parity
-  (AGHmatrix/sommer/BLUPF90), and simulation validation — planned.
+  pedigree + G, REML estimation of the SNP-BLUP marker variance,
+  single-step HBLUP construction, APY, low-rank m≫n solves, genomic
+  feature/QTL-style effects, comparator parity
+  (AGHmatrix/sommer/BLUPF90/JWAS), and simulation validation — planned.
 
 ## Phase 6: Non-Gaussian And GLLVM Animal Models
 

@@ -114,8 +114,11 @@ maternal_effects(fit_mat)
 A single genomic effect whose relationship is a user-supplied genomic
 relationship inverse `Ginv` (with id dimnames) instead of a pedigree.
 This estimates the genomic and residual variances, genomic heritability,
-and genomic breeding values (GEBVs). Building `Ginv` from markers,
-single-step (`Hinv`), and external-comparator validation are planned.
+and genomic breeding values (GEBVs). You can either supply a precomputed
+`Ginv`, or pass a raw marker matrix `M` (rows = individuals) as
+`genomic(1 | id, markers = M)` and let the engine build the genomic
+relationship and its inverse. Single-step (`Hinv`) and
+external-comparator validation are planned.
 
 ``` r
 
@@ -131,6 +134,35 @@ fit_g <- hsquared(
 variance_components(fit_g)      # genomic, residual
 heritability(fit_g)             # genomic h2
 breeding_values(fit_g)         # GEBVs
+```
+
+## SNP-BLUP / RR-BLUP marker effects
+
+A supplied-variance marker-effect model on a raw marker matrix
+`genomic(1 | id, markers = M)`. You supply the genomic and residual
+variances (for example from a prior GREML fit); the engine centres the
+markers and returns per-marker effects
+([`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md))
+together with per-individual genomic breeding values. It does not
+estimate the variance components. REML estimation of the marker
+variance, weighted/Bayesian priors, and comparator parity are planned.
+
+``` r
+
+fit_snp <- hsquared(
+  y ~ genomic(1 | id, markers = M),
+  data = dat,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(
+      target = "snp_blup",
+      variance_components = c(sigma_g2 = 1, sigma_e2 = 2)
+    )
+  )
+)
+
+marker_effects(fit_snp)         # one effect per marker
+breeding_values(fit_snp)        # per-individual GEBVs
 ```
 
 ## What is fitted, and what is planned
@@ -213,6 +245,7 @@ validation_status()
     ##                                experimental repeatability estimator (opt-in)
     ##             experimental two-effect estimator (opt-in: common-env, maternal)
     ##  experimental supplied-relationship estimator (opt-in: genomic, single-step)
+    ##        experimental SNP-BLUP marker-effect solve (opt-in, supplied-variance)
     ##                 univariate Gaussian animal-model fit (default path, AI-REML)
     ##                      external published-REML recovery (gryphon, R reference)
     ##                    known-truth DGP variance-component recovery (R reference)
@@ -232,6 +265,7 @@ validation_status()
     ##   Phase 1 partial
     ##   Phase 2 partial
     ##   Phase 2 partial
+    ##   Phase 5 partial
     ##   Phase 5 partial
     ##   Phase 1 covered
     ##   Phase 1 covered

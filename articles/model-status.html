@@ -202,12 +202,14 @@ AIC, prediction, fitted values, residuals, summaries,
 <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code>, and
 <code><a href="../reference/fit_diagnostics.html">fit_diagnostics()</a></code> for convergence, optimizer, target,
 iteration, and dense-validation-path metadata.</li>
-<li>Reserved marker/QTL/eQTL extractor names:
-<code><a href="../reference/marker_extractors.html">marker_effects()</a></code>, <code><a href="../reference/marker_extractors.html">marker_variance_explained()</a></code>,
-<code><a href="../reference/marker_extractors.html">qtl_table()</a></code>, <code><a href="../reference/marker_extractors.html">gwas_table()</a></code>,
-<code><a href="../reference/marker_extractors.html">eqtl_table()</a></code>, and <code><a href="../reference/marker_extractors.html">lod_scores()</a></code>. These only
-return values for future <code>hsquared_fit</code> objects that contain
-matching result fields.</li>
+<li>Marker/QTL/eQTL extractor names: <code><a href="../reference/marker_extractors.html">marker_effects()</a></code>,
+<code><a href="../reference/marker_extractors.html">marker_variance_explained()</a></code>, <code><a href="../reference/marker_extractors.html">qtl_table()</a></code>,
+<code><a href="../reference/marker_extractors.html">gwas_table()</a></code>, <code><a href="../reference/marker_extractors.html">eqtl_table()</a></code>, and
+<code><a href="../reference/marker_extractors.html">lod_scores()</a></code>. <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> returns the
+per-marker effects of an opt-in SNP-BLUP fit (see above); the rest are
+still reserved and only return values for future
+<code>hsquared_fit</code> objects that contain matching result
+fields.</li>
 <li>
 <code><a href="../reference/hs_data.html">hs_data()</a></code> as a lightweight input container with ID maps
 for phenotype, pedigree, genotype, expression, marker, annotation, and
@@ -281,6 +283,14 @@ relationship from the marker matrix),
 <li>Single-step — <code>single_step(1 | id, Hinv = Hinv)</code> on a
 supplied single-step inverse, <code>target = "single_step"</code>.
 Building <code>Hinv</code> from a pedigree + G is planned.</li>
+<li>SNP-BLUP / RR-BLUP marker effects —
+<code>genomic(1 | id, markers = M)</code>,
+<code>target = "snp_blup"</code>, with supplied
+<code>variance_components = c(sigma_g2 = ..., sigma_e2 = ...)</code>.
+Returns per-marker effects via <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> plus
+per-individual genomic breeding values at the supplied variances (it
+does not estimate them). Mirrors the twin <code>V2-SNPBLUP</code>
+gate.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -314,7 +324,9 @@ annotation, or environment components in <code><a href="../reference/hs_data.htm
 <code>expression</code> and <code>annotation</code> metadata.</li>
 <li>Allele coding, marker imputation, PLINK/VCF parsing, or marker
 scanning from marker maps.</li>
-<li>Marker, QTL, GWAS, or eQTL result generation.</li>
+<li>QTL, GWAS, or eQTL result generation, and marker-scan /
+marker-imputation results (the opt-in SNP-BLUP path above does return
+marker effects via <code><a href="../reference/marker_extractors.html">marker_effects()</a></code>).</li>
 <li>Genomic and single-step models as a default or production path (an
 opt-in experimental path exists; see above).</li>
 <li>Multivariate and factor-analytic G matrices.</li>
