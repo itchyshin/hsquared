@@ -2578,3 +2578,29 @@ with private memory.
 - Remote checks for `bbd527d` (all green):
   - GitHub Actions R-CMD-check `27485346107`: passed.
   - GitHub Actions pkgdown `27485346095`: passed.
+
+## 2026-06-13 Opt-in marker-based genomic (build Ginv from markers) + vignette honesty fix
+
+- Marker-based genomic (commit `d03a987`): `genomic(1 | id, markers = M)` builds
+  the genomic relationship from a raw marker matrix in the engine
+  (`genomic_relationship_matrix`/`_inverse`, ridge 0.01, then `fit_ai_reml`),
+  alongside the existing `genomic(1 | id, Ginv = Ginv)`. Verified read-only that
+  both engine functions and the `V2-GRM`/`V2-GINV`/`V2-GREML` gates are on twin
+  `origin/main` (`100adbe`), so the path works against the released engine.
+- Vignette honesty fix (commit `30ea6fa`): the `model-status` vignette still
+  listed `genomic()`/`single_step()`/`permanent()`/`common_env()`/
+  `maternal_genetic()` as "error as not implemented" (stale since the earlier
+  opt-in slices); added an "Opt-in and experimental" section and removed the
+  false claims. Flagged by the rose honesty review of the marker slice.
+- Spawned subagents: 2-agent review — `hopper-r-julia-translator`
+  (`a05b5e7c716abe0a6`, regression/Z-G-alignment) and `rose-systems-auditor`
+  (`af664757db1486c13`, honesty). Both 0 blockers; acted on hopper should-fix #1
+  (argument-aware eval error), #3 (two non-live payload-wiring tests close the
+  CI-runnable gap), and rose's in-slice ROADMAP nit + the vignette fix.
+- Local checks: `air format`; `devtools::document()`; `pkg::`-grep clean (only
+  declared `JuliaCall::`) + `check_pkgdown()` clean; full `testthat` with juliaup
+  + `NOT_CRAN` + sommer + enhancer (live marker fit ran) — 0/0/0;
+  `rcmdcheck(--as-cran)` 0/0/1 (benign new-submission NOTE).
+- Remote checks for `30ea6fa` (all green):
+  - GitHub Actions R-CMD-check `27485897859`: passed.
+  - GitHub Actions pkgdown `27485897877`: passed.
