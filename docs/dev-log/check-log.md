@@ -2794,6 +2794,28 @@ with private memory.
   - GitHub Actions R-CMD-check `27499481337`: passed.
   - GitHub Actions pkgdown `27499481332`: passed.
   - GitHub Pages build/deployment `27499523585`: passed.
+
+## 2026-06-14 V4 issue ledger cleanup
+
+- GitHub connector write attempt for issue #6 returned 403
+  (`Resource not accessible by integration`), so issue writes used the
+  authenticated `gh` CLI.
+- Posted R bridge-ledger follow-up to `hsquared#6`:
+  `https://github.com/itchyshin/hsquared/issues/6#issuecomment-4701824594`.
+- Posted validation-canon follow-up to `hsquared#7`:
+  `https://github.com/itchyshin/hsquared/issues/7#issuecomment-4701825084`.
+- Posted extractor-contract follow-up to `hsquared#5`:
+  `https://github.com/itchyshin/hsquared/issues/5#issuecomment-4701825670`.
+- Relabelled `hsquared#7` from `status:planned` to `status:partial`.
+- Verification:
+  - `/opt/homebrew/bin/gh issue view 7 --repo itchyshin/hsquared --json number,title,labels,url`
+    shows `status:partial` and no `status:planned`.
+  - `/opt/homebrew/bin/gh issue view 6 --repo itchyshin/hsquared --comments --json comments --jq '.comments[-1].url'`
+    returned the #6 comment URL above.
+  - `/opt/homebrew/bin/gh issue view 7 --repo itchyshin/hsquared --comments --json comments --jq '.comments[-1].url'`
+    returned the #7 comment URL above.
+  - `/opt/homebrew/bin/gh issue view 5 --repo itchyshin/hsquared --comments --json comments --jq '.comments[-1].url'`
+    returned the #5 comment URL above.
 - Remote checks for `43d83aa` (all green):
   - GitHub Actions R-CMD-check `27498842644`: passed.
   - GitHub Actions pkgdown `27498842650`: passed.

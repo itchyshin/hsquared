@@ -21,11 +21,13 @@ check-log evidence, an after-task report, and an updated claim boundary.
   payload ordering plus normalized G/R/h2/fixed-effect/EBV/logLik extractor
   shape against the serialized Julia REML target. Remote R-CMD-check/pkgdown/
   Pages are green.
+- V4 issue-ledger cleanup: done in this slice. R reported fixture consumption
+  back to bridge issue #6, validation issue #7, and extractor issue #5; issue
+  #7 now carries `status:partial` instead of stale `status:planned`.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
-- R lane next safe bite: update issue links for the V4 partial gates and R docs,
-  then keep eating the R-safe documentation/comparator runway while Julia owns
-  structured covariance and recovery hardening.
+- R lane next safe bite: keep eating the R-safe documentation/comparator runway
+  while Julia owns structured covariance and recovery hardening.
 
 ## Programme Board
 
@@ -44,7 +46,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 11 | R | Improve `animal(trait | id, cov = ...)` errors to point users to the current `cbind()` path. | Boole/Pat wording review. |
 | 12 | Julia | Add `multivariate_mme()` examples to Documenter. | Documenter green. |
 | 13 | R | Add examples for `genetic_covariance()` / `genetic_correlation()` in extractor docs. | R examples stay non-running or skip-safe. |
-| 14 | coordinator | Open/update GitHub issues linking V4 partial gates to R issue ledger. | Issues reflect lane ownership. |
+| 14 | coordinator | Open/update GitHub issues linking V4 partial gates to R issue ledger. | done: R follow-up comments posted to #6/#7/#5; #7 labelled `status:partial`. |
 | 15 | Julia | Surface structured multivariate `genetic_structure = :diagonal` through stable engine tests. | Twin gate stays partial until recovery. |
 | 16 | R | Design R control syntax for diagonal multivariate G, without default exposure. | Formula/API signoff. |
 | 17 | Julia | Stabilize low-rank multivariate REML tests and diagnostics. | PSD and logLik checks green. |
