@@ -45,12 +45,16 @@ model_spec <- function(
     family = family,
     REML = REML
   )
-  if (!is.null(spec$random$genomic)) {
+  relinv_type <- intersect(names(spec$random), c("genomic", "single_step"))
+  if (length(relinv_type) > 0L) {
     stop(
       "`model_spec()` previews the pedigree animal-model grammar only. The ",
-      "genomic model is experimental and opt-in; fit it with ",
+      relinv_type[[1L]],
+      " model is experimental and opt-in; fit it with ",
       "`hsquared(..., control = hs_control(engine = \"julia\", ",
-      "engine_control = list(target = \"genomic\")))`.",
+      "engine_control = list(target = \"",
+      relinv_type[[1L]],
+      "\")))`.",
       call. = FALSE
     )
   }

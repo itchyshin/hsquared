@@ -59,8 +59,8 @@ test_that("model_spec uses the same honest planned-marker errors", {
   dat <- data.frame(y = c(1, 2), id = c("a", "b"))
 
   expect_error(
-    model_spec(y ~ single_step(1 | id, Hinv = Hinv), data = dat),
-    "`single_step()` is planned, not implemented.",
+    model_spec(y ~ marker_scan(M, map = map), data = dat),
+    "`marker_scan()` is planned, not implemented.",
     fixed = TRUE
   )
 

@@ -120,7 +120,8 @@ test_that("validation_status separates evidence from planned validation", {
   expect_equal(nrow(status), 19L)
   expect_equal(
     status$status[
-      status$capability == "experimental genomic GREML estimator (opt-in)"
+      status$capability ==
+        "experimental supplied-relationship estimator (opt-in: genomic, single-step)"
     ],
     "partial"
   )

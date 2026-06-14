@@ -1,6 +1,10 @@
 hs_build_bridge_payload <- function(spec) {
-  if (!is.null(spec$random$genomic)) {
-    return(hs_build_genomic_bridge_payload(spec))
+  relinv_primary <- spec$random$genomic
+  if (is.null(relinv_primary)) {
+    relinv_primary <- spec$random$single_step
+  }
+  if (!is.null(relinv_primary)) {
+    return(hs_build_relinv_bridge_payload(spec, relinv_primary))
   }
 
   animal <- spec$random$animal
@@ -98,19 +102,19 @@ hs_build_bridge_payload <- function(spec) {
   )
 }
 
-# Genomic primary effect: build Z from the genotyped-record incidence and carry
-# the user-supplied genomic relationship inverse `Ginv` (no pedigree). The engine
-# fits a `Ginv`-based animal_model_spec by REML (GREML).
-hs_build_genomic_bridge_payload <- function(spec) {
-  genomic <- spec$random$genomic
-  observed_ids <- genomic$values
-  ids <- genomic$ids
+# Supplied-relationship-inverse primary effect (genomic `Ginv` or single-step
+# `Hinv`): build Z from the record incidence and carry the user-supplied
+# relationship inverse (no pedigree). The engine fits a relationship-inverse-
+# based animal_model_spec by REML.
+hs_build_relinv_bridge_payload <- function(spec, primary) {
+  observed_ids <- primary$values
+  ids <- primary$ids
   id_index <- match(observed_ids, ids)
 
   if (anyNA(id_index)) {
     stop(
-      "Internal bridge error: observed genomic IDs are not aligned with the ",
-      "`Ginv` dimnames.",
+      "Internal bridge error: observed IDs are not aligned with the ",
+      "relationship-inverse dimnames.",
       call. = FALSE
     )
   }
@@ -131,8 +135,8 @@ hs_build_genomic_bridge_payload <- function(spec) {
       Z2 = NULL,
       effect2 = NULL,
       Ainv = NULL,
-      Ginv = unname(as.matrix(genomic$ginv)),
-      relationship = "genomic",
+      Ginv = unname(as.matrix(primary$ginv)),
+      relationship = primary$relationship,
       method = spec$method,
       family = spec$family$family,
       ids = ids,
@@ -140,13 +144,13 @@ hs_build_genomic_bridge_payload <- function(spec) {
       metadata = list(
         response = spec$response$name,
         fixed_colnames = colnames(spec$fixed$design),
-        animal_id_column = genomic$group,
+        animal_id_column = primary$group,
         observed_ids = observed_ids,
         observed_id_index = id_index,
         fixed_terms = spec$fixed$terms,
         contrasts = spec$fixed$contrasts,
-        relationship = "genomic",
-        julia_fit_target = "HSquared.fit_ai_reml(animal_model_spec(y, X, Z, Ginv))"
+        relationship = primary$relationship,
+        julia_fit_target = "HSquared.fit_ai_reml(animal_model_spec(y, X, Z, relinv))"
       )
     ),
     class = c("hs_bridge_payload", "list")

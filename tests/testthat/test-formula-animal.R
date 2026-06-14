@@ -92,17 +92,17 @@ test_that("formula parser rejects planned genomic and QTL syntax honestly", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
   dat <- data.frame(y = c(1, 2), id = c("a", "b"), sex = c("f", "m"))
 
-  # `genomic(1 | id, Ginv = Ginv)` is now parsed as the opt-in primary genomic
-  # effect (see test-genomic.R); `single_step()` and the marker/QTL scans remain
-  # planned.
+  # `genomic(1 | id, Ginv = Ginv)` and `single_step(1 | id, Hinv = Hinv)` are now
+  # parsed as opt-in primary effects (see test-genomic.R / test-single-step.R);
+  # the marker/QTL scans remain planned.
   expect_error(
     hsquared:::hs_build_model_spec(
-      y ~ sex + single_step(1 | id, Hinv = Hinv),
+      y ~ sex + markers(M, model = "random"),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "`single_step()` is planned, not implemented.",
+    "`markers()` is planned, not implemented.",
     fixed = TRUE
   )
 

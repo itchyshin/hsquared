@@ -19,7 +19,7 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     function(e) {
       hs_is_planned_marker_call(e) &&
         !hs_is_second_effect_call(e) &&
-        !hs_is_genomic_primary_call(e)
+        !hs_is_relinv_primary_call(e)
     },
     logical(1L)
   ))
@@ -27,15 +27,16 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     hs_stop_planned_marker(rhs_terms[[planned_pos[[1L]]]])
   }
 
-  # The primary effect is exactly one of `animal()` (pedigree) or `genomic()`
-  # (a user-supplied genomic relationship inverse).
+  # The primary effect is exactly one of `animal()` (pedigree) or a
+  # supplied-relationship-inverse term (`genomic()` with `Ginv`, or
+  # `single_step()` with `Hinv`).
   animal_pos <- which(vapply(rhs_terms, hs_is_animal_call, logical(1L)))
-  genomic_pos <- which(vapply(
+  relinv_pos <- which(vapply(
     rhs_terms,
-    hs_is_genomic_primary_call,
+    hs_is_relinv_primary_call,
     logical(1L)
   ))
-  primary_pos <- c(animal_pos, genomic_pos)
+  primary_pos <- c(animal_pos, relinv_pos)
 
   if (length(primary_pos) == 0L) {
     stop(
@@ -61,13 +62,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
       model_data = model_data
     )
   } else {
-    primary_type <- "genomic"
-    primary_spec <- hs_parse_genomic_call(
-      rhs_terms[[genomic_pos]],
+    primary_spec <- hs_parse_relinv_primary_call(
+      rhs_terms[[relinv_pos]],
       data,
-      env,
-      model_data
+      env
     )
+    primary_type <- primary_spec$type
   }
 
   second_pos <- which(vapply(rhs_terms, hs_is_second_effect_call, logical(1L)))
@@ -128,8 +128,11 @@ hs_build_model_spec <- function(formula, data, family, REML) {
 
   random <- list()
   random[[primary_type]] <- primary_spec
-  bridge_target <- if (identical(primary_type, "genomic")) {
-    "fit_ai_reml(y, X, Z, Ginv; method = :REML)"
+  bridge_target <- if (primary_type %in% c("genomic", "single_step")) {
+    sprintf(
+      "fit_ai_reml(y, X, Z, %s; method = :REML)",
+      if (identical(primary_type, "genomic")) "Ginv" else "Hinv"
+    )
   } else {
     "fit_animal_model(y, X, Z, Ainv; method = :REML)"
   }
@@ -481,12 +484,30 @@ hs_is_genomic_primary_call <- function(expr) {
   hs_is_call(expr, "genomic")
 }
 
-# Parse `genomic(1 | id, Ginv = Ginv)` as the opt-in primary genomic effect: a
-# random intercept over genotyped individuals whose relationship inverse is a
-# user-supplied genomic relationship inverse `Ginv` (with id dimnames). The
-# engine fits it by REML on a `Ginv`-based animal_model_spec (GREML).
-hs_parse_genomic_call <- function(call, data, env, model_data) {
+hs_is_single_step_primary_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "single_step")
+}
+
+# The opt-in primary effects whose relationship is a user-supplied inverse:
+# `genomic()` (a genomic relationship inverse `Ginv`) and `single_step()` (a
+# single-step relationship inverse `Hinv`). Both fit by REML on a relationship-
+# inverse-based animal_model_spec.
+hs_is_relinv_primary_call <- function(expr) {
+  hs_is_genomic_primary_call(expr) || hs_is_single_step_primary_call(expr)
+}
+
+hs_parse_relinv_primary_call <- function(call, data, env) {
   call <- hs_unwrap_parentheses(call)
+  if (hs_is_genomic_primary_call(call)) {
+    term <- "genomic"
+    arg_name <- "Ginv"
+  } else {
+    term <- "single_step"
+    arg_name <- "Hinv"
+  }
+  example <- sprintf("`%s(1 | id, %s = %s)`", term, arg_name, arg_name)
+
   args <- as.list(call)[-1L]
   arg_names <- names(args)
   if (is.null(arg_names)) {
@@ -496,8 +517,11 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
   bar_candidates <- which(arg_names == "" | arg_names == "formula")
   if (length(bar_candidates) != 1L) {
     stop(
-      "`genomic()` must have one random-effect expression, for example ",
-      "`genomic(1 | id, Ginv = Ginv)`.",
+      "`",
+      term,
+      "()` must have one random-effect expression, for example ",
+      example,
+      ".",
       call. = FALSE
     )
   }
@@ -505,8 +529,9 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
   bar <- hs_unwrap_parentheses(args[[bar_candidates]])
   if (!hs_is_call(bar, "|") || length(bar) != 3L) {
     stop(
-      "The first `genomic()` argument must be a random-effect expression such ",
-      "as `1 | id`.",
+      "The first `",
+      term,
+      "()` argument must be a random-effect expression such as `1 | id`.",
       call. = FALSE
     )
   }
@@ -515,14 +540,19 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
     stop(
-      "Only random-intercept syntax `genomic(1 | id, Ginv = Ginv)` is ",
-      "implemented. Genomic slopes are planned, not implemented.",
+      "Only random-intercept syntax ",
+      example,
+      " is implemented. ",
+      term,
+      " slopes are planned, not implemented.",
       call. = FALSE
     )
   }
   if (!is.symbol(group_expr)) {
     stop(
-      "The grouping variable in `genomic()` must be a bare column name.",
+      "The grouping variable in `",
+      term,
+      "()` must be a bare column name.",
       call. = FALSE
     )
   }
@@ -530,7 +560,9 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
   group <- as.character(group_expr)
   if (!group %in% names(data)) {
     stop(
-      "`genomic()` grouping variable `",
+      "`",
+      term,
+      "()` grouping variable `",
       group,
       "` was not found in `data`.",
       call. = FALSE
@@ -538,10 +570,12 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
   }
 
   named_args <- args[arg_names != ""]
-  unsupported <- setdiff(names(named_args), "Ginv")
+  unsupported <- setdiff(names(named_args), arg_name)
   if (length(unsupported) > 0L) {
     stop(
-      "`genomic()` argument",
+      "`",
+      term,
+      "()` argument",
       if (length(unsupported) > 1L) "s " else " ",
       paste(sprintf("`%s`", unsupported), collapse = ", "),
       " are planned, not implemented (building a relationship from markers is ",
@@ -549,26 +583,35 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
       call. = FALSE
     )
   }
-  if (!("Ginv" %in% names(named_args))) {
+  if (!(arg_name %in% names(named_args))) {
     stop(
-      "`genomic()` requires a `Ginv` argument (a genomic relationship inverse ",
-      "with id dimnames). Building `Ginv` from markers is planned, not ",
-      "implemented.",
+      "`",
+      term,
+      "()` requires a `",
+      arg_name,
+      "` argument (a relationship inverse with id dimnames). Building `",
+      arg_name,
+      "` from markers is planned, not implemented.",
       call. = FALSE
     )
   }
 
-  ginv <- hs_eval_genomic_ginv(named_args$Ginv, data, env)
-  ginv <- hs_validate_genomic_ginv(ginv)
-  ginv_ids <- rownames(ginv)
+  relinv <- hs_eval_genomic_ginv(named_args[[arg_name]], data, env)
+  relinv <- hs_validate_genomic_ginv(relinv)
+  relinv_ids <- rownames(relinv)
 
   observed_ids <- as.character(data[[group]])
-  unknown <- setdiff(unique(observed_ids), ginv_ids)
+  unknown <- setdiff(unique(observed_ids), relinv_ids)
   if (length(unknown) > 0L) {
     shown <- unknown[seq_len(min(5L, length(unknown)))]
     stop(
-      "`genomic()` ids must be present in the `Ginv` dimnames. ID(s) not in ",
-      "the `Ginv`: ",
+      "`",
+      term,
+      "()` ids must be present in the `",
+      arg_name,
+      "` dimnames. ID(s) not in the `",
+      arg_name,
+      "`: ",
       paste(sprintf("`%s`", shown), collapse = ", "),
       ".",
       call. = FALSE
@@ -576,14 +619,14 @@ hs_parse_genomic_call <- function(call, data, env, model_data) {
   }
 
   list(
-    type = "genomic",
+    type = term,
     term = hs_deparse(call),
     design = "intercept",
     group = group,
     values = observed_ids,
-    ids = ginv_ids,
-    ginv = ginv,
-    relationship = "genomic",
+    ids = relinv_ids,
+    ginv = relinv,
+    relationship = term,
     covariance = "scalar"
   )
 }

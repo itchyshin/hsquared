@@ -261,11 +261,19 @@ hsquared <- function(
       ))
     }
 
-    if (identical(target, "genomic")) {
-      if (is.null(spec$random$genomic)) {
+    if (target %in% c("genomic", "single_step")) {
+      if (is.null(spec$random[[target]])) {
+        arg <- if (identical(target, "genomic")) "Ginv" else "Hinv"
         stop(
-          "`target = \"genomic\"` requires a `genomic(1 | id, Ginv = Ginv)` ",
-          "term in the formula.",
+          "`target = \"",
+          target,
+          "\"` requires a `",
+          target,
+          "(1 | id, ",
+          arg,
+          " = ",
+          arg,
+          ")` term in the formula.",
           call. = FALSE
         )
       }

@@ -89,8 +89,8 @@ hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 5L),
     rep("reserved", 9L),
-    "parsed",
-    rep("reserved", 4L),
+    rep("parsed", 2L),
+    rep("reserved", 3L),
     rep("planned", 2L)
   )
 }
@@ -103,7 +103,8 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in maternal)",
     rep("not available", 9L),
     "fitted (opt-in genomic)",
-    rep("not available", 6L)
+    "fitted (opt-in single-step)",
+    rep("not available", 5L)
   )
 }
 
@@ -142,12 +143,16 @@ hs_formula_status_behavior <- function() {
       "Primary genomic effect of the opt-in, experimental GREML model; requires",
       "a user-supplied `Ginv` and engine = \"julia\", target = \"genomic\"."
     ),
+    paste(
+      "Primary single-step effect of the opt-in, experimental model; requires a",
+      "user-supplied `Hinv` and engine = \"julia\", target = \"single_step\"."
+    ),
     rep(
       paste(
         "Exported as an inert marker; hsquared() errors as planned, not",
         "implemented."
       ),
-      4L
+      3L
     ),
     rep(
       paste(

@@ -649,20 +649,25 @@ hs_fit_julia_genomic_payload <- function(
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
+  rel <- payload$relationship
   result <- hs_normalize_julia_result(raw, payload)
   result$variance_components$component[
     result$variance_components$component == "animal"
-  ] <- "genomic"
-  result$heritability$term[result$heritability$term == "animal"] <- "genomic"
+  ] <- rel
+  result$heritability$term[result$heritability$term == "animal"] <- rel
   names(result$random_effects)[
     names(result$random_effects) == "animal"
-  ] <- "genomic"
-  result$diagnostics$variance_components <- "estimated_genomic_ai_reml"
+  ] <- rel
+  result$diagnostics$variance_components <- paste0(
+    "estimated_",
+    rel,
+    "_ai_reml"
+  )
   hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
-      target = "genomic"
+      target = rel
     ),
     payload = payload,
     result = result,
@@ -794,13 +799,14 @@ hs_validate_julia_target <- function(target) {
         "ai_reml",
         "repeatability",
         "two_effect",
-        "genomic"
+        "genomic",
+        "single_step"
       )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"two_effect\", or \"genomic\".",
+      "\"two_effect\", \"genomic\", or \"single_step\".",
       call. = FALSE
     )
   }
@@ -817,6 +823,7 @@ hs_second_effect_target <- function(type) {
     common_env = "two_effect",
     maternal_genetic = "two_effect",
     genomic = "genomic",
+    single_step = "single_step",
     stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }

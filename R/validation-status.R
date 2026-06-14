@@ -44,7 +44,7 @@ hs_validation_status_capabilities <- function() {
     "experimental sparse REML estimator (opt-in)",
     "experimental repeatability estimator (opt-in)",
     "experimental two-effect estimator (opt-in: common-env, maternal)",
-    "experimental genomic GREML estimator (opt-in)",
+    "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
     "known-truth DGP variance-component recovery (R reference)",
@@ -134,14 +134,16 @@ hs_validation_status_evidence <- function() {
       "variance_components_source = \"estimated_two_effect_reml\"."
     ),
     paste(
-      "Pure-R control/validator tests plus a skip-guarded live test running",
-      "Julia fit_ai_reml() on a user-supplied genomic relationship inverse (Ginv)",
-      "through the opt-in target = \"genomic\" bridge on",
-      "`genomic(1 | id, Ginv = Ginv)`; checks two positive estimated variance",
-      "components (genomic, residual), genomic heritability in (0, 1), genomic",
-      "breeding values (GEBVs), and finite REML logLik; fit provenance tagged",
-      "variance_components_source = \"estimated_genomic_ai_reml\". The user supplies",
-      "Ginv; building it from markers is planned."
+      "Pure-R control/validator tests plus skip-guarded live tests running Julia",
+      "fit_ai_reml() on a user-supplied relationship inverse through the opt-in",
+      "bridge: target = \"genomic\" on `genomic(1 | id, Ginv = Ginv)` (a genomic",
+      "relationship inverse) and target = \"single_step\" on",
+      "`single_step(1 | id, Hinv = Hinv)` (a single-step relationship inverse);",
+      "each checks two positive estimated variance components (effect, residual),",
+      "heritability in (0, 1), breeding values, and finite REML logLik; fit",
+      "provenance tagged variance_components_source =",
+      "\"estimated_<genomic|single_step>_ai_reml\". The user supplies the inverse;",
+      "building it from markers/pedigree is planned."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -230,11 +232,11 @@ hs_validation_status_boundaries <- function() {
     ),
     paste(
       "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
-      "a Ginv spec) that R surfaces; mirrors the twin V2-GREML gate (partial).",
-      "The user supplies the genomic relationship inverse; building Ginv from",
-      "markers, single-step (Hinv), low-rank m>>n solves, and",
-      "AGHmatrix/sommer/BLUPF90 comparator parity are planned. Not the default,",
-      "not ML, not production or comparator-validated."
+      "a relationship-inverse spec) that R surfaces; mirrors the twin V2-GREML",
+      "(genomic) and V2-SSHINV (single-step) gates (partial). The user supplies",
+      "the genomic Ginv / single-step Hinv; building them from markers/pedigree,",
+      "low-rank m>>n solves, and AGHmatrix/sommer/BLUPF90 comparator parity are",
+      "planned. Not the default, not ML, not production or comparator-validated."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
