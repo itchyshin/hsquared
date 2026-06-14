@@ -2454,6 +2454,10 @@ with private memory.
   `_pkgdown.yml` reference index (the test suite and `--as-cran` do not catch
   pkgdown-config gaps). Lesson reaffirmed: run `pkgdown::check_pkgdown()` locally
   for slices that add exports.
-- Fix (follow-up commit): added both extractors to `_pkgdown.yml` and refreshed
-  the stale section description ("…do not fit models yet"); `pkgdown::check_pkgdown()`
-  now reports no problems locally. Remote checks appended after the fix push.
+- Fix (follow-up commit `5ef0c4f`): added both extractors to `_pkgdown.yml` and
+  refreshed the stale section description ("…do not fit models yet");
+  `pkgdown::check_pkgdown()` reports no problems locally.
+- Remote checks for commit `5ef0c4f` (all green):
+  - GitHub Actions R-CMD-check `27483306182`: passed.
+  - GitHub Actions pkgdown `27483306179`: passed.
+  - GitHub Pages build/deploy `27483339408`: passed.
