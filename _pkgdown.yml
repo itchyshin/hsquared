@@ -4,9 +4,9 @@ template:
   bootstrap: 5
   bootswatch: flatly
   bslib:
-    primary: "#126a73"
-    headings-color: "#1b2f33"
-    link-color: "#126a73"
+    primary: "#38a8df"
+    headings-color: "#173141"
+    link-color: "#126f9b"
 
 navbar:
   structure:

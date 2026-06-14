@@ -3621,3 +3621,35 @@ with private memory.
   - GitHub Actions R-CMD-check `27505906421`: passed.
   - GitHub Actions pkgdown `27505906424`: passed.
   - GitHub Pages build/deployment `27505963691`: passed.
+
+## 2026-06-14 Sky-blue pkgdown theme
+
+- Updated `_pkgdown.yml` from the previous deep teal to a sky-blue pkgdown
+  palette:
+  - `primary: "#38a8df"`
+  - `headings-color: "#173141"`
+  - `link-color: "#126f9b"`
+- `git diff --check` - passed.
+- Pkgdown:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::check_pkgdown()"` - passed, "No problems found."
+- Local site build:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "pkgdown::build_site(preview = FALSE, new_process = FALSE)"` - passed.
+- Visual checks:
+  - Desktop screenshot `/tmp/hsquared-skyblue-pkgdown.png`: navbar rendered as
+    `rgb(56, 168, 223)`, body links as `rgb(18, 111, 155)`, white navbar text,
+    dark search box unchanged.
+  - Mobile screenshot `/tmp/hsquared-skyblue-mobile.png`: hamburger visible,
+    no horizontal overflow (`bodyWidth = viewportWidth = 390`).
+- Package check:
+  `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64
+  /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e
+  "devtools::check(document = FALSE, args = '--no-manual')"` - passed, 0
+  errors / 0 warnings / 0 notes.
+- Remote checks for previous commit `71c0766` (all green):
+  - GitHub Actions R-CMD-check `27506205627`: passed.
+  - GitHub Actions pkgdown `27506205628`: passed.
+  - GitHub Pages build/deployment `27506257631`: passed.
