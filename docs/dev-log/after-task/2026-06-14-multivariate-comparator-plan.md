@@ -57,6 +57,8 @@ Post-edit checks:
   /Library/Frameworks/R.framework/Resources/bin/Rscript -e
   "devtools::check(document = FALSE, args = '--no-manual')"`: passed, 0 errors
   / 0 warnings / 0 notes.
+- Remote checks for `c3e5a26`: R-CMD-check `27500073218`, pkgdown
+  `27500073217`, and Pages `27500113544` all passed.
 
 ## Public claim audit
 
