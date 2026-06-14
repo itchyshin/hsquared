@@ -96,10 +96,10 @@ planned.
 
 - Repeatability / permanent environment — opt-in, experimental (REML,
   needs repeated records).
-- Common environment — opt-in, experimental (`target = "two_effect"`,
-  mirroring the twin `V3-TWOEFFECT-REML` partial gate). Maternal-genetic
-  (the other two-effect case) and correlated direct–maternal (2×2 G)
-  remain planned.
+- Common environment and maternal-genetic — opt-in, experimental
+  (`target = "two_effect"`, mirroring the twin `V3-TWOEFFECT-REML`
+  partial gate); two independent effects. The correlated direct–maternal
+  (2×2 G) model remains planned.
 - Sire models.
 - Groups and unknown parent groups.
 - Inbreeding coefficients.

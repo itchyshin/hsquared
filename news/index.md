@@ -107,6 +107,22 @@
   experimental and REML-only; not the default, not production or
   comparator-validated; correlated direct–maternal (2×2 G) effects
   remain planned.
+- **Experimental, opt-in maternal-genetic two-effect model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now parses
+  `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` and fits
+  it through `engine_control = list(target = "two_effect")`: a direct
+  additive genetic effect plus a maternal genetic effect expressed
+  through the dam, both carrying the pedigree relationship (A₂ =
+  pedigree A). It returns three variance components (animal,
+  maternal_genetic, residual),
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md),
+  breeding values, and
+  [`maternal_effects()`](https://itchyshin.github.io/hsquared/reference/maternal_effects.md);
+  the dams must be animals in the
+  [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
+  pedigree. Experimental and REML-only; the correlated direct–maternal
+  (2×2 G) model remains planned.
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   and
   [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)

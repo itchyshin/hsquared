@@ -66,6 +66,8 @@ come from the opt-in, experimental two-effect models.
   : Extract permanent-environment effects
 - [`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md)
   : Extract common-environment effects
+- [`maternal_effects()`](https://itchyshin.github.io/hsquared/reference/maternal_effects.md)
+  : Extract maternal genetic effects
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
