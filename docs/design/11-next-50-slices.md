@@ -16,10 +16,11 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - R multivariate extractor documentation examples: done locally in this slice;
   roxygen examples now show `fit_diagnostics()`, G/R covariance and correlation
   extraction, and per-trait h2 after the opt-in multivariate fit.
-- R shared deterministic multivariate fixture consumption: done locally in this
-  slice; R now carries the same Phase 4 fixture files and checks payload
-  ordering plus normalized G/R/h2/fixed-effect/EBV/logLik extractor shape
-  against the serialized Julia REML target. Commit/push and remote CI remain.
+- R shared deterministic multivariate fixture consumption: done on `hsquared`
+  main (`61a7ca3`); R now carries the same Phase 4 fixture files and checks
+  payload ordering plus normalized G/R/h2/fixed-effect/EBV/logLik extractor
+  shape against the serialized Julia REML target. Remote R-CMD-check/pkgdown/
+  Pages are green.
 - Julia twin report: Phase 4B slices 1-8 are done; the next real Julia bite is
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: update issue links for the V4 partial gates and R docs,

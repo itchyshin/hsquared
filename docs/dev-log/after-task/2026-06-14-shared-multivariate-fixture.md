@@ -40,6 +40,10 @@ Current lane: R.
   passed, "No problems found."
 - `RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64 /Library/Frameworks/R.framework/Resources/bin/Rscript -e "devtools::check(document = FALSE, args = '--no-manual')"`:
   0 errors / 0 warnings / 0 notes.
+- Remote checks for commit `61a7ca3`:
+  - GitHub Actions R-CMD-check `27499481337`: passed.
+  - GitHub Actions pkgdown `27499481332`: passed.
+  - GitHub Pages build/deployment `27499523585`: passed.
 
 ## Public claim audit
 
@@ -74,5 +78,4 @@ does not prove genetic-correlation recovery from simulated truth.
 
 ## Next actions
 
-- Commit and push; watch R-CMD-check, pkgdown, and Pages.
 - Update GitHub issue links for the V4 partial gates and R documentation.
