@@ -227,7 +227,12 @@ loadings.default <- function(object, ...) {
 }
 
 #' @export
-loadings.hsquared_fit <- function(object, effect = "animal", rotate = NULL, ...) {
+loadings.hsquared_fit <- function(
+  object,
+  effect = "animal",
+  rotate = NULL,
+  ...
+) {
   hs_factor_g_extractor_planned(
     "loadings",
     "factor-analytic G-matrix loadings",
@@ -268,7 +273,11 @@ latent_breeding_values.default <- function(object, ...) {
 }
 
 #' @export
-latent_breeding_values.hsquared_fit <- function(object, effect = "animal", ...) {
+latent_breeding_values.hsquared_fit <- function(
+  object,
+  effect = "animal",
+  ...
+) {
   hs_factor_g_extractor_planned(
     "latent_breeding_values",
     "latent breeding values from a factor-analytic G matrix",
@@ -308,7 +317,12 @@ hs_factor_g_extractor_default <- function(name) {
   )
 }
 
-hs_factor_g_extractor_planned <- function(name, quantity, effect, rotate = NULL) {
+hs_factor_g_extractor_planned <- function(
+  name,
+  quantity,
+  effect,
+  rotate = NULL
+) {
   if (!identical(effect, "animal")) {
     stop(
       "`",
@@ -701,8 +715,12 @@ print.hs_fit_diagnostics <- function(x, ...) {
 # Flag whether the fit sits at a variance-component boundary (sigma_a2 ~ 0 or
 # sigma_e2 ~ 0, i.e. h2 at 0 or 1), so a boundary estimate is not silently read
 # as an ordinary interior one. Computed from the returned variance components;
-# returns NULL (row dropped) when they are unavailable. This is the surfacing
-# half of the v0.1 promotion predicate item 4; the engine (HSquared.jl) owns
+# returns NULL (row dropped) when they are unavailable. The primary genetic /
+# effect component is named differently across targets ("animal" for the
+# pedigree animal model, "genomic" for genomic and SNP-BLUP fits, "single_step"
+# for single-step fits), so the boundary check matches whichever of these names
+# the fit actually reports rather than only "animal". This is the surfacing half
+# of the v0.1 promotion predicate item 4; the engine (HSquared.jl) owns
 # boundary-stable optimization.
 hs_fit_boundary_flag <- function(object, tol = 1e-4) {
   vc <- object$result$variance_components
@@ -714,11 +732,12 @@ hs_fit_boundary_flag <- function(object, tol = 1e-4) {
   if (!is.finite(total) || total <= 0) {
     return(NULL)
   }
-  animal <- est[vc$component == "animal"]
-  if (length(animal) != 1L) {
+  primary_names <- c("animal", "genomic", "single_step")
+  primary <- est[vc$component %in% primary_names]
+  if (length(primary) != 1L) {
     return(NULL)
   }
-  h2 <- animal / total
+  h2 <- primary / total
   isTRUE(h2 <= tol) || isTRUE(h2 >= 1 - tol)
 }
 

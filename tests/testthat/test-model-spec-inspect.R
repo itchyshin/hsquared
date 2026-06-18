@@ -51,7 +51,10 @@ test_that("model_spec summaries are compact and do not fit models", {
   expect_equal(out$model$method, "REML")
   expect_equal(out$animal$relationship, "pedigree")
   expect_equal(out$julia$stage, c("Ainv", "model specification", "fit"))
-  expect_equal(out$julia$target[[3L]], "HSquared.fit_animal_model(spec)")
+  expect_equal(
+    out$julia$target[[3L]],
+    "HSquared.fit_animal_model(y, X, Z, Ainv; method = :REML)"
+  )
   expect_null(spec$result)
 })
 

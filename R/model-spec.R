@@ -134,9 +134,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
     )
   }
 
-  response <- hs_build_response_spec(formula[[2L]], stats::model.response(
-    model_frame
-  ))
+  response <- hs_build_response_spec(
+    formula[[2L]],
+    stats::model.response(
+      model_frame
+    )
+  )
 
   fixed_terms_obj <- stats::terms(fixed_formula)
   fixed_design <- stats::model.matrix(fixed_terms_obj, data = model_frame)
@@ -238,7 +241,9 @@ hs_build_response_spec <- function(lhs, response) {
       )
     }
     trait_names <- colnames(response)
-    if (is.null(trait_names) || anyNA(trait_names) || any(!nzchar(trait_names))) {
+    if (
+      is.null(trait_names) || anyNA(trait_names) || any(!nzchar(trait_names))
+    ) {
       trait_names <- all.vars(lhs)
     }
     if (length(trait_names) != ncol(values)) {
@@ -1361,10 +1366,8 @@ hs_stop_planned_marker <- function(expr) {
   stop(
     "`",
     marker,
-    "()` is planned, not implemented. The v0.1 parser currently accepts ",
-    "only `animal(1 | id, pedigree = ped)`. Standard quantitative-genetic, ",
-    "parental, inheritance-kernel, genomic, marker-scan, single-step, and ",
-    "QTL/eQTL terms are tracked in the roadmap.",
+    "()` is planned, not implemented. Run `formula_status()` for the live ",
+    "list of which terms parse and which fit.",
     call. = FALSE
   )
 }

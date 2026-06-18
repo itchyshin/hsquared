@@ -86,9 +86,15 @@ test_that("snp_blup variance components must be named sigma_g2 / sigma_e2", {
 test_that("snp_blup normalizer reports descriptive marker variance shares", {
   markers <- matrix(
     c(
-      0, 1, 2,
-      0, 0, 2,
-      1, 1, 1
+      0,
+      1,
+      2,
+      0,
+      0,
+      2,
+      1,
+      1,
+      1
     ),
     nrow = 3,
     ncol = 3

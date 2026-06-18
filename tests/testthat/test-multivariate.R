@@ -324,7 +324,10 @@ test_that("multivariate result normalizer exposes G, R, h2, and cross-trait EBVs
     result = result
   )
 
-  expect_equal(dimnames(genetic_covariance(fit)), list(c("y1", "y2"), c("y1", "y2")))
+  expect_equal(
+    dimnames(genetic_covariance(fit)),
+    list(c("y1", "y2"), c("y1", "y2"))
+  )
   expect_equal(residual_covariance(fit), result$residual_covariance)
   expect_equal(genetic_correlation(fit), result$genetic_correlation)
   expect_equal(residual_correlation(fit), result$residual_correlation)
@@ -502,7 +505,7 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
   expect_equal(payload$ids, ped$id)
   expect_equal(dim(payload$Z), c(nrow(pheno), nrow(ped)))
   expect_equal(payload$Y, unname(as.matrix(pheno[c("trait1", "trait2")])))
-  expect_equal(payload$X, unname(stats::model.matrix(~ x, data = pheno)))
+  expect_equal(payload$X, unname(stats::model.matrix(~x, data = pheno)))
 
   raw <- list(
     genetic_covariance = G0,
@@ -631,7 +634,9 @@ test_that("optional sommer comparator matches the Phase 4 diagonal-residual targ
   genetic_i <- grep("animal", names(fit$theta), fixed = TRUE)
   residual_i <- match("units", names(fit$theta))
   if (length(genetic_i) != 1L || is.na(residual_i)) {
-    testthat::skip("sommer theta layout changed; comparator extraction needs review.")
+    testthat::skip(
+      "sommer theta layout changed; comparator extraction needs review."
+    )
   }
 
   Ghat <- as.matrix(fit$theta[[genetic_i]])

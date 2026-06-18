@@ -98,10 +98,15 @@ hsquared <- function(
     if (!hs_julia_bridge_available(project)) {
       stop(
         "Fitting the v0.1 Gaussian animal model requires the HSquared.jl Julia ",
-        "engine (Julia, the `JuliaCall` R package, and a local `HSquared.jl`). ",
-        "Install them to fit, or use ",
-        "`control = hs_control(engine = \"validate\")` to validate the model ",
-        "without fitting.",
+        "engine (Julia, the `JuliaCall` R package, and a from-source checkout ",
+        "of `HSquared.jl`, which is not yet a registered Julia package). To ",
+        "fit: (1) `git clone https://github.com/itchyshin/HSquared.jl`; ",
+        "(2) point the bridge at that checkout, either by setting the ",
+        "`HSQUARED_JULIA_PROJECT` environment variable to the clone path or by ",
+        "passing `control = hs_control(engine = \"julia\", engine_control = ",
+        "list(julia_project = \"/path/to/HSquared.jl\"))`. To validate the ",
+        "model contract without fitting (no Julia needed), use ",
+        "`control = hs_control(engine = \"validate\")`.",
         call. = FALSE
       )
     }
@@ -124,7 +129,9 @@ hsquared <- function(
       "fit_animal_model"
     ))
     hs_validate_genetic_structure_control(control, target)
-    if (isTRUE(spec$response$multivariate) && !identical(target, "multivariate")) {
+    if (
+      isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
+    ) {
       stop(
         "A `cbind(...)` multivariate response requires the opt-in ",
         "`target = \"multivariate\"` Julia engine path. The `",
@@ -133,7 +140,9 @@ hsquared <- function(
         call. = FALSE
       )
     }
-    if (identical(target, "multivariate") && !isTRUE(spec$response$multivariate)) {
+    if (
+      identical(target, "multivariate") && !isTRUE(spec$response$multivariate)
+    ) {
       stop(
         "`target = \"multivariate\"` requires a `cbind(trait1, trait2, ...)` ",
         "response with `animal(1 | id, pedigree = ped)`.",
@@ -395,10 +404,9 @@ hsquared <- function(
     "v0.1 animal-model contract and stopped without fitting. Use the default ",
     "`control` to fit the model (requires the HSquared.jl Julia engine), or ",
     "`hs_control(engine = \"julia\")` for advanced engine control. The Julia ",
-    "fit target is `HSquared.fit_ai_reml(",
-    "HSquared.animal_model_spec(y, X, Z, Ainv; ids = ids, method = :",
-    payload$method,
-    "))`.",
+    "fit target is `HSquared.",
+    spec$bridge$target,
+    "`.",
     call. = FALSE
   )
 }

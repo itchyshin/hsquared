@@ -117,7 +117,8 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
       "animal(trait | id, pedigree = ped, cov = diag())",
       "animal(trait | id, pedigree = ped, cov = lowrank(K = 2))",
       "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
-    ) %in% status$term
+    ) %in%
+      status$term
   ))
   expect_true(all(
     status$syntax_status[grepl("cov =", status$term, fixed = TRUE)] == "planned"

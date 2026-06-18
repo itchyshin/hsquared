@@ -50,10 +50,16 @@ dat_out <- data.frame(
 cat("Prepared BLUPF90-family candidate fixture\n")
 cat("  data rows:", nrow(dat_out), "\n")
 cat("  pedigree rows:", nrow(ped_out), "\n")
-cat("  write dir:", if (nzchar(write_dir)) write_dir else "<dry-run only>", "\n")
+cat(
+  "  write dir:",
+  if (nzchar(write_dir)) write_dir else "<dry-run only>",
+  "\n"
+)
 
 if (!nzchar(write_dir)) {
-  cat("Dry run only. Re-run with --write=/path/to/output to create flat files.\n")
+  cat(
+    "Dry run only. Re-run with --write=/path/to/output to create flat files.\n"
+  )
   quit(status = 0)
 }
 

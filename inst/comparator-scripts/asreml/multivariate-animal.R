@@ -59,7 +59,10 @@ if (!run_fit) {
 }
 
 if (!requireNamespace("asreml", quietly = TRUE)) {
-  stop("ASReml-R is not installed or licensed in this R session.", call. = FALSE)
+  stop(
+    "ASReml-R is not installed or licensed in this R session.",
+    call. = FALSE
+  )
 }
 
 ped_asreml <- ped

@@ -109,7 +109,7 @@ test_that("hsquared validate-only error describes the Julia fit target", {
       family = stats::gaussian(),
       control = hs_control(engine = "validate")
     ),
-    "HSquared.fit_ai_reml",
+    "HSquared.fit_animal_model",
     fixed = TRUE
   )
 })

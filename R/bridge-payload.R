@@ -110,7 +110,7 @@ hs_build_bridge_payload <- function(spec) {
           spec$method,
           ")"
         ),
-        julia_fit_target = "HSquared.fit_animal_model(spec)"
+        julia_fit_target = paste0("HSquared.", spec$bridge$target)
       )
     ),
     class = c("hs_bridge_payload", "list")
@@ -183,7 +183,7 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
         fixed_terms = spec$fixed$terms,
         contrasts = spec$fixed$contrasts,
         relationship = primary$relationship,
-        julia_fit_target = "HSquared.fit_ai_reml(animal_model_spec(y, X, Z, relinv))"
+        julia_fit_target = paste0("HSquared.", spec$bridge$target)
       )
     ),
     class = c("hs_bridge_payload", "list")

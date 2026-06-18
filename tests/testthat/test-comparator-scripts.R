@@ -1,7 +1,11 @@
 local_comparator_script <- function(...) {
   candidates <- c(
     testthat::test_path(
-      "..", "..", "inst", "comparator-scripts", ...
+      "..",
+      "..",
+      "inst",
+      "comparator-scripts",
+      ...
     ),
     system.file("comparator-scripts", ..., package = "hsquared")
   )
@@ -71,7 +75,11 @@ test_that("manual BLUPF90 comparator script has dry-run and write modes", {
     paste0("--write=", write_dir)
   )
   expect_identical(write_run$status, 0L)
-  expect_match(write_run$output, "Wrote BLUPF90-family comparator files", fixed = TRUE)
+  expect_match(
+    write_run$output,
+    "Wrote BLUPF90-family comparator files",
+    fixed = TRUE
+  )
 
   data_file <- file.path(write_dir, "multivariate-animal.dat")
   ped_file <- file.path(write_dir, "multivariate-animal.ped")
