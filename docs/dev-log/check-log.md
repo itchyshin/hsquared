@@ -4072,3 +4072,81 @@ Remote follow-up for committed slice `774284f`:
   - `curl -L --max-time 20 -s
     'https://itchyshin.github.io/hsquared/extra.css?theme-check=68101a3'`
     confirmed the live CSS now serves the light sky gradient and navy text.
+
+## 2026-06-18 Retire static mission-control pkgdown article
+
+- Context: a disposable live monitor now serves the mission-control board from
+  gitignored `.mission-control/` (`python3 .mission-control/serve.py` on
+  127.0.0.1:8781), so the static in-package pkgdown article was retired. The
+  monitor is not a package surface.
+- Edits:
+  - `git rm vignettes/articles/mission-control.Rmd`.
+  - `_pkgdown.yml` - removed the navbar menu entry and the articles-index entry.
+  - `README.md` - removed the mission-control page paragraph.
+  - `NEWS.md` - removed the unreleased "Added a pkgdown mission-control
+    dashboard" bullet (the feature never shipped in a release).
+  - `.gitignore` - added `.mission-control/`.
+  - `.Rbuildignore` - added `^\.mission-control$`.
+- Reference scan: `grep -rinE "mission.control"` across `*.Rmd/*.yml/*.md/*.R`
+  (excluding the generated site, the monitor folder, and historical dev-log) -
+  no remaining live references.
+- Checks (RSTUDIO_PANDOC=.../aarch64, Rscript --vanilla):
+  - `pkgdown::check_pkgdown()` - passed, "No problems found."
+  - `pkgdown::build_site(preview = FALSE)` - built clean; rebuilt navbar has 0
+    "Mission control" hits; no live page links to the removed article; stale
+    orphan `pkgdown-site/articles/mission-control.html` removed locally.
+  - `devtools::check(document = FALSE, args = "--no-manual")` - first run
+    0 errors / 0 warnings / 1 NOTE (hidden-dir NOTE for `.mission-control`);
+    after the `.Rbuildignore` fix, re-run 0 / 0 / 0.
+- Not committed or pushed (awaiting maintainer go); remote CI not re-checked.
+
+## 2026-06-18 R-safe finishing: suite green + release hygiene (WORDLIST, Language)
+
+- Full test suite (`devtools::test_local`, silent reporter): 632 pass, 0 fail,
+  0 warn, 32 skip-guarded (Julia bridge) across 18 files.
+- Spelling: `spelling::spell_check_package()` reported 110 domain terms
+  (technical vocabulary, not typos: NelderMead, PEV, VanRaden, sommer,
+  polyploid, oneAPI, haplodiploid, etc.). `spelling::update_wordlist(vignettes =
+  TRUE)` wrote `inst/WORDLIST` (110 terms); re-run spell_check 110 -> 0.
+- DESCRIPTION: added `Language: en-US` (CRAN / spelling recommendation; was
+  missing).
+- `devtools::check(document = FALSE, args = "--no-manual")` after the additions:
+  0 errors / 0 warnings / 0 notes.
+- Context: the ultracode finish-readiness review (`wf_c6e56a2d-5bc`) ran its 8
+  lens passes but synthesis stalled (~6 min silence, no punch-list output);
+  proceeded hands-on with the above R-safe release-hygiene rather than block.
+- Not committed or pushed (commit only when the maintainer asks).
+
+## 2026-06-18 Engine-setup onboarding + review honesty fixes (5-lens parallel batch)
+
+Implemented via a 5-lens parallel workflow (disjoint files); operator ran the
+toolchain once after.
+
+- Findings addressed (finish-readiness punch-list, docs/dev-log/2026-06-18-finish-readiness-punchlist.md):
+  - #6/#24 engine-setup onboarding: README `### Engine setup`, vignettes/hsquared.Rmd
+    `## Engine setup`, fitting-models.Rmd pointer; rewrote the install-failure stop()
+    in R/hsquared.R to name `HSQUARED_JULIA_PROJECT`, `engine_control$julia_project`,
+    `git clone https://github.com/itchyshin/HSquared.jl`, and the `engine = "validate"`
+    fallback. Honest: HSquared.jl is a from-source Julia checkout.
+  - #1 Julia fit-target honesty: the validate branch, bridge payload
+    `julia_fit_target`, and `model_spec()` summary now all report `spec$bridge$target`
+    (one source of truth) -> correct fit_multivariate_reml / fit_repeatability_reml /
+    fit_two_effect_reml for opt-in models. Updated test-bridge-payload.R and
+    test-model-spec-inspect.R, which pinned the old divergent strings.
+  - #2 hs_stop_planned_marker(): no longer claims the parser accepts only animal(...)
+    or lists genomic/single-step as unimplemented; points to formula_status();
+    preserves the pinned "is planned, not implemented".
+  - #4 hs_fit_boundary_flag(): detects a near-zero primary genetic/effect component
+    by name (animal/genomic/single_step), so genomic and single-step fits surface
+    at_boundary. New test-boundary-genomic.R.
+- New tests: test-engine-setup-and-honesty.R (18 expectations), test-boundary-genomic.R.
+- Checks (RSTUDIO_PANDOC + Rscript --vanilla): air format . clean; devtools::document()
+  (RoxygenNote 7.3.2); devtools::test() 652 pass / 0 fail / 0 warn / 32 skip;
+  pkgdown::check_pkgdown() "No problems found."; devtools::check(--no-manual)
+  0 errors / 0 warnings / 0 notes (a transient 1-error from a stale pinned target
+  string was fixed before this record).
+- Follow-up noted: univariate default validate/preview reports
+  "fit_animal_model(...)" (the spec$bridge$target descriptor) rather than the
+  "fit_ai_reml" estimator name.
+- Committed locally; push (CI evidence) deferred to a checkpoint per the
+  local-checks-over-CI policy.

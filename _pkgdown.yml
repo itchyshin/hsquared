@@ -34,8 +34,6 @@ navbar:
           href: articles/g-matrix-interpretation.html
         - text: Inheritance systems roadmap
           href: articles/inheritance-systems.html
-        - text: Mission control
-          href: articles/mission-control.html
         - text: Model status
           href: articles/model-status.html
         - text: Formula grammar roadmap
@@ -91,7 +89,6 @@ articles:
       - articles/multivariate
       - articles/g-matrix-interpretation
       - articles/inheritance-systems
-      - articles/mission-control
       - articles/model-status
       - articles/formula-grammar
       - articles/genomics-gpu-roadmap

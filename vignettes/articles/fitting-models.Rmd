@@ -13,8 +13,11 @@ knitr::opts_chunk$set(eval = FALSE)
 
 This article shows the models `hsquared` can fit. Fitting is computed in the
 sibling `HSquared.jl` engine, so every example needs a local Julia, the
-`JuliaCall` package, and an `HSquared.jl` checkout. The code chunks are not run
-when this page is built (the build host has no Julia).
+`JuliaCall` package, and an `HSquared.jl` checkout. Register the checkout with
+`Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")` or per call via
+`control = hs_control(engine_control = list(julia_project = "/path/to/HSquared.jl"))`;
+see the README or "Getting started" article for full setup. The code chunks are
+not run when this page is built (the build host has no Julia).
 
 All fits are by REML. ML is not implemented; `REML = FALSE` is rejected on the
 fit path.

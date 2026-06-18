@@ -5,11 +5,6 @@ quantitative-genetic modelling system. The R package owns the applied-user
 surface: formula syntax, data validation, summaries, extractors, examples, and
 eventually the bridge to the `HSquared.jl` engine.
 
-The pkgdown site includes a [mission control
-page](https://itchyshin.github.io/hsquared/articles/mission-control.html) that
-summarizes current lanes, evidence gates, and blocked claims for the R and
-Julia twin project.
-
 Version 0.1 fits the univariate Gaussian animal model
 `y ~ fixed + animal(1 | id, pedigree = ped)` by REML through the `HSquared.jl`
 engine. The default `hsquared()` call fits the model and returns heritability,
@@ -226,6 +221,43 @@ local [`HSquared.jl`](https://github.com/itchyshin/HSquared.jl) checkout (the
 engine that performs the fit). Without them, `hsquared()` still parses and
 validates the model — `control = hs_control(engine = "validate")` — but the
 default fit call errors with install guidance.
+
+### Engine setup
+
+`HSquared.jl` is a from-source Julia checkout, not a package-managed
+dependency: `pak::pak("itchyshin/hsquared")` installs the R package only. To
+reach a working fit:
+
+1. Install [Julia](https://julialang.org/downloads/) and the bridge R package:
+
+   ```r
+   install.packages("JuliaCall")
+   ```
+
+2. Clone the engine to a local directory:
+
+   ```sh
+   git clone https://github.com/itchyshin/HSquared.jl
+   ```
+
+3. Tell `hsquared` where the checkout lives, in one of two ways:
+
+   ```r
+   # (a) for the session, or persistently via .Renviron
+   Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
+
+   # (b) per call
+   fit <- hsquared(
+     y ~ sex + age + animal(1 | id, pedigree = ped),
+     data = dat,
+     control = hs_control(
+       engine_control = list(julia_project = "/path/to/HSquared.jl")
+     )
+   )
+   ```
+
+Until the engine is registered, `control = hs_control(engine = "validate")`
+parses and validates the model without fitting.
 
 ## Development
 
