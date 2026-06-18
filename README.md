@@ -20,7 +20,10 @@ The v0.1 fit is validated by known-truth recovery (a replicated DGP study in
 which the engine recovers the generating variance components near-unbiased), by
 the published gryphon REML estimate (Wilson et al. 2010, which the engine
 recovers within the maintainer-signed-off comparator band), and by agreement
-with the `sommer` package. The fitted-object
+with the `sommer` package. These engine-recovery results are validated locally
+through the R-to-Julia bridge and require a local Julia plus an `HSquared.jl`
+checkout; public CI exercises the equivalent pure-R REML reference and
+skip-guards the live-engine tests (no Julia in CI). The fitted-object
 extractors — variance components, heritability, EBVs/BLUPs, PEV, reliability,
 accuracy, fixed effects, random effects, log-likelihood, AIC, prediction, fitted
 values, residuals, `summary()`, `coef()`, `nobs()`, and `fit_diagnostics()`

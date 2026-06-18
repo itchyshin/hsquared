@@ -4150,3 +4150,23 @@ toolchain once after.
   "fit_ai_reml" estimator name.
 - Committed locally; push (CI evidence) deferred to a checkpoint per the
   local-checks-over-CI policy.
+
+## 2026-06-18 Finishing wave 2: CI policy, claim-attribution honesty, negative controls
+
+4-lens parallel workflow (wf_0edbc10e-468); operator verified + integrated.
+
+- #10 CI policy: .github/workflows/R-CMD-check.yaml now triggers on `pull_request` +
+  `workflow_dispatch` only (removed `push`), per the local-checks-over-CI policy;
+  pkgdown.yaml keeps push-to-main (deploys docs) + workflow_dispatch. YAML validated.
+- #5/#11 claim-attribution honesty: README.md + NEWS.md now clarify the engine-recovery
+  results (gryphon, DGP) are validated locally via the R->Julia bridge, while public CI
+  exercises the pure-R reference and skip-guards the live-engine tests. True claims kept;
+  DESCRIPTION correctly left unchanged (no recovery claim there).
+- #23 dead-code: REJECTED as a false positive — hs_fit_julia_payload() is the live
+  default-fit dispatch (R/hsquared.R:387) plus 2 active tests; no change made.
+- #21 negative control: new tests/testthat/test-negative-control.R (5 test-of-test
+  blocks, ~26 assertions) proving the pure-R reference comparisons (Henderson, Mrode,
+  gryphon band, REML band, DGP band) reject deliberately-wrong values.
+- Checks: air format clean; devtools::document(); devtools::test() 678 pass / 0 fail /
+  0 warn / 32 skip; pkgdown::check_pkgdown() clean; devtools::check(--no-manual) 0/0/0.
+- Committed locally; push (CI evidence) deferred to a checkpoint.
