@@ -22,6 +22,21 @@
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
 #'   `iterations`, `target`, and `variance_components`.
+#'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
+#'   it has no effect under the default `engine = "fit"` path. The supported
+#'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
+#'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"genomic"`,
+#'   `"single_step"`, `"snp_blup"`, and `"multivariate"`, described below.
+#'   With `engine = "julia"` and no `target`, the bridge defaults to
+#'   `target = "fit_animal_model"`: it surfaces the Julia-owned
+#'   `HSquared.fit_animal_model()` dense NelderMead optimizer, honouring the
+#'   `REML` flag. This is **not** the same estimator as the default
+#'   `engine = "fit"` path, which runs the validated average-information REML
+#'   estimator (`HSquared.fit_ai_reml()`, the same one reached by
+#'   `target = "ai_reml"`). The two paths target the same Gaussian animal model
+#'   but differ at the optimizer level, so their estimates can differ slightly.
+#'   Reach the validated estimator with `engine = "fit"` (the ordinary path) or
+#'   with `engine = "julia"` and `target = "ai_reml"`.
 #'   `target = "henderson_mme"` is a supplied-variance validation path and
 #'   requires `variance_components` with named `sigma_a2` and `sigma_e2` values.
 #'   `target = "sparse_reml"` is an experimental, opt-in validation path that

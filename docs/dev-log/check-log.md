@@ -4170,3 +4170,19 @@ toolchain once after.
 - Checks: air format clean; devtools::document(); devtools::test() 678 pass / 0 fail /
   0 warn / 32 skip; pkgdown::check_pkgdown() clean; devtools::check(--no-manual) 0/0/0.
 - Committed locally; push (CI evidence) deferred to a checkpoint.
+
+## 2026-06-18 Finishing wave 3: engine-target docs + boundary-flag generalization
+
+2-lens parallel workflow (wf_9e905c7a-fd6); operator verified + integrated.
+- #12/#13: documented the engine_control$target menu in ?hs_control (R/hs_control.R):
+  enumerates the 10 targets and clarifies engine="fit" uses the validated AI-REML
+  estimator while engine="julia" with no target uses the dense fit_animal_model
+  optimizer (results can differ at the optimizer level). Docs only; no behaviour change.
+- #18: hs_fit_boundary_flag() (R/extractors.R) now flags at_boundary when ANY
+  variance-component share <= tol (residual sigma_e2->0 / h2->1, or a near-zero second
+  effect), subsuming the prior primary-component-only check; multivariate unchanged.
+  3 new cases in test-boundary-genomic.R.
+- Checks: air clean; devtools::document() (rewrote man/hs_control.Rd); devtools::test()
+  681 pass / 0 fail / 0 warn / 32 skip; pkgdown::check_pkgdown() clean;
+  devtools::check(--no-manual) 0/0/0.
+- Committed locally; push deferred.

@@ -35,6 +35,21 @@ exposes the advanced opt-in bridge with explicit \code{target} control.}
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{target}, and \code{variance_components}.
+\code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
+it has no effect under the default \code{engine = "fit"} path. The supported
+targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
+\code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"genomic"},
+\code{"single_step"}, \code{"snp_blup"}, and \code{"multivariate"}, described below.
+With \code{engine = "julia"} and no \code{target}, the bridge defaults to
+\code{target = "fit_animal_model"}: it surfaces the Julia-owned
+\code{HSquared.fit_animal_model()} dense NelderMead optimizer, honouring the
+\code{REML} flag. This is \strong{not} the same estimator as the default
+\code{engine = "fit"} path, which runs the validated average-information REML
+estimator (\code{HSquared.fit_ai_reml()}, the same one reached by
+\code{target = "ai_reml"}). The two paths target the same Gaussian animal model
+but differ at the optimizer level, so their estimates can differ slightly.
+Reach the validated estimator with \code{engine = "fit"} (the ordinary path) or
+with \code{engine = "julia"} and \code{target = "ai_reml"}.
 \code{target = "henderson_mme"} is a supplied-variance validation path and
 requires \code{variance_components} with named \code{sigma_a2} and \code{sigma_e2} values.
 \code{target = "sparse_reml"} is an experimental, opt-in validation path that
