@@ -77,7 +77,8 @@ summary.hsquared_fit <- function(object, ...) {
       fixed_effects = object$result$fixed_effects,
       diagnostics = object$result$diagnostics,
       converged = object$result$converged,
-      at_boundary = hs_fit_boundary_flag(object)
+      at_boundary = hs_fit_boundary_flag(object),
+      at_boundary_class = hs_fit_boundary_class(object)
     ),
     class = "summary_hsquared_fit"
   )
@@ -92,11 +93,20 @@ print.summary_hsquared_fit <- function(x, ...) {
     cat("  converged: ", isTRUE(x$converged), "\n", sep = "")
   }
   if (isTRUE(x$at_boundary)) {
-    cat(
-      "  at boundary: TRUE (a variance component is at/near zero; ",
-      "heritability is a boundary estimate, not an ordinary interior one)\n",
-      sep = ""
-    )
+    if (identical(x$at_boundary_class, "negative")) {
+      cat(
+        "  at boundary: TRUE (a variance component is NEGATIVE; the fit is ",
+        "inadmissible, not a clean boundary, and heritability cannot be read ",
+        "as an ordinary interior estimate)\n",
+        sep = ""
+      )
+    } else {
+      cat(
+        "  at boundary: TRUE (a variance component is at/near zero; ",
+        "heritability is a boundary estimate, not an ordinary interior one)\n",
+        sep = ""
+      )
+    }
   }
   invisible(x)
 }

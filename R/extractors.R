@@ -677,7 +677,10 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
       if (!is.null(object$payload$y)) length(object$payload$y) else NULL,
     dense_validation_path = diagnostics$dense_validation_path,
     variance_components_source = diagnostics$variance_components,
-    at_boundary = hs_fit_boundary_flag(object)
+    at_boundary = hs_fit_boundary_flag(object),
+    at_boundary_condition = hs_fit_boundary_condition_label(
+      hs_fit_boundary_class(object)
+    )
   )
 
   diagnostic_names <- names(diagnostics)
@@ -712,39 +715,95 @@ print.hs_fit_diagnostics <- function(x, ...) {
   invisible(x)
 }
 
-# Flag whether the fit sits at a variance-component boundary, so a boundary
-# estimate is not silently read as an ordinary interior one. A fit is at the
-# boundary when ANY variance component it reports is at/near zero relative to the
-# variance total: the primary genetic / effect component (h2 -> 0), the residual
-# (sigma_e2 -> 0, i.e. h2 -> 1), or a second effect such as permanent,
-# common-environment, or maternal (-> 0). Computed from the returned variance
-# components; returns NULL (row dropped) when they are unavailable. The primary
-# genetic / effect component is named differently across targets ("animal" for
-# the pedigree animal model, "genomic" for genomic and SNP-BLUP fits,
-# "single_step" for single-step fits), so the check first confirms exactly one
-# primary component is present. This restricts the flag to the univariate,
+# Classify the variance-component boundary condition, distinguishing a benign
+# near-zero boundary from an inadmissible NEGATIVE variance estimate. Returns
+# one of "zero" (0 <= min share <= tol), "negative" (min share < 0, an
+# inadmissible fit, not a clean boundary), FALSE (interior), or NULL when the
+# components are unavailable or the layout is not a single-primary one. A NULL is
+# also returned when the variance shape is not a list (e.g. an atomic vector or
+# matrix), so a malformed payload drops the row rather than crashing the caller
+# with "$ operator is invalid for atomic vectors" (a data.frame IS a list, so
+# the normal path proceeds). The negative case is surfaced separately because a
+# negative variance is inadmissible: it must not be read as the at/near-zero
+# boundary that the v0.1 contract (item 4) treats as a clean h2 -> 0 / 1 edge.
+hs_fit_boundary_class <- function(object, tol = 1e-4) {
+  vc <- object$result$variance_components
+  if (!is.list(vc)) {
+    return(NULL)
+  }
+  if (is.null(vc$estimate) || is.null(vc$component)) {
+    return(NULL)
+  }
+  est <- as.numeric(vc$estimate)
+  primary_names <- c("animal", "genomic", "single_step")
+  primary <- est[vc$component %in% primary_names]
+  if (length(primary) != 1L) {
+    return(NULL)
+  }
+  if (any(!is.finite(est))) {
+    return(NULL)
+  }
+  # A negative component is inadmissible regardless of the total scale, so check
+  # the raw sign before normalizing (a negative estimate can drive the total
+  # non-positive, which would otherwise drop the row).
+  if (min(est) < 0) {
+    return("negative")
+  }
+  total <- sum(est)
+  if (total <= 0) {
+    return(NULL)
+  }
+  shares <- est / total
+  if (min(shares) <= tol) {
+    "zero"
+  } else {
+    FALSE
+  }
+}
+
+# Logical boundary flag for the `at_boundary` diagnostics row: TRUE when the fit
+# sits at a variance-component boundary. A near-zero ("zero") component and an
+# inadmissible negative ("negative") estimate both count as not-interior here;
+# the distinct wording for the negative case is carried by
+# hs_fit_boundary_class() / the `at_boundary_condition` row. Returns NULL when
+# the class is unavailable (row dropped), preserving the unavailable -> NULL
+# contract.
+#
+# A fit is at the boundary when ANY variance component it reports is at/near zero
+# relative to the variance total: the primary genetic / effect component
+# (h2 -> 0), the residual (sigma_e2 -> 0, i.e. h2 -> 1), or a second effect such
+# as permanent, common-environment, or maternal (-> 0). The primary genetic /
+# effect component is named differently across targets ("animal" for the
+# pedigree animal model, "genomic" for genomic and SNP-BLUP fits, "single_step"
+# for single-step fits), so the check first confirms exactly one primary
+# component is present. This restricts the flag to the univariate,
 # repeatability, two-effect, genomic, and single-step layouts (each has one
 # primary component) and leaves multivariate fits unflagged (NULL), since they
 # report per-trait "genetic"/"residual" diagonals rather than a single primary
 # share. This is the surfacing half of the v0.1 promotion predicate item 4; the
 # engine (HSquared.jl) owns boundary-stable optimization.
 hs_fit_boundary_flag <- function(object, tol = 1e-4) {
-  vc <- object$result$variance_components
-  if (is.null(vc) || is.null(vc$estimate) || is.null(vc$component)) {
+  cls <- hs_fit_boundary_class(object, tol = tol)
+  if (is.null(cls)) {
     return(NULL)
   }
-  est <- as.numeric(vc$estimate)
-  total <- sum(est)
-  if (!is.finite(total) || total <= 0) {
+  cls %in% c("zero", "negative")
+}
+
+# Map a boundary class to the `at_boundary_condition` diagnostics value. Only the
+# at/near-zero and inadmissible-negative cases get a row (NULL is dropped by the
+# caller), so the condition row appears exactly when it carries information the
+# logical `at_boundary` flag cannot: which kind of boundary the fit hit.
+hs_fit_boundary_condition_label <- function(cls) {
+  if (is.null(cls) || isFALSE(cls)) {
     return(NULL)
   }
-  primary_names <- c("animal", "genomic", "single_step")
-  primary <- est[vc$component %in% primary_names]
-  if (length(primary) != 1L) {
-    return(NULL)
-  }
-  shares <- est / total
-  isTRUE(min(shares) <= tol)
+  switch(
+    cls,
+    zero = "at/near zero (clean boundary)",
+    negative = "negative (inadmissible variance)",
+    NULL
+  )
 }
 
 hs_diagnostic_value <- function(x) {

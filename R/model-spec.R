@@ -10,6 +10,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   hs_validate_model_inputs(formula, data, family, REML)
 
   rhs_terms <- hs_split_additive_rhs(formula[[3L]])
+
+  # A bare `.` (all-other-columns shorthand) would otherwise reach
+  # `model.frame()` and abort with the cryptic base-R error "'.' in formula and
+  # no 'data' argument". Reject it by name and point to explicit fixed terms.
+  hs_check_dot_term(rhs_terms)
+
   # Planned QG markers the parser now consumes: `permanent()`/`common_env()`/
   # `maternal_genetic()` as the second random effect of an opt-in two-effect
   # model, and `genomic()` as an opt-in primary genomic effect. Every other
@@ -118,6 +124,12 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   }
 
   fixed_terms <- rhs_terms[-c(primary_pos, second_pos)]
+
+  # An `offset()` term is silently dropped from the fixed design (and the bridge
+  # payload) by `model.matrix()`. Reject it by name, mirroring the bare-bar and
+  # nested-effect guards, rather than quietly ignoring the user's offset.
+  hs_check_offset_term(fixed_terms)
+
   fixed_formula <- formula
   fixed_formula[[3L]] <- hs_rebuild_additive_rhs(fixed_terms)
   environment(fixed_formula) <- env
@@ -151,6 +163,14 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   )
 
   fixed_terms_obj <- stats::terms(fixed_formula)
+
+  # `model.matrix()` aborts with a cryptic base-R error ("contrasts can be
+  # applied only to factors with 2 or more levels") on a zero-row model.frame or
+  # a factor/character fixed effect with fewer than two observed levels. Catch
+  # both first and name the offending term, consistent with the rank-deficient
+  # wording below.
+  hs_validate_fixed_model_frame(fixed_frame)
+
   fixed_design <- stats::model.matrix(fixed_terms_obj, data = model_frame)
   hs_validate_fixed_design(fixed_design)
 
@@ -224,6 +244,7 @@ hs_build_response_spec <- function(lhs, response) {
   }
 
   if (multivariate) {
+    hs_validate_cbind_bare_columns(hs_unwrap_parentheses(lhs))
     values <- unname(as.matrix(response))
     if (!is.numeric(values)) {
       stop("Multivariate `cbind()` responses must be numeric.", call. = FALSE)
@@ -287,7 +308,7 @@ hs_build_response_spec <- function(lhs, response) {
   }
 
   list(
-    name = all.vars(lhs)[1L],
+    name = hs_deparse(lhs),
     values = as.numeric(response),
     trait_names = NULL,
     multivariate = FALSE
@@ -321,6 +342,110 @@ hs_validate_multivariate_trait_names <- function(trait_names) {
       paste0(" (", paste(detail, collapse = "; "), ")")
     },
     ". Rename or wrap response columns before fitting.",
+    call. = FALSE
+  )
+}
+
+# Reject a multivariate `cbind()` response whose arguments are not bare trait
+# column symbols (e.g. `cbind(y1, y1 + y2)` or `cbind(log(y1), y2)`). A derived
+# column would otherwise be mislabelled from `all.vars(lhs)`, giving a
+# confidently wrong trait name. Bare-column `cbind(y1, y2)` is left untouched.
+hs_validate_cbind_bare_columns <- function(lhs) {
+  args <- as.list(lhs)[-1L]
+  bare <- vapply(args, is.symbol, logical(1L))
+  if (all(bare)) {
+    return(invisible(TRUE))
+  }
+  offending <- vapply(args[!bare], hs_deparse, character(1L))
+  stop(
+    "v0.1 multivariate responses require bare trait columns inside ",
+    "`cbind()`. Derived or transformed column",
+    if (length(offending) > 1L) "s " else " ",
+    paste(sprintf("`%s`", offending), collapse = ", "),
+    if (length(offending) > 1L) " are " else " is ",
+    "not supported. Create the columns in `data` first, then list them as ",
+    "`cbind(trait1, trait2, ...)`.",
+    call. = FALSE
+  )
+}
+
+# Reject a zero-row model.frame or a factor/character fixed effect with fewer
+# than two observed levels before `model.matrix()` is built. `fixed_frame` is
+# the model.frame with the response column removed (the fixed-effect columns).
+# Without this guard base R aborts with "contrasts can be applied only to
+# factors with 2 or more levels", which names neither the variable nor the
+# cause.
+hs_validate_fixed_model_frame <- function(fixed_frame) {
+  if (length(fixed_frame) == 0L) {
+    return(invisible(TRUE))
+  }
+  if (nrow(fixed_frame) == 0L) {
+    stop(
+      "The fixed-effect model frame has zero rows. Provide `data` with at ",
+      "least one observed record before fitting.",
+      call. = FALSE
+    )
+  }
+  for (nm in names(fixed_frame)) {
+    column <- fixed_frame[[nm]]
+    if (!is.factor(column) && !is.character(column)) {
+      next
+    }
+    n_levels <- length(unique(column[!is.na(column)]))
+    if (n_levels < 2L) {
+      stop(
+        "The fixed-effect term `",
+        nm,
+        "` has ",
+        if (n_levels == 0L) "no observed levels" else "only one observed level",
+        ", so it cannot be coded as a contrast. Drop it or supply at least two ",
+        "levels before fitting.",
+        call. = FALSE
+      )
+    }
+  }
+  invisible(TRUE)
+}
+
+# Reject an `offset()` term in the fixed RHS. `model.matrix()` would otherwise
+# silently drop it from both the design matrix and the bridge payload, so the
+# offset the user wrote would have no effect. Mirror the bare-bar and
+# nested-effect guards by naming the offending term.
+hs_check_offset_term <- function(fixed_terms) {
+  offset_pos <- which(vapply(
+    fixed_terms,
+    function(e) hs_is_call(hs_unwrap_parentheses(e), "offset"),
+    logical(1L)
+  ))
+  if (length(offset_pos) == 0L) {
+    return(invisible(NULL))
+  }
+  stop(
+    "Offset terms (`",
+    hs_deparse(fixed_terms[[offset_pos[[1L]]]]),
+    "`) are planned, not implemented in v0.1. Remove the `offset()` term ",
+    "before fitting. Run `formula_status()` for the live list of which terms ",
+    "parse and which fit.",
+    call. = FALSE
+  )
+}
+
+# Reject a bare `.` (the all-other-columns shorthand) among the split RHS
+# terms. Left alone it would reach `model.frame()` and abort with the cryptic
+# base-R error "'.' in formula and no 'data' argument".
+hs_check_dot_term <- function(rhs_terms) {
+  is_dot <- vapply(
+    rhs_terms,
+    function(e) is.symbol(e) && identical(as.character(e), "."),
+    logical(1L)
+  )
+  if (!any(is_dot)) {
+    return(invisible(NULL))
+  }
+  stop(
+    "The `.` all-columns shorthand is not supported. List the fixed-effect ",
+    "terms explicitly, for example ",
+    "`y ~ sex + age + animal(1 | id, pedigree = ped)`.",
     call. = FALSE
   )
 }
@@ -970,36 +1095,79 @@ hs_topological_pedigree <- function(ids, sire, dam) {
   sire_index[is.na(sire_index)] <- 0L
   dam_index[is.na(dam_index)] <- 0L
 
-  state <- integer(length(ids))
-  order <- integer()
+  # Iterative DFS post-order (explicit stack) emulating the former recursion so
+  # deep linear pedigrees no longer overflow the call stack or get misreported
+  # as cycles. The ordering is identical to the recursive version: for each node
+  # we fully process the sire subtree, then the dam subtree, then emit the node.
+  # `state` codes 0 = unseen (white), 1 = on the stack (grey), 2 = done (black);
+  # re-entering a grey node is a real parent-offspring cycle.
+  n <- length(ids)
+  state <- integer(n)
+  order <- integer(n)
+  n_emitted <- 0L
 
-  visit <- function(index) {
-    if (state[[index]] == 2L) {
-      return(invisible(NULL))
-    }
-    if (state[[index]] == 1L) {
-      stop(
-        "`pedigree` contains a parent-offspring cycle involving ID `",
-        ids[[index]],
-        "`.",
-        call. = FALSE
-      )
-    }
+  # Each stack frame is a node `index` with a `phase`: 0 = on entry (mark grey,
+  # then descend to sire), 1 = sire subtree done (descend to dam), 2 = dam
+  # subtree done (mark black, emit). Frames are stored in parallel vectors with
+  # a top pointer to avoid per-push reallocation on deep pedigrees.
+  cap <- max(n, 1L)
+  stack_index <- integer(cap)
+  stack_phase <- integer(cap)
+  top <- 0L
 
-    state[[index]] <<- 1L
-    if (sire_index[[index]] != 0L) {
-      visit(sire_index[[index]])
+  push <- function(index, phase) {
+    top <<- top + 1L
+    if (top > length(stack_index)) {
+      new_cap <- length(stack_index) * 2L
+      stack_index <<- c(stack_index, integer(new_cap - length(stack_index)))
+      stack_phase <<- c(stack_phase, integer(new_cap - length(stack_phase)))
     }
-    if (dam_index[[index]] != 0L) {
-      visit(dam_index[[index]])
-    }
-    state[[index]] <<- 2L
-    order <<- c(order, index)
+    stack_index[[top]] <<- index
+    stack_phase[[top]] <<- phase
     invisible(NULL)
   }
 
-  for (index in seq_along(ids)) {
-    visit(index)
+  for (start in seq_len(n)) {
+    if (state[[start]] != 0L) {
+      next
+    }
+    push(start, 0L)
+    while (top > 0L) {
+      index <- stack_index[[top]]
+      phase <- stack_phase[[top]]
+
+      if (phase == 0L) {
+        # Entry: a grey node here means we re-entered a node still on the stack,
+        # i.e. a true parent-offspring cycle. A black node was already emitted.
+        if (state[[index]] == 2L) {
+          top <- top - 1L
+          next
+        }
+        if (state[[index]] == 1L) {
+          stop(
+            "`pedigree` contains a parent-offspring cycle involving ID `",
+            ids[[index]],
+            "`.",
+            call. = FALSE
+          )
+        }
+        state[[index]] <- 1L
+        stack_phase[[top]] <- 1L
+        if (sire_index[[index]] != 0L) {
+          push(sire_index[[index]], 0L)
+        }
+      } else if (phase == 1L) {
+        stack_phase[[top]] <- 2L
+        if (dam_index[[index]] != 0L) {
+          push(dam_index[[index]], 0L)
+        }
+      } else {
+        state[[index]] <- 2L
+        n_emitted <- n_emitted + 1L
+        order[[n_emitted]] <- index
+        top <- top - 1L
+      }
+    }
   }
 
   sorted_position <- integer(length(ids))

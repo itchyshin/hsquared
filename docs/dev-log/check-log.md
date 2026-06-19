@@ -4212,3 +4212,29 @@ toolchain once after.
   0 warn / 32 skip; pkgdown::check_pkgdown() clean (after adding response_scale_methods to
   the reference index); devtools::check(--no-manual) 0/0/0.
 - Committed locally; push deferred.
+
+## 2026-06-18 Deep core fixes: 8 correctness/robustness findings (parser/pedigree/boundary)
+
+2-lens parallel workflow (wf_f77503d3-1f1) on the deep-pass findings; operator verified.
+- #1 single-level / zero-row factor fixed effect -> named error before model.matrix (was a
+  base-R "contrasts can be applied only to factors with 2 or more levels" leak).
+- #2 offset() -> clean unsupported-syntax error (was silently dropped from design + payload).
+- #3 univariate response name uses hs_deparse(lhs) (log(y) labelled "log(y)", not "y").
+- #4 cbind() derived/transformed columns rejected with a named message (was a confidently
+  WRONG trait label from all.vars()).
+- #5 bare "." in formula RHS -> clean unsupported-syntax error (was a base-R "'.' in formula
+  and no 'data' argument" leak).
+- #6 hs_topological_pedigree() rewritten from R recursion to an iterative Kahn / explicit-stack
+  sort (byte-identical ordering verified over 200 random pedigrees; same cycle message); deep
+  pedigrees no longer stack-overflow or get misreported as cycles.
+- #7 negative variance reported as inadmissible (distinct from at/near-zero) via new
+  at_boundary_class / at_boundary_condition; the at_boundary row stays TRUE/FALSE.
+- #8 hs_fit_boundary_class() guards a non-list variance_components shape (no more
+  "$ operator is invalid for atomic vectors" crash in summary()/fit_diagnostics()).
+- New tests: tests/testthat/test-parser-robustness.R, tests/testthat/test-boundary-edge.R
+  (operator fixed an over-strict expect_silent(print()) -> capture.output).
+- Checks: air clean; devtools::document(); devtools::test() 734 pass / 0 fail / 0 warn /
+  32 skip; pkgdown::check_pkgdown() clean; devtools::check(--no-manual) 0/0/0.
+- Follow-up (docs, minor): formula_status()/man could note offset() and "." now error and
+  multivariate cbind() requires bare columns.
+- Committed locally; push deferred.
