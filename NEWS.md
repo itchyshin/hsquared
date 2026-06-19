@@ -7,6 +7,7 @@
 * **Experimental:** `repeatability_interval()` returns a logit delta-method confidence interval for the repeatability coefficient `t = (Va + Vpe) / Vp` from the opt-in repeatability model, when the engine provides one. It mirrors the engine row `V3-REPEAT-REML` (`partial`): engine-internal self-consistency tested (recovery of `t` + interval bracketing on seeded fixtures) but with no external comparator, no `h²` interval, and no deep-pedigree validation; reported as a point estimate plus bounds only (#12).
 * `summary()`/`print()` for `hsquared_fit` now display the experimental heritability confidence interval, variance-component and heritability standard errors, and repeatability interval when a fit carries them, clearly labelled experimental and asymptotic (#28).
 * New "Benchmark: hsquared vs sommer and pedigreemm" article documents the v0.1 Gaussian animal-model fit agreeing with `sommer` and the published gryphon anchor within the signed-off band, with reproducing code and the `pedigreemm` one-sided log-likelihood floor (#31).
+* Added a base-graphics `plot()` method for `hsquared_fit`: `type = "variance"` plots the variance components (with experimental `+/- 1.96 SE` whiskers when present) and `type = "residuals"` plots residuals against fitted values (#30).
 
 # hsquared 0.1.0
 

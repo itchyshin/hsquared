@@ -78,6 +78,7 @@ reference:
       - prediction_error_variance
       - reliability
       - fit_diagnostics
+      - plot.hsquared_fit
       - inference_blocks
       - marker_extractors
       - fixef

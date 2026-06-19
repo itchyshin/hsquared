@@ -89,7 +89,7 @@ rows `partial`) → R surfaces stay experimental/partial.
 | # | Big item | Issue(s) | Lane |
 | --- | --- | --- | --- |
 | 1 | Validation depth (v0.1 unimpeachable) | #7 epic + ✅#31 (sommer/pedigreemm benchmark — **done**), #32 (Mrode beyond 3.1), #33 (comparator policy) | R-ownable |
-| 2 | Applied-user experience + figures | #27 epic + #28 (summary CI/SEs — **done**), #29 (gryphon vignette), #30 (Florence figures) | R-ownable |
+| 2 | Applied-user experience + figures | #27 epic + ✅#28 (summary CI/SEs), ✅#30 (base-R plot.hsquared_fit), #29 (gryphon vignette) | R-ownable |
 | 3 | Multivariate → covered | #10 + #34 (t≥2 recovery harness) + #26 (covariance SEs); twin HSquared.jl#41 | R harness + twin gate |
 | 4 | Factor-analytic unblock | #22 mirror; twin HSquared.jl#37 (calibration) + #42 (payload) | twin-led, R-prepared |
 
