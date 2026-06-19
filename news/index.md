@@ -64,6 +64,11 @@
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) — on the
   gryphon teaching dataset
   ([\#29](https://github.com/itchyshin/hsquared/issues/29)).
+- Added a second published external-canon anchor: a CI-runnable,
+  Julia-free test pinning the reference Henderson solver to the
+  published Mrode (2014) Example 3.2 **sire-model** solutions (p.48),
+  extending the canon to a second model class
+  ([\#32](https://github.com/itchyshin/hsquared/issues/32)).
 
 ## hsquared 0.1.0
 
