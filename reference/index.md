@@ -93,6 +93,8 @@ experimental targets.
   : Extract reliability and accuracy estimates
 - [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
   : Inspect fitted-model diagnostics
+- [`plot(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/plot.hsquared_fit.md)
+  : Diagnostic plots for a fitted animal model
 - [`confint(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)
   [`vcov(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)
   [`profile(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/inference_blocks.md)

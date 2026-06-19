@@ -61,6 +61,7 @@
 <li>
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>/<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> for <code>hsquared_fit</code> now display the experimental heritability confidence interval, variance-component and heritability standard errors, and repeatability interval when a fit carries them, clearly labelled experimental and asymptotic (<a href="https://github.com/itchyshin/hsquared/issues/28" class="external-link">#28</a>).</li>
 <li>New “Benchmark: hsquared vs sommer and pedigreemm” article documents the v0.1 Gaussian animal-model fit agreeing with <code>sommer</code> and the published gryphon anchor within the signed-off band, with reproducing code and the <code>pedigreemm</code> one-sided log-likelihood floor (<a href="https://github.com/itchyshin/hsquared/issues/31" class="external-link">#31</a>).</li>
+<li>Added a base-graphics <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method for <code>hsquared_fit</code>: <code>type = "variance"</code> plots the variance components (with experimental <code>+/- 1.96 SE</code> whiskers when present) and <code>type = "residuals"</code> plots residuals against fitted values (<a href="https://github.com/itchyshin/hsquared/issues/30" class="external-link">#30</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">

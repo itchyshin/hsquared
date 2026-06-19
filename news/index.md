@@ -43,6 +43,12 @@
   published gryphon anchor within the signed-off band, with reproducing
   code and the `pedigreemm` one-sided log-likelihood floor
   ([\#31](https://github.com/itchyshin/hsquared/issues/31)).
+- Added a base-graphics
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method for
+  `hsquared_fit`: `type = "variance"` plots the variance components
+  (with experimental `+/- 1.96 SE` whiskers when present) and
+  `type = "residuals"` plots residuals against fitted values
+  ([\#30](https://github.com/itchyshin/hsquared/issues/30)).
 
 ## hsquared 0.1.0
 
