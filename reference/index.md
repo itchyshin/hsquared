@@ -69,6 +69,8 @@ experimental targets.
   : Extract multivariate covariance and correlation matrices
 - [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)
   : Extract experimental multivariate covariance standard errors
+- [`covariance_structure_lrt()`](https://itchyshin.github.io/hsquared/reference/covariance_structure_lrt.md)
+  : Likelihood-ratio test for genetic covariance structure
 - [`genetic_loadings()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`specific_variance()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`latent_breeding_values()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)

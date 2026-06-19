@@ -69,6 +69,17 @@
   published Mrode (2014) Example 3.2 **sire-model** solutions (p.48),
   extending the canon to a second model class
   ([\#32](https://github.com/itchyshin/hsquared/issues/32)).
+- **Experimental:** the opt-in multivariate target now accepts
+  `engine_control = list(genetic_structure = "diagonal")` (a diagonal
+  genetic covariance — per-trait genetic variances with zero genetic
+  covariances; no rotation ambiguity). `"lowrank"`/`"factor_analytic"`
+  remain gated on a validated rotation convention. New
+  `covariance_structure_lrt(constrained, full)` reports the experimental
+  diagonal-vs-unstructured likelihood-ratio test (`2*Δloglik`,
+  `df = t(t-1)/2`, interior null, χ²) from two multivariate fits on the
+  same data — mirroring `V4-MV-REML` (`partial`): asymptotic, REML-only,
+  not a validated test
+  ([\#47](https://github.com/itchyshin/hsquared/issues/47)).
 
 ## hsquared 0.1.0
 
