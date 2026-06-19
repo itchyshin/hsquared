@@ -13,6 +13,15 @@
   coverage-calibrated and is unreliable at small `n`. It is reported as
   a point estimate plus bounds, not a validated capability
   ([\#11](https://github.com/itchyshin/hsquared/issues/11)).
+- **Experimental:**
+  [`variance_component_standard_errors()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)
+  and
+  [`heritability_standard_error()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)
+  return large-sample (delta-method) standard errors from the REML
+  average-information matrix, when the default Gaussian fit’s engine
+  provides them. Same `V1-HERIT-CI` (`partial`) caveats: asymptotic,
+  REML-only, omitted near a variance-component boundary (ill-conditioned
+  AI matrix), not coverage-calibrated, not a validated capability.
 
 ## hsquared 0.1.0
 
