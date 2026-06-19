@@ -643,32 +643,47 @@ hs_gaussian_loglik_reference <- function(
   Z <- as.matrix(Z)
   A <- solve(as.matrix(Ainv))
   V <- sigma_a2 * Z %*% A %*% t(Z) + sigma_e2 * diag(length(y))
-  cholV <- chol(V)
-  Vinv_y <- backsolve(cholV, forwardsolve(t(cholV), y))
-  Vinv_X <- backsolve(cholV, forwardsolve(t(cholV), X))
-  XtVinvX <- crossprod(X, Vinv_X)
-  beta <- solve(XtVinvX, crossprod(X, Vinv_y))
-  residual <- y - X %*% beta
-  quad <- drop(crossprod(
-    residual,
-    backsolve(
-      cholV,
-      forwardsolve(t(cholV), residual)
-    )
-  ))
-  logdetV <- 2 * sum(log(diag(cholV)))
   n <- length(y)
   p <- ncol(X)
 
-  if (identical(method, "ML")) {
-    loglik <- -0.5 * (n * log(2 * pi) + logdetV + quad)
-  } else {
-    cholXtVinvX <- chol(XtVinvX)
-    logdetXtVinvX <- 2 * sum(log(diag(cholXtVinvX)))
-    loglik <- -0.5 * ((n - p) * log(2 * pi) + logdetV + logdetXtVinvX + quad)
+  # Near the h2 -> 1 boundary (residual variance ~ 0), an overshooting optimizer
+  # can drive V to be numerically singular / non-positive-definite. A raw chol()
+  # error there would propagate out of optim() and abort the whole estimate, so
+  # treat any failed factorization or solve as an inadmissible point: return
+  # loglik = -Inf (the minimized negative log-likelihood becomes +Inf), which
+  # makes Nelder-Mead retreat from the bad region. Well-conditioned inputs are
+  # unaffected and reproduce the exact previous values.
+  evaluate <- function() {
+    cholV <- chol(V)
+    Vinv_y <- backsolve(cholV, forwardsolve(t(cholV), y))
+    Vinv_X <- backsolve(cholV, forwardsolve(t(cholV), X))
+    XtVinvX <- crossprod(X, Vinv_X)
+    beta <- solve(XtVinvX, crossprod(X, Vinv_y))
+    residual <- y - X %*% beta
+    quad <- drop(crossprod(
+      residual,
+      backsolve(
+        cholV,
+        forwardsolve(t(cholV), residual)
+      )
+    ))
+    logdetV <- 2 * sum(log(diag(cholV)))
+
+    if (identical(method, "ML")) {
+      loglik <- -0.5 * (n * log(2 * pi) + logdetV + quad)
+    } else {
+      cholXtVinvX <- chol(XtVinvX)
+      logdetXtVinvX <- 2 * sum(log(diag(cholXtVinvX)))
+      loglik <- -0.5 * ((n - p) * log(2 * pi) + logdetV + logdetXtVinvX + quad)
+    }
+
+    list(loglik = loglik, beta = as.numeric(beta))
   }
 
-  list(loglik = loglik, beta = as.numeric(beta))
+  tryCatch(
+    evaluate(),
+    error = function(e) list(loglik = -Inf, beta = rep(NA_real_, p))
+  )
 }
 
 # Independent pure-R REML/ML variance-component optimizer used only as a
@@ -694,18 +709,34 @@ hs_reml_estimate_reference <- function(
       method = method
     )$loglik
   }
-  opt <- stats::optim(
-    log(as.numeric(initial[c("sigma_a2", "sigma_e2")])),
-    objective,
-    method = "Nelder-Mead",
-    control = list(reltol = 1e-10, maxit = 1000L)
+  opt <- tryCatch(
+    stats::optim(
+      log(as.numeric(initial[c("sigma_a2", "sigma_e2")])),
+      objective,
+      method = "Nelder-Mead",
+      control = list(reltol = 1e-10, maxit = 1000L)
+    ),
+    # Never propagate a raw chol()/solve() error: if the optimization cannot be
+    # evaluated at all, report a non-zero convergence code with NA estimates so
+    # callers can detect failure instead of aborting.
+    error = function(e) {
+      list(par = c(NA_real_, NA_real_), value = Inf, convergence = 99L)
+    }
   )
   estimate <- exp(opt$par)
   names(estimate) <- c("sigma_a2", "sigma_e2")
+  loglik <- -opt$value
+  convergence <- opt$convergence
+  # If the optimum landed on an inadmissible (non-PD V) point, the objective is
+  # +Inf there; surface that as a non-zero convergence code rather than a
+  # spuriously "converged" non-finite estimate.
+  if (!is.finite(loglik) || any(!is.finite(estimate))) {
+    convergence <- if (identical(convergence, 0L)) 99L else convergence
+  }
   list(
     estimate = estimate,
-    loglik = -opt$value,
-    convergence = opt$convergence,
+    loglik = loglik,
+    convergence = convergence,
     method = method
   )
 }

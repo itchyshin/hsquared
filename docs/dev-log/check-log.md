@@ -4238,3 +4238,25 @@ toolchain once after.
 - Follow-up (docs, minor): formula_status()/man could note offset() and "." now error and
   multivariate cbind() requires bare columns.
 - Committed locally; push deferred.
+
+## 2026-06-18 Validation-backbone fixes (reference REML robustness + independent pedigree anchor)
+
+2-lens parallel workflow (wf_8827ff98-4eb) on the validation cross-check findings. The
+cross-check first confirmed the reference math is numerically CORRECT (independently
+re-derived to machine precision); these fixes harden robustness + close a rigor gap.
+- #3 hs_gaussian_loglik_reference() / hs_reml_estimate_reference() no longer propagate a raw
+  chol() error at the h2->1 boundary: the loglik wraps the Cholesky in tryCatch (returns -Inf
+  so Nelder-Mead retreats), and the optimizer returns convergence=99 on an inadmissible
+  optimum instead of a spurious "converged" non-finite estimate. Well-conditioned behaviour is
+  byte-identical (Mrode ML/REML loglik unchanged; gryphon + DGP recovery pass live).
+- #1/#2 new tests/testthat/test-pedigree-mme-anchor.R: an INDEPENDENT hand-built lambda-form
+  MME solve on the real 12-animal pedigree (with off-diagonal Ainv) anchors
+  hs_solve_henderson_mme_reference fixed effects + EBVs (~1e-14), closing the circularity left
+  by the diag(3)-only PEV anchor; includes a discriminating negative control.
+- #4 data-raw/dgp-recovery-study.R header "Relative/absolute bias" -> "Absolute bias".
+- New tests/testthat/test-reference-reml-boundary.R.
+- Checks: air clean; devtools::document(); devtools::test() 753 pass / 0 fail / 0 warn /
+  32 skip; pkgdown::check_pkgdown() clean; devtools::check(--no-manual) 0/0/0.
+- Follow-up (maintainer): pin the PUBLISHED Mrode Example 3.1 EBVs against the physical
+  textbook for an external-source canon gate (needs the book's digits).
+- Committed locally; push deferred.

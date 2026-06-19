@@ -37,7 +37,7 @@
 #   no Julia). No external comparator here -- this is recovery, not parity.
 #
 # P - PERFORMANCE MEASURES
-#   Relative/absolute bias of each component: mean(theta_hat) - theta_true, with
+#   Absolute bias of each component: mean(theta_hat) - theta_true, with
 #   MCSE = sd(theta_hat)/sqrt(n). EBV accuracy: mean cor(u_hat, u_true).
 #   Convergence rate. (No coverage: SE/intervals are out of v0.1 scope.)
 #

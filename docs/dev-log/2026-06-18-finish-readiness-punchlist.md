@@ -70,3 +70,14 @@ Deep pass on the R-side critical path (probed by running): **8 new confirmed**, 
 | 6 | should | Henderson | Topological pedigree sort uses R-level recursion; deep (acyclic) pedigrees overflow the stack and are misreported as pa… | Convert hs_topological_pedigree() to an iterative Kahn / explicit-stack topological sort (no R recursion), so depth is bounded by data size not the interpreter stack. At… |
 | 7 | should | Emmy | Boundary flag mislabels a negative variance estimate as an 'at/near zero' boundary in summary()/fit_diagnostics() | Branch the boundary message on the sign of the minimum share. Compute mn <- min(shares); if mn < 0, report a negative/inadmissible variance condition ('a variance compon… |
 | 8 | nice | Emmy | summary()/fit_diagnostics() crash with cryptic '$ operator is invalid for atomic vectors' when variance_components is a… | Add a shape guard at the top of hs_fit_boundary_flag(): if (!is.list(vc)) return(NULL) (a data.frame is a list, so it still proceeds; named vectors and matrices return N… |
+
+## Validation-backbone cross-check — confirmed findings (2026-06-18, wf_d194d3ed-73b)
+
+Independent numerical cross-check of the R reference solvers: math confirmed CORRECT to machine precision; 4 rigor/robustness findings (all R-safe).
+
+| # | Severity | Lens | Finding | Fix |
+|---|---|---|---|---|
+| 1 | should | Mrode | No fixture encodes the canonical Mrode Example 3.1 fitted EBVs against published textbook constants | Add a CI-runnable fixture (e.g. hs_mrode_example_3_1_fixture) that encodes the published Mrode Example 3.1 pedigree, records, sex fixed effect, and alpha=1 LIT… |
+| 2 | nice-to-have | Mrode | Pedigree-based fitted-output fixtures pin self-generated numbers (circular), not independent anchors | Extend the independent hand-built-MME anchor pattern of test-pev-reliability-anchor.R from the diag(3) toy case to at least one genuine pedigree (the Mrode 3.1… |
+| 3 | should | Gauss | hs_reml_estimate_reference crashes (uncaught chol() error) on h2->1 / near-zero-residual data instead of returning a no… | Make the reference loglik/optimizer robust to a singular or indefinite V near the h2->1 boundary: wrap chol(V) in tryCatch and on failure return +Inf objective… |
+| 4 | nice | Fisher | DGP study header says 'relative/absolute bias' but only absolute bias is ever computed | Drop 'Relative/' from the performance-measures line (or add a relative-bias column if relative bias is genuinely intended). Cosmetic; does not affect any compu… |
