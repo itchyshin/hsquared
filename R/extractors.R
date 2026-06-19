@@ -631,6 +631,48 @@ accuracy.hsquared_fit <- function(object, ...) {
   out
 }
 
+#' Extract an experimental heritability confidence interval
+#'
+#' `heritability_interval()` returns an **experimental** large-sample confidence
+#' interval for `h^2`. It is available only when an `hsquared_fit` object
+#' contains the interval field, which the default Gaussian animal-model fit
+#' (`engine = "fit"`) populates from the engine's
+#' `HSquared.heritability_interval()` when a local Julia engine is present and
+#' the estimate is interior to `(0, 1)`.
+#'
+#' This mirrors the engine row `V1-HERIT-CI`, which is `partial`: the interval is
+#' a REML-only, asymptotic (logit delta-method) approximation, not a
+#' coverage-calibrated interval, and is unreliable at small `n`. It is reported
+#' as a point estimate plus bounds, not a validated capability.
+#'
+#' @inheritParams variance_components
+#'
+#' @return A one-row data frame with `estimate`, `lower`, `upper`, `level`, `se`
+#'   (`NA` for the profile method), and `method`, for `hsquared_fit` objects that
+#'   contain it.
+#' @export
+heritability_interval <- function(object, ...) {
+  UseMethod("heritability_interval")
+}
+
+#' @export
+heritability_interval.default <- function(object, ...) {
+  stop(
+    "`heritability_interval()` requires an `hsquared_fit` object. The current ",
+    "package only returns these from fitted `hsquared_fit` results.",
+    call. = FALSE
+  )
+}
+
+#' @export
+heritability_interval.hsquared_fit <- function(object, ...) {
+  hs_fit_result(
+    object,
+    "heritability_interval",
+    "an experimental heritability confidence interval"
+  )
+}
+
 #' Inspect fitted-model diagnostics
 #'
 #' `fit_diagnostics()` returns a compact diagnostics table for an

@@ -250,6 +250,16 @@ hs_fit_julia_ai_reml_payload <- function(
     "prediction_error_variance =",
     "HSquared.prediction_error_variance(hsq_fit),",
     "reliability = HSquared.reliability(hsq_fit)));",
+    "end;",
+    # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
+    # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
+    # which must not abort the fit.
+    "if isdefined(HSquared, :heritability_interval) &&",
+    "applicable(HSquared.heritability_interval, hsq_fit);",
+    "hsq_hi = try; HSquared.heritability_interval(hsq_fit); catch; nothing; end;",
+    "if hsq_hi !== nothing;",
+    "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
+    "end;",
     "end;"
   ))
 
@@ -1539,8 +1549,28 @@ hs_normalize_julia_result <- function(raw, payload) {
   if (!is.null(raw$reliability)) {
     result$reliability <- hs_julia_id_values(raw$reliability)
   }
+  if (!is.null(raw$heritability_interval)) {
+    result$heritability_interval <- hs_normalize_heritability_interval(
+      raw$heritability_interval
+    )
+  }
 
   result
+}
+
+# Normalize the engine's heritability_interval NamedTuple
+# (heritability, lower, upper, level, [se], method) into a one-row data frame.
+# `se` is absent for the profile method.
+hs_normalize_heritability_interval <- function(hi) {
+  data.frame(
+    estimate = as.numeric(hi$heritability),
+    lower = as.numeric(hi$lower),
+    upper = as.numeric(hi$upper),
+    level = as.numeric(hi$level),
+    se = if (!is.null(hi$se)) as.numeric(hi$se) else NA_real_,
+    method = as.character(hi$method),
+    stringsAsFactors = FALSE
+  )
 }
 
 hs_normalize_julia_henderson_mme_result <- function(
