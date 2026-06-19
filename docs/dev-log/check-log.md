@@ -4399,3 +4399,21 @@ This is the v0.1.0 release checkpoint.
 - `pages-build-deployment` 27803081687 -> success (23s).
 - `curl -L https://itchyshin.github.io/hsquared/` -> HTTP 200 (v0.1.0 site live).
 - All three workflows green at the release commit `b0153aa`.
+
+## 2026-06-19 Cut the v0.1.0 git tag + GitHub release (maintainer-authorized)
+
+Closed the one remaining R-lane action: the `v0.1.0` tag and GitHub release object did not exist
+yet (version bumped, pushed, CI-green, but never tagged). Maintainer authorized "Tag + GitHub
+release".
+- Pre-state verified: `git tag -l` empty, `gh release list` empty.
+- `git tag -a v0.1.0 -m "hsquared 0.1.0"` at HEAD `6d25c7d` (DESCRIPTION `Version: 0.1.0`; the two
+  commits after the dispatched-green checkpoint `b0153aa` are docs-only — CI-evidence record + the
+  handoff doc — so HEAD is the released state).
+- `git push origin v0.1.0` -> `* [new tag] v0.1.0 -> v0.1.0`.
+- `gh release create v0.1.0 --verify-tag --title "hsquared 0.1.0" --notes-file NEWS.md` (NEWS.md is
+  a single `# hsquared 0.1.0` section, so it is the release body verbatim).
+- Verified: `gh release view v0.1.0` -> tag=v0.1.0, name="hsquared 0.1.0", draft=false,
+  prerelease=false, commit=main, published 2026-06-19T11:08:08Z; `gh release list` shows it as
+  `Latest`. URL: https://github.com/itchyshin/hsquared/releases/tag/v0.1.0
+- No package/code/docs change in this action (tag + release object only); prior test 793/0/0/27 +
+  check(--no-manual) 0/0/0 from the release commit remain the standing evidence.

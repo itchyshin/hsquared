@@ -86,11 +86,11 @@ Read `ROADMAP.md` for the full text; it is authoritative.
 ## What is left to do (prioritised)
 
 ### Immediate, R-lane, one step each
-1. **Cut the `v0.1.0` git tag + GitHub release** (the version is bumped + pushed
-   but **no release tag exists yet**). Natural close-out of "cut v0.1.0":
-   `git tag v0.1.0 && git push origin v0.1.0` (optionally
-   `gh release create v0.1.0 --notes-from-tag` or from NEWS). *Awaiting
-   maintainer go-ahead; offered but not yet confirmed.*
+1. ~~**Cut the `v0.1.0` git tag + GitHub release**~~ — **DONE 2026-06-19**
+   (maintainer-authorized). Annotated tag `v0.1.0` at HEAD `6d25c7d`, pushed;
+   GitHub release "hsquared 0.1.0" published from NEWS.md, marked `Latest`
+   (https://github.com/itchyshin/hsquared/releases/tag/v0.1.0). The R-lane
+   maintainer queue is now empty; everything below is twin-gated or Julia-lane.
 
 ### Handoffs (NOT R-lane — do not do from here)
 2. **`HSquared.jl/docs/design/03-engine-contract.md:275-277` reword** (Julia
