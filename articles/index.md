@@ -16,10 +16,10 @@
   matrices](https://itchyshin.github.io/hsquared/articles/g-matrix-interpretation.md):
 - [Inheritance systems
   roadmap](https://itchyshin.github.io/hsquared/articles/inheritance-systems.md):
-- [Mission
-  control](https://itchyshin.github.io/hsquared/articles/mission-control.md):
 - [Model
   status](https://itchyshin.github.io/hsquared/articles/model-status.md):
+- [Validation
+  evidence](https://itchyshin.github.io/hsquared/articles/validation-evidence.md):
 - [Formula grammar
   roadmap](https://itchyshin.github.io/hsquared/articles/formula-grammar.md):
 - [Genomics, QTL, and CPU/GPU

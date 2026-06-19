@@ -13,7 +13,7 @@ axes are interpretable.
 ## Usage
 
 ``` r
-loadings(object, ...)
+genetic_loadings(object, ...)
 
 specific_variance(object, ...)
 

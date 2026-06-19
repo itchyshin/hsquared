@@ -299,7 +299,10 @@ names each unsupported form rather than guessing.
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)).
 - Genomic and single-step models as a default or production path (an
   opt-in experimental path exists; see above).
-- Multivariate and factor-analytic G matrices.
+- Factor-analytic and structured
+  [`cov()`](https://rdrr.io/r/stats/cor.html) G matrices (the
+  unstructured multivariate G/R path fits opt-in and experimentally; see
+  above).
 - Paternal, dominance, epistasis, custom relationship/precision,
   QTL-style, selfing, clonal, haplodiploid, polyploid, cytoplasmic,
   imprinting, and GLLVM-style models. (Permanent environment, common

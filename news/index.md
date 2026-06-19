@@ -1,6 +1,6 @@
 # Changelog
 
-## hsquared 0.0.0.9000
+## hsquared 0.1.0
 
 ### New features
 
@@ -19,7 +19,11 @@
   gryphon REML anchor (within the signed-off comparator band), and
   `sommer` agreement
   ([\#6](https://github.com/itchyshin/hsquared/issues/6),
-  [\#7](https://github.com/itchyshin/hsquared/issues/7)).
+  [\#7](https://github.com/itchyshin/hsquared/issues/7)). These
+  engine-recovery checks run locally through the R-to-Julia bridge (a
+  local Julia and `HSquared.jl` checkout are required); public CI
+  exercises the equivalent pure-R REML reference and skip-guards the
+  live-engine tests.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   is now exported as an inert formula marker, and
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
@@ -374,9 +378,6 @@
 - Added a pkgdown formula grammar roadmap article that separates parsed
   v0.1 syntax from planned quantitative-genetic, genomic, multivariate,
   and inheritance syntax.
-- Added a pkgdown mission-control dashboard that summarizes the R lane,
-  Julia boundary, validation atoms, and blocked claims without adding
-  fitted support.
 - Expanded the genomics/QTL/GLLVM/accelerator design plan and pkgdown
   roadmap with a source-backed CPU/GPU strategy, QTL/eQTL path,
   sibling-package lessons, and explicit evidence gates.

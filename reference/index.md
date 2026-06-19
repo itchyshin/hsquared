@@ -61,7 +61,7 @@ experimental targets.
   [`genetic_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`residual_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   : Extract multivariate covariance and correlation matrices
-- [`loadings()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
+- [`genetic_loadings()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`specific_variance()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`latent_breeding_values()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
@@ -101,6 +101,10 @@ experimental targets.
   Extract fixed effects
 - [`ranef()`](https://itchyshin.github.io/hsquared/reference/ranef.md) :
   Extract random effects
+- [`predict(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/response_scale_methods.md)
+  [`fitted(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/response_scale_methods.md)
+  [`residuals(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/response_scale_methods.md)
+  : Response-scale prediction helpers
 
 ## Package
 

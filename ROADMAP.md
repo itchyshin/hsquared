@@ -174,6 +174,16 @@ Status: planned.
   zero-inflated and hurdle extensions.
 - Wide response matrices, latent genetic axes, ordination, and community
   ecology examples.
+- Estimation by **both Laplace approximation (LA) and variational
+  approximation (VA)**, mirroring the `gllvm` package’s `method = "LA"`
+  / `"VA"` options, so users can trade accuracy against speed on
+  high-dimensional response matrices. Reuse the sister-team machinery
+  rather than reinventing: Laplace from `gllvmTMB` / `GLLVM.jl` and
+  `drmTMB` / `DRM.jl` (TMB / autodiff marginal Laplace); VA from
+  `DRM.jl` (`src/variational.jl`) plus the `gllvmTMB` VA path. The
+  estimator (LA + VA) is Julia-lane engine work in `HSquared.jl`; the R
+  lane surfaces the `method` / control choice and the validation.
+  Coordinate via the shared bridge contract and coordination board.
 
 ## Phase 7: Non-Standard Inheritance
 

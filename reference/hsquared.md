@@ -7,9 +7,9 @@ univariate Gaussian animal model
 `HSquared.jl` engine. The default `control` fits when a local Julia and
 `HSquared.jl` are available and otherwise errors with install guidance;
 `hs_control(engine = "validate")` validates the contract without
-fitting. Genomic, repeatability, two-effect, marker-effect, and
-multivariate models are opt-in experimental paths; non-Gaussian models
-remain planned.
+fitting, then returns the validated model spec invisibly. Genomic,
+repeatability, two-effect, marker-effect, and multivariate models are
+opt-in experimental paths; non-Gaussian models remain planned.
 
 ## Usage
 
@@ -65,6 +65,11 @@ hsquared(
 
 ## Value
 
-A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model, or
-an informative error when the Julia engine is unavailable or
-`engine = "validate"` is used.
+A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model.
+When the Julia engine is unavailable, an informative error. When
+`engine = "validate"`, the validated model specification is returned
+invisibly as a named list (after a confirming message), for programmatic
+inspection — for example `spec$bridge$target` and `spec$response`. This
+is the internal spec list, not the classed object that
+[`model_spec()`](https://itchyshin.github.io/hsquared/reference/model_spec.md)
+builds.

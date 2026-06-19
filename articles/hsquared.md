@@ -40,6 +40,34 @@ animal model should be obvious before users reach for genomic,
 multivariate, factor-analytic, non-Gaussian, or unusual-inheritance
 machinery.
 
+## Engine setup
+
+Installing `hsquared` (`pak::pak("itchyshin/hsquared")`) gives you the R
+interface; it does not install the engine. `HSquared.jl` is a
+from-source Julia checkout, not a package-managed dependency. Install
+[Julia](https://julialang.org/downloads/) and the `JuliaCall` R package,
+clone the engine (`git clone https://github.com/itchyshin/HSquared.jl`),
+then register the checkout in one of two ways:
+
+``` r
+
+# (a) for the session, or persistently via .Renviron
+Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
+
+# (b) per call
+fit <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  control = hs_control(
+    engine_control = list(julia_project = "/path/to/HSquared.jl")
+  )
+)
+```
+
+Until the engine is registered,
+`control = hs_control(engine = "validate")` parses and validates the
+model without fitting.
+
 ## Current parser contract
 
 The parser currently accepts:

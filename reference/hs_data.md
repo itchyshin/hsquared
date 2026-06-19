@@ -88,3 +88,53 @@ genotype-marker alignment diagnostics. When `annotation_id` is supplied,
 it reports expression-feature annotation coverage diagnostics. When
 `environment_id` is supplied, it also reports environment metadata
 coverage diagnostics.
+
+## Examples
+
+``` r
+ped <- data.frame(
+  id = c("a", "b", "c", "d"),
+  sire = c(NA, NA, "a", "a"),
+  dam = c(NA, NA, "b", "c")
+)
+dat <- data.frame(
+  y = c(1, 2, 3),
+  sex = c("f", "m", "f"),
+  id = c("a", "c", "d")
+)
+bundle <- hs_data(phenotypes = dat, pedigree = ped)
+bundle
+#> <hs_data>
+#>   phenotypes: 3 rows
+#>   phenotype IDs: 3
+#>   pedigree IDs: 4
+summary(bundle)
+#> <summary_hs_data>
+#>   components: phenotypes, pedigree
+#>   phenotype IDs: 3
+#>   ID overlap:
+#>                         metric count
+#>                  phenotype_ids     3
+#>                   pedigree_ids     4
+#>                   genotype_ids     0
+#>                 expression_ids     0
+#>    phenotypes_without_pedigree     0
+#>   phenotypes_without_genotypes     3
+#>   genotypes_without_phenotypes     0
+#>  phenotypes_without_expression     3
+#>  expression_without_phenotypes     0
+#>   pedigree status:
+#>                       metric count
+#>                pedigree_rows     4
+#>                 pedigree_ids     4
+#>  phenotype_ids_with_pedigree     3
+#>            pedigree_only_ids     1
+#>                     founders     2
+#>                  nonfounders     2
+#>             known_sire_links     2
+#>              known_dam_links     2
+#>     missing_known_parent_ids     0
+#>       duplicate_pedigree_ids     0
+#>             self_parent_rows     0
+#>       same_known_parent_rows     0
+```

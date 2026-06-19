@@ -2,8 +2,14 @@
 
 This article shows the models `hsquared` can fit. Fitting is computed in
 the sibling `HSquared.jl` engine, so every example needs a local Julia,
-the `JuliaCall` package, and an `HSquared.jl` checkout. The code chunks
-are not run when this page is built (the build host has no Julia).
+the `JuliaCall` package, and an `HSquared.jl` checkout. Register the
+checkout with
+`Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")` or per
+call via
+`control = hs_control(engine_control = list(julia_project = "/path/to/HSquared.jl"))`;
+see the README or “Getting started” article for full setup. The code
+chunks are not run when this page is built (the build host has no
+Julia).
 
 All fits are by REML. ML is not implemented; `REML = FALSE` is rejected
 on the fit path.
@@ -208,17 +214,6 @@ validated.
 ``` r
 
 library(hsquared)
-```
-
-    ## 
-    ## Attaching package: 'hsquared'
-
-    ## The following object is masked from 'package:stats':
-    ## 
-    ##     loadings
-
-``` r
-
 formula_status()
 ```
 
@@ -242,6 +237,7 @@ formula_status()
     ##                                     relmat(1 | id, K = K)  Phase 3+
     ##                                  precision(1 | id, Q = Q)  Phase 3+
     ##                              genomic(1 | id, Ginv = Ginv)   Phase 5
+    ##                              genomic(1 | id, markers = M)   Phase 5
     ##                          single_step(1 | id, Hinv = Hinv)   Phase 5
     ##                              markers(M, model = "random")   Phase 5
     ##                          marker_scan(M, map = marker_map)   Phase 5
@@ -267,6 +263,7 @@ formula_status()
     ##       reserved                      not available
     ##       reserved                      not available
     ##         parsed            fitted (opt-in genomic)
+    ##         parsed fitted (opt-in genomic / SNP-BLUP)
     ##         parsed        fitted (opt-in single-step)
     ##       reserved                      not available
     ##       reserved                      not available
