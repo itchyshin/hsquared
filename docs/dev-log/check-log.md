@@ -4305,3 +4305,27 @@ cited test files + 4 test descriptions exist) -> all confirmed correct.
   `pkgdown::check_pkgdown()` clean. Docs-only; no R/ code touched, so prior test 753 /
   check(--no-manual) 0/0/0 hold.
 - Committed locally; push deferred.
+
+## 2026-06-18 Article-set honesty sweep (Rose x3, clean) — release-readiness check
+
+Extended the validation-evidence cross-doc audit to the three highest-drift-risk articles —
+the ones describing opt-in/experimental and planned capabilities. Each lens checked the
+article against the live source of truth (`validation_status()` in `R/validation-status.R`,
+`docs/design/capability-status.md`, `R/formula-status.R`, and the actual extractor code).
+- `vignettes/articles/genomic-prediction.Rmd` — CLEAN. Genomic GREML / marker-G / SNP-BLUP /
+  single-step all framed experimental/opt-in/partial; every fit chunk uses
+  `engine="julia", target=...` with `eval=FALSE`; QTL/GWAS/eQTL extractors correctly shown
+  `# planned` (verified they error via `hs_fit_result()`); `marker_variance_explained` carries
+  the no-QTL-signal disclaimer matching its roxygen.
+- `vignettes/articles/multivariate.Rmd` — CLEAN. Experimental/opt-in/partial; explicit "no
+  external comparator or committed t>=2 known-truth recovery"; `cov=us()/fa()` labelled
+  "Planned, not fitted yet"; conservative (omits the optional sommer comparator rather than
+  over-state it); closing handoff to `validation_status()`.
+- `vignettes/articles/g-matrix-interpretation.Rmd` — CLEAN. Multivariate G/R reading partial;
+  factor-analytic loadings/specific-variance/latent-BV/eigen-G correctly "roadmap" (verified
+  `loadings()/specific_variance()/eigen_G()` abort via `hs_factor_g_extractor_planned()`);
+  no phantom extractor advertised; `P_matrix()` correctly withheld; no runnable reserved-grammar
+  example.
+- Result: 0 findings across 3 independent adversarial lenses; no over- or under-claims. Three
+  independent audits in a row (this + the validation-evidence cross-doc + the prior self-review)
+  now return zero — the claim surface is consistent end-to-end. Audit-only; no files changed.
