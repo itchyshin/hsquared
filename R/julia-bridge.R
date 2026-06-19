@@ -260,6 +260,24 @@ hs_fit_julia_ai_reml_payload <- function(
     "if hsq_hi !== nothing;",
     "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
     "end;",
+    "end;",
+    # Experimental, opt-in variance-component and heritability standard errors
+    # (engine row V1-HERIT-CI, partial). variance_component_covariance() can
+    # throw on a singular/ill-conditioned AI matrix, so each call is wrapped in
+    # a try so an SE failure never aborts the fit.
+    "if isdefined(HSquared, :variance_component_standard_errors) &&",
+    "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
+    "hsq_vcse = try; HSquared.variance_component_standard_errors(hsq_fit); catch; nothing; end;",
+    "if hsq_vcse !== nothing;",
+    "hsq_result = merge(hsq_result, (variance_component_se = hsq_vcse,));",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :heritability_standard_error) &&",
+    "applicable(HSquared.heritability_standard_error, hsq_fit);",
+    "hsq_h2se = try; HSquared.heritability_standard_error(hsq_fit); catch; nothing; end;",
+    "if hsq_h2se !== nothing;",
+    "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
+    "end;",
     "end;"
   ))
 
@@ -1554,6 +1572,14 @@ hs_normalize_julia_result <- function(raw, payload) {
       raw$heritability_interval
     )
   }
+  if (!is.null(raw$variance_component_se)) {
+    result$variance_component_se <- hs_normalize_variance_component_se(
+      raw$variance_component_se
+    )
+  }
+  if (!is.null(raw$heritability_se)) {
+    result$heritability_se <- as.numeric(raw$heritability_se)
+  }
 
   result
 }
@@ -1569,6 +1595,16 @@ hs_normalize_heritability_interval <- function(hi) {
     level = as.numeric(hi$level),
     se = if (!is.null(hi$se)) as.numeric(hi$se) else NA_real_,
     method = as.character(hi$method),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Normalize the engine's variance_component_standard_errors NamedTuple
+# (sigma_a2, sigma_e2) into a data frame of component standard errors.
+hs_normalize_variance_component_se <- function(vcse) {
+  data.frame(
+    component = c("animal", "residual"),
+    se = c(as.numeric(vcse$sigma_a2), as.numeric(vcse$sigma_e2)),
     stringsAsFactors = FALSE
   )
 }

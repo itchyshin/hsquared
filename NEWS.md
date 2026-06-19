@@ -3,6 +3,7 @@
 ## New features
 
 * **Experimental:** `heritability_interval()` extracts a large-sample confidence interval for `h²` from the default Gaussian animal-model fit, when a local Julia engine returns one. It is a REML-only, asymptotic (logit delta-method) interval — mirroring the engine row `V1-HERIT-CI` (`partial`), so it is not coverage-calibrated and is unreliable at small `n`. It is reported as a point estimate plus bounds, not a validated capability (#11).
+* **Experimental:** `variance_component_standard_errors()` and `heritability_standard_error()` return large-sample (delta-method) standard errors from the REML average-information matrix, when the default Gaussian fit's engine provides them. Same `V1-HERIT-CI` (`partial`) caveats: asymptotic, REML-only, omitted near a variance-component boundary (ill-conditioned AI matrix), not coverage-calibrated, not a validated capability.
 
 # hsquared 0.1.0
 
