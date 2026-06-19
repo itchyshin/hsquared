@@ -107,7 +107,9 @@ hs_validation_status_evidence <- function() {
     paste(
       "Local R reference tests and optional live Julia tests pin a",
       "Mrode-style supplied-variance fixture for Ainv, fixed effects, EBVs,",
-      "fitted values, PEV, reliability, h2, ML logLik, and REML logLik."
+      "fitted values, PEV, reliability, h2, ML logLik, and REML logLik; the",
+      "reference EBVs are additionally pinned to the published Mrode Example",
+      "3.1 textbook digits (Mrode 2014, p.39) in a CI-runnable anchor."
     ),
     paste(
       "Pure-R control/validator tests plus a skip-guarded live test running",

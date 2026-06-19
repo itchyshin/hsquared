@@ -46,13 +46,14 @@
 # fixture$expected$Ainv (an external check matched it to ~1e-16), not a value the
 # solver computed.
 #
-# NOTE (separate maintainer-confirm follow-up): this anchor proves the package
-# solver agrees with an INDEPENDENT hand solve of the SAME MME on this pedigree.
-# It does NOT yet pin the PUBLISHED Mrode Example 3.1 textbook EBV constants
+# NOTE: this anchor proves the package solver agrees with an INDEPENDENT hand
+# solve of the SAME MME on this pedigree. The complementary check -- pinning the
+# package solver against the PUBLISHED Mrode Example 3.1 textbook EBV constants
 # (Mrode 2014, "Linear Models for the Prediction of Animal Breeding Values",
-# 3rd ed.). Pinning those would require transcribing the physical textbook's
-# printed solution digits and is a maintainer-confirm task needing the book in
-# hand; it is intentionally out of scope here.
+# 3rd ed., p.39) -- now lives in test-mrode-published-anchor.R, using inputs and
+# solutions confirmed against three independent citable sources (see
+# hs_mrode_example_3_1_fixture()). Together they close both the self-generated-
+# number circularity (here) and the external-canon gap (there).
 #
 # All checks are pure R, fast, CI-runnable: no Julia engine, no skip guards.
 

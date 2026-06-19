@@ -4358,3 +4358,29 @@ workflow (wf_764021bf-9b8: Boole/Emmy/Curie/Grace/Rose, each finding independent
   (27 skip not 32 because Julia + sommer were available this run); pkgdown::check_pkgdown() clean;
   devtools::check(--no-manual) 0 errors / 0 warnings / 0 notes.
 - Committed locally; push at the release checkpoint (will watch the pkgdown deploy run).
+
+## 2026-06-18 Published Mrode Example 3.1 anchor (#5 / validation cross-check #1)
+
+Closed the last external-canon validation gap: a CI-runnable, Julia-free fixture pinning the
+package R reference Henderson MME solver against the PUBLISHED Mrode (2014, 3rd ed., p.39)
+Example 3.1 EBVs. Mrode-canon research lens (background agent) first established, on evidence,
+that the published digits are honestly pinnable: inputs + solutions confirmed against THREE
+independent citable sources (masuday BLUPF90 tutorial citing Mrode 2014 p.39; austin-putz Mrode
+chapter-3 R reproduction; Bioconductor GeneticsPed Mrode3.1) and independently re-solved (EBVs
+reproduce to ~5e-9). NOT fabricated from memory.
+- New `hs_mrode_example_3_1_fixture()` (R/validation-fixtures.R): 8-animal pedigree, 5 records
+  (animals 4-8), sex fixed effect, sigma_a2=20/sigma_e2=40 (alpha=2). Ainv built by the tabular
+  numerator-relationship method in pure base R (no nadiv) so the anchor is CI-runnable without
+  Julia or optional packages. Published EBVs + the male-female sex contrast stored in `expected`.
+- New `tests/testthat/test-mrode-published-anchor.R`: asserts the solver's EBVs equal the
+  published digits to 1e-6 (empirically ~5e-9), the sex contrast (parameterization-free, from a
+  male vs female record's fixed prediction) equals the published 0.95407223 (~9e-8), and a
+  test-of-test rejects perturbed (+0.1) published EBVs.
+- Cross-references updated: the stale NOTE in test-pedigree-mme-anchor.R (which declared the
+  published pin out-of-scope / needs-the-book) now points at the new anchor; validation_status()
+  evidence and validation-debt-register.md note the published anchor closes the
+  self-generated-number gap. Status stays `partial` (supplied-variance BLUP, not VC estimation),
+  so validation_status() row count is unchanged.
+- Checks: air clean; devtools::test() 793 pass / 0 fail / 0 warn / 27 skip; pkgdown::check_pkgdown()
+  clean; devtools::check(--no-manual) 0/0/0.
+- Committed locally; push at the release checkpoint.
