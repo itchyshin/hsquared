@@ -264,7 +264,7 @@ test_that("hsquared validates basic call shape", {
   )
 })
 
-test_that("hsquared errors honestly before fitting", {
+test_that("the validate engine validates and returns the spec without fitting", {
   ped <- data.frame(
     id = c("a", "b", "c", "d"),
     sire = c(NA, NA, "a", "a"),
@@ -277,15 +277,19 @@ test_that("hsquared errors honestly before fitting", {
     id = c("a", "c", "d")
   )
 
-  expect_error(
-    hsquared(
+  # `engine = "validate"` confirms the contract with a message and returns the
+  # validated spec invisibly (it no longer stops), so it can be inspected.
+  expect_message(
+    spec <- hsquared(
       y ~ sex + age + animal(1 | id, pedigree = ped),
       data = dat,
       control = hs_control(engine = "validate")
     ),
-    "validated the v0.1 animal-model contract",
+    "Validated the v0.1 animal-model contract",
     fixed = TRUE
   )
+  expect_type(spec, "list")
+  expect_match(spec$bridge$target, "fit_animal_model", fixed = TRUE)
 })
 
 test_that("the default engine fits, and errors clearly without the Julia engine", {

@@ -94,7 +94,7 @@ test_that("pedigree cycles are rejected before bridge payload construction", {
   )
 })
 
-test_that("hsquared validate-only error describes the Julia fit target", {
+test_that("hsquared validate-only message describes the Julia fit target", {
   ped <- data.frame(
     id = c("a", "b"),
     sire = c(NA, NA),
@@ -102,8 +102,8 @@ test_that("hsquared validate-only error describes the Julia fit target", {
   )
   dat <- data.frame(y = c(1, 2), id = c("a", "b"))
 
-  expect_error(
-    hsquared(
+  expect_message(
+    spec <- hsquared(
       y ~ animal(1 | id, pedigree = ped),
       data = dat,
       family = stats::gaussian(),
@@ -112,4 +112,7 @@ test_that("hsquared validate-only error describes the Julia fit target", {
     "HSquared.fit_animal_model",
     fixed = TRUE
   )
+  # The validate path also returns the validated spec (a list) invisibly.
+  expect_type(spec, "list")
+  expect_match(spec$bridge$target, "fit_animal_model", fixed = TRUE)
 })

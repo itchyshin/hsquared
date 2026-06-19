@@ -41,7 +41,7 @@ likelihood-based summaries are intentionally blocked when a multivariate fit
 has not converged.
 }
 \examples{
-\dontshow{if (FALSE) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,

@@ -4329,3 +4329,32 @@ article against the live source of truth (`validation_status()` in `R/validation
 - Result: 0 findings across 3 independent adversarial lenses; no over- or under-claims. Three
   independent audits in a row (this + the validation-evidence cross-doc + the prior self-review)
   now return zero — the claim surface is consistent end-to-end. Audit-only; no files changed.
+
+## 2026-06-18 Release-prep slice (maintainer-authorized): v0.1.0 + genetic_loadings + validate-returns-spec
+
+Three maintainer-authorized items, implemented then run through a 5-lens adversarial review
+workflow (wf_764021bf-9b8: Boole/Emmy/Curie/Grace/Rose, each finding independently verified;
+7 raw -> 6 confirmed + 1 false positive). Confirmed findings folded in before commit.
+- VERSION: DESCRIPTION 0.0.0.9000 -> 0.1.0; NEWS.md heading -> `# hsquared 0.1.0`; man/
+  regenerated. v0.1 promotion predicate already SATISFIED (univariate Gaussian animal model,
+  AI-REML, gryphon + DGP + sommer). No stale `0.0.0.9000` strings remain.
+- RENAME (#6): reserved factor-analytic generic `loadings()` (shadowed `stats::loadings`) ->
+  `genetic_loadings()`, aligning with the genetic_* extractor family and the design-doc proposal;
+  `.default` now errors uniformly like its siblings. NAMESPACE clean (no stale `loadings`).
+- VALIDATE-RETURNS-SPEC (#20): `hsquared(control = hs_control(engine = "validate"))` no longer
+  stop()s; it messages ("Validated the v0.1 animal-model contract ... Julia fit target:
+  HSquared.<target> ...") and returns invisible(spec). 4 validate tests updated error->message
+  + spec assertions; roxygen (?hsquared @return, ?hs_control) updated.
+- REVIEW FIXES folded in: (a) [3 lenses, should] the validate message no longer says "inspect it
+  with model_spec()" (model_spec() is a constructor taking formula/data, not an inspector of the
+  returned object) — reworded to "returned invisibly as a named list; assign it to inspect"; the
+  @return now states it is the internal spec list, not the classed model_spec() object;
+  (b) [Curie, minor] test-bridge-payload.R now binds + asserts the returned spec (parity with the
+  other 3 validate tests). Did NOT return a classed hs_model_spec (both verifiers flagged that the
+  naive upgrade breaks on genomic/single_step specs). [Grace, minor] noted process-only: pushing
+  main runs the pkgdown deploy, not R-CMD-check — watch the deploy, don't claim CI-green-at-commit
+  from R-CMD-check.
+- Checks: air clean; devtools::document(); devtools::test() 784 pass / 0 fail / 0 warn / 27 skip
+  (27 skip not 32 because Julia + sommer were available this run); pkgdown::check_pkgdown() clean;
+  devtools::check(--no-manual) 0 errors / 0 warnings / 0 notes.
+- Committed locally; push at the release checkpoint (will watch the pkgdown deploy run).

@@ -37,9 +37,12 @@ implemented and is rejected with an error.}
 \item{...}{Reserved for future arguments.}
 }
 \value{
-A \code{"hsquared_fit"} object from the fitted v0.1 Gaussian animal model,
-or an informative error when the Julia engine is unavailable or
-\code{engine = "validate"} is used.
+A \code{"hsquared_fit"} object from the fitted v0.1 Gaussian animal model.
+When the Julia engine is unavailable, an informative error. When
+\code{engine = "validate"}, the validated model specification is returned
+invisibly as a named list (after a confirming message), for programmatic
+inspection — for example \code{spec$bridge$target} and \code{spec$response}. This is
+the internal spec list, not the classed object that \code{\link[=model_spec]{model_spec()}} builds.
 }
 \description{
 \code{hsquared()} is the R entry point for heritability, breeding-value,
@@ -48,6 +51,7 @@ Gaussian animal model \code{y ~ fixed + animal(1 | id, pedigree = ped)} by REML
 through the \code{HSquared.jl} engine. The default \code{control} fits when a local
 Julia and \code{HSquared.jl} are available and otherwise errors with install
 guidance; \code{hs_control(engine = "validate")} validates the contract without
-fitting. Genomic, repeatability, two-effect, marker-effect, and multivariate
-models are opt-in experimental paths; non-Gaussian models remain planned.
+fitting, then returns the validated model spec invisibly. Genomic,
+repeatability, two-effect, marker-effect, and multivariate models are opt-in
+experimental paths; non-Gaussian models remain planned.
 }

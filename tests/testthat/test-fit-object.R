@@ -221,7 +221,11 @@ test_that("extractor defaults do not imply fitted model support", {
     "reserves this extractor name",
     fixed = TRUE
   )
-  expect_null(loadings(list()))
+  expect_error(
+    genetic_loadings(list()),
+    "reserves this extractor name",
+    fixed = TRUE
+  )
 })
 
 test_that("reserved factor-analytic extractors fail with rotation-aware scope", {
@@ -237,12 +241,12 @@ test_that("reserved factor-analytic extractors fail with rotation-aware scope", 
   )
 
   expect_error(
-    loadings(fit),
+    genetic_loadings(fit),
     "planned, not implemented.*rotation-nonunique",
     perl = TRUE
   )
   expect_error(
-    loadings(fit, rotate = "varimax"),
+    genetic_loadings(fit, rotate = "varimax"),
     "rotation controls are planned, not implemented",
     fixed = TRUE
   )

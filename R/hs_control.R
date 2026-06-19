@@ -3,14 +3,16 @@
 #' `hs_control()` records execution and storage controls for hsquared model
 #' calls. The default `engine = "fit"` fits the validated v0.1 Gaussian
 #' animal model through the `HSquared.jl` engine (average-information REML);
-#' `engine = "validate"` parses and validates the contract without fitting; and
-#' `engine = "julia"` exposes advanced engine controls.
+#' `engine = "validate"` parses and validates the contract without fitting,
+#' returning the validated spec invisibly; and `engine = "julia"` exposes
+#' advanced engine controls.
 #'
 #' @param engine Execution engine. `"fit"` (default) fits the v0.1 Gaussian
 #'   animal model via the `HSquared.jl` engine; this requires a local Julia,
-#'   the `JuliaCall` package, and an `HSquared.jl` checkout. `"validate"` stops
-#'   after parser and bridge payload validation without fitting. `"julia"`
-#'   exposes the advanced opt-in bridge with explicit `target` control.
+#'   the `JuliaCall` package, and an `HSquared.jl` checkout. `"validate"`
+#'   validates the parser and bridge payload without fitting, then returns the
+#'   validated spec invisibly (after a confirming message). `"julia"` exposes
+#'   the advanced opt-in bridge with explicit `target` control.
 #' @param backend Planned compute backend. One of `"auto"`, `"cpu"`,
 #'   `"threads"`, `"cuda"`, `"amdgpu"`, `"metal"`, or `"oneapi"`.
 #' @param accelerator Planned accelerator preference. One of `"auto"`,

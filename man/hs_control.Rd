@@ -16,9 +16,10 @@ hs_control(
 \arguments{
 \item{engine}{Execution engine. \code{"fit"} (default) fits the v0.1 Gaussian
 animal model via the \code{HSquared.jl} engine; this requires a local Julia,
-the \code{JuliaCall} package, and an \code{HSquared.jl} checkout. \code{"validate"} stops
-after parser and bridge payload validation without fitting. \code{"julia"}
-exposes the advanced opt-in bridge with explicit \code{target} control.}
+the \code{JuliaCall} package, and an \code{HSquared.jl} checkout. \code{"validate"}
+validates the parser and bridge payload without fitting, then returns the
+validated spec invisibly (after a confirming message). \code{"julia"} exposes
+the advanced opt-in bridge with explicit \code{target} control.}
 
 \item{backend}{Planned compute backend. One of \code{"auto"}, \code{"cpu"},
 \code{"threads"}, \code{"cuda"}, \code{"amdgpu"}, \code{"metal"}, or \code{"oneapi"}.}
@@ -113,6 +114,7 @@ An object of class \code{"hs_control"}.
 \code{hs_control()} records execution and storage controls for hsquared model
 calls. The default \code{engine = "fit"} fits the validated v0.1 Gaussian
 animal model through the \code{HSquared.jl} engine (average-information REML);
-\code{engine = "validate"} parses and validates the contract without fitting; and
-\code{engine = "julia"} exposes advanced engine controls.
+\code{engine = "validate"} parses and validates the contract without fitting,
+returning the validated spec invisibly; and \code{engine = "julia"} exposes
+advanced engine controls.
 }

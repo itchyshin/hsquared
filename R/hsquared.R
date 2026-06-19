@@ -6,8 +6,9 @@
 #' through the `HSquared.jl` engine. The default `control` fits when a local
 #' Julia and `HSquared.jl` are available and otherwise errors with install
 #' guidance; `hs_control(engine = "validate")` validates the contract without
-#' fitting. Genomic, repeatability, two-effect, marker-effect, and multivariate
-#' models are opt-in experimental paths; non-Gaussian models remain planned.
+#' fitting, then returns the validated model spec invisibly. Genomic,
+#' repeatability, two-effect, marker-effect, and multivariate models are opt-in
+#' experimental paths; non-Gaussian models remain planned.
 #'
 #' @param formula A model formula. The first planned v0.1 syntax is
 #'   `y ~ fixed + animal(1 | id, pedigree = ped)`, with
@@ -26,9 +27,12 @@
 #' @param control An object created by [hs_control()].
 #' @param ... Reserved for future arguments.
 #'
-#' @return A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model,
-#'   or an informative error when the Julia engine is unavailable or
-#'   `engine = "validate"` is used.
+#' @return A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model.
+#'   When the Julia engine is unavailable, an informative error. When
+#'   `engine = "validate"`, the validated model specification is returned
+#'   invisibly as a named list (after a confirming message), for programmatic
+#'   inspection — for example `spec$bridge$target` and `spec$response`. This is
+#'   the internal spec list, not the classed object that [model_spec()] builds.
 #' @export
 hsquared <- function(
   formula,
@@ -399,14 +403,18 @@ hsquared <- function(
     ))
   }
 
-  stop(
-    "`hsquared(control = hs_control(engine = \"validate\"))` validated the ",
-    "v0.1 animal-model contract and stopped without fitting. Use the default ",
-    "`control` to fit the model (requires the HSquared.jl Julia engine), or ",
-    "`hs_control(engine = \"julia\")` for advanced engine control. The Julia ",
-    "fit target is `HSquared.",
+  # `engine == "validate"`: reaching here means `hs_build_model_spec()` and
+  # `hs_build_bridge_payload()` both succeeded, so the v0.1 animal-model
+  # contract is validated. Confirm with a message and return the validated spec
+  # invisibly so it can be assigned and inspected, rather than stopping. Use the
+  # default `control` to fit (requires the HSquared.jl Julia engine), or
+  # `hs_control(engine = "julia")` for advanced engine control.
+  message(
+    "Validated the v0.1 animal-model contract; no model was fitted ",
+    "(`engine = \"validate\"`). Julia fit target: `HSquared.",
     spec$bridge$target,
-    "`.",
-    call. = FALSE
+    "`. The validated spec is returned invisibly as a named list; assign it ",
+    "to inspect the parsed contract (e.g. `spec$bridge$target`)."
   )
+  invisible(spec)
 }

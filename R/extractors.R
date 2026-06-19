@@ -217,24 +217,24 @@ NULL
 
 #' @rdname factor_g_extractors
 #' @export
-loadings <- function(object, ...) {
-  UseMethod("loadings")
+genetic_loadings <- function(object, ...) {
+  UseMethod("genetic_loadings")
 }
 
 #' @export
-loadings.default <- function(object, ...) {
-  stats::loadings(object, ...)
+genetic_loadings.default <- function(object, ...) {
+  hs_factor_g_extractor_default("genetic_loadings")
 }
 
 #' @export
-loadings.hsquared_fit <- function(
+genetic_loadings.hsquared_fit <- function(
   object,
   effect = "animal",
   rotate = NULL,
   ...
 ) {
   hs_factor_g_extractor_planned(
-    "loadings",
+    "genetic_loadings",
     "factor-analytic G-matrix loadings",
     effect = effect,
     rotate = rotate

@@ -117,15 +117,17 @@ test_that("a multivariate spec reports the multivariate Julia fit target", {
   # The no-fit `validate` path reports the Julia fit target in its message. For a
   # `cbind(...)` response it must name the multivariate target, not the
   # univariate `fit_animal_model` one.
-  validate_err <- expect_error(
-    hsquared(
+  expect_message(
+    validated_spec <- hsquared(
       mv_formula,
       data = dat,
       control = hs_control(engine = "validate")
-    )
+    ),
+    "fit_multivariate_reml",
+    fixed = TRUE
   )
   expect_match(
-    conditionMessage(validate_err),
+    validated_spec$bridge$target,
     "fit_multivariate_reml",
     fixed = TRUE
   )

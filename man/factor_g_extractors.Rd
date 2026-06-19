@@ -2,13 +2,13 @@
 % Please edit documentation in R/extractors.R
 \name{factor_g_extractors}
 \alias{factor_g_extractors}
-\alias{loadings}
+\alias{genetic_loadings}
 \alias{specific_variance}
 \alias{latent_breeding_values}
 \alias{eigen_G}
 \title{Reserved factor-analytic and G-matrix extractors}
 \usage{
-loadings(object, ...)
+genetic_loadings(object, ...)
 
 specific_variance(object, ...)
 

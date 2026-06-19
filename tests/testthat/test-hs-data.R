@@ -775,13 +775,14 @@ test_that("hsquared can validate the v0.1 formula from an hs_data bundle", {
     pedigree = pedigree
   )
 
-  expect_error(
-    hsquared(
+  expect_message(
+    spec <- hsquared(
       y ~ animal(1 | id, pedigree = pedigree),
       data = bundle,
       control = hs_control(engine = "validate")
     ),
-    "validated the v0.1 animal-model contract",
+    "Validated the v0.1 animal-model contract",
     fixed = TRUE
   )
+  expect_match(spec$bridge$target, "fit_animal_model", fixed = TRUE)
 })
