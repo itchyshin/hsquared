@@ -109,19 +109,34 @@ unblock.
   on main). Twin multivariate recovery calibration unmet on predeclared seeds —
   R already labels multivariate `partial`, so the claim stays honest.
 
-## Decisions waiting for you
+## Maintainer items — now DONE (authorized "do all these")
 
-- **Cut v0.1.0?** DESCRIPTION is still `0.0.0.9000` (valid dev convention; prose
-  says "Version 0.1 fits…"). One-line bump + `# hsquared 0.1.0` NEWS heading.
-- **`engine = "validate"` returning the spec** instead of `stop()` (#20) — API
-  ergonomics change; needs sign-off.
-- **`loadings()`** shadowing `stats::loadings` (#6) — rename future FA extractor
-  or keep + document.
-- **Push** the 14 local commits (pkgdown deploy only, with the new CI policy).
-- **Authorize / route** the `03-engine-contract.md:277` twin doc fix.
-- **Mrode 3.1 published-constant pin** — add a fixture pinning the *published*
-  Mrode Example 3.1 EBVs (needs the physical textbook's digits); closes the last
-  external-canon gap. Maintainer-confirm, not autonomous.
+All five R-lane maintainer decisions were authorized and completed, each
+implemented → 5-lens adversarially reviewed → verified green → pushed:
+
+- **v0.1.0 cut** ✅ DESCRIPTION `0.0.0.9000` → `0.1.0`, NEWS heading, man/.
+- **`engine = "validate"` returns the spec** ✅ (#20) messages + `invisible(spec)`
+  (no longer `stop()`); the review caught and fixed a mis-pointed `model_spec()`
+  hint.
+- **`loadings()` → `genetic_loadings()`** ✅ (#6) `stats::loadings` shadow gone;
+  aligns with the `genetic_*` family.
+- **Mrode 3.1 published anchor** ✅ — research lens established (3 citable sources
+  + independent re-solve) that the published EBVs are honestly pinnable, then a
+  CI-runnable fixture + test pins the solver to Mrode 2014 p.39 digits (~5e-9).
+- **Pushed** ✅ 18 commits `3666363..b0153aa`; **CI green at the release commit**
+  (R-CMD-check dispatch success, pkgdown deploy success, site HTTP 200).
+
+**Still needs you — the one item I could not do (harness-enforced):**
+
+- **`03-engine-contract.md:277` twin doc fix.** The harness blocked the R lane
+  from editing `HSquared.jl` (read-only boundary), and the twin has an **active
+  Julia session mid-edit on a design doc** — so I did not push into it. The fix
+  is ready to apply (one sentence; the doc is not in the Documenter build):
+  replace `…matches the observed information (ratio ~0.99 on a 250-animal
+  simulation), so…` with `…matches an independent finite-difference Hessian of
+  the REML log-likelihood (observed information) to within ~8% on the committed
+  tiny fixture (`test/runtests.jl`), so…` — backed by the committed
+  `test/runtests.jl:1814-1824` (`isapprox(Matrix(info), Hobs; rtol = 0.12)`).
 
 ## How to resume (any session)
 
@@ -134,9 +149,11 @@ Durable memory: `docs/dev-log/coordination-board.md`, `check-log.md`,
 `2026-06-18-twin-coordination-report.md`, this report; `ROADMAP.md`,
 `docs/design/capability-status.md`.
 
-**Bottom line:** the R lane is at a clean, green, release-adjacent state with
-every R-safe review finding (five passes) resolved, an honest fact-checked
-validation-evidence article shipped, and the claim surface audited consistent.
-Further capability is gated on the twin (land PR #17) and on your release/API
-decisions — there is no remaining R-safe code work that does not need your
-sign-off.
+**Bottom line:** `hsquared` **v0.1.0 is released** — pushed, CI-green at the
+release commit (`b0153aa`), site live. Every R-safe review finding (five passes)
+is resolved, the honest validation-evidence article is shipped and audited
+consistent, all five authorized maintainer items are done, and the external
+Mrode-canon validation gap is closed. The only open item is the one I am
+harness-blocked from doing (the `HSquared.jl` engine-contract doc reword — exact
+fix above, for the Julia lane). Further *capability* remains gated on the twin
+(land PR #17, factor-analytic G).

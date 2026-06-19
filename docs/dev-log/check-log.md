@@ -4384,3 +4384,18 @@ reproduce to ~5e-9). NOT fabricated from memory.
 - Checks: air clean; devtools::test() 793 pass / 0 fail / 0 warn / 27 skip; pkgdown::check_pkgdown()
   clean; devtools::check(--no-manual) 0/0/0.
 - Committed locally; push at the release checkpoint.
+
+## 2026-06-18 Push + CI evidence (v0.1.0 release checkpoint)
+
+Maintainer-authorized push of the full session (18 commits, `3666363..b0153aa`) to `origin/main`.
+This is the v0.1.0 release checkpoint.
+- `git push origin main` -> `3666363..b0153aa`.
+- The push triggered ONLY the pkgdown deploy (NOT R-CMD-check) — confirming the CI-policy change
+  (commit 7c54e28: R-CMD-check is now `pull_request` + `workflow_dispatch`; pkgdown deploys on
+  push). Exactly as Grace's review predicted.
+- `gh workflow run R-CMD-check.yaml --ref main` (workflow_dispatch) so the release commit carries
+  an auditable green tick. `gh run watch 27803010380 --exit-status` -> success (1m50s).
+- `gh run watch 27803006576 --exit-status` (pkgdown deploy, push) -> success (2m23s).
+- `pages-build-deployment` 27803081687 -> success (23s).
+- `curl -L https://itchyshin.github.io/hsquared/` -> HTTP 200 (v0.1.0 site live).
+- All three workflows green at the release commit `b0153aa`.
