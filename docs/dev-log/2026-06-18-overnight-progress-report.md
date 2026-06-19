@@ -7,22 +7,33 @@ with the new CI policy, pushing `main` triggers only the pkgdown deploy).
 
 ## Headline
 
-Built a live mission-control board, ran the team through **three adversarial
-review passes** (two broad + one deep), fixed every R-safe finding in parallel
-ultracode waves, and scouted the Julia twin to pin the single highest-leverage
+Built a live mission-control board, ran the team through **five adversarial
+review passes** (two broad + one deep + a validation-backbone numerical
+cross-check + a cross-document consistency audit), fixed every R-safe finding in
+parallel ultracode waves, shipped a fact-checked **honest validation-evidence
+article**, and re-scouted the Julia twin to pin the single highest-leverage
 unblock.
 
-- **30 review findings fixed** (12 first-pass + 10 second-pass + 8 deep-pass)
-  across **9 commits**; 1 rejected as a false positive (#23 "dead code" is the
-  live default-fit path), 1 left as a flagged design call (#6 `loadings()`).
-- Package green throughout: `devtools::test()` **734 pass / 0 fail / 0 warn /
+- **~35 review findings resolved** (12 first-pass + 10 second-pass + 8 deep-pass
+  + 4 validation-backbone + 1 cross-doc contradiction) across **14 commits**;
+  1 rejected as a false positive (#23 "dead code" is the live default-fit path),
+  maintainer-call items left flagged-not-done (#6 `loadings()`, version bump,
+  #20 `validate`-returns-spec).
+- Package green throughout: `devtools::test()` **753 pass / 0 fail / 0 warn /
   32 skip**, `devtools::check(--no-manual)` **0/0/0**, `check_pkgdown()` clean.
-- **Breakthrough:** the read-only twin scout identified **PR #17
-  (`phase4b-factor-analytic-g`)** as the one move that unblocks genuinely-new R
-  capability — a clean fast-forward of `HSquared.jl` main, green on all CI, that
-  delivers exactly the structured-covariance engine API the R lane reserves.
+- **New:** a `Validation evidence` pkgdown article — the honest, single-source
+  answer to *"what does `hsquared` mean by validated, and what is the actual
+  evidence?"* Every concrete number and test-name in it was independently
+  fact-checked against source (all confirmed), Rose-audited for over-claims
+  (clean), and Pat-clarified for the applied-scientist reader.
+- **Breakthrough (still twin-gated):** **PR #17 (`phase4b-factor-analytic-g`)**
+  remains the one move that unblocks genuinely-new R capability — the
+  structured-covariance engine API the R lane reserves. Re-scouted at end of
+  session: `HSquared.jl` `origin/main` is **unchanged at `abf777d`** and PR #17
+  is **still DRAFT/unmerged**. R cannot self-merge; this waits on the Julia lane
+  / maintainer.
 
-## Commits on `main` (local, unpushed)
+## Commits on `main` (local, unpushed) — 14
 
 1. `3eaaf08` Fix review honesty findings and surface engine setup in the fit error
 2. `3aaa7cd` Add engine-setup onboarding docs and retire static mission-control article
@@ -33,6 +44,11 @@ unblock.
 7. `0ffa4bd` Fix ten second-pass review findings (parser, multivariate, examples, docs)
 8. `3399c4a` Finalize overnight progress report
 9. `13b52aa` Harden parser, pedigree sort, and boundary diagnostics (deep-pass fixes)
+10. `11114e6` Update overnight progress report after the deep-pass fixes
+11. `bd53dad` Record clean adversarial self-review of the session fixes
+12. `99e755e` Harden validation reference solver and add an independent pedigree MME anchor
+13. `127ddf9` Add honest validation-evidence article and register it in pkgdown
+14. `4e4d52d` Fix DGP recovery status drift and clarify the validation-evidence article
 
 ## What's better now (user-visible)
 
@@ -55,7 +71,25 @@ unblock.
   target menu.
 - **Stronger validation**: negative-control test-of-tests, an independent
   hand-built MME PEV/reliability anchor, and dedicated parser/boundary edge-case
-  suites. CI policy aligned to PR + workflow_dispatch; release hygiene done.
+  suites. CI policy aligned to PR + workflow_dispatch; release hygiene done. The
+  reference REML solver no longer crashes at the `h²→1` singular-V boundary
+  (returns a non-converged code, not a raw `chol()` error); an independent
+  hand-built lambda-form MME anchor on the real 12-animal pedigree closes the
+  last self-generated-number circularity.
+- **A canonical validation-evidence article**: `vignettes/articles/
+  validation-evidence.Rmd` lays out the evidence weakest-to-strongest (gryphon
+  anchor → known-truth DGP recovery → external-package agreement →
+  supplied-variance Henderson/Mrode fixtures → independent hand-built MME anchors
+  → nadiv pedigree-inverse comparator → negative controls), the public-CI-vs-local
+  split, and an explicit "Honest boundaries" section. Every number was
+  fact-checked against source and every cited test verified to exist.
+- **Claim-surface consistency fixed**: the cross-document audit caught one real
+  contradiction — `validation-debt-register.md` marked the known-truth DGP
+  recovery `partial` while `validation_status()` (the named source of truth) and
+  `capability-status.md` both mark it `covered`; the register also carried a
+  stale "single h²=0.4 setting" note contradicting its own grid evidence. Both
+  fixed toward the source of truth. No code change (status was already `covered`
+  in `validation_status()`).
 
 ## Twin coordination (read-only) — see `2026-06-18-twin-coordination-report.md`
 
@@ -65,6 +99,8 @@ unblock.
 - **PR #17 is the unblock** (clean FF, green). On landing, the ready R slice
   lifts the `genetic_structure` guardrail and surfaces `cov = diag()/lowrank()/
   fa()` + loadings/specific-variance/latent-BV/eigen-G. **R must not self-merge.**
+  Re-scouted at end of session (`git fetch` only): `origin/main` still `abf777d`,
+  PR #17 still DRAFT — no movement, nothing new to act on in the R lane.
 - Phase 5 GWAS/QTL/eQTL tower (#18-#35): 16 stacked draft PRs, no CI, #28
   conflicting — **not landable** until restructured (split the fixed-effect
   single-marker GWAS path off first).
@@ -81,8 +117,11 @@ unblock.
   ergonomics change; needs sign-off.
 - **`loadings()`** shadowing `stats::loadings` (#6) — rename future FA extractor
   or keep + document.
-- **Push** the 9 local commits (pkgdown deploy only, with the new CI policy).
+- **Push** the 14 local commits (pkgdown deploy only, with the new CI policy).
 - **Authorize / route** the `03-engine-contract.md:277` twin doc fix.
+- **Mrode 3.1 published-constant pin** — add a fixture pinning the *published*
+  Mrode Example 3.1 EBVs (needs the physical textbook's digits); closes the last
+  external-canon gap. Maintainer-confirm, not autonomous.
 
 ## How to resume (any session)
 
@@ -96,5 +135,8 @@ Durable memory: `docs/dev-log/coordination-board.md`, `check-log.md`,
 `docs/design/capability-status.md`.
 
 **Bottom line:** the R lane is at a clean, green, release-adjacent state with
-every R-safe review finding from three passes resolved. Further capability is
-gated on the twin (land PR #17) and on your release/API decisions.
+every R-safe review finding (five passes) resolved, an honest fact-checked
+validation-evidence article shipped, and the claim surface audited consistent.
+Further capability is gated on the twin (land PR #17) and on your release/API
+decisions — there is no remaining R-safe code work that does not need your
+sign-off.
