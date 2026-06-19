@@ -36,7 +36,8 @@
 #
 # P - PERFORMANCE MEASURES
 #   Absolute bias of each unique G0/R0 element, rg, and per-trait h2:
-#   mean(hat) - true, with MCSE = sd(hat)/sqrt(n_rep). Convergence rate.
+#   mean(hat) - true, with MCSE = sd(hat)/sqrt(n_rep). EBV accuracy: per-trait
+#   mean cor(EBV_hat, true BV). Convergence rate.
 #
 # RECORDED RESULT: PENDING (run with a local engine; do not fabricate). When run,
 # record truth vs mean(hat), bias +/- 2*MCSE per target, rg/h2 recovery, and the
@@ -80,8 +81,13 @@ simulate_multitrait <- function(ped, A, G0, R0, mu = c(5, 3), seed = 1L) {
   B <- crossprod(U, Zg) %*% t(LG) # Cov(vec B) = G0 (x) A
   E <- Ze %*% t(LR) # Cov(vec E) = R0 (x) I
   Y <- sweep(B + E, 2L, mu, "+")
-  data.frame(
-    id = ped$id, y1 = Y[, 1L], y2 = Y[, 2L], stringsAsFactors = FALSE
+  # Return the phenotypes AND the true breeding values B (rows aligned to
+  # ped$id), so recovery can score EBV accuracy = cor(EBV_hat, true BV) per trait.
+  list(
+    data = data.frame(
+      id = ped$id, y1 = Y[, 1L], y2 = Y[, 2L], stringsAsFactors = FALSE
+    ),
+    bv = B
   )
 }
 
@@ -102,10 +108,11 @@ run_study <- function(n_rep = 100L) {
   A <- A[ped$id, ped$id]
   set.seed(master_seed)
   seeds <- sample.int(.Machine$integer.max, n_rep)
+  traits <- c("y1", "y2")
   hats <- vector("list", n_rep)
   for (r in seq_len(n_rep)) {
-    dat <- simulate_multitrait(ped, A, G0_true, R0_true, seed = seeds[r])
-    dat <- merge(dat, ped, by = "id", all.x = TRUE)
+    sim <- simulate_multitrait(ped, A, G0_true, R0_true, seed = seeds[r])
+    dat <- merge(sim$data, ped, by = "id", all.x = TRUE)
     fit <- tryCatch(
       hsquared(
         cbind(y1, y2) ~ 1 + animal(1 | id, pedigree = ped),
@@ -118,11 +125,22 @@ run_study <- function(n_rep = 100L) {
       error = function(e) NULL
     )
     if (is.null(fit)) next
+    # EBV accuracy: pivot the long (id, trait, value) EBVs to wide, align to
+    # ped$id, and correlate each trait with the true breeding value.
+    ebv <- breeding_values(fit)
+    ebv_mat <- vapply(traits, function(tn) {
+      s <- ebv[ebv$trait == tn, , drop = FALSE]
+      s$value[match(ped$id, s$id)]
+    }, numeric(nrow(ped)))
+    acc <- vapply(seq_along(traits), function(k) {
+      stats::cor(ebv_mat[, k], sim$bv[, k], use = "complete.obs")
+    }, numeric(1))
     hats[[r]] <- list(
       G0 = genetic_covariance(fit),
       R0 = residual_covariance(fit),
       rg = genetic_correlation(fit)[1L, 2L],
-      h2 = heritability(fit)$estimate
+      h2 = heritability(fit)$estimate,
+      ebv_accuracy = stats::setNames(acc, traits)
     )
   }
   hats <- Filter(Negate(is.null), hats)
