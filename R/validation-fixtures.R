@@ -593,6 +593,84 @@ hs_mrode_example_3_1_fixture <- function() {
   )
 }
 
+# Mrode (2014) Example 3.2 (p.48): the SIRE model on the same WWG data as 3.1.
+# Random sires 1, 3, 4 are related via a sire numerator-relationship matrix
+# (sire 4's sire = sire 1, matching the 3.1 pedigree); sigma_s2 = 5, sigma_e2 =
+# 55 (alpha = 11). This extends the published-EBV external canon to a SECOND
+# model class (the sire model) at near-zero risk: it reuses the tabular A-method
+# and the reference Henderson solver, and is CI-runnable in pure base R.
+#
+# Inputs + published solutions confirmed against the masuday BLUPF90 tutorial
+# (Mrode 3.2, p.48) and the austin-putz chapter-3 reproduction, and
+# independently re-solved (~1e-7). Unlike 3.1, the sex block here is full rank
+# (two means under a no-intercept design), so both sex means are published and
+# directly reproducible.
+hs_mrode_example_3_2_sire_fixture <- function() {
+  data <- data.frame(
+    WWG = c(4.5, 2.9, 3.9, 3.5, 5.0),
+    sex = c("male", "female", "female", "male", "male"),
+    sire = c("1", "3", "1", "4", "3"),
+    stringsAsFactors = FALSE
+  )
+  sire_ids <- c("1", "3", "4")
+
+  # Sire numerator-relationship matrix on {1, 3, 4} (sire 1, sire 3 founders;
+  # sire 4's sire = sire 1, dam unknown). Same tabular recursion as 3.1.
+  sire_ped_sire <- c(0L, 0L, 1L) # index into sire_ids; 0 = unknown
+  sire_ped_dam <- c(0L, 0L, 0L)
+  n <- length(sire_ids)
+  A <- matrix(0, n, n)
+  for (i in seq_len(n)) {
+    s <- sire_ped_sire[i]
+    d <- sire_ped_dam[i]
+    A[i, i] <- 1 + if (s > 0L && d > 0L) 0.5 * A[s, d] else 0
+    for (j in seq_len(i - 1L)) {
+      aij <- 0
+      if (s > 0L) {
+        aij <- aij + 0.5 * A[j, s]
+      }
+      if (d > 0L) {
+        aij <- aij + 0.5 * A[j, d]
+      }
+      A[i, j] <- aij
+      A[j, i] <- aij
+    }
+  }
+  Ainv <- solve(A)
+  dimnames(Ainv) <- list(sire_ids, sire_ids)
+
+  list(
+    name = "mrode_example_3_2_sire_published",
+    description = paste(
+      "Mrode (2014) Example 3.2 (p.48): published-solution external canon for",
+      "the SIRE model (related sires; sigma_s2 = 5, sigma_e2 = 55, alpha = 11)."
+    ),
+    data = data,
+    sire_ids = sire_ids,
+    sigma_s2 = 5,
+    sigma_e2 = 55,
+    expected = list(
+      ids = sire_ids,
+      Ainv = Ainv,
+      # Published sire solutions (Mrode 2014, 3rd ed., p.48), keyed to sires.
+      sire_solutions = stats::setNames(
+        c(0.02200220, 0.01402640, -0.04304180),
+        sire_ids
+      ),
+      # Published fixed-effect (sex) means under the no-intercept design.
+      sex_male = 4.33567107,
+      sex_female = 3.38198579,
+      sex_contrast_male_minus_female = 4.33567107 - 3.38198579,
+      source = paste(
+        "Mrode (2014) Linear Models for the Prediction of Animal Breeding",
+        "Values, 3rd ed., Example 3.2 (p.48); inputs and solutions confirmed",
+        "against the masuday BLUPF90 tutorial and the austin-putz chapter-3",
+        "reproduction, and independently re-solved (~1e-7)."
+      )
+    )
+  )
+}
+
 hs_solve_henderson_mme_reference <- function(
   y,
   X,
