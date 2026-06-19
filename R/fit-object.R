@@ -78,7 +78,13 @@ summary.hsquared_fit <- function(object, ...) {
       diagnostics = object$result$diagnostics,
       converged = object$result$converged,
       at_boundary = hs_fit_boundary_flag(object),
-      at_boundary_class = hs_fit_boundary_class(object)
+      at_boundary_class = hs_fit_boundary_class(object),
+      # Experimental uncertainty surfaces (engine rows V1-HERIT-CI /
+      # V3-REPEAT-REML, partial); present only when the engine returned them.
+      heritability_interval = object$result$heritability_interval,
+      heritability_se = object$result$heritability_se,
+      variance_component_se = object$result$variance_component_se,
+      repeatability_interval = object$result$repeatability_interval
     ),
     class = "summary_hsquared_fit"
   )
@@ -107,6 +113,52 @@ print.summary_hsquared_fit <- function(x, ...) {
         sep = ""
       )
     }
+  }
+  hs_print_uncertainty(x)
+  invisible(x)
+}
+
+# Print the experimental uncertainty surfaces (CIs / SEs) when present. These
+# are asymptotic, REML-only, partial-row surfaces (V1-HERIT-CI / V3-REPEAT-REML)
+# and are labelled experimental so they are never read as validated.
+hs_print_uncertainty <- function(x) {
+  fmt <- function(v) format(signif(as.numeric(v), 4))
+  if (!is.null(x$heritability_se) || !is.null(x$heritability_interval)) {
+    cat("  heritability uncertainty (experimental; asymptotic REML):\n")
+    if (!is.null(x$heritability_se)) {
+      cat("    SE: ", fmt(x$heritability_se), "\n", sep = "")
+    }
+    if (!is.null(x$heritability_interval)) {
+      ci <- x$heritability_interval
+      cat(
+        sprintf(
+          "    %g%% CI: [%s, %s] (%s)\n",
+          100 * as.numeric(ci$level),
+          fmt(ci$lower),
+          fmt(ci$upper),
+          ci$method
+        )
+      )
+    }
+  }
+  if (!is.null(x$variance_component_se)) {
+    cat("  variance-component SEs (experimental; asymptotic REML):\n")
+    se <- x$variance_component_se
+    for (i in seq_len(nrow(se))) {
+      cat("    ", se$component[i], ": ", fmt(se$se[i]), "\n", sep = "")
+    }
+  }
+  if (!is.null(x$repeatability_interval)) {
+    ci <- x$repeatability_interval
+    cat("  repeatability uncertainty (experimental; asymptotic REML):\n")
+    cat(
+      sprintf(
+        "    %g%% CI: [%s, %s]\n",
+        100 * as.numeric(ci$level),
+        fmt(ci$lower),
+        fmt(ci$upper)
+      )
+    )
   }
   invisible(x)
 }
