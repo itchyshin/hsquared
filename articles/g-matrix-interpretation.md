@@ -177,8 +177,13 @@ Still planned:
 
 - a committed `t >= 2` known-truth recovery fixture;
 - full external comparator parity for unstructured `G` and full `R`;
-- standard errors and confidence intervals for G/R entries,
-  correlations, and heritabilities;
+- *validated*, coverage-calibrated standard errors and confidence
+  intervals for G/R entries, correlations, and heritabilities
+  (experimental, asymptotic SEs are already available via
+  [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)
+  for an unstructured fit — `V4-MV-REML`, partial: the recovery
+  calibration has not passed, unstructured-only, not
+  coverage-calibrated);
 - production sparse multivariate fitting;
 - `cov = diag()`, `cov = lowrank(K)`, and `cov = fa(K)` R grammar;
 - a general `P_matrix()` extractor with a model-specific estimand.

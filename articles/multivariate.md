@@ -120,6 +120,13 @@ to look before interpreting likelihood-based summaries;
 [`AIC()`](https://rdrr.io/r/stats/AIC.html) are intentionally blocked
 for non-converged multivariate fits.
 
+`covariance_standard_errors(fit_mv)` returns **experimental**,
+asymptotic delta-method standard errors for the G/R covariance and
+correlation matrices and per-trait h², when a local engine provides
+them. It mirrors `V4-MV-REML` (`partial`): unstructured-only, REML-only,
+surfaced while the multivariate recovery calibration has not passed —
+reported, not validated.
+
 ## Initial values
 
 If you supply starting values, use a named list. The names are part of

@@ -187,6 +187,13 @@ univariate fit, plus trait covariance matrices:</p>
 interpreting likelihood-based summaries; <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> and
 <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC()</a></code> are intentionally blocked for non-converged
 multivariate fits.</p>
+<p><code>covariance_standard_errors(fit_mv)</code> returns
+<strong>experimental</strong>, asymptotic delta-method standard errors
+for the G/R covariance and correlation matrices and per-trait h², when a
+local engine provides them. It mirrors <code>V4-MV-REML</code>
+(<code>partial</code>): unstructured-only, REML-only, surfaced while the
+multivariate recovery calibration has not passed — reported, not
+validated.</p>
 </div>
 <div class="section level2">
 <h2 id="initial-values">Initial values<a class="anchor" aria-label="anchor" href="#initial-values"></a>

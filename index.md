@@ -37,8 +37,11 @@ prediction, fitted values, residuals,
 [`nobs()`](https://rdrr.io/r/stats/nobs.html), and
 [`fit_diagnostics()`](https://itchyshin.github.io/hsquared/reference/fit_diagnostics.md)
 (including an `at_boundary` flag) — operate on the fitted object.
-Standard errors and confidence intervals for variance components and
-heritability are out of v0.1 scope. The advanced
+Experimental, asymptotic REML standard errors and confidence intervals
+are surfaced when a local engine provides them (clearly labelled
+experimental, not coverage-calibrated); validated SEs/CIs and
+[`confint()`](https://rdrr.io/r/stats/confint.html)/[`vcov()`](https://rdrr.io/r/stats/vcov.html)
+remain out of v0.1 scope. The advanced
 `control = hs_control(engine = "julia")` path exposes explicit engine
 targets (supplied-variance Henderson MME, sparse REML). A lightweight
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)

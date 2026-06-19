@@ -422,11 +422,18 @@ path (<code>REML = FALSE</code> errors). The supplied-variance paths
 (<code>henderson_mme</code>, <code>snp_blup</code>) solve at given
 variances rather than estimating them.</li>
 <li>
-<strong>No validated SEs/CIs.</strong> Standard errors and
-confidence intervals for the variance components and heritability are
-out of v0.1 scope. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and the extractors report
-point estimates only and must not print or imply an interval for
-variance components or h². A validated SE/interval is deferred.</li>
+<strong>No validated SEs/CIs.</strong> A <em>validated</em>,
+coverage-calibrated SE/interval — and
+<code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>/<code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> — is deferred.
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and the extractors may surface
+<em>experimental</em>, asymptotic REML SEs/intervals
+(<code><a href="../reference/heritability_interval.html">heritability_interval()</a></code>,
+<code><a href="../reference/variance_component_standard_errors.html">variance_component_standard_errors()</a></code>,
+<code><a href="../reference/variance_component_standard_errors.html">heritability_standard_error()</a></code>,
+<code><a href="../reference/repeatability_interval.html">repeatability_interval()</a></code>, and multivariate
+<code><a href="../reference/covariance_standard_errors.html">covariance_standard_errors()</a></code>), clearly labelled
+experimental and not coverage-calibrated — point estimates plus bounds
+only, never to be read as validated inference.</li>
 <li>
 <strong><code><a href="../reference/reliability.html">accuracy()</a></code> is not a validated
 accuracy.</strong> It is the square root of reliability — a

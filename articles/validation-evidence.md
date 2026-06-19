@@ -313,11 +313,20 @@ What the v0.1 promotion does **not** claim:
 - **REML only.** ML estimation is rejected on the fit path
   (`REML = FALSE` errors). The supplied-variance paths (`henderson_mme`,
   `snp_blup`) solve at given variances rather than estimating them.
-- **No validated SEs/CIs.** Standard errors and confidence intervals for
-  the variance components and heritability are out of v0.1 scope.
-  [`summary()`](https://rdrr.io/r/base/summary.html) and the extractors
-  report point estimates only and must not print or imply an interval
-  for variance components or h². A validated SE/interval is deferred.
+- **No validated SEs/CIs.** A *validated*, coverage-calibrated
+  SE/interval — and
+  [`confint()`](https://rdrr.io/r/stats/confint.html)/[`vcov()`](https://rdrr.io/r/stats/vcov.html)
+  — is deferred. [`summary()`](https://rdrr.io/r/base/summary.html) and
+  the extractors may surface *experimental*, asymptotic REML
+  SEs/intervals
+  ([`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md),
+  [`variance_component_standard_errors()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md),
+  [`heritability_standard_error()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md),
+  [`repeatability_interval()`](https://itchyshin.github.io/hsquared/reference/repeatability_interval.md),
+  and multivariate
+  [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)),
+  clearly labelled experimental and not coverage-calibrated — point
+  estimates plus bounds only, never to be read as validated inference.
 - **[`accuracy()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
   is not a validated accuracy.** It is the square root of reliability —
   a model-internal quantity on the dense validation path — not the

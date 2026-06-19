@@ -240,8 +240,13 @@ version of the shared fixture.</li>
 fixture;</li>
 <li>full external comparator parity for unstructured <code>G</code> and
 full <code>R</code>;</li>
-<li>standard errors and confidence intervals for G/R entries,
-correlations, and heritabilities;</li>
+<li>
+<em>validated</em>, coverage-calibrated standard errors and
+confidence intervals for G/R entries, correlations, and heritabilities
+(experimental, asymptotic SEs are already available via
+<code><a href="../reference/covariance_standard_errors.html">covariance_standard_errors()</a></code> for an unstructured fit —
+<code>V4-MV-REML</code>, partial: the recovery calibration has not
+passed, unstructured-only, not coverage-calibrated);</li>
 <li>production sparse multivariate fitting;</li>
 <li>
 <code>cov = diag()</code>, <code>cov = lowrank(K)</code>, and
