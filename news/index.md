@@ -22,6 +22,16 @@
   provides them. Same `V1-HERIT-CI` (`partial`) caveats: asymptotic,
   REML-only, omitted near a variance-component boundary (ill-conditioned
   AI matrix), not coverage-calibrated, not a validated capability.
+- **Experimental:**
+  [`repeatability_interval()`](https://itchyshin.github.io/hsquared/reference/repeatability_interval.md)
+  returns a logit delta-method confidence interval for the repeatability
+  coefficient `t = (Va + Vpe) / Vp` from the opt-in repeatability model,
+  when the engine provides one. It mirrors the engine row
+  `V3-REPEAT-REML` (`partial`): engine-internal self-consistency tested
+  (recovery of `t` + interval bracketing on seeded fixtures) but with no
+  external comparator, no `h²` interval, and no deep-pedigree
+  validation; reported as a point estimate plus bounds only
+  ([\#12](https://github.com/itchyshin/hsquared/issues/12)).
 
 ## hsquared 0.1.0
 

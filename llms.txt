@@ -402,6 +402,8 @@ experimental targets.
   : Extract breeding values
 - [`repeatability()`](https://itchyshin.github.io/hsquared/reference/repeatability.md)
   : Extract repeatability estimates
+- [`repeatability_interval()`](https://itchyshin.github.io/hsquared/reference/repeatability_interval.md)
+  : Extract an experimental repeatability confidence interval
 - [`permanent_effects()`](https://itchyshin.github.io/hsquared/reference/permanent_effects.md)
   : Extract permanent-environment effects
 - [`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md)
