@@ -6,6 +6,8 @@
 #'
 #' @return A data frame of validation status records with class
 #'   `"hs_validation_status"`.
+#' @examples
+#' validation_status()
 #' @export
 validation_status <- function() {
   out <- data.frame(

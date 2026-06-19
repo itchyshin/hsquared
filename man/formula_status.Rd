@@ -15,3 +15,6 @@ A data frame of formula grammar records with class
 language are parsed today, reserved as syntax markers, or still roadmap-only.
 It is a status table, not a model-fitting helper.
 }
+\examples{
+formula_status()
+}

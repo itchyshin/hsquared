@@ -8,8 +8,9 @@
 #' `y ~ fixed + animal(1 | id, pedigree = ped)` by REML (average-information)
 #' through the HSquared.jl engine: the default `hsquared()` call fits when a
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
-#' install guidance. Multivariate, genomic, and non-Gaussian models remain
-#' planned.
+#' install guidance. Genomic, single-step, repeatability, two-effect, and
+#' multivariate Gaussian models also fit through opt-in, experimental engine
+#' paths; factor-analytic and non-Gaussian models remain planned.
 #'
 #' @keywords internal
 "_PACKAGE"

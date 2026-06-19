@@ -6,6 +6,8 @@
 #'
 #' @return A data frame of formula grammar records with class
 #'   `"hs_formula_status"`.
+#' @examples
+#' formula_status()
 #' @export
 formula_status <- function() {
   out <- data.frame(
@@ -66,6 +68,7 @@ hs_formula_status_terms <- function() {
     "relmat(1 | id, K = K)",
     "precision(1 | id, Q = Q)",
     "genomic(1 | id, Ginv = Ginv)",
+    "genomic(1 | id, markers = M)",
     "single_step(1 | id, Hinv = Hinv)",
     "markers(M, model = \"random\")",
     "marker_scan(M, map = marker_map)",
@@ -83,7 +86,7 @@ hs_formula_status_categories <- function() {
     rep("v0.1 animal model", 2L),
     rep("standard quantitative genetics", 6L),
     rep("inheritance and relationship kernels", 6L),
-    rep("genomic and marker models", 5L),
+    rep("genomic and marker models", 6L),
     rep("multivariate and factor analytic", 5L)
   )
 }
@@ -93,7 +96,7 @@ hs_formula_status_phases <- function() {
     rep("Phase 1", 2L),
     rep("Phase 2", 6L),
     rep("Phase 3+", 6L),
-    rep("Phase 5", 5L),
+    rep("Phase 5", 6L),
     rep("Phase 3-4", 5L)
   )
 }
@@ -102,7 +105,7 @@ hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 5L),
     rep("reserved", 9L),
-    rep("parsed", 2L),
+    rep("parsed", 3L),
     rep("reserved", 3L),
     "parsed",
     rep("planned", 4L)
@@ -117,6 +120,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in maternal)",
     rep("not available", 9L),
     "fitted (opt-in genomic)",
+    "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
@@ -158,6 +162,11 @@ hs_formula_status_behavior <- function() {
     paste(
       "Primary genomic effect of the opt-in, experimental GREML model; requires",
       "a user-supplied `Ginv` and engine = \"julia\", target = \"genomic\"."
+    ),
+    paste(
+      "Primary genomic effect of the opt-in, experimental SNP-BLUP model;",
+      "requires a user-supplied marker matrix `markers` and engine = \"julia\",",
+      "target = \"genomic\"."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental model; requires a",

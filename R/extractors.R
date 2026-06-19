@@ -1083,13 +1083,59 @@ nobs.hsquared_fit <- function(object, ...) {
   as.integer(n)
 }
 
+# Detect the opt-in multivariate target, whose fitted object stores `Y`
+# (a multi-trait matrix) and emits no single-vector predictions. The response-
+# scale `predict()`/`fitted()`/`residuals()` contract is univariate-only in
+# v0.1, so these block on that target with a target-named scope message rather
+# than the generic "planned v0.1 contract" miss from `hs_fit_result()`.
+hs_fit_is_multivariate <- function(object) {
+  identical(object$spec$target, "multivariate") || !is.null(object$payload$Y)
+}
+
+hs_block_multivariate_response_scale <- function(name) {
+  stop(
+    "`",
+    name,
+    "()` on the response scale is univariate-only in v0.1 and is not defined ",
+    "for the opt-in multivariate target (`target = \"multivariate\"`), which ",
+    "fits multiple traits jointly. Use `breeding_values()`, ",
+    "`genetic_covariance()`, and `residual_covariance()` for multivariate ",
+    "results.",
+    call. = FALSE
+  )
+}
+
+#' Response-scale prediction helpers
+#'
+#' `predict()`, `fitted()`, and `residuals()` are part of the planned v0.1
+#' fitted-object contract for univariate `hsquared_fit` objects. They are
+#' univariate-only: the opt-in multivariate target (`target = "multivariate"`)
+#' fits multiple traits jointly and is intentionally out of v0.1 response-scale
+#' scope, so these methods stop with a scope message pointing to
+#' `breeding_values()`, `genetic_covariance()`, and `residual_covariance()`.
+#'
+#' @inheritParams variance_components
+#'
+#' @return Response-scale predictions, fitted values, or residuals for
+#'   univariate `hsquared_fit` objects.
+#' @name response_scale_methods
+NULL
+
+#' @rdname response_scale_methods
 #' @export
 predict.hsquared_fit <- function(object, ...) {
+  if (hs_fit_is_multivariate(object)) {
+    hs_block_multivariate_response_scale("predict")
+  }
   hs_fit_result(object, "predictions", "predictions")
 }
 
+#' @rdname response_scale_methods
 #' @export
 fitted.hsquared_fit <- function(object, ...) {
+  if (hs_fit_is_multivariate(object)) {
+    hs_block_multivariate_response_scale("fitted")
+  }
   predictions <- stats::predict(object, ...)
   if (is.data.frame(predictions) && ".fitted" %in% names(predictions)) {
     return(predictions$.fitted)
@@ -1097,8 +1143,12 @@ fitted.hsquared_fit <- function(object, ...) {
   predictions
 }
 
+#' @rdname response_scale_methods
 #' @export
 residuals.hsquared_fit <- function(object, ...) {
+  if (hs_fit_is_multivariate(object)) {
+    hs_block_multivariate_response_scale("residuals")
+  }
   response <- object$payload$y
   if (is.null(response)) {
     stop(

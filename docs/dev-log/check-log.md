@@ -4186,3 +4186,29 @@ toolchain once after.
   681 pass / 0 fail / 0 warn / 32 skip; pkgdown::check_pkgdown() clean;
   devtools::check(--no-manual) 0/0/0.
 - Committed locally; push deferred.
+
+## 2026-06-18 Second-pass fix wave: ten findings (parser/multivariate/examples/docs/anchor)
+
+6-lens parallel workflow (wf_017aac82-a65); operator verified + integrated.
+- #1 nested-marker cryptic error: R/model-spec.R now names the offending term when an
+  effect/marker is nested in an interaction/function term, instead of leaking base-R
+  "invalid type (NULL)".
+- #2 formula_status() gains a genomic(1 | id, markers = M) row (parsed / fitted opt-in
+  genomic/SNP-BLUP); test-phase0-api.R pinned count 24 -> 25.
+- #3/#4 multi-primary and multi-second-effect errors now name single_step() and
+  maternal_genetic() respectively.
+- #5 predict()/fitted()/residuals() give a clear multivariate-target message instead of
+  the misleading "planned v0.1 contract"; new response_scale_methods man topic +
+  _pkgdown.yml reference entry.
+- #7 runnable Julia-free @examples for formula_status(), validation_status(),
+  model_spec(), hs_data()/data_status() (executed by R CMD check).
+- #8/#9/#11 hsquared-package landing page, README lead sentence, and the model-status
+  article no longer under-state the shipped opt-in multivariate/genomic paths.
+- #10 new tests/testthat/test-pev-reliability-anchor.R: independent hand-built MME
+  PEV/reliability anchor + negative control (no Julia).
+- #6 (loadings() shadowing stats::loadings) left as a flagged design call, not fixed.
+- Checks: air clean; devtools::document() (new response_scale_methods.Rd, refreshed
+  data_status/validation_status/hsquared-package Rd); devtools::test() 692 pass / 0 fail /
+  0 warn / 32 skip; pkgdown::check_pkgdown() clean (after adding response_scale_methods to
+  the reference index); devtools::check(--no-manual) 0/0/0.
+- Committed locally; push deferred.

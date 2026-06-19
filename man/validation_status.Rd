@@ -15,3 +15,6 @@ A data frame of validation status records with class
 comparator lanes for \code{hsquared}. It is a status table only: it does not run
 validation checks, fit models, or promote any capability to working status.
 }
+\examples{
+validation_status()
+}

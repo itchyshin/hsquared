@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 24L)
+  expect_equal(nrow(status), 25L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))

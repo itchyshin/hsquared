@@ -75,6 +75,7 @@ reference:
       - marker_extractors
       - fixef
       - ranef
+      - response_scale_methods
   - title: Package
     contents:
       - hsquared-package

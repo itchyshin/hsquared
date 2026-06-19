@@ -37,6 +37,20 @@
 #' alignment diagnostics. When `annotation_id` is supplied, it reports
 #' expression-feature annotation coverage diagnostics. When `environment_id` is
 #' supplied, it also reports environment metadata coverage diagnostics.
+#' @examples
+#' ped <- data.frame(
+#'   id = c("a", "b", "c", "d"),
+#'   sire = c(NA, NA, "a", "a"),
+#'   dam = c(NA, NA, "b", "c")
+#' )
+#' dat <- data.frame(
+#'   y = c(1, 2, 3),
+#'   sex = c("f", "m", "f"),
+#'   id = c("a", "c", "d")
+#' )
+#' bundle <- hs_data(phenotypes = dat, pedigree = ped)
+#' bundle
+#' summary(bundle)
 #' @export
 hs_data <- function(
   phenotypes,
@@ -156,6 +170,19 @@ print.hs_data <- function(x, ...) {
 #' @param data An [hs_data()] object.
 #'
 #' @return An `"hs_data_status"` object.
+#' @examples
+#' ped <- data.frame(
+#'   id = c("a", "b", "c", "d"),
+#'   sire = c(NA, NA, "a", "a"),
+#'   dam = c(NA, NA, "b", "c")
+#' )
+#' dat <- data.frame(
+#'   y = c(1, 2, 3),
+#'   sex = c("f", "m", "f"),
+#'   id = c("a", "c", "d")
+#' )
+#' bundle <- hs_data(phenotypes = dat, pedigree = ped)
+#' data_status(bundle)
 #' @export
 data_status <- function(data) {
   UseMethod("data_status")

@@ -23,3 +23,17 @@ supplied, it also reports environment metadata coverage diagnostics. It does
 not fit models, build genomic relationship matrices, add eQTL terms, or add
 environment-effect terms.
 }
+\examples{
+ped <- data.frame(
+  id = c("a", "b", "c", "d"),
+  sire = c(NA, NA, "a", "a"),
+  dam = c(NA, NA, "b", "c")
+)
+dat <- data.frame(
+  y = c(1, 2, 3),
+  sex = c("f", "m", "f"),
+  id = c("a", "c", "d")
+)
+bundle <- hs_data(phenotypes = dat, pedigree = ped)
+data_status(bundle)
+}

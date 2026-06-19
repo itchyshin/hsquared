@@ -48,7 +48,7 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   if (length(primary_pos) > 1L) {
     stop(
       "`formula` can contain only one primary effect ",
-      "(`animal()` or `genomic()`).",
+      "(`animal()`, `genomic()`, or `single_step()`).",
       call. = FALSE
     )
   }
@@ -83,7 +83,8 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   if (length(second_pos) > 1L) {
     stop(
       "`formula` can contain at most one additional random effect ",
-      "(`permanent()` or `common_env()`) alongside `animal()`.",
+      "(`permanent()`, `common_env()`, or `maternal_genetic()`) alongside ",
+      "`animal()`.",
       call. = FALSE
     )
   }
@@ -106,6 +107,14 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   )]
   if (length(bar_pos) > 0L) {
     hs_stop_unsupported_random_effect(rhs_terms[[bar_pos[[1L]]]])
+  }
+
+  # A recognized effect/marker call nested inside an interaction or function
+  # term (e.g. `x:dominance(1 | id)`) is not a top-level random effect, so it
+  # would otherwise leak into the fixed-effect model.frame and abort with a
+  # cryptic base-R error. Reject it here with the named term.
+  for (pos in leftover_pos) {
+    hs_check_nested_effect(rhs_terms[[pos]])
   }
 
   fixed_terms <- rhs_terms[-c(primary_pos, second_pos)]
@@ -1368,6 +1377,56 @@ hs_stop_planned_marker <- function(expr) {
     marker,
     "()` is planned, not implemented. Run `formula_status()` for the live ",
     "list of which terms parse and which fit.",
+    call. = FALSE
+  )
+}
+
+# Every recognized effect/marker name, whether implemented (`animal()`) or
+# planned. Used to catch such a call nested inside an interaction or function
+# term (e.g. `x:dominance(1 | id)`), which is not a top-level random effect.
+hs_effect_marker_names <- function() {
+  c("animal", hs_planned_marker_names())
+}
+
+# The first recognized effect/marker name used as a *call* anywhere inside an
+# expression, or NA if none. Only call heads count, so a fixed variable that
+# merely shares a name (e.g. a column called `dominance` in `sex:dominance`) is
+# not flagged.
+hs_nested_effect_call_name <- function(expr) {
+  if (!is.call(expr)) {
+    return(NA_character_)
+  }
+  head <- expr[[1L]]
+  if (is.symbol(head) && as.character(head) %in% hs_effect_marker_names()) {
+    return(as.character(head))
+  }
+  for (part in as.list(expr)[-1L]) {
+    hit <- hs_nested_effect_call_name(part)
+    if (!is.na(hit)) {
+      return(hit)
+    }
+  }
+  NA_character_
+}
+
+# Reject a recognized effect/marker call nested inside a fixed term. The term
+# itself is not a top-level effect (those were already consumed), so any such
+# call found here is nested and would otherwise abort with a cryptic base-R
+# error when the fixed-effect model.frame is built. Ordinary fixed interactions
+# such as `sex:age` are left untouched.
+hs_check_nested_effect <- function(term) {
+  marker <- hs_nested_effect_call_name(term)
+  if (is.na(marker)) {
+    return(invisible(NULL))
+  }
+  stop(
+    "`",
+    marker,
+    "()` cannot appear inside an interaction or function call (`",
+    hs_deparse(term),
+    "`). Name it as a top-level random effect, for example ",
+    "`y ~ ... + animal(1 | id, pedigree = ped)`. Run `formula_status()` for ",
+    "the live list of which terms parse and which fit.",
     call. = FALSE
   )
 }

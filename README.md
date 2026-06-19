@@ -1,9 +1,9 @@
 # hsquared
 
-`hsquared` is the planned R interface for an open, Julia-backed
+`hsquared` is the R interface for an open, Julia-backed
 quantitative-genetic modelling system. The R package owns the applied-user
 surface: formula syntax, data validation, summaries, extractors, examples, and
-eventually the bridge to the `HSquared.jl` engine.
+the bridge to the `HSquared.jl` engine.
 
 Version 0.1 fits the univariate Gaussian animal model
 `y ~ fixed + animal(1 | id, pedigree = ped)` by REML through the `HSquared.jl`
