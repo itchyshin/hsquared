@@ -43,10 +43,12 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 
 **Class A — R-buildable now (no twin change; R calls the exported fn on the returned fit):**
 1. ✅ **#11** `heritability_interval` (experimental CI) — **shipped** `56f8fb5`.
-2. ✅ **#14** `single_step` routing — **verified correct, no bug** (supplied-Hinv ssGBLUP via `fit_ai_reml`).
-3. **#12** `repeatability_interval` (next).
-4. **#13** REML genomic variants (`fit_gblup_reml`/`fit_snp_blup_reml` when variances absent).
-5. **#21** PEV/reliability via `:selinv` — pending the twin promoting these into the standard payload (#43).
+2. ✅ **#14** `single_step` routing — **verified correct, no bug**.
+3. ✅ **#12** `repeatability_interval` — **shipped** `e66e648` (experimental).
+4. ✅ **(critic's find)** `variance_component_standard_errors()` + `heritability_standard_error()` — **shipped** `4266169` (V1-HERIT-CI names them; experimental).
+5. ⏸ **#13** REML genomic variants — **deferred** (ultracode honesty_ok=false + regression; needs the V2-SNPBLUP row updated + the existing supplied-variance test reconciled first).
+6. ☐ **#21** PEV/reliability via `:selinv` — ready; modest value (already enriched with the default method), needs a live probe for the method symbol.
+7. ☐ **#26** multivariate covariance SEs (`:unstructured`) — ready; must disclaim the failed 6/10 calibration + unstructured-only.
 
 Each: bridge probe (live Julia smoke to confirm signature + return shape against the pinned SHA)
 → impl in `R/julia-bridge.R` (+ `R/extractors.R`) → parity fixture → multi-lens review

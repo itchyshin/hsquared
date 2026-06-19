@@ -21,8 +21,10 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | planned | innovation children #17/#18/#19/#20 |
 | 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); twin #41 |
 | 11 | Bridge: surface `heritability_interval` (experimental CI) | 1 | bridge | partial · **DONE** | V1-HERIT-CI (partial); shipped `56f8fb5` (experimental extractor) |
-| 12 | Bridge: surface `repeatability_interval` | 2 | bridge | partial | V3-REPEAT-REML (partial) — **WS2** |
-| 13 | Bridge: REML genomic variants — if on main | 2 | bridge | partial | V2-GREML (partial) — **WS2, Step-0 gated** |
+| 12 | Bridge: surface `repeatability_interval` | 2 | bridge | partial · **DONE** | V3-REPEAT-REML (partial); shipped `e66e648` (experimental) |
+| 13 | Bridge: REML genomic variants — if on main | 2 | bridge | partial · **DEFERRED** | V2-GREML; ultracode honesty_ok=false + regression — needs V2-SNPBLUP row update + existing-test fix first |
+| — | Bridge: REML standard errors (variance components + h²) | 1 | bridge | partial · **DONE** | V1-HERIT-CI (partial); shipped `4266169` (critic's find; experimental) |
+| 26 | Bridge: multivariate covariance SEs (`:unstructured`) | 3 | bridge | partial | V4-MV-REML names SEs as a now-built gap; buildable (disclaim failed calibration + unstructured-only) |
 | 14 | Bridge: verify `single_step` routing | 2 | bridge | partial · **DONE (no bug)** | V2-SSHINV; verified correct — supplied-Hinv ssGBLUP via `fit_ai_reml`, not SNP-BLUP |
 | 15 | Audit: on-main engine fns vs R surfaces (gap table) | 1 | bridge | partial | **WS2 Step 0** |
 | 16 | Docs: verify `eigen_G` wording lives in R repo | 4 | claim-audit | planned | reserved extractor; twin #38 |
