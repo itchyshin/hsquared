@@ -24,7 +24,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 12 | Bridge: surface `repeatability_interval` | 2 | bridge | partial · **DONE** | V3-REPEAT-REML (partial); shipped `e66e648` (experimental) |
 | 13 | Bridge: REML genomic variants — if on main | 2 | bridge | partial · **DEFERRED** | V2-GREML; ultracode honesty_ok=false + regression — needs V2-SNPBLUP row update + existing-test fix first |
 | — | Bridge: REML standard errors (variance components + h²) | 1 | bridge | partial · **DONE** | V1-HERIT-CI (partial); shipped `4266169` (critic's find; experimental) |
-| 26 | Bridge: multivariate covariance SEs (`:unstructured`) | 3 | bridge | partial | V4-MV-REML names SEs as a now-built gap; buildable (disclaim failed calibration + unstructured-only) |
+| 26 | Bridge: multivariate covariance SEs (`:unstructured`) | 3 | bridge | partial · **DONE** | V4-MV-REML SEs surfaced (experimental, unstructured-only, calibration-failed disclaimer); `covariance_standard_errors()` |
 | 14 | Bridge: verify `single_step` routing | 2 | bridge | partial · **DONE (no bug)** | V2-SSHINV; verified correct — supplied-Hinv ssGBLUP via `fit_ai_reml`, not SNP-BLUP |
 | 15 | Audit: on-main engine fns vs R surfaces (gap table) | 1 | bridge | partial | **WS2 Step 0** |
 | 16 | Docs: verify `eigen_G` wording lives in R repo | 4 | claim-audit | planned | reserved extractor; twin #38 |
@@ -88,7 +88,7 @@ rows `partial`) → R surfaces stay experimental/partial.
 
 | # | Big item | Issue(s) | Lane |
 | --- | --- | --- | --- |
-| 1 | Validation depth (v0.1 unimpeachable) | #7 epic + ✅#31 (sommer/pedigreemm benchmark — **done**), #32 (Mrode beyond 3.1), #33 (comparator policy) | R-ownable |
+| 1 | Validation depth (v0.1 unimpeachable) | #7 epic + ✅#31 (sommer/pedigreemm benchmark), ✅#33 (comparator-policy doc), #32 (Mrode beyond 3.1) | R-ownable |
 | 2 | Applied-user experience + figures | #27 epic + ✅#28 (summary CI/SEs), ✅#30 (base-R plot.hsquared_fit), #29 (gryphon vignette) | R-ownable |
 | 3 | Multivariate → covered | #10 + #34 (t≥2 recovery harness) + #26 (covariance SEs); twin HSquared.jl#41 | R harness + twin gate |
 | 4 | Factor-analytic unblock | #22 mirror; twin HSquared.jl#37 (calibration) + #42 (payload) | twin-led, R-prepared |

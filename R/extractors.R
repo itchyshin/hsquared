@@ -783,6 +783,49 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
   )
 }
 
+#' Extract experimental multivariate covariance standard errors
+#'
+#' `covariance_standard_errors()` returns **experimental** large-sample
+#' (delta-method) standard errors for the multivariate genetic/residual
+#' covariance and correlation matrices and per-trait `h²`, for an opt-in
+#' **unstructured** multivariate fit, when the engine returned them.
+#'
+#' Heavy caveats (engine row `V4-MV-REML`, `partial`): the multivariate REML
+#' recovery calibration did **not** pass (6/10 unstructured seeds). These SEs are
+#' asymptotic, REML-only, **unstructured-only** (the engine refuses structured /
+#' factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
+#' flat/boundary optimum, not coverage-calibrated, and not a validated capability.
+#'
+#' @inheritParams variance_components
+#'
+#' @return A named list of standard-error matrices `genetic_covariance`,
+#'   `residual_covariance`, `genetic_correlation`, `residual_correlation`, and a
+#'   per-trait `heritability` SE vector, for `hsquared_fit` objects that contain
+#'   them.
+#' @export
+covariance_standard_errors <- function(object, ...) {
+  UseMethod("covariance_standard_errors")
+}
+
+#' @export
+covariance_standard_errors.default <- function(object, ...) {
+  stop(
+    "`covariance_standard_errors()` requires an `hsquared_fit` object from the ",
+    "opt-in unstructured multivariate model. The current package only returns ",
+    "these from fitted `hsquared_fit` results.",
+    call. = FALSE
+  )
+}
+
+#' @export
+covariance_standard_errors.hsquared_fit <- function(object, ...) {
+  hs_fit_result(
+    object,
+    "covariance_standard_errors",
+    "experimental multivariate covariance standard errors"
+  )
+}
+
 #' Inspect fitted-model diagnostics
 #'
 #' `fit_diagnostics()` returns a compact diagnostics table for an

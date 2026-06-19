@@ -707,7 +707,23 @@ hs_fit_julia_multivariate_payload <- function(
     "\"iterations\" => hsq_fit.iterations,",
     "\"traits\" => string.(collect(hsq_fit.traits)),",
     "\"genetic_structure\" => string(hsq_fit.genetic_structure)",
-    ");"
+    ");",
+    # Experimental covariance standard errors (engine row V4-MV-REML, partial;
+    # :unstructured only — the engine throws for structured / factor-analytic
+    # fits, and the observed information can be non-positive-definite at a
+    # flat/boundary optimum, hence the try guard).
+    "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
+    "hsq_fit.genetic_structure == :unstructured;",
+    "hsq_mvse = try; HSquared.multivariate_covariance_standard_errors(",
+    "hsq_fit, hsq_Y, hsq_X, hsq_Z, hsq_Ainv); catch; nothing; end;",
+    "if hsq_mvse !== nothing;",
+    "hsq_mv_raw[\"se_genetic_covariance\"] = Matrix{Float64}(hsq_mvse.genetic_covariance);",
+    "hsq_mv_raw[\"se_residual_covariance\"] = Matrix{Float64}(hsq_mvse.residual_covariance);",
+    "hsq_mv_raw[\"se_genetic_correlation\"] = Matrix{Float64}(hsq_mvse.genetic_correlation);",
+    "hsq_mv_raw[\"se_residual_correlation\"] = Matrix{Float64}(hsq_mvse.residual_correlation);",
+    "hsq_mv_raw[\"se_heritability\"] = collect(Float64, hsq_mvse.heritability);",
+    "end;",
+    "end;"
   ))
 
   raw <- JuliaCall::julia_eval("hsq_mv_raw")
@@ -827,6 +843,20 @@ hs_normalize_multivariate_result <- function(raw, payload) {
   if (converged) {
     result$loglik <- as.numeric(raw$loglik)
     result$df <- as.integer(p * ntraits + n_covariance_parameters)
+  }
+  if (!is.null(raw$se_genetic_covariance)) {
+    lab <- function(m) {
+      m <- as.matrix(m)
+      dimnames(m) <- list(traits, traits)
+      m
+    }
+    result$covariance_standard_errors <- list(
+      genetic_covariance = lab(raw$se_genetic_covariance),
+      residual_covariance = lab(raw$se_residual_covariance),
+      genetic_correlation = lab(raw$se_genetic_correlation),
+      residual_correlation = lab(raw$se_residual_correlation),
+      heritability = stats::setNames(as.numeric(raw$se_heritability), traits)
+    )
   }
   result
 }

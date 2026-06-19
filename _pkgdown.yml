@@ -68,6 +68,7 @@ reference:
       - heritability_interval
       - variance_component_standard_errors
       - multivariate_extractors
+      - covariance_standard_errors
       - factor_g_extractors
       - breeding_values
       - repeatability
