@@ -391,6 +391,8 @@ experimental targets.
   [`genetic_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`residual_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   : Extract multivariate covariance and correlation matrices
+- [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)
+  : Extract experimental multivariate covariance standard errors
 - [`genetic_loadings()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`specific_variance()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`latent_breeding_values()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)

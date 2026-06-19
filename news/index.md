@@ -49,6 +49,15 @@
   (with experimental `+/- 1.96 SE` whiskers when present) and
   `type = "residuals"` plots residuals against fitted values
   ([\#30](https://github.com/itchyshin/hsquared/issues/30)).
+- **Experimental:**
+  [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)
+  returns delta-method standard errors for the multivariate
+  genetic/residual covariance and correlation matrices and per-trait
+  `h²`, for an opt-in **unstructured** multivariate fit when the engine
+  provides them. Mirrors `V4-MV-REML` (`partial`): asymptotic,
+  REML-only, unstructured-only, and reported while the multivariate
+  recovery calibration has not passed — not a validated capability
+  ([\#26](https://github.com/itchyshin/hsquared/issues/26)).
 
 ## hsquared 0.1.0
 
