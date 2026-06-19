@@ -84,4 +84,13 @@ rows `partial`) → R surfaces stay experimental/partial.
   marker scans — twin scan payload #45 + thresholds), #18 (non-Gaussian LA/VA — twin
   `MarginalMethod` refactor #44).
 
+## Next big 4 (program 2) — see `docs/dev-log/2026-06-19-next-big-4-program.md`
+
+| # | Big item | Issue(s) | Lane |
+| --- | --- | --- | --- |
+| 1 | Validation depth (v0.1 unimpeachable) | #7 epic + #31 (sommer/pedigreemm benchmark), #32 (Mrode beyond 3.1), #33 (comparator policy) | R-ownable |
+| 2 | Applied-user experience + figures | #27 epic + #28 (summary CI/SEs — **done**), #29 (gryphon vignette), #30 (Florence figures) | R-ownable |
+| 3 | Multivariate → covered | #10 + #34 (t≥2 recovery harness) + #26 (covariance SEs); twin HSquared.jl#41 | R harness + twin gate |
+| 4 | Factor-analytic unblock | #22 mirror; twin HSquared.jl#37 (calibration) + #42 (payload) | twin-led, R-prepared |
+
 See `docs/dev-log/coordination-board.md` and the program plan for the full workstream design.
