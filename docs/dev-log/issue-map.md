@@ -90,7 +90,7 @@ rows `partial`) → R surfaces stay experimental/partial.
 | --- | --- | --- | --- |
 | 1 | Validation depth (v0.1 unimpeachable) | #7 epic + ✅#31 (sommer/pedigreemm benchmark), ✅#33 (comparator-policy doc), ✅#32 (Mrode 3.2 sire anchor) — **all done** | R-ownable |
 | 2 | Applied-user experience + figures | #27 epic + ✅#28 (summary CI/SEs), ✅#30 (plot.hsquared_fit), ✅#29 (gryphon worked vignette) — **all done** | R-ownable |
-| 3 | Multivariate → covered | #10 + #34 (t≥2 recovery harness) + #26 (covariance SEs); twin HSquared.jl#41 | R harness + twin gate |
+| 3 | Multivariate → covered | #10 + ✅#26 (covariance SEs) + ✅#34 (t≥2 recovery harness, DGP-verified, ready to run) — **R side done**; promotion awaits twin recovery run HSquared.jl#41 | R harness + twin gate |
 | 4 | Factor-analytic unblock | #22 mirror; twin HSquared.jl#37 (calibration) + #42 (payload) | twin-led, R-prepared |
 
 See `docs/dev-log/coordination-board.md` and the program plan for the full workstream design.
