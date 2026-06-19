@@ -27,9 +27,11 @@ skip-guards the live-engine tests (no Julia in CI). The fitted-object
 extractors — variance components, heritability, EBVs/BLUPs, PEV, reliability,
 accuracy, fixed effects, random effects, log-likelihood, AIC, prediction, fitted
 values, residuals, `summary()`, `coef()`, `nobs()`, and `fit_diagnostics()`
-(including an `at_boundary` flag) — operate on the fitted object. Standard errors
-and confidence intervals for variance components and heritability are out of v0.1
-scope. The advanced `control = hs_control(engine = "julia")` path exposes
+(including an `at_boundary` flag) — operate on the fitted object. Experimental,
+asymptotic REML standard errors and confidence intervals are surfaced when a
+local engine provides them (clearly labelled experimental, not coverage-calibrated);
+validated SEs/CIs and `confint()`/`vcov()` remain out of v0.1 scope. The advanced
+`control = hs_control(engine = "julia")` path exposes
 explicit engine targets (supplied-variance Henderson MME, sparse REML). A
 lightweight `hs_data()` container now records phenotype, pedigree, genotype, expression,
 marker, annotation, and environment inputs for future integrated workflows,

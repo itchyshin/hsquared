@@ -251,10 +251,13 @@ What the v0.1 promotion does **not** claim:
 - **REML only.** ML estimation is rejected on the fit path (`REML = FALSE`
   errors). The supplied-variance paths (`henderson_mme`, `snp_blup`) solve at
   given variances rather than estimating them.
-- **No validated SEs/CIs.** Standard errors and confidence intervals for the
-  variance components and heritability are out of v0.1 scope. `summary()` and the
-  extractors report point estimates only and must not print or imply an interval
-  for variance components or h². A validated SE/interval is deferred.
+- **No validated SEs/CIs.** A *validated*, coverage-calibrated SE/interval — and
+  `confint()`/`vcov()` — is deferred. `summary()` and the extractors may surface
+  *experimental*, asymptotic REML SEs/intervals (`heritability_interval()`,
+  `variance_component_standard_errors()`, `heritability_standard_error()`,
+  `repeatability_interval()`, and multivariate `covariance_standard_errors()`),
+  clearly labelled experimental and not coverage-calibrated — point estimates
+  plus bounds only, never to be read as validated inference.
 - **`accuracy()` is not a validated accuracy.** It is the square root of
   reliability — a model-internal quantity on the dense validation path — not the
   realised `cor(EBV, true)` used as recovery evidence. PEV and reliability are
