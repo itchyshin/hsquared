@@ -1,111 +1,99 @@
 # Overnight progress report — hsquared R lane (2026-06-18)
 
 Autonomous session while the maintainer was away. Lane: **R** (`hsquared`);
-`HSquared.jl` cross-referenced **read-only**. Everything below is verified green
-and **committed locally** — **nothing was pushed** (you were away; push is your
-call). With the new CI policy, pushing `main` now triggers only the pkgdown
-deploy; R-CMD-check runs on PRs / manual dispatch.
+`HSquared.jl` cross-referenced **read-only** (zero twin edits). Everything below
+is verified green and **committed locally** — **nothing pushed** (your call;
+with the new CI policy, pushing `main` triggers only the pkgdown deploy).
 
 ## Headline
 
-Stood up a live mission-control board, then worked the finish-readiness
-punch-list with the team in parallel (ultracode). **12 of 25 review findings
-addressed across 4 commits; 1 rejected as a false positive.** Package is green
-the whole way: `devtools::test()` **681 pass / 0 fail / 0 warn / 32 skip**,
-`devtools::check(--no-manual)` **0/0/0**, `pkgdown::check_pkgdown()` clean.
+Built a live mission-control board, then ran the team through **two adversarial
+review passes** and fixed every R-safe finding in parallel ultracode waves, and
+scouted the Julia twin to pin the single highest-leverage unblock.
+
+- **22 review findings fixed** (12 first-pass + 10 second-pass) across **7
+  commits**; 1 rejected as a false positive (#23 "dead code" is the live
+  default-fit path), 1 left as a flagged design call (#6 `loadings()` shadowing).
+- Package green throughout: `devtools::test()` **692 pass / 0 fail / 0 warn /
+  32 skip**, `devtools::check(--no-manual)` **0/0/0**, `check_pkgdown()` clean.
+- **Breakthrough:** the read-only twin scout identified **PR #17
+  (`phase4b-factor-analytic-g`)** as the one move that unblocks genuinely-new R
+  capability — a clean fast-forward of `HSquared.jl` main, green on all CI, that
+  delivers exactly the structured-covariance engine API the R lane already
+  reserves and guardrails.
 
 ## Commits on `main` (local, unpushed)
 
-1. `3eaaf08` Fix review honesty findings and surface engine setup in the fit error
-   — #1 (Julia fit-target reporting → single source of truth `spec$bridge$target`),
-   #2 (stale planned-marker message → points to `formula_status()`), #4 (boundary
-   flag now fires for genomic/single-step), #6 (install-failure error names the
-   env var + clone + validate fallback). New `test-engine-setup-and-honesty.R`,
-   `test-boundary-genomic.R`.
-2. `3aaa7cd` Add engine-setup onboarding docs and retire static mission-control article
-   — #6/#24 (README "Engine setup" + Getting-started vignette + fitting-models
-   pointer: how to register `HSQUARED_JULIA_PROJECT` / `engine_control$julia_project`,
-   honest that it is a from-source Julia checkout), retire the static pkgdown
-   mission-control article, release hygiene (`inst/WORDLIST`, `Language: en-US`),
-   ROADMAP GLLVM LA+VA.
-3. `7c54e28` Align CI triggers with policy, clarify recovery-evidence locus, add negative controls
-   — #10 (R-CMD-check → `pull_request` + `workflow_dispatch`, removed `push`;
-   pkgdown keeps deploy-on-merge), #5/#11 (README/NEWS clarify engine-recovery is
-   validated locally; CI runs the pure-R reference + skip-guards the engine tests),
-   #21 (new `test-negative-control.R`, test-of-test).
-4. `53994f0` Document engine target menu and generalize the boundary flag
-   — #12/#13 (`?hs_control` documents the `engine_control$target` menu and the
-   `engine="fit"` AI-REML vs `engine="julia"` dense-`fit_animal_model` distinction),
-   #18 (boundary flag fires for residual / second-effect boundaries too).
+1. `3eaaf08` Fix review honesty findings and surface engine setup in the fit error (#1/#2/#4/#6)
+2. `3aaa7cd` Add engine-setup onboarding docs and retire static mission-control article (#6/#24 + release hygiene + ROADMAP GLLVM LA/VA)
+3. `7c54e28` Align CI triggers with policy, clarify recovery-evidence locus, add negative controls (#10/#5/#11/#21)
+4. `53994f0` Document engine target menu and generalize the boundary flag (#12/#13/#18)
+5. `e802536` Add overnight progress report
+6. `cd5d660` Record twin coordination scout report and engine-contract honesty handoff
+7. `0ffa4bd` Fix ten second-pass review findings (parser, multivariate, examples, docs) (#1/#2/#3/#4/#5/#7/#8/#9/#10/#11 of pass 2)
 
-#23 ("dead `hs_fit_julia_payload`") was **rejected as a false positive** — it is
-the live default-fit dispatch (`R/hsquared.R:387`) plus two active tests.
+## What's better now (user-visible)
 
-## Earlier in the session (pre-punch-list)
+- **Onboarding works end-to-end**: README + Getting-started vignette show how to
+  register `HSquared.jl` (`HSQUARED_JULIA_PROJECT` / `engine_control$julia_project`);
+  the install-failure error names them + the clone + the validate fallback;
+  runnable Julia-free examples on `formula_status`/`validation_status`/`model_spec`/
+  `hs_data`/`data_status`.
+- **Honest diagnostics**: the Julia fit-target is reported from one source of
+  truth; the planned-marker error points to `formula_status()`; the boundary flag
+  fires for genomic/single-step/residual/second-effect boundaries; nested
+  effect/marker terms get a named error instead of a base-R leak.
+- **Honest claims**: engine-recovery is attributed to local validation vs public
+  CI; the package landing page / README / model-status no longer under-state the
+  shipped opt-in multivariate/genomic paths; `?hs_control` documents the target menu.
+- **Stronger validation**: negative-control test-of-tests + an independent
+  hand-built MME PEV/reliability anchor (not a self-referential snapshot).
+- **CI policy** aligned to PR + workflow_dispatch (R-CMD-check); release hygiene
+  (`inst/WORDLIST`, `Language: en-US`).
 
-- **Live mission-control board** — disposable, gitignored `.mission-control/`,
-  served on `http://127.0.0.1:8781/` (`python3 .mission-control/serve.py`). It is
-  your cross-session memory: status line, metric cards, repo-truth (both lanes,
-  live git), collapsible phase→slice ledger, team-on-deck, activity, twin×bridge.
-  Reads the committed repo memory, so it is never stale and survives handoff.
-- **Retired the static pkgdown mission-control article** (replaced by the board).
-- **Release hygiene**: `inst/WORDLIST` (110 terms, spell-check clean), DESCRIPTION
-  `Language: en-US`.
-- **Twin coordination**: ROADMAP Phase 6 now records GLLVM must be fit by **both
-  Laplace (LA) and variational approximation (VA)**, with a grounded reuse map
-  (VA: `DRM.jl/src/variational.jl` + `gllvmTMB`; Laplace: `gllvmTMB`/`GLLVM.jl` +
-  `drmTMB`/`DRM.jl`) in `docs/dev-log/scout/2026-06-18-gllvm-la-va-sister-source-scout.md`.
-- **Punch-list preserved**: `docs/dev-log/2026-06-18-finish-readiness-punchlist.md`
-  (25 confirmed findings, adversarially verified by an 8-lens review).
+## Twin coordination (read-only) — see `2026-06-18-twin-coordination-report.md`
 
-## Method
+- `HSquared.jl` `origin/main` = `abf777d`; Phases 1-4 on main; the R surface is
+  consistent with main (no overlap).
+- **PR #17 is the unblock** (clean FF, green): lands `genetic_structure =
+  :diagonal|:lowrank|:factor_analytic` + loadings/uniqueness accessors. On
+  landing, the ready R slice lifts the `genetic_structure` guardrail
+  (`R/julia-bridge.R:1361-1395`) and surfaces `cov = diag()/lowrank()/fa()` +
+  the reserved loadings/specific-variance/latent-BV/eigen-G extractors. **R must
+  not self-merge — Julia-lane decision.**
+- Phase 5 GWAS/QTL/eQTL tower (#18-#35): 16 stacked draft PRs, no CI, #28
+  conflicting, no quality tooling — **not landable** until restructured (Hopper:
+  split the fixed-effect single-marker GWAS path off first).
+- **#22 integrity flag is resolved on the validation ladder** (main); the one
+  remaining surface is `docs/design/03-engine-contract.md:277` — **handoff
+  recorded** in the coordination board (Julia-lane edit; matches the maintainer's
+  request and Curie's independent finding).
+- Flag: twin multivariate recovery calibration unmet on predeclared seeds —
+  R already labels multivariate `partial`, so the claim stays honest.
 
-Multi-lens parallel workflows (ultracode), each lens owning a **disjoint file-set**
-so edits never conflict; the operator ran `air format` / `document` / `test` /
-`check_pkgdown` / `check` once per wave and integrated. Two test assertions that
-pinned the *old* (divergent) Julia fit-target strings were updated to the
-corrected source-of-truth value.
+## Decisions waiting for you
 
-## Decisions waiting for you (not done autonomously — your call)
-
-- **Cut v0.1.0?** DESCRIPTION is still `0.0.0.9000` while the prose says
-  "Version 0.1 fits…" (#7/#16/#17/#25). The verifier rated this *minor* (the dev
-  version is a valid convention). One-line bump + a `# hsquared 0.1.0` NEWS
-  heading when you want to tag a release.
-- **`engine = "validate"` returning the spec instead of `stop()`** (#20) — an API
-  ergonomics change that would break callers/tests expecting the stop; needs your
-  sign-off.
-- **Push the 4 commits** — green locally; pushing triggers only the pkgdown deploy
-  now.
-
-## Twin-gated (HSquared.jl lane — flagged, not editable from here)
-
-- #14/#15 — no real fit/validation runs in public CI (no Julia in CI); the
-  default-fit numeric coverage is local-only. Needs Julia-in-CI or stays honest
-  local evidence.
-- #22 — `validation_status.jl:97` `V1-AI-REML` evidence string cites a 250-animal
-  observed-information check with no backing test; integrity flag for the Julia lane.
-- Capability frontier: PR #17 (Phase 4B factor-analytic) and the Phase 5
-  GWAS/QTL/eQTL stack are not on Julia `main`, so R cannot surface them yet.
-
-## Remaining R-safe (lower value / debatable)
-
-- #8 engine recovery reproducibility — largely addressed by the #5/#11
-  claim-attribution wording; the full 120-rep study stays in `data-raw/`.
-- Fit-target descriptor nuance: the univariate default validate/preview now
-  reports `fit_animal_model(...)` (the `spec$bridge$target` descriptor) rather
-  than the `fit_ai_reml` estimator name. The inspectors are now *consistent*
-  (the #1 goal); whether the descriptor should name the estimator is a small
-  design follow-up.
+- **Cut v0.1.0?** DESCRIPTION is still `0.0.0.9000` (a valid dev convention, but
+  the prose says "Version 0.1 fits…"). One-line bump + `# hsquared 0.1.0` NEWS
+  heading when you want to tag.
+- **`engine = "validate"` returning the spec** instead of `stop()` (#20) — API
+  ergonomics change; needs sign-off (would touch tests that expect the stop).
+- **`loadings()`** shadowing `stats::loadings` (#6) — rename future FA extractor
+  (e.g. `g_loadings()`) or keep + document the deliberate delegation.
+- **Push** the 7 local commits (pkgdown deploy only, with the new CI policy).
+- **Authorize / route** the `03-engine-contract.md:277` twin doc fix.
 
 ## How to resume (any session)
 
 ```sh
-python3 .mission-control/serve.py   # board at http://127.0.0.1:8781/
+python3 .mission-control/serve.py   # live board at http://127.0.0.1:8781/
 ```
 
-Source of truth: `docs/dev-log/coordination-board.md`,
-`docs/dev-log/check-log.md`, `docs/dev-log/2026-06-18-finish-readiness-punchlist.md`,
-this report, `ROADMAP.md`, `docs/design/capability-status.md`.
+Durable memory: `docs/dev-log/coordination-board.md`, `check-log.md`,
+`2026-06-18-finish-readiness-punchlist.md` (36 findings, both passes),
+`2026-06-18-twin-coordination-report.md`, this report; `ROADMAP.md`,
+`docs/design/capability-status.md`.
 
-_Work continues after this snapshot; this report is updated at the end of the session._
+**Bottom line:** the R lane is at a clean, green, release-adjacent state with
+every R-safe review finding from two passes resolved. Further capability is
+gated on the twin (land PR #17) and on your release/API decisions.
