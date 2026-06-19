@@ -465,6 +465,8 @@ experimental targets.
   status](https://itchyshin.github.io/hsquared/articles/model-status.md):
 - [Validation
   evidence](https://itchyshin.github.io/hsquared/articles/validation-evidence.md):
+- [Benchmark: hsquared vs sommer and
+  pedigreemm](https://itchyshin.github.io/hsquared/articles/benchmark-comparators.md):
 - [Formula grammar
   roadmap](https://itchyshin.github.io/hsquared/articles/formula-grammar.md):
 - [Genomics, QTL, and CPU/GPU

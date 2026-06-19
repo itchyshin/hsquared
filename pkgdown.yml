@@ -2,6 +2,7 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
+  articles/benchmark-comparators: benchmark-comparators.html
   articles/fitting-models: fitting-models.html
   articles/formula-grammar: formula-grammar.html
   articles/g-matrix-interpretation: g-matrix-interpretation.html
@@ -13,7 +14,7 @@ articles:
   articles/multivariate: multivariate.html
   articles/qtl-gwas-eqtl-status: qtl-gwas-eqtl-status.html
   articles/validation-evidence: validation-evidence.html
-last_built: 2026-06-19T14:06Z
+last_built: 2026-06-19T14:26Z
 urls:
   reference: https://itchyshin.github.io/hsquared/reference
   article: https://itchyshin.github.io/hsquared/articles

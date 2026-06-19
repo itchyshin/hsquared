@@ -38,6 +38,11 @@
   errors, and repeatability interval when a fit carries them, clearly
   labelled experimental and asymptotic
   ([\#28](https://github.com/itchyshin/hsquared/issues/28)).
+- New “Benchmark: hsquared vs sommer and pedigreemm” article documents
+  the v0.1 Gaussian animal-model fit agreeing with `sommer` and the
+  published gryphon anchor within the signed-off band, with reproducing
+  code and the `pedigreemm` one-sided log-likelihood floor
+  ([\#31](https://github.com/itchyshin/hsquared/issues/31)).
 
 ## hsquared 0.1.0
 

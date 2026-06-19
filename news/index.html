@@ -27,6 +27,7 @@
     <li><a class="dropdown-item" href="../articles/inheritance-systems.html">Inheritance systems roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul></li>
@@ -59,6 +60,7 @@
 <strong>Experimental:</strong> <code><a href="../reference/repeatability_interval.html">repeatability_interval()</a></code> returns a logit delta-method confidence interval for the repeatability coefficient <code>t = (Va + Vpe) / Vp</code> from the opt-in repeatability model, when the engine provides one. It mirrors the engine row <code>V3-REPEAT-REML</code> (<code>partial</code>): engine-internal self-consistency tested (recovery of <code>t</code> + interval bracketing on seeded fixtures) but with no external comparator, no <code>h²</code> interval, and no deep-pedigree validation; reported as a point estimate plus bounds only (<a href="https://github.com/itchyshin/hsquared/issues/12" class="external-link">#12</a>).</li>
 <li>
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>/<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> for <code>hsquared_fit</code> now display the experimental heritability confidence interval, variance-component and heritability standard errors, and repeatability interval when a fit carries them, clearly labelled experimental and asymptotic (<a href="https://github.com/itchyshin/hsquared/issues/28" class="external-link">#28</a>).</li>
+<li>New “Benchmark: hsquared vs sommer and pedigreemm” article documents the v0.1 Gaussian animal-model fit agreeing with <code>sommer</code> and the published gryphon anchor within the signed-off band, with reproducing code and the <code>pedigreemm</code> one-sided log-likelihood floor (<a href="https://github.com/itchyshin/hsquared/issues/31" class="external-link">#31</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">

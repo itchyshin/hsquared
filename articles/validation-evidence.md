@@ -192,6 +192,12 @@ Two external R packages are used as comparators:
 Tests: `test-validation-fixtures.R` (“hsquared’s REML solution is at
 least as good as the pedigreemm comparator”).
 
+For the executed side-by-side numbers (published vs `sommer` vs
+hsquared, plus the `pedigreemm` log-likelihood floor) with reproducing
+code, see the [Benchmark: hsquared vs sommer and
+pedigreemm](https://itchyshin.github.io/hsquared/articles/benchmark-comparators.md)
+article.
+
 ### Supplied-variance Henderson / Mrode-style fixtures
 
 At *supplied* variance components, the engine and an independent R
