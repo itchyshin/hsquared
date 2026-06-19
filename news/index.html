@@ -20,6 +20,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/hsquared.html">Getting started</a></li>
     <li><a class="dropdown-item" href="../articles/fitting-models.html">Fitting models</a></li>
+    <li><a class="dropdown-item" href="../articles/gryphon-worked-example.html">Worked example (gryphon)</a></li>
     <li><a class="dropdown-item" href="../articles/genomic-prediction.html">Genomic prediction</a></li>
     <li><a class="dropdown-item" href="../articles/qtl-gwas-eqtl-status.html">QTL, GWAS, and eQTL status</a></li>
     <li><a class="dropdown-item" href="../articles/multivariate.html">Multivariate Gaussian animal models</a></li>
@@ -64,6 +65,7 @@
 <li>Added a base-graphics <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method for <code>hsquared_fit</code>: <code>type = "variance"</code> plots the variance components (with experimental <code>+/- 1.96 SE</code> whiskers when present) and <code>type = "residuals"</code> plots residuals against fitted values (<a href="https://github.com/itchyshin/hsquared/issues/30" class="external-link">#30</a>).</li>
 <li>
 <strong>Experimental:</strong> <code><a href="../reference/covariance_standard_errors.html">covariance_standard_errors()</a></code> returns delta-method standard errors for the multivariate genetic/residual covariance and correlation matrices and per-trait <code>h²</code>, for an opt-in <strong>unstructured</strong> multivariate fit when the engine provides them. Mirrors <code>V4-MV-REML</code> (<code>partial</code>): asymptotic, REML-only, unstructured-only, and reported while the multivariate recovery calibration has not passed — not a validated capability (<a href="https://github.com/itchyshin/hsquared/issues/26" class="external-link">#26</a>).</li>
+<li>New “A worked animal-model analysis (gryphon)” article walks one univariate animal model end to end — fit, heritability with experimental CI/SE, breeding values and accuracy, and the diagnostic <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> — on the gryphon teaching dataset (<a href="https://github.com/itchyshin/hsquared/issues/29" class="external-link">#29</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">

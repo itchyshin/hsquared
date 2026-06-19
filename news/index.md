@@ -58,6 +58,12 @@
   REML-only, unstructured-only, and reported while the multivariate
   recovery calibration has not passed — not a validated capability
   ([\#26](https://github.com/itchyshin/hsquared/issues/26)).
+- New “A worked animal-model analysis (gryphon)” article walks one
+  univariate animal model end to end — fit, heritability with
+  experimental CI/SE, breeding values and accuracy, and the diagnostic
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) — on the
+  gryphon teaching dataset
+  ([\#29](https://github.com/itchyshin/hsquared/issues/29)).
 
 ## hsquared 0.1.0
 
