@@ -343,6 +343,25 @@ hs_fit_julia_repeatability_payload <- function(
     "iterations = hsq_iterations, ids = hsq_ped.ids);"
   ))
 
+  # Experimental, opt-in repeatability-coefficient CI (engine row V3-REPEAT-REML,
+  # partial). repeatability_interval() takes the raw matrices (not a fit) and
+  # refits internally; it throws on a non-positive-definite REML information
+  # (flat/boundary optimum) or a boundary t, so the try guard keeps an interval
+  # failure from aborting the fit. hsq_has_ri gates the eval so a Julia `nothing`
+  # never crosses the bridge.
+  JuliaCall::julia_command(paste(
+    "hsq_ri = if isdefined(HSquared, :repeatability_interval) &&",
+    "applicable(HSquared.repeatability_interval, hsq_y, hsq_X, hsq_Z, hsq_Ainv);",
+    "try; HSquared.repeatability_interval(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+    "sigma_pe2 = hsq_initial_sigma_pe2,",
+    "sigma_e2 = hsq_initial_sigma_e2),",
+    "iterations = hsq_iterations, ids = hsq_ped.ids);",
+    "catch; nothing; end; else; nothing; end;",
+    "hsq_has_ri = hsq_ri !== nothing;"
+  ))
+
   raw <- JuliaCall::julia_eval(paste(
     "Dict(",
     "\"sigma_a2\" => hsq_fit.variance_components.sigma_a2,",
@@ -360,6 +379,17 @@ hs_fit_julia_repeatability_payload <- function(
   ))
 
   result <- hs_normalize_repeatability_result(raw, payload)
+  if (isTRUE(JuliaCall::julia_eval("hsq_has_ri"))) {
+    raw_ri <- JuliaCall::julia_eval(paste(
+      "Dict(",
+      "\"repeatability\" => hsq_ri.repeatability,",
+      "\"lower\" => hsq_ri.lower,",
+      "\"upper\" => hsq_ri.upper,",
+      "\"level\" => hsq_ri.level,",
+      "\"se\" => hsq_ri.se)"
+    ))
+    result$repeatability_interval <- hs_normalize_repeatability_interval(raw_ri)
+  }
   hs_new_fit(
     spec = list(
       method = "REML",
@@ -1605,6 +1635,22 @@ hs_normalize_variance_component_se <- function(vcse) {
   data.frame(
     component = c("animal", "residual"),
     se = c(as.numeric(vcse$sigma_a2), as.numeric(vcse$sigma_e2)),
+    stringsAsFactors = FALSE
+  )
+}
+
+# Normalize the engine's repeatability_interval NamedTuple
+# (repeatability, lower, upper, level, se) into a one-row data frame. This is the
+# delta-method CI for the repeatability coefficient t = (Va + Vpe)/Vp (engine row
+# V3-REPEAT-REML, partial), not for h2; the engine offers only the delta method
+# for t, so there is no `method` column.
+hs_normalize_repeatability_interval <- function(ri) {
+  data.frame(
+    estimate = as.numeric(ri$repeatability),
+    lower = as.numeric(ri$lower),
+    upper = as.numeric(ri$upper),
+    level = as.numeric(ri$level),
+    se = as.numeric(ri$se),
     stringsAsFactors = FALSE
   )
 }

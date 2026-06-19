@@ -69,6 +69,7 @@ reference:
       - factor_g_extractors
       - breeding_values
       - repeatability
+      - repeatability_interval
       - permanent_effects
       - common_env_effects
       - maternal_effects

@@ -739,6 +739,50 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
   )
 }
 
+#' Extract an experimental repeatability confidence interval
+#'
+#' `repeatability_interval()` returns an **experimental** large-sample (logit
+#' delta-method) confidence interval for the repeatability coefficient
+#' `t = (Va + Vpe) / Vp` of the opt-in repeatability (permanent-environment)
+#' model, available only when the fit contains it.
+#'
+#' It mirrors the engine row `V3-REPEAT-REML` (`partial`): the engine's
+#' repeatability REML estimator and this interval are engine-internal
+#' self-consistency tested (recovery of `t` and interval bracketing / range /
+#' level-nesting / point-estimate match on seeded fixtures), but there is no
+#' external comparator, no `h²` interval, and no deep-pedigree validation. It is
+#' asymptotic, REML-only, unreliable at small `n` or near the (0, 1) boundary
+#' (where the engine throws and the field is omitted), and not a validated
+#' capability.
+#'
+#' @inheritParams variance_components
+#'
+#' @return A one-row data frame with `estimate` (the repeatability `t`), `lower`,
+#'   `upper`, `level`, and `se`, for `hsquared_fit` objects that contain it.
+#' @export
+repeatability_interval <- function(object, ...) {
+  UseMethod("repeatability_interval")
+}
+
+#' @export
+repeatability_interval.default <- function(object, ...) {
+  stop(
+    "`repeatability_interval()` requires an `hsquared_fit` object from the ",
+    "opt-in repeatability model. The current package only returns these from ",
+    "fitted `hsquared_fit` results.",
+    call. = FALSE
+  )
+}
+
+#' @export
+repeatability_interval.hsquared_fit <- function(object, ...) {
+  hs_fit_result(
+    object,
+    "repeatability_interval",
+    "an experimental repeatability confidence interval"
+  )
+}
+
 #' Inspect fitted-model diagnostics
 #'
 #' `fit_diagnostics()` returns a compact diagnostics table for an
