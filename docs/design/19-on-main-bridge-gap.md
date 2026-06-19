@@ -34,7 +34,7 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 | `repeatability_interval` | V3-REPEAT-REML · partial | repeatability target, no CI | **Yes (Class A)** | same, on the repeatability target — #12 |
 | `prediction_error_variance(...; method=:selinv)`, `reliability` | V1-SELINV-PEV · partial | opportunistic enrichment only | **Yes (Class A)** | call selinv methods on the fit; normalize fields — #21 |
 | `fit_gblup_reml` / `fit_snp_blup_reml` | V2-GREML · partial | supplied-variance fitters only | **Yes (Class A)** | route genomic/snp_blup to the `_reml` variant when variances absent — #13 |
-| `fit_single_step` / `fit_single_step_reml` | V2-SSHINV · partial | possible misroute to SNP-BLUP | **Yes (Class A)** | verify + fix routing; parity test — #14 |
+| `fit_single_step` / `fit_single_step_reml` | V2-SSHINV · partial | **verified correct (#14)**: supplied `Hinv` → `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP | n/a (no bug) | dedicated `fit_single_step` + `Hinv` construction is a separate planned item |
 | `factor_analytic_covariance` + `genetic_structure`/`genetic_loadings`/`genetic_uniqueness` | V4-FA · partial (calibration failed 8/10, 9/10) | bridge rejects non-`unstructured`; reserved extractors error | **Partial (Class B)** | accessors exist; needs the multivariate result payload to expose loadings/uniqueness (twin #42) + failing calibration — #22 |
 | `single_marker_scan`/`mixed_model_marker_scan`/`loco_*`, `gwas_table`/`qtl_table`/`eqtl_table` | V5-MARKER-* · partial | reserved extractors error | **No yet (Class B)** | needs the twin's post-fit scan payload (#45) + calibrated thresholds — #23 |
 | `fit_laplace_reml`, `laplace_reml_interval`, `NonGaussianFit` | (Phase 6; no committed row yet) | R parser rejects non-Gaussian `family` | **No yet (Class B)** | needs `MarginalMethod` dispatch + `NonGaussianFit` result shape + R `family=` acceptance (twin #44) — #18 |
@@ -42,11 +42,11 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 ## WS2 work order
 
 **Class A — R-buildable now (no twin change; R calls the exported fn on the returned fit):**
-1. **#21** PEV/reliability via `:selinv` (lowest-delta).
-2. **#11** `heritability_interval` (experimental CI).
-3. **#12** `repeatability_interval`.
-4. **#14** `single_step` routing verify/fix.
-5. **#13** REML genomic variants.
+1. ✅ **#11** `heritability_interval` (experimental CI) — **shipped** `56f8fb5`.
+2. ✅ **#14** `single_step` routing — **verified correct, no bug** (supplied-Hinv ssGBLUP via `fit_ai_reml`).
+3. **#12** `repeatability_interval` (next).
+4. **#13** REML genomic variants (`fit_gblup_reml`/`fit_snp_blup_reml` when variances absent).
+5. **#21** PEV/reliability via `:selinv` — pending the twin promoting these into the standard payload (#43).
 
 Each: bridge probe (live Julia smoke to confirm signature + return shape against the pinned SHA)
 → impl in `R/julia-bridge.R` (+ `R/extractors.R`) → parity fixture → multi-lens review
