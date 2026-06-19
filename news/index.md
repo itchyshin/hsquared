@@ -32,6 +32,12 @@
   external comparator, no `h²` interval, and no deep-pedigree
   validation; reported as a point estimate plus bounds only
   ([\#12](https://github.com/itchyshin/hsquared/issues/12)).
+- [`summary()`](https://rdrr.io/r/base/summary.html)/[`print()`](https://rdrr.io/r/base/print.html)
+  for `hsquared_fit` now display the experimental heritability
+  confidence interval, variance-component and heritability standard
+  errors, and repeatability interval when a fit carries them, clearly
+  labelled experimental and asymptotic
+  ([\#28](https://github.com/itchyshin/hsquared/issues/28)).
 
 ## hsquared 0.1.0
 
