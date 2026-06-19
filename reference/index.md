@@ -54,6 +54,8 @@ experimental targets.
   : Extract variance components
 - [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
   : Extract heritability estimates
+- [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
+  : Extract an experimental heritability confidence interval
 - [`genetic_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`G_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   [`residual_covariance()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)

@@ -1,5 +1,19 @@
 # Changelog
 
+## hsquared (development version)
+
+### New features
+
+- **Experimental:**
+  [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
+  extracts a large-sample confidence interval for `h²` from the default
+  Gaussian animal-model fit, when a local Julia engine returns one. It
+  is a REML-only, asymptotic (logit delta-method) interval — mirroring
+  the engine row `V1-HERIT-CI` (`partial`), so it is not
+  coverage-calibrated and is unreliable at small `n`. It is reported as
+  a point estimate plus bounds, not a validated capability
+  ([\#11](https://github.com/itchyshin/hsquared/issues/11)).
+
 ## hsquared 0.1.0
 
 ### New features
