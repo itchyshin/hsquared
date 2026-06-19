@@ -44,8 +44,8 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 8 | HSData input container and bridge parity | 1 | partial | hsquared#8 |
 | 37 | [from R] PR #17 calibration: em_fa.jl warm-start; merge? | 4 | partial · cross-lane | hsquared#17/#22 |
 | 38 | [from R] reword "250-animal ratio ~0.99" in 03-engine-contract | 1 | cross-lane | hsquared#16 |
-| 39 | [from R] Phase 5 stack: #28 conflict + #26→#35 merge | 5 | blocked · cross-lane | hsquared#23 |
-| 40 | [from R] Phase 6: cut branch/PR; LA/VA dispatch | 6 | partial · cross-lane | hsquared#18 |
+| ~~39~~ | [from R] Phase 5 stack merge — **CLOSED** (landed via PR #36) | 5 | done | residual → #45 / hsquared#23 |
+| ~~40~~ | [from R] Phase 6 branch — **CLOSED** (fns on main) | 6 | done | residual → #44 / hsquared#18 |
 | 41 | [from R] Validation gates R needs (partial→covered) | — | partial · cross-lane | hsquared#10/#7 |
 | 42 | Bridge activation: structured mv covariance (FA/low-rank) | 4 | partial · cross-lane | hsquared#22 |
 | 43 | Bridge activation: PEV/reliability standard fields | 1 | partial · cross-lane | hsquared#21 |
@@ -64,12 +64,19 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | Validation gates | #10, #7 | #41, #7 | twin recovery/comparator tests |
 | HSData marshalling | #8 | #8 | live bridge marshalling |
 
-## WS2 work order (after Step-0 verification, #15)
+## WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
 
-- **Buildable-now candidates:** #21 (PEV/reliability, lowest-delta) → #11 (heritability_interval)
-  → #12 (repeatability_interval) → #14 (single_step routing) → #13 (REML genomic, if on main).
-- **Blocked (twin-gated):** #22 (twin bridge payload+fixture #42; V4-FA calibration partial —
-  FA core already on `origin/main`), #23 (Phase 5 stack), the non-Gaussian activation behind
-  #18 (twin refactor).
+Step 0 (#15) result: `HSquared.jl origin/main` (`4e8ffde`) is at **Phases 1–6** — PR #36 landed
+Phase 4B + Phase 5, and Phase 6 non-Gaussian functions are present. **Every WS2 candidate
+function is on `origin/main` and exported.** Honesty unchanged (7 covered/external rows; all new
+rows `partial`) → R surfaces stay experimental/partial.
+
+- **Class A — R-buildable now** (R calls the exported fn on the returned fit; no twin change):
+  #21 (PEV/reliability via `:selinv`, lowest-delta) → #11 (heritability_interval) →
+  #12 (repeatability_interval) → #14 (single_step routing) → #13 (REML genomic variants).
+- **Class B — gated on a twin result-payload / refactor:** #22 (structured covariance — twin
+  exposes loadings/uniqueness in the multivariate payload #42 + V4-FA calibration), #23 (post-fit
+  marker scans — twin scan payload #45 + thresholds), #18 (non-Gaussian LA/VA — twin
+  `MarginalMethod` refactor #44).
 
 See `docs/dev-log/coordination-board.md` and the program plan for the full workstream design.
