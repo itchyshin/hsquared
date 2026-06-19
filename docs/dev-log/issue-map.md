@@ -20,7 +20,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 8 | R data container: live HSData marshalling parity | 1 | r-package | partial | base `hs_data()` done; mirrors HSquared.jl#8 |
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | planned | innovation children #17/#18/#19/#20 |
 | 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); twin #41 |
-| 11 | Bridge: surface `heritability_interval` (experimental CI) | 1 | bridge | partial | V1-HERIT-CI (partial) — **WS2** |
+| 11 | Bridge: surface `heritability_interval` (experimental CI) | 1 | bridge | partial · **DONE** | V1-HERIT-CI (partial); shipped `56f8fb5` (experimental extractor) |
 | 12 | Bridge: surface `repeatability_interval` | 2 | bridge | partial | V3-REPEAT-REML (partial) — **WS2** |
 | 13 | Bridge: REML genomic variants — if on main | 2 | bridge | partial | V2-GREML (partial) — **WS2, Step-0 gated** |
 | 14 | Bridge: verify/fix `single_step` routing | 2 | bridge/bug | partial | V2-SSHINV (partial) — **WS2** |
