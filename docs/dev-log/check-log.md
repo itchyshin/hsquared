@@ -4279,3 +4279,29 @@ partial, no t>=2 multivariate recovery claim, no production/ASReml-parity claim)
   renders cleanly (against a fresh local `devtools::install()` of hsquared). No R/ code change,
   so the prior green `devtools::test()` (753) and `devtools::check(--no-manual)` (0/0/0) hold.
 - Committed locally; push deferred.
+
+## 2026-06-18 Validation-evidence article: cross-doc audit + clarity pass (Rose + Pat)
+
+Two parallel lenses on the just-committed article. Article numbers/test-names were first
+independently fact-checked against source (gryphon 3.3954/3.8286/0.470; DGP n=420/120 reps/seed
+20240613; h2 bias -0.0049/MCSE 0.0073; EBV grid 0.60/0.74/0.83; b_x 0.9896; closed-form REML
+target `-0.5(2log2pi+3log2+log1.5+1)`; 5-animal Henderson + 12-animal Mrode fixtures; all 5
+cited test files + 4 test descriptions exist) -> all confirmed correct.
+- Rose cross-document audit (1 major + 1 should, both confirmed against source): the
+  known-truth DGP recovery row in `docs/design/validation-debt-register.md` was marked
+  `partial`, contradicting BOTH `validation_status()` (`R/validation-status.R` capability
+  "known-truth DGP variance-component recovery (R reference)", status `rep("covered", 3L)`;
+  pinned `covered` by `test-phase0-api.R`) AND `capability-status.md:34` (`covered`). The same
+  row's Notes said "single h²=0.4 setting" while its own Evidence cell said "h² grid
+  (0.2/0.4/0.6)". Fixed the register TOWARD the source of truth: `partial` -> `covered` and the
+  stale note -> the grid description (aligned to capability-status.md wording). README,
+  model-status.Rmd, DESCRIPTION, NEWS all confirmed consistent with the article.
+- Pat cold applied-user read: applied 7 surgical clarity edits to the article (no claim
+  change) — needs-Julia + status-column orientation in the intro; glosses for "predicate",
+  "ADEMP", "boundary pinning", "lambda form"; an accurate "the three covered rows are X" line
+  before the closing chunk; plainer large/inbred-pedigree caveat; a closing pointer to the
+  Getting-started article for the fit workflow.
+- Checks: `pkgdown::build_article("articles/validation-evidence")` re-renders cleanly;
+  `pkgdown::check_pkgdown()` clean. Docs-only; no R/ code touched, so prior test 753 /
+  check(--no-manual) 0/0/0 hold.
+- Committed locally; push deferred.

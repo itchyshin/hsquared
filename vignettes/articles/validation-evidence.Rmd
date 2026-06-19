@@ -15,8 +15,13 @@ This article is the honest answer to one question: *what does it mean when
 `hsquared` says a model is validated, and what is the actual evidence?* It is
 written test-first. Every claim below points at a fixture, a test, or a study
 that lives in the repository, and nothing is advertised as working beyond what
-those checks demonstrate. When in doubt, the live, machine-readable table is
-`validation_status()` — read it, not this prose, as the source of truth.
+those checks demonstrate. One practical fact up front: the default univariate
+fit needs a local Julia engine (`HSquared.jl` via `JuliaCall`); the pure-R
+reference checks below run without it, and the "What runs where" section gives
+the full split. When in doubt, the live, machine-readable table is
+`validation_status()` — read it, not this prose, as the source of truth. Its
+columns are the capability, its `status` (one of *planned*, *partial*, or
+*covered*, defined just below), and the claim boundary attached to each.
 
 ```{r}
 library(hsquared)
@@ -41,8 +46,8 @@ ladder has three rungs, and the meanings are deliberately narrow:
   Only `covered` rows may be described as working.
 
 The gate is real. The v0.1 univariate Gaussian animal model could not move from
-`partial` to `covered` until a written, binding promotion predicate was met and
-audited (see the
+`partial` to `covered` until a written, binding promotion rule (the predicate)
+was met and audited (see the
 [V0.1 contract](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-contract.md)).
 That predicate explicitly rejects the easy mistakes: internal self-agreement
 (an R reference solve matching the engine at supplied variances),
@@ -88,7 +93,9 @@ via supplied A").
 ### Known-truth recovery (simulated DGP)
 
 The strongest correctness evidence is a known-truth recovery study following the
-ADEMP framework (Morris, White & Crowther 2019). Data are simulated from a
+ADEMP framework (Morris, White & Crowther 2019) — a standard checklist for
+simulation studies: Aims, Data-generating mechanism, Estimands, Methods,
+Performance measures. Data are simulated from a
 univariate Gaussian animal model with **known** variance components over a clean,
 non-selfing generational pedigree (n = 420 animals; founders unrelated). True
 breeding values are drawn as `u = sqrt(sigma_a2) * U' z` with `A = U'U`, so
@@ -106,7 +113,8 @@ n = 420, all converged):
 Recovery holds across an h² grid (0.2 / 0.4 / 0.6, 100 reps per cell): all
 near-unbiased, with EBV accuracy rising with h² (≈ 0.60 / 0.74 / 0.83). The
 near-boundary cell (h² = 0.1) is reported honestly, not hidden: mild upward bias,
-94% convergence, and 5% boundary pinning of σ²ₐ. Recovery also holds for a model
+94% convergence, and 5% boundary pinning of σ²ₐ (the estimate hitting its lower
+bound of zero). Recovery also holds for a model
 with a fixed effect (`y ~ x + animal`): h² near-unbiased and the slope recovered
 (b_x ≈ 0.99 vs 1.0). The full study is reproducible evidence in
 `data-raw/dgp-recovery-study.R` (it is `.Rbuildignore`d, not part of the build).
@@ -153,7 +161,8 @@ components. Tests: `test-validation-fixtures.R`,
 The supplied-variance fixtures above have a known weakness: they pin numbers the
 package solver itself produced (`hs_solve_henderson_mme_reference()`), so a wrong
 solver would still pass. Two **independent** anchors close that circularity by
-building the MME by hand in lambda form,
+building the MME by hand in lambda form (parameterised by the variance ratio
+λ = σ²ₑ/σ²ₐ rather than the variances themselves),
 
 ```
 lambda = sigma_e2 / sigma_a2
@@ -258,18 +267,25 @@ What the v0.1 promotion does **not** claim:
   validate the off-diagonal residual covariance — and there is no known-truth
   multi-trait recovery claim.
 - **No production / ASReml-parity / large-scale claim.** The v0.1 default fit is
-  scoped to tiny and clean pedigrees, the gryphon anchor, and the DGP study
-  pedigree. Engine production-readiness for large, real, or deep-inbred pedigrees
-  and the engine half of boundary stability remain post-v0.1 hardening — declared
-  in the claim boundaries, not silently waived. There is no ASReml / BLUPF90 /
-  DMU / WOMBAT parity claim.
+  validated only on small, clean pedigrees (the gryphon anchor and the simulated
+  DGP study). Large, real, or heavily inbred pedigrees, and the engine half of
+  boundary stability, are not yet validated — they remain post-v0.1 hardening.
+  There is no ASReml / BLUPF90 / DMU / WOMBAT parity claim.
 
 For the current, authoritative status of every capability — including which rows
 are `planned`, `partial`, and `covered`, and the exact claim boundary attached to
 each — call `validation_status()`. It is a status table only: it does not run
 checks, fit models, or promote anything.
 
+For v0.1 the `covered` rows are exactly the univariate Gaussian animal-model fit
+and the two recovery anchors behind it (the known-truth DGP study and the
+published gryphon estimate). Everything else you see is `partial` or `planned`.
+
 ```{r}
 status <- validation_status()
 status[status$status == "covered", c("capability", "phase", "status")]
 ```
+
+To actually fit the validated model end-to-end — including installing and
+registering the `HSquared.jl` engine — see the *Getting started* article and its
+engine-setup section. This article is about the evidence, not the workflow.
