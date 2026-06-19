@@ -32,7 +32,9 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 20 | Infra: recurring innovation scout (weekly) | — | innovation/infra | planned | WS3 cadence |
 | 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial | **WS2 lowest-delta**; twin #43 |
 | 22 | Bridge: activate structured mv covariance (FA/low-rank) | 4 | bridge | partial · **blocked** | twin #42; FA core already on `origin/main` (V4-FA partial), gated on twin bridge payload+fixture + failing calibration (PR #17 closed) |
-| 23 | Bridge: post-fit `gwas()`/scan wrapper | 5 | bridge | partial · **blocked** | twin #45; gated on Phase 5 stack |
+| 23 | Bridge: post-fit `gwas()`/scan wrapper | 5 | bridge | partial · **blocked** | twin #45; Phase 5 engine landed (PR #36) — now gated on post-fit scan payload + thresholds |
+| 24 | Innovation: augmented AI-REML single-solve (Strandén 2024) | 8 | innovation/perf | planned | engine-led; twin #58; scout note |
+| 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
 
 ## HSquared.jl (twin engine) — open
 
@@ -51,6 +53,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 43 | Bridge activation: PEV/reliability standard fields | 1 | partial · cross-lane | hsquared#21 |
 | 44 | Bridge activation: non-Gaussian LA/VA + MarginalMethod | 6 | partial · cross-lane | hsquared#18 |
 | 45 | Bridge activation: post-fit marker scans (GWAS/QTL/eQTL) | 5 | partial · cross-lane | hsquared#23 |
+| 58 | [from R] Engine perf ideas (augmented AI-REML / SQUAREM / Woodbury) | 8 | planned · cross-lane | hsquared#24/#25/#17 |
 
 ## Cross-lane mirror map
 
