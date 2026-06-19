@@ -24,6 +24,8 @@ navbar:
           href: articles/hsquared.html
         - text: Fitting models
           href: articles/fitting-models.html
+        - text: Worked example (gryphon)
+          href: articles/gryphon-worked-example.html
         - text: Genomic prediction
           href: articles/genomic-prediction.html
         - text: QTL, GWAS, and eQTL status
@@ -94,6 +96,7 @@ articles:
     contents:
       - hsquared
       - articles/fitting-models
+      - articles/gryphon-worked-example
       - articles/genomic-prediction
       - articles/qtl-gwas-eqtl-status
       - articles/multivariate

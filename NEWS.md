@@ -9,6 +9,7 @@
 * New "Benchmark: hsquared vs sommer and pedigreemm" article documents the v0.1 Gaussian animal-model fit agreeing with `sommer` and the published gryphon anchor within the signed-off band, with reproducing code and the `pedigreemm` one-sided log-likelihood floor (#31).
 * Added a base-graphics `plot()` method for `hsquared_fit`: `type = "variance"` plots the variance components (with experimental `+/- 1.96 SE` whiskers when present) and `type = "residuals"` plots residuals against fitted values (#30).
 * **Experimental:** `covariance_standard_errors()` returns delta-method standard errors for the multivariate genetic/residual covariance and correlation matrices and per-trait `h²`, for an opt-in **unstructured** multivariate fit when the engine provides them. Mirrors `V4-MV-REML` (`partial`): asymptotic, REML-only, unstructured-only, and reported while the multivariate recovery calibration has not passed — not a validated capability (#26).
+* New "A worked animal-model analysis (gryphon)" article walks one univariate animal model end to end — fit, heritability with experimental CI/SE, breeding values and accuracy, and the diagnostic `plot()` — on the gryphon teaching dataset (#29).
 
 # hsquared 0.1.0
 
