@@ -6,6 +6,7 @@
 * **Experimental:** `variance_component_standard_errors()` and `heritability_standard_error()` return large-sample (delta-method) standard errors from the REML average-information matrix, when the default Gaussian fit's engine provides them. Same `V1-HERIT-CI` (`partial`) caveats: asymptotic, REML-only, omitted near a variance-component boundary (ill-conditioned AI matrix), not coverage-calibrated, not a validated capability.
 * **Experimental:** `repeatability_interval()` returns a logit delta-method confidence interval for the repeatability coefficient `t = (Va + Vpe) / Vp` from the opt-in repeatability model, when the engine provides one. It mirrors the engine row `V3-REPEAT-REML` (`partial`): engine-internal self-consistency tested (recovery of `t` + interval bracketing on seeded fixtures) but with no external comparator, no `h²` interval, and no deep-pedigree validation; reported as a point estimate plus bounds only (#12).
 * `summary()`/`print()` for `hsquared_fit` now display the experimental heritability confidence interval, variance-component and heritability standard errors, and repeatability interval when a fit carries them, clearly labelled experimental and asymptotic (#28).
+* New "Benchmark: hsquared vs sommer and pedigreemm" article documents the v0.1 Gaussian animal-model fit agreeing with `sommer` and the published gryphon anchor within the signed-off band, with reproducing code and the `pedigreemm` one-sided log-likelihood floor (#31).
 
 # hsquared 0.1.0
 
