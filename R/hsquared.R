@@ -132,7 +132,7 @@ hsquared <- function(
       "target",
       "fit_animal_model"
     ))
-    hs_validate_genetic_structure_control(control, target)
+    genetic_structure <- hs_validate_genetic_structure_control(control, target)
     if (
       isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
     ) {
@@ -204,7 +204,8 @@ hsquared <- function(
           control,
           "iterations",
           2000L
-        )
+        ),
+        genetic_structure = genetic_structure
       ))
     }
     if (identical(target, "henderson_mme")) {

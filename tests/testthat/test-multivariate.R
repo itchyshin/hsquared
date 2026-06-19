@@ -212,21 +212,37 @@ test_that("multivariate genetic_structure control is fenced", {
     "only planned for the `target = \"multivariate\"` bridge",
     fixed = TRUE
   )
-  expect_error(
-    hsquared(
-      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
-      data = dat,
-      control = hs_control(
+  # "diagonal" is now accepted (no loadings / no rotation ambiguity).
+  expect_equal(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
         engine = "julia",
         engine_control = list(
           target = "multivariate",
           genetic_structure = "diagonal"
         )
-      )
+      ),
+      "multivariate"
     ),
-    "planned, not implemented",
-    fixed = TRUE
+    "diagonal"
   )
+  # "lowrank" / "factor_analytic" stay gated on the rotation convention.
+  for (gs in c("lowrank", "factor_analytic")) {
+    expect_error(
+      hsquared:::hs_validate_genetic_structure_control(
+        hs_control(
+          engine = "julia",
+          engine_control = list(
+            target = "multivariate",
+            genetic_structure = gs
+          )
+        ),
+        "multivariate"
+      ),
+      "gated on a validated",
+      fixed = TRUE
+    )
+  }
   expect_error(
     hsquared:::hs_validate_genetic_structure_control(
       hs_control(

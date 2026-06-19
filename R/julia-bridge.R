@@ -636,7 +636,8 @@ hs_fit_julia_multivariate_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = NULL,
-  iterations = 2000L
+  iterations = 2000L,
+  genetic_structure = "unstructured"
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -685,13 +686,18 @@ hs_fit_julia_multivariate_payload <- function(
   JuliaCall::julia_assign("hsq_initial_G0", initial$G0)
   JuliaCall::julia_assign("hsq_initial_R0", initial$R0)
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_assign(
+    "hsq_genetic_structure",
+    as.character(genetic_structure)
+  )
   JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_fit = HSquared.fit_multivariate_reml(",
     "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
     "initial = (G0 = hsq_initial_G0, R0 = hsq_initial_R0),",
-    "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits);",
+    "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits,",
+    "genetic_structure = Symbol(hsq_genetic_structure));",
     "hsq_mv_raw = Dict(",
     "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
     "\"residual_covariance\" => Matrix{Float64}(hsq_fit.residual_covariance),",
@@ -708,6 +714,12 @@ hs_fit_julia_multivariate_payload <- function(
     "\"traits\" => string.(collect(hsq_fit.traits)),",
     "\"genetic_structure\" => string(hsq_fit.genetic_structure)",
     ");",
+    # Number of genetic covariance parameters (contract field for the
+    # structure LRT). Read from the engine payload when present; the R
+    # normalizer falls back to deriving it from genetic_structure + n_traits.
+    "if hasproperty(hsq_fit, :n_genetic_params);",
+    "hsq_mv_raw[\"n_genetic_params\"] = hsq_fit.n_genetic_params;",
+    "end;",
     # Experimental covariance standard errors (engine row V4-MV-REML, partial;
     # :unstructured only — the engine throws for structured / factor-analytic
     # fits, and the observed information can be non-positive-definite at a
@@ -843,6 +855,18 @@ hs_normalize_multivariate_result <- function(raw, payload) {
   if (converged) {
     result$loglik <- as.numeric(raw$loglik)
     result$df <- as.integer(p * ntraits + n_covariance_parameters)
+  }
+  # Genetic-structure label + number of genetic covariance parameters, for the
+  # covariance-structure LRT. Prefer the engine payload field; otherwise derive
+  # it from the structure (diagonal = t; unstructured = t(t+1)/2).
+  gstruct <- raw$genetic_structure %||% "unstructured"
+  result$genetic_structure <- gstruct
+  result$n_genetic_params <- if (!is.null(raw$n_genetic_params)) {
+    as.integer(raw$n_genetic_params)
+  } else if (identical(gstruct, "diagonal")) {
+    as.integer(ntraits)
+  } else {
+    as.integer(ntraits * (ntraits + 1L) / 2L)
   }
   if (!is.null(raw$se_genetic_covariance)) {
     lab <- function(m) {
@@ -1452,16 +1476,21 @@ hs_validate_genetic_structure_control <- function(control, target) {
       call. = FALSE
     )
   }
-  if (!identical(value, "unstructured")) {
+  if (value %in% c("lowrank", "factor_analytic")) {
     stop(
       "Structured multivariate genetic covariance controls ",
-      "(`genetic_structure = \"diagonal\"`, \"lowrank\", or ",
-      "\"factor_analytic\") are planned, not implemented in the R bridge. ",
-      "The current opt-in multivariate path estimates unstructured G0/R0 only; ",
-      "omit `genetic_structure` or set it to \"unstructured\".",
+      "(`genetic_structure = \"lowrank\"` or \"factor_analytic\") are planned, ",
+      "not implemented in the R bridge: they are gated on a validated ",
+      "rotation/interpretation convention for the loadings. The opt-in ",
+      "multivariate path estimates `\"unstructured\"` or `\"diagonal\"` G0; use ",
+      "one of those.",
       call. = FALSE
     )
   }
+  # "unstructured" (default) and "diagonal" are both reachable. "diagonal" has
+  # no loadings and no rotation ambiguity (it is just per-trait genetic
+  # variances with zero genetic covariances), so it is honesty-clean to surface
+  # ahead of lowrank/factor_analytic.
   rank <- hs_engine_control_value(control, "rank", NULL)
   if (!is.null(rank)) {
     if (

@@ -71,6 +71,7 @@ reference:
       - variance_component_standard_errors
       - multivariate_extractors
       - covariance_standard_errors
+      - covariance_structure_lrt
       - factor_g_extractors
       - breeding_values
       - repeatability

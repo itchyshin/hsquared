@@ -826,6 +826,85 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
   )
 }
 
+#' Likelihood-ratio test for genetic covariance structure
+#'
+#' `covariance_structure_lrt(constrained, full)` is an **experimental** nested
+#' likelihood-ratio test comparing two opt-in multivariate fits **on the same
+#' data**: a `constrained` genetic structure (currently `genetic_structure =
+#' "diagonal"`) against the `full` `"unstructured"` fit. The statistic is
+#' `2 * (logLik(full) - logLik(constrained))` on
+#' `df = n_genetic_params(full) - n_genetic_params(constrained)`.
+#'
+#' For diagonal-vs-unstructured the null (off-diagonal genetic covariances = 0)
+#' is interior, so the χ² reference is exact (`boundary = FALSE`). Structures
+#' whose null lies on a rank/PSD boundary (low-rank / factor-analytic) would need
+#' a χ²-mixture correction and are gated out of the R bridge for now.
+#'
+#' It mirrors the engine row `V4-MV-REML` (`partial`): asymptotic, REML-only,
+#' dense validation-scale, with the multivariate recovery calibration not yet
+#' passed — a reported test, not a validated one. Both fits must be on the same
+#' response, fixed effects, and pedigree.
+#'
+#' @param constrained,full Two `hsquared_fit` objects from the opt-in
+#'   multivariate target; `full` must nest `constrained` (more genetic
+#'   covariance parameters).
+#' @param ... Unused.
+#'
+#' @return A one-row data frame with `statistic`, `df`, `pvalue`, `boundary`, and
+#'   the `constrained` / `full` genetic-structure labels.
+#' @export
+covariance_structure_lrt <- function(constrained, full, ...) {
+  if (
+    !inherits(constrained, "hsquared_fit") || !inherits(full, "hsquared_fit")
+  ) {
+    stop(
+      "`constrained` and `full` must both be `hsquared_fit` objects from the ",
+      "opt-in multivariate target.",
+      call. = FALSE
+    )
+  }
+  field <- function(fit, nm) {
+    v <- fit$result[[nm]]
+    if (is.null(v)) {
+      stop(
+        "This `hsquared_fit` does not carry `",
+        nm,
+        "`. The covariance-structure LRT needs converged multivariate fits ",
+        "that report `loglik` and `n_genetic_params`.",
+        call. = FALSE
+      )
+    }
+    v
+  }
+  ll_c <- as.numeric(field(constrained, "loglik"))
+  ll_f <- as.numeric(field(full, "loglik"))
+  np_c <- as.integer(field(constrained, "n_genetic_params"))
+  np_f <- as.integer(field(full, "n_genetic_params"))
+  df <- np_f - np_c
+  if (df <= 0L) {
+    stop(
+      "`full` must have more genetic covariance parameters than `constrained` ",
+      "(df = ",
+      df,
+      "); call as `covariance_structure_lrt(constrained, full)`.",
+      call. = FALSE
+    )
+  }
+  sc <- constrained$result$genetic_structure %||% NA_character_
+  sf <- full$result$genetic_structure %||% NA_character_
+  stat <- 2 * (ll_f - ll_c)
+  boundary <- !(identical(sc, "diagonal") && identical(sf, "unstructured"))
+  data.frame(
+    statistic = stat,
+    df = df,
+    pvalue = stats::pchisq(max(stat, 0), df = df, lower.tail = FALSE),
+    boundary = boundary,
+    constrained = sc,
+    full = sf,
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Inspect fitted-model diagnostics
 #'
 #' `fit_diagnostics()` returns a compact diagnostics table for an

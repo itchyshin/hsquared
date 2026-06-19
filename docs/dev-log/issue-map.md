@@ -33,7 +33,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 19 | Innovation: `mi()`/`miss_control()` grammar | 8 | innovation | planned | `08-missing-data-plan.md`; drmTMB/gllvmTMB |
 | 20 | Infra: recurring innovation scout (weekly) | — | innovation/infra | planned | WS3 cadence |
 | 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial | **WS2 lowest-delta**; twin #43 |
-| 22 | Bridge: activate structured mv covariance (FA/low-rank) | 4 | bridge | partial · **blocked** | twin #42; FA core already on `origin/main` (V4-FA partial), gated on twin bridge payload+fixture + failing calibration (PR #17 closed) |
+| 22 | Bridge: activate structured mv covariance | 4 | bridge | partial · **diagonal shipped** | **`:diagonal` subset SHIPPED** (guardrail relaxed + `genetic_structure` threaded + `covariance_structure_lrt`, built to twin contract #61; live fit skip-guarded until the twin payload lands). `lowrank`/`fa` stay **blocked** on the rotation convention (twin #42/#37) |
 | 23 | Bridge: post-fit `gwas()`/scan wrapper | 5 | bridge | partial · **blocked** | twin #45; Phase 5 engine landed (PR #36) — now gated on post-fit scan payload + thresholds |
 | 24 | Innovation: augmented AI-REML single-solve (Strandén 2024) | 8 | innovation/perf | planned | engine-led; twin #58; scout note |
 | 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
