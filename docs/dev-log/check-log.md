@@ -4260,3 +4260,22 @@ re-derived to machine precision); these fixes harden robustness + close a rigor 
 - Follow-up (maintainer): pin the PUBLISHED Mrode Example 3.1 EBVs against the physical
   textbook for an external-source canon gate (needs the book's digits).
 - Committed locally; push deferred.
+
+## 2026-06-18 Validation-evidence article (Curie/Fisher write, Rose honesty audit)
+
+New `vignettes/articles/validation-evidence.Rmd`: the honest, single-source answer to "what
+does `hsquared` mean by validated, and what is the actual evidence?" Written test-first — every
+claim points at a named fixture/test/study; weakest-to-strongest ladder (gryphon anchor -> DGP
+recovery -> external-package agreement -> supplied-variance Henderson/Mrode fixtures ->
+independent hand-built MME anchors -> nadiv pedigree-inverse comparator -> negative controls),
+the public-CI-vs-local split, and an explicit "Honest boundaries" section (REML-only, no
+validated SE/CI, accuracy() is sqrt(reliability) not realised accuracy, opt-in models are
+partial, no t>=2 multivariate recovery claim, no production/ASReml-parity claim).
+- Registered in `_pkgdown.yml` (articles navbar + index). Rose adversarial honesty audit:
+  clean, 0 findings (no claim exceeds `validation_status()`).
+- Render-name fix: `build_article()` needs the registered name `articles/validation-evidence`
+  (the `articles/` subdir is part of the pkgdown article name), not the bare slug.
+- Checks: `pkgdown::check_pkgdown()` clean; `pkgdown::build_article("articles/validation-evidence")`
+  renders cleanly (against a fresh local `devtools::install()` of hsquared). No R/ code change,
+  so the prior green `devtools::test()` (753) and `devtools::check(--no-manual)` (0/0/0) hold.
+- Committed locally; push deferred.

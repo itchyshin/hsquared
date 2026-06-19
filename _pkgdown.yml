@@ -36,6 +36,8 @@ navbar:
           href: articles/inheritance-systems.html
         - text: Model status
           href: articles/model-status.html
+        - text: Validation evidence
+          href: articles/validation-evidence.html
         - text: Formula grammar roadmap
           href: articles/formula-grammar.html
         - text: Genomics and GPU roadmap
@@ -91,5 +93,6 @@ articles:
       - articles/g-matrix-interpretation
       - articles/inheritance-systems
       - articles/model-status
+      - articles/validation-evidence
       - articles/formula-grammar
       - articles/genomics-gpu-roadmap
