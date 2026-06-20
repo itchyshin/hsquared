@@ -39,7 +39,7 @@ caveats, and honest-status — only the rendering engine differs.
 | Variance + h² forest | `autoplot(fit, "variance")` | `:variance` | variance components + per-trait h² with intervals | experimental asymptotic SE; no fabricated whiskers |
 | EBV caterpillar | `autoplot(fit, "breeding_values")` | `:breeding_values` | sorted EBVs + PEV bands | validation-scale PEV (dense denominator), not production reliability |
 | Genetic-correlation heatmap | `autoplot(fit, "g_matrix")` | `:g_matrix` | genetic correlations (rotation-invariant; the `D⁻¹GD⁻¹` scaling of G) | rotation-invariant; never raw loadings; low-h² cells imprecise (flag) |
-| G geometry / evolvability | plot planned; numbers via `eigen_G()`/`evolvability()` | `:g_geometry` | eigenvalues (variance per genetic axis) + sign-canonical axes + evolvability | rotation-invariant eigenstructure only |
+| G geometry (scree) / evolvability | `autoplot(fit, "g_geometry")` (scree); evolvability numbers via `eigen_G()`/`evolvability()` | `:g_geometry` | eigenvalues (variance per genetic axis) + % variance explained | rotation-invariant eigenstructure only; **axis directions / loadings never drawn** |
 | Reaction-norm trajectories | `autoplot(fit, "reaction_norm")` | `:reaction_norm` | RR genetic-variance + h²(t) over the covariate | supplied-`K_g` descriptive; h²(t) can overstate (no PE term) |
 | Reaction-norm surface | plot planned (R) | `:rr_surface` | covariate×covariate genetic covariance/correlation surface | supplied-`K_g` descriptive |
 | Manhattan | `autoplot(scan)` where `scan <- gwas(fit, markers)` | `:manhattan` | marker −log10(p) along the genome | nominal Wald; NOT genome-wide calibrated (#48) |

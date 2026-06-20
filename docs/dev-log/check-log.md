@@ -4861,3 +4861,28 @@ release".
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
   **16/16** (g-corr ×2 + variance forest + NaN round-trip).
 - CI (commit `df54258`): pkgdown run `27884196127` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — g_geometry eigenvalue scree figure)
+
+- Built `autoplot(fit, "g_geometry")` — a rotation-invariant genetic-eigenstructure
+  **scree** (eigenvalues = variance per genetic axis + % variance explained),
+  realizing the "plot planned" g_geometry catalog row. Auto-detects the engine
+  `genetic_pca_plot_data` payload (recompute via `eigen_G()` fallback). **Axis
+  directions / loadings are never drawn** (rotation-arbitrary; span-ambiguous under
+  repeated eigenvalues). Live parity case added.
+- **Adversarial verify (Workflow `wf_bef66f21-dfb`: Florence/Curie)** caught a
+  **BLOCKER**: the payload branch validated `rotation_invariant` but NOT
+  `is_eigenstructure_not_loadings` (the §3-enforced flag whose purpose is to signal
+  a loadings payload) → a loadings payload would be drawn as a scree. Fixed: added
+  the guard so such a payload falls through to the PSD-gated recompute. Plus a
+  should-fix: a non-PSD payload (negative eigenvalue) produced nonsense "116%"
+  labels (recompute is PSD-gated, payload was not) → now suppresses the %
+  labels + flags "non-positive-definite G" in the subtitle/meta. Added the
+  matching tests + the coverage Curie asked for (loadings-flag fallback, non-PSD,
+  ve/axis length-mismatch fallback, all-zero NA, payload-vs-recompute parity).
+- Standard §1 catalog row updated (g_geometry: scree, built; axis directions never
+  drawn); capability-status viz row updated.
+- Commands: `air format`; `devtools::document()` (regen `hsquared-autoplot.Rd`);
+  `test-autoplot` all pass (incl. 11 g_geometry cases); `pkgdown::check_pkgdown()`
+  clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
+  **21/21** (g_pca eigenvalues == eigen(G); marshalled scree consumed).

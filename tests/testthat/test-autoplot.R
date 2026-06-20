@@ -237,6 +237,167 @@ test_that("g_matrix errors on a univariate fit (no correlation matrix)", {
   )
 })
 
+# A multivariate fit carrying a genetic covariance G (eigen_G reads it).
+mock_mv_fit_gcov <- function() {
+  g <- matrix(c(2.0, 0.6, 0.6, 0.5), 2, 2)
+  structure(
+    list(result = list(genetic_covariance = g)),
+    class = "hsquared_fit"
+  )
+}
+
+test_that("g_geometry draws a rotation-invariant eigenvalue scree", {
+  p <- autoplot(mock_mv_fit_gcov(), "g_geometry")
+  expect_s3_class(p, "ggplot")
+  ev <- sort(eigen(matrix(c(2, 0.6, 0.6, 0.5), 2, 2))$values, decreasing = TRUE)
+  expect_equal(
+    sort(p$data$eigenvalue, decreasing = TRUE),
+    ev,
+    tolerance = 1e-10
+  )
+  expect_equal(sum(p$data$variance_explained), 1, tolerance = 1e-10)
+  # §3 binding rule: g_geometry must be rotation_invariant; no loadings drawn.
+  expect_equal(attr(p, "hsquared_meta")$rotation_status, "rotation_invariant")
+  expect_equal(attr(p, "hsquared_meta")$type, "g_geometry")
+})
+
+test_that("g_geometry errors on a fit without a genetic covariance", {
+  expect_error(
+    autoplot(mock_uni_fit(), "g_geometry"),
+    "g_geometry",
+    fixed = TRUE
+  )
+})
+
+test_that("g_geometry consumes the engine genetic_pca_plot_data payload", {
+  fit <- structure(
+    list(
+      result = list(
+        genetic_pca_plot_data = list(
+          eigenvalues = c(2.4, 0.1),
+          variance_explained = c(0.96, 0.04),
+          axis_labels = c("PC1", "PC2"),
+          rotation_invariant = TRUE,
+          is_eigenstructure_not_loadings = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "g_geometry")
+  expect_equal(p$data$eigenvalue, c(2.4, 0.1))
+  expect_true(any(grepl("96%", p$data$label)))
+})
+
+test_that("g_geometry ignores a payload that is not rotation-invariant", {
+  fit <- mock_mv_fit_gcov()
+  fit$result$genetic_pca_plot_data <- list(
+    eigenvalues = c(9, 9),
+    rotation_invariant = FALSE
+  )
+  p <- autoplot(fit, "g_geometry")
+  # falls back to eigen_G recompute -> not the bogus c(9, 9).
+  expect_false(all(p$data$eigenvalue == 9))
+})
+
+test_that("g_geometry ignores a payload flagged as loadings (not eigenstructure)", {
+  fit <- mock_mv_fit_gcov()
+  fit$result$genetic_pca_plot_data <- list(
+    eigenvalues = c(9, 9),
+    rotation_invariant = TRUE,
+    is_eigenstructure_not_loadings = FALSE # §3-enforced: must not be drawn
+  )
+  p <- autoplot(fit, "g_geometry")
+  expect_false(all(p$data$eigenvalue == 9)) # fell back to eigen_G recompute
+})
+
+test_that("g_geometry flags a non-PSD payload and omits variance-share labels", {
+  fit <- structure(
+    list(
+      result = list(
+        genetic_pca_plot_data = list(
+          eigenvalues = c(1.73, -0.23),
+          rotation_invariant = TRUE,
+          is_eigenstructure_not_loadings = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "g_geometry")
+  expect_true(any(p$data$eigenvalue < 0)) # negative bar drawn (honest)
+  expect_true(all(p$data$label == "")) # % labels suppressed
+  expect_true(grepl("non-positive-definite", p$labels$subtitle))
+  expect_match(attr(p, "hsquared_meta")$notes, "non-positive-definite")
+})
+
+test_that("g_geometry recomputes variance_explained and labels on length mismatch", {
+  fit <- structure(
+    list(
+      result = list(
+        genetic_pca_plot_data = list(
+          eigenvalues = c(2, 1, 1),
+          variance_explained = c(0.9), # wrong length -> recompute
+          axis_labels = c("only one"), # wrong length -> PC labels
+          rotation_invariant = TRUE,
+          is_eigenstructure_not_loadings = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "g_geometry")
+  expect_equal(sum(p$data$variance_explained), 1, tolerance = 1e-10)
+  expect_equal(levels(p$data$axis), c("PC1", "PC2", "PC3"))
+})
+
+test_that("g_geometry yields NA variance shares for an all-zero eigenstructure", {
+  fit <- structure(
+    list(
+      result = list(
+        genetic_pca_plot_data = list(
+          eigenvalues = c(0, 0),
+          rotation_invariant = TRUE,
+          is_eigenstructure_not_loadings = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "g_geometry")
+  expect_true(all(is.na(p$data$variance_explained)))
+  expect_true(all(p$data$label == ""))
+})
+
+test_that("g_geometry payload and recompute agree on identical G", {
+  g <- matrix(c(2.0, 0.6, 0.6, 0.5), 2, 2)
+  ev <- sort(eigen(g, symmetric = TRUE)$values, decreasing = TRUE)
+  fit_recompute <- mock_mv_fit_gcov() # genetic_covariance == g
+  fit_payload <- structure(
+    list(
+      result = list(
+        genetic_pca_plot_data = list(
+          eigenvalues = ev,
+          variance_explained = ev / sum(ev),
+          axis_labels = c("PC1", "PC2"),
+          rotation_invariant = TRUE,
+          is_eigenstructure_not_loadings = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  d_r <- autoplot(fit_recompute, "g_geometry")$data
+  d_p <- autoplot(fit_payload, "g_geometry")$data
+  expect_equal(d_p$eigenvalue, d_r$eigenvalue, tolerance = 1e-10)
+  expect_equal(
+    d_p$variance_explained,
+    d_r$variance_explained,
+    tolerance = 1e-10
+  )
+  expect_equal(d_p$label, d_r$label)
+})
+
 test_that("g_matrix flags off-diagonal cells involving a low-h2 trait", {
   p <- autoplot(mock_mv_fit_h2(c(t1 = 0.05, t2 = 0.4)), "g_matrix")
   expect_s3_class(p, "ggplot")

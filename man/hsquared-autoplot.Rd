@@ -8,7 +8,7 @@
 \usage{
 \method{autoplot}{hsquared_fit}(
   object,
-  type = c("variance", "breeding_values", "g_matrix", "reaction_norm"),
+  type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm"),
   ...
 )
 
@@ -47,7 +47,12 @@ are available, faceted by trait for multivariate fits.
 \item \code{"g_matrix"} -- a \strong{rotation-invariant} genetic-correlation heatmap of the
 estimated \code{G} for multivariate fits (correlations are invariant to the
 factor rotation; raw loadings are never plotted -- the ratified cross-lane
-convention).
+convention). Off-diagonal cells involving a low-\code{h^2} trait are flagged as
+imprecise (threshold \code{low_h2}, default \code{0.1}).
+\item \code{"g_geometry"} -- a scree of the \strong{rotation-invariant} genetic
+eigenstructure (eigenvalues = variance per genetic axis, with percent
+variance explained) for multivariate fits. Axis directions / loadings are
+never drawn (rotation-arbitrary; span-ambiguous under repeated eigenvalues).
 \item \code{"reaction_norm"} -- for random-regression fits, the genetic-variance and
 heritability trajectories across the covariate (faceted). The heritability
 trajectory carries the same caveat as \code{\link[=rr_heritability]{rr_heritability()}}: with a

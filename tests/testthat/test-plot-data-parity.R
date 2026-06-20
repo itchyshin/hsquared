@@ -106,6 +106,45 @@ test_that("autoplot consumes a live-marshalled genetic_correlation_plot_data pay
   expect_true(any(off$low))
 })
 
+test_that("genetic_pca_plot_data engine preparer matches eigen_G scree [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+
+  g_cov <- matrix(c(2.0, 0.6, 0.6, 0.5), 2, 2)
+  JuliaCall::julia_assign("G_pca", g_cov)
+  JuliaCall::julia_command("pdg = HSquared.genetic_pca_plot_data(G_pca);")
+  ev_engine <- JuliaCall::julia_eval("collect(Float64, pdg.eigenvalues)")
+  ve_engine <- JuliaCall::julia_eval("collect(Float64, pdg.variance_explained)")
+  rot_engine <- JuliaCall::julia_eval("pdg.rotation_invariant")
+  not_loadings <- JuliaCall::julia_eval("pdg.is_eigenstructure_not_loadings")
+
+  # The engine eigenvalues are the rotation-invariant eigenstructure; R's eigen_G
+  # recompute (via the fit-stored G) sorts the same eigenvalues descending.
+  r_ev <- sort(eigen(g_cov, symmetric = TRUE)$values, decreasing = TRUE)
+  expect_equal(sort(ev_engine, decreasing = TRUE), r_ev, tolerance = 1e-10)
+  expect_equal(sum(ve_engine), 1, tolerance = 1e-10)
+  expect_true(isTRUE(rot_engine))
+  expect_true(isTRUE(not_loadings))
+
+  # Consume a marshalled payload end-to-end through autoplot.
+  pdg <- JuliaCall::julia_eval(paste(
+    "(eigenvalues = collect(Float64, pdg.eigenvalues),",
+    "variance_explained = collect(Float64, pdg.variance_explained),",
+    "axis_labels = collect(String, pdg.axis_labels),",
+    "rotation_invariant = pdg.rotation_invariant)"
+  ))
+  fit <- structure(
+    list(result = list(genetic_pca_plot_data = pdg)),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "g_geometry")
+  expect_equal(p$data$eigenvalue, ev_engine, tolerance = 1e-10)
+})
+
 test_that("variance_components_plot_data engine preparer feeds the variance forest [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(

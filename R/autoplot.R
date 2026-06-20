@@ -18,7 +18,12 @@
 #' * `"g_matrix"` -- a **rotation-invariant** genetic-correlation heatmap of the
 #'   estimated `G` for multivariate fits (correlations are invariant to the
 #'   factor rotation; raw loadings are never plotted -- the ratified cross-lane
-#'   convention).
+#'   convention). Off-diagonal cells involving a low-`h^2` trait are flagged as
+#'   imprecise (threshold `low_h2`, default `0.1`).
+#' * `"g_geometry"` -- a scree of the **rotation-invariant** genetic
+#'   eigenstructure (eigenvalues = variance per genetic axis, with percent
+#'   variance explained) for multivariate fits. Axis directions / loadings are
+#'   never drawn (rotation-arbitrary; span-ambiguous under repeated eigenvalues).
 #' * `"reaction_norm"` -- for random-regression fits, the genetic-variance and
 #'   heritability trajectories across the covariate (faceted). The heritability
 #'   trajectory carries the same caveat as [rr_heritability()]: with a
@@ -114,7 +119,13 @@ hs_gg_forest <- function(
 #' @exportS3Method ggplot2::autoplot
 autoplot.hsquared_fit <- function(
   object,
-  type = c("variance", "breeding_values", "g_matrix", "reaction_norm"),
+  type = c(
+    "variance",
+    "breeding_values",
+    "g_matrix",
+    "g_geometry",
+    "reaction_norm"
+  ),
   ...
 ) {
   hs_require_ggplot2()
@@ -124,6 +135,7 @@ autoplot.hsquared_fit <- function(
     variance = hs_autoplot_variance(object, ...),
     breeding_values = hs_autoplot_breeding_values(object, ...),
     g_matrix = hs_autoplot_g_matrix(object, ...),
+    g_geometry = hs_autoplot_g_geometry(object, ...),
     reaction_norm = hs_autoplot_reaction_norm(object, ...)
   )
 }
@@ -459,6 +471,121 @@ hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
     notes = paste0(
       "genetic correlations only; raw factor loadings are never plotted",
       if (flagged_any) "; low-h2 cells flagged (imprecise)" else ""
+    )
+  )
+}
+
+# Scree of the genetic eigenstructure: rotation-invariant eigenvalues (variance
+# per genetic axis) with variance-explained labels. Axis DIRECTIONS / loadings are
+# never drawn -- they are rotation-arbitrary and span-ambiguous under repeated
+# eigenvalues (plotting standard 24 §2 g_geometry; the cataloged figure is the
+# scree, not a loadings biplot).
+hs_autoplot_g_geometry <- function(object, ...) {
+  # Auto-detect the engine `genetic_pca_plot_data` payload; else recompute from
+  # the fit's G via eigen_G(). NOTE: the bridge does not attach the payload at fit
+  # time yet -- recompute is the live path.
+  pd <- object$result$genetic_pca_plot_data
+  ev <- NULL
+  ve <- NULL
+  axis <- NULL
+  if (
+    !is.null(pd) &&
+      !is.null(pd$eigenvalues) &&
+      !isFALSE(pd$rotation_invariant) &&
+      # §3-enforced for g_geometry: a payload that disclaims eigenstructure status
+      # (i.e. carries loadings/directions) must NOT be drawn as a scree.
+      !isFALSE(pd$is_eigenstructure_not_loadings)
+  ) {
+    ev <- as.numeric(pd$eigenvalues)
+    if (!is.null(pd$variance_explained)) {
+      ve <- as.numeric(pd$variance_explained)
+    }
+    if (!is.null(pd$axis_labels)) {
+      axis <- as.character(pd$axis_labels)
+    }
+  }
+  if (is.null(ev)) {
+    eg <- tryCatch(eigen_G(object), error = function(e) NULL)
+    if (is.null(eg) || is.null(eg$values) || length(eg$values) < 2L) {
+      stop(
+        "`type = \"g_geometry\"` needs a multivariate fit with a genetic ",
+        "covariance matrix (`engine_control = list(target = \"multivariate\")`).",
+        call. = FALSE
+      )
+    }
+    ev <- as.numeric(eg$values)
+  }
+  if (is.null(ve) || length(ve) != length(ev)) {
+    total <- sum(ev)
+    ve <- if (is.finite(total) && total > 0) {
+      ev / total
+    } else {
+      rep(NA_real_, length(ev))
+    }
+  }
+  if (is.null(axis) || length(axis) != length(ev)) {
+    axis <- paste0("PC", seq_along(ev))
+  }
+  df <- data.frame(
+    axis = factor(axis, levels = axis),
+    eigenvalue = ev,
+    variance_explained = ve,
+    stringsAsFactors = FALSE
+  )
+  # The recompute path is PSD-gated (eigen_G via hs_fit_genetic_G throws on a
+  # non-PSD G), but an engine payload can carry a (small) negative eigenvalue.
+  # With a negative eigenvalue the percent-variance shares are not a clean
+  # partition, so omit the % labels and flag the non-PSD G honestly rather than
+  # print a meaningless "116%".
+  non_psd <- any(is.finite(df$eigenvalue) & df$eigenvalue < 0)
+  if (non_psd) {
+    df$label <- ""
+  } else {
+    df$label <- ifelse(
+      is.finite(df$variance_explained),
+      paste0(
+        formatC(100 * df$variance_explained, format = "f", digits = 0),
+        "%"
+      ),
+      ""
+    )
+  }
+  sub <- if (non_psd) {
+    paste(
+      "rotation-invariant eigenvalues; G is non-positive-definite",
+      "(variance shares omitted); axis directions / loadings are never shown"
+    )
+  } else {
+    paste(
+      "rotation-invariant eigenvalues (% variance explained);",
+      "axis directions / loadings are never shown"
+    )
+  }
+  hs_attach_meta(
+    ggplot2::ggplot(
+      df,
+      ggplot2::aes(x = .data$axis, y = .data$eigenvalue)
+    ) +
+      ggplot2::geom_col(fill = "#2c6fbb", width = 0.7) +
+      ggplot2::geom_text(
+        ggplot2::aes(label = .data$label),
+        vjust = -0.4,
+        size = 3.2,
+        na.rm = TRUE
+      ) +
+      ggplot2::labs(
+        x = "genetic axis",
+        y = "eigenvalue (variance)",
+        title = "Genetic eigenstructure (G)",
+        subtitle = sub
+      ) +
+      theme_hsquared(),
+    type = "g_geometry",
+    rotation_status = "rotation_invariant",
+    notes = paste0(
+      "rotation-invariant eigenstructure (variance per genetic axis); ",
+      "axis directions/loadings not shown",
+      if (non_psd) "; non-positive-definite G (variance shares omitted)" else ""
     )
   )
 }
