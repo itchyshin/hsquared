@@ -6,7 +6,11 @@
 \alias{autoplot.hs_gwas}
 \title{ggplot2 visualizations for hsquared results}
 \usage{
-\method{autoplot}{hsquared_fit}(object, type = c("variance", "breeding_values", "g_matrix"), ...)
+\method{autoplot}{hsquared_fit}(
+  object,
+  type = c("variance", "breeding_values", "g_matrix", "reaction_norm"),
+  ...
+)
 
 \method{autoplot}{hs_gwas}(object, ...)
 }
@@ -41,6 +45,11 @@ are available, faceted by trait for multivariate fits.
 estimated \code{G} for multivariate fits (correlations are invariant to the
 factor rotation; raw loadings are never plotted -- the ratified cross-lane
 convention).
+\item \code{"reaction_norm"} -- for random-regression fits, the genetic-variance and
+heritability trajectories across the covariate (faceted). The heritability
+trajectory carries the same caveat as \code{\link[=rr_heritability]{rr_heritability()}}: with a
+homogeneous residual and no permanent-environment term it can overstate
+\code{h^2(t)} for repeated-records designs.
 }
 
 The figure helpers are deliberately modular (each takes a tidy data frame and

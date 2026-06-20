@@ -289,6 +289,10 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
   expect_equal(nrow(ef$eigenfunctions), 3L * 2L)
   expect_equal(sort(unique(ef$eigenfunctions$axis)), c(1L, 2L))
 
+  # reaction-norm autoplot returns a faceted ggplot (variance + heritability).
+  p_rn <- autoplot(fit, "reaction_norm")
+  expect_s3_class(p_rn, "ggplot")
+
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)
   expect_s3_class(stats::logLik(fit), "logLik")

@@ -19,6 +19,11 @@
 #'   estimated `G` for multivariate fits (correlations are invariant to the
 #'   factor rotation; raw loadings are never plotted -- the ratified cross-lane
 #'   convention).
+#' * `"reaction_norm"` -- for random-regression fits, the genetic-variance and
+#'   heritability trajectories across the covariate (faceted). The heritability
+#'   trajectory carries the same caveat as [rr_heritability()]: with a
+#'   homogeneous residual and no permanent-environment term it can overstate
+#'   `h^2(t)` for repeated-records designs.
 #'
 #' The figure helpers are deliberately modular (each takes a tidy data frame and
 #' returns a `ggplot`) so they can be factored into a shared visualization
@@ -106,7 +111,7 @@ hs_gg_forest <- function(
 #' @exportS3Method ggplot2::autoplot
 autoplot.hsquared_fit <- function(
   object,
-  type = c("variance", "breeding_values", "g_matrix"),
+  type = c("variance", "breeding_values", "g_matrix", "reaction_norm"),
   ...
 ) {
   hs_require_ggplot2()
@@ -115,7 +120,8 @@ autoplot.hsquared_fit <- function(
     type,
     variance = hs_autoplot_variance(object, ...),
     breeding_values = hs_autoplot_breeding_values(object, ...),
-    g_matrix = hs_autoplot_g_matrix(object, ...)
+    g_matrix = hs_autoplot_g_matrix(object, ...),
+    reaction_norm = hs_autoplot_reaction_norm(object, ...)
   )
 }
 
@@ -301,6 +307,46 @@ hs_autoplot_g_matrix <- function(object, ...) {
       y = NULL,
       title = "Genetic correlation (G)",
       subtitle = "rotation-invariant; raw loadings are never plotted"
+    ) +
+    theme_hsquared()
+}
+
+hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
+  # rr_genetic_variance()/rr_heritability() reject non-RR fits with a clear
+  # message, so no extra guard is needed here.
+  vg <- rr_genetic_variance(object, at = at, n = n)
+  h2 <- rr_heritability(object, at = at, n = n)
+  df <- rbind(
+    data.frame(
+      covariate = vg$covariate,
+      value = vg$value,
+      panel = "genetic variance",
+      stringsAsFactors = FALSE
+    ),
+    data.frame(
+      covariate = h2$covariate,
+      value = h2$value,
+      panel = "heritability",
+      stringsAsFactors = FALSE
+    )
+  )
+  df$panel <- factor(df$panel, levels = c("genetic variance", "heritability"))
+  ggplot2::ggplot(df, ggplot2::aes(x = .data$covariate, y = .data$value)) +
+    ggplot2::geom_line(colour = "#2c6fbb", linewidth = 0.8) +
+    ggplot2::geom_point(size = 1.4, colour = "#2c6fbb") +
+    ggplot2::facet_wrap(
+      ggplot2::vars(.data$panel),
+      scales = "free_y",
+      ncol = 1L
+    ) +
+    ggplot2::labs(
+      x = "covariate",
+      y = NULL,
+      title = "Reaction norm (random regression)",
+      subtitle = paste(
+        "genetic-variance and heritability trajectories;",
+        "h2(t) experimental (homogeneous residual, no PE term)"
+      )
     ) +
     theme_hsquared()
 }
