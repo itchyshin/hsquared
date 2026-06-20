@@ -4535,3 +4535,36 @@ release".
 
 - Updated 4 pkgdown articles to reflect the session's shipped capabilities (gwas, eigen_G/evolvability, non-Gaussian) with experimental/uncalibrated framing; QTL/eQTL/loadings/calibration stay reserved. `genomic-prediction`/`g-matrix-interpretation` (`c81f83c`), `model-status`/`qtl-gwas-eqtl-status` (`e64fd3d`).
 - All four `rmarkdown::render()` cleanly (eval=FALSE); `pkgdown::check_pkgdown()` clean. Pushed.
+
+## 2026-06-20 (session 3 — cross-lane engine-scaling prototypes #51/#58)
+
+- **Lane: coordinator / cross-lane research. No R package code touched** (only
+  `docs/dev-log/prototypes/` + dev-log). So the standard R checks (document/test/
+  check/pkgdown) are not applicable to this slice; evidence is the runnable Julia
+  prototypes + their recorded outputs. Engine: local Julia 1.10.0 (`~/.juliaup/bin/julia`).
+- **Matrix-free genomic REML** (`prototypes/matrix-free-genomic-reml.jl`):
+  - `~/.juliaup/bin/julia hsq_proto_reml_mf.jl` → exit 0.
+  - `-2logL` matfree vs dense `abs_err = 2.27e-13`; analytic AI score == central
+    finite-difference (all printed digits).
+  - VC recovery (truth va=0.60 ve=1.00): n=2k vâ=0.599; n=8k vâ=0.581; n=30k vâ=0.609;
+    n=80k vâ=0.575 (setup 2.80s + solve 5.02s, 6 it) — dense G=51.2 GB skipped.
+  - SLQ logdet(K) rel-err 2.8e-3 (nv=24, L=30).
+- **Metal GPU `W(W'B)`** (`prototypes/gpu-vapply-bench.jl`, `gpu-precision-check.jl`),
+  Metal.jl in `/tmp/hsqgpu` project, `functional=true`:
+  - speedups 3.36×(k=1) → 10.7×(k=32, n=200k); rel-err ~1e-6 for k≤8.
+  - **Precision finding (verified vs Float64):** CPU-f32 stays 5.6e-7 for all k;
+    Metal-f32 jumps to 3.0e-2 at k≥32 (reduced-precision wide-GEMM, k-triggered).
+- **Symbolic-once `cholesky!`** (`prototypes/symbolic-once-cholesky.jl`):
+  - `~/.juliaup/bin/julia hsq_symbolic_once.jl` → exit 0.
+  - solve rel-err(reuse vs fresh) = **0.00** at q∈{5k,20k,50k,100k}; speedup
+    1.43–2.55× (constant-factor, flat in q).
+- **R-lane-verified by reading source:** `fit_ai_reml` (`likelihood.jl:378-381`)
+  full-factors each iteration (symbolic-once opportunity) and lacks a `try/catch`
+  around the factorization (uncaught PosDefException risk); `pedigree_inverse` is
+  dense-capped at 10 000 rows (`pedigree.jl:106-109`).
+- **Design pass `wms6xwbj4`** (9 agents, adversarial verify): plan + risk register
+  saved verbatim to `prototypes/engine-scaling-plan.md`; independently reproduced
+  the 2.3e-13 low-rank result.
+- Cross-lane comments to the twin: HSquared.jl #51 `issuecomment-4757925615`
+  (brief), #58 `issuecomment-4757928611` (pointer) + `issuecomment-4758004745`
+  (engine improvements, attribution-separated).
