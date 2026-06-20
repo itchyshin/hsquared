@@ -1,9 +1,17 @@
 # Structured Covariance R-Control Contract
 
-Status: **design note only**. No R-facing structured covariance fit is exposed
-by this note. The current live multivariate grammar remains the opt-in
-`cbind(...) ~ ... + animal(1 | id, pedigree = ped)` path with unstructured
-`G0`/`R0`.
+Status: **partial**. The rotation-free `:diagonal` genetic-covariance structure
+is now R-surfaced as an experimental engine control —
+`engine_control = list(genetic_structure = "diagonal")` on the opt-in
+multivariate target, with `covariance_structure_lrt()` for the
+diagonal-vs-unstructured test (fixture-verified against the twin
+`structured_covariance_parity` target; live fit skip-guarded). The current live
+multivariate grammar remains the opt-in
+`cbind(...) ~ ... + animal(1 | id, pedigree = ped)` path with `unstructured` (or
+now `diagonal`) `G0` and unstructured `R0`. The `lowrank`/`fa` structured fits
+and the `cov = us()/diag()/lowrank()/fa()` formula grammar described below
+remain design-note only, gated on a validated rotation/interpretation
+convention for the loadings.
 
 ## Purpose
 
