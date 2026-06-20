@@ -4945,3 +4945,18 @@ release".
   `test-autoplot` all pass; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**. Rendered QQ: λGC label + caveat correct.
 - CI (commit `ba0bb67`): pkgdown run `27885363770` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — Rose session-close honesty audit + reconciliation)
+
+- Ran a **Rose session-scope honesty audit** (spawned `rose-systems-auditor`) over
+  the s5 surfaces (autoplot.R, capability-status, plotting standard, doc 25 spec,
+  README, NEWS) cross-checked against the engine. **Verdict: CLEAN — no overclaims,
+  no blockers.** All findings were *under*-claims (stale status text where the code
+  now does more than the docs admitted) + one NEWS completeness gap.
+- Reconciled (docs-only): capability-status + standard §0/§7 now state the live
+  parity guard covers FOUR preparers (genetic_correlation, genetic_pca,
+  rr_genetic_variance, variance_components), not "genetic_correlation only"; §3 lists
+  `g_geometry` among the testthat-enforced rotation-invariant figures; NEWS now lists
+  the g_geometry scree + the gwas QQ/λGC + the low-h² flag (were omitted).
+- `pkgdown::check_pkgdown()` clean (renders NEWS/articles). Docs-only; no R code
+  change, so the prior `rcmdcheck` 0/0/0 holds.

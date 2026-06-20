@@ -23,9 +23,10 @@ conventions**:
   `13-plotting-layer.md`), reproducing each figure to this standard.
 - **Julia ships the plot-DATA** (`*_plot_data` NamedTuple preparers); R consumes
   those payloads **or** recomputes from the fit. A live parity test keeping the
-  two in step has **LANDED for `genetic_correlation_plot_data`** (skip-guarded
-  live; `tests/testthat/test-plot-data-parity.R`) and is extended per preparer as
-  the rest land (see §7). The recompute fallback is still the live source today
+  two in step has **LANDED for four preparers** (`genetic_correlation`,
+  `genetic_pca`, `rr_genetic_variance`, `variance_components`; skip-guarded live in
+  `tests/testthat/test-plot-data-parity.R`) and is extended per preparer as the
+  rest land (see §7). The recompute fallback is still the live source today
   (the bridge does not yet attach the payloads at fit time); the engine preparers
   are the cross-check.
 
@@ -112,8 +113,8 @@ hsquared_meta = list(
 **Machine-checkable rule (BINDING):** for `type ∈ {g_matrix, g_geometry,
 reaction_norm, rr_surface}` `rotation_status` MUST equal `"rotation_invariant"`;
 any other value is a contract violation a downstream tool may reject. R enforces
-this in `testthat` for the built members (`g_matrix`, `reaction_norm`);
-`g_geometry`/`rr_surface` are guarded when they ship.
+this in `testthat` for the built members (`g_matrix`, `reaction_norm`,
+`g_geometry`); `rr_surface` is guarded when it ships.
 
 ## 4. Data contract — engine NamedTuple fields ↔ R tidy shape
 
@@ -168,12 +169,15 @@ the map is explicit per figure:
 
 This is a **proposed v1** — deliberately flexible. The twin refines + mirrors; both
 lanes converge on the same catalog. New figures: R proposes (adds to §1), both
-implement. **Live R↔engine parity test — landed for `genetic_correlation` so
-far:** a skip-guarded `testthat` case (`tests/testthat/test-plot-data-parity.R`)
-that, when Julia is available, checks the engine `genetic_correlation_plot_data`
-preparer == `stats::cov2cor(G)` and consumes a live-marshalled payload end-to-end
-through `autoplot()` — the mitigation for the twin's §5 parity-drift risk. The
-variance/EBV/RR/surface cases are added as those preparers are consumed. Changes
+implement. **Live R↔engine parity test — landed for four preparers:** a
+skip-guarded `testthat` file (`tests/testthat/test-plot-data-parity.R`) that, when
+Julia is available, checks each engine preparer against the R recompute —
+`genetic_correlation` (== `stats::cov2cor(G)` + live-marshalled through
+`autoplot()`), `genetic_pca` (== `eigen(G)`), `rr_genetic_variance` (== R
+`hs_rr_variance_values`, the #93 Q6 guard), and `variance_components` (preparer on a
+real fit + NaN→NA round-trip) — the mitigation for the twin's §5 parity-drift risk.
+The remaining `breeding_values` (EBV) and `rr_surface` cases are added as those
+preparers are consumed. Changes
 are coordinated on `HSquared.jl#61` / `#93`. R leads the
 standard (mature `ggplot2` layer + brms/bayesplot reference); Julia mirrors via the
 Makie extension + plot-data preparers.
