@@ -42,6 +42,7 @@ caveats, and honest-status — only the rendering engine differs.
 | Genetic-correlation heatmap | `autoplot(fit, "g_matrix")` | `:g_matrix` | genetic correlations (rotation-invariant; the `D⁻¹GD⁻¹` scaling of G) | rotation-invariant; never raw loadings; low-h² cells imprecise (flag) |
 | G geometry (scree) / evolvability | `autoplot(fit, "g_geometry")` (scree); evolvability numbers via `eigen_G()`/`evolvability()` | `:g_geometry` | eigenvalues (variance per genetic axis) + % variance explained | rotation-invariant eigenstructure only; **axis directions / loadings never drawn** |
 | Reaction-norm trajectories | `autoplot(fit, "reaction_norm")` | `:reaction_norm` | RR genetic-variance + h²(t) over the covariate | supplied-`K_g` descriptive; h²(t) can overstate (no PE term) |
+| Reaction-norm eigenfunctions | `autoplot(fit, "rr_eigenfunctions")` | `:rr_eigenfunctions` | rotation-invariant eigenfunctions `ψ_j(t)` of `K_g`, faceted by axis, % variance per axis | supplied-`K_g` descriptive; signs arbitrary, span-ambiguous under repeated eigenvalues |
 | Reaction-norm surface | plot planned (R) | `:rr_surface` | covariate×covariate genetic covariance/correlation surface | supplied-`K_g` descriptive |
 | Manhattan | `autoplot(scan)` where `scan <- gwas(fit, markers)` | `:manhattan` | marker −log10(p) along the genome | nominal Wald; NOT genome-wide calibrated (#48) |
 | QQ | `autoplot(scan, "qq")` | `:qq` | observed vs expected −log10(p), y=x reference | deviation uncalibrated, not LD/structure-corrected |
@@ -96,8 +97,8 @@ onto:
 ```
 hsquared_meta = list(
   type            = "variance" | "breeding_values" | "g_matrix" | "g_geometry"
-                    | "reaction_norm" | "rr_surface" | "manhattan" | "qq"
-                    | "genomic_inflation" | "recovery_forest",
+                    | "reaction_norm" | "rr_eigenfunctions" | "rr_surface"
+                    | "manhattan" | "qq" | "genomic_inflation" | "recovery_forest",
   source          = "fit" | "gwas" | "study",
   interval_status = "none" | "experimental_asymptotic" | "pev_band"
                     | "mcse_band" | "uncalibrated" | "descriptive",
@@ -111,10 +112,11 @@ hsquared_meta = list(
 ↔ `interval_status="descriptive"` (reaction-norm).
 
 **Machine-checkable rule (BINDING):** for `type ∈ {g_matrix, g_geometry,
-reaction_norm, rr_surface}` `rotation_status` MUST equal `"rotation_invariant"`;
-any other value is a contract violation a downstream tool may reject. R enforces
-this in `testthat` for the built members (`g_matrix`, `reaction_norm`,
-`g_geometry`); `rr_surface` is guarded when it ships.
+reaction_norm, rr_eigenfunctions, rr_surface}` `rotation_status` MUST equal
+`"rotation_invariant"`; any other value is a contract violation a downstream tool
+may reject. R enforces this in `testthat` for the built members (`g_matrix`,
+`reaction_norm`, `g_geometry`, `rr_eigenfunctions`); `rr_surface` is guarded when
+it ships.
 
 ## 4. Data contract — engine NamedTuple fields ↔ R tidy shape
 
@@ -159,7 +161,8 @@ the map is explicit per figure:
 | `breeding_values` | `:breeding_values` | `breeding_values_plot_data` (planned) |
 | `g_matrix` | `:g_matrix` | `genetic_correlation_plot_data` |
 | `g_geometry` | `:g_geometry` | `genetic_pca_plot_data` |
-| `reaction_norm` | `:reaction_norm` | `rr_genetic_variance_plot_data` / `rr_eigenfunctions_plot_data` |
+| `reaction_norm` | `:reaction_norm` | `rr_genetic_variance_plot_data` |
+| `rr_eigenfunctions` | `:rr_eigenfunctions` | `rr_eigenfunctions_plot_data` |
 | `rr_surface` | `:rr_surface` | `rr_covariance_surface_plot_data` |
 | `manhattan` | `:manhattan` | `marker_manhattan_data` |
 | `qq` | `:qq` | `marker_qq_data` |

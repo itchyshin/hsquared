@@ -352,6 +352,21 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
       c(98, 99)
   ))
 
+  # rr_eigenfunctions autoplot (recompute path): faceted psi_j(t) curves whose
+  # values equal the rr_eigenfunctions() extractor; rotation-invariant meta.
+  p_ef <- autoplot(fit, "rr_eigenfunctions")
+  expect_s3_class(p_ef, "ggplot")
+  ef_rn <- rr_eigenfunctions(fit)
+  expect_equal(
+    sort(p_ef$data$value),
+    sort(ef_rn$eigenfunctions$value),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    attr(p_ef, "hsquared_meta")$rotation_status,
+    "rotation_invariant"
+  )
+
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)
   expect_s3_class(stats::logLik(fit), "logLik")

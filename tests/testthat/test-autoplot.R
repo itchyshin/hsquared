@@ -587,6 +587,30 @@ test_that("autoplot.hs_gwas returns a Manhattan ggplot with a Bonferroni line", 
   )))
 })
 
+test_that("rr_eigenfunctions autoplot consumes the engine payload", {
+  ef_mat <- matrix(c(0.5, 0.6, 0.7, -0.1, 0.0, 0.1), nrow = 3) # 3 cov x 2 axes
+  fit <- structure(
+    list(
+      result = list(
+        rr_eigenfunctions_plot_data = list(
+          covariate = c(1, 2, 3),
+          eigenfunctions = ef_mat,
+          variance_explained = c(0.8, 0.2),
+          rotation_invariant = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "rr_eigenfunctions")
+  expect_s3_class(p, "ggplot")
+  expect_equal(nrow(p$data), 6L) # 3 covariate x 2 axes
+  expect_equal(sort(p$data$value), sort(as.numeric(ef_mat)))
+  expect_equal(attr(p, "hsquared_meta")$type, "rr_eigenfunctions")
+  expect_equal(attr(p, "hsquared_meta")$rotation_status, "rotation_invariant")
+  expect_true(any(grepl("80%", levels(p$data$axis_label), fixed = TRUE)))
+})
+
 test_that("autoplot.hs_gwas qq returns a ggplot with a y=x null and lambda_GC", {
   set.seed(1)
   p <- autoplot(mock_gwas(), "qq")

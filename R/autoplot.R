@@ -29,6 +29,10 @@
 #'   trajectory carries the same caveat as [rr_heritability()]: with a
 #'   homogeneous residual and no permanent-environment term it can overstate
 #'   `h^2(t)` for repeated-records designs.
+#' * `"rr_eigenfunctions"` -- for random-regression fits, the rotation-invariant
+#'   eigenfunctions `psi_j(t)` of `K_g` as covariate functions (faceted by axis,
+#'   labelled by percent genetic variance). Signs are arbitrary and the curves are
+#'   span-ambiguous under repeated eigenvalues (do not over-read).
 #'
 #' `autoplot()` on a `gwas()` scan (`hs_gwas`) draws `type = "manhattan"`
 #' (default) or `type = "qq"` (observed vs expected `-log10(p)` with a `y = x`
@@ -129,7 +133,8 @@ autoplot.hsquared_fit <- function(
     "breeding_values",
     "g_matrix",
     "g_geometry",
-    "reaction_norm"
+    "reaction_norm",
+    "rr_eigenfunctions"
   ),
   ...
 ) {
@@ -141,7 +146,8 @@ autoplot.hsquared_fit <- function(
     breeding_values = hs_autoplot_breeding_values(object, ...),
     g_matrix = hs_autoplot_g_matrix(object, ...),
     g_geometry = hs_autoplot_g_geometry(object, ...),
-    reaction_norm = hs_autoplot_reaction_norm(object, ...)
+    reaction_norm = hs_autoplot_reaction_norm(object, ...),
+    rr_eigenfunctions = hs_autoplot_rr_eigenfunctions(object, ...)
   )
 }
 
@@ -591,6 +597,83 @@ hs_autoplot_g_geometry <- function(object, ...) {
       "rotation-invariant eigenstructure (variance per genetic axis); ",
       "axis directions/loadings not shown",
       if (non_psd) "; non-positive-definite G (variance shares omitted)" else ""
+    )
+  )
+}
+
+# Reaction-norm eigenfunctions psi_j(t): the rotation-invariant eigen-decomposition
+# of K_g drawn as covariate functions, faceted by axis with each curve's genetic
+# variance share. Eigenfunction SIGNS are arbitrary and the curves are span-ambiguous
+# under repeated eigenvalues (plotting standard 24 §2) — caveated, never over-read.
+hs_autoplot_rr_eigenfunctions <- function(object, at = NULL, n = 25L, ...) {
+  pd <- object$result$rr_eigenfunctions_plot_data
+  ve <- NULL
+  if (
+    is.null(at) &&
+      !is.null(pd) &&
+      !is.null(pd$eigenfunctions) &&
+      !is.null(pd$covariate) &&
+      !isFALSE(pd$rotation_invariant)
+  ) {
+    ef_mat <- as.matrix(pd$eigenfunctions) # m x k
+    cov <- as.numeric(pd$covariate)
+    if (!is.null(pd$variance_explained)) {
+      ve <- as.numeric(pd$variance_explained)
+    }
+    k <- ncol(ef_mat)
+    df <- data.frame(
+      covariate = rep(cov, times = k),
+      axis = rep(seq_len(k), each = length(cov)),
+      value = as.numeric(ef_mat),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    ef <- rr_eigenfunctions(object, at = at, n = n)
+    df <- ef$eigenfunctions
+    ve <- ef$variance_explained
+  }
+  k <- max(df$axis)
+  if (is.null(ve) || length(ve) != k) {
+    ve <- rep(NA_real_, k)
+  }
+  lab <- ifelse(
+    is.finite(ve),
+    sprintf(
+      "axis %d (%s%%)",
+      seq_len(k),
+      formatC(100 * ve, format = "f", digits = 0)
+    ),
+    sprintf("axis %d", seq_len(k))
+  )
+  df$axis_label <- factor(lab[df$axis], levels = lab)
+  hs_attach_meta(
+    ggplot2::ggplot(
+      df,
+      ggplot2::aes(x = .data$covariate, y = .data$value)
+    ) +
+      ggplot2::geom_hline(yintercept = 0, linetype = 3, colour = "grey70") +
+      ggplot2::geom_line(colour = "#2c6fbb", linewidth = 0.8) +
+      ggplot2::facet_wrap(
+        ggplot2::vars(.data$axis_label),
+        ncol = 1L,
+        scales = "free_y"
+      ) +
+      ggplot2::labs(
+        x = "covariate",
+        y = expression(psi[j](t)),
+        title = "Reaction-norm eigenfunctions",
+        subtitle = paste(
+          "rotation-invariant (% genetic variance per axis);",
+          "eigenfunction signs are arbitrary, span-ambiguous under",
+          "repeated eigenvalues"
+        )
+      ) +
+      theme_hsquared(),
+    type = "rr_eigenfunctions",
+    rotation_status = "rotation_invariant",
+    notes = paste(
+      "rotation-invariant eigenfunctions of supplied K_g;",
+      "signs arbitrary; span-ambiguous under repeated eigenvalues"
     )
   )
 }

@@ -187,6 +187,29 @@ test_that("rr_genetic_variance_plot_data engine preparer matches R hs_rr_varianc
   p <- autoplot(fit, "reaction_norm")
   gv_panel <- p$data$value[p$data$panel == "genetic variance"]
   expect_equal(gv_panel, gv_engine, tolerance = 1e-10)
+
+  # rr_eigenfunctions_plot_data: marshal the m x k eigenfunctions matrix and feed
+  # the eigenfunction figure; the consumed values match the engine matrix.
+  JuliaCall::julia_command(
+    "pdee = HSquared.rr_eigenfunctions_plot_data(Kg_rr, ts_rr);"
+  )
+  ef_engine <- JuliaCall::julia_eval("Matrix{Float64}(pdee.eigenfunctions)")
+  pdee <- JuliaCall::julia_eval(paste(
+    "(covariate = collect(Float64, pdee.covariate),",
+    "eigenfunctions = Matrix{Float64}(pdee.eigenfunctions),",
+    "variance_explained = collect(Float64, pdee.variance_explained),",
+    "rotation_invariant = pdee.rotation_invariant)"
+  ))
+  fit_ef <- structure(
+    list(result = list(rr_eigenfunctions_plot_data = pdee)),
+    class = "hsquared_fit"
+  )
+  p_ef <- autoplot(fit_ef, "rr_eigenfunctions")
+  expect_equal(
+    sort(p_ef$data$value),
+    sort(as.numeric(ef_engine)),
+    tolerance = 1e-10
+  )
 })
 
 test_that("variance_components_plot_data engine preparer feeds the variance forest [live]", {

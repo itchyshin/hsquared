@@ -4961,3 +4961,23 @@ release".
 - `pkgdown::check_pkgdown()` clean (renders NEWS/articles). Docs-only; no R code
   change, so the prior `rcmdcheck` 0/0/0 holds.
 - CI (commit `be43091`): pkgdown run `27885576792` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — rr_eigenfunctions figure)
+
+- Added `autoplot(fit, "rr_eigenfunctions")` — the rotation-invariant eigenfunctions
+  `psi_j(t)` of `K_g` as covariate functions (faceted by axis, labelled by % genetic
+  variance). Auto-detects `rr_eigenfunctions_plot_data` (recompute via
+  `rr_eigenfunctions()` fallback). Honest §2 caveat: signs arbitrary,
+  span-ambiguous under repeated eigenvalues; `rotation_status="rotation_invariant"`
+  (added to the §3 binding set). Realizes the standard's §1 reaction-norm
+  eigenfunctions catalog row (R-proposes process, §7).
+- Standard amended: §3 type enum + binding set (+`rr_eigenfunctions`), §1 catalog
+  row, §6 naming map (`rr_eigenfunctions` → `rr_eigenfunctions_plot_data`).
+- Tests: payload-consume (test-autoplot), recompute on the real RR fit
+  (test-random-regression: values == `rr_eigenfunctions()$eigenfunctions`, meta
+  rotation-invariant), + a live consume leg in test-plot-data-parity (marshalled
+  m×k eigenfunctions matrix == engine).
+- Commands: `air format`; `devtools::document()` (regen `hsquared-autoplot.Rd`);
+  `test-autoplot` + `test-random-regression` all pass; `pkgdown::check_pkgdown()`
+  clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
+  **25/25**; rendered figure verified (axis facets + % variance labels).

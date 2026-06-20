@@ -8,7 +8,8 @@
 \usage{
 \method{autoplot}{hsquared_fit}(
   object,
-  type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm"),
+  type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm",
+    "rr_eigenfunctions"),
   ...
 )
 
@@ -58,6 +59,10 @@ heritability trajectories across the covariate (faceted). The heritability
 trajectory carries the same caveat as \code{\link[=rr_heritability]{rr_heritability()}}: with a
 homogeneous residual and no permanent-environment term it can overstate
 \code{h^2(t)} for repeated-records designs.
+\item \code{"rr_eigenfunctions"} -- for random-regression fits, the rotation-invariant
+eigenfunctions \code{psi_j(t)} of \code{K_g} as covariate functions (faceted by axis,
+labelled by percent genetic variance). Signs are arbitrary and the curves are
+span-ambiguous under repeated eigenvalues (do not over-read).
 }
 
 \code{autoplot()} on a \code{gwas()} scan (\code{hs_gwas}) draws \code{type = "manhattan"}
