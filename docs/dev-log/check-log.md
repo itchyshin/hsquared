@@ -4960,3 +4960,4 @@ release".
   the g_geometry scree + the gwas QQ/λGC + the low-h² flag (were omitted).
 - `pkgdown::check_pkgdown()` clean (renders NEWS/articles). Docs-only; no R code
   change, so the prior `rcmdcheck` 0/0/0 holds.
+- CI (commit `be43091`): pkgdown run `27885576792` **success**; pages deploy green.
