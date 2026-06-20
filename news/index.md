@@ -23,7 +23,11 @@
   genetic-eigenstructure **scree** (eigenvalues + % variance explained;
   axis directions / loadings are never drawn);
   `autoplot(fit, "reaction_norm")` draws the genetic-variance and
-  heritability trajectories of a random-regression fit; and
+  heritability trajectories of a random-regression fit;
+  `autoplot(fit, "rr_eigenfunctions")` draws the rotation-invariant
+  eigenfunctions `ψ_j(t)` of `K_g` (signs arbitrary, span-ambiguous
+  under repeated eigenvalues); `autoplot(fit, "rr_surface")` draws the
+  genetic covariance/correlation surface over the covariate grid; and
   `autoplot(gwas_result, "manhattan")` (default) /
   `autoplot(gwas_result, "qq")` draw a Manhattan plot and a QQ plot (the
   latter with a `lambda_GC` genomic-inflation diagnostic), both carrying
