@@ -5002,3 +5002,16 @@ release".
   `test-random-regression` all pass; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity` **26/26**.
 - CI (commit `9edc726`): pkgdown run `27886025919` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — visualizing-models article: complete the gallery)
+
+- Completed the user-facing figure gallery `vignettes/articles/visualizing-models.Rmd`
+  — it showed 5 of the now-10 figures. Added **g_geometry** scree, **QQ** (+λGC),
+  **reaction_norm**, **rr_eigenfunctions**, **rr_surface** sections, each rendered
+  from a small illustrative plain-`structure()` mock (no engine at build): added
+  `genetic_covariance` to the multivariate mock + a plain random-regression mock
+  (`coefficient_covariance` + `residual_variance` + `random_regression` metadata).
+  Carries the honest-status caveats (low-h² flag note, rotation-invariant/no-loadings,
+  signs-arbitrary, not-genome-wide-calibrated).
+- `rmarkdown::render()` OK (all figures build); `pkgdown::check_pkgdown()` clean.
+  Docs-only (article); no R package code changed.

@@ -71,13 +71,31 @@ fit <- structure(
   class = "hsquared_fit"
 )
 
-# --- illustrative multivariate fit (genetic correlation) ---
+# --- illustrative multivariate fit (genetic correlation + covariance) ---
 g <- matrix(
   c(1, 0.42, -0.18, 0.42, 1, 0.27, -0.18, 0.27, 1), 3, 3,
   dimnames = list(c("mass", "length", "horn"), c("mass", "length", "horn"))
 )
+sds <- c(1.1, 0.9, 0.6)
+g_cov <- outer(sds, sds) * g
 fit_mv <- structure(
-  list(result = list(genetic_correlation = g)), class = "hsquared_fit"
+  list(result = list(genetic_correlation = g, genetic_covariance = g_cov)),
+  class = "hsquared_fit"
+)
+
+# --- illustrative random-regression fit (order-2 K_g + residual variance) ---
+fit_rr <- structure(
+  list(
+    spec = list(target = "random_regression"),
+    result = list(
+      coefficient_covariance = matrix(c(0.30, 0.045, 0.045, 0.07), 2, 2),
+      residual_variance = 0.55,
+      random_regression = list(
+        covariate = "age", order = 2L, lower = 1, upper = 5
+      )
+    )
+  ),
+  class = "hsquared_fit"
 )
 
 # --- illustrative marker scan ---
@@ -126,6 +144,20 @@ loadings are never plotted (the ratified cross-lane convention).
 autoplot(fit_mv, "g_matrix")
 ```
 
+The heatmap also flags off-diagonal cells that involve a low-`h²` trait (where the
+genetic correlation is imprecise); pass `low_h2 =` to set the threshold.
+
+## Genetic eigenstructure (G geometry)
+
+`autoplot(fit_mv, "g_geometry")` draws a scree of the **rotation-invariant** genetic
+eigenstructure — the eigenvalues of `G` (variance per genetic axis) with the percent
+variance explained. Axis directions and loadings are never drawn: they are
+rotation-arbitrary and span-ambiguous under repeated eigenvalues.
+
+```{r, fig.width = 5.6, fig.height = 4}
+autoplot(fit_mv, "g_geometry")
+```
+
 ## Marker scan (Manhattan)
 
 `autoplot()` on the result of `gwas(fit, markers)` draws a Manhattan plot. The
@@ -135,6 +167,46 @@ not a validated genome-wide threshold.
 
 ```{r}
 autoplot(gw)
+```
+
+## Marker scan (QQ)
+
+`autoplot(gw, "qq")` draws the QQ plot of the scan: observed versus expected
+`−log10(p)` with a `y = x` null reference and the genomic-inflation `lambda_GC` as a
+**diagnostic** annotation. As with the Manhattan, the p-values are nominal Wald
+p-values and are not genome-wide calibrated.
+
+```{r, fig.width = 5.2, fig.height = 4.4}
+autoplot(gw, "qq")
+```
+
+## Reaction norms (random regression)
+
+For a random-regression fit, `autoplot(fit, "reaction_norm")` draws the
+genetic-variance and heritability trajectories across the covariate. The `h²(t)`
+trajectory is experimental: with a homogeneous residual and no permanent-environment
+term it can overstate heritability for repeated-records designs.
+
+```{r}
+autoplot(fit_rr, "reaction_norm")
+```
+
+`autoplot(fit, "rr_eigenfunctions")` draws the rotation-invariant eigenfunctions
+`ψ_j(t)` of the coefficient covariance `K_g` as covariate functions, faceted by axis
+and labelled with the percent genetic variance. Eigenfunction signs are arbitrary
+and the curves are span-ambiguous under repeated eigenvalues, so do not over-read
+their direction.
+
+```{r}
+autoplot(fit_rr, "rr_eigenfunctions")
+```
+
+`autoplot(fit, "rr_surface")` draws the genetic covariance surface
+`S(s, t) = φ(s)′ K_g φ(t)` over the covariate grid as a heatmap; pass
+`correlation = TRUE` for the genetic-correlation surface.
+
+```{r, fig.width = 5.2, fig.height = 4.4}
+autoplot(fit_rr, "rr_surface")
 ```
 
 ## Known-truth recovery studies
