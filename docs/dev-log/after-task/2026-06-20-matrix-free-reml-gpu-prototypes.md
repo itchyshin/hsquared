@@ -67,13 +67,15 @@ genomic, single-step H, and huge-n. Posted to the twin as a proposed re-scope of
 - **Symbolic-once `cholesky!` for the sparse AI-REML loop** (`symbolic-once-cholesky.jl`).
   `fit_ai_reml` (`likelihood.jl:378-381`) full-factors the MME every iteration, but
   the pattern is invariant. Benchmarked on a real pedigree-structured sparse `A⁻¹`:
-  **bit-identical solves (rel-err 0.0)**, **~1.4–1.6× constant-factor speedup**
-  (flat in q — symbolic analysis is a ~constant fraction of each factorize; reported
-  honestly, not as a headline).
-- **R-lane-verified (by reading source)** two robustness gaps in the same loop:
-  `likelihood.jl:381` has no `try/catch` around the factorization (uncaught
-  `PosDefException` on a near-boundary overshoot); the σ²ₐ→0 score arithmetic
-  (`:389`) has catastrophic cancellation.
+  **bit-identical solves (rel-err 0.0)**, **1.43–2.55× speedup (2.55× at q=5k →
+  ~1.4–1.6× for q≥20k); constant-factor, flat-to-declining in q, not widening**
+  (symbolic analysis is a ~constant fraction of each factorize; reported honestly,
+  not as a headline).
+- **R-lane-verified (by reading source):** `likelihood.jl:381` has no `try/catch`
+  around the factorization (uncaught `PosDefException` on a near-boundary overshoot).
+- **Design-pass lead (shape confirmed, behavior to verify):** the σ²ₐ→0 score
+  arithmetic (`:389`) has a `1/σ²ₐ²`-prefactor × difference shape (read from source);
+  the catastrophic-cancellation characterization is a design-pass inference.
 - **Design pass `wms6xwbj4`** (9 agents, adversarial verify, read live HSquared.jl +
   ran the prototypes) independently reproduced the low-rank Woodbury result (2.3e-13)
   and produced the full staged plan + risk register, saved verbatim to

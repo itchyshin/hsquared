@@ -114,20 +114,26 @@ q=50000   nnz(Ainv)=319726   solve rel-err=0.00                   fresh 4.721s  
 q=100000  nnz(Ainv)=639430   solve rel-err=0.00                   fresh 11.878s symbolic-once 7.651s  1.55x
 ```
 
-Solves are **bit-identical** (rel-err exactly 0.0). The speedup is **~1.4–1.6×
-and roughly flat** in q (not widening) — honest reading: symbolic analysis is a
-~constant fraction of each CHOLMOD factorize, so this is a real constant-factor win,
-not an asymptotic one. Worth taking (free, correctness-preserving), but not the
-"speedy algorithm" headline. Two adjacent hardening items in the same loop
-(R-lane-verified by reading source): `likelihood.jl:381` has **no `try/catch`
-around the factorization** (unlike the dense path) → a near-boundary non-PD
-overshoot throws uncaught; and the σ²ₐ→0 score arithmetic (`:389`) multiplies a
-`1/σ²ₐ²` prefactor by a difference of underflowing terms (catastrophic cancellation).
+Solves are **bit-identical** (rel-err exactly 0.0). The speedup is **1.43–2.55×
+(2.55× at q=5k, settling to ~1.4–1.6× for q≥20k); flat-to-declining in q, not
+widening** — honest reading: symbolic analysis is a ~constant fraction of each
+CHOLMOD factorize, so this is a real constant-factor win, not an asymptotic one.
+Worth taking (free, correctness-preserving), but not the "speedy algorithm"
+headline. Adjacent hardening items in the same loop:
+
+- **[R-lane-verified by reading source]** `likelihood.jl:381` has **no `try/catch`
+  around the factorization** (unlike the dense path) → a near-boundary non-PD
+  overshoot throws an uncaught `PosDefException`.
+- **[design-pass lead]** the σ²ₐ→0 score arithmetic at `:389` has the *shape*
+  (`1/σ²ₐ²` prefactor × a difference of terms — confirmed by reading the line);
+  the *claim* that it catastrophically cancels as σ²ₐ→0 is a numerical-behavior
+  inference from the design pass, to confirm with a near-boundary run.
 
 The non-inbred Henderson `A⁻¹` is built directly in O(q) here because the engine's
-own `pedigree_inverse` routes through a **dense** relationship matrix capped at
-10 000 rows (`pedigree.jl:106-109`, validation-only) — itself a sparse-`A⁻¹`
-construction gap worth a separate engine slice.
+own `pedigree_inverse` reaches a **dense** numerator-relationship helper
+(`inbreeding_coefficients` → `_numerator_relationship`) capped at 10 000 rows
+(`pedigree.jl:106-109`, validation-only), so it throws above that — itself a
+sparse-`A⁻¹` construction gap worth a separate engine slice.
 
 See `engine-scaling-plan.md` for the full adversarially-verified staged plan
 (Stage A symbolic-once + selinv, Stage B low-rank Woodbury + matrix-free PCG +
