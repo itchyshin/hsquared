@@ -39,6 +39,7 @@ the result prints is the teardown, not a failure).
 | `47d46e1` | **Metafounder `Gamma=` reservation** — `metafounder()` marker now declares `Gamma = NULL` (+ @param); marker stays planned-not-implemented. |
 | `a9c81d4` | Dev-log: board + check-log + after-task (`2026-06-20-multivariate-validation-metafounder.md`). |
 | `2ac078d` | CI evidence record. |
+| `0d7f635` | **Batched CPU marker-scan prototype** (`docs/dev-log/prototypes/batched-marker-scan.jl`) — exact drop-in for the engine `_mixed_marker_scan_stats`: one BLAS-3 `cholV \ W` vs the per-marker BLAS-2 loop. Live: element-wise equivalent (≤3e-14), **46.8×** (38.2s→0.82s, n=2000/m=20000). Posted to twin #51 (issuecomment-4759008417). Gates the GPU marker scan (#48/#51). |
 
 Adversarially verified by a 4-lens Workflow (`wf_8bad14cd-fba`): both comparator
 lenses **sound** (the correctness agent re-ran the study and reproduced every
@@ -83,11 +84,12 @@ items applied to the #61 post + the code.
    **Correctness anchor (de-risks it):** when `G = A₂₂` (genomic == pedigree among
    genotyped), single-step reduces EXACTLY to the pedigree animal model — so a
    live test `single_step(G=A₂₂) == plain animal()` fit is the parity check.
-2. **CPU batched marker-scan prototype** (Julia, R-lane-assigned; gates GPU, #48).
-   Batch all-marker Wald stats off one mixed-model solve vs the per-marker loop;
-   the design pass measured ~30× CPU. Standalone Julia, deliver to twin #48/#51.
-3. **AI-REML convergence hardening** (Julia prototype): the `fit_ai_reml` PosDef
+2. **AI-REML convergence hardening** (Julia prototype): the `fit_ai_reml` PosDef
    try/catch gap noted s3 (`likelihood.jl:381`); σ²ₐ→0 cancellation lead.
+   Construct a failure case + a PD-guarded fix, verify, deliver to twin #58.
+
+(DONE s4: the CPU batched marker-scan prototype — exact 46.8× drop-in for the
+engine post-fit scan — landed `0d7f635`, posted to twin #51.)
 
 **Twin-blocked (do NOT start):** FA/low-rank covariance (#42), calibrated GWAS
 thresholds (#48), GPU ext/wiring, production sparse fitting, correlated
