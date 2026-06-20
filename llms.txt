@@ -434,6 +434,7 @@ opt-in experimental targets.
   [`rr_genetic_variance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   [`rr_correlation()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  [`rr_eigenfunctions()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   : Random-regression (reaction-norm) extractors
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances

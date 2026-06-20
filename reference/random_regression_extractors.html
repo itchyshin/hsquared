@@ -79,7 +79,9 @@ residual variance.</p>
 <span></span>
 <span><span class="fu">rr_heritability</span><span class="op">(</span><span class="va">object</span>, at <span class="op">=</span> <span class="cn">NULL</span>, n <span class="op">=</span> <span class="fl">25L</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">rr_correlation</span><span class="op">(</span><span class="va">object</span>, at <span class="op">=</span> <span class="cn">NULL</span>, n <span class="op">=</span> <span class="fl">25L</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">rr_correlation</span><span class="op">(</span><span class="va">object</span>, at <span class="op">=</span> <span class="cn">NULL</span>, n <span class="op">=</span> <span class="fl">25L</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">rr_eigenfunctions</span><span class="op">(</span><span class="va">object</span>, at <span class="op">=</span> <span class="cn">NULL</span>, n <span class="op">=</span> <span class="fl">25L</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -125,6 +127,13 @@ homogeneous and there is no permanent-environment term yet, this can
 OVERSTATE <code>h^2(t)</code> for repeated-records designs (test-day, growth curves).</p></li>
 <li><p><code>rr_correlation()</code> returns the genetic correlation surface among the
 covariate points.</p></li>
+<li><p><code>rr_eigenfunctions()</code> returns the eigen-decomposition of the coefficient
+covariance <code>K_g</code> evaluated as functions of the covariate: the eigenvalues
+(additive genetic variance carried by each axis), the proportion of genetic
+variance explained, the sign-canonicalized eigen-coefficients, and the
+eigenfunctions <code>psi_j(t) = phi(t)' v_j</code> over the covariate grid. These are
+<strong>rotation-invariant</strong> functionals of <code>K_g</code> (mirroring the engine's
+<code>rr_eigenfunctions</code>); no raw, rotation-arbitrary loadings are returned.</p></li>
 </ul><p>The trajectories are computed in R from the estimated <code>K_g</code> and the recorded
 covariate standardization range; <code>at</code> is supplied on the ORIGINAL covariate
 scale (defaulting to a grid over the fitted range) and re-standardized to
@@ -150,6 +159,7 @@ scale (defaulting to a grid over the fitted range) and re-standardized to
 <span class="r-in"><span><span class="fu">rr_genetic_variance</span><span class="op">(</span><span class="va">fit_rr</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rr_heritability</span><span class="op">(</span><span class="va">fit_rr</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rr_correlation</span><span class="op">(</span><span class="va">fit_rr</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">rr_eigenfunctions</span><span class="op">(</span><span class="va">fit_rr</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>

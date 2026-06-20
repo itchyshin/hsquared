@@ -46,16 +46,22 @@
   [`random_coefficients()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   (per-animal predicted Legendre coefficients), and the reaction-norm
   trajectories `rr_genetic_variance(fit, at =)`,
-  `rr_heritability(fit, at =)`, and `rr_correlation(fit, at =)`
-  (computed in R from `K_g` and the recorded basis, matching the engine
-  convention). **The grammar (`rr(...)` inside
+  `rr_heritability(fit, at =)`, `rr_correlation(fit, at =)`, and
+  `rr_eigenfunctions(fit, at =)` (the rotation-invariant
+  eigen-decomposition of `K_g` as covariate functions — eigenvalues,
+  proportion of genetic variance explained, sign-canonicalized
+  eigen-coefficients, and eigenfunctions `psi_j(t)`; live-verified
+  `== HSquared.rr_eigenfunctions()` to ~1e-15) — all computed in R from
+  `K_g` and the recorded basis, matching the engine convention. The
+  grammar (`rr(...)` inside
   [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md))
-  is PROVISIONAL** — proposed to the Julia twin on `HSquared.jl#61` and
-  awaiting acknowledgement; it may change. Experimental, opt-in,
-  REML-only, single-effect, univariate, dense/validation-scale; mirrors
-  the twin `#54` engine. **Heterogeneous residual variance and a
-  permanent-environment term are still planned** — with the current
-  homogeneous residual and no permanent-environment effect,
+  was **ratified by the Julia twin** on `HSquared.jl#61` (normalized
+  Legendre on standardized `t ∈ [-1, 1]`; Kirkpatrick/Meyer/Schaeffer).
+  Experimental, opt-in, REML-only, single-effect, univariate,
+  dense/validation-scale; mirrors the twin `#54` engine. **Heterogeneous
+  residual variance and a permanent-environment term are still planned**
+  — with the current homogeneous residual and no permanent-environment
+  effect,
   [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   can OVERSTATE `h^2(t)` for repeated-records designs (test-day, growth
   curves). Multivariate random regression and combining `rr()` with a

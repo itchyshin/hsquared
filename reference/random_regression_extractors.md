@@ -19,6 +19,8 @@ rr_genetic_variance(object, at = NULL, n = 25L, ...)
 rr_heritability(object, at = NULL, n = 25L, ...)
 
 rr_correlation(object, at = NULL, n = 25L, ...)
+
+rr_eigenfunctions(object, at = NULL, n = 25L, ...)
 ```
 
 ## Arguments
@@ -67,6 +69,15 @@ a `covariate` column and the evaluated `value`s.
 - `rr_correlation()` returns the genetic correlation surface among the
   covariate points.
 
+- `rr_eigenfunctions()` returns the eigen-decomposition of the
+  coefficient covariance `K_g` evaluated as functions of the covariate:
+  the eigenvalues (additive genetic variance carried by each axis), the
+  proportion of genetic variance explained, the sign-canonicalized
+  eigen-coefficients, and the eigenfunctions `psi_j(t) = phi(t)' v_j`
+  over the covariate grid. These are **rotation-invariant** functionals
+  of `K_g` (mirroring the engine's `rr_eigenfunctions`); no raw,
+  rotation-arbitrary loadings are returned.
+
 The trajectories are computed in R from the estimated `K_g` and the
 recorded covariate standardization range; `at` is supplied on the
 ORIGINAL covariate scale (defaulting to a grid over the fitted range)
@@ -93,5 +104,6 @@ random_coefficients(fit_rr)
 rr_genetic_variance(fit_rr)
 rr_heritability(fit_rr)
 rr_correlation(fit_rr, at = c(1, 3, 5))
+rr_eigenfunctions(fit_rr)
 }
 ```
