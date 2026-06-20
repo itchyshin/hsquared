@@ -6,8 +6,8 @@
 # Run from the package root with a local HSquared.jl checkout + julia on PATH for
 # the engine leg. It is the R-side harness the twin needs to move
 # V4-MULTIVARIATE / V4-MV-REML from `partial` toward `covered` (issue #34 /
-# HSquared.jl#41). The RECORDED RESULT block below is intentionally left PENDING
-# until the harness is run with an engine — no recovery numbers are claimed here.
+# HSquared.jl#41). The RECORDED RESULT block below was produced by running the
+# harness against the live engine on 2026-06-20 (provenance in that block).
 #
 # A - AIMS
 #   Does the multivariate REML estimator recover a known 2-trait genetic and
@@ -30,25 +30,55 @@
 # M - METHODS
 #   Engine: HSquared.fit_multivariate_reml via
 #   hsquared(cbind(y1, y2) ~ 1 + animal(1 | id, pedigree = ped),
-#            engine_control = list(target = "multivariate",
-#                                  initial = list(G0 = diag(2), R0 = diag(2)))).
-#   Recovery only -- no external comparator here.
+#            control = hs_control(engine = "julia",
+#              engine_control = list(target = "multivariate",
+#                                    initial = list(G0 = diag(2), R0 = diag(2))))).
+#   The initial G0/R0 = diag(2) is a COLD start (identity, not truth), matching
+#   the twin's cold-start replication (HSquared.jl#79). Recovery only -- no
+#   external comparator here (that is data-raw/multivariate-comparator-study.R).
 #
 # P - PERFORMANCE MEASURES
 #   Absolute bias of each unique G0/R0 element, rg, and per-trait h2:
 #   mean(hat) - true, with MCSE = sd(hat)/sqrt(n_rep). EBV accuracy: per-trait
 #   mean cor(EBV_hat, true BV). Convergence rate.
 #
-# RECORDED RESULT: PENDING (run with a local engine; do not fabricate). When run,
-# record truth vs mean(hat), bias +/- 2*MCSE per target, rg/h2 recovery, and the
-# convergence rate here, mirroring the univariate study's recorded block.
+# RECORDED RESULT (HSquared.jl live engine; macOS arm64; R 4.x; 2026-06-20):
+#   n_rep = 100, converged 100/100 (cold start G0 = R0 = diag(2)), 12.6s/rep.
+#   Design: 420 animals (60 founders + 3 generations x 120), one record/animal,
+#   2 traits. Every target is within bias +/- 2*MCSE -- no detectable bias:
+#
+#     target    truth    mean(hat)    bias       MCSE     |bias| <= 2*MCSE
+#     G0[1,1]   1.000     0.9961    -0.00395    0.02221       TRUE
+#     G0[2,1]   0.300     0.3062    +0.00621    0.01397       TRUE
+#     G0[2,2]   0.800     0.7854    -0.01459    0.01726       TRUE
+#     R0[1,1]   1.000     1.0117    +0.01171    0.01387       TRUE
+#     R0[2,1]  -0.100    -0.1122    -0.01223    0.01164       TRUE
+#     R0[2,2]   1.200     1.1989    -0.00106    0.01199       TRUE
+#     rg        0.3354    0.3519    +0.01652    0.01553       TRUE  (1.06*MCSE)
+#     h2[1]     0.500     0.4924    -0.00756    0.00817       TRUE
+#     h2[2]     0.400     0.3932    -0.00676    0.00697       TRUE
+#
+#   EBV accuracy (mean cor(EBV_hat, true BV)): trait1 = 0.790, trait2 = 0.742.
+#   Cold-started from the identity (NOT truth), so this is not a warm-start
+#   artifact (cf. the twin's cold-start replication, HSquared.jl#79). The genetic
+#   correlation rg sits closest to its band (|bias| = 1.06*MCSE) -- a mild,
+#   non-significant positive bias consistent with sampling, not a detected bias.
+#   100 reps give tighter MCSE than the twin's 12-seed bias/MCSE study (#78);
+#   both agree: no detectable bias in the dense unstructured t=2 REML estimator.
+#   This is RECOVERY (statistical-correctness) evidence; V4-MV-REML stays
+#   `partial` -- promotion is twin-gated and also needs the external-comparator
+#   leg (data-raw/multivariate-comparator-study.R: sommer agrees to <= 8e-5).
 
 suppressWarnings(suppressMessages({
   library(hsquared)
 }))
 
-make_pedigree <- function(n_founder = 60L, n_per_gen = 120L, n_gen = 3L,
-                          seed = 20240613L) {
+make_pedigree <- function(
+  n_founder = 60L,
+  n_per_gen = 120L,
+  n_gen = 3L,
+  seed = 20240613L
+) {
   set.seed(seed)
   ids <- as.character(seq_len(n_founder))
   sire <- rep(NA_character_, n_founder)
@@ -85,7 +115,10 @@ simulate_multitrait <- function(ped, A, G0, R0, mu = c(5, 3), seed = 1L) {
   # ped$id), so recovery can score EBV accuracy = cor(EBV_hat, true BV) per trait.
   list(
     data = data.frame(
-      id = ped$id, y1 = Y[, 1L], y2 = Y[, 2L], stringsAsFactors = FALSE
+      id = ped$id,
+      y1 = Y[, 1L],
+      y2 = Y[, 2L],
+      stringsAsFactors = FALSE
     ),
     bv = B
   )
@@ -99,10 +132,14 @@ rg_true <- G0_true[1L, 2L] / sqrt(G0_true[1L, 1L] * G0_true[2L, 2L])
 n_rep <- 100L
 master_seed <- 20240613L
 
+.hs_mv_first_error <- new.env(parent = emptyenv())
+.hs_mv_first_error$msg <- NULL
+
 run_study <- function(n_rep = 100L) {
   if (!requireNamespace("nadiv", quietly = TRUE)) {
     stop("nadiv is required to build A for the recovery study.")
   }
+  .hs_mv_first_error$msg <- NULL
   ped <- make_pedigree()
   A <- as.matrix(nadiv::makeA(ped))
   A <- A[ped$id, ped$id]
@@ -117,24 +154,48 @@ run_study <- function(n_rep = 100L) {
       hsquared(
         cbind(y1, y2) ~ 1 + animal(1 | id, pedigree = ped),
         data = dat,
-        engine_control = list(
-          target = "multivariate",
-          initial = list(G0 = diag(2), R0 = diag(2))
+        control = hs_control(
+          engine = "julia",
+          engine_control = list(
+            target = "multivariate",
+            initial = list(G0 = diag(2), R0 = diag(2))
+          )
         )
       ),
-      error = function(e) NULL
+      error = function(e) {
+        # Surface the first failure rather than silently dropping every fit
+        # (a systematic bug would otherwise masquerade as "0 converged").
+        if (is.null(.hs_mv_first_error$msg)) {
+          .hs_mv_first_error$msg <- conditionMessage(e)
+        }
+        NULL
+      }
     )
-    if (is.null(fit)) next
+    if (is.null(fit)) {
+      next
+    }
+    # Treat a non-converged engine result as a non-convergence, not a recovery.
+    if (identical(fit$result$converged, FALSE)) {
+      next
+    }
     # EBV accuracy: pivot the long (id, trait, value) EBVs to wide, align to
     # ped$id, and correlate each trait with the true breeding value.
     ebv <- breeding_values(fit)
-    ebv_mat <- vapply(traits, function(tn) {
-      s <- ebv[ebv$trait == tn, , drop = FALSE]
-      s$value[match(ped$id, s$id)]
-    }, numeric(nrow(ped)))
-    acc <- vapply(seq_along(traits), function(k) {
-      stats::cor(ebv_mat[, k], sim$bv[, k], use = "complete.obs")
-    }, numeric(1))
+    ebv_mat <- vapply(
+      traits,
+      function(tn) {
+        s <- ebv[ebv$trait == tn, , drop = FALSE]
+        s$value[match(ped$id, s$id)]
+      },
+      numeric(nrow(ped))
+    )
+    acc <- vapply(
+      seq_along(traits),
+      function(k) {
+        stats::cor(ebv_mat[, k], sim$bv[, k], use = "complete.obs")
+      },
+      numeric(1)
+    )
     hats[[r]] <- list(
       G0 = genetic_covariance(fit),
       R0 = residual_covariance(fit),
@@ -145,6 +206,9 @@ run_study <- function(n_rep = 100L) {
   }
   hats <- Filter(Negate(is.null), hats)
   message(sprintf("converged %d / %d", length(hats), n_rep))
+  if (length(hats) == 0L && !is.null(.hs_mv_first_error$msg)) {
+    message("first fit error: ", .hs_mv_first_error$msg)
+  }
   hats
 }
 
