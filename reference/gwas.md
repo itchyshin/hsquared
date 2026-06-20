@@ -47,7 +47,10 @@ uncalibrated-significance caveat.
 **The p-values are NOT genome-wide calibrated.** They are
 marker-by-marker Wald (nominal) p-values plus deterministic Bonferroni
 and Benjamini-Hochberg adjustments over the *supplied* marker set only.
-There is no realistic-LD / study-design calibration, no permutation, no
-leave-one-chromosome-out (LOCO), and no external comparator (the
-calibration gate is `HSquared.jl#48`). Do not report genome-wide
-significance from these values.
+There is no realistic-LD / study-design calibration, no permutation, and
+no external comparator (the calibration gate is `HSquared.jl#48`). A
+leave-one-group-out (LOCO) scan is available engine-side
+(`HSquared.loco_mixed_model_marker_scan()`); this R `gwas()` wrapper
+does **not** yet surface it (R LOCO surfacing is in progress), so the
+scan it runs applies one whole-pedigree relationship correction across
+all markers. Do not report genome-wide significance from these values.

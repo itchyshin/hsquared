@@ -44,8 +44,13 @@
   `bonferroni_p`, `bh_qvalue`, `lod`). **The p-values are NOT
   genome-wide calibrated** — they are nominal Wald p-values plus
   Bonferroni/BH over the supplied markers only, with no
-  realistic-LD/design calibration, no permutation, no LOCO, and no
-  external comparator (engine gate `HSquared.jl#48`);
+  realistic-LD/design calibration, no permutation, and no external
+  comparator (engine gate `HSquared.jl#48`); the wrapper applies one
+  whole-pedigree relationship correction, and although a
+  leave-one-group-out (LOCO) scan exists engine-side
+  (`HSquared.loco_mixed_model_marker_scan()`) this R
+  [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
+  does not yet surface it (R LOCO surfacing in progress);
   [`print()`](https://rdrr.io/r/base/print.html) restates this. Verified
   live to match the engine element-wise. Experimental,
   dense/validation-scale; the reserved tabular
@@ -143,8 +148,11 @@
   genetic/residual covariance and correlation matrices and per-trait
   `h²`, for an opt-in **unstructured** multivariate fit when the engine
   provides them. Mirrors `V4-MV-REML` (`partial`): asymptotic,
-  REML-only, unstructured-only, and reported while the multivariate
-  recovery calibration has not passed — not a validated capability
+  REML-only, unstructured-only, not coverage-calibrated. The strict
+  per-seed recovery gate is still a non-pass (7/12 seeds), but the
+  12-seed bias/MCSE study (twin `HSquared.jl#78`/`#79`) shows **no
+  detectable bias** (`|bias| ≤ 2·MCSE` for all six covariance
+  parameters) — reported, not yet a validated capability
   ([\#26](https://github.com/itchyshin/hsquared/issues/26)).
 - New “A worked animal-model analysis (gryphon)” article walks one
   univariate animal model end to end — fit, heritability with

@@ -124,8 +124,10 @@ for non-converged multivariate fits.
 asymptotic delta-method standard errors for the G/R covariance and
 correlation matrices and per-trait h², when a local engine provides
 them. It mirrors `V4-MV-REML` (`partial`): unstructured-only, REML-only,
-surfaced while the multivariate recovery calibration has not passed —
-reported, not validated.
+not coverage-calibrated. The strict per-seed recovery gate is still a
+non-pass (7/12 seeds), but the 12-seed bias/MCSE study (twin
+`HSquared.jl#78`/`#79`) shows no detectable bias (`|bias| ≤ 2·MCSE` for
+all six covariance parameters) — reported, not validated.
 
 ## Initial values
 

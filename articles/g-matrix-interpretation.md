@@ -200,9 +200,10 @@ Still planned:
   intervals for G/R entries, correlations, and heritabilities
   (experimental, asymptotic SEs are already available via
   [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)
-  for an unstructured fit — `V4-MV-REML`, partial: the recovery
-  calibration has not passed, unstructured-only, not
-  coverage-calibrated);
+  for an unstructured fit — `V4-MV-REML`, partial: the strict per-seed
+  recovery gate is still a non-pass (7/12 seeds), though the 12-seed
+  bias/MCSE study (twin `HSquared.jl#78`/`#79`) shows no detectable
+  bias; unstructured-only, not coverage-calibrated);
 - production sparse multivariate fitting;
 - `cov = diag()`, `cov = lowrank(K)`, and `cov = fa(K)` R grammar;
 - a general `P_matrix()` extractor with a model-specific estimand.
