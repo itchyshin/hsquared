@@ -85,6 +85,7 @@ experimental targets.
   [`autonomy()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
   [`mean_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
   [`g_max()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`variance_along_gradient()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
   : G-matrix geometry and evolvability
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)

@@ -23,6 +23,8 @@ mean_evolvability(object, ...)
 
 g_max(object, ...)
 
+variance_along_gradient(object, direction, normalize = TRUE, ...)
+
 eigen_G(object, ...)
 ```
 
@@ -40,6 +42,13 @@ eigen_G(object, ...)
 - ...:
 
   Unused.
+
+- normalize:
+
+  For `variance_along_gradient()`, whether to scale `direction` to unit
+  length first (`TRUE`, the default, which then equals
+  `evolvability()`); `FALSE` uses `direction` as given, returning the
+  genetic variance in the raw (un-normalised) selection gradient `β'Gβ`.
 
 ## Value
 
@@ -62,6 +71,10 @@ A scalar for the directional metrics; a list for `eigen_G()` (`values`,
 - `evolvability(fit, direction)` is `e(β) = β'Gβ` (unit `β`): the
   additive genetic variance available to directional selection along
   `direction`.
+
+- `variance_along_gradient(fit, direction, normalize)` is `β'Gβ` for a
+  unit `direction` (`normalize = TRUE`, equal to `evolvability()`) or
+  for the raw `direction` (`normalize = FALSE`).
 
 - `respondability(fit, direction)` is `‖Gβ‖`: the length of the
   response.

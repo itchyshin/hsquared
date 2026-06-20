@@ -31,6 +31,7 @@
   [`mean_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
   and the directional
   [`evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  [`variance_along_gradient()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
   [`respondability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
   [`conditional_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
   and

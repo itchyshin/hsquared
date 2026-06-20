@@ -83,6 +83,8 @@ factor-analytic — and do not depend on a loading rotation convention.</p>
 <span></span>
 <span><span class="fu">g_max</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">variance_along_gradient</span><span class="op">(</span><span class="va">object</span>, <span class="va">direction</span>, normalize <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">eigen_G</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,6 +103,13 @@ is normalised to unit length internally; only its direction matters.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Unused.</p></dd>
+
+
+<dt id="arg-normalize">normalize<a class="anchor" aria-label="anchor" href="#arg-normalize"></a></dt>
+<dd><p>For <code>variance_along_gradient()</code>, whether to scale
+<code>direction</code> to unit length first (<code>TRUE</code>, the default, which then equals
+<code>evolvability()</code>); <code>FALSE</code> uses <code>direction</code> as given, returning the genetic
+variance in the raw (un-normalised) selection gradient <code>β'Gβ</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -121,6 +130,9 @@ each is positive).</p></li>
 directions, <code>tr(G) / t</code>.</p></li>
 <li><p><code>evolvability(fit, direction)</code> is <code>e(β) = β'Gβ</code> (unit <code>β</code>): the additive
 genetic variance available to directional selection along <code>direction</code>.</p></li>
+<li><p><code>variance_along_gradient(fit, direction, normalize)</code> is <code>β'Gβ</code> for a unit
+<code>direction</code> (<code>normalize = TRUE</code>, equal to <code>evolvability()</code>) or for the raw
+<code>direction</code> (<code>normalize = FALSE</code>).</p></li>
 <li><p><code>respondability(fit, direction)</code> is <code>‖Gβ‖</code>: the length of the response.</p></li>
 <li><p><code>conditional_evolvability(fit, direction)</code> is <code>1 / (β'G⁻¹β)</code>: evolvability
 when all other directions are held under stabilising selection (requires a
