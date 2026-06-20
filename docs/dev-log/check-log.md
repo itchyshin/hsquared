@@ -4981,3 +4981,4 @@ release".
   `test-autoplot` + `test-random-regression` all pass; `pkgdown::check_pkgdown()`
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
   **25/25**; rendered figure verified (axis facets + % variance labels).
+- CI (commit `df7ef4a`): pkgdown run `27885829976` **success**; pages deploy green.
