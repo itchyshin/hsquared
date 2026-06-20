@@ -4672,4 +4672,8 @@ release".
   `metafounder(1|id, pedigree=ped, Gamma=Γ)` grammar isn't silently swallowed by `...`;
   marker stays planned-not-implemented). `devtools::document()` regenerated
   man/qg_effect_markers.Rd. check 0/0/0.
-- Q1–Q4 metafounder contract + the MV evidence posted to twin #61.
+- Q1–Q4 metafounder contract + the MV evidence posted to twin #61
+  (issuecomment-4758935657 + -4758935789). Pushed `ad6584f..a9c81d4`.
+- **CI evidence:** pkgdown run `27876651312` **success** (2m26s) + pages build
+  `27876713163` **success** on `main @ a9c81d4`. (R-CMD-check is workflow_dispatch
+  + PR-only per repo CI policy; local rcmdcheck 0/0/0 is the push gate.)
