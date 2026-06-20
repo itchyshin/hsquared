@@ -8,6 +8,8 @@
   models](https://itchyshin.github.io/hsquared/articles/fitting-models.md):
 - [A worked animal-model analysis
   (gryphon)](https://itchyshin.github.io/hsquared/articles/gryphon-worked-example.md):
+- [Visualizing an animal
+  model](https://itchyshin.github.io/hsquared/articles/visualizing-models.md):
 - [Genomic
   prediction](https://itchyshin.github.io/hsquared/articles/genomic-prediction.md):
 - [QTL, GWAS, and eQTL
