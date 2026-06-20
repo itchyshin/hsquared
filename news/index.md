@@ -4,6 +4,37 @@
 
 ### New features
 
+- **Experimental random-regression (reaction-norm) model.** A new opt-in
+  target surfaces the Julia-owned
+  `HSquared.fit_random_regression_reml()`:
+  `hsquared(weight ~ sex + animal(rr(age, order = 2) | id, pedigree = ped), data = long_records, family = gaussian(), REML = TRUE, control = hs_control(engine = "julia", engine_control = list(target = "random_regression")))`.
+  `rr(covariate, order = k)` on the left of the
+  [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
+  bar fits a `k`-coefficient normalized-Legendre polynomial of a
+  within-individual covariate (default `order = 2` = intercept + slope);
+  the covariate is standardized to `[-1, 1]` over its observed range and
+  the bounds are recorded so extractors can re-standardize a
+  user-supplied `at =` on the original scale. New extractors:
+  [`rr_covariance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  (the `k x k` coefficient genetic covariance `K_g`),
+  [`random_coefficients()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  (per-animal predicted Legendre coefficients), and the reaction-norm
+  trajectories `rr_genetic_variance(fit, at =)`,
+  `rr_heritability(fit, at =)`, and `rr_correlation(fit, at =)`
+  (computed in R from `K_g` and the recorded basis, matching the engine
+  convention). **The grammar (`rr(...)` inside
+  [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md))
+  is PROVISIONAL** — proposed to the Julia twin on `HSquared.jl#61` and
+  awaiting acknowledgement; it may change. Experimental, opt-in,
+  REML-only, single-effect, univariate, dense/validation-scale; mirrors
+  the twin `#54` engine. **Heterogeneous residual variance and a
+  permanent-environment term are still planned** — with the current
+  homogeneous residual and no permanent-environment effect,
+  [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  can OVERSTATE `h^2(t)` for repeated-records designs (test-day, growth
+  curves). Multivariate random regression and combining `rr()` with a
+  second random effect are planned, not implemented
+  ([\#54](https://github.com/itchyshin/hsquared/issues/54)).
 - **Experimental `gwas(fit, markers)` post-fit marker scan.** Runs a
   dense, supplied-variance, **relatedness-corrected** mixed-model (GLS)
   Wald marker scan on a fitted Gaussian animal model, reusing the fit’s

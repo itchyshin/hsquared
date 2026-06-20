@@ -51,8 +51,8 @@ Current parser entry points and planned fitting controls.
 Extractors for fitted `hsquared_fit` objects. The default
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 call fits the v0.1 Gaussian animal model; repeatability, two-effect,
-genomic, SNP-BLUP, and multivariate outputs come from opt-in
-experimental targets.
+genomic, SNP-BLUP, multivariate, and random-regression outputs come from
+opt-in experimental targets.
 
 - [`variance_components()`](https://itchyshin.github.io/hsquared/reference/variance_components.md)
   : Extract variance components
@@ -102,6 +102,12 @@ experimental targets.
   : Extract common-environment effects
 - [`maternal_effects()`](https://itchyshin.github.io/hsquared/reference/maternal_effects.md)
   : Extract maternal genetic effects
+- [`rr_covariance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  [`random_coefficients()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  [`rr_genetic_variance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  [`rr_correlation()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
+  : Random-regression (reaction-norm) extractors
 - [`prediction_error_variance()`](https://itchyshin.github.io/hsquared/reference/prediction_error_variance.md)
   : Extract prediction error variances
 - [`reliability()`](https://itchyshin.github.io/hsquared/reference/reliability.md)
