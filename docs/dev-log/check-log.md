@@ -4417,3 +4417,37 @@ release".
   `Latest`. URL: https://github.com/itchyshin/hsquared/releases/tag/v0.1.0
 - No package/code/docs change in this action (tag + release object only); prior test 793/0/0/27 +
   check(--no-manual) 0/0/0 from the release commit remain the standing evidence.
+
+## 2026-06-19 (session 3 — autonomous gap-closing run)
+
+- Rehydrated: `git status --short --branch`; `git log --oneline -8`;
+  `gh run list --repo itchyshin/hsquared --limit 5` (pkgdown green);
+  `gh issue list` both repos; `git -C ../HSquared.jl fetch origin && git -C ../HSquared.jl log
+  origin/main --oneline -8`. Live finding: twin advanced to `ef5bda4`; the `:diagonal` multivariate
+  bridge payload + `test/fixtures/structured_covariance_parity/` fixture landed (`ad6006d`, PR #63),
+  making the #61 hand-off actionable. `which julia` → not found, so
+  `hs_julia_bridge_available() == FALSE` (no live fit; engine legs skip-guarded).
+- Five slices, each: `air format <files>` → `Rscript -e devtools::document()` (where roxygen/exports
+  changed) → `Rscript -e devtools::load_all + testthat::test_file/test_dir` → commit → `git push`.
+  - `d1c1002` diagonal multivariate fixture parity (#61): test 862/0/0.
+  - `eee2275` Phase 2 grammar markers: `devtools::document()` regenerated NAMESPACE +
+    `man/qg_effect_markers.Rd`; test 868/0/0.
+  - `38cb0cb` gated family/marker error sharpens: test 870/0/0.
+  - `cfdf4c1` doc/status reconcile (no code).
+  - `34f8a29` review-barrier follow-ups (test tightening + marker masking note): test 876/0/0.
+- Cumulative DoD checks (full state, run twice — after slice 4 and again after slice 5):
+  - `Rscript -e 'pkgdown::check_pkgdown()'` → clean.
+  - `RSTUDIO_PANDOC=... Rscript -e 'devtools::check(args="--no-manual", error_on="never")'`
+    → **ERRORS=0 WARNINGS=0 NOTES=0** (the benign "installed roxygen2 8.0.0 doesn't match required
+    7.3.2 → check() will not re-document" line only means `check()` skips re-docs; `document()` ran
+    cleanly separately).
+  - `Rscript -e 'devtools::test()'` full suite → **876 pass / 0 fail / 0 warn / 32 skip** (the
+    skip count reflects live-engine legs guarded by `skip_if_not(hs_julia_bridge_available())` /
+    `skip_on_cran()`; with no local Julia they skip).
+- JSON: `python3 -c "json.load(open('.mission-control/status.json'))"` → valid (widget tally string
+  updated to twin `ef5bda4` 25-partial/33; the gitignored widget is not committed).
+- Two multi-agent workflows: map-and-design (6 scouts → Rose verify → Ada synthesis) and the
+  review barrier (6 lenses → Ada+Rose audit, verdict CLEAN, Rose honesty-clean). Cross-lane comments
+  posted via `gh issue comment` on `HSquared.jl#44` and `hsquared#23`.
+- `git push origin main` for each slice; final HEAD `34f8a29`. R-CMD-check does not run on push
+  (CI = pull_request + workflow_dispatch); pkgdown auto-deploys on push.
