@@ -75,7 +75,7 @@ them (clearly labelled experimental and asymptotic).</p>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variance"</span>, <span class="st">"breeding_values"</span>, <span class="st">"g_matrix"</span>, <span class="st">"g_geometry"</span>, <span class="st">"reaction_norm"</span>,</span>
-<span>    <span class="st">"rr_eigenfunctions"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"rr_eigenfunctions"</span>, <span class="st">"rr_surface"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -98,8 +98,9 @@ them (clearly labelled experimental and asymptotic).</p>
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Figure-specific options passed through: <code>low_h2</code> (the
 genetic-correlation heatmap flags off-diagonal cells involving a trait with
-<code>h^2 &lt; low_h2</code> as imprecise; default <code>0.1</code>), and <code>at</code>/<code>n</code> (the reaction-norm
-trajectories' covariate evaluation points).</p></dd>
+<code>h^2 &lt; low_h2</code> as imprecise; default <code>0.1</code>), <code>at</code>/<code>n</code> (the reaction-norm
+covariate evaluation points), and <code>correlation</code> (<code>rr_surface</code>: draw the
+genetic-correlation surface instead of the covariance surface).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -132,6 +133,10 @@ homogeneous residual and no permanent-environment term it can overstate
 eigenfunctions <code>psi_j(t)</code> of <code>K_g</code> as covariate functions (faceted by axis,
 labelled by percent genetic variance). Signs are arbitrary and the curves are
 span-ambiguous under repeated eigenvalues (do not over-read).</p></li>
+<li><p><code>"rr_surface"</code> – for random-regression fits, the genetic covariance
+surface <code>S(s, t) = phi(s)' K_g phi(t)</code> over the covariate grid as a heatmap
+(pass <code>correlation = TRUE</code> for the genetic-correlation surface). Supplied-<code>K_g</code>
+descriptive.</p></li>
 </ul><p><code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> on a <code><a href="gwas.html">gwas()</a></code> scan (<code>hs_gwas</code>) draws <code>type = "manhattan"</code>
 (default) or <code>type = "qq"</code> (observed vs expected <code>-log10(p)</code> with a <code>y = x</code>
 null and the genomic-inflation <code>lambda_GC</code> as a diagnostic). Both carry the

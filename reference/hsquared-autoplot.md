@@ -16,7 +16,7 @@ experimental and asymptotic).
 autoplot(
   object,
   type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm",
-    "rr_eigenfunctions"),
+    "rr_eigenfunctions", "rr_surface"),
   ...
 )
 
@@ -38,8 +38,10 @@ autoplot(object, type = c("manhattan", "qq"), ...)
 
   Figure-specific options passed through: `low_h2` (the
   genetic-correlation heatmap flags off-diagonal cells involving a trait
-  with `h^2 < low_h2` as imprecise; default `0.1`), and `at`/`n` (the
-  reaction-norm trajectories' covariate evaluation points).
+  with `h^2 < low_h2` as imprecise; default `0.1`), `at`/`n` (the
+  reaction-norm covariate evaluation points), and `correlation`
+  (`rr_surface`: draw the genetic-correlation surface instead of the
+  covariance surface).
 
 ## Value
 
@@ -82,6 +84,11 @@ Available `type`s for `autoplot.hsquared_fit()`:
   functions (faceted by axis, labelled by percent genetic variance).
   Signs are arbitrary and the curves are span-ambiguous under repeated
   eigenvalues (do not over-read).
+
+- `"rr_surface"` – for random-regression fits, the genetic covariance
+  surface `S(s, t) = phi(s)' K_g phi(t)` over the covariate grid as a
+  heatmap (pass `correlation = TRUE` for the genetic-correlation
+  surface). Supplied-`K_g` descriptive.
 
 [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html) on
 a [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
