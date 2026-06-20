@@ -48,7 +48,7 @@ group(formula, ...)
 
 unknown_parent_group(formula, ...)
 
-metafounder(formula, pedigree = NULL, ...)
+metafounder(formula, pedigree = NULL, Gamma = NULL, ...)
 
 inbreeding(formula, ...)
 }
@@ -67,6 +67,11 @@ effects.}
 \item{E, Einv}{Epistatic relationship or precision matrices.}
 
 \item{K, Kinv, Q}{User-supplied relationship or precision matrices.}
+
+\item{Gamma}{A supplied metafounder relationship matrix (an \code{m}-by-\code{m}
+covariance over the \code{m} metafounder pseudo-populations; Legarra et al.
+2015). Supplied, not estimated; reserved for the planned \code{metafounder()}
+bridge.}
 }
 \value{
 \code{NULL}, invisibly. Calls are interpreted by \code{\link[=hsquared]{hsquared()}} when they

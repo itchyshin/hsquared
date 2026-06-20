@@ -24,6 +24,10 @@
 #' @param D,Dinv Dominance relationship or precision matrices.
 #' @param E,Einv Epistatic relationship or precision matrices.
 #' @param K,Kinv,Q User-supplied relationship or precision matrices.
+#' @param Gamma A supplied metafounder relationship matrix (an `m`-by-`m`
+#'   covariance over the `m` metafounder pseudo-populations; Legarra et al.
+#'   2015). Supplied, not estimated; reserved for the planned `metafounder()`
+#'   bridge.
 #' @param parent Planned parent-of-origin side for imprinting effects.
 #' @param ... Reserved for future syntax.
 #'
@@ -123,7 +127,7 @@ unknown_parent_group <- function(formula, ...) {
 
 #' @rdname qg_effect_markers
 #' @export
-metafounder <- function(formula, pedigree = NULL, ...) {
+metafounder <- function(formula, pedigree = NULL, Gamma = NULL, ...) {
   invisible(NULL)
 }
 
