@@ -4524,3 +4524,9 @@ release".
 - Mirrored twin `test/fixtures/animal_model_fitted_target/` into `tests/testthat/fixtures/`; new `test-fitted-target-fixture.R` (julia-free internal consistency + a live estimated-VC reproduction).
 - `air format`; non-live `devtools::test()` -> **922 / 0 / 0 / 36**; **live** test reproduces the serialized REML estimates (VC/beta/h2 to 1e-4, EBVs/reliabilities to 1e-3); `pkgdown::check_pkgdown()` clean; `devtools::check(args="--no-manual")` -> **0 / 0 / 0**. Pushed `7761055`; posted on twin #46.
 - Note: corrected an inbreeding-naive `reliability == 1 - PEV/sigma_a2` check to the inbreeding-aware implied-A_ii identity (the fixture includes inbred animals).
+
+## 2026-06-20 (session 3 — variance_along_gradient + full live hardening v2 + handoff)
+
+- `variance_along_gradient()` completes the evolvability bridge (`95e598a`): hand-computed + live engine parity (both normalize modes). test 925/0/0/36; check(--no-manual) 0/0/0; check_pkgdown clean.
+- **Full live hardening v2** against twin main `616339e` (one file/process to dodge the JuliaCall teardown segfault): every experimental bridge target passes — julia-bridge 94, diagonal-multivariate 26, nongaussian 22, evolvability 33, gwas 20, fitted-target 14, repeatability 31, genomic 39, single-step 16, snp-blup 25, validation-fixtures 104 (incl. live sommer) = **424 live assertions, 0 fail**.
+- Wrote `docs/dev-log/after-task/2026-06-20-session-handoff-3.md` (START-HERE) + refreshed the mission-control widget (gitignored).
