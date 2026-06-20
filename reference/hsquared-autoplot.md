@@ -35,7 +35,10 @@ autoplot(object, ...)
 
 - ...:
 
-  Currently unused.
+  Figure-specific options passed through: `low_h2` (the
+  genetic-correlation heatmap flags off-diagonal cells involving a trait
+  with `h^2 < low_h2` as imprecise; default `0.1`), and `at`/`n` (the
+  reaction-norm trajectories' covariate evaluation points).
 
 ## Value
 
