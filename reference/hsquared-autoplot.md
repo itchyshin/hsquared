@@ -15,7 +15,7 @@ experimental and asymptotic).
 # S3 method for class 'hsquared_fit'
 autoplot(
   object,
-  type = c("variance", "breeding_values", "g_matrix", "reaction_norm"),
+  type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm"),
   ...
 )
 
@@ -60,7 +60,14 @@ Available `type`s for `autoplot.hsquared_fit()`:
 - `"g_matrix"` – a **rotation-invariant** genetic-correlation heatmap of
   the estimated `G` for multivariate fits (correlations are invariant to
   the factor rotation; raw loadings are never plotted – the ratified
-  cross-lane convention).
+  cross-lane convention). Off-diagonal cells involving a low-`h^2` trait
+  are flagged as imprecise (threshold `low_h2`, default `0.1`).
+
+- `"g_geometry"` – a scree of the **rotation-invariant** genetic
+  eigenstructure (eigenvalues = variance per genetic axis, with percent
+  variance explained) for multivariate fits. Axis directions / loadings
+  are never drawn (rotation-arbitrary; span-ambiguous under repeated
+  eigenvalues).
 
 - `"reaction_norm"` – for random-regression fits, the genetic-variance
   and heritability trajectories across the covariate (faceted). The

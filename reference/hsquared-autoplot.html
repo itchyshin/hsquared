@@ -74,7 +74,7 @@ them (clearly labelled experimental and asymptotic).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'hsquared_fit'</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variance"</span>, <span class="st">"breeding_values"</span>, <span class="st">"g_matrix"</span>, <span class="st">"reaction_norm"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variance"</span>, <span class="st">"breeding_values"</span>, <span class="st">"g_matrix"</span>, <span class="st">"g_geometry"</span>, <span class="st">"reaction_norm"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -116,7 +116,12 @@ are available, faceted by trait for multivariate fits.</p></li>
 <li><p><code>"g_matrix"</code> – a <strong>rotation-invariant</strong> genetic-correlation heatmap of the
 estimated <code>G</code> for multivariate fits (correlations are invariant to the
 factor rotation; raw loadings are never plotted – the ratified cross-lane
-convention).</p></li>
+convention). Off-diagonal cells involving a low-<code>h^2</code> trait are flagged as
+imprecise (threshold <code>low_h2</code>, default <code>0.1</code>).</p></li>
+<li><p><code>"g_geometry"</code> – a scree of the <strong>rotation-invariant</strong> genetic
+eigenstructure (eigenvalues = variance per genetic axis, with percent
+variance explained) for multivariate fits. Axis directions / loadings are
+never drawn (rotation-arbitrary; span-ambiguous under repeated eigenvalues).</p></li>
 <li><p><code>"reaction_norm"</code> – for random-regression fits, the genetic-variance and
 heritability trajectories across the covariate (faceted). The heritability
 trajectory carries the same caveat as <code><a href="random_regression_extractors.html">rr_heritability()</a></code>: with a
