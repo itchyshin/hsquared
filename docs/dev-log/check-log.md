@@ -4748,3 +4748,22 @@ release".
   near-term scope.
 - air format; `devtools::document()`; `test-random-regression` 12 mock + live all
   pass; `rcmdcheck(--no-manual)` **0/0/0**; `check_pkgdown()` clean.
+
+## 2026-06-20 (session 4 — R-authored plotting STANDARD + impl alignment)
+
+- Maintainer: "R sets the plotting standard, then Julia mirrors it." Authored
+  `docs/design/24-plotting-standard.md` (figure catalog incl. QQ/λGC/RR-surface;
+  binding per-figure honest-status contract; `hsquared_meta` schema + mapping to
+  the engine flags; two-column engine-field↔R-shape data contract incl. full
+  `marker_manhattan_data`; explicit R↔Julia↔preparer naming map; theme; flexible
+  v1). Builds on the twin's `13-plotting-layer.md` architecture.
+- **Adversarial review** (4-lens Workflow: Florence/Pat/Rose/Hopper) — all
+  `minor_gaps`, sound in intent/honesty/mirrorability; applied every should-fix
+  (added QQ/λGC, genomic-coordinate Manhattan shape, per-figure §2 rows, low-h²
+  flag, h² annotate-not-clamp, engine-field data contract, explicit naming map,
+  parity test honestly marked PLANNED).
+- **Impl alignment:** `R/autoplot.R` h² interval now surfaces RAW bounds +
+  annotates a `[0,1]` crossing instead of silently clamping (matches §2 + the
+  engine boundary-throw discipline). test-autoplot 18 pass; rcmdcheck 0/0/0.
+- Posted the standard to the twin on #61 (R-set, flexible, asks: confirm the §6
+  naming map; the live R↔engine parity test is the shared §5 drift mitigation).
