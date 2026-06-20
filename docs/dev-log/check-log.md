@@ -4602,3 +4602,28 @@ release".
     100k 3.48s, 250k 9.86s.
 - **Symbolic-once fit_ai_reml PR seed** (`prototypes/symbolic-once-fit_ai_reml.patch.md`):
   diff + parity test for the cholesky!-reuse refactor (twin's lane to apply).
+
+## 2026-06-20 (session 3 — random-regression bridge, LIVE-VERIFIED)
+
+- Bridge activation of engine #54 (RR/reaction-norm). Implemented by the
+  emmy-r-package-architect agent (mirroring the multivariate target); live
+  verification + commit by the operator.
+- Files: model-spec.R (rr() parser), bridge-payload.R, julia-bridge.R (target reg +
+  `hs_fit_julia_random_regression_payload` + normalizer + R-side legendre helpers),
+  hsquared.R (dispatch), extractors.R (5 new exported extractors), formula-status.R,
+  NEWS.md, capability-status.md, _pkgdown.yml, test-random-regression.R (new).
+- New extractors: `rr_covariance`, `random_coefficients`, `rr_genetic_variance(at=)`,
+  `rr_heritability(at=)`, `rr_correlation(at=)`. Trajectories computed in R from K_g +
+  the normalized-Legendre basis.
+- Agent non-live checks: `air format` exit 0; `devtools::document()` OK;
+  `devtools::test()` **996 pass / 0 fail / 33 skip**; `pkgdown::check_pkgdown()` clean;
+  `devtools::check(--no-manual)` **0 / 0 / 0**.
+- **LIVE (operator, PATH=~/.juliaup/bin, HSQUARED_JULIA_PROJECT=sibling):**
+  - ad-hoc parity (`/tmp/rr_live_verify.R`): bridge vs direct
+    `fit_random_regression_reml` on identical data → max|dK_g|, |d sigma_e2|,
+    |d loglik|, max|d coef| all **0.00e+00**; h2(at 2/5/8)=0.927/0.922/0.915.
+  - committed `test-random-regression.R` run live → **FAIL 0 | WARN 0 | SKIP 0 |
+    PASS 57** (live fit + extractors against the real engine).
+- Grammar `animal(rr(age, order=k) | id, pedigree=ped)` is PROVISIONAL (proposed to
+  twin #61, awaiting ack); shipped experimental; homogeneous residual only,
+  permanent-environment + heterogeneous residual still planned.

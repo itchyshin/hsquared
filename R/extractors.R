@@ -1501,3 +1501,264 @@ residuals.hsquared_fit <- function(object, ...) {
   }
   response - fitted_values
 }
+
+# ---------------------------------------------------------------------------
+# Random-regression (reaction-norm) extractors
+# ---------------------------------------------------------------------------
+
+# Detect the opt-in random-regression target and fetch its result block. The
+# trajectory extractors compute v_g(t)/h^2(t)/correlation in R from the supplied
+# K_g and the recorded standardization bounds, so they need no live Julia.
+hs_fit_is_random_regression <- function(object) {
+  identical(object$spec$target, "random_regression") ||
+    !is.null(object$result$coefficient_covariance)
+}
+
+hs_require_random_regression <- function(object, name) {
+  if (!inherits(object, "hsquared_fit")) {
+    stop(
+      "`",
+      name,
+      "()` requires an `hsquared_fit` object from the opt-in random-regression ",
+      "model (`target = \"random_regression\"`).",
+      call. = FALSE
+    )
+  }
+  if (!hs_fit_is_random_regression(object)) {
+    stop(
+      "`",
+      name,
+      "()` requires a fit from the opt-in random-regression model ",
+      "(`target = \"random_regression\"`), fitted with an ",
+      "`animal(rr(covariate, order = k) | id, pedigree = ped)` term.",
+      call. = FALSE
+    )
+  }
+  invisible(object)
+}
+
+# Resolve the covariate points the trajectory is evaluated at. `at = NULL`
+# (the default) builds an evenly spaced grid of `n` points spanning the recorded
+# covariate range; otherwise `at` is taken on the ORIGINAL covariate scale.
+# Returns the original-scale points and the matching standardized t in [-1, 1].
+hs_rr_eval_points <- function(object, at, n = 25L) {
+  rr <- object$result$random_regression
+  if (is.null(rr)) {
+    stop(
+      "This random-regression `hsquared_fit` is missing its covariate ",
+      "standardization metadata.",
+      call. = FALSE
+    )
+  }
+  if (is.null(at)) {
+    at <- seq(rr$lower, rr$upper, length.out = n)
+  } else {
+    at <- as.numeric(at)
+    if (length(at) == 0L || anyNA(at) || any(!is.finite(at))) {
+      stop("`at` must be finite covariate values.", call. = FALSE)
+    }
+  }
+  t_std <- hs_standardize_covariate(at, rr$lower, rr$upper)
+  list(at = at, t = t_std, covariate = rr$covariate, order = rr$order)
+}
+
+# Per-point additive genetic variance v_g(t) = phi(t)' K_g phi(t), clamped to >= 0
+# (mirrors `HSquared.rr_genetic_variance`).
+hs_rr_variance_values <- function(K_g, t_std, order) {
+  phi <- hs_legendre_design(t_std, order)
+  vapply(
+    seq_along(t_std),
+    function(i) {
+      max(0, drop(phi[i, , drop = FALSE] %*% K_g %*% t(phi[i, , drop = FALSE])))
+    },
+    numeric(1L)
+  )
+}
+
+#' Random-regression (reaction-norm) extractors
+#'
+#' These extractors summarize an opt-in, **experimental** random-regression
+#' (reaction-norm) fit (`target = "random_regression"`), fitted with an
+#' `animal(rr(covariate, order = k) | id, pedigree = ped)` term. The model
+#' estimates a `k x k` genetic covariance matrix `K_g` among an animal's
+#' normalized-Legendre random-regression coefficients plus a single homogeneous
+#' residual variance.
+#'
+#' * `rr_covariance()` returns the estimated `k x k` coefficient genetic
+#'   covariance matrix `K_g`.
+#' * `random_coefficients()` returns the per-animal predicted Legendre
+#'   coefficients (long format: `id`, `coefficient`, `value`).
+#' * `rr_genetic_variance()` returns the additive genetic variance trajectory
+#'   `v_g(t) = phi(t)' K_g phi(t)` across covariate points.
+#' * `rr_heritability()` returns the heritability trajectory
+#'   `h^2(t) = v_g(t) / (v_g(t) + sigma_e^2)`. Because the residual is
+#'   homogeneous and there is no permanent-environment term yet, this can
+#'   OVERSTATE `h^2(t)` for repeated-records designs (test-day, growth curves).
+#' * `rr_correlation()` returns the genetic correlation surface among the
+#'   covariate points.
+#'
+#' The trajectories are computed in R from the estimated `K_g` and the recorded
+#' covariate standardization range; `at` is supplied on the ORIGINAL covariate
+#' scale (defaulting to a grid over the fitted range) and re-standardized to
+#' `[-1, 1]` internally, matching the Julia engine's basis convention.
+#'
+#' @param object A random-regression `hsquared_fit` object.
+#' @param at Covariate values on the original scale at which to evaluate the
+#'   trajectory. `NULL` (the default) uses an evenly spaced grid over the fitted
+#'   covariate range.
+#' @param n Number of grid points used when `at = NULL`.
+#' @param ... Reserved for future arguments.
+#'
+#' @return `rr_covariance()` returns a numeric matrix; `random_coefficients()`
+#'   returns a data frame; the trajectory extractors return a data frame with a
+#'   `covariate` column and the evaluated `value`s.
+#'
+#' @examplesIf FALSE
+#' fit_rr <- hsquared(
+#'   weight ~ sex + animal(rr(age, order = 2) | id, pedigree = ped),
+#'   data = long_records,
+#'   family = gaussian(),
+#'   REML = TRUE,
+#'   control = hs_control(
+#'     engine = "julia",
+#'     engine_control = list(target = "random_regression")
+#'   )
+#' )
+#'
+#' rr_covariance(fit_rr)
+#' random_coefficients(fit_rr)
+#' rr_genetic_variance(fit_rr)
+#' rr_heritability(fit_rr)
+#' rr_correlation(fit_rr, at = c(1, 3, 5))
+#' @name random_regression_extractors
+NULL
+
+#' @rdname random_regression_extractors
+#' @export
+rr_covariance <- function(object, ...) {
+  UseMethod("rr_covariance")
+}
+
+#' @export
+rr_covariance.default <- function(object, ...) {
+  hs_require_random_regression(object, "rr_covariance")
+}
+
+#' @export
+rr_covariance.hsquared_fit <- function(object, ...) {
+  hs_require_random_regression(object, "rr_covariance")
+  hs_fit_result(
+    object,
+    "coefficient_covariance",
+    "the random-regression coefficient genetic covariance matrix"
+  )
+}
+
+#' @rdname random_regression_extractors
+#' @export
+random_coefficients <- function(object, ...) {
+  UseMethod("random_coefficients")
+}
+
+#' @export
+random_coefficients.default <- function(object, ...) {
+  hs_require_random_regression(object, "random_coefficients")
+}
+
+#' @export
+random_coefficients.hsquared_fit <- function(object, ...) {
+  hs_require_random_regression(object, "random_coefficients")
+  hs_fit_result(
+    object,
+    "random_coefficients",
+    "the predicted random-regression coefficients"
+  )
+}
+
+#' @rdname random_regression_extractors
+#' @export
+rr_genetic_variance <- function(object, at = NULL, n = 25L, ...) {
+  UseMethod("rr_genetic_variance")
+}
+
+#' @export
+rr_genetic_variance.default <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_genetic_variance")
+}
+
+#' @export
+rr_genetic_variance.hsquared_fit <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_genetic_variance")
+  K_g <- rr_covariance(object)
+  pts <- hs_rr_eval_points(object, at, n)
+  data.frame(
+    covariate = pts$at,
+    value = hs_rr_variance_values(K_g, pts$t, pts$order),
+    stringsAsFactors = FALSE
+  )
+}
+
+#' @rdname random_regression_extractors
+#' @export
+rr_heritability <- function(object, at = NULL, n = 25L, ...) {
+  UseMethod("rr_heritability")
+}
+
+#' @export
+rr_heritability.default <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_heritability")
+}
+
+#' @export
+rr_heritability.hsquared_fit <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_heritability")
+  K_g <- rr_covariance(object)
+  sigma_e2 <- hs_fit_result(
+    object,
+    "residual_variance",
+    "the random-regression residual variance"
+  )
+  pts <- hs_rr_eval_points(object, at, n)
+  vg <- hs_rr_variance_values(K_g, pts$t, pts$order)
+  data.frame(
+    covariate = pts$at,
+    value = vg / (vg + as.numeric(sigma_e2)),
+    stringsAsFactors = FALSE
+  )
+}
+
+#' @rdname random_regression_extractors
+#' @export
+rr_correlation <- function(object, at = NULL, n = 25L, ...) {
+  UseMethod("rr_correlation")
+}
+
+#' @export
+rr_correlation.default <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_correlation")
+}
+
+#' @export
+rr_correlation.hsquared_fit <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_correlation")
+  K_g <- rr_covariance(object)
+  pts <- hs_rr_eval_points(object, at, n)
+  phi <- hs_legendre_design(pts$t, pts$order)
+  G <- phi %*% K_g %*% t(phi)
+  G <- 0.5 * (G + t(G))
+  d <- diag(G)
+  if (any(d <= 0)) {
+    stop(
+      "`rr_correlation()` is undefined: at least one covariate point has ",
+      "non-positive genetic variance. Evaluate at points inside the genetic ",
+      "variance support, or inspect `rr_genetic_variance()`.",
+      call. = FALSE
+    )
+  }
+  corr <- stats::cov2cor(G)
+  dimnames(corr) <- list(
+    format(pts$at, trim = TRUE),
+    format(pts$at, trim = TRUE)
+  )
+  corr
+}

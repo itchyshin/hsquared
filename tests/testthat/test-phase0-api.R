@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 29L)
+  expect_equal(nrow(status), 30L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -105,6 +105,13 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   ))
   expect_true("permanent(1 | id)" %in% status$term)
   expect_true("genomic(1 | id, Ginv = Ginv)" %in% status$term)
+  rr_term <- "animal(rr(covariate, order = 2) | id, pedigree = ped)"
+  expect_true(rr_term %in% status$term)
+  expect_equal(status$syntax_status[status$term == rr_term], "parsed")
+  expect_equal(
+    status$fitting_status[status$term == rr_term],
+    "fitted (opt-in random-regression)"
+  )
   expect_equal(
     status$fitting_status[
       status$term == "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)"

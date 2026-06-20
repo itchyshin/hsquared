@@ -1146,6 +1146,230 @@ hs_long_matrix <- function(x, ids, traits) {
   )
 }
 
+# Opt-in, experimental random-regression (reaction-norm) bridge. Mirrors the
+# multivariate payload path: assign the univariate response, fixed design, sparse
+# record incidence, pedigree, the per-record covariate, and the Legendre order;
+# build the n x k Legendre design Phi in Julia from the standardized covariate;
+# call the Julia-owned `HSquared.fit_random_regression_reml`; unpack the
+# NamedTuple fields into a Dict; normalize to an `hsquared_fit`. The grammar is
+# PROVISIONAL (proposed to the twin on HSquared.jl#61, awaiting ack).
+hs_fit_julia_random_regression_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  iterations = 2000L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (is.null(payload$y)) {
+    stop(
+      "Internal bridge error: the random-regression payload is missing its ",
+      "univariate `y` response vector.",
+      call. = FALSE
+    )
+  }
+  if (is.null(payload$random_regression)) {
+    stop(
+      "Internal bridge error: the random-regression target requires an ",
+      "`animal(rr(covariate, order = k) | id, ...)` payload.",
+      call. = FALSE
+    )
+  }
+  if (is.null(payload$pedigree)) {
+    stop(
+      "Internal bridge error: the random-regression target requires a ",
+      "pedigree animal-model payload.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  rr <- payload$random_regression
+  iterations <- hs_validate_iterations(iterations)
+  order <- as.integer(rr$order)
+
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  JuliaCall::julia_assign("hsq_age", as.numeric(rr$values))
+  JuliaCall::julia_assign("hsq_order", order)
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    # Standardize the per-record covariate to [-1, 1] over its observed range and
+    # build the n x k normalized-Legendre design Phi (basis convention fixed to
+    # Kirkpatrick/Meyer/Schaeffer normalized Legendre on standardized t).
+    "hsq_Phi = HSquared.legendre_design(",
+    "HSquared.standardize_covariate(hsq_age), hsq_order);",
+    "hsq_fit = HSquared.fit_random_regression_reml(",
+    "hsq_y, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
+    "iterations = hsq_iterations, ids = hsq_ped.ids);",
+    "hsq_rr_raw = Dict(",
+    "\"K_g\" => Matrix{Float64}(hsq_fit.variance_components.K_g),",
+    "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
+    "\"beta\" => collect(Float64, hsq_fit.beta),",
+    "\"coef_ids\" => string.(collect(hsq_fit.random_coefficients.ids)),",
+    "\"coef_values\" => Matrix{Float64}(hsq_fit.random_coefficients.values),",
+    "\"loglik\" => hsq_fit.loglik,",
+    "\"converged\" => hsq_fit.converged,",
+    "\"iterations\" => hsq_fit.iterations,",
+    "\"ncoef\" => hsq_fit.basis.ncoef",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_rr_raw")
+  result <- hs_normalize_random_regression_result(raw, payload)
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "random_regression"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_random_regression_result <- function(raw, payload) {
+  rr <- payload$random_regression %||% payload$metadata$random_regression
+  fixed_names <- payload$metadata$fixed_colnames
+  ids <- as.character(raw$coef_ids %||% payload$ids)
+  k <- as.integer(raw$ncoef)
+  if (is.na(k) || k < 1L) {
+    k <- as.integer(rr$order)
+  }
+  coef_labels <- paste0("legendre", seq_len(k) - 1L)
+
+  K_g <- hs_matrix_from_julia(raw$K_g, k, k, "coefficient genetic covariance")
+  dimnames(K_g) <- list(coef_labels, coef_labels)
+  sigma_e2 <- as.numeric(raw$sigma_e2)
+
+  beta <- as.numeric(raw$beta)
+  fixed_effects <- data.frame(
+    term = fixed_names,
+    estimate = beta,
+    stringsAsFactors = FALSE
+  )
+
+  coefficients <- hs_matrix_from_julia(
+    raw$coef_values,
+    length(ids),
+    k,
+    "random-regression coefficients"
+  )
+  dimnames(coefficients) <- list(ids, coef_labels)
+  random_coefficients <- data.frame(
+    id = rep(ids, times = k),
+    coefficient = rep(coef_labels, each = length(ids)),
+    value = as.vector(coefficients),
+    stringsAsFactors = FALSE
+  )
+
+  converged <- isTRUE(raw$converged)
+  p <- ncol(payload$X)
+  n_covariance_parameters <- as.integer(k * (k + 1L) / 2L) + 1L
+
+  result <- list(
+    variance_components = data.frame(
+      component = c(paste0("K_g_", coef_labels), "residual"),
+      estimate = c(diag(K_g), sigma_e2),
+      stringsAsFactors = FALSE
+    ),
+    coefficient_covariance = K_g,
+    residual_variance = sigma_e2,
+    random_coefficients = random_coefficients,
+    fixed_effects = fixed_effects,
+    nobs = as.integer(length(payload$y)),
+    converged = converged,
+    # Standardization + basis metadata: extractors recompute the genetic
+    # variance / heritability / correlation trajectories in R from K_g and the
+    # normalized-Legendre basis, re-standardizing any user-supplied `at =` on the
+    # original covariate scale with these recorded bounds.
+    random_regression = list(
+      covariate = rr$covariate,
+      order = k,
+      lower = as.numeric(rr$lower),
+      upper = as.numeric(rr$upper)
+    ),
+    diagnostics = list(
+      target = "random_regression",
+      variance_components = "estimated_random_regression_reml",
+      optimizer_status = if (converged) "converged" else "not_converged",
+      iterations = as.integer(raw$iterations),
+      n_coefficients = k,
+      n_records = length(payload$y),
+      covariate = rr$covariate,
+      covariate_range = c(as.numeric(rr$lower), as.numeric(rr$upper)),
+      dense_validation_path = TRUE,
+      residual_model = "homogeneous",
+      conditioning_caveat = paste(
+        "Experimental dense validation-scale path with a HOMOGENEOUS residual",
+        "and NO permanent-environment term; both are planned. The Julia engine",
+        "inverts Ainv internally, so deep-inbreeding/high-condition-number",
+        "pedigrees remain a twin-side hardening item."
+      )
+    )
+  )
+  if (converged) {
+    result$loglik <- as.numeric(raw$loglik)
+    result$df <- as.integer(p + n_covariance_parameters)
+  }
+  result
+}
+
+# Normalized Legendre basis row vector phi(t) = [phi_0(t), ..., phi_{k-1}(t)] at a
+# standardized covariate t in [-1, 1], mirroring `HSquared.legendre_basis`:
+# phi_n(t) = sqrt((2n+1)/2) * P_n(t), with P_n the ordinary Legendre polynomials
+# via the Bonnet recurrence. Used by the R-side reaction-norm trajectory
+# extractors so they need no live Julia round-trip.
+hs_legendre_basis <- function(t, order) {
+  order <- as.integer(order)
+  tt <- max(-1, min(1, as.numeric(t)))
+  p <- numeric(order)
+  p[1L] <- 1
+  if (order >= 2L) {
+    p[2L] <- tt
+  }
+  if (order >= 3L) {
+    for (n in 2:(order - 1L)) {
+      p[n + 1L] <- ((2 * n - 1) * tt * p[n] - (n - 1) * p[n - 1L]) / n
+    }
+  }
+  phi <- numeric(order)
+  for (n in 0:(order - 1L)) {
+    phi[n + 1L] <- sqrt((2 * n + 1) / 2) * p[n + 1L]
+  }
+  phi
+}
+
+# n x order normalized-Legendre design over already-standardized points `ts`,
+# mirroring `HSquared.legendre_design`.
+hs_legendre_design <- function(ts, order) {
+  do.call(rbind, lapply(ts, hs_legendre_basis, order = order))
+}
+
+# Map a raw covariate value/vector onto t in [-1, 1] using the recorded fit
+# range, mirroring `HSquared.standardize_covariate`
+# (t = 2(a - lower)/(upper - lower) - 1).
+hs_standardize_covariate <- function(a, lower, upper) {
+  2 * (as.numeric(a) - lower) / (upper - lower) - 1
+}
+
 hs_validate_two_effect_initial <- function(initial) {
   if (
     !is.numeric(initial) ||
@@ -1616,6 +1840,7 @@ hs_validate_julia_target <- function(target) {
         "single_step",
         "snp_blup",
         "multivariate",
+        "random_regression",
         "nongaussian"
       )
   ) {
@@ -1623,7 +1848,7 @@ hs_validate_julia_target <- function(target) {
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
       "\"two_effect\", \"genomic\", \"single_step\", \"snp_blup\", ",
-      "\"multivariate\", or \"nongaussian\".",
+      "\"multivariate\", \"random_regression\", or \"nongaussian\".",
       call. = FALSE
     )
   }

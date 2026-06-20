@@ -88,6 +88,16 @@ hsquared <- function(
         call. = FALSE
       )
     }
+    if (identical(spec$random$animal$design, "random_regression")) {
+      stop(
+        "The random-regression (reaction-norm) animal model is experimental ",
+        "and opt-in; the default `engine = \"fit\"` path fits the ",
+        "random-intercept Gaussian animal model only. Use `control = ",
+        "hs_control(engine = \"julia\", engine_control = list(target = ",
+        "\"random_regression\"))`.",
+        call. = FALSE
+      )
+    }
     if (!isTRUE(REML)) {
       stop(
         "The v0.1 default fit path estimates variance components by REML ",
@@ -169,6 +179,24 @@ hsquared <- function(
         call. = FALSE
       )
     }
+    rr_design <- identical(spec$random$animal$design, "random_regression")
+    if (rr_design && !identical(target, "random_regression")) {
+      stop(
+        "An `animal(rr(...) | id)` random-regression term requires the opt-in ",
+        "`target = \"random_regression\"` Julia engine path. The `",
+        target,
+        "` target fits a random-intercept response.",
+        call. = FALSE
+      )
+    }
+    if (identical(target, "random_regression") && !rr_design) {
+      stop(
+        "`target = \"random_regression\"` requires an ",
+        "`animal(rr(covariate, order = k) | id, pedigree = ped)` term in the ",
+        "formula.",
+        call. = FALSE
+      )
+    }
     # ML estimation is not implemented in v0.1. The estimation targets either
     # run the ML optimizer (`fit_animal_model`) or are REML-only
     # (`sparse_reml`/`ai_reml`, which would otherwise silently ignore the ML
@@ -222,6 +250,21 @@ hsquared <- function(
           2000L
         ),
         genetic_structure = genetic_structure
+      ))
+    }
+    if (identical(target, "random_regression")) {
+      return(hs_fit_julia_random_regression_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          2000L
+        )
       ))
     }
     if (identical(target, "nongaussian")) {

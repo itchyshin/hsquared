@@ -195,6 +195,8 @@ hs_build_model_spec <- function(
         if (identical(primary_type, "genomic")) "Ginv" else "Hinv"
       )
     }
+  } else if (identical(primary_spec$design, "random_regression")) {
+    "fit_random_regression_reml(y, X, Phi, Z, Ainv; ids = ped.ids)"
   } else {
     "fit_animal_model(y, X, Z, Ainv; method = :REML)"
   }
@@ -206,6 +208,20 @@ hs_build_model_spec <- function(
       "fit_two_effect_reml(y, X, Z, Ainv, Z2, Ainv2; method = :REML)"
     }
   }
+  # The opt-in random-regression design is a single-effect, univariate model. It
+  # does not (yet) combine with a second random effect or a multivariate cbind()
+  # response; both are planned.
+  if (
+    identical(primary_spec$design, "random_regression") && !is.null(second_spec)
+  ) {
+    stop(
+      "A `rr(...)` random-regression term in `animal()` is a single-effect, ",
+      "opt-in model; combining it with a second random effect ",
+      "(`permanent()`/`common_env()`/`maternal_genetic()`) is planned, not ",
+      "implemented.",
+      call. = FALSE
+    )
+  }
   if (isTRUE(response$multivariate)) {
     if (!identical(primary_type, "animal") || !is.null(second_spec)) {
       stop(
@@ -213,6 +229,14 @@ hs_build_model_spec <- function(
         "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
         "Multivariate genomic, single-step, and second-effect models are ",
         "planned, not implemented.",
+        call. = FALSE
+      )
+    }
+    if (identical(primary_spec$design, "random_regression")) {
+      stop(
+        "Multivariate random regression (`cbind(...)` response with a ",
+        "`rr(...)` term) is planned, not implemented. Use a univariate ",
+        "response with the opt-in `target = \"random_regression\"` path.",
         call. = FALSE
       )
     }
@@ -596,8 +620,17 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
 
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  # `rr(covariate, order = k)` on the left-hand side is the opt-in, experimental
+  # random-regression (reaction-norm) design: a per-record Legendre polynomial of
+  # a within-individual covariate. Any other non-intercept left-hand side is the
+  # planned random-slope / long-format syntax, still rejected.
+  rr_spec <- NULL
   if (!hs_is_one(lhs)) {
-    hs_stop_animal_non_intercept()
+    if (hs_is_call(lhs, "rr")) {
+      rr_spec <- hs_parse_rr_lhs(lhs, data)
+    } else {
+      hs_stop_animal_non_intercept()
+    }
   }
   if (!is.symbol(group_expr)) {
     stop(
@@ -646,7 +679,7 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     group = group
   )
 
-  list(
+  spec <- list(
     type = "animal",
     term = hs_deparse(call),
     design = "intercept",
@@ -657,17 +690,132 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     pedigree_source = pedigree_input$source,
     pedigree = pedigree_spec
   )
+  if (!is.null(rr_spec)) {
+    spec$design <- "random_regression"
+    spec$covariance <- "random_regression"
+    spec$random_regression <- rr_spec
+  }
+  spec
+}
+
+# Parse `rr(covariate, order = k)` from the left-hand side of an `animal()`
+# random-effect expression. `covariate` is a bare data column that varies within
+# individual (repeated records); `order` is the number of Legendre coefficients
+# (default 2 = intercept + slope). The covariate is standardized to [-1, 1] via
+# its observed data range in the engine; the (lower, upper) bounds are recorded
+# here so extractors can re-standardize a user-supplied `at =` on the original
+# scale. The provisional grammar is proposed to the twin on HSquared.jl#61.
+hs_parse_rr_lhs <- function(lhs, data) {
+  lhs <- hs_unwrap_parentheses(lhs)
+  args <- as.list(lhs)[-1L]
+  arg_names <- names(args)
+  if (is.null(arg_names)) {
+    arg_names <- rep("", length(args))
+  }
+
+  covariate_candidates <- which(arg_names == "" | arg_names == "covariate")
+  if (length(covariate_candidates) != 1L) {
+    stop(
+      "`rr()` must name exactly one covariate column, for example ",
+      "`rr(age, order = 2)`.",
+      call. = FALSE
+    )
+  }
+  covariate_expr <- hs_unwrap_parentheses(args[[covariate_candidates]])
+  if (!is.symbol(covariate_expr)) {
+    stop(
+      "The `rr()` covariate must be a bare column name, for example ",
+      "`rr(age, order = 2)`.",
+      call. = FALSE
+    )
+  }
+  covariate <- as.character(covariate_expr)
+  if (!covariate %in% names(data)) {
+    stop(
+      "`rr()` covariate `",
+      covariate,
+      "` was not found in `data`.",
+      call. = FALSE
+    )
+  }
+
+  named_args <- args[arg_names != "" & arg_names != "covariate"]
+  unsupported <- setdiff(names(named_args), "order")
+  if (length(unsupported) > 0L) {
+    stop(
+      "`rr()` argument",
+      if (length(unsupported) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unsupported), collapse = ", "),
+      if (length(unsupported) > 1L) {
+        " are planned, not implemented."
+      } else {
+        " is planned, not implemented."
+      },
+      " The opt-in random-regression grammar currently accepts only ",
+      "`rr(covariate, order = k)`.",
+      call. = FALSE
+    )
+  }
+
+  order <- if ("order" %in% names(named_args)) named_args$order else 2
+  order <- suppressWarnings(as.integer(order))
+  if (length(order) != 1L || is.na(order) || order < 1L) {
+    stop(
+      "`rr(order = ...)` must be a single positive integer (the number of ",
+      "Legendre coefficients; 2 = intercept + slope).",
+      call. = FALSE
+    )
+  }
+
+  values <- data[[covariate]]
+  if (!is.numeric(values)) {
+    stop(
+      "`rr()` covariate `",
+      covariate,
+      "` must be numeric.",
+      call. = FALSE
+    )
+  }
+  if (anyNA(values) || any(!is.finite(values))) {
+    stop(
+      "`rr()` covariate `",
+      covariate,
+      "` must contain only finite, non-missing values.",
+      call. = FALSE
+    )
+  }
+  lower <- min(values)
+  upper <- max(values)
+  if (!(upper > lower)) {
+    stop(
+      "`rr()` covariate `",
+      covariate,
+      "` must vary (its observed range has zero width), so it cannot be ",
+      "standardized to [-1, 1].",
+      call. = FALSE
+    )
+  }
+
+  list(
+    covariate = covariate,
+    values = as.numeric(values),
+    order = order,
+    lower = as.numeric(lower),
+    upper = as.numeric(upper)
+  )
 }
 
 hs_stop_animal_non_intercept <- function() {
   stop(
-    "Only random-intercept syntax `animal(1 | id, pedigree = ped)` is ",
-    "implemented inside `animal()`. For the current opt-in multivariate animal ",
-    "model, put traits on the left-hand side as ",
+    "Only random-intercept syntax `animal(1 | id, pedigree = ped)` and the ",
+    "opt-in random-regression syntax `animal(rr(covariate, order = k) | id, ",
+    "pedigree = ped)` are implemented inside `animal()`. For the current opt-in ",
+    "multivariate animal model, put traits on the left-hand side as ",
     "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
-    "`engine_control = list(target = \"multivariate\")`. Long-format ",
-    "`animal(trait | id, cov = ...)`, random-slope, and random-regression ",
-    "(reaction-norm) syntax are planned, not implemented.",
+    "`engine_control = list(target = \"multivariate\")`. Random regression uses ",
+    "`engine_control = list(target = \"random_regression\")`. Long-format ",
+    "`animal(trait | id, cov = ...)` and random-slope syntax are planned, not ",
+    "implemented.",
     call. = FALSE
   )
 }

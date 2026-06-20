@@ -63,7 +63,7 @@ reference:
       - genomic_markers
       - qg_effect_markers
   - title: Extractor contract
-    desc: Extractors for fitted `hsquared_fit` objects. The default `hsquared()` call fits the v0.1 Gaussian animal model; repeatability, two-effect, genomic, SNP-BLUP, and multivariate outputs come from opt-in experimental targets.
+    desc: Extractors for fitted `hsquared_fit` objects. The default `hsquared()` call fits the v0.1 Gaussian animal model; repeatability, two-effect, genomic, SNP-BLUP, multivariate, and random-regression outputs come from opt-in experimental targets.
     contents:
       - variance_components
       - heritability
@@ -80,6 +80,7 @@ reference:
       - permanent_effects
       - common_env_effects
       - maternal_effects
+      - random_regression_extractors
       - prediction_error_variance
       - reliability
       - fit_diagnostics

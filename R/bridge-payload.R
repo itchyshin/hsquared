@@ -57,6 +57,13 @@ hs_build_bridge_payload <- function(spec) {
     )
   }
 
+  # Opt-in random-regression (reaction-norm) design carried on `animal()`'s LHS:
+  # the per-record covariate and the number of Legendre coefficients travel in
+  # the payload; the engine builds the n x k Phi basis from the standardized
+  # covariate. The recorded (lower, upper) bounds let extractors re-standardize a
+  # user-supplied `at =` covariate value on the original scale.
+  rr <- animal$random_regression
+
   structure(
     list(
       y = if (isTRUE(spec$response$multivariate)) {
@@ -73,6 +80,7 @@ hs_build_bridge_payload <- function(spec) {
       Z = Z,
       Z2 = Z2,
       effect2 = effect2,
+      random_regression = rr,
       Ainv = NULL,
       method = spec$method,
       family = spec$family$family,
@@ -89,10 +97,22 @@ hs_build_bridge_payload <- function(spec) {
         response = spec$response$name,
         response_type = if (isTRUE(spec$response$multivariate)) {
           "multivariate"
+        } else if (!is.null(rr)) {
+          "random_regression"
         } else {
           "univariate"
         },
         trait_names = spec$response$trait_names,
+        random_regression = if (is.null(rr)) {
+          NULL
+        } else {
+          list(
+            covariate = rr$covariate,
+            order = rr$order,
+            lower = rr$lower,
+            upper = rr$upper
+          )
+        },
         fixed_colnames = colnames(spec$fixed$design),
         animal_id_column = animal$group,
         observed_ids = observed_ids,

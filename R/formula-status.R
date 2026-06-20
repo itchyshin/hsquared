@@ -58,6 +58,7 @@ hs_formula_status_terms <- function() {
     "permanent(1 | id)",
     "common_env(1 | group)",
     "maternal_genetic(1 | dam)",
+    "animal(rr(covariate, order = 2) | id, pedigree = ped)",
     "maternal_env(1 | dam)",
     "paternal_genetic(1 | sire, pedigree = ped)",
     "paternal_env(1 | sire)",
@@ -88,7 +89,7 @@ hs_formula_status_terms <- function() {
 hs_formula_status_categories <- function() {
   c(
     rep("v0.1 animal model", 2L),
-    rep("standard quantitative genetics", 10L),
+    rep("standard quantitative genetics", 11L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 6L),
     rep("multivariate and factor analytic", 5L)
@@ -98,7 +99,7 @@ hs_formula_status_categories <- function() {
 hs_formula_status_phases <- function() {
   c(
     rep("Phase 1", 2L),
-    rep("Phase 2", 10L),
+    rep("Phase 2", 11L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 6L),
     rep("Phase 3-4", 5L)
@@ -107,7 +108,7 @@ hs_formula_status_phases <- function() {
 
 hs_formula_status_syntax <- function() {
   c(
-    rep("parsed", 5L),
+    rep("parsed", 6L),
     rep("reserved", 13L),
     rep("parsed", 3L),
     rep("reserved", 3L),
@@ -122,6 +123,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in repeatability)",
     "fitted (opt-in common-environment)",
     "fitted (opt-in maternal)",
+    "fitted (opt-in random-regression)",
     rep("not available", 13L),
     "fitted (opt-in genomic)",
     "fitted (opt-in genomic / SNP-BLUP)",
@@ -159,6 +161,14 @@ hs_formula_status_behavior <- function() {
       "Maternal genetic effect of the opt-in, experimental two-effect model (A2 =",
       "pedigree A via the dam); requires an animal() term and engine = \"julia\",",
       "target = \"two_effect\"."
+    ),
+    paste(
+      "Opt-in, experimental random-regression (reaction-norm) model: rr(covariate,",
+      "order = k) on the animal() left-hand side fits a k-coefficient normalized-",
+      "Legendre polynomial of a within-individual covariate; requires repeated",
+      "records and engine = \"julia\", target = \"random_regression\". PROVISIONAL",
+      "grammar (HSquared.jl#61); homogeneous residual, no permanent-environment",
+      "term yet."
     ),
     rep(inert_marker_text, 6L),
     paste(
