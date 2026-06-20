@@ -4589,3 +4589,16 @@ release".
   first draft's validation hardened (sharp c<n test, dual GRM, truth comparison,
   rSVD sizing, complexity label, single-step framing). Validation debt: real-marker
   recovery + BLUPF90 comparator.
+
+## 2026-06-20 (session 3 — Julia engine unlocks: Meuwissen-Luo + symbolic-once PR seed)
+
+- After a discovery workflow (`wi3omhdhz`) mapped the full remaining surface; user
+  chose "Julia engine unlocks first". No R package code touched.
+- **Meuwissen-Luo O(n) sparse inbreeding** (`prototypes/meuwissen-luo-inbreeding.jl`,
+  stdlib-only): `~/.juliaup/bin/julia hsq_proto_ml_inbreeding.jl` -> exit 0.
+  - max|F_ML - F_dense| = **0.00e+00** vs an independent dense tabular A at n=500/2000,
+    1500-inbred (max F=0.5), and 2000 with 35% one-parent-known.
+  - scale (dense numerator-relationship hard-throws > 10,000): n=20k 0.48s, 50k 1.53s,
+    100k 3.48s, 250k 9.86s.
+- **Symbolic-once fit_ai_reml PR seed** (`prototypes/symbolic-once-fit_ai_reml.patch.md`):
+  diff + parity test for the cholesky!-reuse refactor (twin's lane to apply).

@@ -188,6 +188,37 @@ Build cost is `O(c·m·n + c²·n + c³)` — the marker product `Gcn=Wc·Wn'/m`
 **Validation debt:** real-marker (LD/MAF/pedigree-relatedness) recovery and a BLUPF90
 comparator-parity run are not done; the recovery target here is a controlled GRM.
 
+## 5. Meuwissen-Luo O(n) sparse inbreeding — `meuwissen-luo-inbreeding.jl`
+
+The **>10,000-pedigree unlock.** The engine's `pedigree_inverse` routes the
+inbreeding vector `F` through `_numerator_relationship` — a **dense n×n** recursion
+hard-capped at 10,000 animals (`pedigree.jl:106-109`) — so **no pedigree above 10k
+can build A⁻¹ today**. This computes the full `F` via the `A = L D L'` decomposition
+(`a_ii = Σ_k L_ik²·d_k`, the i-th row of `L` propagated up the ancestors of `i`,
+ordered by a tiny stdlib max-heap), never forming the dense A.
+
+```
+correctness vs an INDEPENDENT dense tabular A (textbook recursion, engine-free):
+  n=500  both-parents          max|F_ML - F_dense| = 0.00e+00
+  n=2000 both-parents          max|F_ML - F_dense| = 0.00e+00
+  n=1500 inbred (sib-mating)   max|F_ML - F_dense| = 0.00e+00   (max F = 0.5000)
+  n=2000 35% one-parent-known  max|F_ML - F_dense| = 0.00e+00
+scale (dense path throws > 10,000; ~12-generation pedigree):
+  n=20000  0.48s   n=50000 1.53s   n=100000 3.48s   n=250000 9.86s
+```
+
+**Bit-exact** against an independent dense tabular A across both-parents, full-sib
+inbreeding, and one-parent-known pedigrees (the dense tabular is a different
+algorithm, so the `0.0` match is the verification). Hand-off to the twin: replace the
+dense-F bottleneck in `pedigree_inverse` with this, removing the 10k cap. Cost scales
+with total ancestor count (shallow / many-founder real pedigrees are fast; deeply
+interconnected synthetic ones are slower — as with any Meuwissen-Luo).
+
+## 6. Symbolic-once `fit_ai_reml` — `symbolic-once-fit_ai_reml.patch.md`
+
+The ready-to-apply #58 PR seed (diff + parity test) for the symbolic-once `cholesky!`
+refactor benchmarked in §3. Twin's lane to apply; not applied from here.
+
 ## Files
 
 - `matrix-free-genomic-reml.jl` — exact low-rank AI-REML + dense validation + known-truth recovery + SLQ logdet demo. Deps: stdlib only.
@@ -198,3 +229,5 @@ comparator-parity run are not done; the recovery target here is a controlled GRM
 - `symbolic-once-cholesky.jl` — symbolic-once `cholesky!` vs fresh `cholesky` in the AI-REML loop, on a real pedigree-structured sparse `A⁻¹`. Deps: stdlib only.
 - `engine-scaling-plan.md` — the adversarially-verified staged engineering plan (provenance + risk register + division of labour) feeding HSquared.jl #51/#58.
 - `apy-sparse-ginv.jl` — first open-Julia APY sparse genomic inverse: sharp c<n correctness, dual-GRM honest recovery, randomized-SVD core sizing, large-n build. Deps: LinearAlgebra + SparseArrays. (Scout note: `../scout/2026-06-20-apy-sparse-ginv-scout.md`.)
+- `meuwissen-luo-inbreeding.jl` — Meuwissen-Luo O(n) sparse inbreeding (the >10k-pedigree A⁻¹ unlock); bit-exact vs dense tabular, n=250k in ~10s. Deps: stdlib only.
+- `symbolic-once-fit_ai_reml.patch.md` — ready-to-apply #58 PR seed (diff + parity test) for the symbolic-once `cholesky!` refactor.
