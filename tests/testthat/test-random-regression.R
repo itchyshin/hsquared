@@ -292,6 +292,13 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
   # reaction-norm autoplot returns a faceted ggplot (variance + heritability).
   p_rn <- autoplot(fit, "reaction_norm")
   expect_s3_class(p_rn, "ggplot")
+  # The reaction-norm trajectories are functionals of K_g, so the figure is in
+  # the plotting-standard's rotation-invariant set (24-plotting-standard.md §3
+  # binding rule): rotation_status MUST be "rotation_invariant".
+  m_rn <- attr(p_rn, "hsquared_meta")
+  expect_equal(m_rn$type, "reaction_norm")
+  expect_equal(m_rn$rotation_status, "rotation_invariant")
+  expect_equal(m_rn$interval_status, "descriptive")
 
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)

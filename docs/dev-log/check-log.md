@@ -4767,3 +4767,35 @@ release".
   engine boundary-throw discipline). test-autoplot 18 pass; rcmdcheck 0/0/0.
 - Posted the standard to the twin on #61 (R-set, flexible, asks: confirm the §6
   naming map; the live R↔engine parity test is the shared §5 drift mitigation).
+
+## 2026-06-20 (session 5 — answered twin #93 plotting plot-data contract + §3 fix)
+
+- Answered the twin's **8 structured questions on `HSquared.jl#93`** (plotting
+  plot-data contract; the engine adapts its `*_plot_data` payloads to `autoplot.R`)
+  and **settled the h² clamp divergence: RAW + annotate, no clamp** (engine ships
+  raw `lo`/`hi`; R owns the `[0,1]` annotation). Reply
+  `#93 issuecomment-4759668333`; pointer on `#61 issuecomment-4759670038`.
+- Draft **adversarially verified** before posting (4-lens Workflow `wf_009f0a43-922`:
+  Hopper/Florence/Rose/Pat). All `minor_gaps`; applied every should-fix + nit:
+  Q1 panel-scoped rbind; Q2 pinned coordinate field names (`covariate`/`surface`;
+  `covariate`/`eigenfunctions`/`axis`/`variance_explained` — `axis` not `rank`);
+  Q3a read-only `method` field already exists (defer only the settable arg);
+  Q3b/divergence scoped as a payload request; Q4 flat status fields + cite the §3
+  BINDING rule honestly; Q7 added the rotation-arbitrary/span-ambiguity directional
+  caveat (arrow biplot = new §1 figure); Q8 EBV field named `value` (not `ebv`) +
+  `pev_scale` honest-status; TL;DR parity-net marked PLANNED.
+- **Real fix surfaced by Florence:** `hs_autoplot_reaction_norm()` shipped without
+  `rotation_status`, defaulting to `"not_applicable"` — a self-violation of the
+  standard's §3 BINDING rule (`type ∈ {g_matrix,g_geometry,reaction_norm,rr_surface}`
+  MUST be `"rotation_invariant"`). Fixed: `R/autoplot.R` now emits
+  `rotation_status="rotation_invariant"` + `interval_status="descriptive"` for
+  reaction_norm; added a `testthat` guard (`test-random-regression.R`).
+- **Standard amended** (`docs/design/24-plotting-standard.md` §3/§4/§6) to encode
+  the field decisions (flat engine status fields; pinned coordinate/EBV field names;
+  `interval_status`/`interval_method`; `breeding_values_plot_data` in the naming map)
+  — standard + #93 reply are one source of truth.
+- Commands: `air format R/autoplot.R tests/testthat/test-random-regression.R` (clean);
+  `devtools::document()` (no man-page diffs); `testthat::test_file` on test-autoplot
+  (36 pass) + test-random-regression (60 pass, 1 on-CRAN skip);
+  `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
+  No live engine needed (reaction_norm fixture is a pure-R `hs_new_fit`).

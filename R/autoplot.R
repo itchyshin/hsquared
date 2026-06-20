@@ -375,6 +375,8 @@ hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
       ) +
       theme_hsquared(),
     type = "reaction_norm",
+    interval_status = "descriptive",
+    rotation_status = "rotation_invariant",
     notes = "supplied-K_g descriptive trajectories; h2(t) can overstate without a PE term"
   )
 }

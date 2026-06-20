@@ -2,7 +2,9 @@
 
 Status: **proposed standard v1**, 2026-06-20 (R lane / Florence). Flexible — this
 is the shared figure contract both lanes follow, open to the twin's refinement on
-`HSquared.jl#61`. It formalizes what is shipped in `R/autoplot.R` and aligns with
+`HSquared.jl#61` / `#93`. *Updated 2026-06-20: §3/§4/§6 encode the `#93` plot-data
+field decisions (flat engine status fields; pinned coordinate/EBV field names;
+`interval_status`/`interval_method`).* It formalizes what is shipped in `R/autoplot.R` and aligns with
 the twin's plotting **architecture** (`HSquared.jl docs/design/13-plotting-layer.md`)
 and the sister precedents (`gllvmTMB` Confidence Eye / rotated loadings; `drmTMB`
 corpairs / parameter surfaces). Reviewed by Florence / Pat / Rose / Hopper.
@@ -81,9 +83,11 @@ A figure that cannot state its caveat does not ship.
 ## 3. The `hsquared_meta` schema (R-side; maps to engine flags)
 
 Every **R** figure carries `attr(p, "hsquared_meta")`. The **engine** carries the
-same status as fields on its plot-data NamedTuples (`supplied`,
-`rotation_invariant`, `is_eigenstructure_not_loadings`, `interval_status`, …); the
-R schema is the canonical cross-lane vocabulary they map onto:
+same status as **flat top-level fields** on each `*_plot_data` NamedTuple (not a
+nested `meta` sub-tuple, so R's unpack is single-path): `supplied`,
+`rotation_invariant`, `is_eigenstructure_not_loadings`, `interval_status`,
+`interval_method`, …; the R schema is the canonical cross-lane vocabulary they map
+onto:
 
 ```
 hsquared_meta = list(
@@ -104,7 +108,9 @@ hsquared_meta = list(
 
 **Machine-checkable rule (BINDING):** for `type ∈ {g_matrix, g_geometry,
 reaction_norm, rr_surface}` `rotation_status` MUST equal `"rotation_invariant"`;
-any other value is a contract violation a downstream tool may reject.
+any other value is a contract violation a downstream tool may reject. R enforces
+this in `testthat` for the built members (`g_matrix`, `reaction_norm`);
+`g_geometry`/`rr_surface` are guarded when they ship.
 
 ## 4. Data contract — engine NamedTuple fields ↔ R tidy shape
 
@@ -114,12 +120,12 @@ them:
 
 | Figure | Engine `*_plot_data` fields (HSquared.jl) | R tidy shape |
 | --- | --- | --- |
-| forest (variance/recovery) | `variance_components_plot_data` (planned): components, estimates, lo, hi | `data.frame(term, estimate, lo, hi, panel)` |
-| caterpillar (EBV) | (planned) ids, ebv, pev | `data.frame(rank, value, lo, hi, trait)` |
+| forest (variance/recovery) | `variance_components_plot_data` (planned): components, estimates, lo (raw, unclamped), hi (raw, unclamped), interval_status, interval_method | `data.frame(term, estimate, lo, hi, panel)` |
+| caterpillar (EBV) | `breeding_values_plot_data` (planned): id, trait, value (EBV), pev, pev_scale | `data.frame(rank, value, lo, hi, trait)` (rank is R-side presentation) |
 | g_matrix | `genetic_correlation_plot_data`: `traits`, `genetic_correlations`, `heritabilities`, `rotation_invariant` | long `data.frame(row, col, value, label)` + low-h² flag |
 | g_geometry | `genetic_pca_plot_data`: `eigenvalues`, `variance_explained`, `eigenvectors`, `loadings_scaled`, `axis_labels`, `rotation_invariant`, `is_eigenstructure_not_loadings` | `data.frame(axis, eigenvalue, variance_explained)` |
-| reaction_norm | `rr_genetic_variance_plot_data` / `rr_eigenfunctions_plot_data` | `data.frame(covariate, value, panel)` |
-| rr_surface | `rr_covariance_surface_plot_data`: covariate grid + surface | long `data.frame(covariate_i, covariate_j, value)` |
+| reaction_norm | `rr_genetic_variance_plot_data`: covariate, value; `rr_eigenfunctions_plot_data`: covariate, eigenfunctions (m×k wide), axis (k), variance_explained (k) | `data.frame(covariate, value, panel)`; eigenfns melt + facet by `axis` |
+| rr_surface | `rr_covariance_surface_plot_data`: covariate (shared grid vector), surface (m×m wide) | long `data.frame(covariate_i, covariate_j, value)` |
 | manhattan | `marker_manhattan_data`: `marker`, `chromosome`, `position`, `plot_position`, neglog10p | `data.frame(marker, chromosome, position, plot_position, neglog10p)` + threshold; degrades to row-index when no map metadata |
 | qq | `marker_qq_data`: observed/expected | `data.frame(observed_neglog10p, expected_neglog10p, marker)` |
 | λGC | `marker_genomic_inflation`: median χ², expected | labelled scalar |
@@ -146,7 +152,7 @@ the map is explicit per figure:
 | R `autoplot` type | Julia `plot(...; kind=)` | Engine preparer |
 | --- | --- | --- |
 | `variance` | `:variance` | `variance_components_plot_data` (planned) |
-| `breeding_values` | `:breeding_values` | (planned) |
+| `breeding_values` | `:breeding_values` | `breeding_values_plot_data` (planned) |
 | `g_matrix` | `:g_matrix` | `genetic_correlation_plot_data` |
 | `g_geometry` | `:g_geometry` | `genetic_pca_plot_data` |
 | `reaction_norm` | `:reaction_norm` | `rr_genetic_variance_plot_data` / `rr_eigenfunctions_plot_data` |
