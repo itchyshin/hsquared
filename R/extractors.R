@@ -203,11 +203,13 @@ hs_multivariate_extractor_default <- function(name) {
 #' These extractor names are reserved for future factor-analytic G-matrix
 #' results. The current package can report invariant covariance and correlation
 #' matrices from opt-in multivariate fits, but it does not yet expose
-#' interpreted loadings, uniqueness/specific variance, latent breeding values,
-#' or eigen-G summaries. Loading columns are rotation-nonunique until a
-#' rotation or constraint policy is validated. Future `hsquared_fit` methods
-#' reserve `effect` and rotation controls, but these controls currently error
-#' rather than implying that loading axes are interpretable.
+#' interpreted loadings, uniqueness/specific variance, or latent breeding
+#' values. Loading columns are rotation-nonunique until a rotation or
+#' constraint policy is validated. Future `hsquared_fit` methods reserve
+#' `effect` and rotation controls, but these controls currently error rather
+#' than implying that loading axes are interpretable. The **rotation-invariant**
+#' genetic eigenstructure and evolvability geometry are available now via
+#' [eigen_G()] and the [g_matrix_geometry] family.
 #'
 #' @inheritParams variance_components
 #'
@@ -285,7 +287,7 @@ latent_breeding_values.hsquared_fit <- function(
   )
 }
 
-#' @rdname factor_g_extractors
+#' @rdname g_matrix_geometry
 #' @export
 eigen_G <- function(object, ...) {
   UseMethod("eigen_G")
@@ -293,16 +295,12 @@ eigen_G <- function(object, ...) {
 
 #' @export
 eigen_G.default <- function(object, ...) {
-  hs_factor_g_extractor_default("eigen_G")
+  stop("`eigen_G()` requires an `hsquared_fit` object.", call. = FALSE)
 }
 
 #' @export
-eigen_G.hsquared_fit <- function(object, effect = "animal", ...) {
-  hs_factor_g_extractor_planned(
-    "eigen_G",
-    "G-matrix eigen summaries",
-    effect = effect
-  )
+eigen_G.hsquared_fit <- function(object, ...) {
+  hs_g_eigen(hs_fit_genetic_G(object))
 }
 
 hs_factor_g_extractor_default <- function(name) {

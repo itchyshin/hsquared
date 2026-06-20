@@ -73,6 +73,7 @@ reference:
       - covariance_standard_errors
       - covariance_structure_lrt
       - factor_g_extractors
+      - g_matrix_geometry
       - breeding_values
       - repeatability
       - repeatability_interval

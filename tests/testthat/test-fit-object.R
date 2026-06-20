@@ -224,15 +224,12 @@ test_that("extractor defaults do not imply fitted model support", {
     fixed = TRUE
   )
   expect_error(
-    eigen_G(list()),
-    "reserves this extractor name",
-    fixed = TRUE
-  )
-  expect_error(
     genetic_loadings(list()),
     "reserves this extractor name",
     fixed = TRUE
   )
+  # eigen_G() is no longer reserved (rotation-invariant eigenstructure); its
+  # behaviour is covered in test-evolvability.R.
 })
 
 test_that("reserved factor-analytic extractors fail with rotation-aware scope", {
@@ -267,16 +264,9 @@ test_that("reserved factor-analytic extractors fail with rotation-aware scope", 
     "planned, not implemented.*rotation-nonunique",
     perl = TRUE
   )
-  expect_error(
-    eigen_G(fit),
-    "planned, not implemented.*rotation-nonunique",
-    perl = TRUE
-  )
-  expect_error(
-    eigen_G(fit, effect = "residual"),
-    "effect = \"animal\"",
-    fixed = TRUE
-  )
+  # eigen_G() now returns the rotation-invariant eigenstructure (see
+  # test-evolvability.R); only the loading-based extractors stay reserved.
+  expect_equal(eigen_G(fit)$values, eigen(fit$result$genetic_covariance)$values)
 })
 
 test_that("unsupported inference helpers fail with explicit scope", {

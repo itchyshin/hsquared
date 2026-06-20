@@ -5,7 +5,6 @@
 \alias{genetic_loadings}
 \alias{specific_variance}
 \alias{latent_breeding_values}
-\alias{eigen_G}
 \title{Reserved factor-analytic and G-matrix extractors}
 \usage{
 genetic_loadings(object, ...)
@@ -13,8 +12,6 @@ genetic_loadings(object, ...)
 specific_variance(object, ...)
 
 latent_breeding_values(object, ...)
-
-eigen_G(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object.}
@@ -28,9 +25,11 @@ These reserved extractors currently error for \code{hsquared_fit} objects.
 These extractor names are reserved for future factor-analytic G-matrix
 results. The current package can report invariant covariance and correlation
 matrices from opt-in multivariate fits, but it does not yet expose
-interpreted loadings, uniqueness/specific variance, latent breeding values,
-or eigen-G summaries. Loading columns are rotation-nonunique until a
-rotation or constraint policy is validated. Future \code{hsquared_fit} methods
-reserve \code{effect} and rotation controls, but these controls currently error
-rather than implying that loading axes are interpretable.
+interpreted loadings, uniqueness/specific variance, or latent breeding
+values. Loading columns are rotation-nonunique until a rotation or
+constraint policy is validated. Future \code{hsquared_fit} methods reserve
+\code{effect} and rotation controls, but these controls currently error rather
+than implying that loading axes are interpretable. The \strong{rotation-invariant}
+genetic eigenstructure and evolvability geometry are available now via
+\code{\link[=eigen_G]{eigen_G()}} and the \link{g_matrix_geometry} family.
 }
