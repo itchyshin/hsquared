@@ -17,11 +17,17 @@
   `± 1.96·√PEV` bands (faceted by trait for multivariate fits);
   `autoplot(fit, "g_matrix")` draws a **rotation-invariant**
   genetic-correlation heatmap of `G` for multivariate fits (raw factor
-  loadings are never plotted — the ratified cross-lane convention);
+  loadings are never plotted — the ratified cross-lane convention;
+  off-diagonal cells involving a low-`h²` trait are flagged as
+  imprecise); `autoplot(fit, "g_geometry")` draws a rotation-invariant
+  genetic-eigenstructure **scree** (eigenvalues + % variance explained;
+  axis directions / loadings are never drawn);
   `autoplot(fit, "reaction_norm")` draws the genetic-variance and
   heritability trajectories of a random-regression fit; and
-  `autoplot(gwas_result)` draws a Manhattan plot carrying the
-  uncalibrated-significance banner. Also new:
+  `autoplot(gwas_result, "manhattan")` (default) /
+  `autoplot(gwas_result, "qq")` draw a Manhattan plot and a QQ plot (the
+  latter with a `lambda_GC` genomic-inflation diagnostic), both carrying
+  the uncalibrated-significance banner. Also new:
   [`hs_recovery_forest()`](https://itchyshin.github.io/hsquared/reference/hs_recovery_forest.md)
   for known-truth recovery studies (bias `± 2·MCSE`, intervals covering
   zero = no detectable bias) and an exported
