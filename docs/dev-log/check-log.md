@@ -4907,3 +4907,24 @@ release".
   `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity` **24/24**
   (g-corr ×2, g-pca, variance forest, NaN round-trip, RR parity).
 - CI (commit `34074f3`): pkgdown run `27884896947` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — closed #93 loop + single-step R-wiring build-spec)
+
+- **Closed the #93 plot-data contract loop** with the twin (`issuecomment-4760095710`):
+  R now consumes ALL FOUR landed `*_plot_data` preparers (genetic_correlation,
+  variance_components, genetic_pca, rr_genetic_variance) with a live parity guard
+  each (24/24), incl. the #93 Q6 RR parity she co-owns; the engine status flags are
+  enforced R-side; the RR consumer is rename-robust. Asked her to confirm the §6
+  naming map + the `value` rename on her schedule.
+- **Single-step H⁻¹ construction R-wiring build-spec** (`docs/design/25-...md`) —
+  turns the ranked #3 ("focused fresh-context build") into a mechanical execution:
+  parser grammar (`single_step(1|id, pedigree=ped, markers=M)` vs supplied-Hinv),
+  the **genotyped_rows alignment rule** (the crux: `rownames(M) ⊆ ped_ids`, sorted
+  pedigree-row order, observed NOT required ⊆ markers), the payload contract, the
+  exact engine command sequence, the live reduction test, and a risk register.
+- **LIVE-confirmed the spec's command sequence** (engine, juliaup): a 5-animal
+  pedigree, `additive_relationship(ped)`→A, `G=A[g,g]` all-genotyped,
+  `fit_single_step_reml(y,X,Z,Ainv,A,G,g)` == `fit_ai_reml(animal_model_spec(...))`
+  → **max|ΔVC| = 0.0**. Engine fn names verified callable + exported
+  (`single_step_inverse`, `fit_single_step_reml`, `genomic_relationship_matrix`,
+  `additive_relationship`). Docs-only slice; no R package code changed.
