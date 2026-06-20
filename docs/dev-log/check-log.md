@@ -4641,3 +4641,35 @@ release".
   `pkgdown::check_pkgdown()` clean.
 - Wrote docs/dev-log/after-task/2026-06-20-session-handoff-4.md (START-HERE;
   inherits the /goal, mission-control, the discovery-map plan, the live-bridge recipe).
+
+## 2026-06-20 (session 4 — multivariate t=2 validation evidence + metafounder Gamma reservation)
+
+- **Multivariate t=2 validation slice** (the twin's #1 cross-lane handoff #10/#49 ↔
+  twin #47/#49; backlog #1). Two reproducible `.Rbuildignore`d studies + doc/register
+  reconcile. Files: data-raw/multivariate-recovery-study.R (bug-fixed + RECORDED RESULT
+  filled), data-raw/multivariate-comparator-study.R (new), docs/design/capability-status.md,
+  docs/design/validation-debt-register.md, NEWS.md.
+  - **Harness bug fixed:** the recovery study called `hsquared(..., engine_control=...)` at
+    top level (no `control = hs_control(engine="julia", ...)` wrapper), so the default
+    `engine="fit"` path rejected every fit and `error=function(e) NULL` silently dropped
+    them (reported 0/4 converged in 0.3s). Added the wrapper + surfaced the first error.
+  - **LIVE recovery (operator, PATH=~/.juliaup/bin, HSQUARED_JULIA_PROJECT=sibling,
+    NOT_CRAN=true):** n_rep=100, **100/100 converged**, cold-start diag(2) (not truth),
+    12.6s/rep. Every target within bias ± 2·MCSE (no detectable bias); EBV accuracy
+    0.790/0.742. Corroborates twin #78/#79 with tighter MCSE (100 vs 12 reps).
+  - **sommer comparator (no Julia):** sommer 4.4.5 `mmer` full-unstructured residual vs the
+    twin `phase4_multitrait_parity` target, A rebuilt via nadiv (not copied):
+    max|dG0|=7.5e-5, max|dR0|=7.6e-6, max|dβ|=1.8e-6, max|dh2|=6.8e-5, EBV cor=1.0,
+    max|dEBV|=4.4e-5; loglik offset 113.74 (additive constant, not compared). Recovers the
+    off-diag R0[2,1] the in-suite diagonal-residual `mmes` check can't (mmes errors on an
+    unstructured residual here). V4-MV-REML kept **partial** (promotion twin-gated).
+  - Adversarial verification: 4-lens Workflow (jason/rose/henderson/boole). Both comparator
+    lenses **sound** (correctness agent re-ran and reproduced every number, confirmed the
+    113.7 offset + A symmetry + mmes error); nits applied (loglik offset reporting, column
+    order, claim-boundary). check 0/0/0, check_pkgdown clean.
+- **Metafounder Gamma reservation** (grammar lens should-fix). R/qg-effects.R: added
+  `Gamma = NULL` to the inert `metafounder()` marker signature + @param (so the proposed
+  `metafounder(1|id, pedigree=ped, Gamma=Γ)` grammar isn't silently swallowed by `...`;
+  marker stays planned-not-implemented). `devtools::document()` regenerated
+  man/qg_effect_markers.Rd. check 0/0/0.
+- Q1–Q4 metafounder contract + the MV evidence posted to twin #61.
