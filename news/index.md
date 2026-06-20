@@ -179,6 +179,23 @@
   χ². It mirrors `V4-MV-REML` (`partial`): asymptotic, REML-only, not a
   validated test
   ([\#47](https://github.com/itchyshin/hsquared/issues/47)).
+- **Validation evidence (multivariate, t = 2).** Two reproducible
+  studies now back the experimental multivariate target (both
+  `.Rbuildignore`d, not part of the build).
+  `data-raw/multivariate-recovery-study.R` is a 100-replicate
+  **cold-start** known-truth recovery study in which all six G0/R0
+  elements, the genetic correlation, and both per-trait `h²` fall within
+  bias ± 2·MCSE (100/100 converged; EBV accuracy 0.79/0.74) — **no
+  detectable bias**, agreeing with the twin’s 12-seed study
+  (`HSquared.jl#78`/`#79`); being cold-started from the identity, it is
+  not a warm-start artifact. `data-raw/multivariate-comparator-study.R`
+  is a **full-unstructured-residual** `sommer` external comparator that
+  reproduces the engine’s serialized `phase4_multitrait_parity`
+  G0/R0/β/`h²`/EBV to ≤ 8e-5 and additionally recovers the off-diagonal
+  residual covariance the in-suite diagonal-residual `sommer` check
+  cannot. The multivariate capability **stays `partial`** — this is
+  evidence toward, not promotion of, the twin-gated covered gate
+  ([\#10](https://github.com/itchyshin/hsquared/issues/10)).
 
 ## hsquared 0.1.0
 

@@ -47,7 +47,7 @@ group(formula, ...)
 
 unknown_parent_group(formula, ...)
 
-metafounder(formula, pedigree = NULL, ...)
+metafounder(formula, pedigree = NULL, Gamma = NULL, ...)
 
 inbreeding(formula, ...)
 ```
@@ -81,6 +81,13 @@ inbreeding(formula, ...)
 - K, Kinv, Q:
 
   User-supplied relationship or precision matrices.
+
+- Gamma:
+
+  A supplied metafounder relationship matrix (an `m`-by-`m` covariance
+  over the `m` metafounder pseudo-populations; Legarra et al. 2015).
+  Supplied, not estimated; reserved for the planned `metafounder()`
+  bridge.
 
 ## Value
 

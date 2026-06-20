@@ -114,7 +114,7 @@ reservations that the parser rejects with a planned-not-implemented message.</p>
 <span></span>
 <span><span class="fu">unknown_parent_group</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">metafounder</span><span class="op">(</span><span class="va">formula</span>, pedigree <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">metafounder</span><span class="op">(</span><span class="va">formula</span>, pedigree <span class="op">=</span> <span class="cn">NULL</span>, Gamma <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">inbreeding</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -150,6 +150,13 @@ effects.</p></dd>
 
 <dt id="arg-k-kinv-q">K, Kinv, Q<a class="anchor" aria-label="anchor" href="#arg-k-kinv-q"></a></dt>
 <dd><p>User-supplied relationship or precision matrices.</p></dd>
+
+
+<dt id="arg-gamma">Gamma<a class="anchor" aria-label="anchor" href="#arg-gamma"></a></dt>
+<dd><p>A supplied metafounder relationship matrix (an <code>m</code>-by-<code>m</code>
+covariance over the <code>m</code> metafounder pseudo-populations; Legarra et al.
+2015). Supplied, not estimated; reserved for the planned <code>metafounder()</code>
+bridge.</p></dd>
 
 </dl></div>
     <div class="section level2">
