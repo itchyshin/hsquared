@@ -5015,3 +5015,5 @@ release".
   signs-arbitrary, not-genome-wide-calibrated).
 - `rmarkdown::render()` OK (all figures build); `pkgdown::check_pkgdown()` clean.
   Docs-only (article); no R package code changed.
+- CI (commit `638ad15`, visualizing-models gallery): pkgdown run `27886549198` **success** (the article renders all 10 figures on the site).
+- Follow-up: NEWS.md completeness — added `rr_eigenfunctions` + `rr_surface` to the visualization-layer bullet (they landed after the earlier NEWS edit).
