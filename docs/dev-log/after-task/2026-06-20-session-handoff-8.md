@@ -60,7 +60,11 @@ everywhere); the engine status flags (`rotation_invariant`,
 low-h², g_geometry, reaction_norm, rr_eigenfunctions, rr_surface, Manhattan, QQ +
 λGC, recovery_forest) — no cataloged figures remain.
 
-## DO FIRST next session — execute the single-step build-spec (ranked #3)
+## Ranked #3 DONE — single-step H⁻¹ construction LANDED (s5, commit 80d27cf)
+
+`single_step(1 | id, pedigree = ped, markers = M)` + `target = "single_step_construct"` now builds H⁻¹ engine-side and fits by REML (capability-status partial(R); doc 25 IMPLEMENTED; live reorder + differs-from-pedigree guards green). DO FIRST next: LOCO/single-marker `gwas()` (#4).
+
+## (historical) the single-step build-spec
 
 **`docs/design/25-single-step-construction-bridge.md`** is a complete, live-confirmed
 R-wiring spec for the single-step H⁻¹ **construction** bridge

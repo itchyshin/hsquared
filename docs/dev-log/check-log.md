@@ -5047,3 +5047,4 @@ release".
   string literal). capability-status row flipped planned(R) → **partial (R)**;
   doc 25 marked IMPLEMENTED (as-built, §6 corrected — the markers-G path can't reduce
   to A₂₂, so reorder + differs-from-pedigree are the anchors); NEWS bullet added.
+- CI (commit `80d27cf`, single-step construction): pkgdown run `27887761040` **success**; pages green. Posted to twin #61 (`issuecomment-4760353752`).
