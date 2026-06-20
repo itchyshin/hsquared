@@ -243,6 +243,34 @@ before any GPU. Twin's lane to apply; not applied from here. Dense
 validation-scale; not a sparse production scan or a calibrated-significance claim
 (that is #48).
 
+## 8. AI-REML convergence/robustness hardening — `ai-reml-hardening.jl`
+
+Two gaps in the engine's AI-REML loop (`likelihood.jl:356-420`), with a faithful
+dense mirror that reproduces them + a verified fix:
+
+- **No PD guard (`likelihood.jl:381`).** `cholesky(Symmetric(lhs); check = true)`
+  throws a bare `PosDefException` (LAPACK stacktrace) mid-iteration when the
+  mixed-model `lhs` is not positive-definite — the common real cause being a
+  **rank-deficient / collinear fixed-effect design X** (the `X'X/σ²ₑ` block is
+  then singular). The prototype's guarded factorization (`cholesky(…; check =
+  false)` + `issuccess` + a rank test) turns it into a clear, actionable error:
+  *"the fixed-effect design X is rank-deficient (rank 2 < 3 columns) — drop
+  collinear/aliased terms."*
+- **σ²ₐ→0 step instability.** `score_a` and the AI information scale with
+  `1/σ²ₐ²` / `1/σ²ₐ`, so the Newton step is numerically delicate near the
+  boundary; the step-halving (`:407-413`) guards positivity but not the
+  factorization. The fix composes a guarded factor with step-halving.
+
+```
+well-posed:  raw == guarded to 0.00e+00 (non-regressive)
+collinear X: raw -> cryptic PosDefException ; guarded -> clear rank-deficient error
+recovery over 20 seeds: mean sa2=0.652 (truth 0.6), se2=0.930 (truth 1.0), 20/20 conv
+```
+
+The dense loop mirrors `likelihood.jl` line-for-line (lhs / score / AI-information
+/ step-halving) and recovers the truth on average, so the guard maps straight onto
+the engine's sparse loop. Twin's lane to apply (#58).
+
 ## Files
 
 - `matrix-free-genomic-reml.jl` — exact low-rank AI-REML + dense validation + known-truth recovery + SLQ logdet demo. Deps: stdlib only.
@@ -256,3 +284,4 @@ validation-scale; not a sparse production scan or a calibrated-significance clai
 - `meuwissen-luo-inbreeding.jl` — Meuwissen-Luo O(n) sparse inbreeding (the >10k-pedigree A⁻¹ unlock); bit-exact vs dense tabular, n=250k in ~10s. Deps: stdlib only.
 - `symbolic-once-fit_ai_reml.patch.md` — ready-to-apply #58 PR seed (diff + parity test) for the symbolic-once `cholesky!` refactor.
 - `batched-marker-scan.jl` — exact drop-in speedup for the post-fit marker scan (`_mixed_marker_scan_stats`): one BLAS-3 `cholV \ W` vs the per-marker BLAS-2 loop; element-wise equivalent (≤3e-14), 46.8× at n=2000/m=20000. The CPU reference that gates the GPU marker scan (#51/#48). Deps: stdlib only.
+- `ai-reml-hardening.jl` — faithful dense AI-REML mirror demonstrating the engine's unguarded `cholesky(check=true)` (`likelihood.jl:381`) crypto-failing on rank-deficient X + a guarded fix (clear error); non-regressive (raw==guarded to 0.0), recovers truth over 20 seeds (0.652/0.930). Deps: stdlib only. Twin's lane to apply (#58).

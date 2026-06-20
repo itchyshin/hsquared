@@ -4689,3 +4689,16 @@ release".
   line-for-line; **46.8×** (38.19s → 0.82s), EXACT not an approximation.
   Self-verifying (two independent code paths agree to 1e-16 across 20k markers).
 - No R package code; no public claim. Twin's lane to apply (#48/#51).
+
+## 2026-06-20 (session 4 — AI-REML convergence/robustness hardening prototype)
+
+- `docs/dev-log/prototypes/ai-reml-hardening.jl` (new) + README §8. Faithful dense
+  mirror of the engine AI-REML loop (`likelihood.jl:356-420`) demonstrating two
+  gaps + a verified fix: (1) the unguarded `cholesky(Symmetric(lhs); check=true)`
+  at `likelihood.jl:381` throws a cryptic `PosDefException` on a rank-deficient /
+  collinear X; (2) σ²ₐ→0 step instability.
+- **LIVE (Julia 1.10):** well-posed raw == guarded to **0.00e+00** (non-regressive);
+  collinear X → raw `PosDefException` (cryptic) vs guarded clear error ("X is
+  rank-deficient (rank 2 < 3 columns)…"); faithfulness over 20 seeds mean
+  sa2=0.652 (truth 0.6) / se2=0.930 (truth 1.0), 20/20 converged.
+- No R package code; no public claim. Twin's lane to apply (#58).
