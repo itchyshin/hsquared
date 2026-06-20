@@ -522,7 +522,10 @@ hs_validate_model_inputs <- function(formula, data, family, REML) {
       "` is planned, not implemented. Current fitted paths require ",
       "`family = gaussian()` with identity link; use the v0.1 Gaussian animal ",
       "model path or `model_spec()` with `family = gaussian()` to inspect the ",
-      "contract without fitting.",
+      "contract without fitting. Non-Gaussian fitting is gated on the Julia ",
+      "engine: a Laplace-REML foundation exists there (validation row ",
+      "V6-LAPLACE, partial) but is not yet bridge-wired or comparator-",
+      "calibrated, so no non-Gaussian family is accepted here.",
       call. = FALSE
     )
   }

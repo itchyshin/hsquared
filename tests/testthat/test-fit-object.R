@@ -201,6 +201,13 @@ test_that("extractor defaults do not imply fitted model support", {
     "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
     fixed = TRUE
   )
+  # The reservation now names the uncalibrated-scan honesty caveat + the twin
+  # bridge/threshold gates it is waiting on, instead of staying silent.
+  expect_error(
+    gwas_table(list()),
+    "HSquared.jl#45",
+    fixed = TRUE
+  )
   expect_error(
     eqtl_table(list()),
     "does not fit marker-scan, QTL, GWAS, or eQTL models yet",

@@ -136,6 +136,19 @@ test_that("family errors name the planned non-Gaussian path", {
     "binomial\\(logit\\).*Current fitted paths require",
     perl = TRUE
   )
+
+  # The error reflects the twin's current engine state honestly: a gated,
+  # not-yet-bridge-wired Laplace-REML foundation, not a bare "planned".
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::poisson(),
+      REML = TRUE
+    ),
+    "V6-LAPLACE",
+    fixed = TRUE
+  )
 })
 
 test_that("formula parser rejects bare (... | group) random effects", {

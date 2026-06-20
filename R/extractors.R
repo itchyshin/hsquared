@@ -1254,7 +1254,11 @@ hs_marker_extractor_default <- function(name) {
     "`marker_effects()` and `marker_variance_explained()` are populated only ",
     "by opt-in SNP-BLUP fits; the current package reserves the other marker ",
     "extractor names but does not fit marker-scan, QTL, GWAS, or eQTL models ",
-    "yet.",
+    "yet. The Julia engine has standalone single-marker scans (fixed-effect or ",
+    "supplied-variance Wald tests, nominal / Bonferroni / BH p-values, no LOCO ",
+    "and no calibrated genome-wide significance); surfacing them on a fitted ",
+    "object is gated on the engine post-fit scan bridge (HSquared.jl#45) and ",
+    "calibrated thresholds (HSquared.jl#48).",
     call. = FALSE
   )
 }
