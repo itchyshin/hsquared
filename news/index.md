@@ -28,10 +28,13 @@
   [`theme_hsquared()`](https://itchyshin.github.io/hsquared/reference/theme_hsquared.md).
   The figures are **uncertainty-first** and the helpers are modular
   (each takes a tidy data frame and returns a `ggplot`) so they can be
-  factored into a shared visualization package later. `ggplot2` is now a
-  dependency; the base-R
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method is
-  unchanged.
+  factored into a shared visualization package later. Each figure also
+  carries an `attr(p, "hsquared_meta")` honest-status attribute (type /
+  interval status / rotation status / notes), implementing the §3
+  R-drawing contract of the cross-lane plotting architecture shared with
+  `HSquared.jl` (`13-plotting-layer.md`). `ggplot2` is now a dependency;
+  the base-R [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
+  method is unchanged.
 - **Experimental random-regression (reaction-norm) model.** A new opt-in
   target surfaces the Julia-owned
   `HSquared.fit_random_regression_reml()`:
