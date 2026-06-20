@@ -4860,3 +4860,4 @@ release".
   `test-autoplot` all pass (incl. 11 variance cases); `pkgdown::check_pkgdown()`
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
   **16/16** (g-corr ×2 + variance forest + NaN round-trip).
+- CI (commit `df54258`): pkgdown run `27884196127` **success**; pages deploy green.
