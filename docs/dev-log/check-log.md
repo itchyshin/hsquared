@@ -4887,3 +4887,22 @@ release".
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
   **21/21** (g_pca eigenvalues == eigen(G); marshalled scree consumed).
 - CI (commit `70a8731`): pkgdown run `27884567967` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — reaction_norm consumer + the #93 Q6 RR parity test)
+
+- `hs_autoplot_reaction_norm()` now auto-detects the engine
+  `rr_genetic_variance_plot_data` payload (covariate + genetic-variance +
+  heritability trajectories) when the user has not asked for a custom grid; else
+  recomputes via `rr_genetic_variance()`/`rr_heritability()`. **Rename-robust**:
+  accepts either `value` (the #93-agreed field) or the current `genetic_variance`,
+  so it works whether or not the twin's rename has landed — this removes the
+  handoff's "hold the RR consumer until the rename" dependency.
+- **Delivered the #93 Q6 RR parity test** (the twin asked both lanes to co-own it):
+  a skip-guarded live `testthat` case asserting the engine
+  `rr_genetic_variance_plot_data` `v_g(t)` == R `hs_rr_variance_values()` on a
+  seeded `K_g` / standardized covariate grid.
+- Commands: `air format`; `devtools::document()` (no man change);
+  `test-autoplot` all pass (+2 RR payload tests), `test-random-regression`
+  recompute path still green; `pkgdown::check_pkgdown()` clean;
+  `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity` **24/24**
+  (g-corr ×2, g-pca, variance forest, NaN round-trip, RR parity).

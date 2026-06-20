@@ -528,6 +528,55 @@ test_that("g_matrix payload and recompute paths agree on identical G", {
   expect_equal(d_payload$label, d_recompute$label)
 })
 
+test_that("reaction_norm consumes the engine rr_genetic_variance_plot_data payload", {
+  # payload-only fit: if the code tried to recompute it would error (not an RR
+  # fit), so a successful figure using the payload values proves consumption.
+  pd <- list(
+    covariate = c(1, 2, 3),
+    value = c(0.5, 0.8, 0.6),
+    heritability = c(0.2, 0.3, 0.25)
+  )
+  fit <- structure(
+    list(result = list(rr_genetic_variance_plot_data = pd)),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "reaction_norm")
+  expect_s3_class(p, "ggplot")
+  gv <- p$data[p$data$panel == "genetic variance", ]
+  expect_equal(gv$value, c(0.5, 0.8, 0.6))
+  expect_equal(attr(p, "hsquared_meta")$rotation_status, "rotation_invariant")
+})
+
+test_that("reaction_norm payload consumption is rename-robust", {
+  base <- list(covariate = c(1, 2, 3), heritability = c(0.2, 0.3, 0.25))
+  fit_v <- structure(
+    list(
+      result = list(
+        rr_genetic_variance_plot_data = c(base, list(value = c(0.5, 0.8, 0.6)))
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  fit_g <- structure(
+    list(
+      result = list(
+        rr_genetic_variance_plot_data = c(
+          base,
+          list(genetic_variance = c(0.5, 0.8, 0.6))
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  gv_v <- autoplot(fit_v, "reaction_norm")$data
+  gv_g <- autoplot(fit_g, "reaction_norm")$data
+  expect_equal(gv_v$value, gv_g$value)
+  expect_equal(
+    gv_v$value[gv_v$panel == "genetic variance"],
+    c(0.5, 0.8, 0.6)
+  )
+})
+
 test_that("autoplot.hs_gwas returns a Manhattan ggplot with a Bonferroni line", {
   p <- autoplot(mock_gwas())
   expect_s3_class(p, "ggplot")

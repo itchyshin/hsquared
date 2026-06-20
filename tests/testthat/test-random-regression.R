@@ -299,6 +299,58 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
   expect_equal(m_rn$type, "reaction_norm")
   expect_equal(m_rn$rotation_status, "rotation_invariant")
   expect_equal(m_rn$interval_status, "descriptive")
+  # Recompute path: the panels equal the trajectory extractors (not just a ggplot).
+  gv_rn <- rr_genetic_variance(fit)
+  h2_rn <- rr_heritability(fit)
+  expect_equal(
+    p_rn$data$value[p_rn$data$panel == "genetic variance"],
+    gv_rn$value
+  )
+  expect_equal(
+    p_rn$data$value[p_rn$data$panel == "heritability"],
+    h2_rn$value
+  )
+
+  # Payload auto-detect: attach an engine `rr_genetic_variance_plot_data` payload
+  # with a DISTINGUISHABLE covariate grid so consumption vs recompute is provable.
+  fit_pd <- fit
+  fit_pd$result$rr_genetic_variance_plot_data <- list(
+    covariate = c(99, 98, 97),
+    value = c(1, 1, 1),
+    heritability = c(0.5, 0.5, 0.5)
+  )
+  # default at = NULL -> the payload is consumed (its covariate grid is plotted).
+  p_consume <- autoplot(fit_pd, "reaction_norm")
+  expect_equal(
+    sort(unique(p_consume$data$covariate)),
+    c(97, 98, 99)
+  )
+  # a custom `at` must BYPASS the payload and recompute on the user's grid.
+  p_bypass <- autoplot(fit_pd, "reaction_norm", at = c(2, 4, 6))
+  expect_equal(
+    sort(unique(p_bypass$data$covariate)),
+    c(2, 4, 6)
+  )
+  # rename precedence: with both fields, `value` wins over `genetic_variance`.
+  fit_both <- fit
+  fit_both$result$rr_genetic_variance_plot_data <- list(
+    covariate = c(1, 2),
+    value = c(5, 5),
+    genetic_variance = c(9, 9),
+    heritability = c(0.5, 0.5)
+  )
+  gvb <- autoplot(fit_both, "reaction_norm")$data
+  expect_equal(gvb$value[gvb$panel == "genetic variance"], c(5, 5))
+  # partial payload (no heritability) -> all-or-nothing guard recomputes.
+  fit_partial <- fit
+  fit_partial$result$rr_genetic_variance_plot_data <- list(
+    covariate = c(99, 98),
+    value = c(1, 1)
+  )
+  expect_false(any(
+    autoplot(fit_partial, "reaction_norm")$data$covariate %in%
+      c(98, 99)
+  ))
 
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)

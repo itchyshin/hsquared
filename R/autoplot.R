@@ -591,24 +591,57 @@ hs_autoplot_g_geometry <- function(object, ...) {
 }
 
 hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
-  # rr_genetic_variance()/rr_heritability() reject non-RR fits with a clear
-  # message, so no extra guard is needed here.
-  vg <- rr_genetic_variance(object, at = at, n = n)
-  h2 <- rr_heritability(object, at = at, n = n)
-  df <- rbind(
-    data.frame(
-      covariate = vg$covariate,
-      value = vg$value,
-      panel = "genetic variance",
-      stringsAsFactors = FALSE
-    ),
-    data.frame(
-      covariate = h2$covariate,
-      value = h2$value,
-      panel = "heritability",
-      stringsAsFactors = FALSE
+  # Auto-detect the engine `rr_genetic_variance_plot_data` payload (covariate +
+  # genetic-variance + heritability trajectories) when the user has not asked for a
+  # custom grid; else recompute from K_g via rr_genetic_variance()/rr_heritability()
+  # (which also reject non-RR fits with a clear message). Rename-robust: accept
+  # either `value` (the #93-agreed field) or the current `genetic_variance`. NOTE:
+  # the bridge does not attach the payload at fit time yet -- recompute is the live
+  # path.
+  pd <- object$result$rr_genetic_variance_plot_data
+  gv_payload <- NULL
+  if (!is.null(pd)) {
+    gv_payload <- if (!is.null(pd$value)) pd$value else pd$genetic_variance
+  }
+  if (
+    is.null(at) &&
+      !is.null(pd) &&
+      !is.null(pd$covariate) &&
+      !is.null(gv_payload) &&
+      !is.null(pd$heritability)
+  ) {
+    df <- rbind(
+      data.frame(
+        covariate = as.numeric(pd$covariate),
+        value = as.numeric(gv_payload),
+        panel = "genetic variance",
+        stringsAsFactors = FALSE
+      ),
+      data.frame(
+        covariate = as.numeric(pd$covariate),
+        value = as.numeric(pd$heritability),
+        panel = "heritability",
+        stringsAsFactors = FALSE
+      )
     )
-  )
+  } else {
+    vg <- rr_genetic_variance(object, at = at, n = n)
+    h2 <- rr_heritability(object, at = at, n = n)
+    df <- rbind(
+      data.frame(
+        covariate = vg$covariate,
+        value = vg$value,
+        panel = "genetic variance",
+        stringsAsFactors = FALSE
+      ),
+      data.frame(
+        covariate = h2$covariate,
+        value = h2$value,
+        panel = "heritability",
+        stringsAsFactors = FALSE
+      )
+    )
+  }
   df$panel <- factor(df$panel, levels = c("genetic variance", "heritability"))
   hs_attach_meta(
     ggplot2::ggplot(df, ggplot2::aes(x = .data$covariate, y = .data$value)) +

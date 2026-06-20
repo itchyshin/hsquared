@@ -145,6 +145,50 @@ test_that("genetic_pca_plot_data engine preparer matches eigen_G scree [live]", 
   expect_equal(p$data$eigenvalue, ev_engine, tolerance = 1e-10)
 })
 
+test_that("rr_genetic_variance_plot_data engine preparer matches R hs_rr_variance_values [live]", {
+  # The RR parity guard the twin asked to co-own (#93 Q6): R's recompute
+  # (hs_rr_variance_values) and the engine preparer must agree on v_g(t) on a
+  # seeded K_g / standardized covariate grid.
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+
+  k_g <- matrix(c(0.4, 0.05, 0.05, 0.1), 2, 2)
+  ts <- seq(-1, 1, length.out = 5) # standardized covariate in [-1, 1]
+  JuliaCall::julia_assign("Kg_rr", k_g)
+  JuliaCall::julia_assign("ts_rr", ts)
+  JuliaCall::julia_command(
+    "pdrr = HSquared.rr_genetic_variance_plot_data(Kg_rr, ts_rr);"
+  )
+  gv_engine <- JuliaCall::julia_eval("collect(Float64, pdrr.genetic_variance)")
+  cov_engine <- JuliaCall::julia_eval("collect(Float64, pdrr.covariate)")
+
+  gv_r <- hsquared:::hs_rr_variance_values(k_g, ts, nrow(k_g))
+  expect_equal(gv_engine, gv_r, tolerance = 1e-10)
+  expect_equal(cov_engine, ts, tolerance = 1e-12)
+
+  # Consume a marshalled payload end-to-end through autoplot (mirrors the other
+  # live tests; needs heritability, so supply a residual to the preparer).
+  JuliaCall::julia_command(
+    "pdrr2 = HSquared.rr_genetic_variance_plot_data(Kg_rr, ts_rr; residual = 1.0);"
+  )
+  pdrr <- JuliaCall::julia_eval(paste(
+    "(covariate = collect(Float64, pdrr2.covariate),",
+    "genetic_variance = collect(Float64, pdrr2.genetic_variance),",
+    "heritability = collect(Float64, pdrr2.heritability))"
+  ))
+  fit <- structure(
+    list(result = list(rr_genetic_variance_plot_data = pdrr)),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "reaction_norm")
+  gv_panel <- p$data$value[p$data$panel == "genetic variance"]
+  expect_equal(gv_panel, gv_engine, tolerance = 1e-10)
+})
+
 test_that("variance_components_plot_data engine preparer feeds the variance forest [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
