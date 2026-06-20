@@ -14,6 +14,10 @@
 \alias{epistasis}
 \alias{relmat}
 \alias{precision}
+\alias{group}
+\alias{unknown_parent_group}
+\alias{metafounder}
+\alias{inbreeding}
 \title{Quantitative-genetic formula markers}
 \usage{
 permanent(formula, ...)
@@ -39,6 +43,14 @@ epistasis(formula, pedigree = NULL, E = NULL, Einv = NULL, ...)
 relmat(formula, K = NULL, Kinv = NULL, Q = NULL, ...)
 
 precision(formula, Q = NULL, ...)
+
+group(formula, ...)
+
+unknown_parent_group(formula, ...)
+
+metafounder(formula, pedigree = NULL, ...)
+
+inbreeding(formula, ...)
 }
 \arguments{
 \item{formula}{A random-effect expression such as \code{1 | id}.}
@@ -69,6 +81,7 @@ now fit through an opt-in, experimental engine path (\code{engine = "julia"},
 REML-only, not the default, mirroring a \code{partial} validation gate) as the
 second random effect alongside \code{animal()}. The remaining markers
 (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision) are still inert syntax
+imprinting, custom relationship/precision, genetic groups /
+unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.
 }

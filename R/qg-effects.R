@@ -8,7 +8,8 @@
 #' REML-only, not the default, mirroring a `partial` validation gate) as the
 #' second random effect alongside `animal()`. The remaining markers
 #' (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-#' imprinting, custom relationship/precision) are still inert syntax
+#' imprinting, custom relationship/precision, genetic groups /
+#' unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 #' reservations that the parser rejects with a planned-not-implemented message.
 #'
 #' @param formula A random-effect expression such as `1 | id`.
@@ -99,5 +100,29 @@ relmat <- function(formula, K = NULL, Kinv = NULL, Q = NULL, ...) {
 #' @rdname qg_effect_markers
 #' @export
 precision <- function(formula, Q = NULL, ...) {
+  invisible(NULL)
+}
+
+#' @rdname qg_effect_markers
+#' @export
+group <- function(formula, ...) {
+  invisible(NULL)
+}
+
+#' @rdname qg_effect_markers
+#' @export
+unknown_parent_group <- function(formula, ...) {
+  invisible(NULL)
+}
+
+#' @rdname qg_effect_markers
+#' @export
+metafounder <- function(formula, pedigree = NULL, ...) {
+  invisible(NULL)
+}
+
+#' @rdname qg_effect_markers
+#' @export
+inbreeding <- function(formula, ...) {
   invisible(NULL)
 }

@@ -643,8 +643,8 @@ hs_stop_animal_non_intercept <- function() {
     "model, put traits on the left-hand side as ",
     "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
     "`engine_control = list(target = \"multivariate\")`. Long-format ",
-    "`animal(trait | id, cov = ...)` and random-slope syntax are planned, not ",
-    "implemented.",
+    "`animal(trait | id, cov = ...)`, random-slope, and random-regression ",
+    "(reaction-norm) syntax are planned, not implemented.",
     call. = FALSE
   )
 }
@@ -1533,7 +1533,11 @@ hs_planned_qg_effect_marker_names <- function() {
     "dominance",
     "epistasis",
     "relmat",
-    "precision"
+    "precision",
+    "group",
+    "unknown_parent_group",
+    "metafounder",
+    "inbreeding"
   )
 }
 

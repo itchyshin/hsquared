@@ -235,6 +235,70 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
     "`relmat()` is planned, not implemented.",
     fixed = TRUE
   )
+
+  # Phase 2 standard-QG reservations (genetic groups / unknown-parent-groups,
+  # metafounders, inbreeding-as-effect) now error cleanly instead of leaking a
+  # cryptic `could not find function` from the formula environment.
+  for (term in c(
+    "group(1 | id)",
+    "unknown_parent_group(1 | id)",
+    "metafounder(1 | id, pedigree = ped)",
+    "inbreeding(1 | id)"
+  )) {
+    marker <- sub("\\(.*$", "", term)
+    expect_error(
+      hsquared:::hs_build_model_spec(
+        stats::as.formula(
+          paste("y ~ animal(1 | id, pedigree = ped) +", term)
+        ),
+        data = dat,
+        family = stats::gaussian(),
+        REML = TRUE
+      ),
+      paste0("`", marker, "()` is planned, not implemented."),
+      fixed = TRUE
+    )
+  }
+})
+
+test_that("a bare fixed-effect column named `group` still parses", {
+  # The reserved `group()` marker is detected by call head only, so a plain
+  # fixed-effect column that happens to be named `group` must keep parsing.
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    y = c(1, 2, 3),
+    id = c("a", "b", "c"),
+    group = c("g1", "g2", "g1")
+  )
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ group + animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  expect_true(any(grepl("group", payload$metadata$fixed_colnames)))
+})
+
+test_that("animal() random-regression syntax errors as planned", {
+  ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"), x = c(0.1, 0.2))
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(x | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "random-regression",
+    fixed = TRUE
+  )
 })
 
 test_that("formula parser validates pedigree and observed IDs", {

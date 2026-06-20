@@ -61,6 +61,10 @@ hs_formula_status_terms <- function() {
     "maternal_env(1 | dam)",
     "paternal_genetic(1 | sire, pedigree = ped)",
     "paternal_env(1 | sire)",
+    "group(1 | genetic_group)",
+    "unknown_parent_group(1 | upg)",
+    "metafounder(1 | id, pedigree = ped)",
+    "inbreeding(1 | id)",
     "cytoplasmic(1 | maternal_line)",
     "imprinting(1 | id, pedigree = ped, parent = \"maternal\")",
     "dominance(1 | id, pedigree = ped)",
@@ -84,7 +88,7 @@ hs_formula_status_terms <- function() {
 hs_formula_status_categories <- function() {
   c(
     rep("v0.1 animal model", 2L),
-    rep("standard quantitative genetics", 6L),
+    rep("standard quantitative genetics", 10L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 6L),
     rep("multivariate and factor analytic", 5L)
@@ -94,7 +98,7 @@ hs_formula_status_categories <- function() {
 hs_formula_status_phases <- function() {
   c(
     rep("Phase 1", 2L),
-    rep("Phase 2", 6L),
+    rep("Phase 2", 10L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 6L),
     rep("Phase 3-4", 5L)
@@ -104,7 +108,7 @@ hs_formula_status_phases <- function() {
 hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 5L),
-    rep("reserved", 9L),
+    rep("reserved", 13L),
     rep("parsed", 3L),
     rep("reserved", 3L),
     "parsed",
@@ -118,7 +122,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in repeatability)",
     "fitted (opt-in common-environment)",
     "fitted (opt-in maternal)",
-    rep("not available", 9L),
+    rep("not available", 13L),
     "fitted (opt-in genomic)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
@@ -129,6 +133,10 @@ hs_formula_status_fitting <- function() {
 }
 
 hs_formula_status_behavior <- function() {
+  inert_marker_text <- paste(
+    "Exported as an inert marker; hsquared() errors as planned, not",
+    "implemented."
+  )
   c(
     paste(
       "Parsed and fitted by the default v0.1 path (Gaussian animal model,",
@@ -152,13 +160,14 @@ hs_formula_status_behavior <- function() {
       "pedigree A via the dam); requires an animal() term and engine = \"julia\",",
       "target = \"two_effect\"."
     ),
-    rep(
-      paste(
-        "Exported as an inert marker; hsquared() errors as planned, not",
-        "implemented."
-      ),
-      9L
+    rep(inert_marker_text, 6L),
+    paste(
+      "Exported as an inert marker; hsquared() errors as planned, not",
+      "implemented. Inbreeding coefficients F are already computed internally",
+      "for Ainv construction in the engine; this reserved term is the future",
+      "user-facing F-as-effect surface, not yet fittable."
     ),
+    rep(inert_marker_text, 6L),
     paste(
       "Primary genomic effect of the opt-in, experimental GREML model; requires",
       "a user-supplied `Ginv` and engine = \"julia\", target = \"genomic\"."
@@ -172,13 +181,7 @@ hs_formula_status_behavior <- function() {
       "Primary single-step effect of the opt-in, experimental model; requires a",
       "user-supplied `Hinv` and engine = \"julia\", target = \"single_step\"."
     ),
-    rep(
-      paste(
-        "Exported as an inert marker; hsquared() errors as planned, not",
-        "implemented."
-      ),
-      3L
-    ),
+    rep(inert_marker_text, 3L),
     paste(
       "Experimental multivariate Gaussian animal model; requires a `cbind()`",
       "response, an `animal()` term, and engine = \"julia\", target =",
