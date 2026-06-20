@@ -88,6 +88,28 @@ genomic, single-step H, and huge-n. Posted to the twin as a proposed re-scope of
 - Third twin comment posted: HSquared.jl **#58** `issuecomment-4758004745`
   (engine-improvement follow-up).
 
+## Addendum 2 — APY sparse genomic inverse (twin #51 item 2; ultracode-verified)
+- **First open-Julia APY** (`apy-sparse-ginv.jl`) — sparse `G⁻¹` with a diagonal
+  non-core block (Pocrnic 2016), built straight from markers (G never formed) +
+  randomized-SVD core sizing. Scout grounding: `scout/2026-06-20-apy-sparse-ginv-scout.md`.
+- **Adversarially verified** (4-lens panel `wgztxoz8y`): no blockers; the panel
+  *independently* confirmed the core block-inverse math to `2.7e-16`, but caught that
+  the first draft's validation was weak (c=n exactness is a tautology; the synthetic
+  GRM flattered APY; full-G vs truth conflated; complexity label + rSVD/single-step
+  framing over-reached). The shipped version closes all of it:
+  - sharp c<n element-wise test (scattered core) `3.41e-15`, `G_APY⁻¹·Σ−I = 5.6e-15`,
+    nn=1 exactness `4.3e-15`, floor guard demonstrated, marker==dense `2.9e-16`;
+  - dual-GRM recovery — realistic VanRaden shows EIG98 core = **59% of n** (matching the
+    panel's independent 1172–1797), nnz/dense **0.83**; the synthetic clean-rank case
+    (12%, 0.22) is labelled the optimistic limit. **APY compresses only when genomic
+    dimension ≪ n** (asymptotic in n/Ne) — stated plainly;
+  - accuracy-vs-true reported alongside fidelity-to-full;
+  - **randomized-SVD core sizing implemented + validated** (rSVD EIG98 == dense-eig
+    exactly, never forms G) — the genuinely novel missing piece;
+  - scale: n=100k core picked by rSVD (761), nnz/dense **0.015**, build 11.7s, G never formed.
+- **Honesty:** GBLUP-only; single-step + A22-blend are the twin's lane and not
+  exercised. Validation debt (real-marker recovery + BLUPF90 comparator) recorded.
+
 ## Next
 - On the twin's shared genomic fixture: prove low-rank == `fit_ai_reml`, then
   bridge an R `target = "genomic_reml"` scalable path.

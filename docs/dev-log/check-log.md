@@ -4568,3 +4568,24 @@ release".
 - Cross-lane comments to the twin: HSquared.jl #51 `issuecomment-4757925615`
   (brief), #58 `issuecomment-4757928611` (pointer) + `issuecomment-4758004745`
   (engine improvements, attribution-separated).
+
+## 2026-06-20 (session 3 — APY sparse genomic inverse, ultracode-verified)
+
+- **Lane: coordinator / cross-lane research. No R package code touched.** Engine:
+  local Julia 1.10.0. Jason scout -> equation-level APY spec
+  (`docs/dev-log/scout/2026-06-20-apy-sparse-ginv-scout.md`).
+- `~/.juliaup/bin/julia hsq_proto_apy.jl` -> exit 0 (after a 4-lens adversarial
+  panel `wgztxoz8y` rebuild).
+- (i) SHARP correctness (c<n, scattered core): ||G_APY^-1 - inv(Sigma)|| = 3.41e-15;
+  ||G_APY^-1*Sigma - I|| = 5.6e-15; nn=1 vs (G+λI)^-1 = 4.3e-15; floor guard active
+  (66 floored at ridge 1e-12); marker-built==dense-built = 2.9e-16.
+- (ii) recovery: lowrank(d=250) EIG98 core=234 (12% n) fidelity 0.978 acc-vs-true 0.930
+  nnz/dense 0.22 ; VanRaden EIG98 core=1173 (59% n) fidelity 0.9995 acc-vs-true 0.733
+  nnz/dense 0.83 -> APY compresses only when genomic dim << n.
+- (iv) rSVD core sizing == dense eig exactly (234==234, 1173==1173), G never formed.
+- (v) scale build (G never formed; core from rSVD): n=10000 core381 nnz/dense 0.075
+  0.43s ; n=40000 core571 0.028 3.22s ; n=100000 core761 0.015 11.72s.
+- Adversarial panel verdict: no blockers; core math independently confirmed 2.7e-16;
+  first draft's validation hardened (sharp c<n test, dual GRM, truth comparison,
+  rSVD sizing, complexity label, single-step framing). Validation debt: real-marker
+  recovery + BLUPF90 comparator.

@@ -139,6 +139,55 @@ See `engine-scaling-plan.md` for the full adversarially-verified staged plan
 (Stage A symbolic-once + selinv, Stage B low-rank Woodbury + matrix-free PCG +
 stochastic fallback, Stage C GPU), with the repo-grounded risk register.
 
+## 4. APY sparse genomic inverse — `apy-sparse-ginv.jl`
+
+A genuine **first open-Julia APY** (Algorithm for Proven and Young; scout-confirmed
+no open implementation exists — verified locally for JWAS, plus a General-registry
+name sweep; re-confirm before any public first-implementation claim). APY removes
+the dense-G fill-in cliff that the matrix-free / low-rank work and the design pass
+both flagged: it approximates `G⁻¹` by a **sparse** matrix whose non-core block is
+**diagonal** (`Pocrnic et al. 2016`), so `nnz ~ c² + 2cn + n` vs `(c+n)²` dense.
+
+**Scope:** the sparse `G⁻¹` recursion + its core-sizing only. GBLUP-only; the
+single-step `H⁻¹ = A⁻¹ + scatter(G_APY⁻¹ − A22⁻¹)` and the `(1−w)G + w·A22` SPD
+blend live in the twin (`genomic.jl`) and are **not** exercised here.
+
+This prototype was hardened after a 4-lens adversarial verification panel
+(`wgztxoz8y`) — the panel independently confirmed the core block-inverse math to
+`2.7e-16` (signs, broadcasts, Schur all correct) but showed the *first* draft's
+validation was weak/flattering. The shipped version closes every finding:
+
+```
+(i) SHARP correctness (c<n, SCATTERED core — the real proof; c=n alone is a tautology
+    that cannot catch sign/permutation/misalignment bugs):
+    ||G_APY^-1 - inv(Sigma_APY)||/||.|| = 3.41e-15   (core=20, non=40)
+    ||G_APY^-1 * Sigma - I|| = 5.6e-15 ;  symmetry 7.6e-15
+    nn=1 exactness vs (G+lambda I)^-1 = 4.3e-15   (certifies the non-core ridge path)
+    floor guard active (66 Mnn floored at ridge 1e-12) ;  marker-built==dense-built = 2.9e-16
+
+(ii) recovery, BOTH an optimistic clean-rank GRM AND a realistic VanRaden GRM
+     (fidelity-to-full = cor(EBV_APY, EBV_fullG), NOT accuracy; accuracy-vs-true is separate):
+   lowrank(d=250)  EIG98 core=234 (12% of n)   fidelity 0.978 [seed 0.978-0.992]  acc-vs-true 0.930  nnz/dense 0.22
+   vanraden        EIG98 core=1173 (59% of n)  fidelity 0.9995                     acc-vs-true 0.733  nnz/dense 0.83
+   -> APY's sparsity win REQUIRES genomic dimension << n. On realistic markers at n=2000 the
+      effective dimension is ~60% of n, so APY barely compresses; the win is asymptotic in n/Ne.
+
+(iii) under-rank failure mode (read via the vs-full drop, not the cross-seed number alone):
+     EIG98 core=234 fidelity 0.985 ; tiny core=39 fidelity 0.805  (cross-seed cor is the under-ranking signature)
+
+(iv) randomized-SVD core sizing (never forms G): rSVD EIG98 == dense-eig EIG98 exactly
+     (lowrank 234==234 ; vanraden 1173==1173)
+
+(v) APY marker-based build at scale (G never formed; core from rSVD):
+   n=10000  core=381  nnz/dense=0.075  build 0.43s
+   n=40000  core=571  nnz/dense=0.028  build 3.22s   [dense G^-1 = 12.8 GB skipped]
+   n=100000 core=761  nnz/dense=0.015  build 11.72s  [dense G^-1 = 80.0 GB skipped]
+```
+
+Build cost is `O(c·m·n + c²·n + c³)` — the marker product `Gcn=Wc·Wn'/m` dominates.
+**Validation debt:** real-marker (LD/MAF/pedigree-relatedness) recovery and a BLUPF90
+comparator-parity run are not done; the recovery target here is a controlled GRM.
+
 ## Files
 
 - `matrix-free-genomic-reml.jl` — exact low-rank AI-REML + dense validation + known-truth recovery + SLQ logdet demo. Deps: stdlib only.
@@ -148,3 +197,4 @@ stochastic fallback, Stage C GPU), with the repo-grounded risk register.
 - `gpu-precision-check.jl` — CPU-f32 vs Metal-f32 vs Float64 ground truth (the k≥32 diagnosis).
 - `symbolic-once-cholesky.jl` — symbolic-once `cholesky!` vs fresh `cholesky` in the AI-REML loop, on a real pedigree-structured sparse `A⁻¹`. Deps: stdlib only.
 - `engine-scaling-plan.md` — the adversarially-verified staged engineering plan (provenance + risk register + division of labour) feeding HSquared.jl #51/#58.
+- `apy-sparse-ginv.jl` — first open-Julia APY sparse genomic inverse: sharp c<n correctness, dual-GRM honest recovery, randomized-SVD core sizing, large-n build. Deps: LinearAlgebra + SparseArrays. (Scout note: `../scout/2026-06-20-apy-sparse-ginv-scout.md`.)
