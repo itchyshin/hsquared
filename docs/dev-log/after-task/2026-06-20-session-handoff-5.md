@@ -84,9 +84,19 @@ items applied to the #61 post + the code.
    **Correctness anchor (de-risks it):** when `G = A₂₂` (genomic == pedigree among
    genotyped), single-step reduces EXACTLY to the pedigree animal model — so a
    live test `single_step(G=A₂₂) == plain animal()` fit is the parity check.
-2. **AI-REML convergence hardening** (Julia prototype): the `fit_ai_reml` PosDef
-   try/catch gap noted s3 (`likelihood.jl:381`); σ²ₐ→0 cancellation lead.
-   Construct a failure case + a PD-guarded fix, verify, deliver to twin #58.
+2. **AI-REML convergence hardening** (Julia prototype; deliver to twin #58).
+   Exact scope (read `likelihood.jl:356-420` s4): (a) `factor = cholesky(Symmetric(lhs);
+   check = true)` at **`likelihood.jl:381`** throws a cryptic `PosDefException` if the
+   MME `lhs` is not PD (rank-deficient `X`, or extreme conditioning) — there is no
+   try/catch, so the whole fit dies mid-iteration. (b) `score_a =
+   -0.5/σ²ₐ² · (nrandom·σ²ₐ − trace_AC − uAu)` (`:389`) and the information entries
+   scale with `1/σ²ₐ`, so as σ²ₐ→0 the Newton step is numerically unstable
+   (catastrophic cancellation). The step-halving loop (`:407-413`) only guards
+   `a_new/e_new > 0`, NOT the PD-ness of `lhs` at the new point. **Fix to prototype:**
+   wrap the factorization in try/catch → on failure, halve the step and retry (or
+   return a clean `not_converged` + message), and/or optimize in log-variance / the
+   ratio γ=σ²ₐ/σ²ₑ to stabilize the boundary. Demonstrate a failure case (near-boundary
+   h²→0 or rank-deficient X) + the fix.
 
 (DONE s4: the CPU batched marker-scan prototype — exact 46.8× drop-in for the
 engine post-fit scan — landed `0d7f635`, posted to twin #51.)
