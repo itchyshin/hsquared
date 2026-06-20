@@ -17,6 +17,9 @@
 #'   directions, `tr(G) / t`.
 #' - `evolvability(fit, direction)` is `e(β) = β'Gβ` (unit `β`): the additive
 #'   genetic variance available to directional selection along `direction`.
+#' - `variance_along_gradient(fit, direction, normalize)` is `β'Gβ` for a unit
+#'   `direction` (`normalize = TRUE`, equal to `evolvability()`) or for the raw
+#'   `direction` (`normalize = FALSE`).
 #' - `respondability(fit, direction)` is `‖Gβ‖`: the length of the response.
 #' - `conditional_evolvability(fit, direction)` is `1 / (β'G⁻¹β)`: evolvability
 #'   when all other directions are held under stabilising selection (requires a
@@ -235,4 +238,57 @@ g_max.default <- function(object, ...) {
 g_max.hsquared_fit <- function(object, ...) {
   e <- hs_g_eigen(hs_fit_genetic_G(object))
   list(eigenvalue = e$values[[1L]], eigenvector = e$vectors[, 1L])
+}
+
+#' @rdname g_matrix_geometry
+#' @param normalize For `variance_along_gradient()`, whether to scale
+#'   `direction` to unit length first (`TRUE`, the default, which then equals
+#'   `evolvability()`); `FALSE` uses `direction` as given, returning the genetic
+#'   variance in the raw (un-normalised) selection gradient `β'Gβ`.
+#' @export
+variance_along_gradient <- function(object, direction, normalize = TRUE, ...) {
+  UseMethod("variance_along_gradient")
+}
+
+#' @export
+variance_along_gradient.default <- function(
+  object,
+  direction,
+  normalize = TRUE,
+  ...
+) {
+  stop(
+    "`variance_along_gradient()` requires an `hsquared_fit` object.",
+    call. = FALSE
+  )
+}
+
+#' @export
+variance_along_gradient.hsquared_fit <- function(
+  object,
+  direction,
+  normalize = TRUE,
+  ...
+) {
+  G <- hs_fit_genetic_G(object)
+  t <- nrow(G)
+  if (isTRUE(normalize)) {
+    b <- hs_normalize_direction(direction, t)
+  } else {
+    if (
+      !is.numeric(direction) ||
+        length(direction) != t ||
+        any(!is.finite(direction))
+    ) {
+      stop(
+        "`direction` must be a finite numeric vector with one entry per trait ",
+        "(length ",
+        t,
+        ").",
+        call. = FALSE
+      )
+    }
+    b <- direction
+  }
+  max(0, as.numeric(crossprod(b, G %*% b)))
 }

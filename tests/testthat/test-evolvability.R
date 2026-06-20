@@ -32,6 +32,10 @@ test_that("G-matrix geometry extractors match hand-computed values", {
   expect_equal(evolvability(fit, c(0, 1)), 1) # G[2,2]
   expect_equal(evolvability(fit, c(2, 0)), 2) # direction is normalised
   expect_equal(respondability(fit, c(1, 0)), sqrt(2^2 + 0.5^2))
+  # variance_along_gradient: raw uses the gradient as given; normalized = evolvability.
+  expect_equal(variance_along_gradient(fit, c(1, 0), normalize = FALSE), 2)
+  expect_equal(variance_along_gradient(fit, c(2, 0), normalize = FALSE), 8)
+  expect_equal(variance_along_gradient(fit, c(2, 0), normalize = TRUE), 2)
   expect_equal(conditional_evolvability(fit, c(1, 0)), 1.75) # det/G22 = 1.75/1
   expect_equal(autonomy(fit, c(1, 0)), 0.875) # 1.75 / 2
 
@@ -123,4 +127,18 @@ test_that("G-matrix geometry matches the engine (live parity)", {
     g_max(fit)$eigenvalue,
     JuliaCall::julia_eval("HSquared.g_max(hsq_Gtest).eigenvalue")
   )
+  expect_equal(
+    variance_along_gradient(fit, beta),
+    JuliaCall::julia_eval(
+      "HSquared.variance_along_gradient(hsq_Gtest, hsq_beta)"
+    )
+  )
+  expect_equal(
+    variance_along_gradient(fit, beta, normalize = FALSE),
+    JuliaCall::julia_eval(
+      "HSquared.variance_along_gradient(hsq_Gtest, hsq_beta; normalize = false)"
+    )
+  )
+  # normalize = TRUE equals evolvability().
+  expect_equal(variance_along_gradient(fit, beta), evolvability(fit, beta))
 })

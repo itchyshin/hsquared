@@ -8,6 +8,7 @@
 \alias{autonomy}
 \alias{mean_evolvability}
 \alias{g_max}
+\alias{variance_along_gradient}
 \alias{eigen_G}
 \title{G-matrix geometry and evolvability}
 \usage{
@@ -23,6 +24,8 @@ mean_evolvability(object, ...)
 
 g_max(object, ...)
 
+variance_along_gradient(object, direction, normalize = TRUE, ...)
+
 eigen_G(object, ...)
 }
 \arguments{
@@ -32,6 +35,11 @@ eigen_G(object, ...)
 is normalised to unit length internally; only its direction matters.}
 
 \item{...}{Unused.}
+
+\item{normalize}{For \code{variance_along_gradient()}, whether to scale
+\code{direction} to unit length first (\code{TRUE}, the default, which then equals
+\code{evolvability()}); \code{FALSE} uses \code{direction} as given, returning the genetic
+variance in the raw (un-normalised) selection gradient \verb{β'Gβ}.}
 }
 \value{
 A scalar for the directional metrics; a list for \code{eigen_G()}
@@ -57,6 +65,9 @@ each is positive).
 directions, \code{tr(G) / t}.
 \item \code{evolvability(fit, direction)} is \verb{e(β) = β'Gβ} (unit \code{β}): the additive
 genetic variance available to directional selection along \code{direction}.
+\item \code{variance_along_gradient(fit, direction, normalize)} is \verb{β'Gβ} for a unit
+\code{direction} (\code{normalize = TRUE}, equal to \code{evolvability()}) or for the raw
+\code{direction} (\code{normalize = FALSE}).
 \item \code{respondability(fit, direction)} is \verb{‖Gβ‖}: the length of the response.
 \item \code{conditional_evolvability(fit, direction)} is \verb{1 / (β'G⁻¹β)}: evolvability
 when all other directions are held under stabilising selection (requires a
