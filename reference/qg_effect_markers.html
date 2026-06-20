@@ -7,7 +7,8 @@ now fit through an opt-in, experimental engine path (engine = "julia",
 REML-only, not the default, mirroring a partial validation gate) as the
 second random effect alongside animal(). The remaining markers
 (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision) are still inert syntax
+imprinting, custom relationship/precision, genetic groups /
+unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.'><meta property="og:description" content='These functions provide readable formula vocabulary for standard
 quantitative-genetic, parental, inheritance, and custom-kernel models. Called
 directly they are inert (they return NULL); they take meaning only inside an
@@ -16,7 +17,8 @@ now fit through an opt-in, experimental engine path (engine = "julia",
 REML-only, not the default, mirroring a partial validation gate) as the
 second random effect alongside animal(). The remaining markers
 (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision) are still inert syntax
+imprinting, custom relationship/precision, genetic groups /
+unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -77,7 +79,8 @@ now fit through an opt-in, experimental engine path (<code>engine = "julia"</cod
 REML-only, not the default, mirroring a <code>partial</code> validation gate) as the
 second random effect alongside <code><a href="animal.html">animal()</a></code>. The remaining markers
 (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision) are still inert syntax
+imprinting, custom relationship/precision, genetic groups /
+unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.</p>
     </div>
 
@@ -105,7 +108,15 @@ reservations that the parser rejects with a planned-not-implemented message.</p>
 <span></span>
 <span><span class="fu">relmat</span><span class="op">(</span><span class="va">formula</span>, K <span class="op">=</span> <span class="cn">NULL</span>, Kinv <span class="op">=</span> <span class="cn">NULL</span>, Q <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">precision</span><span class="op">(</span><span class="va">formula</span>, Q <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">precision</span><span class="op">(</span><span class="va">formula</span>, Q <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">group</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">unknown_parent_group</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">metafounder</span><span class="op">(</span><span class="va">formula</span>, pedigree <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">inbreeding</span><span class="op">(</span><span class="va">formula</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">

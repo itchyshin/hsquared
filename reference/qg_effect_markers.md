@@ -11,8 +11,9 @@ REML-only, not the default, mirroring a `partial` validation gate) as
 the second random effect alongside
 [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md).
 The remaining markers (paternal/maternal-environment, dominance,
-epistasis, cytoplasmic, imprinting, custom relationship/precision) are
-still inert syntax reservations that the parser rejects with a
+epistasis, cytoplasmic, imprinting, custom relationship/precision,
+genetic groups / unknown-parent-groups, metafounders, and inbreeding)
+are still inert syntax reservations that the parser rejects with a
 planned-not-implemented message.
 
 ## Usage
@@ -41,6 +42,14 @@ epistasis(formula, pedigree = NULL, E = NULL, Einv = NULL, ...)
 relmat(formula, K = NULL, Kinv = NULL, Q = NULL, ...)
 
 precision(formula, Q = NULL, ...)
+
+group(formula, ...)
+
+unknown_parent_group(formula, ...)
+
+metafounder(formula, pedigree = NULL, ...)
+
+inbreeding(formula, ...)
 ```
 
 ## Arguments

@@ -33,6 +33,10 @@ formula_status()
 #>                                     maternal_env(1 | dam)   Phase 2
 #>                paternal_genetic(1 | sire, pedigree = ped)   Phase 2
 #>                                    paternal_env(1 | sire)   Phase 2
+#>                                  group(1 | genetic_group)   Phase 2
+#>                             unknown_parent_group(1 | upg)   Phase 2
+#>                       metafounder(1 | id, pedigree = ped)   Phase 2
+#>                                        inbreeding(1 | id)   Phase 2
 #>                            cytoplasmic(1 | maternal_line)  Phase 3+
 #>   imprinting(1 | id, pedigree = ped, parent = "maternal")  Phase 3+
 #>                         dominance(1 | id, pedigree = ped)  Phase 3+
@@ -56,6 +60,10 @@ formula_status()
 #>         parsed      fitted (opt-in repeatability)
 #>         parsed fitted (opt-in common-environment)
 #>         parsed           fitted (opt-in maternal)
+#>       reserved                      not available
+#>       reserved                      not available
+#>       reserved                      not available
+#>       reserved                      not available
 #>       reserved                      not available
 #>       reserved                      not available
 #>       reserved                      not available

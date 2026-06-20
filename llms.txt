@@ -367,6 +367,10 @@ Current parser entry points and planned fitting controls.
   [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`group()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`unknown_parent_group()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`metafounder()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`inbreeding()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   : Quantitative-genetic formula markers
 
 ## Extractor contract
