@@ -7,6 +7,7 @@
 \alias{rr_genetic_variance}
 \alias{rr_heritability}
 \alias{rr_correlation}
+\alias{rr_eigenfunctions}
 \title{Random-regression (reaction-norm) extractors}
 \usage{
 rr_covariance(object, ...)
@@ -18,6 +19,8 @@ rr_genetic_variance(object, at = NULL, n = 25L, ...)
 rr_heritability(object, at = NULL, n = 25L, ...)
 
 rr_correlation(object, at = NULL, n = 25L, ...)
+
+rr_eigenfunctions(object, at = NULL, n = 25L, ...)
 }
 \arguments{
 \item{object}{A random-regression \code{hsquared_fit} object.}
@@ -57,6 +60,13 @@ homogeneous and there is no permanent-environment term yet, this can
 OVERSTATE \code{h^2(t)} for repeated-records designs (test-day, growth curves).
 \item \code{rr_correlation()} returns the genetic correlation surface among the
 covariate points.
+\item \code{rr_eigenfunctions()} returns the eigen-decomposition of the coefficient
+covariance \code{K_g} evaluated as functions of the covariate: the eigenvalues
+(additive genetic variance carried by each axis), the proportion of genetic
+variance explained, the sign-canonicalized eigen-coefficients, and the
+eigenfunctions \verb{psi_j(t) = phi(t)' v_j} over the covariate grid. These are
+\strong{rotation-invariant} functionals of \code{K_g} (mirroring the engine's
+\code{rr_eigenfunctions}); no raw, rotation-arbitrary loadings are returned.
 }
 
 The trajectories are computed in R from the estimated \code{K_g} and the recorded
@@ -82,5 +92,6 @@ random_coefficients(fit_rr)
 rr_genetic_variance(fit_rr)
 rr_heritability(fit_rr)
 rr_correlation(fit_rr, at = c(1, 3, 5))
+rr_eigenfunctions(fit_rr)
 \dontshow{\}) # examplesIf}
 }

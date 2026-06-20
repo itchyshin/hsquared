@@ -704,7 +704,7 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
 # (default 2 = intercept + slope). The covariate is standardized to [-1, 1] via
 # its observed data range in the engine; the (lower, upper) bounds are recorded
 # here so extractors can re-standardize a user-supplied `at =` on the original
-# scale. The provisional grammar is proposed to the twin on HSquared.jl#61.
+# scale. The grammar is ratified by the twin on HSquared.jl#61.
 hs_parse_rr_lhs <- function(lhs, data) {
   lhs <- hs_unwrap_parentheses(lhs)
   args <- as.list(lhs)[-1L]

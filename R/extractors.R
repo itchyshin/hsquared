@@ -1604,6 +1604,13 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #'   OVERSTATE `h^2(t)` for repeated-records designs (test-day, growth curves).
 #' * `rr_correlation()` returns the genetic correlation surface among the
 #'   covariate points.
+#' * `rr_eigenfunctions()` returns the eigen-decomposition of the coefficient
+#'   covariance `K_g` evaluated as functions of the covariate: the eigenvalues
+#'   (additive genetic variance carried by each axis), the proportion of genetic
+#'   variance explained, the sign-canonicalized eigen-coefficients, and the
+#'   eigenfunctions `psi_j(t) = phi(t)' v_j` over the covariate grid. These are
+#'   **rotation-invariant** functionals of `K_g` (mirroring the engine's
+#'   `rr_eigenfunctions`); no raw, rotation-arbitrary loadings are returned.
 #'
 #' The trajectories are computed in R from the estimated `K_g` and the recorded
 #' covariate standardization range; `at` is supplied on the ORIGINAL covariate
@@ -1638,6 +1645,7 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #' rr_genetic_variance(fit_rr)
 #' rr_heritability(fit_rr)
 #' rr_correlation(fit_rr, at = c(1, 3, 5))
+#' rr_eigenfunctions(fit_rr)
 #' @name random_regression_extractors
 NULL
 
@@ -1769,4 +1777,40 @@ rr_correlation.hsquared_fit <- function(object, at = NULL, n = 25L, ...) {
     format(pts$at, trim = TRUE)
   )
   corr
+}
+
+#' @rdname random_regression_extractors
+#' @export
+rr_eigenfunctions <- function(object, at = NULL, n = 25L, ...) {
+  UseMethod("rr_eigenfunctions")
+}
+
+#' @export
+rr_eigenfunctions.default <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_eigenfunctions")
+}
+
+#' @export
+rr_eigenfunctions.hsquared_fit <- function(object, at = NULL, n = 25L, ...) {
+  hs_require_random_regression(object, "rr_eigenfunctions")
+  K_g <- rr_covariance(object)
+  e <- hs_g_eigen(K_g) # eigenvalues (desc) + sign-canonicalized eigenvectors
+  pts <- hs_rr_eval_points(object, at, n)
+  phi <- hs_legendre_design(pts$t, pts$order)
+  psi <- phi %*% e$vectors # eigenfunctions over the covariate grid
+  total <- sum(e$values)
+  prop <- if (total > 0) e$values / total else rep(0, length(e$values))
+  k <- length(e$values)
+  list(
+    covariate = pts$at,
+    eigenvalues = e$values,
+    variance_explained = prop,
+    eigen_coefficients = e$vectors,
+    eigenfunctions = data.frame(
+      covariate = rep(pts$at, times = k),
+      axis = rep(seq_len(k), each = length(pts$at)),
+      value = as.numeric(psi),
+      stringsAsFactors = FALSE
+    )
+  )
 }

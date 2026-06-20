@@ -266,6 +266,29 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
   expect_equal(unname(diag(corr)), rep(1, 3L), tolerance = 1e-10)
   expect_equal(unname(corr), unname(t(corr)), tolerance = 1e-10)
 
+  # Eigen-functions: rotation-invariant decomposition of K_g.
+  ef <- rr_eigenfunctions(fit, at = c(1, 3, 5))
+  expect_named(
+    ef,
+    c(
+      "covariate",
+      "eigenvalues",
+      "variance_explained",
+      "eigen_coefficients",
+      "eigenfunctions"
+    )
+  )
+  expect_equal(length(ef$eigenvalues), 2L)
+  expect_equal(
+    ef$eigenvalues,
+    sort(eigen(raw$K_g, symmetric = TRUE)$values, decreasing = TRUE),
+    tolerance = 1e-10
+  )
+  expect_equal(sum(ef$variance_explained), 1, tolerance = 1e-10)
+  expect_equal(dim(ef$eigen_coefficients), c(2L, 2L))
+  expect_equal(nrow(ef$eigenfunctions), 3L * 2L)
+  expect_equal(sort(unique(ef$eigenfunctions$axis)), c(1L, 2L))
+
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)
   expect_s3_class(stats::logLik(fit), "logLik")
@@ -364,6 +387,20 @@ test_that("hsquared can use the opt-in experimental random-regression bridge", {
   # Heritability trajectory in [0, 1].
   h2 <- rr_heritability(fit)
   expect_true(all(h2$value >= 0 & h2$value <= 1))
+
+  # rr_eigenfunctions matches the engine `rr_eigenfunctions` element-wise.
+  ef <- rr_eigenfunctions(fit, at = NULL, n = 9L)
+  pts <- hsquared:::hs_rr_eval_points(fit, NULL, 9L)
+  JuliaCall::julia_assign("Kg_ef", as.matrix(K_g))
+  JuliaCall::julia_assign("ts_ef", pts$t)
+  JuliaCall::julia_command("out_ef = HSquared.rr_eigenfunctions(Kg_ef, ts_ef);")
+  ev_J <- JuliaCall::julia_eval("collect(Float64, out_ef.eigenvalues)")
+  ve_J <- JuliaCall::julia_eval("collect(Float64, out_ef.variance_explained)")
+  psi_J <- JuliaCall::julia_eval("Matrix{Float64}(out_ef.eigenfunctions)")
+  expect_equal(ef$eigenvalues, ev_J, tolerance = 1e-8)
+  expect_equal(ef$variance_explained, ve_J, tolerance = 1e-8)
+  psi_R <- matrix(ef$eigenfunctions$value, nrow = length(pts$at))
+  expect_equal(psi_R, psi_J, tolerance = 1e-8)
 
   expect_true(isTRUE(fit$result$converged))
 })
