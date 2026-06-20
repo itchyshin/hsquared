@@ -135,6 +135,22 @@ convention).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit_mv</span>, <span class="st">"g_matrix"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="visualizing-models_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="624"></p>
+<p>The heatmap also flags off-diagonal cells that involve a
+low-<code>h²</code> trait (where the genetic correlation is imprecise);
+pass <code>low_h2 =</code> to set the threshold.</p>
+</div>
+<div class="section level2">
+<h2 id="genetic-eigenstructure-g-geometry">Genetic eigenstructure (G geometry)<a class="anchor" aria-label="anchor" href="#genetic-eigenstructure-g-geometry"></a>
+</h2>
+<p><code>autoplot(fit_mv, "g_geometry")</code> draws a scree of the
+<strong>rotation-invariant</strong> genetic eigenstructure — the
+eigenvalues of <code>G</code> (variance per genetic axis) with the
+percent variance explained. Axis directions and loadings are never
+drawn: they are rotation-arbitrary and span-ambiguous under repeated
+eigenvalues.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit_mv</span>, <span class="st">"g_geometry"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="672"></p>
 </div>
 <div class="section level2">
 <h2 id="marker-scan-manhattan">Marker scan (Manhattan)<a class="anchor" aria-label="anchor" href="#marker-scan-manhattan"></a>
@@ -145,9 +161,51 @@ convention).</p>
 calibrated</strong> — the figure carries that banner, and the dashed
 line is a plain Bonferroni reference, not a validated genome-wide
 threshold.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">gw</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualizing-models_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="840"></p>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="840"></p>
+</div>
+<div class="section level2">
+<h2 id="marker-scan-qq">Marker scan (QQ)<a class="anchor" aria-label="anchor" href="#marker-scan-qq"></a>
+</h2>
+<p><code>autoplot(gw, "qq")</code> draws the QQ plot of the scan:
+observed versus expected <code>−log10(p)</code> with a
+<code>y = x</code> null reference and the genomic-inflation
+<code>lambda_GC</code> as a <strong>diagnostic</strong> annotation. As
+with the Manhattan, the p-values are nominal Wald p-values and are not
+genome-wide calibrated.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">gw</span>, <span class="st">"qq"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="624"></p>
+</div>
+<div class="section level2">
+<h2 id="reaction-norms-random-regression">Reaction norms (random regression)<a class="anchor" aria-label="anchor" href="#reaction-norms-random-regression"></a>
+</h2>
+<p>For a random-regression fit,
+<code>autoplot(fit, "reaction_norm")</code> draws the genetic-variance
+and heritability trajectories across the covariate. The
+<code>h²(t)</code> trajectory is experimental: with a homogeneous
+residual and no permanent-environment term it can overstate heritability
+for repeated-records designs.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit_rr</span>, <span class="st">"reaction_norm"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="840"></p>
+<p><code>autoplot(fit, "rr_eigenfunctions")</code> draws the
+rotation-invariant eigenfunctions <code>ψ_j(t)</code> of the coefficient
+covariance <code>K_g</code> as covariate functions, faceted by axis and
+labelled with the percent genetic variance. Eigenfunction signs are
+arbitrary and the curves are span-ambiguous under repeated eigenvalues,
+so do not over-read their direction.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit_rr</span>, <span class="st">"rr_eigenfunctions"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="840"></p>
+<p><code>autoplot(fit, "rr_surface")</code> draws the genetic covariance
+surface <code>S(s, t) = φ(s)′ K_g φ(t)</code> over the covariate grid as
+a heatmap; pass <code>correlation = TRUE</code> for the
+genetic-correlation surface.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit_rr</span>, <span class="st">"rr_surface"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="624"></p>
 </div>
 <div class="section level2">
 <h2 id="known-truth-recovery-studies">Known-truth recovery studies<a class="anchor" aria-label="anchor" href="#known-truth-recovery-studies"></a>
@@ -156,7 +214,7 @@ threshold.</p>
 study (such as <code>data-raw/multivariate-recovery-study.R</code>):
 each target’s bias with its <code>± 2 · MCSE</code> interval. Intervals
 that cover zero indicate <strong>no detectable bias</strong>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recovery</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G0[1,1]"</span>, <span class="st">"G0[2,1]"</span>, <span class="st">"G0[2,2]"</span>, <span class="st">"R0[1,1]"</span>, <span class="st">"R0[2,1]"</span>,</span>
 <span>             <span class="st">"R0[2,2]"</span>, <span class="st">"rg"</span>, <span class="st">"h2[1]"</span>, <span class="st">"h2[2]"</span><span class="op">)</span>,</span>
@@ -166,7 +224,7 @@ that cover zero indicate <strong>no detectable bias</strong>.</p>
 <span>           <span class="fl">0.01553</span>, <span class="fl">0.00817</span>, <span class="fl">0.00697</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/hs_recovery_forest.html">hs_recovery_forest</a></span><span class="op">(</span><span class="va">recovery</span><span class="op">)</span></span></code></pre></div>
-<p><img src="visualizing-models_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="840"></p>
+<p><img src="visualizing-models_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="840"></p>
 </div>
 <div class="section level2">
 <h2 id="theming">Theming<a class="anchor" aria-label="anchor" href="#theming"></a>
@@ -174,7 +232,7 @@ that cover zero indicate <strong>no detectable bias</strong>.</p>
 <p>Every figure returns a <code>ggplot</code> object, so you can restyle
 it with the usual <code>ggplot2</code> grammar, and
 <code><a href="../reference/theme_hsquared.html">theme_hsquared()</a></code> is exported for reuse:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"variance"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"My trait"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/theme_hsquared.html">theme_hsquared</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></code></pre></div>

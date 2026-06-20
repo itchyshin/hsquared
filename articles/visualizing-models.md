@@ -68,6 +68,25 @@ autoplot(fit_mv, "g_matrix")
 
 ![](visualizing-models_files/figure-html/unnamed-chunk-5-1.png)
 
+The heatmap also flags off-diagonal cells that involve a low-`h²` trait
+(where the genetic correlation is imprecise); pass `low_h2 =` to set the
+threshold.
+
+## Genetic eigenstructure (G geometry)
+
+`autoplot(fit_mv, "g_geometry")` draws a scree of the
+**rotation-invariant** genetic eigenstructure — the eigenvalues of `G`
+(variance per genetic axis) with the percent variance explained. Axis
+directions and loadings are never drawn: they are rotation-arbitrary and
+span-ambiguous under repeated eigenvalues.
+
+``` r
+
+autoplot(fit_mv, "g_geometry")
+```
+
+![](visualizing-models_files/figure-html/unnamed-chunk-6-1.png)
+
 ## Marker scan (Manhattan)
 
 [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html) on
@@ -81,7 +100,62 @@ reference, not a validated genome-wide threshold.
 autoplot(gw)
 ```
 
-![](visualizing-models_files/figure-html/unnamed-chunk-6-1.png)
+![](visualizing-models_files/figure-html/unnamed-chunk-7-1.png)
+
+## Marker scan (QQ)
+
+`autoplot(gw, "qq")` draws the QQ plot of the scan: observed versus
+expected `−log10(p)` with a `y = x` null reference and the
+genomic-inflation `lambda_GC` as a **diagnostic** annotation. As with
+the Manhattan, the p-values are nominal Wald p-values and are not
+genome-wide calibrated.
+
+``` r
+
+autoplot(gw, "qq")
+```
+
+![](visualizing-models_files/figure-html/unnamed-chunk-8-1.png)
+
+## Reaction norms (random regression)
+
+For a random-regression fit, `autoplot(fit, "reaction_norm")` draws the
+genetic-variance and heritability trajectories across the covariate. The
+`h²(t)` trajectory is experimental: with a homogeneous residual and no
+permanent-environment term it can overstate heritability for
+repeated-records designs.
+
+``` r
+
+autoplot(fit_rr, "reaction_norm")
+```
+
+![](visualizing-models_files/figure-html/unnamed-chunk-9-1.png)
+
+`autoplot(fit, "rr_eigenfunctions")` draws the rotation-invariant
+eigenfunctions `ψ_j(t)` of the coefficient covariance `K_g` as covariate
+functions, faceted by axis and labelled with the percent genetic
+variance. Eigenfunction signs are arbitrary and the curves are
+span-ambiguous under repeated eigenvalues, so do not over-read their
+direction.
+
+``` r
+
+autoplot(fit_rr, "rr_eigenfunctions")
+```
+
+![](visualizing-models_files/figure-html/unnamed-chunk-10-1.png)
+
+`autoplot(fit, "rr_surface")` draws the genetic covariance surface
+`S(s, t) = φ(s)′ K_g φ(t)` over the covariate grid as a heatmap; pass
+`correlation = TRUE` for the genetic-correlation surface.
+
+``` r
+
+autoplot(fit_rr, "rr_surface")
+```
+
+![](visualizing-models_files/figure-html/unnamed-chunk-11-1.png)
 
 ## Known-truth recovery studies
 
@@ -104,7 +178,7 @@ recovery <- data.frame(
 hs_recovery_forest(recovery)
 ```
 
-![](visualizing-models_files/figure-html/unnamed-chunk-7-1.png)
+![](visualizing-models_files/figure-html/unnamed-chunk-12-1.png)
 
 ## Theming
 
