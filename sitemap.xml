@@ -39,6 +39,8 @@
 <url><loc>https://itchyshin.github.io/hsquared/reference/heritability_interval.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/hs_control.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/hs_data.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/hs_recovery_forest.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/hsquared-autoplot.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/hsquared-package.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/hsquared.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/index.html</loc></url>
@@ -53,10 +55,12 @@
 <url><loc>https://itchyshin.github.io/hsquared/reference/qg_effect_markers.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/random_regression_extractors.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/ranef.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/reexports.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/reliability.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/repeatability.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/repeatability_interval.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/response_scale_methods.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/theme_hsquared.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/validation_status.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/variance_components.html</loc></url>

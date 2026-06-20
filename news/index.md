@@ -4,6 +4,32 @@
 
 ### New features
 
+- **ggplot2 visualization layer
+  ([`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)).**
+  New
+  [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+  methods render hsquared results as `ggplot2` figures, in the style of
+  the `brms`/`bayesplot` ecosystem and consistent with the sister
+  packages `drmTMB`/`gllvmTMB`: `autoplot(fit, "variance")` draws a
+  variance-component **and** per-trait `h²` forest with experimental 95%
+  intervals (`± 1.96·SE`, labelled asymptotic/REML);
+  `autoplot(fit, "breeding_values")` draws a sorted EBV caterpillar with
+  `± 1.96·√PEV` bands (faceted by trait for multivariate fits);
+  `autoplot(fit, "g_matrix")` draws a **rotation-invariant**
+  genetic-correlation heatmap of `G` for multivariate fits (raw factor
+  loadings are never plotted — the ratified cross-lane convention); and
+  `autoplot(gwas_result)` draws a Manhattan plot carrying the
+  uncalibrated-significance banner. Also new:
+  [`hs_recovery_forest()`](https://itchyshin.github.io/hsquared/reference/hs_recovery_forest.md)
+  for known-truth recovery studies (bias `± 2·MCSE`, intervals covering
+  zero = no detectable bias) and an exported
+  [`theme_hsquared()`](https://itchyshin.github.io/hsquared/reference/theme_hsquared.md).
+  The figures are **uncertainty-first** and the helpers are modular
+  (each takes a tidy data frame and returns a `ggplot`) so they can be
+  factored into a shared visualization package later. `ggplot2` is now a
+  dependency; the base-R
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method is
+  unchanged.
 - **Experimental random-regression (reaction-norm) model.** A new opt-in
   target surfaces the Julia-owned
   `HSquared.fit_random_regression_reml()`:

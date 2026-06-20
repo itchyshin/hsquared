@@ -467,6 +467,16 @@ opt-in experimental targets.
   [`residuals(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/response_scale_methods.md)
   : Response-scale prediction helpers
 
+## Visualization
+
+- [`autoplot(`*`<hsquared_fit>`*`)`](https://itchyshin.github.io/hsquared/reference/hsquared-autoplot.md)
+  [`autoplot(`*`<hs_gwas>`*`)`](https://itchyshin.github.io/hsquared/reference/hsquared-autoplot.md)
+  : ggplot2 visualizations for hsquared results
+- [`theme_hsquared()`](https://itchyshin.github.io/hsquared/reference/theme_hsquared.md)
+  : hsquared ggplot2 theme
+- [`hs_recovery_forest()`](https://itchyshin.github.io/hsquared/reference/hs_recovery_forest.md)
+  : Forest plot of a known-truth recovery study
+
 ## Package
 
 - [`hsquared-package`](https://itchyshin.github.io/hsquared/reference/hsquared-package.md)
