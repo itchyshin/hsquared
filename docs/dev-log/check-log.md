@@ -4702,3 +4702,20 @@ release".
   rank-deficient (rank 2 < 3 columns)…"); faithfulness over 20 seeds mean
   sa2=0.652 (truth 0.6) / se2=0.930 (truth 1.0), 20/20 converged.
 - No R package code; no public claim. Twin's lane to apply (#58).
+
+## 2026-06-20 (session 4 — ggplot2 visualization layer, maintainer-directed)
+
+- Maintainer asked for brms/bayesplot-style result visualization (consistent with
+  the drmTMB/gllvmTMB sisters). Decisions: ggplot2 engine; in-package `autoplot()`
+  methods, modular for later extraction; all four figure families.
+- `R/autoplot.R` (new): `autoplot.hsquared_fit(type=)` -> variance+h2 forest (95% CIs),
+  EBV caterpillar (+-1.96 sqrt(PEV) bands, trait facets), rotation-invariant G
+  correlation heatmap (NO raw loadings); `autoplot.hs_gwas()` -> Manhattan with the
+  uncalibrated-significance banner; `hs_recovery_forest()` (bias +-2*MCSE);
+  `theme_hsquared()`. ggplot2 + stats -> Imports; `_pkgdown.yml` Visualization group.
+- **LIVE render** (operator, bridge recipe) of all 5 figures from REAL fits (univariate
+  + multivariate + gwas via the live bridge; recovery from the real s4 numbers) ->
+  `/tmp/hsq-figs/*.png`, visually QA'd (all correct + honest banners).
+- air format; `devtools::document()` (reexports.Rd + 3 new man pages); `test-autoplot`
+  **12/12 pass**; `rcmdcheck(--no-manual)` **0/0/0** (fixed one non-ASCII `h2` ->
+  `²`); `pkgdown::check_pkgdown()` clean.
