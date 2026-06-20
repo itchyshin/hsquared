@@ -163,6 +163,56 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
   )
 
   source <- if (is.null(primary$source)) "supplied" else primary$source
+
+  # single_step CONSTRUCTION payload: carry the pedigree (id/sire/dam -> Ainv, A),
+  # the genotyped-subset markers (-> G), the genotyped_rows alignment, and the
+  # construction knobs. The engine assembles H^-1 and fits via fit_single_step_reml.
+  if (identical(source, "construct")) {
+    ped <- primary$pedigree$data
+    return(structure(
+      list(
+        y = as.numeric(spec$response$values),
+        Y = NULL,
+        X = unname(as.matrix(spec$fixed$design)),
+        Z = Z,
+        Z2 = NULL,
+        effect2 = NULL,
+        Ainv = NULL,
+        Ginv = NULL,
+        markers = unname(as.matrix(primary$markers)),
+        marker_names = colnames(primary$markers),
+        genotyped_rows = primary$genotyped_rows,
+        single_step = list(
+          tau = primary$tau,
+          omega = primary$omega,
+          blend_weight = primary$blend_weight,
+          ridge = primary$ridge
+        ),
+        relationship_source = "construct",
+        relationship = primary$relationship,
+        method = spec$method,
+        family = spec$family$family,
+        ids = ids,
+        pedigree = list(id = ped$id, sire = ped$sire, dam = ped$dam),
+        metadata = list(
+          response = spec$response$name,
+          response_type = "univariate",
+          trait_names = NULL,
+          fixed_colnames = colnames(spec$fixed$design),
+          animal_id_column = primary$group,
+          observed_ids = observed_ids,
+          observed_id_index = id_index,
+          fixed_terms = spec$fixed$terms,
+          contrasts = spec$fixed$contrasts,
+          relationship = primary$relationship,
+          n_genotyped = length(primary$genotyped_rows),
+          julia_fit_target = paste0("HSquared.", spec$bridge$target)
+        )
+      ),
+      class = c("hs_bridge_payload", "list")
+    ))
+  }
+
   marker_names <- NULL
   if (identical(source, "markers")) {
     ginv <- NULL

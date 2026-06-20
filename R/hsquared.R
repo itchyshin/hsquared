@@ -433,6 +433,36 @@ hsquared <- function(
       ))
     }
 
+    if (identical(target, "single_step_construct")) {
+      ss <- spec$random$single_step
+      if (is.null(ss) || !identical(ss$source, "construct")) {
+        stop(
+          "`target = \"single_step_construct\"` requires a ",
+          "`single_step(1 | id, pedigree = ped, markers = M)` term in the ",
+          "formula.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_single_step_construct_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          100L
+        )
+      ))
+    }
+
     if (target %in% c("genomic", "single_step")) {
       if (is.null(spec$random[[target]])) {
         arg <- if (identical(target, "genomic")) "Ginv" else "Hinv"

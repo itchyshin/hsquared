@@ -183,7 +183,12 @@ hs_build_model_spec <- function(
   random <- list()
   random[[primary_type]] <- primary_spec
   bridge_target <- if (primary_type %in% c("genomic", "single_step")) {
-    if (identical(primary_spec$source, "markers")) {
+    if (identical(primary_spec$source, "construct")) {
+      paste0(
+        "fit_single_step_reml(y, X, Z, Ainv, A, G, genotyped_rows; ",
+        "method = :REML)"
+      )
+    } else if (identical(primary_spec$source, "markers")) {
       paste0(
         "fit_ai_reml(y, X, Z, ",
         "genomic_relationship_inverse(genomic_relationship_matrix(markers)); ",
@@ -1078,6 +1083,30 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
     )
   }
 
+  # single_step() construction path: `pedigree = ped` + `markers = M` builds the
+  # single-step H^-1 engine-side (Aguilar et al. 2010), distinct from the
+  # supplied-`Hinv` path below.
+  if (identical(term, "single_step")) {
+    if ("pedigree" %in% arg_names) {
+      return(hs_parse_single_step_construct(
+        call,
+        args,
+        arg_names,
+        group,
+        data,
+        env
+      ))
+    }
+    if ("markers" %in% arg_names) {
+      stop(
+        "`single_step()` marker-based construction needs a pedigree: ",
+        "`single_step(1 | id, pedigree = ped, markers = M)`. To use a ",
+        "precomputed inverse instead, write `single_step(1 | id, Hinv = Hinv)`.",
+        call. = FALSE
+      )
+    }
+  }
+
   # `genomic()` accepts either a supplied `Ginv` or a marker matrix `markers`
   # (the engine builds the genomic relationship from markers); `single_step()`
   # accepts a supplied `Hinv`.
@@ -1192,6 +1221,129 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
     ginv = relinv,
     source = "supplied",
     relationship = term,
+    covariance = "scalar"
+  )
+}
+
+# Parse the single-step CONSTRUCTION call `single_step(1 | id, pedigree = ped,
+# markers = M, ...)`. Combines the pedigree path (id/sire/dam -> Ainv, A) with a
+# genotyped-subset marker matrix (-> G among the genotyped animals). The crux is
+# the `genotyped_rows` alignment (docs/design/25 §3): the genotyped ids must be a
+# subset of the pedigree ids (NOT the observed ids -- ungenotyped phenotyped
+# animals are the whole point of single-step), and the marker rows are reordered
+# to the genotyped animals' sorted pedigree-row positions so G aligns with the
+# `genotyped_rows` the engine expects.
+hs_parse_single_step_construct <- function(
+  call,
+  args,
+  arg_names,
+  group,
+  data,
+  env
+) {
+  named_args <- args[arg_names != ""]
+  # The construction path and the supplied-inverse path are mutually exclusive.
+  if (any(c("Hinv", "H") %in% names(named_args))) {
+    stop(
+      "`single_step()` takes EITHER a precomputed `Hinv` ",
+      "(`single_step(1 | id, Hinv = Hinv)`) OR `pedigree` + `markers` to ",
+      "construct H^-1 -- not both.",
+      call. = FALSE
+    )
+  }
+  accepted <- c(
+    "pedigree",
+    "markers",
+    "tau",
+    "omega",
+    "blend_weight",
+    "ridge"
+  )
+  unsupported <- setdiff(names(named_args), accepted)
+  if (length(unsupported) > 0L) {
+    stop(
+      "`single_step()` construction argument",
+      if (length(unsupported) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unsupported), collapse = ", "),
+      if (length(unsupported) > 1L) " are" else " is",
+      " planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (is.null(named_args$markers)) {
+    stop(
+      "`single_step(1 | id, pedigree = ped, markers = M)` construction requires ",
+      "a `markers` matrix alongside `pedigree`. Supply a precomputed `Hinv` ",
+      "instead via `single_step(1 | id, Hinv = Hinv)`.",
+      call. = FALSE
+    )
+  }
+
+  observed_ids <- as.character(data[[group]])
+
+  ped_df <- hs_eval_pedigree(named_args$pedigree, data, env)
+  pedigree <- hs_validate_pedigree(ped_df, observed_ids, group)
+  ped_ids <- pedigree$ids
+
+  markers <- hs_eval_genomic_ginv(
+    named_args$markers,
+    data,
+    env,
+    what = "markers"
+  )
+  markers <- hs_validate_genomic_markers(markers)
+  geno_ids <- rownames(markers)
+  not_in_ped <- setdiff(geno_ids, ped_ids)
+  if (length(not_in_ped) > 0L) {
+    shown <- not_in_ped[seq_len(min(5L, length(not_in_ped)))]
+    stop(
+      "`single_step()` `markers` row ids must all be present in the pedigree. ",
+      "Genotyped id(s) not in the pedigree: ",
+      paste(sprintf("`%s`", shown), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  # genotyped_rows: the genotyped animals' pedigree-row positions, sorted
+  # ascending; reorder the marker rows to match so G's rows/cols align.
+  ped_pos <- match(geno_ids, ped_ids)
+  ord <- order(ped_pos)
+  genotyped_rows <- ped_pos[ord]
+  markers <- markers[ord, , drop = FALSE]
+
+  knob <- function(name, default) {
+    if (is.null(named_args[[name]])) {
+      return(default)
+    }
+    value <- as.numeric(eval(named_args[[name]], envir = data, enclos = env))
+    if (length(value) != 1L || !is.finite(value)) {
+      stop(
+        "`single_step()` `",
+        name,
+        "` must be a single finite number.",
+        call. = FALSE
+      )
+    }
+    value
+  }
+
+  list(
+    type = "single_step",
+    source = "construct",
+    term = hs_deparse(call),
+    design = "intercept",
+    group = group,
+    values = observed_ids,
+    ids = ped_ids,
+    pedigree = pedigree,
+    markers = markers,
+    genotyped_rows = genotyped_rows,
+    tau = knob("tau", 1),
+    omega = knob("omega", 1),
+    blend_weight = knob("blend_weight", 0),
+    ridge = knob("ridge", 0),
+    relationship = "single_step",
     covariance = "scalar"
   )
 }

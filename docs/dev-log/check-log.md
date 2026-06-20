@@ -5017,3 +5017,33 @@ release".
   Docs-only (article); no R package code changed.
 - CI (commit `638ad15`, visualizing-models gallery): pkgdown run `27886549198` **success** (the article renders all 10 figures on the site).
 - Follow-up: NEWS.md completeness — added `rr_eigenfunctions` + `rr_surface` to the visualization-layer bullet (they landed after the earlier NEWS edit).
+
+## 2026-06-20 (session 5 — single-step H⁻¹ CONSTRUCTION bridge, ranked #3)
+
+- Landed the ranked #3 capability: `single_step(1 | id, pedigree = ped, markers = M)`
+  + `target = "single_step_construct"` builds `H⁻¹` engine-side (Ainv + dense A from
+  the pedigree, G from the genotyped-subset markers; Aguilar et al. 2010) and fits
+  by REML — no precomputed `Hinv` needed. Additive + isolated: new parser branch,
+  payload branch, bridge fit fn, target; reuses `hs_validate_pedigree` + the genomic
+  result normalizer. Engine fns `additive_relationship`/`single_step_inverse`/
+  `fit_single_step_reml` confirmed exported; the bridge asserts engine-order ==
+  R-order at fit time (the §8 alignment guard, fails loudly).
+- **Adversarial verify (Workflow `wf_7c349339-20f`: Boole/Hopper/Henderson/Curie/Rose)
+  caught 2 BLOCKERS** the green checks missed: (1) the fit call omitted
+  `ids = hsq_ped.ids` → GEBVs labelled 1..n (fixed: pass ids + a live id-label
+  assertion); (2) the keystone equivalence test was **circular** (both sides read
+  the same parsed `ss`) → replaced with independent guards: the marker-row **reorder
+  invariance** test (§6.3, the real alignment guard) + a **differs-from-pedigree-model**
+  anchor + id/coverage + ridge rank-deficient-G; plus Boole's parser error contracts
+  ("choose one" Hinv+construction; markers-without-pedigree directing error; grammar)
+  and the hs_data-shorthand deferral (documented).
+- Pure-R alignment tests (topological, non-contiguous, scrambled rows, ungenotyped
+  accepted) all pass; **LIVE** `test-single-step-construct.R` all pass (reorder
+  invariance, id-labelled GEBVs for all pedigree animals, differs-from-pedigree
+  cor>0.5 + differ, ridge fits a rank-deficient G).
+- `air`; `devtools::document()` (genomic_markers.Rd: new single_step args);
+  full `devtools::test_dir` (non-live) FAIL 0 / PASS 1112+; `pkgdown::check_pkgdown()`
+  clean; `rcmdcheck(args="--no-manual")` **0/0/0** (fixed one non-ASCII em-dash in a
+  string literal). capability-status row flipped planned(R) → **partial (R)**;
+  doc 25 marked IMPLEMENTED (as-built, §6 corrected — the markers-G path can't reduce
+  to A₂₂, so reorder + differs-from-pedigree are the anchors); NEWS bullet added.

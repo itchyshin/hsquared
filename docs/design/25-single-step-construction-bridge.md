@@ -1,8 +1,10 @@
 # Single-step H⁻¹ construction bridge — R-wiring build-spec
 
-Status: **build-spec (planned)**, 2026-06-20 (R lane / Ada, Hopper, Henderson,
-Kirkpatrick). The engine contract is **proven**; this spec defines the remaining
-**R wiring** so it is a mechanical fresh-context build, not a design problem.
+Status: **IMPLEMENTED**, 2026-06-20 (R lane / Ada, Hopper, Henderson,
+Kirkpatrick; adversarially reviewed by Boole/Hopper/Henderson/Curie/Rose). The
+engine contract is **proven**; the R wiring (parser + payload + bridge + target)
+has landed with pure-R alignment tests and live guards (§6). This doc is kept as
+the as-built contract.
 
 ## 0. Why
 
@@ -62,11 +64,13 @@ Generalize `single_step()` (`R/genomic-markers.R`) and the model-spec parser
 - Optional knobs (parsed, passed through): `tau`, `omega`, `blend_weight`, `ridge`
   (defaults `1, 1, 0, 0`); keep them **out of the common path** (Users-are-gold) —
   document but do not require.
-- Error contract: supplying BOTH `Hinv` and (`pedigree`+`markers`) → a clear
-  "choose one" error. `markers` without `pedigree` (and no `hs_data` pedigree) →
-  point at the pedigree requirement. Reuse the `hs_data()` pedigree shorthand
-  (`animal(1|id)` precedent) so `single_step(1|id, markers=M)` can find a bundled
-  pedigree.
+- Error contract (as built): supplying BOTH `Hinv` and (`pedigree`+`markers`) →
+  a clear "choose one" error; `markers` without `pedigree` → a directing error
+  pointing at the `pedigree =` requirement. **v1 scope cut:** an explicit
+  `pedigree =` is required — the `hs_data()` bundled-pedigree shorthand (the
+  `animal(1|id)` precedent) is **deferred**, not wired, to keep this slice
+  surgical; a follow-up can call `hs_resolve_animal_pedigree()` when `markers` is
+  present but `pedigree` is not.
 
 ## 3. genotyped_rows alignment (THE CRUX — Henderson/Hopper)
 
@@ -120,29 +124,47 @@ Result normalizer + extractors: **reuse** the existing genomic/single_step path
 (VC/h²/GEBVs, `estimated_single_step_construct_ai_reml` provenance). No new
 extractors needed.
 
-## 6. Live tests (Curie/Mrode) — `tests/testthat/test-single-step-construct.R`
+## 6. Live tests (Curie/Mrode) — `tests/testthat/test-single-step-construct.R` (LANDED)
 
-1. **Reduction (the keystone):** all-genotyped pedigree, `markers` chosen so
-   `G == A₂₂` is not required — instead pass the all-genotyped construction and
-   assert the fit's VC/h²/EBVs **== the plain `animal()` `fit_ai_reml`** fit on the
-   same data (the engine guarantees `G=A₂₂ ⇒ H⁻¹=A⁻¹`; the R-level test drives it
-   through the public API). Tolerance machine-precision.
-2. **Partial-genotyped sanity:** a pedigree where only a subset is genotyped +
-   some phenotyped animals are ungenotyped; assert the fit converges, VC positive,
-   h² ∈ (0,1), GEBVs for ALL pedigree animals (genotyped + not).
-3. **Alignment guards:** `rownames(M) ⊄ ped_ids` errors naming the ids;
-   shuffled `M` rows give the **same** fit (reorder correctness).
-4. **Knobs:** `blend_weight`/`ridge` make a singular raw `G` fit (no PD error).
-5. All skip-guarded on `hs_julia_bridge_available()`; one process per file.
+NB the construct path builds `G` from **markers** (`genomic_relationship_matrix`),
+so `G = A₂₂` is *not* reachable through it — the original "reduction == `animal()`"
+keystone idea is **invalid** (markers give a VanRaden `G ≠ A₂₂`). The keystone is
+instead the pair of *independent* guards below.
+
+1. **Reorder guard (THE alignment guard, §6.3):** fitting with the marker rows in
+   two different orders (same genotypes) gives an **identical** fit. A missing or
+   wrong reorder would place `G` at the wrong `H⁻¹` rows and change the fit; this
+   is the only test that catches a `genotyped_rows`/marker-permutation bug
+   independently (a self-referential construct-vs-rebuilt-Hinv check cannot — both
+   sides share the same alignment).
+2. **Differs-from-pedigree anchor:** the construct GEBVs **track** the plain
+   `animal()` pedigree-model GEBVs (correlation > 0.5, same signal) but **differ**
+   from them (the genomic information is genuinely used) — an independent estimand,
+   not a hand-rebuild of the same construction.
+3. **Labels + coverage:** GEBVs are labelled by the real pedigree ids (not
+   positional integers) and cover ALL pedigree animals; a specific ungenotyped
+   phenotyped animal gets a finite GEBV (the §3.3 property).
+4. **Singular-G / ridge (§6.4):** more genotyped animals than markers → a positive
+   `ridge` makes `H⁻¹` PD and the fit succeed.
+5. **Parser (no Julia):** topological + non-contiguous + scrambled-row alignment;
+   `rownames(M) ⊄ ped_ids` / missing-markers / `markers`-without-`pedigree` /
+   both-`Hinv`-and-construction error contracts.
+
+All live tests skip-guarded on `hs_julia_bridge_available()`; one process per file.
+The bridge also asserts engine-order == R-order at fit time (so the genotyped_rows
+alignment fails loudly, not silently, if the two topological sorts ever diverge).
 
 ## 7. Honesty / status
 
-Experimental, opt-in, REML-only, dense/validation-scale; mirrors the twin
-`V2-SSHINV` (partial). The construction `τ/ω/blend/ridge` knobs are **not**
-comparator-validated. Promotion past `partial` is twin-gated (BLUPF90/AGHmatrix
-single-step comparator). `capability-status.md` row "genomic/single-step
-construction beyond supplied inverses" flips from `planned (R)` to `partial (R)`
-only when this lands + the reduction test is green.
+**LANDED 2026-06-20** (R lane). Experimental, opt-in, REML-only,
+dense/validation-scale; mirrors the twin `V2-SSHINV` (partial). The construction
+`τ/ω/blend/ridge` knobs are **not** comparator-validated. Promotion past `partial`
+is twin-gated (BLUPF90/AGHmatrix single-step comparator). `capability-status.md`
+row "genomic/single-step construction beyond supplied inverses" is now `partial
+(R)` (the reorder + differs-from-pedigree guards are green live). **v1 scope cut:**
+an explicit `pedigree =` is required (the `hs_data()` bundled-pedigree shorthand,
+unlike `animal()`, is deferred); `markers` without a `pedigree` emits a directing
+error pointing at the requirement.
 
 ## 8. Risk register
 

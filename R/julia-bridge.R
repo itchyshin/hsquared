@@ -1490,6 +1490,108 @@ hs_fit_julia_genomic_payload <- function(
   )
 }
 
+# Opt-in, experimental single-step H^-1 CONSTRUCTION estimator. Builds Ainv + dense
+# A from the pedigree and G from the genotyped-subset markers, then fits via the
+# Julia-owned `fit_single_step_reml` (which assembles H^-1 = A^-1 + scatter over the
+# genotyped rows). Mirrors `fit_ai_reml` on the supplied-Hinv path; experimental,
+# dense/validation-scale (docs/design/25).
+hs_fit_julia_single_step_construct_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = c(sigma_a2 = 1, sigma_e2 = 1),
+  iterations = 100L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (
+    !identical(payload$relationship_source, "construct") ||
+      is.null(payload$markers) ||
+      is.null(payload$pedigree) ||
+      is.null(payload$genotyped_rows)
+  ) {
+    stop(
+      "Internal bridge error: the single-step construction payload is ",
+      "incomplete (needs pedigree, markers, and genotyped_rows).",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  initial <- hs_validate_initial_variances(initial)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  JuliaCall::julia_assign("hsq_markers", payload$markers)
+  JuliaCall::julia_assign(
+    "hsq_grows",
+    as.integer(payload$genotyped_rows)
+  )
+  JuliaCall::julia_assign("hsq_tau", payload$single_step$tau)
+  JuliaCall::julia_assign("hsq_omega", payload$single_step$omega)
+  JuliaCall::julia_assign("hsq_bw", payload$single_step$blend_weight)
+  JuliaCall::julia_assign("hsq_ssridge", payload$single_step$ridge)
+  JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
+  JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    # Guard the genotyped_rows alignment (docs/design/25 §8): the R-computed
+    # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
+    # must preserve that order. Fail loudly rather than fit a misaligned G.
+    "collect(String, hsq_ped.ids) == hsq_id ||",
+    "error(\"single_step construct: engine pedigree order != R order\");",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_A = HSquared.additive_relationship(hsq_ped);",
+    "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+    "hsq_fit = HSquared.fit_single_step_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_A, hsq_G, hsq_grows;",
+    "ids = hsq_ped.ids,",
+    "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
+    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+    "sigma_e2 = hsq_initial_sigma_e2));",
+    "hsq_result = HSquared.result_payload(hsq_fit);"
+  ))
+
+  raw <- JuliaCall::julia_eval(
+    "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
+  )
+  rel <- payload$relationship
+  result <- hs_normalize_julia_result(raw, payload)
+  result$variance_components$component[
+    result$variance_components$component == "animal"
+  ] <- rel
+  result$heritability$term[result$heritability$term == "animal"] <- rel
+  names(result$random_effects)[
+    names(result$random_effects) == "animal"
+  ] <- rel
+  result$diagnostics$variance_components <- "estimated_single_step_construct_ai_reml"
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "single_step_construct"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_fit_julia_snp_blup_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -1838,6 +1940,7 @@ hs_validate_julia_target <- function(target) {
         "two_effect",
         "genomic",
         "single_step",
+        "single_step_construct",
         "snp_blup",
         "multivariate",
         "random_regression",
@@ -1847,8 +1950,9 @@ hs_validate_julia_target <- function(target) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"two_effect\", \"genomic\", \"single_step\", \"snp_blup\", ",
-      "\"multivariate\", \"random_regression\", or \"nongaussian\".",
+      "\"two_effect\", \"genomic\", \"single_step\", \"single_step_construct\", ",
+      "\"snp_blup\", \"multivariate\", \"random_regression\", or ",
+      "\"nongaussian\".",
       call. = FALSE
     )
   }
@@ -1933,7 +2037,7 @@ hs_effect_targets <- function(type) {
     common_env = "two_effect",
     maternal_genetic = "two_effect",
     genomic = c("genomic", "snp_blup"),
-    single_step = "single_step",
+    single_step = c("single_step", "single_step_construct"),
     stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }
