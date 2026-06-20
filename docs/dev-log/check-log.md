@@ -4886,3 +4886,4 @@ release".
   `test-autoplot` all pass (incl. 11 g_geometry cases); `pkgdown::check_pkgdown()`
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
   **21/21** (g_pca eigenvalues == eigen(G); marshalled scree consumed).
+- CI (commit `70a8731`): pkgdown run `27884567967` **success**; pages deploy green.
