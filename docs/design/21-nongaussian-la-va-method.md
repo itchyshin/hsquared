@@ -248,9 +248,16 @@ public claims register / `capability-status.md` may move non-Gaussian off
    public exposure; resolve `HSquared.jl#44`'s `MarginalMethod` refactor and the
    missing validation row first.
 
-Until gates 1–7 are met with committed evidence, R keeps non-Gaussian as
-`planned`, `family =` non-Gaussian as a reserved-not-fitted error, and `method`
-unexposed.
+**Update (shipped `31f200c`).** The Laplace path is now surfaced
+**experimentally**: `family = poisson()` and `family = binomial()` (binary) fit
+through the opt-in `target = "nongaussian"` (`HSquared.fit_laplace_reml`),
+reporting the latent-scale additive-genetic variance, breeding values, and
+marginal log-likelihood, and **no heritability** (no residual-variance scale) —
+mirroring the twin `V6-LAPLACE` `partial` gate. What remains `planned` behind the
+gates below: the `method = "LA" | "VA"` control (the wire token is now frozen as
+the engine's `"laplace"`/`"variational"`, with R mapping `"LA"`/`"VA"` onto
+them — `HSquared.jl#61`), variational (VA), `binomial` with `n_trials` (only
+binary Bernoulli is surfaced today), and promotion past `partial`.
 
 ---
 
@@ -264,7 +271,9 @@ marginal loglik and VA returns an ELBO lower bound). The twin's experimental
 caveats — Bernoulli `sigma_a2` downward bias from the information effect, the
 hard `m = 20` Gauss–Hermite gate, VA `:full`-covariance densification, and
 Poisson-only intervals — none of which `hsquared` may paper over.
-None of this is fitted today: it stays `planned` behind seven validation gates
-(Gaussian self-consistency, Poisson/binomial recovery, LA-vs-VA envelope,
-external comparator, bridge parity, Rose audit) and the `HSquared.jl#44`
-`MarginalMethod` refactor.
+The Laplace path now fits **experimentally** (`31f200c`; see the update above);
+VA, the `method =` control, and `binomial` with `n_trials` remain `planned`, and
+promotion past `partial` stays gated behind the validation gates (Gaussian
+self-consistency, Poisson/binomial recovery, LA-vs-VA envelope, external
+comparator, bridge parity, Rose audit) and the `HSquared.jl#44` `MarginalMethod`
+refactor.
