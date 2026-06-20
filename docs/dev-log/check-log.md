@@ -4724,3 +4724,27 @@ release".
   site from small illustrative fit objects (`eval = TRUE`, ggplot2 only, no engine
   needed at build), with the real `autoplot()` calls shown. Added to `_pkgdown.yml`.
   `rmarkdown::render()` OK; `check_pkgdown()` clean.
+
+## 2026-06-20 (session 4 — rr_eigenfunctions flip + twin #61 reconciliation cleanups)
+
+- Acting on the twin's #61 cross-lane reconciliation (she re-baselined what's
+  already flipped + what R can flip now). **R-owned flip:** `rr_eigenfunctions()`
+  extractor (`R/extractors.R`) — the rotation-invariant eigen-decomposition of
+  `K_g` as covariate functions (eigenvalues, variance_explained,
+  sign-canonicalized eigen_coefficients, eigenfunctions `psi_j(t)`); computed in R
+  via `hs_g_eigen` + `hs_legendre_design` (conventions already engine-verified).
+- **LIVE parity (operator):** `rr_eigenfunctions` == `HSquared.rr_eigenfunctions`
+  on a fixed K_g/grid AND on a live RR fit — eigenvalues 1.1e-16,
+  variance_explained 1.1e-16, eigenfunctions 1.0e-15. Committed mock + skip-guarded
+  live parity tests (`test-random-regression.R`).
+- **Twin ratified the `rr()` grammar (#61):** dropped the PROVISIONAL/may-change
+  caveat from NEWS + capability-status + the parser comment (now "ratified").
+- **Honesty:** reconciled `docs/design/21-nongaussian-la-va-method.md` — the
+  Laplace path now fits experimentally since `31f200c`; VA / method-control /
+  binomial-with-trials / promotion past partial remain planned.
+- Also posted decisions on #61 unblocking the twin: FA **invariants-only** (ship
+  the eigenbasis payload), metafounder **option (a)** combined (m+n) inverse,
+  freeze method wire-token `"laplace"`/`"variational"`, binomial-with-trials in
+  near-term scope.
+- air format; `devtools::document()`; `test-random-regression` 12 mock + live all
+  pass; `rcmdcheck(--no-manual)` **0/0/0**; `check_pkgdown()` clean.
