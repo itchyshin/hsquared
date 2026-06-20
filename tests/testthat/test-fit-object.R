@@ -183,34 +183,29 @@ test_that("extractor defaults do not imply fitted model support", {
   )
   expect_error(
     marker_effects(list()),
-    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    "requires an `hsquared_fit` object with marker",
     fixed = TRUE
   )
   expect_error(
     marker_variance_explained(list()),
-    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    "populated only ",
     fixed = TRUE
   )
   expect_error(
     qtl_table(list()),
-    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    "reserved for the planned map-annotated scan API",
     fixed = TRUE
   )
+  # The reservation now points users to the post-fit gwas() verb and names the
+  # uncalibrated-significance honesty gate, instead of staying silent.
   expect_error(
     gwas_table(list()),
-    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
-    fixed = TRUE
-  )
-  # The reservation now names the uncalibrated-scan honesty caveat + the twin
-  # bridge/threshold gates it is waiting on, instead of staying silent.
-  expect_error(
-    gwas_table(list()),
-    "HSquared.jl#45",
+    "use `gwas(fit, markers)`",
     fixed = TRUE
   )
   expect_error(
     eqtl_table(list()),
-    "does not fit marker-scan, QTL, GWAS, or eQTL models yet",
+    "HSquared.jl#48",
     fixed = TRUE
   )
   expect_error(

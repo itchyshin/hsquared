@@ -1250,13 +1250,12 @@ hs_marker_extractor_default <- function(name) {
     name,
     "()` requires an `hsquared_fit` object with marker/QTL/eQTL results. ",
     "`marker_effects()` and `marker_variance_explained()` are populated only ",
-    "by opt-in SNP-BLUP fits; the current package reserves the other marker ",
-    "extractor names but does not fit marker-scan, QTL, GWAS, or eQTL models ",
-    "yet. The Julia engine has standalone single-marker scans (fixed-effect or ",
-    "supplied-variance Wald tests, nominal / Bonferroni / BH p-values, no LOCO ",
-    "and no calibrated genome-wide significance); surfacing them on a fitted ",
-    "object is gated on the engine post-fit scan bridge (HSquared.jl#45) and ",
-    "calibrated thresholds (HSquared.jl#48).",
+    "by opt-in SNP-BLUP fits. For a relatedness-corrected post-fit marker scan, ",
+    "use `gwas(fit, markers)` (experimental; nominal / Bonferroni / BH ",
+    "p-values, NOT genome-wide calibrated). These tabular `gwas_table()` / ",
+    "`qtl_table()` / `eqtl_table()` / `lod_scores()` extractors remain reserved ",
+    "for the planned map-annotated scan API (gated on calibrated thresholds, ",
+    "HSquared.jl#48).",
     call. = FALSE
   )
 }

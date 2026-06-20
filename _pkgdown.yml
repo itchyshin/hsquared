@@ -86,6 +86,7 @@ reference:
       - plot.hsquared_fit
       - inference_blocks
       - marker_extractors
+      - gwas
       - fixef
       - ranef
       - response_scale_methods
