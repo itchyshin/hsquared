@@ -4501,3 +4501,14 @@ release".
 - Rose audit: slice surfaces clean; fixed 4 stale "non-Gaussian remains planned" claims
   (`R/hsquared.R`, `R/hsquared-package.R`, `README.md`, old `#6` NEWS line) → re-checked clean.
 - Pushed `31f200c`. Cross-lane: division-of-labour on twin #61, bridge-landed on twin #44.
+
+## 2026-06-19 (session 3 — evolvability / G-geometry bridge #55)
+
+- New `R/evolvability.R` (eigen_G/g_max/mean_evolvability/evolvability/respondability/
+  conditional_evolvability/autonomy); flipped the reserved `eigen_G()`; updated 2 `test-fit-object.R`
+  assertions; added `g_matrix_geometry` to `_pkgdown.yml`.
+- `devtools::document()` (NAMESPACE + `man/g_matrix_geometry.Rd`); `air format`; non-live
+  `devtools::test()` → **907 / 0 / 0 / 34**; **live** `test-evolvability.R` parity (R == engine
+  `evolvability.jl` on a random PD G) passes; `pkgdown::check_pkgdown()` clean;
+  `devtools::check(args="--no-manual")` → **0 / 0 / 0**. Pushed `35bf92f`; posted on twin #61.
+- Ratified the FA rotation convention on twin #61 (the Julia thread was holding on R's ack).
