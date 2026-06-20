@@ -4530,3 +4530,8 @@ release".
 - `variance_along_gradient()` completes the evolvability bridge (`95e598a`): hand-computed + live engine parity (both normalize modes). test 925/0/0/36; check(--no-manual) 0/0/0; check_pkgdown clean.
 - **Full live hardening v2** against twin main `616339e` (one file/process to dodge the JuliaCall teardown segfault): every experimental bridge target passes — julia-bridge 94, diagonal-multivariate 26, nongaussian 22, evolvability 33, gwas 20, fitted-target 14, repeatability 31, genomic 39, single-step 16, snp-blup 25, validation-fixtures 104 (incl. live sommer) = **424 live assertions, 0 fail**.
 - Wrote `docs/dev-log/after-task/2026-06-20-session-handoff-3.md` (START-HERE) + refreshed the mission-control widget (gitignored).
+
+## 2026-06-20 (session 3 — public-article reconciliation)
+
+- Updated 4 pkgdown articles to reflect the session's shipped capabilities (gwas, eigen_G/evolvability, non-Gaussian) with experimental/uncalibrated framing; QTL/eQTL/loadings/calibration stay reserved. `genomic-prediction`/`g-matrix-interpretation` (`c81f83c`), `model-status`/`qtl-gwas-eqtl-status` (`e64fd3d`).
+- All four `rmarkdown::render()` cleanly (eval=FALSE); `pkgdown::check_pkgdown()` clean. Pushed.
