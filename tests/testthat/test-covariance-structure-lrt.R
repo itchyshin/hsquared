@@ -58,3 +58,35 @@ test_that("covariance_structure_lrt guards order, object class, and missing fiel
   )
   expect_error(covariance_structure_lrt(no_ll, full_fit), "loglik")
 })
+
+hs_lrt_fixture_loglik <- function(dir) {
+  meta <- utils::read.csv(
+    testthat::test_path("fixtures", dir, "expected_metadata.csv"),
+    stringsAsFactors = FALSE
+  )
+  as.numeric(stats::setNames(meta$value, meta$key)[["loglik"]])
+}
+
+test_that("covariance_structure_lrt runs end-to-end on the shared fixtures", {
+  # The diagonal and unstructured targets are fitted on IDENTICAL inputs (the
+  # `structured_covariance_parity` and `phase4_multitrait_parity` fixtures share
+  # the same pedigree + phenotypes), so the two REML log-likelihoods form a
+  # valid nested diagonal-vs-unstructured structure test.
+  ll_diag <- hs_lrt_fixture_loglik("structured_covariance_parity")
+  ll_full <- hs_lrt_fixture_loglik("phase4_multitrait_parity")
+
+  diag_fit <- make_mv_fit(ll_diag, 2L, "diagonal")
+  full_fit <- make_mv_fit(ll_full, 3L, "unstructured")
+  lrt <- covariance_structure_lrt(diag_fit, full_fit)
+
+  expect_equal(lrt$df, 1L) # t(t-1)/2 off-diagonal genetic covariances, t = 2
+  expect_false(lrt$boundary) # interior null
+  expect_equal(lrt$statistic, 2 * (ll_full - ll_diag))
+  expect_gt(lrt$statistic, 0) # the unstructured fit cannot do worse
+  expect_equal(
+    lrt$pvalue,
+    stats::pchisq(2 * (ll_full - ll_diag), df = 1, lower.tail = FALSE)
+  )
+  expect_equal(lrt$constrained, "diagonal")
+  expect_equal(lrt$full, "unstructured")
+})
