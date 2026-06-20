@@ -367,9 +367,11 @@ names each unsupported form rather than guessing.</p>
 </h2>
 <ul>
 <li>General default model fitting beyond the v0.1 univariate Gaussian
-animal model (non-Gaussian and the reserved inheritance kernels). The
-multivariate, standard two-effect, repeatability, genomic, SNP-BLUP, and
-single-step models fit only opt-in and experimentally (see above).</li>
+animal model (the reserved inheritance kernels). The multivariate,
+standard two-effect, repeatability, genomic, SNP-BLUP, single-step, and
+non-Gaussian (<code>poisson</code>/<code>binomial</code>, Laplace-REML,
+no heritability) models fit only opt-in and experimentally (see
+above).</li>
 <li>ML estimation on the fit path (<code>REML = FALSE</code> is
 rejected; only REML is implemented).</li>
 <li>R-side <code>Ainv</code> construction (the engine builds

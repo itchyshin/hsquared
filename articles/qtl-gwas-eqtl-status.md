@@ -7,6 +7,9 @@ The short version:
 
 - [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   is live only for the opt-in SNP-BLUP path.
+- `gwas(fit, markers)` runs an experimental post-fit,
+  relatedness-corrected marker scan with **uncalibrated** significance
+  (see *Post-fit GWAS* below).
 - [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
@@ -14,8 +17,10 @@ The short version:
   [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   and
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-  are reserved vocabulary.
-- No marker-scan, QTL, GWAS, or eQTL model is fitted today.
+  are reserved vocabulary (the planned map-annotated / formula-grammar
+  API).
+- No QTL or eQTL model, and no *calibrated* genome-wide GWAS, is fitted
+  today.
 
 The goal is to make the future syntax visible without making users
 wonder whether a scan engine is already hidden somewhere.
@@ -50,6 +55,25 @@ This is a supplied-variance marker-effect solve. The variance-explained
 table is a descriptive fitted-marker share, not a scan statistic. This
 path does not scan markers for association, estimate p-values, compute
 LOD scores, or identify QTL intervals.
+
+### Post-fit GWAS (experimental)
+
+`gwas(fit, markers)` does scan markers for association: it runs a dense,
+supplied-variance, **relatedness-corrected** mixed-model (GLS) Wald scan
+on a fitted Gaussian animal model, reusing the fit’s variance components
+and pedigree.
+
+``` r
+
+fit <- hsquared(y ~ batch + animal(1 | id, pedigree = ped), data = pheno)
+gwas(fit, M) # M: animals x markers; returns effect/se/z/chisq/p_value/...
+```
+
+The p-values are **not genome-wide calibrated**: nominal Wald p-values
+plus Bonferroni/Benjamini-Hochberg over the supplied markers only, with
+no realistic-LD/design calibration, no permutation, and no LOCO. Do not
+report genome-wide significance from them. The calibrated thresholds and
+the formula-grammar / map-annotated path below remain planned.
 
 Data diagnostics are also live:
 
@@ -94,9 +118,13 @@ variance-explained table is a descriptive fitted-marker share, not a
 scan statistic or QTL claim. The other extractors return values only if
 a future engine target has produced the matching result field.
 
-## Planned GWAS path
+## Planned formula-grammar GWAS path
 
-The intended single-marker GWAS grammar is:
+Beyond the experimental post-fit
+[`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
+above, the intended *in-formula* single-marker GWAS grammar — with a
+marker map, leave-one-chromosome-out, and calibrated genome-wide
+significance — is:
 
 ``` r
 

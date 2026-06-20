@@ -87,11 +87,16 @@ in <code>hsquared</code>.</p>
 <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> is live only for the opt-in SNP-BLUP
 path.</li>
 <li>
+<code>gwas(fit, markers)</code> runs an experimental post-fit,
+relatedness-corrected marker scan with <strong>uncalibrated</strong>
+significance (see <em>Post-fit GWAS</em> below).</li>
+<li>
 <code><a href="../reference/genomic_markers.html">marker_scan()</a></code>, <code><a href="../reference/genomic_markers.html">qtl_scan()</a></code>,
 <code><a href="../reference/marker_extractors.html">qtl_table()</a></code>, <code><a href="../reference/marker_extractors.html">gwas_table()</a></code>,
 <code><a href="../reference/marker_extractors.html">eqtl_table()</a></code>, and <code><a href="../reference/marker_extractors.html">lod_scores()</a></code> are reserved
-vocabulary.</li>
-<li>No marker-scan, QTL, GWAS, or eQTL model is fitted today.</li>
+vocabulary (the planned map-annotated / formula-grammar API).</li>
+<li>No QTL or eQTL model, and no <em>calibrated</em> genome-wide GWAS,
+is fitted today.</li>
 </ul>
 <p>The goal is to make the future syntax visible without making users
 wonder whether a scan engine is already hidden somewhere.</p>
@@ -122,8 +127,24 @@ supplied variance components:</p>
 variance-explained table is a descriptive fitted-marker share, not a
 scan statistic. This path does not scan markers for association,
 estimate p-values, compute LOD scores, or identify QTL intervals.</p>
-<p>Data diagnostics are also live:</p>
+<div class="section level3">
+<h3 id="post-fit-gwas-experimental">Post-fit GWAS (experimental)<a class="anchor" aria-label="anchor" href="#post-fit-gwas-experimental"></a>
+</h3>
+<p><code>gwas(fit, markers)</code> does scan markers for association: it
+runs a dense, supplied-variance, <strong>relatedness-corrected</strong>
+mixed-model (GLS) Wald scan on a fitted Gaussian animal model, reusing
+the fit’s variance components and pedigree.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">pheno</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">M</span><span class="op">)</span> <span class="co"># M: animals x markers; returns effect/se/z/chisq/p_value/...</span></span></code></pre></div>
+<p>The p-values are <strong>not genome-wide calibrated</strong>: nominal
+Wald p-values plus Bonferroni/Benjamini-Hochberg over the supplied
+markers only, with no realistic-LD/design calibration, no permutation,
+and no LOCO. Do not report genome-wide significance from them. The
+calibrated thresholds and the formula-grammar / map-annotated path below
+remain planned.</p>
+<p>Data diagnostics are also live:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bundle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hs_data.html">hs_data</a></span><span class="op">(</span></span>
 <span>  phenotypes <span class="op">=</span> <span class="va">pheno</span>,</span>
 <span>  genotypes <span class="op">=</span> <span class="va">M</span>,</span>
@@ -138,11 +159,12 @@ estimate p-values, compute LOD scores, or identify QTL intervals.</p>
 marker-map, and expression-component problems that would otherwise
 become hard-to-debug scan errors later.</p>
 </div>
+</div>
 <div class="section level2">
 <h2 id="reserved-output-vocabulary">Reserved output vocabulary<a class="anchor" aria-label="anchor" href="#reserved-output-vocabulary"></a>
 </h2>
 <p>These names are already part of the fitted-object contract:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_variance_explained</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">qtl_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -157,10 +179,13 @@ other extractors return values only if a future engine target has
 produced the matching result field.</p>
 </div>
 <div class="section level2">
-<h2 id="planned-gwas-path">Planned GWAS path<a class="anchor" aria-label="anchor" href="#planned-gwas-path"></a>
+<h2 id="planned-formula-grammar-gwas-path">Planned formula-grammar GWAS path<a class="anchor" aria-label="anchor" href="#planned-formula-grammar-gwas-path"></a>
 </h2>
-<p>The intended single-marker GWAS grammar is:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>Beyond the experimental post-fit <code><a href="../reference/gwas.html">gwas()</a></code> above, the
+intended <em>in-formula</em> single-marker GWAS grammar — with a marker
+map, leave-one-chromosome-out, and calibrated genome-wide significance —
+is:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_gwas</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Ginv</span><span class="op">)</span> <span class="op">+</span></span>
@@ -190,7 +215,7 @@ those fields are produced, tested, and documented.</p>
 <p>For experimental crosses and line designs, QTL scans usually need
 more than a raw marker matrix. The planned interval-style surface
 is:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_qtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span></span>
@@ -213,7 +238,7 @@ data-integration pieces.</p>
 </h2>
 <p>eQTL analysis is a scale problem as much as a syntax problem. A small
 cis-eQTL surface might eventually look like this:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_eqtl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">expression</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="../reference/genomic_markers.html">marker_scan</a></span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span>, window <span class="op">=</span> <span class="st">"cis"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -225,7 +250,7 @@ cis-eQTL surface might eventually look like this:</p>
 <span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit_eqtl</span><span class="op">)</span></span></code></pre></div>
 <p>A wide expression-matrix version is later still:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_eqtl_wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">expr_matrix</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="../reference/genomic_markers.html">marker_scan</a></span><span class="op">(</span><span class="va">M</span>, map <span class="op">=</span> <span class="va">marker_map</span><span class="op">)</span> <span class="op">+</span></span>
