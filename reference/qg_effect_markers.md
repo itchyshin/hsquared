@@ -87,3 +87,12 @@ inbreeding(formula, ...)
 `NULL`, invisibly. Calls are interpreted by
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 when they appear inside model formulas.
+
+## Details
+
+Some markers use generic names (e.g. `group()`, `inbreeding()`). They
+are formula-only tokens detected by call head and are not meant to be
+called directly, so attaching `hsquared` alongside a package that
+exports a same-named function (e.g.
+[`pedigreemm::inbreeding()`](https://rdrr.io/pkg/pedigreemm/man/inbreeding.html))
+may print a masking message; this is expected and harmless.
