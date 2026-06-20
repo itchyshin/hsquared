@@ -4,6 +4,29 @@
 
 ### New features
 
+- **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008)
+  for opt-in multivariate fits:
+  [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  (the genetic eigenstructure — variance per genetic axis + the genetic
+  principal components, the reserved name now implemented),
+  [`g_max()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  (the leading genetic axis),
+  [`mean_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  and the directional
+  [`evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  [`respondability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  [`conditional_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  and
+  [`autonomy()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md).
+  These are **rotation-invariant** functionals of the estimated `G` (not
+  of factor loadings), so they are well defined for any multivariate fit
+  and need no loading-rotation convention — the agreed cross-lane
+  convention for what the structured-covariance bridge may surface
+  (`HSquared.jl#42`/`#55`). Computed in R from `genetic_covariance(fit)`
+  and verified to match the engine’s `evolvability.jl` definitions by a
+  live parity test; experimental, REML-only, no standard errors,
+  carrying the multivariate fit’s `partial` status
+  ([\#55](https://github.com/itchyshin/hsquared/issues/55)).
 - **Experimental, opt-in non-Gaussian (GLMM) animal model.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now accepts `family = poisson()` and `family = binomial()` (binary

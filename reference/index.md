@@ -78,8 +78,15 @@ experimental targets.
 - [`genetic_loadings()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`specific_variance()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`latent_breeding_values()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
-  [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   : Reserved factor-analytic and G-matrix extractors
+- [`evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`respondability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`conditional_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`autonomy()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`mean_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`g_max()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+  : G-matrix geometry and evolvability
 - [`breeding_values()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   [`EBV()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
   [`BLUP()`](https://itchyshin.github.io/hsquared/reference/breeding_values.md)
