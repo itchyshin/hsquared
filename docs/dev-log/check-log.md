@@ -4512,3 +4512,9 @@ release".
   `evolvability.jl` on a random PD G) passes; `pkgdown::check_pkgdown()` clean;
   `devtools::check(args="--no-manual")` → **0 / 0 / 0**. Pushed `35bf92f`; posted on twin #61.
 - Ratified the FA rotation convention on twin #61 (the Julia thread was holding on R's ack).
+
+## 2026-06-19 (session 3 — post-fit gwas() marker scan #45/#23)
+
+- New `R/gwas.R` (`gwas(fit, markers)` + `hs_gwas` print); updated `hs_marker_extractor_default` + 5 `test-fit-object.R` marker assertions; added `gwas` to `_pkgdown.yml`.
+- `devtools::document()`; `air format`; non-live `devtools::test()` → **917 / 0 / 0 / 35**; **live** `test-gwas.R` (fit + scan + element-wise engine parity + relatedness-vs-fixed-effect discriminator) passes; `pkgdown::check_pkgdown()` clean; `devtools::check(args="--no-manual")` → **0 / 0 / 0**. Pushed `23aab52`.
+- First live fit attempt failed on pure-noise data (`fit_ai_reml could not keep variance components positive`); fixed the test to simulate pedigree-structured breeding values (additive variance identifiable). Rose audit CLEAN. Posted on twin #45 + R #23.
