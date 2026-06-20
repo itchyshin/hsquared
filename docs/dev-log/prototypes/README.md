@@ -219,6 +219,30 @@ interconnected synthetic ones are slower — as with any Meuwissen-Luo).
 The ready-to-apply #58 PR seed (diff + parity test) for the symbolic-once `cholesky!`
 refactor benchmarked in §3. Twin's lane to apply; not applied from here.
 
+## 7. Batched CPU mixed-model marker scan — `batched-marker-scan.jl`
+
+An **exact**, drop-in speedup for the engine's post-fit marker scan
+(`_mixed_marker_scan_stats`, `genomic.jl:627`). The GLS cache is already built
+once; the only remaining cost is a per-marker `cholV \ w_j` (an O(n²) BLAS-2
+triangular solve, **per marker**). Replacing the marker loop with one BLAS-3
+solve over the whole centered marker matrix `W` — `Vinv_W = cholV \ W`, then
+`PW`, `denom = colsum(W .* PW)`, `alpha = (Wᵀ Py) ./ denom` — is the *same
+arithmetic, column for column*:
+
+```
+n=2000  p=3  m=20000   max|d effects|=2.9e-16  max|d se|=5.6e-17  max|d chisq|=3.6e-14
+per-marker loop = 38.19s    batched = 0.82s    => 46.8x   (EXACT, not an approximation)
+```
+
+The diffs are machine-precision (BLAS reassociation only), so the batched kernel
+is **element-wise equivalent** to the per-marker loop that mirrors the engine.
+It is a drop-in for `_mixed_marker_scan_stats` and composes with LOCO (batch per
+group cache via `cache_for_marker(j)`, then concatenate). This is the CPU
+reference that gates the GPU marker-scan work (#51): ~47× on CPU alone, exact,
+before any GPU. Twin's lane to apply; not applied from here. Dense
+validation-scale; not a sparse production scan or a calibrated-significance claim
+(that is #48).
+
 ## Files
 
 - `matrix-free-genomic-reml.jl` — exact low-rank AI-REML + dense validation + known-truth recovery + SLQ logdet demo. Deps: stdlib only.
@@ -231,3 +255,4 @@ refactor benchmarked in §3. Twin's lane to apply; not applied from here.
 - `apy-sparse-ginv.jl` — first open-Julia APY sparse genomic inverse: sharp c<n correctness, dual-GRM honest recovery, randomized-SVD core sizing, large-n build. Deps: LinearAlgebra + SparseArrays. (Scout note: `../scout/2026-06-20-apy-sparse-ginv-scout.md`.)
 - `meuwissen-luo-inbreeding.jl` — Meuwissen-Luo O(n) sparse inbreeding (the >10k-pedigree A⁻¹ unlock); bit-exact vs dense tabular, n=250k in ~10s. Deps: stdlib only.
 - `symbolic-once-fit_ai_reml.patch.md` — ready-to-apply #58 PR seed (diff + parity test) for the symbolic-once `cholesky!` refactor.
+- `batched-marker-scan.jl` — exact drop-in speedup for the post-fit marker scan (`_mixed_marker_scan_stats`): one BLAS-3 `cholV \ W` vs the per-marker BLAS-2 loop; element-wise equivalent (≤3e-14), 46.8× at n=2000/m=20000. The CPU reference that gates the GPU marker scan (#51/#48). Deps: stdlib only.

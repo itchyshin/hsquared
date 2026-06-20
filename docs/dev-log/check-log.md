@@ -4677,3 +4677,15 @@ release".
 - **CI evidence:** pkgdown run `27876651312` **success** (2m26s) + pages build
   `27876713163` **success** on `main @ a9c81d4`. (R-CMD-check is workflow_dispatch
   + PR-only per repo CI policy; local rcmdcheck 0/0/0 is the push gate.)
+
+## 2026-06-20 (session 4 — batched CPU marker-scan prototype)
+
+- `docs/dev-log/prototypes/batched-marker-scan.jl` (new) + README §7. Exact
+  drop-in speedup for the engine's post-fit scan (`_mixed_marker_scan_stats`,
+  genomic.jl:627): one BLAS-3 `cholV \ W` vs the per-marker BLAS-2 loop.
+- **LIVE (Julia 1.10, n=2000 p=3 m=20000):** max|d effects|=2.9e-16,
+  max|d se|=5.6e-17, max|d chisq|=3.6e-14, max|d denom|=1.8e-12 (machine
+  precision — BLAS reassociation) vs the per-marker loop that mirrors the engine
+  line-for-line; **46.8×** (38.19s → 0.82s), EXACT not an approximation.
+  Self-verifying (two independent code paths agree to 1e-16 across 20k markers).
+- No R package code; no public claim. Twin's lane to apply (#48/#51).
