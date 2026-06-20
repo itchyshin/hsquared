@@ -40,6 +40,7 @@ the result prints is the teardown, not a failure).
 | `a9c81d4` | Dev-log: board + check-log + after-task (`2026-06-20-multivariate-validation-metafounder.md`). |
 | `2ac078d` | CI evidence record. |
 | `0d7f635` | **Batched CPU marker-scan prototype** (`docs/dev-log/prototypes/batched-marker-scan.jl`) — exact drop-in for the engine `_mixed_marker_scan_stats`: one BLAS-3 `cholV \ W` vs the per-marker BLAS-2 loop. Live: element-wise equivalent (≤3e-14), **46.8×** (38.2s→0.82s, n=2000/m=20000). Posted to twin #51 (issuecomment-4759008417). Gates the GPU marker scan (#48/#51). |
+| `41079a2` | **AI-REML hardening prototype** (`docs/dev-log/prototypes/ai-reml-hardening.jl`) — faithful dense mirror guarding the engine's `cholesky(check=true)` (`likelihood.jl:381`) PD-failure into a clear rank-deficient error; non-regressive (raw==guarded to 0.0), faithful (20-seed recovery 0.652/0.930, 20/20 conv). Posted to twin #58 (issuecomment-4759052778). |
 
 Adversarially verified by a 4-lens Workflow (`wf_8bad14cd-fba`): both comparator
 lenses **sound** (the correctness agent re-ran the study and reproduced every
@@ -84,19 +85,14 @@ items applied to the #61 post + the code.
    **Correctness anchor (de-risks it):** when `G = A₂₂` (genomic == pedigree among
    genotyped), single-step reduces EXACTLY to the pedigree animal model — so a
    live test `single_step(G=A₂₂) == plain animal()` fit is the parity check.
-2. **AI-REML convergence hardening** (Julia prototype; deliver to twin #58).
-   Exact scope (read `likelihood.jl:356-420` s4): (a) `factor = cholesky(Symmetric(lhs);
-   check = true)` at **`likelihood.jl:381`** throws a cryptic `PosDefException` if the
-   MME `lhs` is not PD (rank-deficient `X`, or extreme conditioning) — there is no
-   try/catch, so the whole fit dies mid-iteration. (b) `score_a =
-   -0.5/σ²ₐ² · (nrandom·σ²ₐ − trace_AC − uAu)` (`:389`) and the information entries
-   scale with `1/σ²ₐ`, so as σ²ₐ→0 the Newton step is numerically unstable
-   (catastrophic cancellation). The step-halving loop (`:407-413`) only guards
-   `a_new/e_new > 0`, NOT the PD-ness of `lhs` at the new point. **Fix to prototype:**
-   wrap the factorization in try/catch → on failure, halve the step and retry (or
-   return a clean `not_converged` + message), and/or optimize in log-variance / the
-   ratio γ=σ²ₐ/σ²ₑ to stabilize the boundary. Demonstrate a failure case (near-boundary
-   h²→0 or rank-deficient X) + the fix.
+(DONE s4: **AI-REML convergence/robustness hardening prototype** — `0d7f635`'s
+sibling `41079a2`, `docs/dev-log/prototypes/ai-reml-hardening.jl`. Demonstrated +
+verified the `cholesky(check=true)` (`likelihood.jl:381`) PD-guard fix
+(cryptic `PosDefException` → clear rank-deficient error) with a faithful dense
+mirror; posted to twin #58. The σ²ₐ→0 reparam (log-variance / ratio γ) for the
+boundary-convergence half remains a future deepening if the twin wants it.)
+
+2. **CPU batched marker-scan** — DONE s4 (`0d7f635`, posted twin #51).
 
 (DONE s4: the CPU batched marker-scan prototype — exact 46.8× drop-in for the
 engine post-fit scan — landed `0d7f635`, posted to twin #51.)
