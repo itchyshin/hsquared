@@ -4944,3 +4944,4 @@ release".
 - Commands: `air format`; `devtools::document()` (regen `hsquared-autoplot.Rd`);
   `test-autoplot` all pass; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**. Rendered QQ: λGC label + caveat correct.
+- CI (commit `ba0bb67`): pkgdown run `27885363770` **success**; pages deploy green.

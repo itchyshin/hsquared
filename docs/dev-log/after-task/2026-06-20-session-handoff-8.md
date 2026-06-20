@@ -43,6 +43,7 @@ file. Supersedes handoff-7.
 | Bridge (viz) | Consume `variance_components_plot_data` (set B) in `autoplot("variance")` forest + live parity | `df54258` |
 | Bridge (viz) | New `autoplot("g_geometry")` **eigenvalue scree** (rotation-invariant; no loadings) + live parity | `70a8731` |
 | Bridge (viz) | Consume `rr_genetic_variance_plot_data` in `autoplot("reaction_norm")` (rename-robust) + **the #93 Q6 RR parity test** | `34074f3` |
+| Bridge (viz) | New `autoplot(scan, "qq")` QQ + genomic-inflation lambda_GC (Manhattan/QQ dispatch) | `ba0bb67` |
 | Coordinator | **Closed the #93 loop** (all 4 preparers consumed, 24/24 live parity) + the **single-step construction R-wiring build-spec** (`docs/design/25`), live-confirmed | `1c96f86` |
 
 **Plotting-consumer arc is COMPLETE:** all four landed `*_plot_data` preparers
@@ -76,9 +77,9 @@ mechanical: parser (§2) → `genotyped_rows` alignment (§3, the crux) → payl
    landed post-fit entry (relatedness-UNcorrected screen; `src/postfit.jl:51`) — a
    small `gwas(method=)` option. LOCO proper needs per-group precisions
    (`loco_relationship_precisions`) — check before wiring.
-2b. **rr_surface / rr_eigenfunctions** figures (`autoplot` new types) +
-   `qq`/`λGC` for gwas — the remaining cataloged-but-unbuilt plotting figures
-   (standard §1); each has a landed engine preparer.
+2b. **rr_surface / rr_eigenfunctions** figures (`autoplot` new types) — the
+   remaining cataloged-but-unbuilt plotting figures (standard §1; QQ + λGC landed
+   `ba0bb67`); each has a landed engine preparer.
 3. **Await twin:** the §6 naming-map confirm + the optional `genetic_variance →
    value` rename (the RR consumer is already rename-robust, so non-blocking);
    metafounder option-(a) + FA-eigenbasis payloads (#61) → wire the unpacks.
