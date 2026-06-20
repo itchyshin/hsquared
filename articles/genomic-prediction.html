@@ -150,8 +150,11 @@ a local Julia, <code>JuliaCall</code>, and a sibling
 </table>
 <p>Building <code>Hinv</code> from a pedigree and genomic relationship
 is planned. APY, low-rank marker solvers, weighted genomic
-relationships, Bayesian marker models, GWAS, QTL, and eQTL scans are
-also planned.</p>
+relationships, and Bayesian marker models are also planned. A post-fit,
+relatedness-corrected marker scan is now available experimentally via
+<code>gwas(fit, markers)</code> (see <em>Post-fit marker scan</em>
+below) — its p-values are <strong>not</strong> genome-wide calibrated;
+QTL/eQTL scans remain planned.</p>
 </div>
 <div class="section level2">
 <h2 id="supplied-ginv">Supplied Ginv<a class="anchor" aria-label="anchor" href="#supplied-ginv"></a>
@@ -288,12 +291,31 @@ relationship-matrix slice.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_variance_explained</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span></code></pre></div>
-<p>The QTL/GWAS/eQTL output names are reserved, but they are not fitted
-by the current genomic paths:</p>
+</div>
+<div class="section level2">
+<h2 id="post-fit-marker-scan-experimental">Post-fit marker scan (experimental)<a class="anchor" aria-label="anchor" href="#post-fit-marker-scan-experimental"></a>
+</h2>
+<p><code>gwas(fit, markers)</code> runs a dense, supplied-variance,
+<strong>relatedness-corrected</strong> mixed-model (GLS) Wald marker
+scan on a fitted Gaussian animal model, reusing the fit’s estimated
+variance components and pedigree relationship. Markers are one row per
+animal (in the fit’s pedigree order), one column per marker.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">qtl_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>    <span class="co"># planned unless a future QTL target produced it</span></span>
-<span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>   <span class="co"># planned</span></span>
-<span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>   <span class="co"># planned</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">dat</span><span class="op">)</span></span>
+<span><span class="va">scan</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">markers</span><span class="op">)</span> <span class="co"># markers: animals x markers</span></span>
+<span><span class="va">scan</span> <span class="co"># effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod</span></span></code></pre></div>
+<p>The p-values are <strong>not genome-wide calibrated</strong>: they
+are nominal Wald p-values plus Bonferroni/Benjamini-Hochberg over the
+supplied markers only, with no realistic-LD/design calibration, no
+permutation, and no leave-one-chromosome-out (LOCO). Do not report
+genome-wide significance from them.</p>
+<p>The tabular <code><a href="../reference/marker_extractors.html">gwas_table()</a></code> / <code><a href="../reference/marker_extractors.html">qtl_table()</a></code> /
+<code><a href="../reference/marker_extractors.html">eqtl_table()</a></code> output names stay reserved for a planned
+map-annotated scan API:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">qtl_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>    <span class="co"># reserved (planned map-annotated API)</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>   <span class="co"># reserved</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>   <span class="co"># reserved</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="current-evidence-boundary">Current evidence boundary<a class="anchor" aria-label="anchor" href="#current-evidence-boundary"></a>

@@ -207,13 +207,24 @@ pedigree relationship.</p>
 <li>
 <code>fit_diagnostics(fit)</code>.</li>
 </ul>
-<p>The factor-analytic roadmap will eventually add loadings, specific
-variance, latent breeding values, and eigen-G summaries. Those are not
-just pretty alternative labels for <code>G</code>: loading axes are
-sign- and rotation-nonunique unless the model has a validated constraint
-or rotation policy. Until that policy is validated,
-<code>hsquared</code> keeps the invariant covariance and correlation
-matrices as the stable interpretation layer.</p>
+<p>The <strong>rotation-invariant</strong> geometry of <code>G</code> is
+now surfaced (experimental): the genetic eigenstructure via
+<code>eigen_G(fit)</code> and <code>g_max(fit)</code>, and the Hansen
+&amp; Houle (2008) evolvability measures <code><a href="../reference/g_matrix_geometry.html">evolvability()</a></code>,
+<code><a href="../reference/g_matrix_geometry.html">variance_along_gradient()</a></code>, <code><a href="../reference/g_matrix_geometry.html">respondability()</a></code>,
+<code><a href="../reference/g_matrix_geometry.html">conditional_evolvability()</a></code>, <code><a href="../reference/g_matrix_geometry.html">autonomy()</a></code>, and
+<code><a href="../reference/g_matrix_geometry.html">mean_evolvability()</a></code>. These are functionals of
+<code>G</code> itself, not of factor loadings, so they are well defined
+without a rotation convention.</p>
+<p>Factor <em>loadings</em>, specific variance, and latent breeding
+values stay reserved: loading axes are sign- and rotation-nonunique
+unless the model has a validated constraint or rotation policy. The
+agreed cross-lane convention is to bridge only rotation-invariant
+functionals of <code>G</code> (the eigenbasis + the invariants above),
+never the raw loadings. Until a loading-rotation policy is validated,
+<code>hsquared</code> keeps the invariant covariance, correlation,
+eigenstructure, and evolvability geometry as the stable interpretation
+layer.</p>
 </div>
 <div class="section level2">
 <h2 id="current-evidence-boundary">Current evidence boundary<a class="anchor" aria-label="anchor" href="#current-evidence-boundary"></a>
@@ -230,6 +241,10 @@ to Julia <code>NaN</code>;</li>
 <code><a href="../reference/multivariate_extractors.html">G_matrix()</a></code> and <code><a href="../reference/multivariate_extractors.html">R_matrix()</a></code> aliases over
 those same fields;</li>
 <li>per-trait heritability and cross-trait EBVs;</li>
+<li>the rotation-invariant G geometry: <code><a href="../reference/g_matrix_geometry.html">eigen_G()</a></code>,
+<code><a href="../reference/g_matrix_geometry.html">g_max()</a></code>, and the Hansen &amp; Houle evolvability measures
+(live-verified against the engine; experimental, no standard
+errors);</li>
 <li>a shared deterministic R/Julia fixture;</li>
 <li>an optional <code>sommer</code> comparator for the diagonal-residual
 version of the shared fixture.</li>
@@ -265,10 +280,12 @@ correlated-trait selection framework</a>, <a href="https://pubmed.ncbi.nlm.nih.g
 and Bulmer’s work on genetic covariance functions for growth
 trajectories</a>, and <a href="https://pubmed.ncbi.nlm.nih.gov/18662244/" class="external-link">Hansen and Houle’s
 evolvability measures for multivariate characters</a>.</p>
-<p>For <code>hsquared</code>, those ideas are roadmap direction, not
-current over-claim. The current package reports the fitted G and R
-matrices and keeps future evolvability, selection-response, and
-factor-analytic interpretation behind explicit validation gates.</p>
+<p>For <code>hsquared</code>, the current package reports the fitted G
+and R matrices and now the rotation-invariant eigenstructure and Hansen
+&amp; Houle evolvability geometry (experimental, no standard errors).
+Selection-response and factor-analytic <em>loading</em> interpretation
+stay behind explicit validation gates (loadings need a validated
+rotation policy; nothing here is coverage-calibrated).</p>
 <p>See also:</p>
 <ul>
 <li><a href="multivariate.html">Multivariate Gaussian animal

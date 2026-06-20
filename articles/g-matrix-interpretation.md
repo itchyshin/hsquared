@@ -146,13 +146,27 @@ Trust invariant summaries first:
 - `breeding_values(fit)`;
 - `fit_diagnostics(fit)`.
 
-The factor-analytic roadmap will eventually add loadings, specific
-variance, latent breeding values, and eigen-G summaries. Those are not
-just pretty alternative labels for `G`: loading axes are sign- and
-rotation-nonunique unless the model has a validated constraint or
-rotation policy. Until that policy is validated, `hsquared` keeps the
-invariant covariance and correlation matrices as the stable
-interpretation layer.
+The **rotation-invariant** geometry of `G` is now surfaced
+(experimental): the genetic eigenstructure via `eigen_G(fit)` and
+`g_max(fit)`, and the Hansen & Houle (2008) evolvability measures
+[`evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+[`variance_along_gradient()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+[`respondability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+[`conditional_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+[`autonomy()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+and
+[`mean_evolvability()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md).
+These are functionals of `G` itself, not of factor loadings, so they are
+well defined without a rotation convention.
+
+Factor *loadings*, specific variance, and latent breeding values stay
+reserved: loading axes are sign- and rotation-nonunique unless the model
+has a validated constraint or rotation policy. The agreed cross-lane
+convention is to bridge only rotation-invariant functionals of `G` (the
+eigenbasis + the invariants above), never the raw loadings. Until a
+loading-rotation policy is validated, `hsquared` keeps the invariant
+covariance, correlation, eigenstructure, and evolvability geometry as
+the stable interpretation layer.
 
 ## Current evidence boundary
 
@@ -169,6 +183,11 @@ Covered in the R lane:
   [`R_matrix()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
   aliases over those same fields;
 - per-trait heritability and cross-trait EBVs;
+- the rotation-invariant G geometry:
+  [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  [`g_max()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md),
+  and the Hansen & Houle evolvability measures (live-verified against
+  the engine; experimental, no standard errors);
 - a shared deterministic R/Julia fixture;
 - an optional `sommer` comparator for the diagonal-residual version of
   the shared fixture.
@@ -200,10 +219,12 @@ trajectories](https://pubmed.ncbi.nlm.nih.gov/2323560/), and [Hansen and
 Houle’s evolvability measures for multivariate
 characters](https://pubmed.ncbi.nlm.nih.gov/18662244/).
 
-For `hsquared`, those ideas are roadmap direction, not current
-over-claim. The current package reports the fitted G and R matrices and
-keeps future evolvability, selection-response, and factor-analytic
-interpretation behind explicit validation gates.
+For `hsquared`, the current package reports the fitted G and R matrices
+and now the rotation-invariant eigenstructure and Hansen & Houle
+evolvability geometry (experimental, no standard errors).
+Selection-response and factor-analytic *loading* interpretation stay
+behind explicit validation gates (loadings need a validated rotation
+policy; nothing here is coverage-calibrated).
 
 See also:
 
