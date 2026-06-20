@@ -4906,3 +4906,4 @@ release".
   recompute path still green; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity` **24/24**
   (g-corr ×2, g-pca, variance forest, NaN round-trip, RR parity).
+- CI (commit `34074f3`): pkgdown run `27884896947` **success**; pages deploy green.
