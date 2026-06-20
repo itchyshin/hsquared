@@ -124,3 +124,17 @@ test_that("variance autoplot errors when there are no variance components", {
   bad <- structure(list(result = list()), class = "hsquared_fit")
   expect_error(autoplot(bad, "variance"), "no variance-component")
 })
+
+test_that("autoplot figures carry the hsquared_meta honest-status attribute", {
+  m_g <- attr(autoplot(mock_mv_fit(), "g_matrix"), "hsquared_meta")
+  expect_equal(m_g$type, "g_matrix")
+  expect_equal(m_g$rotation_status, "rotation_invariant")
+
+  m_gw <- attr(autoplot(mock_gwas()), "hsquared_meta")
+  expect_equal(m_gw$type, "manhattan")
+  expect_equal(m_gw$interval_status, "uncalibrated")
+
+  m_v <- attr(autoplot(mock_uni_fit(), "variance"), "hsquared_meta")
+  expect_equal(m_v$type, "variance")
+  expect_equal(m_v$interval_status, "experimental_asymptotic")
+})

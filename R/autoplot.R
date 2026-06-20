@@ -186,12 +186,17 @@ hs_autoplot_variance <- function(object, ...) {
   } else {
     NULL
   }
-  hs_gg_forest(
-    df,
-    xlab = "estimate",
-    title = "Variance components and heritability",
-    subtitle = sub,
-    zero_line = TRUE
+  hs_attach_meta(
+    hs_gg_forest(
+      df,
+      xlab = "estimate",
+      title = "Variance components and heritability",
+      subtitle = sub,
+      zero_line = TRUE
+    ),
+    type = "variance",
+    interval_status = if (experimental) "experimental_asymptotic" else "none",
+    notes = "variance components + per-trait h^2; SEs asymptotic/REML, not coverage-calibrated"
   )
 }
 
@@ -253,14 +258,19 @@ hs_autoplot_breeding_values <- function(object, ...) {
   } else {
     "sorted EBVs (no prediction error variances available)"
   }
-  p +
-    ggplot2::labs(
-      x = "rank",
-      y = "breeding value",
-      title = "Estimated breeding values",
-      subtitle = sub
-    ) +
-    theme_hsquared()
+  hs_attach_meta(
+    p +
+      ggplot2::labs(
+        x = "rank",
+        y = "breeding value",
+        title = "Estimated breeding values",
+        subtitle = sub
+      ) +
+      theme_hsquared(),
+    type = "breeding_values",
+    interval_status = if (has_band) "pev_band" else "none",
+    notes = "sorted EBVs; bands are +/- 1.96 sqrt(PEV) when available"
+  )
 }
 
 hs_autoplot_g_matrix <- function(object, ...) {
@@ -287,28 +297,33 @@ hs_autoplot_g_matrix <- function(object, ...) {
     match(df$col, traits)
   )])
   df$label <- formatC(df$value, format = "f", digits = 2)
-  ggplot2::ggplot(
-    df,
-    ggplot2::aes(x = .data$row, y = .data$col, fill = .data$value)
-  ) +
-    ggplot2::geom_tile(colour = "white", linewidth = 0.6) +
-    ggplot2::geom_text(ggplot2::aes(label = .data$label), size = 3.4) +
-    ggplot2::scale_fill_gradient2(
-      low = "#b2182b",
-      mid = "white",
-      high = "#2166ac",
-      midpoint = 0,
-      limits = c(-1, 1),
-      name = "genetic\ncorrelation"
+  hs_attach_meta(
+    ggplot2::ggplot(
+      df,
+      ggplot2::aes(x = .data$row, y = .data$col, fill = .data$value)
     ) +
-    ggplot2::coord_equal() +
-    ggplot2::labs(
-      x = NULL,
-      y = NULL,
-      title = "Genetic correlation (G)",
-      subtitle = "rotation-invariant; raw loadings are never plotted"
-    ) +
-    theme_hsquared()
+      ggplot2::geom_tile(colour = "white", linewidth = 0.6) +
+      ggplot2::geom_text(ggplot2::aes(label = .data$label), size = 3.4) +
+      ggplot2::scale_fill_gradient2(
+        low = "#b2182b",
+        mid = "white",
+        high = "#2166ac",
+        midpoint = 0,
+        limits = c(-1, 1),
+        name = "genetic\ncorrelation"
+      ) +
+      ggplot2::coord_equal() +
+      ggplot2::labs(
+        x = NULL,
+        y = NULL,
+        title = "Genetic correlation (G)",
+        subtitle = "rotation-invariant; raw loadings are never plotted"
+      ) +
+      theme_hsquared(),
+    type = "g_matrix",
+    rotation_status = "rotation_invariant",
+    notes = "genetic correlations only; raw factor loadings are never plotted"
+  )
 }
 
 hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
@@ -331,24 +346,28 @@ hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
     )
   )
   df$panel <- factor(df$panel, levels = c("genetic variance", "heritability"))
-  ggplot2::ggplot(df, ggplot2::aes(x = .data$covariate, y = .data$value)) +
-    ggplot2::geom_line(colour = "#2c6fbb", linewidth = 0.8) +
-    ggplot2::geom_point(size = 1.4, colour = "#2c6fbb") +
-    ggplot2::facet_wrap(
-      ggplot2::vars(.data$panel),
-      scales = "free_y",
-      ncol = 1L
-    ) +
-    ggplot2::labs(
-      x = "covariate",
-      y = NULL,
-      title = "Reaction norm (random regression)",
-      subtitle = paste(
-        "genetic-variance and heritability trajectories;",
-        "h2(t) experimental (homogeneous residual, no PE term)"
-      )
-    ) +
-    theme_hsquared()
+  hs_attach_meta(
+    ggplot2::ggplot(df, ggplot2::aes(x = .data$covariate, y = .data$value)) +
+      ggplot2::geom_line(colour = "#2c6fbb", linewidth = 0.8) +
+      ggplot2::geom_point(size = 1.4, colour = "#2c6fbb") +
+      ggplot2::facet_wrap(
+        ggplot2::vars(.data$panel),
+        scales = "free_y",
+        ncol = 1L
+      ) +
+      ggplot2::labs(
+        x = "covariate",
+        y = NULL,
+        title = "Reaction norm (random regression)",
+        subtitle = paste(
+          "genetic-variance and heritability trajectories;",
+          "h2(t) experimental (homogeneous residual, no PE term)"
+        )
+      ) +
+      theme_hsquared(),
+    type = "reaction_norm",
+    notes = "supplied-K_g descriptive trajectories; h2(t) can overstate without a PE term"
+  )
 }
 
 # --- autoplot.hs_gwas (Manhattan) ------------------------------------------
@@ -368,33 +387,39 @@ autoplot.hs_gwas <- function(object, ...) {
   df$neglog10p <- -log10(pmax(df$p_value, .Machine$double.xmin))
   m <- nrow(df)
   bonf <- -log10(0.05 / m)
-  ggplot2::ggplot(df, ggplot2::aes(x = .data$index, y = .data$neglog10p)) +
-    ggplot2::geom_hline(
-      yintercept = bonf,
-      linetype = 2,
-      colour = "#b2182b"
-    ) +
-    ggplot2::geom_point(size = 1.3, colour = "#2c6fbb") +
-    ggplot2::annotate(
-      "text",
-      x = 1,
-      y = bonf,
-      vjust = -0.5,
-      hjust = 0,
-      size = 3,
-      colour = "#b2182b",
-      label = "Bonferroni 0.05"
-    ) +
-    ggplot2::labs(
-      x = "marker",
-      y = expression(-log[10](p)),
-      title = "Marker scan (Manhattan)",
-      subtitle = paste(
-        "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide",
-        "calibrated (gate HSquared.jl#48)"
-      )
-    ) +
-    theme_hsquared()
+  hs_attach_meta(
+    ggplot2::ggplot(df, ggplot2::aes(x = .data$index, y = .data$neglog10p)) +
+      ggplot2::geom_hline(
+        yintercept = bonf,
+        linetype = 2,
+        colour = "#b2182b"
+      ) +
+      ggplot2::geom_point(size = 1.3, colour = "#2c6fbb") +
+      ggplot2::annotate(
+        "text",
+        x = 1,
+        y = bonf,
+        vjust = -0.5,
+        hjust = 0,
+        size = 3,
+        colour = "#b2182b",
+        label = "Bonferroni 0.05"
+      ) +
+      ggplot2::labs(
+        x = "marker",
+        y = expression(-log[10](p)),
+        title = "Marker scan (Manhattan)",
+        subtitle = paste(
+          "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide",
+          "calibrated (gate HSquared.jl#48)"
+        )
+      ) +
+      theme_hsquared(),
+    type = "manhattan",
+    source = "gwas",
+    interval_status = "uncalibrated",
+    notes = "nominal Wald p-values; Bonferroni line is visual only; not genome-wide calibrated (gate #48)"
+  )
 }
 
 # --- recovery forest (validation-study data frame) -------------------------
@@ -425,12 +450,18 @@ hs_recovery_forest <- function(data) {
     stringsAsFactors = FALSE
   )
   df$covers0 <- df$lo <= 0 & df$hi >= 0
-  hs_gg_forest(
-    df,
-    xlab = "bias (mean(hat) - truth)",
-    title = "Known-truth recovery (bias +/- 2 MCSE)",
-    subtitle = "intervals covering 0 indicate no detectable bias",
-    zero_line = TRUE
+  hs_attach_meta(
+    hs_gg_forest(
+      df,
+      xlab = "bias (mean(hat) - truth)",
+      title = "Known-truth recovery (bias +/- 2 MCSE)",
+      subtitle = "intervals covering 0 indicate no detectable bias",
+      zero_line = TRUE
+    ),
+    type = "recovery_forest",
+    source = "study",
+    interval_status = "mcse_band",
+    notes = "bias +/- 2 MCSE; interval covering 0 = no detectable bias"
   )
 }
 
@@ -444,4 +475,26 @@ hs_require_ggplot2 <- function() {
     )
   }
   invisible(TRUE)
+}
+
+# Attach the cross-lane honest-status meta (the `13-plotting-layer.md` §3
+# contract, mirroring gllvmTMB/drmTMB): machine-readable type / source /
+# interval / rotation status + caveat notes, alongside the human-readable
+# subtitle, so the honest-status guardrails are inspectable, not just printed.
+hs_attach_meta <- function(
+  p,
+  type,
+  source = "fit",
+  interval_status = "none",
+  rotation_status = "not_applicable",
+  notes = NULL
+) {
+  attr(p, "hsquared_meta") <- list(
+    type = type,
+    source = source,
+    interval_status = interval_status,
+    rotation_status = rotation_status,
+    notes = notes
+  )
+  p
 }
