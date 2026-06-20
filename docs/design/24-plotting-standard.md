@@ -55,8 +55,8 @@ Every figure carries a **subtitle caveat** AND the machine-readable
   coverage-calibrated; small-n coverage may be < 95%. No whiskers when SEs absent.
   **h² interval boundary:** surface the raw asymptotic bounds and **annotate** when
   they cross `[0,1]`; do not silently clamp (aligning with the engine's
-  boundary-throw discipline). *(Current `R/autoplot.R` clamps for display — a
-  follow-up R fix to match this rule.)*
+  boundary-throw discipline). *(Implemented in `R/autoplot.R`: raw bounds + a
+  "h² CI crosses the [0,1] boundary" subtitle note.)*
 - **EBV** — PEV bands are validation-scale (the reliability denominator is dense),
   not a production large-pedigree reliability claim. Band only when PEV present.
 - **G correlation** — rotation-invariant `D⁻¹GD⁻¹`, unit diagonal; **cells

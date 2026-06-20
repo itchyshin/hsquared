@@ -171,18 +171,27 @@ hs_autoplot_variance <- function(object, ...) {
         hsev <- rep(hsev, nrow(h_df))
       }
       if (length(hsev) == nrow(h_df)) {
-        h_df$lo <- pmax(0, h_df$estimate - 1.96 * hsev)
-        h_df$hi <- pmin(1, h_df$estimate + 1.96 * hsev)
+        # Surface the RAW asymptotic bounds and annotate when they cross [0, 1];
+        # do not silently clamp (plotting standard 24 §2; mirrors the engine's
+        # boundary-throw discipline). A whisker crossing 0/1 is the honest signal
+        # that h^2 is imprecise.
+        h_df$lo <- h_df$estimate - 1.96 * hsev
+        h_df$hi <- h_df$estimate + 1.96 * hsev
         experimental <- experimental || any(is.finite(hsev))
       }
     }
+    boundary <- any(is.finite(h_df$lo) & (h_df$lo < 0 | h_df$hi > 1))
     df <- rbind(vc_df, h_df)
   } else {
+    boundary <- FALSE
     df <- vc_df
   }
 
   sub <- if (experimental) {
-    "experimental +/- 1.96 SE (asymptotic, REML, not coverage-calibrated)"
+    paste0(
+      "experimental +/- 1.96 SE (asymptotic, REML, not coverage-calibrated)",
+      if (isTRUE(boundary)) "; h^2 CI crosses the [0,1] boundary" else ""
+    )
   } else {
     NULL
   }
