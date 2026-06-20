@@ -4451,3 +4451,32 @@ release".
   posted via `gh issue comment` on `HSquared.jl#44` and `hsquared#23`.
 - `git push origin main` for each slice; final HEAD `34f8a29`. R-CMD-check does not run on push
   (CI = pull_request + workflow_dispatch); pkgdown auto-deploys on push.
+
+## 2026-06-19 (session 3 — LIVE ENGINE UNLOCKED + verified PEV bridge fix)
+
+- **Julia was available all along — only off-PATH.** Found a `juliaup` install at
+  `~/.juliaup/bin/julia` (julia 1.10.0 default; 1.12.6 available) + `~/.julia` +
+  `/Applications/Julia-1.6.app`. The bridge goes LIVE in a dev (`load_all`) session with:
+  `export PATH="$HOME/.juliaup/bin:$PATH"` and
+  `export HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl"`
+  (under `load_all`, `system.file()` resolves the default project to `hsquared/HSquared.jl`,
+  the wrong path — the env var overrides it to the sibling). Set `NOT_CRAN=true` to run
+  `skip_on_cran()` legs. Then `hs_julia_bridge_available()` → TRUE. **Future sessions: live
+  verification of every engine-coupled slice is possible — do not assume skip-only.**
+- Live verification (Julia 1.10 + HSquared.jl `origin/main`):
+  - `testthat::test_file("tests/testthat/test-diagonal-multivariate.R")` → all pass incl. the
+    live diagonal leg + LRT end-to-end (this session's #1 slice, previously skip-only). CLEAN.
+  - `testthat::test_file("tests/testthat/test-julia-bridge.R")` → all pass against the real
+    engine, incl. the reliability/PEV presence assertions (L87-90, L129).
+  - `testthat::test_file("tests/testthat/test-multivariate.R")` → assertions pass, then a
+    **JuliaCall/Rcpp segfault at teardown** (`Rcpp_precious_preserve`) — a known JuliaCall memory
+    quirk under many `julia_eval` calls, NOT a model-logic failure. Run heavy live files one per
+    process.
+- **Verified PEV/reliability bridge fix shipped (`f38d7f4`, closes the univariate half of #21).**
+  Confirmed live that `result_payload(::AnimalModelFit)` now carries the `:selinv`
+  `prediction_error_variance` field (`hasproperty(...) == TRUE`); the bridge's unconditional
+  `:dense` re-merge was clobbering it. Guarded the merge on
+  `!hasproperty(hsq_result, :prediction_error_variance)` at all three `result_payload` routes.
+  Post-fix live check: reliability/pev/accuracy finite, and `R PEV == result_payload(:selinv)
+  PEV` → TRUE (merge correctly skipped, no redundant `:dense` factorization). Non-live suite
+  `devtools::test()` → **876 / 0 / 0 / 32**. Pushed `f38d7f4`.
