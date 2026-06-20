@@ -4928,3 +4928,4 @@ release".
   → **max|ΔVC| = 0.0**. Engine fn names verified callable + exported
   (`single_step_inverse`, `fit_single_step_reml`, `genomic_relationship_matrix`,
   `additive_relationship`). Docs-only slice; no R package code changed.
+- CI (commit `1c96f86`): pkgdown run `27885106331` **success**; pages deploy green.
