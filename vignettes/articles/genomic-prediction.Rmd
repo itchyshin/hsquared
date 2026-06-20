@@ -47,8 +47,11 @@ There is also a single-step surface:
 | supplied-H inverse single-step | `single_step(1 | id, Hinv = Hinv)` | `target = "single_step"` | estimated by the Julia AI-REML path |
 
 Building `Hinv` from a pedigree and genomic relationship is planned. APY,
-low-rank marker solvers, weighted genomic relationships, Bayesian marker
-models, GWAS, QTL, and eQTL scans are also planned.
+low-rank marker solvers, weighted genomic relationships, and Bayesian marker
+models are also planned. A post-fit, relatedness-corrected marker scan is now
+available experimentally via `gwas(fit, markers)` (see *Post-fit marker scan*
+below) — its p-values are **not** genome-wide calibrated; QTL/eQTL scans remain
+planned.
 
 ## Supplied Ginv
 
@@ -191,13 +194,31 @@ marker_effects(fit_snp)
 marker_variance_explained(fit_snp)
 ```
 
-The QTL/GWAS/eQTL output names are reserved, but they are not fitted by the
-current genomic paths:
+## Post-fit marker scan (experimental)
+
+`gwas(fit, markers)` runs a dense, supplied-variance, **relatedness-corrected**
+mixed-model (GLS) Wald marker scan on a fitted Gaussian animal model, reusing the
+fit's estimated variance components and pedigree relationship. Markers are one row
+per animal (in the fit's pedigree order), one column per marker.
 
 ```{r}
-qtl_table(fit_g)    # planned unless a future QTL target produced it
-gwas_table(fit_g)   # planned
-eqtl_table(fit_g)   # planned
+fit <- hsquared(y ~ x + animal(1 | id, pedigree = ped), data = dat)
+scan <- gwas(fit, markers) # markers: animals x markers
+scan # effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod
+```
+
+The p-values are **not genome-wide calibrated**: they are nominal Wald p-values
+plus Bonferroni/Benjamini-Hochberg over the supplied markers only, with no
+realistic-LD/design calibration, no permutation, and no leave-one-chromosome-out
+(LOCO). Do not report genome-wide significance from them.
+
+The tabular `gwas_table()` / `qtl_table()` / `eqtl_table()` output names stay
+reserved for a planned map-annotated scan API:
+
+```{r}
+qtl_table(fit_g)    # reserved (planned map-annotated API)
+gwas_table(fit_g)   # reserved
+eqtl_table(fit_g)   # reserved
 ```
 
 ## Current evidence boundary
