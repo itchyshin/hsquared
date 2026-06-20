@@ -154,8 +154,10 @@ hs_validation_status_evidence <- function() {
       "\"estimated_<genomic|single_step>_ai_reml\". For genomic, a skip-guarded",
       "live test also fits from a raw marker matrix (`genomic(1 | id, markers =",
       "M)`): the engine builds G (genomic_relationship_matrix) and its regularized",
-      "inverse, then fits. single_step still needs a supplied Hinv; building Hinv",
-      "from a pedigree and genomic relationship is planned."
+      "inverse, then fits. The R single_step bridge still needs a supplied Hinv;",
+      "building Hinv from a pedigree and genomic relationship is engine-shipped",
+      "(single_step_inverse / fit_single_step_reml), but the R bridge does not",
+      "yet surface that construction (R surfacing pending)."
     ),
     paste(
       "Pure-R control/validator tests plus a skip-guarded live test running Julia",
@@ -269,8 +271,10 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
       "a relationship-inverse spec) that R surfaces; mirrors the twin V2-GREML /",
       "V2-GRM / V2-GINV (genomic) and V2-SSHINV (single-step) gates (partial).",
-      "Genomic accepts a supplied Ginv or a marker matrix (engine-built G); single",
-      "step needs a supplied Hinv (building it from a pedigree + G is planned).",
+      "Genomic accepts a supplied Ginv or a marker matrix (engine-built G); the R",
+      "single-step bridge needs a supplied Hinv. Building Hinv from a pedigree + G",
+      "is engine-shipped (single_step_inverse / fit_single_step_reml), but the R",
+      "bridge does not yet surface that construction (R surfacing pending).",
       "Low-rank m>>n solves and AGHmatrix/sommer/BLUPF90 comparator parity are",
       "planned. Not the default, not ML, not production or comparator-validated."
     ),

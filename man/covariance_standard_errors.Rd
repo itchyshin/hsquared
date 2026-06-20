@@ -24,9 +24,17 @@ covariance and correlation matrices and per-trait \verb{h²}, for an opt-in
 \strong{unstructured} multivariate fit, when the engine returned them.
 }
 \details{
-Heavy caveats (engine row \code{V4-MV-REML}, \code{partial}): the multivariate REML
-recovery calibration did \strong{not} pass (6/10 unstructured seeds). These SEs are
+Heavy caveats (engine row \code{V4-MV-REML}, \code{partial}): the strict per-seed
+recovery gate is still a non-pass (7/12 unstructured seeds in the updated
+study), but a 12-seed bias/MCSE study (twin \code{HSquared.jl#78}) shows \strong{no
+detectable bias} — all six covariance parameters have \verb{|bias| ≤ 2·MCSE}
+(largest 0.84·MCSE), a low-power non-rejection consistent with an unbiased
+estimator (not a proof), with EBV accuracy ≈ 0.90 in both traits; a cold-start
+replication (#79) reaches the same optimum on all 12 seeds, so it is not a
+warm-start artifact. The per-seed gate failures reflect sampling variance of
+the estimated \code{G} at this design, not a detected bias. These SEs remain
 asymptotic, REML-only, \strong{unstructured-only} (the engine refuses structured /
 factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
-flat/boundary optimum, not coverage-calibrated, and not a validated capability.
+flat/boundary optimum, not coverage-calibrated, with no external comparator,
+and not a validated capability.
 }

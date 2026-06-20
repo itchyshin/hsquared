@@ -35,7 +35,11 @@ experimental, validation-scale screen that surfaces the Julia-owned
 \strong{The p-values are NOT genome-wide calibrated.} They are marker-by-marker
 Wald (nominal) p-values plus deterministic Bonferroni and Benjamini-Hochberg
 adjustments over the \emph{supplied} marker set only. There is no realistic-LD /
-study-design calibration, no permutation, no leave-one-chromosome-out (LOCO),
-and no external comparator (the calibration gate is \code{HSquared.jl#48}). Do not
-report genome-wide significance from these values.
+study-design calibration, no permutation, and no external comparator (the
+calibration gate is \code{HSquared.jl#48}). A leave-one-group-out (LOCO) scan is
+available engine-side (\code{HSquared.loco_mixed_model_marker_scan()}); this R
+\code{gwas()} wrapper does \strong{not} yet surface it (R LOCO surfacing is in
+progress), so the scan it runs applies one whole-pedigree relationship
+correction across all markers. Do not report genome-wide significance from
+these values.
 }

@@ -4627,3 +4627,17 @@ release".
 - Grammar `animal(rr(age, order=k) | id, pedigree=ped)` is PROVISIONAL (proposed to
   twin #61, awaiting ack); shipped experimental; homogeneous residual only,
   permanent-environment + heterogeneous residual still planned.
+
+## 2026-06-20 (session 3 — doc reconciliation + handoff-4)
+
+- Reconciled R-doc drift vs engine 2f62781 (Rose lens): LOCO, single-step H-inverse
+  construction, and selinv-PEV reworded from false "planned" to "engine-shipped, R
+  surfacing pending"; the 7/12-seed recovery gate paired with the twin #78/#79
+  no-detectable-bias result; experimental fences kept. Engine exports verified:
+  loco_mixed_model_marker_scan (genomic.jl:498), single_step_inverse /
+  fit_single_step_reml (HSquared.jl:66/68, genomic.jl:2163).
+- `devtools::document()` regenerated gwas.Rd + covariance_standard_errors.Rd;
+  `devtools::test()` no failures (live tests skip without Julia);
+  `pkgdown::check_pkgdown()` clean.
+- Wrote docs/dev-log/after-task/2026-06-20-session-handoff-4.md (START-HERE;
+  inherits the /goal, mission-control, the discovery-map plan, the live-bridge recipe).
