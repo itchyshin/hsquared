@@ -4832,3 +4832,4 @@ release".
 - Commands: `air format`; `devtools::document()` (regen `hsquared-autoplot.Rd` for
   the `@param ...` passthrough doc); `test-autoplot` all pass (incl. 13 g_matrix
   cases); `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
+- CI (commit `a9173dc`): pkgdown run `27883654950` **success**; pages deploy green.
