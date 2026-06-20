@@ -85,3 +85,10 @@ imprinting, custom relationship/precision, genetic groups /
 unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.
 }
+\details{
+Some markers use generic names (e.g. \code{group()}, \code{inbreeding()}). They are
+formula-only tokens detected by call head and are not meant to be called
+directly, so attaching \code{hsquared} alongside a package that exports a
+same-named function (e.g. \code{pedigreemm::inbreeding()}) may print a masking
+message; this is expected and harmless.
+}

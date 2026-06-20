@@ -12,6 +12,12 @@
 #' unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
 #' reservations that the parser rejects with a planned-not-implemented message.
 #'
+#' Some markers use generic names (e.g. `group()`, `inbreeding()`). They are
+#' formula-only tokens detected by call head and are not meant to be called
+#' directly, so attaching `hsquared` alongside a package that exports a
+#' same-named function (e.g. `pedigreemm::inbreeding()`) may print a masking
+#' message; this is expected and harmless.
+#'
 #' @param formula A random-effect expression such as `1 | id`.
 #' @param pedigree A pedigree data frame for future parental and relationship
 #'   effects.

@@ -128,6 +128,18 @@ test_that("R consumes the shared diagonal-G multivariate parity fixture", {
     ],
     "diagonal"
   )
+
+  # When the engine omits n_genetic_params, the normalizer derives it from the
+  # structure (diagonal = t); this fallback feeds the structure-LRT df.
+  raw_no_np <- raw
+  raw_no_np$n_genetic_params <- NULL
+  expect_identical(
+    hsquared:::hs_normalize_multivariate_result(
+      raw_no_np,
+      payload
+    )$n_genetic_params,
+    2L
+  )
 })
 
 test_that("the live Julia bridge fits diagonal G and the structure LRT end-to-end", {

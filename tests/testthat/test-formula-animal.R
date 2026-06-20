@@ -295,7 +295,19 @@ test_that("a bare fixed-effect column named `group` still parses", {
     REML = TRUE
   )
   payload <- hsquared:::hs_build_bridge_payload(spec)
-  expect_true(any(grepl("group", payload$metadata$fixed_colnames)))
+  expect_true("groupg2" %in% payload$metadata$fixed_colnames)
+
+  # `group` as a grouping VARIABLE inside a random effect is the package's own
+  # documented usage (`common_env(1 | group)`, formula_status row 4); the
+  # reserved `group()` marker must not break it.
+  expect_no_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    )
+  )
 })
 
 test_that("animal() random-regression syntax errors as planned", {

@@ -59,12 +59,12 @@ test_that("covariance_structure_lrt guards order, object class, and missing fiel
   expect_error(covariance_structure_lrt(no_ll, full_fit), "loglik")
 })
 
-hs_lrt_fixture_loglik <- function(dir) {
+hs_lrt_fixture_meta <- function(dir, key) {
   meta <- utils::read.csv(
     testthat::test_path("fixtures", dir, "expected_metadata.csv"),
     stringsAsFactors = FALSE
   )
-  as.numeric(stats::setNames(meta$value, meta$key)[["loglik"]])
+  stats::setNames(meta$value, meta$key)[[key]]
 }
 
 test_that("covariance_structure_lrt runs end-to-end on the shared fixtures", {
@@ -72,10 +72,21 @@ test_that("covariance_structure_lrt runs end-to-end on the shared fixtures", {
   # `structured_covariance_parity` and `phase4_multitrait_parity` fixtures share
   # the same pedigree + phenotypes), so the two REML log-likelihoods form a
   # valid nested diagonal-vs-unstructured structure test.
-  ll_diag <- hs_lrt_fixture_loglik("structured_covariance_parity")
-  ll_full <- hs_lrt_fixture_loglik("phase4_multitrait_parity")
+  ll_diag <- as.numeric(
+    hs_lrt_fixture_meta("structured_covariance_parity", "loglik")
+  )
+  ll_full <- as.numeric(
+    hs_lrt_fixture_meta("phase4_multitrait_parity", "loglik")
+  )
+  # The diagonal genetic-parameter count is read from the fixture (it records
+  # n_genetic_params = t); the unstructured count is the derived t(t+1)/2 = 3
+  # for t = 2 (the phase4 fixture predates the n_genetic_params field).
+  np_diag <- as.integer(
+    hs_lrt_fixture_meta("structured_covariance_parity", "n_genetic_params")
+  )
+  expect_equal(np_diag, 2L)
 
-  diag_fit <- make_mv_fit(ll_diag, 2L, "diagonal")
+  diag_fit <- make_mv_fit(ll_diag, np_diag, "diagonal")
   full_fit <- make_mv_fit(ll_full, 3L, "unstructured")
   lrt <- covariance_structure_lrt(diag_fit, full_fit)
 
@@ -89,4 +100,19 @@ test_that("covariance_structure_lrt runs end-to-end on the shared fixtures", {
   )
   expect_equal(lrt$constrained, "diagonal")
   expect_equal(lrt$full, "unstructured")
+})
+
+test_that("covariance_structure_lrt flags a non-interior null and clamps a negative statistic", {
+  # Any pairing other than diagonal-in-unstructured is boundary-conservative
+  # (the naive chi-square is not valid at a variance boundary).
+  diag_fit <- make_mv_fit(-110, 2L, "diagonal")
+  lowrank_fit <- make_mv_fit(-108, 3L, "lowrank")
+  expect_true(covariance_structure_lrt(diag_fit, lowrank_fit)$boundary)
+
+  # A marginally-negative 2*Δloglik (optimizer noise) is clamped so the p-value
+  # stays a valid probability rather than exceeding 1.
+  worse_full <- make_mv_fit(-110.0001, 3L, "unstructured")
+  noisy <- covariance_structure_lrt(diag_fit, worse_full)
+  expect_lt(noisy$statistic, 0)
+  expect_equal(noisy$pvalue, stats::pchisq(0, df = 1, lower.tail = FALSE))
 })
