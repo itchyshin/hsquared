@@ -4480,3 +4480,24 @@ release".
   Post-fix live check: reliability/pev/accuracy finite, and `R PEV == result_payload(:selinv)
   PEV` → TRUE (merge correctly skipped, no redundant `:dense` factorization). Non-live suite
   `devtools::test()` → **876 / 0 / 0 / 32**. Pushed `f38d7f4`.
+
+## 2026-06-19 (session 3 — full live bridge hardening + non-Gaussian bridge #44)
+
+- **Full live bridge hardening** (each test file in its own process to dodge the JuliaCall/Rcpp
+  teardown segfault; env: `PATH=$HOME/.juliaup/bin:...` + `HSQUARED_JULIA_PROJECT=../HSquared.jl`
+  + `NOT_CRAN=true`). Every experimental bridge target passes against `HSquared.jl origin/main`:
+  `julia-bridge` 94, `diagonal-multivariate` 26, `repeatability` 31, `common_env` 22, `maternal`
+  13, `genomic` 39, `single_step` 16, `snp_blup` 25, `validation-fixtures` 104 (incl. the live
+  `sommer` comparator), `mrode-validation` 8, `pev-reliability-anchor` 11 — **0 failures**.
+  `test-multivariate.R` segfaults at teardown (its assertions pass; `test-diagonal-multivariate.R`
+  covers the same engine path cleanly).
+- **Non-Gaussian bridge (#44, `31f200c`)** — built the R bridge to the twin's `nongaussian_result_payload`
+  (`29b66c5`). Commands: `devtools::document()` (regenerated `man/hsquared.Rd` + `man/hsquared-package.Rd`,
+  NAMESPACE unchanged — bridge fns are internal); `air format`; non-live `devtools::test()` →
+  **889 / 0 / 0 / 33**; **live** `test-nongaussian.R` (Poisson + Bernoulli fits) passes against the
+  real engine; `pkgdown::check_pkgdown()` clean; `devtools::check(args="--no-manual")` → **0 / 0 / 0**
+  (first pass raised a non-ASCII WARNING from an em-dash I put in an error string at
+  `R/model-spec.R:545` → replaced with ASCII; comment em-dashes are tolerated).
+- Rose audit: slice surfaces clean; fixed 4 stale "non-Gaussian remains planned" claims
+  (`R/hsquared.R`, `R/hsquared-package.R`, `README.md`, old `#6` NEWS line) → re-checked clean.
+- Pushed `31f200c`. Cross-lane: division-of-labour on twin #61, bridge-landed on twin #44.
