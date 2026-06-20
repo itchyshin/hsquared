@@ -449,6 +449,8 @@ experimental targets.
   [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   : Extract planned marker, QTL, GWAS, and eQTL results
+- [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md) :
+  Post-fit relatedness-corrected marker scan (GWAS)
 - [`fixef()`](https://itchyshin.github.io/hsquared/reference/fixef.md) :
   Extract fixed effects
 - [`ranef()`](https://itchyshin.github.io/hsquared/reference/ranef.md) :

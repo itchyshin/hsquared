@@ -4,6 +4,23 @@
 
 ### New features
 
+- **Experimental `gwas(fit, markers)` post-fit marker scan.** Runs a
+  dense, supplied-variance, **relatedness-corrected** mixed-model (GLS)
+  Wald marker scan on a fitted Gaussian animal model, reusing the fit’s
+  estimated variance components and pedigree relationship (surfacing the
+  Julia-owned `HSquared.mixed_model_marker_scan()`). Returns a
+  per-marker table (`effect`, `se`, `z`, `chisq`, `p_value`,
+  `bonferroni_p`, `bh_qvalue`, `lod`). **The p-values are NOT
+  genome-wide calibrated** — they are nominal Wald p-values plus
+  Bonferroni/BH over the supplied markers only, with no
+  realistic-LD/design calibration, no permutation, no LOCO, and no
+  external comparator (engine gate `HSquared.jl#48`);
+  [`print()`](https://rdrr.io/r/base/print.html) restates this. Verified
+  live to match the engine element-wise. Experimental,
+  dense/validation-scale; the reserved tabular
+  [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  extractors stay reserved for the planned map-annotated API
+  ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
 - **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008)
   for opt-in multivariate fits:
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
