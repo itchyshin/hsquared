@@ -21,7 +21,9 @@ Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
 Imports:
-    Matrix
+    ggplot2,
+    Matrix,
+    stats
 Suggests:
     enhancer,
     JuliaCall,

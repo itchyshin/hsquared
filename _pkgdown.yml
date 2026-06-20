@@ -91,6 +91,11 @@ reference:
       - fixef
       - ranef
       - response_scale_methods
+  - title: Visualization
+    contents:
+      - hsquared-autoplot
+      - theme_hsquared
+      - hs_recovery_forest
   - title: Package
     contents:
       - hsquared-package
