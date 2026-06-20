@@ -12,7 +12,7 @@
   ...
 )
 
-\method{autoplot}{hs_gwas}(object, ...)
+\method{autoplot}{hs_gwas}(object, type = c("manhattan", "qq"), ...)
 }
 \arguments{
 \item{object}{An \code{hsquared_fit} or \code{hs_gwas} object.}
@@ -59,6 +59,11 @@ trajectory carries the same caveat as \code{\link[=rr_heritability]{rr_heritabil
 homogeneous residual and no permanent-environment term it can overstate
 \code{h^2(t)} for repeated-records designs.
 }
+
+\code{autoplot()} on a \code{gwas()} scan (\code{hs_gwas}) draws \code{type = "manhattan"}
+(default) or \code{type = "qq"} (observed vs expected \code{-log10(p)} with a \code{y = x}
+null and the genomic-inflation \code{lambda_GC} as a diagnostic). Both carry the
+EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate \code{HSquared.jl#48}).
 
 The figure helpers are deliberately modular (each takes a tidy data frame and
 returns a \code{ggplot}) so they can be factored into a shared visualization

@@ -587,6 +587,34 @@ test_that("autoplot.hs_gwas returns a Manhattan ggplot with a Bonferroni line", 
   )))
 })
 
+test_that("autoplot.hs_gwas qq returns a ggplot with a y=x null and lambda_GC", {
+  set.seed(1)
+  p <- autoplot(mock_gwas(), "qq")
+  expect_s3_class(p, "ggplot")
+  # the y = x null reference line is present
+  expect_true(any(vapply(
+    p$layers,
+    function(l) inherits(l$geom, "GeomAbline"),
+    logical(1)
+  )))
+  # QQ data: observed/expected -log10(p), one point per marker, sorted-aligned
+  expect_equal(nrow(p$data), 20L)
+  expect_true(all(c("expected", "observed") %in% names(p$data)))
+  expect_false(is.unsorted(rev(p$data$expected))) # expected descending
+  m <- attr(p, "hsquared_meta")
+  expect_equal(m$type, "qq")
+  expect_equal(m$interval_status, "uncalibrated")
+  expect_true(grepl("lambda_GC", p$labels$subtitle))
+})
+
+test_that("autoplot.hs_gwas defaults to the Manhattan", {
+  expect_equal(attr(autoplot(mock_gwas()), "hsquared_meta")$type, "manhattan")
+  expect_equal(
+    attr(autoplot(mock_gwas(), "manhattan"), "hsquared_meta")$type,
+    "manhattan"
+  )
+})
+
 test_that("hs_recovery_forest returns a ggplot and validates columns", {
   rec <- data.frame(
     target = c("a", "b"),

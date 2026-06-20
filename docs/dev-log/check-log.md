@@ -4929,3 +4929,18 @@ release".
   (`single_step_inverse`, `fit_single_step_reml`, `genomic_relationship_matrix`,
   `additive_relationship`). Docs-only slice; no R package code changed.
 - CI (commit `1c96f86`): pkgdown run `27885106331` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — gwas QQ figure + lambda_GC)
+
+- Added `autoplot(scan, "qq")` (`autoplot.hs_gwas` now dispatches
+  `type = c("manhattan", "qq")`; Manhattan extracted to a helper): observed vs
+  expected `-log10(p)` with a `y = x` null reference and the genomic-inflation
+  `lambda_GC = median(qchisq(1-p,1)) / qchisq(0.5,1)` as a subtitle diagnostic.
+  Pure-R from the scan p-values (no engine). Realizes the standard's §1 QQ + λGC
+  catalog rows; honest EXPERIMENTAL / not-genome-wide-calibrated caveat (gate #48).
+- Tests: qq has a y=x abline, 20-point sorted-aligned expected/observed data,
+  `type="qq"`/`uncalibrated` meta, `lambda_GC` in the subtitle; Manhattan stays the
+  default. Standard §1 (QQ + λGC built) + capability-status viz row updated.
+- Commands: `air format`; `devtools::document()` (regen `hsquared-autoplot.Rd`);
+  `test-autoplot` all pass; `pkgdown::check_pkgdown()` clean;
+  `rcmdcheck(args="--no-manual")` **0/0/0**. Rendered QQ: λGC label + caveat correct.

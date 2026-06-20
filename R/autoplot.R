@@ -30,6 +30,11 @@
 #'   homogeneous residual and no permanent-environment term it can overstate
 #'   `h^2(t)` for repeated-records designs.
 #'
+#' `autoplot()` on a `gwas()` scan (`hs_gwas`) draws `type = "manhattan"`
+#' (default) or `type = "qq"` (observed vs expected `-log10(p)` with a `y = x`
+#' null and the genomic-inflation `lambda_GC` as a diagnostic). Both carry the
+#' EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate `HSquared.jl#48`).
+#'
 #' The figure helpers are deliberately modular (each takes a tidy data frame and
 #' returns a `ggplot`) so they can be factored into a shared visualization
 #' package later.
@@ -673,8 +678,9 @@ hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
 
 #' @rdname hsquared-autoplot
 #' @exportS3Method ggplot2::autoplot
-autoplot.hs_gwas <- function(object, ...) {
+autoplot.hs_gwas <- function(object, type = c("manhattan", "qq"), ...) {
   hs_require_ggplot2()
+  type <- match.arg(type)
   df <- as.data.frame(object)
   if (!all(c("p_value") %in% names(df))) {
     stop(
@@ -682,6 +688,14 @@ autoplot.hs_gwas <- function(object, ...) {
       call. = FALSE
     )
   }
+  switch(
+    type,
+    manhattan = hs_autoplot_manhattan(df),
+    qq = hs_autoplot_qq(df)
+  )
+}
+
+hs_autoplot_manhattan <- function(df) {
   df$index <- seq_len(nrow(df))
   df$neglog10p <- -log10(pmax(df$p_value, .Machine$double.xmin))
   m <- nrow(df)
@@ -718,6 +732,54 @@ autoplot.hs_gwas <- function(object, ...) {
     source = "gwas",
     interval_status = "uncalibrated",
     notes = "nominal Wald p-values; Bonferroni line is visual only; not genome-wide calibrated (gate #48)"
+  )
+}
+
+# QQ of the scan p-values against the uniform null, with the genomic-inflation
+# lambda_GC as a diagnostic annotation. Pure-R from the p-values (no engine).
+hs_autoplot_qq <- function(df) {
+  p <- pmax(as.numeric(df$p_value), .Machine$double.xmin)
+  m <- length(p)
+  qq <- data.frame(
+    expected = -log10(stats::ppoints(m)),
+    observed = -log10(sort(p))
+  )
+  lambda_gc <- stats::median(stats::qchisq(1 - p, df = 1)) /
+    stats::qchisq(0.5, df = 1)
+  lab <- formatC(lambda_gc, format = "f", digits = 2)
+  hs_attach_meta(
+    ggplot2::ggplot(
+      qq,
+      ggplot2::aes(x = .data$expected, y = .data$observed)
+    ) +
+      ggplot2::geom_abline(
+        slope = 1,
+        intercept = 0,
+        linetype = 2,
+        colour = "#b2182b"
+      ) +
+      ggplot2::geom_point(size = 1.3, colour = "#2c6fbb") +
+      ggplot2::labs(
+        x = expression(expected ~ -log[10](p)),
+        y = expression(observed ~ -log[10](p)),
+        title = "Marker scan (QQ)",
+        subtitle = paste0(
+          "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide calibrated ",
+          "(gate #48); genomic inflation lambda_GC = ",
+          lab,
+          " (diagnostic only; >1 may reflect structure/polygenicity, ",
+          "not corrected)"
+        )
+      ) +
+      theme_hsquared(),
+    type = "qq",
+    source = "gwas",
+    interval_status = "uncalibrated",
+    notes = paste0(
+      "QQ of nominal Wald p-values; y=x is the null; lambda_GC = ",
+      lab,
+      " is diagnostic only; not genome-wide calibrated (gate #48)"
+    )
   )
 }
 

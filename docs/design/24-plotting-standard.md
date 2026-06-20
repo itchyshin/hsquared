@@ -43,8 +43,8 @@ caveats, and honest-status — only the rendering engine differs.
 | Reaction-norm trajectories | `autoplot(fit, "reaction_norm")` | `:reaction_norm` | RR genetic-variance + h²(t) over the covariate | supplied-`K_g` descriptive; h²(t) can overstate (no PE term) |
 | Reaction-norm surface | plot planned (R) | `:rr_surface` | covariate×covariate genetic covariance/correlation surface | supplied-`K_g` descriptive |
 | Manhattan | `autoplot(scan)` where `scan <- gwas(fit, markers)` | `:manhattan` | marker −log10(p) along the genome | nominal Wald; NOT genome-wide calibrated (#48) |
-| QQ | `autoplot(scan, "qq")` (planned) | `:qq` | observed vs expected −log10(p), y=x reference | deviation uncalibrated, not LD/structure-corrected |
-| Genomic inflation (λGC) | annotation/diagnostic (planned) | `:genomic_inflation` | λGC = median χ² / expected | diagnostic only; >1 may reflect structure/polygenicity, not corrected |
+| QQ | `autoplot(scan, "qq")` | `:qq` | observed vs expected −log10(p), y=x reference | deviation uncalibrated, not LD/structure-corrected |
+| Genomic inflation (λGC) | surfaced as the **QQ subtitle annotation** (`λGC = median χ² / expected`) | `:genomic_inflation` | λGC diagnostic | diagnostic only; >1 may reflect structure/polygenicity, not corrected |
 | Recovery forest | `hs_recovery_forest(study)` | `:recovery` | bias ± 2·MCSE | interval covering 0 = no detectable bias; descriptive, not a power claim |
 
 **Roadmap (not yet cataloged):** selection-response (breeder's equation `R = h²S`,
