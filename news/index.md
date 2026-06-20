@@ -75,10 +75,13 @@
   covariances; no rotation ambiguity). `"lowrank"`/`"factor_analytic"`
   remain gated on a validated rotation convention. New
   `covariance_structure_lrt(constrained, full)` reports the experimental
-  diagonal-vs-unstructured likelihood-ratio test (`2*Δloglik`,
-  `df = t(t-1)/2`, interior null, χ²) from two multivariate fits on the
-  same data — mirroring `V4-MV-REML` (`partial`): asymptotic, REML-only,
-  not a validated test
+  diagonal-vs-unstructured likelihood-ratio test from two multivariate
+  fits on the same data — statistic `2*Δloglik`, with `df` the
+  difference in the two fits’ genetic-covariance parameter counts (the
+  off-diagonal genetic covariances, i.e. `t(t-1)/2` for the
+  diagonal-in-unstructured case), an interior null (`boundary = FALSE`),
+  χ². It mirrors `V4-MV-REML` (`partial`): asymptotic, REML-only, not a
+  validated test
   ([\#47](https://github.com/itchyshin/hsquared/issues/47)).
 
 ## hsquared 0.1.0

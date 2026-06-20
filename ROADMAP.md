@@ -128,13 +128,17 @@ evidence. See
 
 ## Phase 4: Factor-Analytic G Matrices
 
-Status: planned. The R-side expert-control contract for the first
-structured multivariate bridge is recorded in
+Status: partial (diagonal) / planned (lowrank, fa). The R-side
+expert-control contract for the first structured multivariate bridge is
+recorded in
 [`docs/design/18-structured-covariance-r-control.md`](https://itchyshin.github.io/hsquared/docs/design/18-structured-covariance-r-control.md).
-It keeps the current `cbind(...)` response grammar and reserves
-`engine_control$genetic_structure` for a future opt-in bridge after the
-Julia structured-covariance branch reaches `main` and R bridge tests
-exist.
+It keeps the current `cbind(...)` response grammar. The rotation-free
+`engine_control$genetic_structure = "diagonal"` control is now
+R-surfaced (experimental/partial), with
+[`covariance_structure_lrt()`](https://itchyshin.github.io/hsquared/reference/covariance_structure_lrt.md)
+fixture-verified against the twin `structured_covariance_parity` target
+(live fit skip-guarded). `lowrank`/`fa` structured fits stay gated on a
+validated rotation convention.
 
 - `cov = diag()`.
 - `cov = lowrank(K)`.

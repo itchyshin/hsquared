@@ -108,7 +108,7 @@
 </ul></div>
 <div class="section level2">
 <h2 id="phase-4-factor-analytic-g-matrices">Phase 4: Factor-Analytic G Matrices<a class="anchor" aria-label="anchor" href="#phase-4-factor-analytic-g-matrices"></a></h2>
-<p>Status: planned. The R-side expert-control contract for the first structured multivariate bridge is recorded in <a href="docs/design/18-structured-covariance-r-control.html"><code>docs/design/18-structured-covariance-r-control.md</code></a>. It keeps the current <code>cbind(...)</code> response grammar and reserves <code>engine_control$genetic_structure</code> for a future opt-in bridge after the Julia structured-covariance branch reaches <code>main</code> and R bridge tests exist.</p>
+<p>Status: partial (diagonal) / planned (lowrank, fa). The R-side expert-control contract for the first structured multivariate bridge is recorded in <a href="docs/design/18-structured-covariance-r-control.html"><code>docs/design/18-structured-covariance-r-control.md</code></a>. It keeps the current <code>cbind(...)</code> response grammar. The rotation-free <code>engine_control$genetic_structure = "diagonal"</code> control is now R-surfaced (experimental/partial), with <code><a href="reference/covariance_structure_lrt.html">covariance_structure_lrt()</a></code> fixture-verified against the twin <code>structured_covariance_parity</code> target (live fit skip-guarded). <code>lowrank</code>/<code>fa</code> structured fits stay gated on a validated rotation convention.</p>
 <ul><li>
 <code>cov = diag()</code>.</li>
 <li>
