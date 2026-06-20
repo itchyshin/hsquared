@@ -49,7 +49,11 @@ hs_fit_julia_payload <- function(
     "sigma_e2 = hsq_initial_sigma_e2)",
     ");",
     "hsq_result = HSquared.result_payload(hsq_fit);",
-    "if isdefined(HSquared, :prediction_error_variance) &&",
+    # Enrich with PEV/reliability only for older engines whose result_payload
+    # does not already carry them; current engines emit them via :selinv, and
+    # re-merging would clobber that standard field with a redundant :dense solve.
+    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+    "isdefined(HSquared, :prediction_error_variance) &&",
     "isdefined(HSquared, :reliability);",
     "hsq_result = merge(hsq_result, (",
     "prediction_error_variance =",
@@ -178,7 +182,11 @@ hs_fit_julia_sparse_reml_payload <- function(
     "sigma_e2 = hsq_initial_sigma_e2),",
     "iterations = hsq_iterations);",
     "hsq_result = HSquared.result_payload(hsq_fit);",
-    "if isdefined(HSquared, :prediction_error_variance) &&",
+    # Enrich with PEV/reliability only for older engines whose result_payload
+    # does not already carry them; current engines emit them via :selinv, and
+    # re-merging would clobber that standard field with a redundant :dense solve.
+    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+    "isdefined(HSquared, :prediction_error_variance) &&",
     "isdefined(HSquared, :reliability) &&",
     "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
     "applicable(HSquared.reliability, hsq_fit);",
@@ -242,7 +250,11 @@ hs_fit_julia_ai_reml_payload <- function(
     "sigma_e2 = hsq_initial_sigma_e2),",
     "iterations = hsq_iterations);",
     "hsq_result = HSquared.result_payload(hsq_fit);",
-    "if isdefined(HSquared, :prediction_error_variance) &&",
+    # Enrich with PEV/reliability only for older engines whose result_payload
+    # does not already carry them; current engines emit them via :selinv, and
+    # re-merging would clobber that standard field with a redundant :dense solve.
+    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+    "isdefined(HSquared, :prediction_error_variance) &&",
     "isdefined(HSquared, :reliability) &&",
     "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
     "applicable(HSquared.reliability, hsq_fit);",
