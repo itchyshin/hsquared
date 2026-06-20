@@ -31,7 +31,10 @@
 #'
 #' @param object An `hsquared_fit` or `hs_gwas` object.
 #' @param type Which figure to draw (see Details).
-#' @param ... Currently unused.
+#' @param ... Figure-specific options passed through: `low_h2` (the
+#'   genetic-correlation heatmap flags off-diagonal cells involving a trait with
+#'   `h^2 < low_h2` as imprecise; default `0.1`), and `at`/`n` (the reaction-norm
+#'   trajectories' covariate evaluation points).
 #'
 #' @return A `ggplot` object.
 #' @name hsquared-autoplot
@@ -282,8 +285,40 @@ hs_autoplot_breeding_values <- function(object, ...) {
   )
 }
 
-hs_autoplot_g_matrix <- function(object, ...) {
-  rg <- tryCatch(genetic_correlation(object), error = function(e) NULL)
+hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
+  # Auto-detect the engine's `genetic_correlation_plot_data` payload when the
+  # bridge attaches it to the fit, otherwise assemble from the stored extractors
+  # (recompute fallback). The live R<->engine parity test
+  # (test-plot-data-parity.R) is the drift guard: the engine preparer's
+  # `genetic_correlations` is `D^-1 G D^-1`, the same correlation
+  # `genetic_correlation()` reads from the fit. Both paths feed one tidy shape.
+  # Consume the engine payload only when it is present AND honestly claims
+  # rotation invariance (this figure stamps rotation_status="rotation_invariant",
+  # so a payload that says otherwise must not pass silently); else recompute.
+  # NOTE: the bridge does NOT attach this payload at fit time yet -- the recompute
+  # fallback is the live path today; this branch is the forward-looking contract.
+  pd <- object$result$genetic_correlation_plot_data
+  h2 <- NULL
+  rg <- NULL
+  if (
+    !is.null(pd) &&
+      !is.null(pd$genetic_correlations) &&
+      !isFALSE(pd$rotation_invariant)
+  ) {
+    rg <- hs_as_square_matrix(pd$genetic_correlations)
+    if (!is.null(rg)) {
+      if (!is.null(pd$traits)) {
+        dimnames(rg) <- list(as.character(pd$traits), as.character(pd$traits))
+      }
+      if (!is.null(pd$heritabilities)) {
+        h2 <- as.numeric(pd$heritabilities)
+      }
+    }
+  }
+  if (is.null(rg)) {
+    rg <- tryCatch(genetic_correlation(object), error = function(e) NULL)
+    h2 <- NULL
+  }
   if (is.null(rg) || !is.matrix(rg) || nrow(rg) < 2L) {
     stop(
       "`type = \"g_matrix\"` needs a multivariate fit with a genetic ",
@@ -294,8 +329,22 @@ hs_autoplot_g_matrix <- function(object, ...) {
   }
   traits <- rownames(rg)
   if (is.null(traits)) {
-    traits <- paste0("trait", seq_len(nrow(rg)))
+    # match the engine preparer's default labels (evolvability.jl: `trait_$(i)`)
+    traits <- paste0("trait_", seq_len(nrow(rg)))
   }
+
+  # Per-trait h^2 aligned to `traits`: payload first, else the fit's heritability
+  # extractor; NA where unavailable so the low-h^2 flag degrades gracefully.
+  if (is.null(h2)) {
+    her <- object$result$heritability
+    if (!is.null(her) && all(c("term", "estimate") %in% names(her))) {
+      h2 <- as.numeric(her$estimate)[match(traits, as.character(her$term))]
+    }
+  }
+  if (!is.null(h2) && length(h2) != length(traits)) {
+    h2 <- NULL # mismatched length: do not flag rather than mis-flag
+  }
+
   df <- expand.grid(
     row = factor(traits, levels = traits),
     col = factor(traits, levels = rev(traits)),
@@ -306,6 +355,43 @@ hs_autoplot_g_matrix <- function(object, ...) {
     match(df$col, traits)
   )])
   df$label <- formatC(df$value, format = "f", digits = 2)
+
+  # Low-h^2 flag (plotting standard 24 §2): an off-diagonal correlation that
+  # involves a low-h^2 trait is imprecise -> mark it. The diagonal (==1) is
+  # definitional, so it is never flagged. `intToUtf8` builds the glyphs from code
+  # points (ASCII source, no backslash-escape ambiguity).
+  dagger <- intToUtf8(0x2020)
+  flagged_any <- FALSE
+  if (!is.null(h2) && any(is.finite(h2))) {
+    h2_row <- h2[match(as.character(df$row), traits)]
+    h2_col <- h2[match(as.character(df$col), traits)]
+    df$low <- as.character(df$row) != as.character(df$col) &
+      ((is.finite(h2_row) & h2_row < low_h2) |
+        (is.finite(h2_col) & h2_col < low_h2))
+    df$label <- ifelse(df$low, paste0(df$label, dagger), df$label)
+    flagged_any <- any(df$low)
+  } else {
+    df$low <- FALSE
+  }
+
+  base_sub <- "rotation-invariant; raw loadings are never plotted"
+  sub <- if (flagged_any) {
+    paste0(
+      base_sub,
+      "; ",
+      dagger,
+      " involves a low-h",
+      intToUtf8(0x00b2),
+      " (< ",
+      low_h2,
+      ") trait ",
+      intToUtf8(0x2014),
+      " correlation imprecise"
+    )
+  } else {
+    base_sub
+  }
+
   hs_attach_meta(
     ggplot2::ggplot(
       df,
@@ -326,12 +412,15 @@ hs_autoplot_g_matrix <- function(object, ...) {
         x = NULL,
         y = NULL,
         title = "Genetic correlation (G)",
-        subtitle = "rotation-invariant; raw loadings are never plotted"
+        subtitle = sub
       ) +
       theme_hsquared(),
     type = "g_matrix",
     rotation_status = "rotation_invariant",
-    notes = "genetic correlations only; raw factor loadings are never plotted"
+    notes = paste0(
+      "genetic correlations only; raw factor loadings are never plotted",
+      if (flagged_any) "; low-h2 cells flagged (imprecise)" else ""
+    )
   )
 }
 
@@ -477,6 +566,22 @@ hs_recovery_forest <- function(data) {
 }
 
 # --- helper ----------------------------------------------------------------
+
+# Coerce a bridge-marshalled correlation field to a square matrix. JuliaCall may
+# hand a NamedTuple matrix field back as a column-major numeric vector rather than
+# a 2D matrix; restore p x p from a perfect-square length. Returns NULL when the
+# input cannot be a >=2x2 square matrix, so the caller falls back to recompute.
+hs_as_square_matrix <- function(x) {
+  if (is.matrix(x)) {
+    return(x)
+  }
+  v <- suppressWarnings(as.numeric(x))
+  n <- sqrt(length(v))
+  if (length(v) >= 4L && is.finite(n) && n == floor(n)) {
+    return(matrix(v, nrow = n, ncol = n))
+  }
+  NULL
+}
 
 hs_require_ggplot2 <- function() {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {

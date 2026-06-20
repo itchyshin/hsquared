@@ -23,8 +23,11 @@ conventions**:
   `13-plotting-layer.md`), reproducing each figure to this standard.
 - **Julia ships the plot-DATA** (`*_plot_data` NamedTuple preparers); R consumes
   those payloads **or** recomputes from the fit. A live parity test keeping the
-  two in step is **PLANNED, not yet in force** (see §7) — until it lands, R
-  recompute is the source and the engine preparers are the cross-check.
+  two in step has **LANDED for `genetic_correlation_plot_data`** (skip-guarded
+  live; `tests/testthat/test-plot-data-parity.R`) and is extended per preparer as
+  the rest land (see §7). The recompute fallback is still the live source today
+  (the bridge does not yet attach the payloads at fit time); the engine preparers
+  are the cross-check.
 
 Goal: an R user and a Julia user looking at the same figure see the same encoding,
 caveats, and honest-status — only the rendering engine differs.
@@ -165,9 +168,12 @@ the map is explicit per figure:
 
 This is a **proposed v1** — deliberately flexible. The twin refines + mirrors; both
 lanes converge on the same catalog. New figures: R proposes (adds to §1), both
-implement. **Planned, not yet in force:** the live R↔engine parity test (a
-skip-guarded `testthat` case that, when Julia is available, checks each R-recompute
-== the matching engine `*_plot_data` preparer — the mitigation for the twin's §5
-parity-drift risk). Changes are coordinated on `HSquared.jl#61`. R leads the
+implement. **Live R↔engine parity test — landed for `genetic_correlation` so
+far:** a skip-guarded `testthat` case (`tests/testthat/test-plot-data-parity.R`)
+that, when Julia is available, checks the engine `genetic_correlation_plot_data`
+preparer == `stats::cov2cor(G)` and consumes a live-marshalled payload end-to-end
+through `autoplot()` — the mitigation for the twin's §5 parity-drift risk. The
+variance/EBV/RR/surface cases are added as those preparers are consumed. Changes
+are coordinated on `HSquared.jl#61` / `#93`. R leads the
 standard (mature `ggplot2` layer + brms/bayesplot reference); Julia mirrors via the
 Makie extension + plot-data preparers.

@@ -44,6 +44,43 @@ mock_mv_fit <- function() {
   )
 }
 
+mock_mv_fit_h2 <- function(h2 = c(t1 = 0.05, t2 = 0.4)) {
+  f <- mock_mv_fit()
+  f$result$heritability <- data.frame(
+    term = names(h2),
+    estimate = as.numeric(h2),
+    stringsAsFactors = FALSE
+  )
+  f
+}
+
+# A fit carrying the engine `genetic_correlation_plot_data` payload. NOTE: the
+# bridge does NOT attach this field at fit time yet (the recompute fallback is the
+# live path); this mock exercises the forward-looking auto-detect branch so it
+# cannot silently break when the bridge wires the payload. The payload correlation
+# (0.55) differs from the `genetic_correlation` field (0.3) to prove consumption.
+mock_mv_fit_plotdata <- function() {
+  structure(
+    list(
+      result = list(
+        genetic_correlation = matrix(
+          c(1, 0.3, 0.3, 1),
+          2,
+          2,
+          dimnames = list(c("t1", "t2"), c("t1", "t2"))
+        ),
+        genetic_correlation_plot_data = list(
+          traits = c("t1", "t2"),
+          genetic_correlations = matrix(c(1, 0.55, 0.55, 1), 2, 2),
+          heritabilities = c(0.05, 0.4),
+          rotation_invariant = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+}
+
 mock_gwas <- function() {
   structure(
     data.frame(
@@ -93,6 +130,136 @@ test_that("g_matrix errors on a univariate fit (no correlation matrix)", {
     "multivariate fit",
     fixed = TRUE
   )
+})
+
+test_that("g_matrix flags off-diagonal cells involving a low-h2 trait", {
+  p <- autoplot(mock_mv_fit_h2(c(t1 = 0.05, t2 = 0.4)), "g_matrix")
+  expect_s3_class(p, "ggplot")
+  off <- p$data[as.character(p$data$row) != as.character(p$data$col), ]
+  dia <- p$data[as.character(p$data$row) == as.character(p$data$col), ]
+  # t1 h2 = 0.05 < 0.1 -> every off-diagonal cell is imprecise; diagonal is not.
+  expect_true(all(off$low))
+  expect_false(any(dia$low))
+  expect_true(grepl("imprecise", p$labels$subtitle))
+})
+
+test_that("g_matrix renders the flag as a glyph, not a literal escape", {
+  p <- autoplot(mock_mv_fit_h2(c(t1 = 0.05, t2 = 0.4)), "g_matrix")
+  dagger <- intToUtf8(0x2020)
+  # the dagger glyph is present on flagged labels and in the subtitle ...
+  expect_true(any(grepl(dagger, p$data$label, fixed = TRUE)))
+  expect_true(grepl(dagger, p$labels$subtitle, fixed = TRUE))
+  # ... and the literal escape text never leaks (guards the backslash-escape bug).
+  expect_false(any(grepl("u2020", p$data$label)))
+  expect_false(grepl("u2020", p$labels$subtitle))
+  expect_false(grepl("u00b2", p$labels$subtitle))
+})
+
+test_that("g_matrix does not flag when all traits clear low_h2", {
+  p <- autoplot(mock_mv_fit_h2(c(t1 = 0.5, t2 = 0.6)), "g_matrix")
+  expect_false(any(p$data$low))
+  expect_false(grepl("imprecise", p$labels$subtitle))
+})
+
+test_that("g_matrix low_h2 threshold is configurable", {
+  fit <- mock_mv_fit_h2(c(t1 = 0.2, t2 = 0.6))
+  # the default 0.1 does not flag (0.2 >= 0.1) ...
+  expect_false(any(autoplot(fit, "g_matrix")$data$low))
+  # ... but a higher threshold does, and the threshold shows in the subtitle.
+  p <- autoplot(fit, "g_matrix", low_h2 = 0.3)
+  off <- p$data[as.character(p$data$row) != as.character(p$data$col), ]
+  expect_true(all(off$low))
+  expect_true(grepl("0.3", p$labels$subtitle, fixed = TRUE))
+})
+
+test_that("g_matrix handles a single NA heritability without false flags", {
+  # t1 NA, t2 clears -> the off-diagonal involves no finite low-h2 trait: no flag.
+  p_na <- autoplot(mock_mv_fit_h2(c(t1 = NA, t2 = 0.4)), "g_matrix")
+  expect_false(any(p_na$data$low))
+  # t1 low, t2 NA -> the off-diagonal involves t1 (finite, low): flagged.
+  p_low <- autoplot(mock_mv_fit_h2(c(t1 = 0.05, t2 = NA)), "g_matrix")
+  off <- p_low$data[
+    as.character(p_low$data$row) != as.character(p_low$data$col),
+  ]
+  expect_true(all(off$low))
+})
+
+test_that("g_matrix degrades gracefully without heritabilities (no flag)", {
+  p <- autoplot(mock_mv_fit(), "g_matrix")
+  expect_s3_class(p, "ggplot")
+  expect_false(any(p$data$low))
+  # recompute path uses the genetic_correlation field value (0.3).
+  off <- p$data[as.character(p$data$row) != as.character(p$data$col), ]
+  expect_true(all(abs(off$value - 0.3) < 1e-9))
+})
+
+test_that("g_matrix consumes the engine genetic_correlation_plot_data payload", {
+  p <- autoplot(mock_mv_fit_plotdata(), "g_matrix")
+  off <- p$data[as.character(p$data$row) != as.character(p$data$col), ]
+  # payload correlation 0.55 is used, not the 0.3 in result$genetic_correlation
+  expect_true(all(abs(off$value - 0.55) < 1e-9))
+  # payload heritabilities (t1 = 0.05) flag the imprecise off-diagonal cells
+  expect_true(all(off$low))
+})
+
+test_that("g_matrix ignores a payload that is not rotation-invariant", {
+  fit <- mock_mv_fit_plotdata()
+  fit$result$genetic_correlation_plot_data$rotation_invariant <- FALSE
+  p <- autoplot(fit, "g_matrix")
+  off <- p$data[as.character(p$data$row) != as.character(p$data$col), ]
+  # falls back to the recompute path -> the 0.3 genetic_correlation, not 0.55.
+  expect_true(all(abs(off$value - 0.3) < 1e-9))
+})
+
+test_that("g_matrix drops mismatched-length payload heritabilities (no flag)", {
+  fit <- mock_mv_fit_plotdata()
+  # 3 heritabilities for a 2-trait G -> the guard drops h2 rather than mis-flag.
+  fit$result$genetic_correlation_plot_data$heritabilities <- c(0.02, 0.5, 0.5)
+  p <- autoplot(fit, "g_matrix")
+  expect_false(any(p$data$low))
+})
+
+test_that("g_matrix handles a payload with NULL traits (engine default labels)", {
+  fit <- mock_mv_fit_plotdata()
+  fit$result$genetic_correlation_plot_data$traits <- NULL
+  fit$result$genetic_correlation_plot_data$genetic_correlations <-
+    unname(fit$result$genetic_correlation_plot_data$genetic_correlations)
+  p <- autoplot(fit, "g_matrix")
+  expect_s3_class(p, "ggplot")
+  # default labels match the engine preparer convention (trait_1, trait_2).
+  expect_true(all(c("trait_1", "trait_2") %in% as.character(p$data$row)))
+})
+
+test_that("g_matrix payload and recompute paths agree on identical G", {
+  # Julia-free consumer parity: the same correlation via the payload vs the
+  # recompute path must yield identical tidy frames (value, low, label).
+  corr <- matrix(c(1, 0.42, 0.42, 1), 2, 2)
+  h2 <- c(t1 = 0.05, t2 = 0.4)
+  fit_recompute <- mock_mv_fit_h2(h2)
+  fit_recompute$result$genetic_correlation <- matrix(
+    c(1, 0.42, 0.42, 1),
+    2,
+    2,
+    dimnames = list(c("t1", "t2"), c("t1", "t2"))
+  )
+  fit_payload <- structure(
+    list(
+      result = list(
+        genetic_correlation_plot_data = list(
+          traits = c("t1", "t2"),
+          genetic_correlations = corr,
+          heritabilities = as.numeric(h2),
+          rotation_invariant = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  d_recompute <- autoplot(fit_recompute, "g_matrix")$data
+  d_payload <- autoplot(fit_payload, "g_matrix")$data
+  expect_equal(d_payload$value, d_recompute$value)
+  expect_equal(d_payload$low, d_recompute$low)
+  expect_equal(d_payload$label, d_recompute$label)
 })
 
 test_that("autoplot.hs_gwas returns a Manhattan ggplot with a Bonferroni line", {

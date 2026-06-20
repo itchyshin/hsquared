@@ -4800,3 +4800,35 @@ release".
   `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
   No live engine needed (reaction_norm fixture is a pure-R `hs_new_fit`).
 - CI (commit `878638c`): pkgdown run `27880741356` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — consume genetic_correlation_plot_data in autoplot + low-h² flag + live parity)
+
+- Backlog #2 buildable subset (g-correlation set-C). `hs_autoplot_g_matrix()`:
+  auto-detect the engine `genetic_correlation_plot_data` payload (recompute
+  fallback via `genetic_correlation()`), add a **low-h² imprecision flag** on
+  off-diagonal cells (plotting standard §2; heuristic, default `low_h2 = 0.1`,
+  degrades gracefully on absent/NA/mismatched h²), and a `intToUtf8` dagger marker
+  + subtitle. New live parity guard `test-plot-data-parity.R`
+  (`genetic_correlation_plot_data` == `cov2cor(G)`; + a live-marshalled end-to-end
+  consumer check). Standard §1/§7 + capability-status updated (new viz-layer row).
+- **Adversarial verify (Workflow `wf_346a322f-608`: Hopper/Florence/Rose/Pat)
+  caught a BLOCKER** the green checks missed: the `†`/`²`/`—`
+  escapes were written with DOUBLED backslashes -> rendered as literal text
+  (`0.30†`), and the first tests only grepped the ASCII word "imprecise" so
+  they passed. Fixed with `intToUtf8(0x2020/0x00b2/0x2014)` (ASCII source, no
+  escape ambiguity) + a glyph-asserting regression test (nchar 5, no `u2020`
+  leak). Also applied: validate payload `rotation_invariant` (drop to recompute if
+  FALSE); defensive `hs_as_square_matrix()` reshape; align fallback trait labels to
+  the engine `trait_%d`; reworded the overclaiming mock comment (bridge does NOT
+  attach the payload yet — recompute is the live path); 7 new edge-case tests
+  (single-NA h², mismatched-length, low_h2 override, NULL-traits payload, recompute
+  0.3 assertion, payload-vs-recompute Julia-free parity, non-rotation-invariant
+  payload).
+- **LIVE-VERIFIED** (bridge): `test-plot-data-parity.R` 7/7 — engine
+  `genetic_correlations` == `cov2cor(G)` to 1e-12, h² exact, and JuliaCall returns
+  the NamedTuple matrix field as a real R 3×3 matrix consumed end-to-end by
+  `autoplot`. Rendered a flagged heatmap: subtitle + `0.30†` labels show real
+  glyphs (nchar 5).
+- Commands: `air format`; `devtools::document()` (regen `hsquared-autoplot.Rd` for
+  the `@param ...` passthrough doc); `test-autoplot` all pass (incl. 13 g_matrix
+  cases); `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.

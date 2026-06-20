@@ -19,7 +19,10 @@
 
 \item{type}{Which figure to draw (see Details).}
 
-\item{...}{Currently unused.}
+\item{...}{Figure-specific options passed through: \code{low_h2} (the
+genetic-correlation heatmap flags off-diagonal cells involving a trait with
+\code{h^2 < low_h2} as imprecise; default \code{0.1}), and \code{at}/\code{n} (the reaction-norm
+trajectories' covariate evaluation points).}
 }
 \value{
 A \code{ggplot} object.
