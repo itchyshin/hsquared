@@ -4799,3 +4799,4 @@ release".
   (36 pass) + test-random-regression (60 pass, 1 on-CRAN skip);
   `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
   No live engine needed (reaction_norm fixture is a pure-R `hs_new_fit`).
+- CI (commit `878638c`): pkgdown run `27880741356` **success**; pages deploy green.
