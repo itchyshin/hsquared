@@ -74,7 +74,8 @@ them (clearly labelled experimental and asymptotic).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'hsquared_fit'</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variance"</span>, <span class="st">"breeding_values"</span>, <span class="st">"g_matrix"</span>, <span class="st">"g_geometry"</span>, <span class="st">"reaction_norm"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variance"</span>, <span class="st">"breeding_values"</span>, <span class="st">"g_matrix"</span>, <span class="st">"g_geometry"</span>, <span class="st">"reaction_norm"</span>,</span>
+<span>    <span class="st">"rr_eigenfunctions"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -127,6 +128,10 @@ heritability trajectories across the covariate (faceted). The heritability
 trajectory carries the same caveat as <code><a href="random_regression_extractors.html">rr_heritability()</a></code>: with a
 homogeneous residual and no permanent-environment term it can overstate
 <code>h^2(t)</code> for repeated-records designs.</p></li>
+<li><p><code>"rr_eigenfunctions"</code> – for random-regression fits, the rotation-invariant
+eigenfunctions <code>psi_j(t)</code> of <code>K_g</code> as covariate functions (faceted by axis,
+labelled by percent genetic variance). Signs are arbitrary and the curves are
+span-ambiguous under repeated eigenvalues (do not over-read).</p></li>
 </ul><p><code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> on a <code><a href="gwas.html">gwas()</a></code> scan (<code>hs_gwas</code>) draws <code>type = "manhattan"</code>
 (default) or <code>type = "qq"</code> (observed vs expected <code>-log10(p)</code> with a <code>y = x</code>
 null and the genomic-inflation <code>lambda_GC</code> as a diagnostic). Both carry the

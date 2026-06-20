@@ -15,7 +15,8 @@ experimental and asymptotic).
 # S3 method for class 'hsquared_fit'
 autoplot(
   object,
-  type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm"),
+  type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm",
+    "rr_eigenfunctions"),
   ...
 )
 
@@ -75,6 +76,12 @@ Available `type`s for `autoplot.hsquared_fit()`:
   [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md):
   with a homogeneous residual and no permanent-environment term it can
   overstate `h^2(t)` for repeated-records designs.
+
+- `"rr_eigenfunctions"` – for random-regression fits, the
+  rotation-invariant eigenfunctions `psi_j(t)` of `K_g` as covariate
+  functions (faceted by axis, labelled by percent genetic variance).
+  Signs are arbitrary and the curves are span-ambiguous under repeated
+  eigenvalues (do not over-read).
 
 [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html) on
 a [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
