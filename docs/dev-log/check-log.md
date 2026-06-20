@@ -4518,3 +4518,9 @@ release".
 - New `R/gwas.R` (`gwas(fit, markers)` + `hs_gwas` print); updated `hs_marker_extractor_default` + 5 `test-fit-object.R` marker assertions; added `gwas` to `_pkgdown.yml`.
 - `devtools::document()`; `air format`; non-live `devtools::test()` → **917 / 0 / 0 / 35**; **live** `test-gwas.R` (fit + scan + element-wise engine parity + relatedness-vs-fixed-effect discriminator) passes; `pkgdown::check_pkgdown()` clean; `devtools::check(args="--no-manual")` → **0 / 0 / 0**. Pushed `23aab52`.
 - First live fit attempt failed on pure-noise data (`fit_ai_reml could not keep variance components positive`); fixed the test to simulate pedigree-structured breeding values (additive variance identifiable). Rose audit CLEAN. Posted on twin #45 + R #23.
+
+## 2026-06-20 (session 3 — fitted estimated-VC fixture #46/#49)
+
+- Mirrored twin `test/fixtures/animal_model_fitted_target/` into `tests/testthat/fixtures/`; new `test-fitted-target-fixture.R` (julia-free internal consistency + a live estimated-VC reproduction).
+- `air format`; non-live `devtools::test()` -> **922 / 0 / 0 / 36**; **live** test reproduces the serialized REML estimates (VC/beta/h2 to 1e-4, EBVs/reliabilities to 1e-3); `pkgdown::check_pkgdown()` clean; `devtools::check(args="--no-manual")` -> **0 / 0 / 0**. Pushed `7761055`; posted on twin #46.
+- Note: corrected an inbreeding-naive `reliability == 1 - PEV/sigma_a2` check to the inbreeding-aware implied-A_ii identity (the fixture includes inbred animals).
