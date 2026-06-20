@@ -4982,3 +4982,22 @@ release".
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
   **25/25**; rendered figure verified (axis facets + % variance labels).
 - CI (commit `df7ef4a`): pkgdown run `27885829976` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — rr_surface figure; plotting catalog complete)
+
+- Added `autoplot(fit, "rr_surface")` — the genetic covariance surface
+  `S(s,t) = phi(s)' K_g phi(t)` over the covariate grid as a heatmap, with
+  `correlation = TRUE` for the genetic-correlation surface (unit diagonal).
+  Auto-detects `rr_covariance_surface_plot_data` (recompute via the internal
+  Legendre design + `rr_covariance()` fallback). Supplied-K_g descriptive,
+  rotation-invariant (now the full §3 binding set is enforced in tests).
+- **This completes the plotting standard's §1 figure catalog** — every cataloged
+  figure is now built (variance, breeding_values, g_matrix+low-h², g_geometry,
+  reaction_norm, rr_eigenfunctions, rr_surface, Manhattan, QQ+λGC, recovery_forest).
+- Standard §1 (rr_surface built), §3 (full enforced set), §7 (rr_surface parity
+  covered) updated.
+- Tests: payload-consume (test-autoplot), recompute + correlation-option unit
+  diagonal (test-random-regression), live marshalled-consume leg (test-plot-data-parity).
+- Commands: `air format`; `devtools::document()`; `test-autoplot` +
+  `test-random-regression` all pass; `pkgdown::check_pkgdown()` clean;
+  `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity` **26/26**.

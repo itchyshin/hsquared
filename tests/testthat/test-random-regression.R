@@ -367,6 +367,29 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
     "rotation_invariant"
   )
 
+  # rr_surface autoplot (recompute path): the covariance surface S = phi K_g phi'
+  # over the grid; correlation = TRUE has a unit diagonal.
+  p_surf <- autoplot(fit, "rr_surface")
+  expect_s3_class(p_surf, "ggplot")
+  k_g_rn <- rr_covariance(fit)
+  pts_rn <- hsquared:::hs_rr_eval_points(fit, NULL, 25L)
+  phi_rn <- hsquared:::hs_legendre_design(pts_rn$t, pts_rn$order)
+  surf_rn <- phi_rn %*% k_g_rn %*% t(phi_rn)
+  expect_equal(
+    sort(p_surf$data$value),
+    sort(as.numeric(surf_rn)),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    attr(p_surf, "hsquared_meta")$rotation_status,
+    "rotation_invariant"
+  )
+  p_corr <- autoplot(fit, "rr_surface", correlation = TRUE)
+  diag_corr <- p_corr$data$value[
+    p_corr$data$covariate_i == p_corr$data$covariate_j
+  ]
+  expect_true(all(abs(diag_corr - 1) < 1e-8))
+
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)
   expect_s3_class(stats::logLik(fit), "logLik")

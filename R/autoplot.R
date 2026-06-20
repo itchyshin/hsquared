@@ -33,6 +33,10 @@
 #'   eigenfunctions `psi_j(t)` of `K_g` as covariate functions (faceted by axis,
 #'   labelled by percent genetic variance). Signs are arbitrary and the curves are
 #'   span-ambiguous under repeated eigenvalues (do not over-read).
+#' * `"rr_surface"` -- for random-regression fits, the genetic covariance
+#'   surface `S(s, t) = phi(s)' K_g phi(t)` over the covariate grid as a heatmap
+#'   (pass `correlation = TRUE` for the genetic-correlation surface). Supplied-`K_g`
+#'   descriptive.
 #'
 #' `autoplot()` on a `gwas()` scan (`hs_gwas`) draws `type = "manhattan"`
 #' (default) or `type = "qq"` (observed vs expected `-log10(p)` with a `y = x`
@@ -47,8 +51,9 @@
 #' @param type Which figure to draw (see Details).
 #' @param ... Figure-specific options passed through: `low_h2` (the
 #'   genetic-correlation heatmap flags off-diagonal cells involving a trait with
-#'   `h^2 < low_h2` as imprecise; default `0.1`), and `at`/`n` (the reaction-norm
-#'   trajectories' covariate evaluation points).
+#'   `h^2 < low_h2` as imprecise; default `0.1`), `at`/`n` (the reaction-norm
+#'   covariate evaluation points), and `correlation` (`rr_surface`: draw the
+#'   genetic-correlation surface instead of the covariance surface).
 #'
 #' @return A `ggplot` object.
 #' @name hsquared-autoplot
@@ -134,7 +139,8 @@ autoplot.hsquared_fit <- function(
     "g_matrix",
     "g_geometry",
     "reaction_norm",
-    "rr_eigenfunctions"
+    "rr_eigenfunctions",
+    "rr_surface"
   ),
   ...
 ) {
@@ -147,7 +153,8 @@ autoplot.hsquared_fit <- function(
     g_matrix = hs_autoplot_g_matrix(object, ...),
     g_geometry = hs_autoplot_g_geometry(object, ...),
     reaction_norm = hs_autoplot_reaction_norm(object, ...),
-    rr_eigenfunctions = hs_autoplot_rr_eigenfunctions(object, ...)
+    rr_eigenfunctions = hs_autoplot_rr_eigenfunctions(object, ...),
+    rr_surface = hs_autoplot_rr_surface(object, ...)
   )
 }
 
@@ -674,6 +681,103 @@ hs_autoplot_rr_eigenfunctions <- function(object, at = NULL, n = 25L, ...) {
     notes = paste(
       "rotation-invariant eigenfunctions of supplied K_g;",
       "signs arbitrary; span-ambiguous under repeated eigenvalues"
+    )
+  )
+}
+
+# Reaction-norm genetic covariance (or correlation) surface over the covariate
+# grid: S(s, t) = phi(s)' K_g phi(t). Supplied-K_g descriptive and
+# rotation-invariant (basis-rotation-invariant genetic covariance function).
+hs_autoplot_rr_surface <- function(
+  object,
+  at = NULL,
+  n = 25L,
+  correlation = FALSE,
+  ...
+) {
+  pd <- object$result$rr_covariance_surface_plot_data
+  if (
+    is.null(at) &&
+      !is.null(pd) &&
+      !is.null(pd$surface) &&
+      !is.null(pd$covariate)
+  ) {
+    cov <- as.numeric(pd$covariate)
+    surf <- as.matrix(pd$surface)
+    is_corr <- isTRUE(pd$is_correlation)
+  } else {
+    k_g <- rr_covariance(object) # rejects non-RR fits with a clear message
+    pts <- hs_rr_eval_points(object, at, n)
+    phi <- hs_legendre_design(pts$t, pts$order)
+    surf <- phi %*% k_g %*% t(phi)
+    surf <- 0.5 * (surf + t(surf))
+    cov <- pts$at
+    is_corr <- isTRUE(correlation)
+    if (is_corr) {
+      d <- diag(surf)
+      if (any(d <= 0)) {
+        stop(
+          "`type = \"rr_surface\"` correlation is undefined: a covariate point ",
+          "has non-positive genetic variance. Use `correlation = FALSE` or ",
+          "evaluate inside the genetic-variance support.",
+          call. = FALSE
+        )
+      }
+      surf <- stats::cov2cor(surf)
+    }
+  }
+  m <- length(cov)
+  df <- expand.grid(i = seq_len(m), j = seq_len(m))
+  df$covariate_i <- cov[df$i]
+  df$covariate_j <- cov[df$j]
+  df$value <- as.numeric(surf[cbind(df$i, df$j)])
+  fill_scale <- if (is_corr) {
+    ggplot2::scale_fill_gradient2(
+      low = "#b2182b",
+      mid = "white",
+      high = "#2166ac",
+      midpoint = 0,
+      limits = c(-1, 1),
+      name = "genetic\ncorrelation"
+    )
+  } else {
+    ggplot2::scale_fill_gradient2(
+      low = "#b2182b",
+      mid = "white",
+      high = "#2166ac",
+      midpoint = 0,
+      name = "genetic\ncovariance"
+    )
+  }
+  hs_attach_meta(
+    ggplot2::ggplot(
+      df,
+      ggplot2::aes(
+        x = .data$covariate_i,
+        y = .data$covariate_j,
+        fill = .data$value
+      )
+    ) +
+      ggplot2::geom_tile() +
+      fill_scale +
+      ggplot2::coord_equal() +
+      ggplot2::labs(
+        x = "covariate",
+        y = "covariate",
+        title = paste0(
+          "Reaction-norm genetic ",
+          if (is_corr) "correlation" else "covariance",
+          " surface"
+        ),
+        subtitle = "supplied-K_g descriptive; rotation-invariant"
+      ) +
+      theme_hsquared(),
+    type = "rr_surface",
+    rotation_status = "rotation_invariant",
+    notes = paste0(
+      "supplied-K_g descriptive genetic ",
+      if (is_corr) "correlation" else "covariance",
+      " surface; rotation-invariant"
     )
   )
 }

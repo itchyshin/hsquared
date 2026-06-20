@@ -210,6 +210,28 @@ test_that("rr_genetic_variance_plot_data engine preparer matches R hs_rr_varianc
     sort(as.numeric(ef_engine)),
     tolerance = 1e-10
   )
+
+  # rr_covariance_surface_plot_data: marshal the m x m surface and feed the
+  # surface heatmap; the consumed values match the engine surface.
+  JuliaCall::julia_command(
+    "pdsf = HSquared.rr_covariance_surface_plot_data(Kg_rr, ts_rr);"
+  )
+  surf_engine <- JuliaCall::julia_eval("Matrix{Float64}(pdsf.surface)")
+  pdsf <- JuliaCall::julia_eval(paste(
+    "(covariate = collect(Float64, pdsf.covariate),",
+    "surface = Matrix{Float64}(pdsf.surface),",
+    "is_correlation = pdsf.is_correlation)"
+  ))
+  fit_sf <- structure(
+    list(result = list(rr_covariance_surface_plot_data = pdsf)),
+    class = "hsquared_fit"
+  )
+  p_sf <- autoplot(fit_sf, "rr_surface")
+  expect_equal(
+    sort(p_sf$data$value),
+    sort(as.numeric(surf_engine)),
+    tolerance = 1e-10
+  )
 })
 
 test_that("variance_components_plot_data engine preparer feeds the variance forest [live]", {

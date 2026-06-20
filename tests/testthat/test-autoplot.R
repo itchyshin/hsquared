@@ -611,6 +611,30 @@ test_that("rr_eigenfunctions autoplot consumes the engine payload", {
   expect_true(any(grepl("80%", levels(p$data$axis_label), fixed = TRUE)))
 })
 
+test_that("rr_surface autoplot consumes the engine payload", {
+  surf <- matrix(c(0.4, 0.2, 0.1, 0.2, 0.5, 0.2, 0.1, 0.2, 0.6), 3, 3)
+  fit <- structure(
+    list(
+      result = list(
+        rr_covariance_surface_plot_data = list(
+          covariate = c(1, 2, 3),
+          surface = surf,
+          is_correlation = FALSE,
+          rotation_invariant = TRUE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "rr_surface")
+  expect_s3_class(p, "ggplot")
+  expect_equal(nrow(p$data), 9L) # 3 x 3 grid
+  expect_equal(sort(p$data$value), sort(as.numeric(surf)))
+  expect_equal(attr(p, "hsquared_meta")$type, "rr_surface")
+  expect_equal(attr(p, "hsquared_meta")$rotation_status, "rotation_invariant")
+  expect_true(grepl("covariance", p$labels$title))
+})
+
 test_that("autoplot.hs_gwas qq returns a ggplot with a y=x null and lambda_GC", {
   set.seed(1)
   p <- autoplot(mock_gwas(), "qq")

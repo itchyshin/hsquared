@@ -9,7 +9,7 @@
 \method{autoplot}{hsquared_fit}(
   object,
   type = c("variance", "breeding_values", "g_matrix", "g_geometry", "reaction_norm",
-    "rr_eigenfunctions"),
+    "rr_eigenfunctions", "rr_surface"),
   ...
 )
 
@@ -22,8 +22,9 @@
 
 \item{...}{Figure-specific options passed through: \code{low_h2} (the
 genetic-correlation heatmap flags off-diagonal cells involving a trait with
-\code{h^2 < low_h2} as imprecise; default \code{0.1}), and \code{at}/\code{n} (the reaction-norm
-trajectories' covariate evaluation points).}
+\code{h^2 < low_h2} as imprecise; default \code{0.1}), \code{at}/\code{n} (the reaction-norm
+covariate evaluation points), and \code{correlation} (\code{rr_surface}: draw the
+genetic-correlation surface instead of the covariance surface).}
 }
 \value{
 A \code{ggplot} object.
@@ -63,6 +64,10 @@ homogeneous residual and no permanent-environment term it can overstate
 eigenfunctions \code{psi_j(t)} of \code{K_g} as covariate functions (faceted by axis,
 labelled by percent genetic variance). Signs are arbitrary and the curves are
 span-ambiguous under repeated eigenvalues (do not over-read).
+\item \code{"rr_surface"} -- for random-regression fits, the genetic covariance
+surface \verb{S(s, t) = phi(s)' K_g phi(t)} over the covariate grid as a heatmap
+(pass \code{correlation = TRUE} for the genetic-correlation surface). Supplied-\code{K_g}
+descriptive.
 }
 
 \code{autoplot()} on a \code{gwas()} scan (\code{hs_gwas}) draws \code{type = "manhattan"}

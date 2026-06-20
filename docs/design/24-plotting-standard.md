@@ -43,7 +43,7 @@ caveats, and honest-status — only the rendering engine differs.
 | G geometry (scree) / evolvability | `autoplot(fit, "g_geometry")` (scree); evolvability numbers via `eigen_G()`/`evolvability()` | `:g_geometry` | eigenvalues (variance per genetic axis) + % variance explained | rotation-invariant eigenstructure only; **axis directions / loadings never drawn** |
 | Reaction-norm trajectories | `autoplot(fit, "reaction_norm")` | `:reaction_norm` | RR genetic-variance + h²(t) over the covariate | supplied-`K_g` descriptive; h²(t) can overstate (no PE term) |
 | Reaction-norm eigenfunctions | `autoplot(fit, "rr_eigenfunctions")` | `:rr_eigenfunctions` | rotation-invariant eigenfunctions `ψ_j(t)` of `K_g`, faceted by axis, % variance per axis | supplied-`K_g` descriptive; signs arbitrary, span-ambiguous under repeated eigenvalues |
-| Reaction-norm surface | plot planned (R) | `:rr_surface` | covariate×covariate genetic covariance/correlation surface | supplied-`K_g` descriptive |
+| Reaction-norm surface | `autoplot(fit, "rr_surface")` (`correlation =` for the correlation surface) | `:rr_surface` | covariate×covariate genetic covariance/correlation surface | supplied-`K_g` descriptive |
 | Manhattan | `autoplot(scan)` where `scan <- gwas(fit, markers)` | `:manhattan` | marker −log10(p) along the genome | nominal Wald; NOT genome-wide calibrated (#48) |
 | QQ | `autoplot(scan, "qq")` | `:qq` | observed vs expected −log10(p), y=x reference | deviation uncalibrated, not LD/structure-corrected |
 | Genomic inflation (λGC) | surfaced as the **QQ subtitle annotation** (`λGC = median χ² / expected`) | `:genomic_inflation` | λGC diagnostic | diagnostic only; >1 may reflect structure/polygenicity, not corrected |
@@ -115,8 +115,8 @@ hsquared_meta = list(
 reaction_norm, rr_eigenfunctions, rr_surface}` `rotation_status` MUST equal
 `"rotation_invariant"`; any other value is a contract violation a downstream tool
 may reject. R enforces this in `testthat` for the built members (`g_matrix`,
-`reaction_norm`, `g_geometry`, `rr_eigenfunctions`); `rr_surface` is guarded when
-it ships.
+`reaction_norm`, `g_geometry`, `rr_eigenfunctions`, `rr_surface`) — the full
+rotation-invariant set.
 
 ## 4. Data contract — engine NamedTuple fields ↔ R tidy shape
 
@@ -179,8 +179,8 @@ Julia is available, checks each engine preparer against the R recompute —
 `autoplot()`), `genetic_pca` (== `eigen(G)`), `rr_genetic_variance` (== R
 `hs_rr_variance_values`, the #93 Q6 guard), and `variance_components` (preparer on a
 real fit + NaN→NA round-trip) — the mitigation for the twin's §5 parity-drift risk.
-The remaining `breeding_values` (EBV) and `rr_surface` cases are added as those
-preparers are consumed. Changes
+`rr_surface` is also covered (surface == `phi K_g phi'`). The remaining
+`breeding_values` (EBV) case is added when its engine preparer lands. Changes
 are coordinated on `HSquared.jl#61` / `#93`. R leads the
 standard (mature `ggplot2` layer + brms/bayesplot reference); Julia mirrors via the
 Makie extension + plot-data preparers.
