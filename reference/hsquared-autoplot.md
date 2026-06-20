@@ -13,7 +13,11 @@ experimental and asymptotic).
 
 ``` r
 # S3 method for class 'hsquared_fit'
-autoplot(object, type = c("variance", "breeding_values", "g_matrix"), ...)
+autoplot(
+  object,
+  type = c("variance", "breeding_values", "g_matrix", "reaction_norm"),
+  ...
+)
 
 # S3 method for class 'hs_gwas'
 autoplot(object, ...)
@@ -54,6 +58,13 @@ Available `type`s for `autoplot.hsquared_fit()`:
   the estimated `G` for multivariate fits (correlations are invariant to
   the factor rotation; raw loadings are never plotted – the ratified
   cross-lane convention).
+
+- `"reaction_norm"` – for random-regression fits, the genetic-variance
+  and heritability trajectories across the covariate (faceted). The
+  heritability trajectory carries the same caveat as
+  [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md):
+  with a homogeneous residual and no permanent-environment term it can
+  overstate `h^2(t)` for repeated-records designs.
 
 The figure helpers are deliberately modular (each takes a tidy data
 frame and returns a `ggplot`) so they can be factored into a shared

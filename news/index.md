@@ -17,7 +17,9 @@
   `± 1.96·√PEV` bands (faceted by trait for multivariate fits);
   `autoplot(fit, "g_matrix")` draws a **rotation-invariant**
   genetic-correlation heatmap of `G` for multivariate fits (raw factor
-  loadings are never plotted — the ratified cross-lane convention); and
+  loadings are never plotted — the ratified cross-lane convention);
+  `autoplot(fit, "reaction_norm")` draws the genetic-variance and
+  heritability trajectories of a random-regression fit; and
   `autoplot(gwas_result)` draws a Manhattan plot carrying the
   uncalibrated-significance banner. Also new:
   [`hs_recovery_forest()`](https://itchyshin.github.io/hsquared/reference/hs_recovery_forest.md)
