@@ -108,7 +108,7 @@ test_that("formula parser rejects unsupported animal syntax", {
   )
 })
 
-test_that("family errors name the planned non-Gaussian path", {
+test_that("family errors point to the opt-in non-Gaussian path", {
   ped <- data.frame(
     id = c("a", "b"),
     sire = c(NA, NA),
@@ -116,6 +116,8 @@ test_that("family errors name the planned non-Gaussian path", {
   )
   dat <- data.frame(y = c(1, 2), id = c("a", "b"), sex = c("f", "m"))
 
+  # On the default/spec path, poisson/binomial are rejected and pointed to the
+  # opt-in `target = "nongaussian"` path (the families now fit there).
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ sex + animal(1 | id, pedigree = ped),
@@ -123,7 +125,7 @@ test_that("family errors name the planned non-Gaussian path", {
       family = stats::poisson(),
       REML = TRUE
     ),
-    "poisson\\(log\\).*planned, not implemented.*family = gaussian\\(\\)",
+    "poisson\\(log\\).*nongaussian",
     perl = TRUE
   )
 
@@ -133,12 +135,11 @@ test_that("family errors name the planned non-Gaussian path", {
       data = dat,
       family = stats::binomial()
     ),
-    "binomial\\(logit\\).*Current fitted paths require",
+    "binomial\\(logit\\).*nongaussian",
     perl = TRUE
   )
 
-  # The error reflects the twin's current engine state honestly: a gated,
-  # not-yet-bridge-wired Laplace-REML foundation, not a bare "planned".
+  # The error names the engine's V6-LAPLACE (partial) gate honestly.
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ sex + animal(1 | id, pedigree = ped),
@@ -148,6 +149,30 @@ test_that("family errors name the planned non-Gaussian path", {
     ),
     "V6-LAPLACE",
     fixed = TRUE
+  )
+
+  # gaussian() with a non-identity link is still rejected.
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian("log"),
+      REML = TRUE
+    ),
+    "not fitted on this path",
+    fixed = TRUE
+  )
+
+  # With the opt-in target the family gate accepts poisson/binomial (the spec
+  # builds; fitting itself needs a live engine).
+  expect_no_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::poisson(),
+      REML = TRUE,
+      allow_families = c("gaussian", "poisson", "binomial")
+    )
   )
 })
 

@@ -1,4 +1,10 @@
-hs_build_model_spec <- function(formula, data, family, REML) {
+hs_build_model_spec <- function(
+  formula,
+  data,
+  family,
+  REML,
+  allow_families = "gaussian"
+) {
   env <- environment(formula)
   if (is.null(env)) {
     env <- parent.frame()
@@ -7,7 +13,7 @@ hs_build_model_spec <- function(formula, data, family, REML) {
   data <- model_data$data
   env <- model_data$env
 
-  hs_validate_model_inputs(formula, data, family, REML)
+  hs_validate_model_inputs(formula, data, family, REML, allow_families)
 
   rhs_terms <- hs_split_additive_rhs(formula[[3L]])
 
@@ -500,7 +506,13 @@ hs_model_data_context <- function(data, env) {
   )
 }
 
-hs_validate_model_inputs <- function(formula, data, family, REML) {
+hs_validate_model_inputs <- function(
+  formula,
+  data,
+  family,
+  REML,
+  allow_families = "gaussian"
+) {
   if (!inherits(formula, "formula") || length(formula) != 3L) {
     stop("`formula` must be a two-sided formula.", call. = FALSE)
   }
@@ -513,19 +525,27 @@ hs_validate_model_inputs <- function(formula, data, family, REML) {
       call. = FALSE
     )
   }
-  if (
-    !identical(family$family, "gaussian") || !identical(family$link, "identity")
-  ) {
+  # gaussian fits everywhere (identity link); poisson(log)/binomial(logit) are
+  # accepted only on the opt-in non-Gaussian path (`allow_families` widened by
+  # `hsquared()` when `target = "nongaussian"`).
+  expected_link <- c(gaussian = "identity", poisson = "log", binomial = "logit")
+  link_for_family <- expected_link[family$family]
+  family_ok <- family$family %in%
+    allow_families &&
+    !is.na(link_for_family) &&
+    identical(family$link, unname(link_for_family))
+  if (!family_ok) {
     stop(
       "The requested family `",
       hs_family_label(family),
-      "` is planned, not implemented. Current fitted paths require ",
-      "`family = gaussian()` with identity link; use the v0.1 Gaussian animal ",
-      "model path or `model_spec()` with `family = gaussian()` to inspect the ",
-      "contract without fitting. Non-Gaussian fitting is gated on the Julia ",
-      "engine: a Laplace-REML foundation exists there (validation row ",
-      "V6-LAPLACE, partial) but is not yet bridge-wired or comparator-",
-      "calibrated, so no non-Gaussian family is accepted here.",
+      "` is not fitted on this path. The default `hsquared()` path fits ",
+      "`family = gaussian()` (identity link). Non-Gaussian `poisson(log)` and ",
+      "`binomial(logit)` (binary 0/1) fit through the experimental, opt-in ",
+      "`hs_control(engine = \"julia\", engine_control = list(target = ",
+      "\"nongaussian\"))` path: a Laplace-REML latent-scale GLMM (engine ",
+      "row V6-LAPLACE, partial): REML/Laplace-only, no heritability, not ",
+      "coverage-calibrated. Use `model_spec()` with `family = gaussian()` to ",
+      "inspect the contract without fitting.",
       call. = FALSE
     )
   }

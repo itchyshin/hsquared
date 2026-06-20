@@ -52,6 +52,7 @@ through the \code{HSquared.jl} engine. The default \code{control} fits when a lo
 Julia and \code{HSquared.jl} are available and otherwise errors with install
 guidance; \code{hs_control(engine = "validate")} validates the contract without
 fitting, then returns the validated model spec invisibly. Genomic,
-repeatability, two-effect, marker-effect, and multivariate models are opt-in
-experimental paths; non-Gaussian models remain planned.
+repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
+(\code{poisson}/\code{binomial}, Laplace-REML, no heritability) models are opt-in
+experimental paths; factor-analytic models remain planned.
 }

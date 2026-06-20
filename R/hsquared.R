@@ -7,8 +7,9 @@
 #' Julia and `HSquared.jl` are available and otherwise errors with install
 #' guidance; `hs_control(engine = "validate")` validates the contract without
 #' fitting, then returns the validated model spec invisibly. Genomic,
-#' repeatability, two-effect, marker-effect, and multivariate models are opt-in
-#' experimental paths; non-Gaussian models remain planned.
+#' repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
+#' (`poisson`/`binomial`, Laplace-REML, no heritability) models are opt-in
+#' experimental paths; factor-analytic models remain planned.
 #'
 #' @param formula A model formula. The first planned v0.1 syntax is
 #'   `y ~ fixed + animal(1 | id, pedigree = ped)`, with
@@ -54,11 +55,26 @@ hsquared <- function(
   dots <- list(...)
   force(dots)
 
+  # The opt-in non-Gaussian target widens the accepted families before the
+  # model spec is validated; poisson(log)/binomial(logit) fit on the latent
+  # scale, every other path stays Gaussian-only.
+  julia_target <- if (identical(control$engine, "julia")) {
+    hs_engine_control_value(control, "target", "fit_animal_model")
+  } else {
+    NA_character_
+  }
+  allow_families <- if (identical(julia_target, "nongaussian")) {
+    c("gaussian", "poisson", "binomial")
+  } else {
+    "gaussian"
+  }
+
   spec <- hs_build_model_spec(
     formula = formula,
     data = data,
     family = family,
-    REML = REML
+    REML = REML,
+    allow_families = allow_families
   )
   payload <- hs_build_bridge_payload(spec)
 
@@ -206,6 +222,27 @@ hsquared <- function(
           2000L
         ),
         genetic_structure = genetic_structure
+      ))
+    }
+    if (identical(target, "nongaussian")) {
+      if (identical(family$family, "gaussian")) {
+        stop(
+          "`target = \"nongaussian\"` fits non-Gaussian families ",
+          "(`poisson(log)`, `binomial(logit)`); `family = gaussian()` fits ",
+          "through the default path or `target = \"ai_reml\"`.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_nongaussian_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        family = family,
+        marginal = hs_engine_control_value(control, "marginal", "laplace"),
+        iterations = hs_engine_control_value(control, "iterations", 200L)
       ))
     }
     if (identical(target, "henderson_mme")) {

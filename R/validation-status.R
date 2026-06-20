@@ -297,10 +297,10 @@ hs_validation_status_boundaries <- function() {
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
       "REML only (ML is rejected on the fit path). Genomic, repeatability,",
-      "two-effect, marker-effect, and multivariate fitting are separate opt-in",
-      "experimental targets, not the default; non-Gaussian fitting remains",
-      "planned. Mirrors the twin-owned V1-AI-REML gate (covered); not ASReml",
-      "multi-trait parity."
+      "two-effect, marker-effect, multivariate, and non-Gaussian",
+      "(poisson/binomial Laplace-REML) fitting are separate opt-in experimental",
+      "targets, not the default. Mirrors the twin-owned V1-AI-REML gate",
+      "(covered); not ASReml multi-trait parity."
     ),
     paste(
       "Published-anchor recovery within the maintainer-signed-off band (not",

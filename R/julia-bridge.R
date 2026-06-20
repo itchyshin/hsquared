@@ -312,6 +312,174 @@ hs_fit_julia_ai_reml_payload <- function(
   )
 }
 
+# Map an R `family` object to the engine's non-Gaussian family symbol. Only the
+# experimental Laplace-REML families are surfaced: `poisson(log)` -> "poisson"
+# and `binomial(logit)` -> "bernoulli" (binary 0/1). `binomial` with a trial
+# count (`cbind()`/weights) and other families remain planned.
+hs_nongaussian_family_symbol <- function(family) {
+  if (identical(family$family, "poisson") && identical(family$link, "log")) {
+    return("poisson")
+  }
+  if (identical(family$family, "binomial") && identical(family$link, "logit")) {
+    return("bernoulli")
+  }
+  stop(
+    "The opt-in non-Gaussian target fits `poisson(log)` and `binomial(logit)` ",
+    "(binary 0/1) only; `",
+    hs_family_label(family),
+    "` is not implemented. `binomial` with a trial count and other families ",
+    "are planned.",
+    call. = FALSE
+  )
+}
+
+hs_validate_marginal_method <- function(marginal) {
+  if (is.null(marginal)) {
+    return("laplace")
+  }
+  if (!identical(marginal, "laplace")) {
+    stop(
+      "Only `engine_control$marginal = \"laplace\"` is implemented for the ",
+      "opt-in non-Gaussian target; the engine's variational approximation is a ",
+      "planned R follow-up.",
+      call. = FALSE
+    )
+  }
+  "laplace"
+}
+
+# Opt-in, experimental non-Gaussian (GLMM) animal model. Surfaces the
+# Julia-owned `HSquared.fit_laplace_reml()` marginal (Laplace) REML optimizer for
+# a `poisson`/`bernoulli` response on the latent scale. There is no
+# residual-variance scale for these families, so the result deliberately carries
+# NO heritability. Experimental, REML/Laplace-only, not coverage-calibrated
+# (mirrors the engine row V6-LAPLACE, partial); Bernoulli `sigma_a2` is prone to
+# a search-bound boundary at small scale.
+hs_fit_julia_nongaussian_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  family = stats::binomial(),
+  marginal = "laplace",
+  iterations = 200L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (is.null(payload$pedigree)) {
+    stop(
+      "Internal bridge error: the non-Gaussian target requires a pedigree ",
+      "animal-model payload.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  family_symbol <- hs_nongaussian_family_symbol(family)
+  marginal <- hs_validate_marginal_method(marginal)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  JuliaCall::julia_assign("hsq_family", family_symbol)
+  JuliaCall::julia_assign("hsq_marginal", marginal)
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_fit = HSquared.fit_laplace_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal),",
+    "ids = hsq_ped.ids, iterations = hsq_iterations);",
+    "hsq_result = HSquared.nongaussian_result_payload(hsq_fit);",
+    "hsq_ng_raw = Dict(",
+    "\"family\" => String(hsq_result.family),",
+    "\"method\" => String(hsq_result.method),",
+    "\"sigma_a2\" => hsq_result.variance_components.sigma_a2,",
+    "\"beta\" => collect(Float64, hsq_result.fixed_effects),",
+    "\"breeding_ids\" => string.(collect(hsq_result.breeding_values.ids)),",
+    "\"breeding_values\" => collect(Float64, hsq_result.breeding_values.values),",
+    "\"loglik\" => hsq_result.loglik,",
+    "\"converged\" => hsq_result.converged",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_ng_raw")
+  result <- hs_normalize_nongaussian_result(raw, payload)
+  hs_new_fit(
+    spec = list(
+      method = "Laplace-REML",
+      family = list(family = family$family, link = family$link),
+      target = "nongaussian"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_nongaussian_result <- function(raw, payload) {
+  fixed_effects <- as.numeric(raw$beta)
+  fixed_names <- payload$metadata$fixed_colnames
+  if (length(fixed_effects) == length(fixed_names)) {
+    names(fixed_effects) <- fixed_names
+  }
+  animal_bv <- data.frame(
+    id = as.character(raw$breeding_ids),
+    value = as.numeric(raw$breeding_values),
+    stringsAsFactors = FALSE
+  )
+  converged <- isTRUE(raw$converged)
+  result <- list(
+    # Latent-scale additive genetic variance; a non-Gaussian family has no
+    # residual-variance scale, so no heritability is reported (surfacing a
+    # liability-scale h2 here would be an unbacked claim).
+    variance_components = data.frame(
+      component = "animal",
+      estimate = as.numeric(raw$sigma_a2),
+      stringsAsFactors = FALSE
+    ),
+    breeding_values = animal_bv,
+    random_effects = list(animal = animal_bv),
+    fixed_effects = fixed_effects,
+    nobs = length(payload$y),
+    converged = converged,
+    family = as.character(raw$family),
+    marginal_method = as.character(raw$method),
+    diagnostics = list(
+      target = "nongaussian",
+      variance_components = "estimated_laplace_reml",
+      engine_family = as.character(raw$family),
+      marginal_method = as.character(raw$method),
+      latent_scale = TRUE,
+      heritability_note = paste(
+        "No heritability is reported: a non-Gaussian family has no",
+        "residual-variance scale, so a latent/liability-scale h2 would be an",
+        "unbacked claim."
+      )
+    )
+  )
+  if (converged) {
+    result$loglik <- as.numeric(raw$loglik)
+    # Laplace marginal log-likelihood; df = fixed effects + the single
+    # additive-genetic variance component.
+    result$df <- as.integer(ncol(payload$X) + 1L)
+  }
+  result
+}
+
 # Opt-in, experimental repeatability (permanent-environment) estimator. Surfaces
 # the Julia-owned `HSquared.fit_repeatability_reml()` REML-only optimizer through
 # the bridge. The permanent-environment effect shares the animal incidence `Z`
@@ -1447,14 +1615,15 @@ hs_validate_julia_target <- function(target) {
         "genomic",
         "single_step",
         "snp_blup",
-        "multivariate"
+        "multivariate",
+        "nongaussian"
       )
   ) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"two_effect\", \"genomic\", \"single_step\", \"snp_blup\", or ",
-      "\"multivariate\".",
+      "\"two_effect\", \"genomic\", \"single_step\", \"snp_blup\", ",
+      "\"multivariate\", or \"nongaussian\".",
       call. = FALSE
     )
   }
