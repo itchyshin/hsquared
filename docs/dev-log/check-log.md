@@ -5001,3 +5001,4 @@ release".
 - Commands: `air format`; `devtools::document()`; `test-autoplot` +
   `test-random-regression` all pass; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity` **26/26**.
+- CI (commit `9edc726`): pkgdown run `27886025919` **success**; pages deploy green.

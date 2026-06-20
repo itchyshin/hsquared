@@ -44,6 +44,9 @@ file. Supersedes handoff-7.
 | Bridge (viz) | New `autoplot("g_geometry")` **eigenvalue scree** (rotation-invariant; no loadings) + live parity | `70a8731` |
 | Bridge (viz) | Consume `rr_genetic_variance_plot_data` in `autoplot("reaction_norm")` (rename-robust) + **the #93 Q6 RR parity test** | `34074f3` |
 | Bridge (viz) | New `autoplot(scan, "qq")` QQ + genomic-inflation lambda_GC (Manhattan/QQ dispatch) | `ba0bb67` |
+| Bridge (viz) | New `autoplot(fit, "rr_eigenfunctions")` (rotation-invariant ψ_j(t) curves) + #93 Q6-style parity | `df7ef4a` |
+| Bridge (viz) | New `autoplot(fit, "rr_surface")` covariance/correlation surface — **completes the §1 figure catalog** | `9edc726` |
+| Audit | Rose session-close honesty audit (CLEAN) + under-claim/NEWS reconciliation | `be43091` |
 | Coordinator | **Closed the #93 loop** (all 4 preparers consumed, 24/24 live parity) + the **single-step construction R-wiring build-spec** (`docs/design/25`), live-confirmed | `1c96f86` |
 
 **Plotting-consumer arc is COMPLETE:** all four landed `*_plot_data` preparers
@@ -53,6 +56,9 @@ R↔engine parity guard in `tests/testthat/test-plot-data-parity.R`. The bridge 
 **not** attach payloads at fit time yet, so recompute is the live path (stated
 everywhere); the engine status flags (`rotation_invariant`,
 `is_eigenstructure_not_loadings`, `interval_status`) are **enforced** R-side.
+**The full §1 figure catalog is now built** (variance, breeding_values, g_matrix +
+low-h², g_geometry, reaction_norm, rr_eigenfunctions, rr_surface, Manhattan, QQ +
+λGC, recovery_forest) — no cataloged figures remain.
 
 ## DO FIRST next session — execute the single-step build-spec (ranked #3)
 
@@ -77,9 +83,9 @@ mechanical: parser (§2) → `genotyped_rows` alignment (§3, the crux) → payl
    landed post-fit entry (relatedness-UNcorrected screen; `src/postfit.jl:51`) — a
    small `gwas(method=)` option. LOCO proper needs per-group precisions
    (`loco_relationship_precisions`) — check before wiring.
-2b. **rr_surface / rr_eigenfunctions** figures (`autoplot` new types) — the
-   remaining cataloged-but-unbuilt plotting figures (standard §1; QQ + λGC landed
-   `ba0bb67`); each has a landed engine preparer.
+2b. **Plotting figures: DONE** — the full §1 catalog is built (s5). The only
+   remaining plot-data parity gap is `breeding_values_plot_data`, which awaits its
+   engine preparer (a #93 ask); wire it when the twin lands it.
 3. **Await twin:** the §6 naming-map confirm + the optional `genetic_variance →
    value` rename (the RR consumer is already rename-robust, so non-blocking);
    metafounder option-(a) + FA-eigenbasis payloads (#61) → wire the unpacks.
