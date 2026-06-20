@@ -106,6 +106,7 @@ articles:
       - hsquared
       - articles/fitting-models
       - articles/gryphon-worked-example
+      - articles/visualizing-models
       - articles/genomic-prediction
       - articles/qtl-gwas-eqtl-status
       - articles/multivariate

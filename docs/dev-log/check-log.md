@@ -4719,3 +4719,8 @@ release".
 - air format; `devtools::document()` (reexports.Rd + 3 new man pages); `test-autoplot`
   **12/12 pass**; `rcmdcheck(--no-manual)` **0/0/0** (fixed one non-ASCII `h2` ->
   `²`); `pkgdown::check_pkgdown()` clean.
+- Follow-up: `vignettes/articles/visualizing-models.Rmd` (new) — a "Visualizing an
+  animal model" gallery that **renders** every `autoplot()` figure on the pkgdown
+  site from small illustrative fit objects (`eval = TRUE`, ggplot2 only, no engine
+  needed at build), with the real `autoplot()` calls shown. Added to `_pkgdown.yml`.
+  `rmarkdown::render()` OK; `check_pkgdown()` clean.
