@@ -96,11 +96,11 @@ fit <- hsquared(
 This fits by default: the R side builds the `y`, `X`, sparse `Z`, and
 normalized pedigree payload, the `HSquared.jl` engine builds `Ainv`,
 estimates the variance components by REML, and returns an `hsquared_fit`
-object. A genomic GREML / SNP-BLUP effect, single-step, and the
-multivariate Gaussian animal model also fit through the opt-in,
+object. A genomic GREML / SNP-BLUP effect, single-step, the multivariate
+Gaussian animal model, and non-Gaussian (`poisson`/`binomial`,
+Laplace-REML, no heritability) models also fit through the opt-in,
 experimental `engine = "julia"` path (not the default); factor-analytic
-and non-Gaussian models remain planned. For the multivariate Gaussian
-path, use:
+models remain planned. For the multivariate Gaussian path, use:
 
 ``` r
 

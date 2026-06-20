@@ -4,6 +4,22 @@
 
 ### New features
 
+- **Experimental, opt-in non-Gaussian (GLMM) animal model.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now accepts `family = poisson()` and `family = binomial()` (binary
+  0/1) on `animal(1 | id, pedigree = ped)` through
+  `hs_control(engine = "julia", engine_control = list(target = "nongaussian"))`,
+  surfacing the Julia-owned `HSquared.fit_laplace_reml()` marginal
+  (Laplace) REML optimizer. It returns the latent-scale additive-genetic
+  variance, breeding values, fixed effects, and the marginal
+  log-likelihood. Because a non-Gaussian family has no residual-variance
+  scale, **no heritability is reported** (a liability-scale `h²` would
+  be an unbacked claim). Experimental and REML/Laplace-only
+  (`marginal = "laplace"`; variational and `binomial` with a trial count
+  are planned); mirrors the engine row `V6-LAPLACE` (`partial`): not
+  coverage-calibrated, no external comparator, and Bernoulli `σ²a` is
+  prone to a search-bound boundary at small scale. Not the default
+  ([\#44](https://github.com/itchyshin/hsquared/issues/44)).
 - **Experimental:**
   [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
   extracts a large-sample confidence interval for `h²` from the default
@@ -148,8 +164,9 @@
   explicit `ai_reml` control, repeatability/two-effect/genomic/SNP-BLUP
   targets, and the opt-in multivariate target) through a sibling
   `HSquared.jl` checkout via JuliaCall. The default `engine = "fit"`
-  already fits the v0.1 model via `ai_reml`; non-Gaussian fitted-model
-  support is still planned
+  already fits the v0.1 model via `ai_reml` (non-Gaussian fitting was
+  planned at the time of this entry; see the development-version entry
+  above for the opt-in `target = "nongaussian"` path)
   ([\#6](https://github.com/itchyshin/hsquared/issues/6)).
 - [`hs_control()`](https://itchyshin.github.io/hsquared/reference/hs_control.md)
   now recognizes an experimental, opt-in

@@ -12,9 +12,9 @@ v0.1 fits the univariate Gaussian animal model
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 call fits when a local Julia and `HSquared.jl` are available, and
 otherwise errors with install guidance. Genomic, single-step,
-repeatability, two-effect, and multivariate Gaussian models also fit
-through opt-in, experimental engine paths; factor-analytic and
-non-Gaussian models remain planned.
+repeatability, two-effect, multivariate Gaussian, and non-Gaussian
+(`poisson`/`binomial`, Laplace-REML) models also fit through opt-in,
+experimental engine paths; factor-analytic models remain planned.
 
 ## See also
 
