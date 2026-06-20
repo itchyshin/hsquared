@@ -20,7 +20,7 @@ autoplot(
 )
 
 # S3 method for class 'hs_gwas'
-autoplot(object, ...)
+autoplot(object, type = c("manhattan", "qq"), ...)
 ```
 
 ## Arguments
@@ -75,6 +75,13 @@ Available `type`s for `autoplot.hsquared_fit()`:
   [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md):
   with a homogeneous residual and no permanent-environment term it can
   overstate `h^2(t)` for repeated-records designs.
+
+[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html) on
+a [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
+scan (`hs_gwas`) draws `type = "manhattan"` (default) or `type = "qq"`
+(observed vs expected `-log10(p)` with a `y = x` null and the
+genomic-inflation `lambda_GC` as a diagnostic). Both carry the
+EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate `HSquared.jl#48`).
 
 The figure helpers are deliberately modular (each takes a tidy data
 frame and returns a `ggplot`) so they can be factored into a shared
