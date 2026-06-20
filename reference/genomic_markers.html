@@ -6,7 +6,11 @@ genomic() and single_step() now fit through an opt-in, experimental
 engine path (engine = "julia", REML-only or supplied-variance, not the
 default, mirroring a partial validation gate): genomic(1 | id, Ginv = Ginv)
 or genomic(1 | id, markers = M) (GREML, or SNP-BLUP via
-target = "snp_blup") and single_step(1 | id, Hinv = Hinv). The remaining
+target = "snp_blup"), and single_step(1 | id, Hinv = Hinv) (a precomputed
+inverse) or single_step(1 | id, pedigree = ped, markers = M) (the engine
+constructs H^-1 from the pedigree + genotyped-subset markers via
+target = "single_step_construct"; an explicit pedigree = is required). The
+remaining
 markers (markers(), marker_scan(), qtl_scan()) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.'><meta property="og:description" content='These functions provide readable formula vocabulary for genomic, single-step,
 marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
@@ -15,7 +19,11 @@ genomic() and single_step() now fit through an opt-in, experimental
 engine path (engine = "julia", REML-only or supplied-variance, not the
 default, mirroring a partial validation gate): genomic(1 | id, Ginv = Ginv)
 or genomic(1 | id, markers = M) (GREML, or SNP-BLUP via
-target = "snp_blup") and single_step(1 | id, Hinv = Hinv). The remaining
+target = "snp_blup"), and single_step(1 | id, Hinv = Hinv) (a precomputed
+inverse) or single_step(1 | id, pedigree = ped, markers = M) (the engine
+constructs H^-1 from the pedigree + genotyped-subset markers via
+target = "single_step_construct"; an explicit pedigree = is required). The
+remaining
 markers (markers(), marker_scan(), qtl_scan()) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -76,7 +84,11 @@ return <code>NULL</code>); they take meaning only inside an <code><a href="hsqua
 engine path (<code>engine = "julia"</code>, REML-only or supplied-variance, not the
 default, mirroring a <code>partial</code> validation gate): <code>genomic(1 | id, Ginv = Ginv)</code>
 or <code>genomic(1 | id, markers = M)</code> (GREML, or SNP-BLUP via
-<code>target = "snp_blup"</code>) and <code>single_step(1 | id, Hinv = Hinv)</code>. The remaining
+<code>target = "snp_blup"</code>), and <code>single_step(1 | id, Hinv = Hinv)</code> (a precomputed
+inverse) or <code>single_step(1 | id, pedigree = ped, markers = M)</code> (the engine
+constructs <code>H^-1</code> from the pedigree + genotyped-subset markers via
+<code>target = "single_step_construct"</code>; an explicit <code>pedigree =</code> is required). The
+remaining
 markers (<code>markers()</code>, <code>marker_scan()</code>, <code>qtl_scan()</code>) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.</p>
     </div>
@@ -85,7 +97,18 @@ reservations that the parser rejects with a planned-not-implemented message.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">genomic</span><span class="op">(</span><span class="va">formula</span>, G <span class="op">=</span> <span class="cn">NULL</span>, Ginv <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">single_step</span><span class="op">(</span><span class="va">formula</span>, H <span class="op">=</span> <span class="cn">NULL</span>, Hinv <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">single_step</span><span class="op">(</span></span>
+<span>  <span class="va">formula</span>,</span>
+<span>  H <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  Hinv <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pedigree <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  markers <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  tau <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  omega <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  blend_weight <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  ridge <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">markers</span><span class="op">(</span><span class="va">M</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"random"</span>, <span class="st">"fixed"</span>, <span class="st">"scan"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -109,6 +132,24 @@ and single-step models.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Reserved for future syntax.</p></dd>
+
+
+<dt id="arg-pedigree">pedigree<a class="anchor" aria-label="anchor" href="#arg-pedigree"></a></dt>
+<dd><p>A pedigree data frame (<code>id</code>, <code>sire</code>, <code>dam</code>) for the
+single-step <code>H^-1</code> <em>construction</em> path
+(<code>single_step(1 | id, pedigree = ped, markers = M)</code>), in place of a
+precomputed <code>Hinv</code>.</p></dd>
+
+
+<dt id="arg-markers">markers<a class="anchor" aria-label="anchor" href="#arg-markers"></a></dt>
+<dd><p>A genotyped-subset marker matrix (rows named by genotyped id)
+for the single-step construction path; the engine builds the genomic
+relationship from it.</p></dd>
+
+
+<dt id="arg-tau-omega-blend-weight-ridge">tau, omega, blend_weight, ridge<a class="anchor" aria-label="anchor" href="#arg-tau-omega-blend-weight-ridge"></a></dt>
+<dd><p>Single-step construction tuning knobs
+(Aguilar et al. 2010); defaults <code>tau = omega = 1</code>, <code>blend_weight = ridge = 0</code>.</p></dd>
 
 
 <dt id="arg-m">M<a class="anchor" aria-label="anchor" href="#arg-m"></a></dt>

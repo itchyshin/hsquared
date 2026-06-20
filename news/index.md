@@ -104,6 +104,26 @@
   [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   extractors stay reserved for the planned map-annotated API
   ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
+- **Experimental, opt-in single-step H⁻¹ *construction*.**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now accepts `single_step(1 | id, pedigree = ped, markers = M)` and
+  fits it through
+  `engine_control = list(target = "single_step_construct")`: the engine
+  builds the pedigree inverse `A⁻¹` and dense `A` from the pedigree and
+  the genomic relationship `G` from the genotyped-subset markers,
+  assembles the single-step relationship inverse `H⁻¹` (Aguilar et
+  al. 2010), and fits by REML — so you no longer have to precompute
+  `Hinv` yourself (the supplied-`Hinv` form still works). Genotyped
+  animals must be in the pedigree, but phenotyped animals need **not**
+  be genotyped (the point of single-step), and GEBVs are returned for
+  **all** pedigree animals. Construction knobs (`tau`, `omega`,
+  `blend_weight`, `ridge`) are exposed but not comparator-validated; an
+  explicit `pedigree =` is required. Experimental, opt-in, REML-only,
+  dense/validation-scale; mirrors the twin `V2-SSHINV` (partial).
+  Verified live: marker-row-order invariance (the genotyped-rows
+  alignment guard), id-labelled GEBVs covering ungenotyped animals, and
+  a differs-from-pedigree-model anchor. Not the default; promotion past
+  `partial` is twin-gated (`docs/design/25`).
 - **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008)
   for opt-in multivariate fits:
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
