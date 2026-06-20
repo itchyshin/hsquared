@@ -46,6 +46,40 @@ hs_sim_animal_phenotypes <- function(chol_A, sigma_a2, sigma_e2, mu = 0) {
   list(y = mu + u + e, u = u)
 }
 
+# Gene-dropping simulator: draw breeding values down a clean (non-inbred-founder)
+# pedigree via u_i = 0.5(u_sire + u_dam) + Mendelian sampling, then add residual
+# noise. Needs no relationship matrix, so it is a cheap way to get a genetically
+# informative dataset that `fit_ai_reml` converges to interior variance
+# components on (the toy 3-5 animal datasets pin sigma_a2 -> 0). Returns a
+# data.frame(id, y) aligned to `ped`. The one-parent-known (0.75) branches are
+# present for completeness; `hs_sim_pedigree()` always assigns both parents to a
+# non-founder, so they are unexercised by the current parity test.
+hs_sim_genedrop_phenotypes <- function(ped, sigma_a2, sigma_e2, seed = 1) {
+  set.seed(seed)
+  u <- stats::setNames(numeric(nrow(ped)), ped$id)
+  for (i in seq_len(nrow(ped))) {
+    s <- ped$sire[i]
+    d <- ped$dam[i]
+    has_s <- !is.na(s)
+    has_d <- !is.na(d)
+    pa <- 0
+    ms <- sigma_a2 # Mendelian-sampling variance (non-inbred founders)
+    if (has_s && has_d) {
+      pa <- 0.5 * (u[[s]] + u[[d]])
+      ms <- 0.5 * sigma_a2
+    } else if (has_s) {
+      pa <- 0.5 * u[[s]]
+      ms <- 0.75 * sigma_a2
+    } else if (has_d) {
+      pa <- 0.5 * u[[d]]
+      ms <- 0.75 * sigma_a2
+    }
+    u[i] <- pa + stats::rnorm(1, 0, sqrt(ms))
+  }
+  y <- as.numeric(u) + stats::rnorm(nrow(ped), 0, sqrt(sigma_e2))
+  data.frame(id = ped$id, y = y, stringsAsFactors = FALSE)
+}
+
 # Henderson BLUP EBVs at supplied variance components for the intercept-only
 # animal model (X = 1, Z = I), used to score EBV accuracy against true u.
 hs_sim_blup_ebv <- function(y, Ainv, sigma_a2, sigma_e2) {

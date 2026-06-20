@@ -81,6 +81,34 @@ mock_mv_fit_plotdata <- function() {
   )
 }
 
+# A fit carrying the engine Set-B `variance_components_plot_data` payload (twin
+# PR #95). NOTE: the bridge does not attach this at fit time yet -- recompute is
+# the live path; this exercises the forward-looking auto-detect branch.
+mock_uni_fit_vcpd <- function(h2_hi = 0.54) {
+  structure(
+    list(
+      result = list(
+        variance_components_plot_data = list(
+          term = c("sigma_a2", "sigma_e2", "h2"),
+          estimate = c(0.6, 0.9, 0.40),
+          lo = c(0.36, 0.70, 0.26),
+          hi = c(0.84, 1.10, h2_hi),
+          panel = c(
+            "variance components",
+            "variance components",
+            "heritability"
+          ),
+          level = 0.95,
+          interval_method = "asymptotic_reml",
+          interval_status = "experimental_asymptotic",
+          supplied = FALSE
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+}
+
 mock_gwas <- function() {
   structure(
     data.frame(
@@ -106,6 +134,83 @@ test_that("autoplot.hsquared_fit variance returns a ggplot with a zero line", {
     function(l) inherits(l$geom, "GeomVline"),
     logical(1)
   )))
+})
+
+test_that("variance autoplot consumes the engine variance_components_plot_data", {
+  p <- autoplot(mock_uni_fit_vcpd(), "variance")
+  expect_s3_class(p, "ggplot")
+  # engine terms/panels are used directly (sigma_a2/sigma_e2/h2)
+  expect_true(all(
+    c("sigma_a2", "sigma_e2", "h2") %in% as.character(p$data$term)
+  ))
+  expect_equal(p$data$estimate[as.character(p$data$term) == "sigma_a2"], 0.6)
+  expect_equal(p$data$lo[as.character(p$data$term) == "h2"], 0.26)
+  expect_true(grepl("experimental", p$labels$subtitle))
+  expect_equal(
+    attr(p, "hsquared_meta")$interval_status,
+    "experimental_asymptotic"
+  )
+})
+
+test_that("variance payload annotates an h2 interval crossing [0,1]", {
+  p <- autoplot(mock_uni_fit_vcpd(h2_hi = 1.05), "variance")
+  expect_true(grepl("[0,1] boundary", p$labels$subtitle, fixed = TRUE))
+})
+
+test_that("variance boundary note is h2-only (a variance whisker crossing is not flagged)", {
+  # default mock has sigma_e2 hi = 1.10 (> 1) on the variance panel, h2 in [0,1].
+  p <- autoplot(mock_uni_fit_vcpd(h2_hi = 0.54), "variance")
+  expect_true(any(p$data$hi[p$data$panel == "variance components"] > 1))
+  expect_false(grepl("[0,1] boundary", p$labels$subtitle, fixed = TRUE))
+})
+
+test_that("variance payload with only term + estimate degrades to points only", {
+  fit <- structure(
+    list(
+      result = list(
+        variance_components_plot_data = list(
+          term = c("sigma_a2", "sigma_e2"),
+          estimate = c(0.6, 0.9)
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "variance")
+  expect_true(all(is.na(p$data$lo)))
+  expect_equal(attr(p, "hsquared_meta")$interval_status, "none")
+})
+
+test_that("variance recompute path annotates an h2 CI crossing [0,1]", {
+  # no variance_components_plot_data -> the recompute branch; h2 = 0.9, se = 0.30
+  # gives a +/- 1.96 SE whisker that crosses 1.
+  fit <- mock_uni_fit()
+  fit$result$heritability <- data.frame(term = "animal", estimate = 0.9)
+  fit$result$heritability_se <- 0.30
+  p <- autoplot(fit, "variance")
+  h_row <- p$data[p$data$panel == "heritability", ]
+  expect_equal(h_row$hi, 0.9 + 1.96 * 0.30, tolerance = 1e-9)
+  expect_true(grepl("[0,1] boundary", p$labels$subtitle, fixed = TRUE))
+})
+
+test_that("variance payload with NaN intervals draws points only", {
+  fit <- mock_uni_fit_vcpd()
+  fit$result$variance_components_plot_data$lo <- rep(NaN, 3)
+  fit$result$variance_components_plot_data$hi <- rep(NaN, 3)
+  fit$result$variance_components_plot_data$interval_status <- "none"
+  p <- autoplot(fit, "variance")
+  expect_true(all(is.na(p$data$lo)))
+  expect_equal(attr(p, "hsquared_meta")$interval_status, "none")
+})
+
+test_that("variance payload takes precedence over the recompute fields", {
+  fit <- mock_uni_fit() # has variance_components (animal/residual)
+  fit$result$variance_components_plot_data <-
+    mock_uni_fit_vcpd()$result$variance_components_plot_data
+  p <- autoplot(fit, "variance")
+  # payload terms win (sigma_a2), not the recompute component name (animal)
+  expect_true("sigma_a2" %in% as.character(p$data$term))
+  expect_false("animal" %in% as.character(p$data$term))
 })
 
 test_that("autoplot.hsquared_fit breeding_values returns a ggplot", {

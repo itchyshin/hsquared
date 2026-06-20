@@ -4833,3 +4833,30 @@ release".
   the `@param ...` passthrough doc); `test-autoplot` all pass (incl. 13 g_matrix
   cases); `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
 - CI (commit `a9173dc`): pkgdown run `27883654950` **success**; pages deploy green.
+
+## 2026-06-20 (session 5 — consume variance_components_plot_data Set-B forest)
+
+- Twin landed `variance_components_plot_data` (PR #95) returning exactly the #93
+  spec: `(term, estimate, lo, hi, panel, level, interval_method, interval_status,
+  supplied)` with RAW unclamped `lo`/`hi`. `hs_autoplot_variance()` now auto-detects
+  it (recompute fallback preserved in the else branch); the `[0,1]` boundary
+  annotation is scoped to the h² panel only (a variance whisker crossing 0 is
+  expected, not flagged). Live parity extended (`variance_components_plot_data`
+  preparer on a real fit → marshalled → consumed; + NaN→NA bridge round-trip).
+- **Adversarial verify (Workflow `wf_14b47306-325`: Curie/Rose/Hopper)** — no
+  blockers (Hopper confirmed the field/shape contract matches the engine exactly).
+  Applied the should-fix + nits: a negative-control test (variance whisker crossing
+  is NOT flagged as an h² boundary), a recompute-branch boundary + CI-value test, a
+  term+estimate-only points-only test, the live NaN→NA marshalling assertion, and
+  clarifying comments (interval_status binary-by-contract; engine h² is logit-delta
+  so the payload boundary path is a defensive guard).
+- Caught + fixed a **test bug** the live run surfaced: the NaN assertion used a
+  mixed `[NaN,1.0,NaN]` vector, so `all(is.na())` was correctly FALSE; rewrote to
+  assert NaN→NA at positions 1/3 and finite passthrough at 2.
+- New test helper `hs_sim_genedrop_phenotypes()` (gene-dropping; clean pedigree →
+  interior VCs) so the live variance fit converges (toy 3-5 animal datasets pin
+  σ²ₐ→0, confirming the AI-REML σ²ₐ→0 instability lead).
+- Commands: `air format`; `devtools::document()` (no man change);
+  `test-autoplot` all pass (incl. 11 variance cases); `pkgdown::check_pkgdown()`
+  clean; `rcmdcheck(args="--no-manual")` **0/0/0**; LIVE `test-plot-data-parity`
+  **16/16** (g-corr ×2 + variance forest + NaN round-trip).

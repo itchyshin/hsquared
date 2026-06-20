@@ -129,65 +129,104 @@ autoplot.hsquared_fit <- function(
 }
 
 hs_autoplot_variance <- function(object, ...) {
-  vc <- object$result$variance_components
-  if (is.null(vc) || !all(c("component", "estimate") %in% names(vc))) {
-    stop(
-      "This `hsquared_fit` has no variance-component estimates to plot.",
-      call. = FALSE
-    )
-  }
-  se <- object$result$variance_component_se
-  vc_df <- data.frame(
-    term = as.character(vc$component),
-    estimate = as.numeric(vc$estimate),
-    panel = "variance components",
-    stringsAsFactors = FALSE
-  )
-  vc_df$lo <- NA_real_
-  vc_df$hi <- NA_real_
-  experimental <- FALSE
-  if (!is.null(se) && all(c("component", "se") %in% names(se))) {
-    idx <- match(vc_df$term, as.character(se$component))
-    sev <- as.numeric(se$se)[idx]
-    vc_df$lo <- vc_df$estimate - 1.96 * sev
-    vc_df$hi <- vc_df$estimate + 1.96 * sev
-    experimental <- any(is.finite(sev))
-  }
-
-  # heritability panel (with SE if available)
-  her <- object$result$heritability
-  if (!is.null(her) && all(c("term", "estimate") %in% names(her))) {
-    h_df <- data.frame(
-      term = paste0("h\u00b2[", as.character(her$term), "]"),
-      estimate = as.numeric(her$estimate),
-      panel = "heritability",
-      lo = NA_real_,
-      hi = NA_real_,
+  # Auto-detect the engine Set-B `variance_components_plot_data` payload; else
+  # assemble from the stored extractors (recompute fallback). NOTE: the bridge
+  # does not attach this payload at fit time yet -- recompute is the live path.
+  pd <- object$result$variance_components_plot_data
+  if (!is.null(pd) && all(c("term", "estimate") %in% names(pd))) {
+    # The payload is already shaped to the hs_gg_forest contract
+    # (term/estimate/lo/hi/panel + interval_status). NaN -> NA so ggplot draws no
+    # whisker where the interval is unavailable; lo/hi are RAW (unclamped).
+    n <- length(pd$term)
+    lo <- if (!is.null(pd$lo)) as.numeric(pd$lo) else rep(NA_real_, n)
+    hi <- if (!is.null(pd$hi)) as.numeric(pd$hi) else rep(NA_real_, n)
+    lo[is.nan(lo)] <- NA_real_
+    hi[is.nan(hi)] <- NA_real_
+    df <- data.frame(
+      term = as.character(pd$term),
+      estimate = as.numeric(pd$estimate),
+      panel = if (!is.null(pd$panel)) {
+        as.character(pd$panel)
+      } else {
+        "variance components"
+      },
+      lo = lo,
+      hi = hi,
       stringsAsFactors = FALSE
     )
-    # `heritability_se` is a scalar SE for univariate fits and may be a
-    # per-trait vector for multivariate; recycle a scalar across the h^2 rows.
-    hse <- object$result$heritability_se
-    if (!is.null(hse)) {
-      hsev <- as.numeric(if (is.data.frame(hse)) hse$se else hse)
-      if (length(hsev) == 1L) {
-        hsev <- rep(hsev, nrow(h_df))
-      }
-      if (length(hsev) == nrow(h_df)) {
-        # Surface the RAW asymptotic bounds and annotate when they cross [0, 1];
-        # do not silently clamp (plotting standard 24 §2; mirrors the engine's
-        # boundary-throw discipline). A whisker crossing 0/1 is the honest signal
-        # that h^2 is imprecise.
-        h_df$lo <- h_df$estimate - 1.96 * hsev
-        h_df$hi <- h_df$estimate + 1.96 * hsev
-        experimental <- experimental || any(is.finite(hsev))
-      }
-    }
-    boundary <- any(is.finite(h_df$lo) & (h_df$lo < 0 | h_df$hi > 1))
-    df <- rbind(vc_df, h_df)
+    # Binary by design: the v1 engine contract emits only "experimental_asymptotic"
+    # or "none" (likelihood.jl); a future third status would be a known follow-up
+    # to map explicitly, not a silent relabel.
+    experimental <- !is.null(pd$interval_status) &&
+      !identical(as.character(pd$interval_status), "none")
+    # The [0,1] boundary annotation applies to h^2 only (a variance whisker may
+    # cross zero, which is expected/honest, not a boundary crossing). NB the
+    # engine's h^2 row is a logit-delta interval (always in (0,1)), so on real
+    # engine output this never fires -- it is a defensive guard kept symmetric with
+    # the recompute path, which uses raw natural-scale bounds that genuinely can.
+    is_h2 <- df$panel == "heritability"
+    boundary <- any(is_h2 & is.finite(df$lo) & (df$lo < 0 | df$hi > 1))
   } else {
-    boundary <- FALSE
-    df <- vc_df
+    vc <- object$result$variance_components
+    if (is.null(vc) || !all(c("component", "estimate") %in% names(vc))) {
+      stop(
+        "This `hsquared_fit` has no variance-component estimates to plot.",
+        call. = FALSE
+      )
+    }
+    se <- object$result$variance_component_se
+    vc_df <- data.frame(
+      term = as.character(vc$component),
+      estimate = as.numeric(vc$estimate),
+      panel = "variance components",
+      stringsAsFactors = FALSE
+    )
+    vc_df$lo <- NA_real_
+    vc_df$hi <- NA_real_
+    experimental <- FALSE
+    if (!is.null(se) && all(c("component", "se") %in% names(se))) {
+      idx <- match(vc_df$term, as.character(se$component))
+      sev <- as.numeric(se$se)[idx]
+      vc_df$lo <- vc_df$estimate - 1.96 * sev
+      vc_df$hi <- vc_df$estimate + 1.96 * sev
+      experimental <- any(is.finite(sev))
+    }
+
+    # heritability panel (with SE if available)
+    her <- object$result$heritability
+    if (!is.null(her) && all(c("term", "estimate") %in% names(her))) {
+      h_df <- data.frame(
+        term = paste0("h\u00b2[", as.character(her$term), "]"),
+        estimate = as.numeric(her$estimate),
+        panel = "heritability",
+        lo = NA_real_,
+        hi = NA_real_,
+        stringsAsFactors = FALSE
+      )
+      # `heritability_se` is a scalar SE for univariate fits and may be a
+      # per-trait vector for multivariate; recycle a scalar across the h^2 rows.
+      hse <- object$result$heritability_se
+      if (!is.null(hse)) {
+        hsev <- as.numeric(if (is.data.frame(hse)) hse$se else hse)
+        if (length(hsev) == 1L) {
+          hsev <- rep(hsev, nrow(h_df))
+        }
+        if (length(hsev) == nrow(h_df)) {
+          # Surface the RAW asymptotic bounds and annotate when they cross [0, 1];
+          # do not silently clamp (plotting standard 24 §2; mirrors the engine's
+          # boundary-throw discipline). A whisker crossing 0/1 is the honest signal
+          # that h^2 is imprecise.
+          h_df$lo <- h_df$estimate - 1.96 * hsev
+          h_df$hi <- h_df$estimate + 1.96 * hsev
+          experimental <- experimental || any(is.finite(hsev))
+        }
+      }
+      boundary <- any(is.finite(h_df$lo) & (h_df$lo < 0 | h_df$hi > 1))
+      df <- rbind(vc_df, h_df)
+    } else {
+      boundary <- FALSE
+      df <- vc_df
+    }
   }
 
   sub <- if (experimental) {
