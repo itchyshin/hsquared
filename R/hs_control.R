@@ -28,8 +28,10 @@
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
 #'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"genomic"`,
-#'   `"single_step"`, `"snp_blup"`, `"multivariate"`, and `"nongaussian"`,
-#'   described below. `marginal` applies only to `target = "nongaussian"`.
+#'   `"single_step"`, `"single_step_construct"`,
+#'   `"metafounder_single_step"`, `"snp_blup"`, `"multivariate"`, and
+#'   `"nongaussian"`, described below. `marginal` applies only to
+#'   `target = "nongaussian"`.
 #'   With `engine = "julia"` and no `target`, the bridge defaults to
 #'   `target = "fit_animal_model"`: it surfaces the Julia-owned
 #'   `HSquared.fit_animal_model()` dense NelderMead optimizer, honouring the
@@ -74,6 +76,14 @@
 #'   genomic relationship), and `single_step(1 | id, Hinv = Hinv)` (a single-step
 #'   relationship inverse). All surface `HSquared.fit_ai_reml()`. They are REML
 #'   only and not the default.
+#'   `target = "single_step_construct"` fits
+#'   `single_step(1 | id, pedigree = ped, markers = M)` after the engine builds
+#'   `H^-1` from the pedigree and genotyped-subset markers. `target =
+#'   "metafounder_single_step"` fits
+#'   `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma =
+#'   Gamma)` through the Julia-owned supplied-`Gamma` `H^Gamma` path. Both are
+#'   experimental, opt-in, dense/validation-scale, REML-only, and not
+#'   comparator-validated; `Gamma` is supplied, not estimated.
 #'   `target = "snp_blup"` is an experimental, opt-in path for the SNP-BLUP /
 #'   RR-BLUP marker-effect model. It requires `genomic(1 | id, markers = M)` (a
 #'   raw marker matrix) and estimates per-marker effects (`marker_effects()`) and

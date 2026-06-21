@@ -494,13 +494,24 @@ hsquared <- function(
           call. = FALSE
         )
       }
-      stop(
-        "`target = \"metafounder_single_step\"` is a contract-only payload ",
-        "gate in this version: the parser and bridge payload validate ",
-        "`group`, supplied `Gamma`, marker ordering, and `genotyped_rows`, ",
-        "but the live Julia fit is not wired yet.",
-        call. = FALSE
-      )
+      return(hs_fit_julia_metafounder_single_step_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          100L
+        )
+      ))
     }
 
     if (target %in% c("genomic", "single_step")) {

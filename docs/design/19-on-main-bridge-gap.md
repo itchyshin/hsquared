@@ -17,10 +17,12 @@ a twin result-payload change.
 > single-step construction gap in row 44 is closed on the R side:
 > `single_step(1 | id, pedigree = ped, markers = M)` + `target =
 > "single_step_construct"` now surfaces `fit_single_step_reml()` experimentally.
-> The next R-side gap is metafounder / single-step `H^Gamma`: the Julia primitives
-> exist and were banked in HSquared.jl PR #128. R now has a contract-only
-> `single_step(..., group =, Gamma =)` parser/payload gate, but no live fit bridge
-> or extractor contract yet.
+> The current R-side gap is now animal-only metafounder plus validation depth for
+> single-step `H^Gamma`: the Julia primitives
+> exist and were banked in HSquared.jl PR #128. R now fits the experimental
+> supplied-`Gamma` `single_step(..., group =, Gamma =)` bridge through
+> `target = "metafounder_single_step"`; animal-only `metafounder()`,
+> external validation, and metafounder-specific extractors remain open.
 
 > **The twin is actively reshaping `main`** (it advanced abf777d → c4fb442 → 4e8ffde within one
 > hour, and closed all 19 open PRs via the trunk merge PR #36). Pin each WS2 slice to a known
@@ -50,7 +52,7 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 | `repeatability_interval` | V3-REPEAT-REML · partial | repeatability target, no CI | **Yes (Class A)** | same, on the repeatability target — #12 |
 | `prediction_error_variance(...; method=:selinv)`, `reliability` | V1-SELINV-PEV · partial (engine: selinv==dense PEV-diagonal + reliability parity to rtol 1e-8 on a **110-animal 4-generation pedigree**, nfixed=2, off-diag Ainv nnz=550 — `HSquared.jl` test/runtests.jl, gate #81) | standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson MME attaches dense validation fields unconditionally | **Done for univariate/Henderson; MV/prod sparse still gated** | #21 remains open for multivariate per-trait PEV/reliability, production sparse strategy, and comparator validation. Engine has 110-animal correctness evidence; no production-sparse or comparator claim. |
 | `fit_gblup_reml` / `fit_snp_blup_reml` | V2-GREML · partial | supplied-variance fitters only | **Yes (Class A)** | route genomic/snp_blup to the `_reml` variant when variances absent — #13 |
-| `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · partial | **verified correct (#14)**: supplied `Hinv` -> `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP; construction path now surfaced with `target = "single_step_construct"` | **Done for ordinary single-step construction**; `H^Gamma` parser/payload gate done, live fit still pending | R surfaces `single_step(1 \| id, pedigree = ped, markers = M)` experimentally; live tests cover marker-row reorder invariance, ungenotyped animal GEBVs, ridge handling, and `hs_data()` shorthand. `single_step(..., group =, Gamma =)` validates/builds the future `metafounder_single_step` payload but deliberately errors before fitting. |
+| `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · partial | **verified correct (#14)**: supplied `Hinv` -> `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP; construction path now surfaced with `target = "single_step_construct"` | **Done for ordinary single-step construction and supplied-Gamma `H^Gamma` live bridge** | R surfaces `single_step(1 \| id, pedigree = ped, markers = M)` experimentally; live tests cover marker-row reorder invariance, ungenotyped animal GEBVs, ridge handling, and `hs_data()` shorthand. `single_step(..., group =, Gamma =)` now fits through `target = "metafounder_single_step"` with skip-guarded `Gamma = 0` reduction and nonzero-`Gamma` sensitivity probes. |
 | `factor_analytic_covariance` + `genetic_structure`/`genetic_loadings`/`genetic_uniqueness` | V4-FA · partial (calibration failed 8/10, 9/10); V4-BRIDGE · partial (diagonal payload `ad6006d`) | bridge accepts `unstructured` + `diagonal` (rotation-free); rejects `lowrank`/`fa`; reserved loading extractors error | **Diagonal done (Class A); lowrank/fa No yet (Class B)** | `diagonal` shipped + LRT fixture-verified (#61); loadings/uniqueness still need the result payload to expose them (twin #42) + failing calibration — #22 |
 | `single_marker_scan`/`mixed_model_marker_scan`/`loco_*`, `gwas_table`/`qtl_table`/`eqtl_table` | V5-MARKER-* · partial | reserved extractors error | **No yet (Class B)** | needs the twin's post-fit scan payload (#45) + calibrated thresholds — #23 |
 | `fit_laplace_reml`, `laplace_reml_interval`, `NonGaussianFit` | V6-LAPLACE · partial (committed `d7c7ffa`) | R parser rejects non-Gaussian `family`, error now cites the V6-LAPLACE gated foundation | **No yet (Class B)** | committed row exists, but no exported result-payload NamedTuple / `MarginalMethod` dispatch yet; needs `NonGaussianFit` result shape + R `family=` acceptance (twin #44) — #18 |

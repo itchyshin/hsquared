@@ -532,7 +532,7 @@ test_that("single_step construction errors direct to the on-ramps", {
   )
 })
 
-test_that("metafounder_single_step target is recognized but not fit-wired", {
+test_that("metafounder_single_step target requires the H^Gamma formula branch", {
   expect_equal(
     hsquared:::hs_validate_julia_target("metafounder_single_step"),
     "metafounder_single_step"
@@ -549,25 +549,6 @@ test_that("metafounder_single_step target is recognized but not fit-wired", {
   mf_group <- c(c1 = "", s = "base_s", d = "base_d")
   Gamma <- diag(2)
   dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))
-
-  expect_error(
-    hsquared(
-      y ~ single_step(
-        1 | id,
-        pedigree = ped,
-        markers = m,
-        group = mf_group,
-        Gamma = Gamma
-      ),
-      data = dat,
-      control = hs_control(
-        engine = "julia",
-        engine_control = list(target = "metafounder_single_step")
-      )
-    ),
-    "contract-only payload gate",
-    fixed = TRUE
-  )
 
   expect_error(
     hsquared(
@@ -604,13 +585,58 @@ test_that("metafounder_single_step target is recognized but not fit-wired", {
 
 # --- live tests (skip-guarded on the local HSquared.jl bridge) ---------------
 
-hs_ss_construct_fit <- function(ped, dat, markers, ridge = 0.01) {
+hs_ss_construct_fit <- function(
+  ped,
+  dat,
+  markers,
+  ridge = 0.01,
+  iterations = 100L
+) {
   hsquared(
     y ~ single_step(1 | id, pedigree = ped, markers = markers, ridge = ridge),
     data = dat,
     control = hs_control(
       engine = "julia",
-      engine_control = list(target = "single_step_construct")
+      engine_control = list(
+        target = "single_step_construct",
+        iterations = iterations
+      )
+    )
+  )
+}
+
+hs_mf_group <- function(ped, label = "base") {
+  out <- rep("", nrow(ped))
+  out[is.na(ped$sire) | is.na(ped$dam)] <- label
+  names(out) <- as.character(ped$id)
+  out
+}
+
+hs_mf_single_step_fit <- function(
+  ped,
+  dat,
+  markers,
+  group,
+  Gamma,
+  ridge = 0.01,
+  iterations = 100L
+) {
+  hsquared(
+    y ~ single_step(
+      1 | id,
+      pedigree = ped,
+      markers = markers,
+      group = group,
+      Gamma = Gamma,
+      ridge = ridge
+    ),
+    data = dat,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "metafounder_single_step",
+        iterations = iterations
+      )
     )
   )
 }
@@ -654,6 +680,127 @@ test_that("single_step construction is invariant to marker row order [live]", {
   ba <- breeding_values(fit_a)
   bb <- breeding_values(fit_b)
   expect_equal(ba$value[order(ba$id)], bb$value[order(bb$id)], tolerance = 1e-8)
+})
+
+test_that("metafounder single-step Gamma = 0 reduces to ordinary construction [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live metafounder single-step test."
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+
+  ped <- hs_sim_pedigree(n_founder = 10, n_per_gen = 20, n_gen = 2, seed = 25)
+  dat <- hs_sim_genedrop_phenotypes(
+    ped,
+    sigma_a2 = 0.4,
+    sigma_e2 = 0.6,
+    seed = 25
+  )
+  geno <- utils::tail(ped$id, 30L)
+  set.seed(25)
+  markers <- matrix(
+    stats::rbinom(length(geno) * 60L, 2L, 0.3),
+    nrow = length(geno),
+    dimnames = list(geno, paste0("snp", seq_len(60L)))
+  )
+  group <- hs_mf_group(ped)
+  Gamma0 <- matrix(0, nrow = 1, dimnames = list("base", "base"))
+
+  ordinary <- hs_ss_construct_fit(
+    ped,
+    dat,
+    markers,
+    ridge = 0.05,
+    iterations = 500L
+  )
+  hgamma0 <- hs_mf_single_step_fit(
+    ped,
+    dat,
+    markers,
+    group = group,
+    Gamma = Gamma0,
+    ridge = 0.05,
+    iterations = 500L
+  )
+
+  expect_equal(hgamma0$spec$target, "metafounder_single_step")
+  expect_equal(
+    fit_diagnostics(hgamma0)$value[
+      fit_diagnostics(hgamma0)$metric == "gamma_source"
+    ],
+    "supplied"
+  )
+  expect_equal(
+    variance_components(hgamma0)$estimate,
+    variance_components(ordinary)$estimate,
+    tolerance = 1e-6
+  )
+  expect_equal(hgamma0$result$converged, ordinary$result$converged)
+  expect_equal(hgamma0$result$loglik, ordinary$result$loglik, tolerance = 1e-6)
+  bv_hg <- breeding_values(hgamma0)
+  bv_ord <- breeding_values(ordinary)
+  expect_equal(bv_hg$id[order(bv_hg$id)], bv_ord$id[order(bv_ord$id)])
+  expect_equal(
+    bv_hg$value[order(bv_hg$id)],
+    bv_ord$value[order(bv_ord$id)],
+    tolerance = 1e-6
+  )
+})
+
+test_that("metafounder single-step nonzero Gamma changes predictions [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live metafounder single-step test."
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+
+  ped <- hs_sim_pedigree(n_founder = 10, n_per_gen = 20, n_gen = 2, seed = 26)
+  dat <- hs_sim_genedrop_phenotypes(
+    ped,
+    sigma_a2 = 0.4,
+    sigma_e2 = 0.6,
+    seed = 26
+  )
+  geno <- utils::tail(ped$id, 30L)
+  set.seed(26)
+  markers <- matrix(
+    stats::rbinom(length(geno) * 60L, 2L, 0.3),
+    nrow = length(geno),
+    dimnames = list(geno, paste0("snp", seq_len(60L)))
+  )
+  group <- hs_mf_group(ped)
+  Gamma0 <- matrix(0, nrow = 1, dimnames = list("base", "base"))
+  Gamma <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+
+  hgamma0 <- hs_mf_single_step_fit(
+    ped,
+    dat,
+    markers,
+    group = group,
+    Gamma = Gamma0,
+    ridge = 0.05,
+    iterations = 500L
+  )
+  hgamma <- hs_mf_single_step_fit(
+    ped,
+    dat,
+    markers,
+    group = group,
+    Gamma = Gamma,
+    ridge = 0.05,
+    iterations = 500L
+  )
+
+  bv0 <- breeding_values(hgamma0)
+  bvg <- breeding_values(hgamma)
+  expect_setequal(bvg$id, as.character(ped$id))
+  expect_equal(nrow(bvg), nrow(ped))
+  expect_true(all(is.finite(bvg$value)))
+  merged <- merge(bv0, bvg, by = "id", suffixes = c("_zero", "_gamma"))
+  expect_equal(nrow(merged), nrow(ped))
+  expect_gt(mean(abs(merged$value_zero - merged$value_gamma)), 1e-6)
 })
 
 test_that("single_step construction labels + covers all pedigree animals [live]", {

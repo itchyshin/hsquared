@@ -148,7 +148,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   expect_true(any(
     grepl("Gamma = Gamma", status$term, fixed = TRUE) &
       status$syntax_status == "parsed" &
-      status$fitting_status == "not available (contract-only payload)"
+      status$fitting_status == "fitted (opt-in supplied-Gamma H^Gamma)"
   ))
   metafounder_row <- status[
     grepl("metafounder", status$term, fixed = TRUE),

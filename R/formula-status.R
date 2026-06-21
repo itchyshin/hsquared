@@ -134,7 +134,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
-    "not available (contract-only payload)",
+    "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
     rep("not available", 4L)
@@ -211,11 +211,11 @@ hs_formula_status_behavior <- function() {
       "H^-1 from pedigree and genotyped-subset markers at validation scale."
     ),
     paste(
-      "Parsed as a contract-only payload gate for supplied-Gamma single-step",
-      "H^Gamma; validates ID-keyed metafounder `group`, supplied symmetric",
-      "positive-semidefinite `Gamma`, marker ordering, and `genotyped_rows`.",
-      "The live `target = \"metafounder_single_step\"` fit is planned, not",
-      "wired."
+      "Primary single-step effect of the opt-in, experimental supplied-Gamma",
+      "H^Gamma path; validates ID-keyed metafounder `group`, supplied",
+      "symmetric positive-semidefinite `Gamma`, marker ordering, and",
+      "`genotyped_rows`, then fits with engine = \"julia\", target =",
+      "\"metafounder_single_step\". `Gamma` is supplied, not estimated."
     ),
     rep(inert_marker_text, 3L),
     paste(
