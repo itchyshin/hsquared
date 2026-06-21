@@ -1,7 +1,9 @@
 # Multivariate Comparator Plan
 
-Status: design and scout evidence plus one Mrode-style published target. This
-note does not promote the multivariate row beyond `partial`.
+Status: design and scout evidence, one Mrode-style published target, one
+full-unstructured `sommer` REML comparator, and one `MCMCglmm` Bayesian
+agreement probe. This note does not promote the multivariate row beyond
+`partial`.
 
 ## Purpose
 
@@ -19,6 +21,9 @@ which tools are only manual or approximate gates.
   Julia `fit_multivariate_reml` targets.
 - The R lane records a 100-replicate cold-start known-truth recovery study and a
   full-unstructured `sommer` comparator run in `.Rbuildignore`d scripts.
+- The R lane records a `MCMCglmm` Bayesian agreement probe in an
+  `.Rbuildignore`d script; it supports qualitative agreement but is not a
+  same-estimand REML comparator.
 - A pure-R CI anchor now reproduces Mrode Example 5.1 multiple-trait
   supplied-G0/R0 BLUP/MME fixed effects and animal BLUPs.
 - These are not ASReml/BLUPF90 parity and do not promote multivariate REML to
@@ -32,6 +37,9 @@ which tools are only manual or approximate gates.
   `vsm(dsm(trait), ism(units))`.
 - The existing hsquared univariate validation fixture already uses optional
   `sommer::mmes()` as a skip-safe comparator pattern.
+- Local `MCMCglmm` 2.36 package fit on the shared Phase 4 fixture: multivariate
+  Gaussian response with `us(trait):animal` and `us(trait):units`, pedigree
+  supplied to `inverseA()` via `MCMCglmm()`, and weak inverse-Wishart priors.
 - Local `drmTMB` comparator design notes emphasize same-scale matching,
   optional comparator dependencies, and explicit "closest but not identical"
   rows when no faithful comparator exists.
@@ -56,12 +64,13 @@ which tools are only manual or approximate gates.
 | --- | --- | --- | --- | --- |
 | 0 | Shared Julia fixture | Current R/Julia parity check for payload and extractor shape | ordinary CI | Internal parity only |
 | 1 | Mrode Example 5.1 published target | CI anchor for supplied-G0/R0 multiple-trait BLUP/MME fixed effects and animal BLUPs | ordinary CI | Published target only; not VC estimation |
-| 2 | `sommer` diagonal residual multivariate model | Optional external check for genetic covariance and residual variances | skip-safe if installed | Partial comparator; not full residual covariance |
-| 3 | `sommer` known-truth recovery | Deterministic multi-seed recovery for G0/R0-compatible subset | optional or non-CRAN | Recovery evidence only after thresholds are signed off |
-| 4 | ASReml-R | Licensed external comparator for full unstructured multivariate animal models | manual | Record version, script, output, and license boundary |
-| 5 | BLUPF90/AIREMLF90 | External REML animal-model comparator using parameter files | manual | Record executable, parameter file, output, and scale mapping |
-| 6 | DMU/WOMBAT | Later animal-breeding software comparators | manual | Useful only when scripts are reproducible locally |
-| 7 | `MCMCglmm` | Bayesian qualitative cross-check | optional/manual | Not a REML equality comparator |
+| 2 | `sommer` diagonal residual multivariate model | Optional in-suite external check for genetic covariance and residual variances | skip-safe if installed | Partial comparator; not full residual covariance |
+| 3 | `sommer::mmer` full-unstructured residual model | Reproducible external REML comparator for the shared fixture | manual/data-raw | Recorded in `data-raw/multivariate-comparator-study.R`; one independent REML comparator leg |
+| 4 | `sommer` known-truth recovery | Deterministic multi-seed recovery for G0/R0-compatible subset | optional or non-CRAN | Recovery evidence only after thresholds are signed off |
+| 5 | ASReml-R | Licensed external comparator for full unstructured multivariate animal models | manual | Record version, script, output, and license boundary |
+| 6 | BLUPF90/AIREMLF90 | External REML animal-model comparator using parameter files | manual | Record executable, parameter file, output, and scale mapping |
+| 7 | DMU/WOMBAT | Later animal-breeding software comparators | manual | Useful only when scripts are reproducible locally |
+| 8 | `MCMCglmm` | Bayesian agreement probe | optional/manual | Recorded in `data-raw/multivariate-mcmcglmm-agreement-study.R`; not a REML equality comparator |
 
 ## Same-Estimand Contract
 
@@ -83,7 +92,7 @@ covariance.
 ## Local Pilot Results
 
 On 2026-06-21 the local machine has `sommer` 4.4.3 and `MCMCglmm` 2.36
-installed; `nadiv`, `pedigreemm`, `asreml`, `AGHmatrix`, `enhancer`, and `JWAS`
+installed; `nadiv`, `asreml`, `pedigreemm`, `enhancer`, `AGHmatrix`, and `JWAS`
 are not installed. ASReml-R is not installed, and BLUPF90, AIREMLF90, DMU, and
 WOMBAT executables are not on `PATH`.
 
@@ -121,8 +130,52 @@ Two important limits were observed:
 - Sommer's wide `cbind(trait1, trait2)` route did not accept the same random and
   residual structure under the installed API.
 
-Therefore the first `sommer` comparator should be a diagonal-residual partial
-comparator unless a stable full-residual sommer specification is found.
+This diagonal-residual route remains useful as an ordinary optional test because
+it is quick and stable. A later classic `sommer::mmer` wide-response route did
+fit the full unstructured residual model and is recorded in
+`data-raw/multivariate-comparator-study.R`: `G0`/`R0`/beta/h2/EBV agree with the
+serialized Julia target to <= 8e-5 while recovering the off-diagonal residual
+covariance.
+
+## MCMCglmm Bayesian Agreement Probe
+
+`data-raw/multivariate-mcmcglmm-agreement-study.R` runs the same shared Phase 4
+fixture through `MCMCglmm` with:
+
+```r
+MCMCglmm::MCMCglmm(
+  cbind(trait1, trait2) ~ trait - 1 + trait:x,
+  random = ~ us(trait):animal,
+  rcov = ~ us(trait):units,
+  family = c("gaussian", "gaussian"),
+  pedigree = ped_mcmc,
+  data = phe,
+  prior = list(
+    G = list(G1 = list(V = diag(2) * 0.02, nu = 3)),
+    R = list(V = diag(2) * 0.02, nu = 3)
+  ),
+  nitt = 50000,
+  burnin = 10000,
+  thin = 40,
+  pr = TRUE
+)
+```
+
+Recorded 2026-06-21 result:
+
+- 1000 posterior samples; minimum VCV effective sample size 777.4 and minimum
+  solution effective sample size 867.4.
+- The serialized Julia target is inside the 95% HPD intervals for all 8
+  covariance elements, all 4 fixed effects, and both per-trait h2 values.
+- Posterior-mean h2 is 0.6771 / 0.7236 versus target 0.6964 / 0.7489.
+- Posterior-mean EBV correlations with the target are > 0.9997 for both traits.
+- Posterior-mean covariance differences (`max |dG0| = 0.0385`,
+  `max |dR0| = 0.00647`) are reported as MCMC posterior-summary differences,
+  not REML equality tolerances.
+
+Claim boundary: this leg is useful independent Bayesian agreement evidence, but
+it is not a same-estimand REML optimizer comparison and does not clear the
+second-comparator blocker.
 
 ## Published Mrode Target
 
@@ -198,4 +251,6 @@ recorded. The useful remaining routes are:
    outputs.
 
 Until then, public docs may say the multivariate path is opt-in and partial,
-with internal R/Julia parity plus a planned comparator ladder.
+with internal R/Julia parity, recovery evidence, `sommer` REML comparator
+evidence, the `MCMCglmm` Bayesian agreement probe, and a still-open
+same-estimand comparator ladder.

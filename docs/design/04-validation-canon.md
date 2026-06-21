@@ -97,9 +97,23 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   accuracy 0.79/0.74. The full-unstructured `sommer` run agrees with the
   serialized Julia target to <= 8e-5 for G0/R0/beta/h2/EBV and recovers the
   off-diagonal residual covariance that the in-suite diagonal-residual `sommer`
-  check cannot test. The Mrode Example 5.1 anchor is a published supplied-
+  check cannot test. A Bayesian `MCMCglmm` agreement probe
+  (`data-raw/multivariate-mcmcglmm-agreement-study.R`) puts the serialized Julia
+  target inside 95% HPD intervals for all 8 covariance elements, all 4 fixed
+  effects, and both per-trait h2 values, with posterior-mean EBV correlations
+  above 0.9997. Because `MCMCglmm` is Bayesian/MCMC, this leg is agreement
+  evidence only and not a same-estimand REML comparator. The Mrode Example 5.1
+  anchor is a published supplied-
   covariance BLUP/MME target, not variance-component estimation. This is
   evidence toward the twin-owned V4-MV-REML covered gate, not coverage by
   itself. Promotion still needs the broader or re-declared recovery gate and one
   more independent same-estimand comparator such as ASReml, BLUPF90/AIREMLF90,
   JWAS/equivalent, or another accepted tool.
+- Multivariate MCMCglmm Bayesian agreement probe: an opt-in `data-raw` script
+  fits the same two-trait animal-model fixture with `MCMCglmm` using an
+  unstructured animal covariance and unstructured residual covariance. With
+  seed 20260621, 50,000 iterations, 10,000 burn-in, and thin 40, the serialized
+  HSquared.jl target is inside the 95% HPD interval for all eight covariance
+  elements, all four fixed effects, and both per-trait h2 values; posterior
+  mean EBV correlations are > 0.9997. This is Bayesian agreement evidence only,
+  not a same-estimand REML comparator and not a covered-status promotion.

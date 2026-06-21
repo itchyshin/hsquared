@@ -281,6 +281,16 @@ test_that("validation_status separates evidence from planned validation", {
     fixed = TRUE
   )
   expect_match(
+    multivariate_row$evidence,
+    "Bayesian MCMCglmm agreement probe",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$evidence,
+    "explicitly not a same-estimand REML comparator",
+    fixed = TRUE
+  )
+  expect_match(
     multivariate_row$claim_boundary,
     "covered promotion remains twin-gated",
     fixed = TRUE
@@ -293,6 +303,11 @@ test_that("validation_status separates evidence from planned validation", {
   expect_match(
     multivariate_row$claim_boundary,
     "another independent same-estimand comparator",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "MCMCglmm leg is not same-estimand REML parity",
     fixed = TRUE
   )
   expect_match(

@@ -19,7 +19,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 7 | Validation canon | 1 | validation | partial | mirrors HSquared.jl#7/#41 |
 | 8 | R data container: live HSData marshalling parity | 1 | r-package | partial | base `hs_data()` done; mirrors HSquared.jl#8 |
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | planned | innovation children #17/#18/#19/#20 |
-| 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); R evidence legs now include cold-start recovery, full-unstructured `sommer`, and Mrode Example 5.1 supplied-G0/R0 BLUP/MME; twin #41/#49 still own promotion gates |
+| 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); R evidence legs now include cold-start recovery, full-unstructured `sommer`, Mrode Example 5.1 supplied-G0/R0 BLUP/MME, and a Bayesian `MCMCglmm` agreement probe; twin #41/#49 still own promotion gates |
 | 11 | Bridge: surface `heritability_interval` (experimental CI) | 1 | bridge | partial · **DONE** | V1-HERIT-CI (partial); shipped `56f8fb5` (experimental extractor) |
 | 12 | Bridge: surface `repeatability_interval` | 2 | bridge | partial · **DONE** | V3-REPEAT-REML (partial); shipped `e66e648` (experimental) |
 | 13 | Bridge: REML genomic variants — if on main | 2 | bridge | partial · **DEFERRED** | V2-GREML; ultracode honesty_ok=false + regression — needs V2-SNPBLUP row update + existing-test fix first |
@@ -68,7 +68,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | Marker scans | #23 | #45 (+ #39) | Phase 5 stack on main + thresholds |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
 | 03-engine-contract reword | #16 (R-side eigen_G) | #38 | twin doc edit |
-| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + published/Mrode-style target + second independent comparator |
+| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity |
 | HSData marshalling | #8 | #8 | live bridge marshalling |
 
 ## WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
@@ -92,7 +92,7 @@ rows `partial`) → R surfaces stay experimental/partial.
 | --- | --- | --- | --- |
 | 1 | Validation depth (v0.1 unimpeachable) | #7 epic + ✅#31 (sommer/pedigreemm benchmark), ✅#33 (comparator-policy doc), ✅#32 (Mrode 3.2 sire anchor) — **all done** | R-ownable |
 | 2 | Applied-user experience + figures | #27 epic + ✅#28 (summary CI/SEs), ✅#30 (plot.hsquared_fit), ✅#29 (gryphon worked vignette) — **all done** | R-ownable |
-| 3 | Multivariate → covered | #10 + ✅#26 (covariance SEs) + ✅#34 (t≥2 recovery harness) + R full-unstructured `sommer` comparator evidence — **R evidence leg recorded, not coverage**; promotion still needs broader/redeclared recovery gate, published/Mrode-style target, and second independent comparator via HSquared.jl#41/#49 | R evidence + twin gate |
+| 3 | Multivariate → covered | #10 + ✅#26 (covariance SEs) + ✅#34 (t≥2 recovery harness) + R full-unstructured `sommer` REML evidence + Mrode Example 5.1 supplied-covariance target + `MCMCglmm` Bayesian agreement — **R evidence recorded, not coverage**; promotion still needs broader/redeclared recovery gate and a second independent same-estimand comparator via HSquared.jl#41/#49 | R evidence + twin gate |
 | 4 | Factor-analytic unblock | #22 mirror; twin HSquared.jl#37 (calibration) + #42 (payload) | twin-led, R-prepared |
 
 See `docs/dev-log/coordination-board.md` and the program plan for the full workstream design.

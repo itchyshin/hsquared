@@ -30,9 +30,11 @@ is policy/design, not a capability claim. The live source of truth for status is
 | **`sommer`** | two-sided (REML VC + h²) | gryphon published-REML agreement within the signed-off band (twin `V1-COMPARATORS`; R "external published-REML recovery" row, `covered`) | `test-validation-fixtures.R` |
 | **`pedigreemm`** | **one-sided floor only** | hsquared REML logLik ≥ pedigreemm's on a *replicated* design (it cannot fit the saturated one-record Mrode design; its optimiser lands off-optimum on pedigree models) | `test-validation-fixtures.R` |
 | **`enhancer`** | data source | ships the gryphon `DT_gryphon` / `A_gryphon` teaching dataset for the published anchor | fixtures |
-| **`sommer` (multivariate)** | partial two-sided | diagonal-residual multivariate target: G0, diag(R0), per-trait h² within `5e-4`; does NOT validate off-diagonal R0 | `test-multivariate.R` |
+| **`sommer` (multivariate diagonal)** | partial two-sided | diagonal-residual multivariate target: G0, diag(R0), per-trait h² within `5e-4`; does NOT validate off-diagonal R0 | `test-multivariate.R` |
+| **`sommer::mmer` (multivariate full residual)** | two-sided REML evidence | full-unstructured residual Phase 4 fixture: G0/R0/beta/h²/EBV within `1e-4`; validates off-diagonal R0 for this fixture | `data-raw/multivariate-comparator-study.R` |
 | **ASReml-R / BLUPF90** | manual, future | dry-run-safe comparator-script templates only; no committed run evidence | `inst/comparator-scripts/` |
-| **MCMCglmm / DMU / WOMBAT** | future | not yet wired; reserved for promotion of partial rows | — |
+| **MCMCglmm** | Bayesian agreement only | target inside 95% HPD intervals for all multivariate fixture covariance/fixed-effect/h² targets; not same-estimand REML parity | `data-raw/multivariate-mcmcglmm-agreement-study.R` |
+| **DMU / WOMBAT** | future | not yet wired; reserved for promotion of partial rows | — |
 
 ## Tolerance bands (maintainer-signed-off, 2026-06-13)
 
@@ -45,6 +47,10 @@ From `docs/design/01-v0.1-contract.md` (Gate decisions):
   the engine side.
 - **pedigreemm floor:** `logLik(hsquared) ≥ logLik(pedigreemm) − 1e-6`. A floor, not a band.
 - **Multivariate (sommer, diagonal residual):** `5e-4` on G0, diag(R0), and diagonal-target h².
+- **Multivariate (sommer::mmer, full residual):** recorded agreement to <= `8e-5`
+  on G0/R0/beta/h²/EBV for the shared Phase 4 fixture; use `1e-4` as the
+  policy band for this fixture until the twin declares a broader comparator
+  threshold.
 - **Known-truth DGP (not a comparator, the recovery study):** ≥ 100 replicates, fixed seed; `0`
   inside bias ± 2·MCSE for σ²a, σ²e, h² (|relative h² bias| ≤ 0.05 backstop); mean cor(EBV, true BV)
   ≥ 0.5 at h² = 0.4.
@@ -61,10 +67,14 @@ A capability row moves from `partial`/`planned` to `covered` only when:
    skip-guard documented);
 4. the public claim matches the row, and Rose records a clean audit.
 
-Multivariate (`V4-MULTIVARIATE` / `V4-MV-REML`), factor-analytic (`V4-FA`), genomic
-(`V2-*`), and the standard-QG REML rows (`V3-*-REML`) remain `partial` precisely because they lack a
-*passing* two-sided comparator or known-truth recovery; the harness exists, the gate does not yet
-pass. See `docs/dev-log/issue-map.md` for the open gates.
+Multivariate (`V4-MULTIVARIATE` / `V4-MV-REML`) remains `partial` despite the
+recorded recovery, one full-residual `sommer` REML comparator, Mrode supplied-
+covariance anchor, and `MCMCglmm` Bayesian agreement probe because promotion is
+twin-gated and still needs the recovery gate accepted/broadened plus another
+independent same-estimand comparator beyond `sommer`. Factor-analytic (`V4-FA`),
+genomic (`V2-*`), and the standard-QG REML rows (`V3-*-REML`) likewise remain
+`partial` until their row-specific gates pass. See `docs/dev-log/issue-map.md`
+for the open gates.
 
 ## See also
 
