@@ -3,6 +3,26 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Julia #38 issue-map sync
+
+- Scope: coordination docs only. Refreshed `docs/dev-log/issue-map.md` after
+  Julia-lane sync reported HSquared.jl PR #133 merged at `4526481`, closing
+  HSquared.jl issue #38 and replacing the stale `250-animal` /
+  `ratio ~0.99` AI-matrix wording in the Julia engine contract with the
+  committed finite-difference REML Hessian gate (`rtol = 0.12`).
+- Live check:
+  `gh issue view 38 --repo itchyshin/HSquared.jl --json number,title,state,closedAt,url,labels`
+  returned `state = "CLOSED"`, `closedAt = "2026-06-21T18:12:50Z"`.
+- Claim boundary: R code and public capability status are unchanged. Historical
+  R dev-log notes may still mention the old wording as the problem statement;
+  the live selected issue map now treats #38 as banked.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "\\| 38 \\||03-engine-contract reword|Recently banked.*#38|4526481|250-animal" docs/dev-log/issue-map.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-julia-38-issue-map-sync.md`
+    confirms the live selected issue map no longer lists #38 as open; remaining
+    `250-animal` hits are historical notes or the explicit historical caveat.
+
 ## 2026-06-21 structured diagonal claims reconciliation
 
 - Scope: public-claim/status wording only. Reconciled the structured
