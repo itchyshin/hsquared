@@ -122,6 +122,12 @@ check-log evidence, an after-task report, and an updated claim boundary.
   the opt-in structured covariance recovery harness.
 - R lane next safe bite: keep eating the R-safe documentation/comparator runway
   while Julia owns structured covariance and recovery hardening.
+- Published multivariate Mrode target: added in the Mrode 5.1 anchor slice. A
+  pure-R CI test reproduces the published supplied-G0/R0 multiple-trait BLUP/MME
+  fixed effects and animal BLUPs. This closes the published/Mrode-style target
+  gap for supplied-covariance validation only; V4 remains `partial` and still
+  needs recovery-gate acceptance or broadening plus another independent
+  same-estimand comparator beyond `sommer`.
 
 ## Programme Board
 

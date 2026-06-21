@@ -246,13 +246,18 @@ test_that("validation_status separates evidence from planned validation", {
     fixed = TRUE
   )
   expect_match(
+    multivariate_row$evidence,
+    "published Mrode Example 5.1 multiple-trait supplied-G0/R0 BLUP/MME",
+    fixed = TRUE
+  )
+  expect_match(
     multivariate_row$claim_boundary,
     "covered promotion remains twin-gated",
     fixed = TRUE
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "published or Mrode-style multivariate target",
+    "published Mrode-style supplied-variance BLUP/MME anchor",
     fixed = TRUE
   )
   expect_match(

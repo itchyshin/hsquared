@@ -5403,3 +5403,30 @@ release".
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**. doc 24 updated (all-seven
   preparers). No engine edit.
 - CI (commit `f5e00b7`, breeding_values_plot_data consumer): pkgdown run `27892365616` **success**; pages green.
+
+## 2026-06-21 (Mrode Example 5.1 multivariate published target)
+
+- Added a CI-runnable pure-R Mrode Example 5.1 multiple-trait supplied-G0/R0
+  BLUP/MME anchor: `hs_mrode_example_5_1_multitrait_fixture()`,
+  `hs_solve_multivariate_henderson_mme_reference()`, and
+  `test-mrode-multivariate-anchor.R`. The reference solve reproduces the
+  published/reproduced fixed effects and animal BLUPs for pre-weaning and
+  post-weaning gain at the supplied `G0 = [[20, 18], [18, 40]]` and
+  `R0 = [[40, 11], [11, 30]]`.
+- Reconciled `validation_status()`, `capability-status.md`,
+  `validation-debt-register.md`, `04-validation-canon.md`,
+  `12-multivariate-comparator-plan.md`, `11-next-50-slices.md`, and
+  `issue-map.md`. Claim boundary stays explicit: this closes the
+  published/Mrode-style supplied-covariance target gap only; V4-MV-REML remains
+  `partial` and still needs recovery-gate acceptance or broadening plus another
+  independent same-estimand comparator beyond `sommer`.
+- Local tool availability refreshed: `sommer` 4.4.3 and `MCMCglmm` 2.36 are
+  installed; `nadiv`, `pedigreemm`, `asreml`, `AGHmatrix`, `enhancer`, and
+  `JWAS` are not installed; `asreml`, `airemlf90`, `blupf90`, `renumf90`,
+  `dmuai`, and `wombat` are not on `PATH`.
+- Checks: `air format .` clean; focused
+  `devtools::test(filter = "mrode-multivariate-anchor|phase0-api")`
+  **94/0/0/0**; full `devtools::test()` **1210 pass / 0 fail / 0 warn /
+  55 skip**; `pkgdown::check_pkgdown()` clean; `git diff --check` clean;
+  `_R_CHECK_FORCE_SUGGESTS_=false rcmdcheck::rcmdcheck(args = "--no-manual")`
+  **0/0/0**.

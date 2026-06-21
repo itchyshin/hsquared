@@ -593,6 +593,100 @@ hs_mrode_example_3_1_fixture <- function() {
   )
 }
 
+hs_mrode_example_5_1_multitrait_fixture <- function() {
+  ids <- as.character(1:8)
+  pedigree <- data.frame(
+    id = ids,
+    sire = c(NA, NA, NA, "1", "3", "1", "4", "3"),
+    dam = c(NA, NA, NA, NA, "2", "2", "5", "6"),
+    stringsAsFactors = FALSE
+  )
+  data <- data.frame(
+    animal = as.character(4:8),
+    sex = factor(c("1", "2", "2", "1", "1"), levels = c("1", "2")),
+    WWG = c(4.5, 2.9, 3.9, 3.5, 5.0),
+    PWG = c(6.8, 5.0, 6.8, 6.0, 7.5),
+    stringsAsFactors = FALSE
+  )
+
+  sire_idx <- match(pedigree$sire, ids)
+  dam_idx <- match(pedigree$dam, ids)
+  sire_idx[is.na(sire_idx)] <- 0L
+  dam_idx[is.na(dam_idx)] <- 0L
+  n <- length(ids)
+  A <- matrix(0, n, n)
+  for (i in seq_len(n)) {
+    s <- sire_idx[i]
+    d <- dam_idx[i]
+    A[i, i] <- 1 + if (s > 0L && d > 0L) 0.5 * A[s, d] else 0
+    for (j in seq_len(i - 1L)) {
+      aij <- 0
+      if (s > 0L) {
+        aij <- aij + 0.5 * A[j, s]
+      }
+      if (d > 0L) {
+        aij <- aij + 0.5 * A[j, d]
+      }
+      A[i, j] <- aij
+      A[j, i] <- aij
+    }
+  }
+  Ainv <- solve(A)
+  dimnames(Ainv) <- list(ids, ids)
+
+  list(
+    name = "mrode_example_5_1_multitrait_published",
+    description = paste(
+      "Mrode Example 5.1: published multiple-trait animal-model BLUP/MME",
+      "anchor for pre-weaning and post-weaning gain at supplied G0/R0."
+    ),
+    data = data,
+    pedigree = pedigree,
+    traits = c("WWG", "PWG"),
+    ids = ids,
+    G0 = matrix(c(20, 18, 18, 40), nrow = 2, byrow = TRUE),
+    R0 = matrix(c(40, 11, 11, 30), nrow = 2, byrow = TRUE),
+    expected = list(
+      Ainv = Ainv,
+      fixed_effects = c(
+        "trait1.sex1" = 4.3609,
+        "trait2.sex1" = 6.7999,
+        "trait1.sex2" = 3.3973,
+        "trait2.sex2" = 5.8803
+      ),
+      breeding_values = data.frame(
+        id = rep(ids, each = 2L),
+        trait = rep(c("WWG", "PWG"), times = length(ids)),
+        value = c(
+          0.15092,
+          0.27960,
+          -0.015393,
+          -0.0076101,
+          -0.078392,
+          -0.17034,
+          -0.010239,
+          -0.012671,
+          -0.27033,
+          -0.47783,
+          0.27581,
+          0.51724,
+          -0.31612,
+          -0.47898,
+          0.24376,
+          0.39196
+        ),
+        stringsAsFactors = FALSE
+      ),
+      source = paste(
+        "Mrode Example 5.1 as reproduced in the LUKE Multiple trait animal",
+        "model note (Mrode 1996, pp. 80-84) and Masuda's BLUPF90 tutorial",
+        "for Mrode (2014) Chapter 5 Example 5.1. This is a supplied-G0/R0",
+        "BLUP/MME target, not variance-component estimation."
+      )
+    )
+  )
+}
+
 # Mrode (2014) Example 3.2 (p.48): the SIRE model on the same WWG data as 3.1.
 # Random sires 1, 3, 4 are related via a sire numerator-relationship matrix
 # (sire 4's sire = sire 1, matching the 3.1 pedigree); sigma_s2 = 5, sigma_e2 =
@@ -754,6 +848,117 @@ hs_solve_henderson_mme_reference <- function(
       stringsAsFactors = FALSE
     ),
     heritability = sigma_a2 / (sigma_a2 + sigma_e2)
+  )
+}
+
+hs_solve_multivariate_henderson_mme_reference <- function(
+  Y,
+  sex,
+  animal,
+  ids,
+  Ainv,
+  G0,
+  R0,
+  traits = colnames(Y)
+) {
+  Y <- as.matrix(Y)
+  if (!is.numeric(Y)) {
+    stop("`Y` must be numeric.", call. = FALSE)
+  }
+  if (nrow(Y) != length(sex) || nrow(Y) != length(animal)) {
+    stop(
+      "`Y`, `sex`, and `animal` must have the same record count.",
+      call. = FALSE
+    )
+  }
+  if (!is.matrix(Ainv)) {
+    Ainv <- as.matrix(Ainv)
+  }
+  if (!is.matrix(G0)) {
+    G0 <- as.matrix(G0)
+  }
+  if (!is.matrix(R0)) {
+    R0 <- as.matrix(R0)
+  }
+  n_traits <- ncol(Y)
+  n_records <- nrow(Y)
+  n_animals <- length(ids)
+  if (!identical(dim(G0), c(n_traits, n_traits))) {
+    stop("`G0` must be a square trait covariance matrix.", call. = FALSE)
+  }
+  if (!identical(dim(R0), c(n_traits, n_traits))) {
+    stop("`R0` must be a square residual covariance matrix.", call. = FALSE)
+  }
+
+  sex <- factor(sex)
+  sex_levels <- levels(sex)
+  y <- as.numeric(t(Y))
+  X <- matrix(0, n_records * n_traits, length(sex_levels) * n_traits)
+  Z <- matrix(0, n_records * n_traits, n_animals * n_traits)
+
+  fixed_names <- character(length(sex_levels) * n_traits)
+  for (level_idx in seq_along(sex_levels)) {
+    for (trait_idx in seq_len(n_traits)) {
+      col <- (level_idx - 1L) * n_traits + trait_idx
+      fixed_names[[col]] <- paste0(
+        "trait",
+        trait_idx,
+        ".sex",
+        sex_levels[[level_idx]]
+      )
+    }
+  }
+  colnames(X) <- fixed_names
+
+  animal_match <- match(animal, ids)
+  if (anyNA(animal_match)) {
+    stop("All `animal` values must appear in `ids`.", call. = FALSE)
+  }
+  for (record_idx in seq_len(n_records)) {
+    sex_idx <- match(as.character(sex[[record_idx]]), sex_levels)
+    animal_idx <- animal_match[[record_idx]]
+    for (trait_idx in seq_len(n_traits)) {
+      row <- (record_idx - 1L) * n_traits + trait_idx
+      X[row, (sex_idx - 1L) * n_traits + trait_idx] <- 1
+      Z[row, (animal_idx - 1L) * n_traits + trait_idx] <- 1
+    }
+  }
+
+  residual_precision <- kronecker(diag(n_records), solve(R0))
+  relationship_precision <- kronecker(Ainv, solve(G0))
+  lhs <- rbind(
+    cbind(
+      crossprod(X, residual_precision %*% X),
+      crossprod(X, residual_precision %*% Z)
+    ),
+    cbind(
+      crossprod(Z, residual_precision %*% X),
+      crossprod(Z, residual_precision %*% Z) + relationship_precision
+    )
+  )
+  rhs <- c(
+    crossprod(X, residual_precision %*% y),
+    crossprod(Z, residual_precision %*% y)
+  )
+  solution <- as.numeric(solve(lhs, rhs))
+  nfixed <- ncol(X)
+  fixed <- solution[seq_len(nfixed)]
+  names(fixed) <- colnames(X)
+  animal_effects <- matrix(
+    solution[-seq_len(nfixed)],
+    ncol = n_traits,
+    byrow = TRUE,
+    dimnames = list(ids, traits)
+  )
+
+  list(
+    fixed_effects = fixed,
+    breeding_values = data.frame(
+      id = rep(ids, each = n_traits),
+      trait = rep(traits, times = n_animals),
+      value = as.numeric(t(animal_effects)),
+      stringsAsFactors = FALSE
+    )
   )
 }
 

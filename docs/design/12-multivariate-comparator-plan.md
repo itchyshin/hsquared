@@ -1,7 +1,7 @@
 # Multivariate Comparator Plan
 
-Status: design and scout evidence only. This note does not promote the
-multivariate row beyond `partial`.
+Status: design and scout evidence plus one Mrode-style published target. This
+note does not promote the multivariate row beyond `partial`.
 
 ## Purpose
 
@@ -17,8 +17,12 @@ which tools are only manual or approximate gates.
   `tests/testthat/fixtures/phase4_multitrait_parity/`.
 - The fixture checks payload ordering and R extractor shape against serialized
   Julia `fit_multivariate_reml` targets.
-- This is internal parity only. It is not an external comparator, not a
-  known-truth recovery study, and not ASReml/BLUPF90 parity.
+- The R lane records a 100-replicate cold-start known-truth recovery study and a
+  full-unstructured `sommer` comparator run in `.Rbuildignore`d scripts.
+- A pure-R CI anchor now reproduces Mrode Example 5.1 multiple-trait
+  supplied-G0/R0 BLUP/MME fixed effects and animal BLUPs.
+- These are not ASReml/BLUPF90 parity and do not promote multivariate REML to
+  covered.
 
 ## Sources Checked
 
@@ -37,6 +41,10 @@ which tools are only manual or approximate gates.
 - External comparator references:
   - `sommer`: https://cran.r-project.org/package=sommer
   - `sommer::mmes`: https://www.rdocumentation.org/packages/sommer/versions/4.4.4/topics/mmes
+  - LUKE Multiple trait animal model:
+    https://www.luke.fi/en/documents/multiple-trait-animal-modelpdf
+  - Masuda BLUPF90 Mrode Example 5.1:
+    https://masuday.github.io/blupf90_tutorial/mrode_c05ex051_mt_equal_design.html
   - ASReml multivariate cookbook:
     https://asreml.kb.vsni.co.uk/knowledge-base/cookbook-multivariate-analysis/
   - BLUPF90 / AIREMLF90 tutorial:
@@ -47,12 +55,13 @@ which tools are only manual or approximate gates.
 | Tier | Comparator | Role | CI status | Claim boundary |
 | --- | --- | --- | --- | --- |
 | 0 | Shared Julia fixture | Current R/Julia parity check for payload and extractor shape | ordinary CI | Internal parity only |
-| 1 | `sommer` diagonal residual multivariate model | Optional external check for genetic covariance and residual variances | skip-safe if installed | Partial comparator; not full residual covariance |
-| 2 | `sommer` known-truth recovery | Deterministic multi-seed recovery for G0/R0-compatible subset | optional or non-CRAN | Recovery evidence only after thresholds are signed off |
-| 3 | ASReml-R | Licensed external comparator for full unstructured multivariate animal models | manual | Record version, script, output, and license boundary |
-| 4 | BLUPF90/AIREMLF90 | External REML animal-model comparator using parameter files | manual | Record executable, parameter file, output, and scale mapping |
-| 5 | DMU/WOMBAT | Later animal-breeding software comparators | manual | Useful only when scripts are reproducible locally |
-| 6 | `MCMCglmm` | Bayesian qualitative cross-check | optional/manual | Not a REML equality comparator |
+| 1 | Mrode Example 5.1 published target | CI anchor for supplied-G0/R0 multiple-trait BLUP/MME fixed effects and animal BLUPs | ordinary CI | Published target only; not VC estimation |
+| 2 | `sommer` diagonal residual multivariate model | Optional external check for genetic covariance and residual variances | skip-safe if installed | Partial comparator; not full residual covariance |
+| 3 | `sommer` known-truth recovery | Deterministic multi-seed recovery for G0/R0-compatible subset | optional or non-CRAN | Recovery evidence only after thresholds are signed off |
+| 4 | ASReml-R | Licensed external comparator for full unstructured multivariate animal models | manual | Record version, script, output, and license boundary |
+| 5 | BLUPF90/AIREMLF90 | External REML animal-model comparator using parameter files | manual | Record executable, parameter file, output, and scale mapping |
+| 6 | DMU/WOMBAT | Later animal-breeding software comparators | manual | Useful only when scripts are reproducible locally |
+| 7 | `MCMCglmm` | Bayesian qualitative cross-check | optional/manual | Not a REML equality comparator |
 
 ## Same-Estimand Contract
 
@@ -73,9 +82,10 @@ covariance.
 
 ## Local Pilot Results
 
-The local machine has `sommer` 4.4.5, `nadiv` 2.18.0, `MCMCglmm` 2.36, and
-`pedigreemm` 0.3.5 installed. ASReml-R is not installed, and BLUPF90,
-AIREMLF90, DMU, and WOMBAT executables are not on `PATH`.
+On 2026-06-21 the local machine has `sommer` 4.4.3 and `MCMCglmm` 2.36
+installed; `nadiv`, `pedigreemm`, `asreml`, `AGHmatrix`, `enhancer`, and `JWAS`
+are not installed. ASReml-R is not installed, and BLUPF90, AIREMLF90, DMU, and
+WOMBAT executables are not on `PATH`.
 
 The current Phase 4 fixture can be reshaped into sommer's documented long
 format and fit with:
@@ -113,6 +123,21 @@ Two important limits were observed:
 
 Therefore the first `sommer` comparator should be a diagonal-residual partial
 comparator unless a stable full-residual sommer specification is found.
+
+## Published Mrode Target
+
+Mrode Example 5.1 is now pinned in ordinary CI by
+`tests/testthat/test-mrode-multivariate-anchor.R`. The fixture uses the
+published two-trait pre-weaning/post-weaning gain data, pedigree, and supplied
+covariance matrices `G0 = [[20, 18], [18, 40]]` and
+`R0 = [[40, 11], [11, 30]]`, then solves the multivariate Henderson MME in pure
+R and checks the published fixed-effect and animal-BLUP digits reproduced by
+LUKE and Masuda.
+
+Claim boundary: this closes the published/Mrode-style multivariate target gap
+for supplied-covariance BLUP/MME checks. It does not estimate G0/R0, does not
+validate REML optimization, and is not a second independent same-estimand
+comparator for the dense REML estimator.
 
 ## Proposed Optional Test Slice
 
@@ -162,10 +187,13 @@ Each manual run must record:
 
 ## Promotion Rule
 
-Rose/Fisher/Curie promotion remains blocked until at least one of these is true:
+Rose/Fisher/Curie promotion remains blocked until the twin-owned covered gate
+accepts the recovery scope and another independent same-estimand comparator is
+recorded. The useful remaining routes are:
 
 1. A same-estimand external comparator checks full `G0` and full `R0`.
-2. A signed-off known-truth recovery study checks `t >= 2` covariance recovery.
+2. The current cold-start recovery study is accepted as the declared recovery
+   gate, or a broader recovery gate is run and signed off.
 3. A manual ASReml/BLUPF90 comparison is recorded with reproducible inputs and
    outputs.
 

@@ -90,14 +90,17 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
 - Multivariate t=2 recovery and comparator evidence: the R lane records a
   reproducible 100-replicate cold-start known-truth recovery study for the
   opt-in `target = "multivariate"` path and a reproduced full-unstructured
-  `sommer` comparator leg against the shared `phase4_multitrait_parity` target.
-  The recovery study reports 100/100 convergence, all six G0/R0 elements, the
+  `sommer` comparator leg against the shared `phase4_multitrait_parity` target,
+  plus a pure-R CI anchor reproducing the published Mrode Example 5.1
+  multiple-trait supplied-G0/R0 BLUP/MME fixed effects and animal BLUPs. The
+  recovery study reports 100/100 convergence, all six G0/R0 elements, the
   genetic correlation, and both per-trait h2 within bias +/- 2*MCSE, and EBV
   accuracy 0.79/0.74. The full-unstructured `sommer` run agrees with the
   serialized Julia target to <= 8e-5 for G0/R0/beta/h2/EBV and recovers the
   off-diagonal residual covariance that the in-suite diagonal-residual `sommer`
-  check cannot test. This is evidence toward the twin-owned V4-MV-REML covered
-  gate, not coverage by itself. Promotion still needs the broader or re-declared
-  recovery gate, a published or Mrode-style multivariate target, and one more
-  independent same-estimand comparator such as ASReml, BLUPF90/AIREMLF90,
+  check cannot test. The Mrode Example 5.1 anchor is a published supplied-
+  covariance BLUP/MME target, not variance-component estimation. This is
+  evidence toward the twin-owned V4-MV-REML covered gate, not coverage by
+  itself. Promotion still needs the broader or re-declared recovery gate and one
+  more independent same-estimand comparator such as ASReml, BLUPF90/AIREMLF90,
   JWAS/equivalent, or another accepted tool.
