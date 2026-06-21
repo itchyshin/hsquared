@@ -19,7 +19,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 7 | Validation canon | 1 | validation | partial | mirrors HSquared.jl#7/#41 |
 | 8 | R data container: live HSData marshalling parity | 1 | r-package | partial | base `hs_data()` done; mirrors HSquared.jl#8 |
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | planned | innovation children #17/#18/#19/#20 |
-| 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); R evidence leg recorded; twin #41/#49 still own promotion gates |
+| 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); R evidence legs now include cold-start recovery, full-unstructured `sommer`, and Mrode Example 5.1 supplied-G0/R0 BLUP/MME; twin #41/#49 still own promotion gates |
 | 11 | Bridge: surface `heritability_interval` (experimental CI) | 1 | bridge | partial · **DONE** | V1-HERIT-CI (partial); shipped `56f8fb5` (experimental extractor) |
 | 12 | Bridge: surface `repeatability_interval` | 2 | bridge | partial · **DONE** | V3-REPEAT-REML (partial); shipped `e66e648` (experimental) |
 | 13 | Bridge: REML genomic variants — if on main | 2 | bridge | partial · **DEFERRED** | V2-GREML; ultracode honesty_ok=false + regression — needs V2-SNPBLUP row update + existing-test fix first |

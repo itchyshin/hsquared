@@ -189,8 +189,10 @@ hs_validation_status_evidence <- function() {
       "(100/100 converged; EBV accuracy 0.79/0.74), and a full-unstructured",
       "residual sommer comparator reproduces the serialized phase4_multitrait",
       "target's G0/R0/beta/h2/EBV to <= 8e-5 while recovering the off-diagonal",
-      "R0 residual covariance. Mirrors the twin V4-MULTIVARIATE / V4-MV-REML",
-      "gates (partial)."
+      "R0 residual covariance. A pure-R CI anchor also reproduces the",
+      "published Mrode Example 5.1 multiple-trait supplied-G0/R0 BLUP/MME",
+      "fixed effects and animal BLUPs from the LUKE/Masuda reproductions.",
+      "Mirrors the twin V4-MULTIVARIATE / V4-MV-REML gates (partial)."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -302,10 +304,11 @@ hs_validation_status_boundaries <- function() {
       "(partial). `cbind()` responses with missing trait cells are supported,",
       "but this is REML-only, animal-model-only, and not the default. The R lane",
       "has cold-start recovery and one reproduced full-unstructured sommer",
-      "comparator leg, but covered promotion remains twin-gated and still needs",
-      "a broader/redeclared recovery gate, a published or Mrode-style",
-      "multivariate target, and another independent same-estimand comparator",
-      "(ASReml, BLUPF90/AIREMLF90, JWAS/equivalent, or accepted alternative).",
+      "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
+      "anchor, but covered promotion remains twin-gated and still needs a",
+      "broader/redeclared recovery gate and another independent same-estimand",
+      "comparator (ASReml, BLUPF90/AIREMLF90, JWAS/equivalent, or accepted",
+      "alternative).",
       "The Julia engine currently inverts Ainv internally, so deep-inbreeding or",
       "high-condition-number pedigrees remain a twin-side hardening item."
     ),
