@@ -3,6 +3,38 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Close R issue #21 after PEV/reliability standard-field banking
+
+- Active lenses: Ada, Shannon, Hopper, Fisher, Rose, Grace.
+- Branch: `codex/issue-map-close-21`.
+- Scope:
+  - inspected live R issue #21 and current PEV/reliability bridge/status
+    surfaces;
+  - closed GitHub issue #21 because its named R deliverable is banked: current
+    univariate/default result-payload routes consume standard engine
+    `prediction_error_variance` / `reliability` fields when present, older-engine
+    dense fallback remains guarded, and the supplied-variance Henderson MME
+    bridge attaches dense validation-path PEV/reliability unconditionally;
+  - updated `docs/dev-log/issue-map.md` to remove #21 from the active R-open
+    table and record the remaining twin/broader gates.
+- Live GitHub action:
+  - `gh issue close 21 --repo itchyshin/hsquared --comment ...` closed R issue
+    #21 at 2026-06-21T20:51:45Z.
+- Claim boundary: issue close and coordination-map update only. No R behavior
+  changed, no fitted capability was promoted, no production sparse reliability
+  claim was added, and no multivariate per-trait or comparator evidence was
+  claimed. Remaining work stays partial/twin-gated via HSquared.jl #43 and the
+  broader validation gates.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-map-close-21.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep confirms current issue-map wording says R #21 is closed while
+    multivariate per-trait, production sparse, comparator-validation, and
+    no-promotion boundaries remain explicit. Historical check-log/board rows
+    still mention the older partial state as dated evidence.
+
 ## 2026-06-21 Reconcile structured diagonal R-control design note
 
 - Active lenses: Ada, Shannon, Boole, Hopper, Kirkpatrick, Rose, Grace.
