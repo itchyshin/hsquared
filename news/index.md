@@ -67,10 +67,13 @@
   table and marker-level LOD scores. Fit-level GWAS/QTL/eQTL tables, map
   joins, and calibrated thresholds remain planned
   ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
-- Synced the Julia-owned genomic GBLUP/SNP-BLUP target fixture from
+- Mirrored the Julia-owned genomic GBLUP/SNP-BLUP target fixture from
   HSquared.jl PR
   [\#140](https://github.com/itchyshin/hsquared/issues/140) (`008ea4d`)
-  into the R validation/comparator ledgers. The fixture is available for
+  into R tests and validation/comparator ledgers. The Julia-free fixture
+  check recomputes the supplied-frequency VanRaden `G`, `Ginv`,
+  supplied-variance GBLUP MME solution, and SNP-BLUP
+  marker-effect-to-GEBV route agreement. The fixture is available for
   future external comparator runs, but no
   AGHmatrix/rrBLUP/sommer/JWAS/BGLR/BLUPF90 comparator evidence is
   claimed and the genomic/SNP-BLUP rows remain partial.
