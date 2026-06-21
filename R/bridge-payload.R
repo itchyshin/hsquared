@@ -8,6 +8,11 @@ hs_build_bridge_payload <- function(spec) {
   }
 
   animal <- spec$random$animal
+  is_metafounder <- FALSE
+  if (is.null(animal)) {
+    animal <- spec$random$metafounder
+    is_metafounder <- TRUE
+  }
   pedigree <- animal$pedigree
   observed_ids <- animal$values
   ids <- pedigree$ids
@@ -82,6 +87,10 @@ hs_build_bridge_payload <- function(spec) {
       effect2 = effect2,
       random_regression = rr,
       Ainv = NULL,
+      group_of = if (is_metafounder) animal$group_of else NULL,
+      Gamma = if (is_metafounder) animal$Gamma else NULL,
+      gamma_labels = if (is_metafounder) animal$gamma_labels else NULL,
+      relationship_source = if (is_metafounder) "metafounder" else "pedigree",
       method = spec$method,
       family = spec$family$family,
       # Common per-record trial count for a cbind(successes, failures) binomial
@@ -120,6 +129,8 @@ hs_build_bridge_payload <- function(spec) {
         animal_id_column = animal$group,
         observed_ids = observed_ids,
         observed_id_index = id_index,
+        relationship = animal$relationship,
+        gamma_source = if (is_metafounder) "supplied" else NULL,
         fixed_terms = spec$fixed$terms,
         contrasts = spec$fixed$contrasts,
         ainv_status = "build_in_julia",
@@ -128,10 +139,16 @@ hs_build_bridge_payload <- function(spec) {
           "HSquared.normalize_pedigree(id, sire, dam))"
         ),
         julia_spec_target = paste0(
-          "HSquared.animal_model_spec(y, X, Z, Ainv; ",
-          "ids = ids, method = :",
-          spec$method,
-          ")"
+          if (is_metafounder) {
+            "HSquared.metafounder_animal_model"
+          } else {
+            paste0(
+              "HSquared.animal_model_spec(y, X, Z, Ainv; ",
+              "ids = ids, method = :",
+              spec$method,
+              ")"
+            )
+          }
         ),
         julia_fit_target = paste0("HSquared.", spec$bridge$target)
       )

@@ -168,6 +168,102 @@ hs_fit_julia_henderson_mme_payload <- function(
   )
 }
 
+hs_fit_julia_metafounder_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  variance_components
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (
+    !identical(payload$relationship_source, "metafounder") ||
+      is.null(payload$group_of) ||
+      is.null(payload$Gamma)
+  ) {
+    stop(
+      "Internal bridge error: the metafounder payload is incomplete ",
+      "(needs group_of and Gamma).",
+      call. = FALSE
+    )
+  }
+  variance_components <- hs_validate_supplied_variances(
+    variance_components,
+    target = "metafounder"
+  )
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  hs_julia_setup(project)
+  hs_julia_assign_payload(payload, variance_components)
+  JuliaCall::julia_assign("hsq_group_of", unname(payload$group_of))
+  JuliaCall::julia_assign("hsq_Gamma_vec", as.numeric(payload$Gamma))
+  JuliaCall::julia_assign("hsq_Gamma_n", as.integer(nrow(payload$Gamma)))
+  JuliaCall::julia_assign(
+    "hsq_supplied_sigma_a2",
+    unname(variance_components[["sigma_a2"]])
+  )
+  JuliaCall::julia_assign(
+    "hsq_supplied_sigma_e2",
+    unname(variance_components[["sigma_e2"]])
+  )
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "collect(String, hsq_ped.ids) == hsq_id ||",
+    "error(\"metafounder: engine pedigree order != R order\");",
+    "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
+    "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
+    "hsq_mme = HSquared.metafounder_animal_model(",
+    "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma,",
+    "hsq_supplied_sigma_a2, hsq_supplied_sigma_e2;",
+    "ids = hsq_ped.ids);",
+    "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
+    "hsq_mme_raw = Dict(",
+    "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
+    "\"animal_ids\" => hsq_mme_bv.ids,",
+    "\"animal_effects\" => hsq_mme_bv.values,",
+    "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+    "\"prediction_error_variance\" =>",
+    "HSquared.prediction_error_variance(hsq_mme),",
+    "\"reliability\" => HSquared.reliability(hsq_mme),",
+    "\"nobs\" => length(hsq_y)",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_mme_raw")
+  result <- hs_normalize_julia_henderson_mme_result(
+    raw,
+    payload,
+    variance_components
+  )
+  result$variance_components$component[
+    result$variance_components$component == "animal"
+  ] <- "metafounder"
+  result$heritability$term[result$heritability$term == "animal"] <-
+    "metafounder"
+  names(result$random_effects)[
+    names(result$random_effects) == "animal"
+  ] <- "metafounder"
+  result$diagnostics$target <- "metafounder"
+  result$diagnostics$variance_components <- "supplied_metafounder"
+  result$diagnostics$gamma_source <- "supplied"
+  hs_new_fit(
+    spec = list(
+      method = payload$method,
+      family = list(family = payload$family, link = "identity"),
+      target = "metafounder"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_fit_julia_sparse_reml_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -2287,6 +2383,7 @@ hs_validate_julia_target <- function(target) {
       c(
         "fit_animal_model",
         "henderson_mme",
+        "metafounder",
         "sparse_reml",
         "ai_reml",
         "repeatability",
@@ -2304,8 +2401,8 @@ hs_validate_julia_target <- function(target) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"two_effect\", \"genomic\", \"single_step\", \"single_step_construct\", ",
-      "\"metafounder_single_step\", \"snp_blup\", \"multivariate\", ",
+      "\"metafounder\", \"two_effect\", \"genomic\", \"single_step\", ",
+      "\"single_step_construct\", \"metafounder_single_step\", \"snp_blup\", \"multivariate\", ",
       "\"random_regression\", or \"nongaussian\".",
       call. = FALSE
     )
@@ -2391,6 +2488,7 @@ hs_effect_targets <- function(type) {
     permanent = "repeatability",
     common_env = "two_effect",
     maternal_genetic = "two_effect",
+    metafounder = "metafounder",
     genomic = c("genomic", "snp_blup"),
     single_step = c(
       "single_step",
@@ -2410,17 +2508,23 @@ hs_second_effect_target <- function(type) {
     permanent = "repeatability",
     common_env = "two_effect",
     maternal_genetic = "two_effect",
+    metafounder = "metafounder",
     genomic = "genomic",
     single_step = "single_step",
     stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }
 
-hs_validate_supplied_variances <- function(variance_components) {
+hs_validate_supplied_variances <- function(
+  variance_components,
+  target = "henderson_mme"
+) {
   if (is.null(variance_components)) {
     stop(
       "`engine_control$variance_components` is required when ",
-      "`target = \"henderson_mme\"`.",
+      "`target = \"",
+      target,
+      "\"`.",
       call. = FALSE
     )
   }

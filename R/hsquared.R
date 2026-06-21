@@ -211,6 +211,7 @@ hsquared <- function(
     snp_blup_supplied <- identical(target, "snp_blup") &&
       !is.null(hs_engine_control_value(control, "variance_components", NULL))
     supplied_variance_exempt <- identical(target, "henderson_mme") ||
+      identical(target, "metafounder") ||
       snp_blup_supplied
     if (!isTRUE(REML) && !supplied_variance_exempt) {
       stop(
@@ -298,6 +299,30 @@ hsquared <- function(
     }
     if (identical(target, "henderson_mme")) {
       return(hs_fit_julia_henderson_mme_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        variance_components = hs_engine_control_value(
+          control,
+          "variance_components",
+          NULL
+        )
+      ))
+    }
+
+    if (identical(target, "metafounder")) {
+      if (is.null(spec$random$metafounder)) {
+        stop(
+          "`target = \"metafounder\"` requires ",
+          "`metafounder(1 | id, pedigree = ped, group = mf_group, ",
+          "Gamma = Gamma)` in the formula.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_metafounder_payload(
         payload,
         project = hs_engine_control_value(
           control,

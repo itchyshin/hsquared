@@ -130,6 +130,131 @@ test_that("hsquared can use the opt-in experimental Julia engine", {
   expect_equal(reliability(fit)$id, c("sire", "dam", "calf"))
 })
 
+test_that("metafounder target is supplied-variance and formula-gated", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  dat <- data.frame(y = c(1, 2.5, 4), id = c("sire", "dam", "calf"))
+  mf_group <- c(sire = "base", dam = "base", calf = "")
+  Gamma <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+
+  expect_error(
+    hsquared(
+      y ~ metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "metafounder")
+      )
+    ),
+    "`engine_control$variance_components` is required when `target = \"metafounder\"`.",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "metafounder",
+          variance_components = c(sigma_a2 = 0.8, sigma_e2 = 0.4)
+        )
+      )
+    ),
+    "`target = \"metafounder\"` requires",
+    fixed = TRUE
+  )
+})
+
+test_that("metafounder supplied-variance bridge matches Gamma-zero Henderson path [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live metafounder bridge validation."
+  )
+
+  ped <- data.frame(
+    id = c("sire", "dam", "calf", "sib"),
+    sire = c(NA, NA, "sire", "sire"),
+    dam = c(NA, NA, "dam", "dam")
+  )
+  dat <- data.frame(
+    y = c(1, 2.5, 4, 3.2),
+    id = c("sire", "dam", "calf", "sib")
+  )
+  mf_group <- c(sire = "base", dam = "base", calf = "", sib = "")
+  Gamma0 <- matrix(0, nrow = 1, dimnames = list("base", "base"))
+  Gammag <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+  vc <- c(sigma_a2 = 0.8, sigma_e2 = 0.4)
+
+  ordinary <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "henderson_mme",
+        variance_components = vc
+      )
+    )
+  )
+  mf0 <- hsquared(
+    y ~ metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma0),
+    data = dat,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "metafounder",
+        variance_components = vc
+      )
+    )
+  )
+  mfg <- hsquared(
+    y ~ metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gammag),
+    data = dat,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "metafounder",
+        variance_components = vc
+      )
+    )
+  )
+
+  expect_equal(mf0$spec$target, "metafounder")
+  expect_equal(
+    fit_diagnostics(mf0)$value[
+      fit_diagnostics(mf0)$metric == "variance_components_source"
+    ],
+    "supplied_metafounder"
+  )
+  expect_equal(
+    fit_diagnostics(mf0)$value[
+      fit_diagnostics(mf0)$metric == "gamma_source"
+    ],
+    "supplied"
+  )
+  expect_equal(variance_components(mf0)$component, c("metafounder", "residual"))
+  expect_equal(heritability(mf0)$term, "metafounder")
+  expect_equal(
+    breeding_values(mf0)$value,
+    breeding_values(ordinary)$value,
+    tolerance = 1e-8
+  )
+  expect_equal(prediction_error_variance(mf0)$id, ped$id)
+  expect_equal(reliability(mf0)$id, ped$id)
+
+  bv0 <- breeding_values(mf0)
+  bvg <- breeding_values(mfg)
+  expect_equal(bvg$id, bv0$id)
+  expect_true(all(is.finite(bvg$value)))
+  expect_gt(mean(abs(bvg$value - bv0$value)), 1e-8)
+})
+
 test_that("the opt-in engine = \"julia\" estimation path rejects REML = FALSE (ML)", {
   ped <- data.frame(
     id = c("sire", "dam", "calf"),

@@ -230,7 +230,7 @@ coordinate without guessing.
 | 37 | Add two-effect recovery/comparator evidence | pending |
 | 38 | Promote two-effect after Rose audit | pending |
 | 39 | Add genomic inverse / GBLUP bridge slice | done in R for supplied `Ginv` and marker-built G; broader bridge pending |
-| 40 | Add single-step H inverse validation | partial: ordinary construction is surfaced and live-tested; `single_step(..., group =, Gamma =)` now fits an experimental supplied-`Gamma` `H^Gamma` bridge; APY, animal-only metafounder fitting, and production comparator parity remain pending |
+| 40 | Add single-step H inverse validation | partial: ordinary construction is surfaced and live-tested; `metafounder(..., group =, Gamma =)` now fits an experimental supplied-variance animal-only `A^Gamma` bridge; `single_step(..., group =, Gamma =)` now fits an experimental supplied-`Gamma` `H^Gamma` bridge; APY and production comparator parity remain pending |
 | 41 | Add APY design/evidence gate | pending |
 | 42 | Add standard QG comparator fixtures | pending |
 | 43 | Tighten validation-status public table | ongoing |

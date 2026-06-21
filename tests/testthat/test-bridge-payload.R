@@ -74,6 +74,38 @@ test_that("bridge payload normalizes pedigree order for Julia Ainv construction"
   expect_equal(payload$method, "ML")
 })
 
+test_that("bridge payload carries animal-only metafounder fields", {
+  ped <- data.frame(
+    id = c("calf", "sire", "dam"),
+    sire = c("sire", NA, NA),
+    dam = c("dam", NA, NA)
+  )
+  dat <- data.frame(y = c(1, 2.5, 4), id = c("sire", "dam", "calf"))
+  mf_group <- c(sire = "base", dam = "base", calf = "")
+  Gamma <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_s3_class(payload, "hs_bridge_payload")
+  expect_equal(payload$relationship_source, "metafounder")
+  expect_equal(payload$ids, c("sire", "dam", "calf"))
+  expect_equal(unname(payload$group_of), c("base", "base", ""))
+  expect_equal(payload$Gamma, matrix(0.25, nrow = 1))
+  expect_equal(payload$gamma_labels, "base")
+  expect_equal(payload$metadata$gamma_source, "supplied")
+  expect_match(payload$metadata$julia_spec_target, "metafounder_animal_model")
+  expect_equal(
+    unname(as.matrix(payload$Z)),
+    rbind(c(1, 0, 0), c(0, 1, 0), c(0, 0, 1))
+  )
+})
+
 test_that("pedigree cycles are rejected before bridge payload construction", {
   ped <- data.frame(
     id = c("a", "b"),

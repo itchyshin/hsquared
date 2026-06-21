@@ -31,7 +31,8 @@ hs_build_model_spec <- function(
     function(e) {
       hs_is_planned_marker_call(e) &&
         !hs_is_second_effect_call(e) &&
-        !hs_is_relinv_primary_call(e)
+        !hs_is_relinv_primary_call(e) &&
+        !hs_is_metafounder_primary_call(e)
     },
     logical(1L)
   ))
@@ -39,28 +40,36 @@ hs_build_model_spec <- function(
     hs_stop_planned_marker(rhs_terms[[planned_pos[[1L]]]])
   }
 
-  # The primary effect is exactly one of `animal()` (pedigree) or a
+  # The primary effect is exactly one of `animal()` (pedigree), a
   # supplied-relationship-inverse term (`genomic()` with `Ginv`, or
-  # `single_step()` with `Hinv`).
+  # `single_step()` with `Hinv`), or the opt-in supplied-Gamma metafounder
+  # relationship term.
   animal_pos <- which(vapply(rhs_terms, hs_is_animal_call, logical(1L)))
   relinv_pos <- which(vapply(
     rhs_terms,
     hs_is_relinv_primary_call,
     logical(1L)
   ))
-  primary_pos <- c(animal_pos, relinv_pos)
+  metafounder_pos <- which(vapply(
+    rhs_terms,
+    hs_is_metafounder_primary_call,
+    logical(1L)
+  ))
+  primary_pos <- c(animal_pos, relinv_pos, metafounder_pos)
 
   if (length(primary_pos) == 0L) {
     stop(
       "`formula` must contain exactly one primary term: ",
-      "`animal(1 | id, pedigree = ped)` or `genomic(1 | id, Ginv = Ginv)`.",
+      "`animal(1 | id, pedigree = ped)`, `genomic(1 | id, Ginv = Ginv)`, ",
+      "or `metafounder(1 | id, pedigree = ped, group = mf_group, ",
+      "Gamma = Gamma)`.",
       call. = FALSE
     )
   }
   if (length(primary_pos) > 1L) {
     stop(
       "`formula` can contain only one primary effect ",
-      "(`animal()`, `genomic()`, or `single_step()`).",
+      "(`animal()`, `genomic()`, `single_step()`, or `metafounder()`).",
       call. = FALSE
     )
   }
@@ -73,7 +82,7 @@ hs_build_model_spec <- function(
       env,
       model_data = model_data
     )
-  } else {
+  } else if (length(relinv_pos) == 1L) {
     primary_spec <- hs_parse_relinv_primary_call(
       rhs_terms[[relinv_pos]],
       data,
@@ -81,6 +90,14 @@ hs_build_model_spec <- function(
       model_data = model_data
     )
     primary_type <- primary_spec$type
+  } else {
+    primary_type <- "metafounder"
+    primary_spec <- hs_parse_metafounder_call(
+      rhs_terms[[metafounder_pos]],
+      data,
+      env,
+      model_data = model_data
+    )
   }
 
   second_pos <- which(vapply(rhs_terms, hs_is_second_effect_call, logical(1L)))
@@ -88,8 +105,9 @@ hs_build_model_spec <- function(
   if (length(second_pos) > 0L && !identical(primary_type, "animal")) {
     stop(
       "A second random effect (`permanent()`/`common_env()`/",
-      "`maternal_genetic()`) requires an `animal()` primary term, not ",
-      "`genomic()`.",
+      "`maternal_genetic()`) requires an `animal()` primary term, not `",
+      primary_type,
+      "()`.",
       call. = FALSE
     )
   }
@@ -207,6 +225,11 @@ hs_build_model_spec <- function(
         if (identical(primary_type, "genomic")) "Ginv" else "Hinv"
       )
     }
+  } else if (identical(primary_type, "metafounder")) {
+    paste0(
+      "metafounder_animal_model(y, X, Z, pedigree, group_of, Gamma, ",
+      "sigma_a2, sigma_e2)"
+    )
   } else if (identical(primary_spec$design, "random_regression")) {
     "fit_random_regression_reml(y, X, Phi, Z, Ainv; ids = ped.ids)"
   } else {
@@ -679,6 +702,134 @@ hs_family_label <- function(family) {
     link_name <- "<unknown>"
   }
   paste0(family_name, "(", link_name, ")")
+}
+
+hs_parse_metafounder_call <- function(call, data, env, model_data) {
+  call <- hs_unwrap_parentheses(call)
+  args <- as.list(call)[-1L]
+  arg_names <- names(args)
+  if (is.null(arg_names)) {
+    arg_names <- rep("", length(args))
+  }
+
+  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if (length(bar_candidates) != 1L) {
+    stop(
+      "`metafounder()` must have one random-effect expression, for example ",
+      "`metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`.",
+      call. = FALSE
+    )
+  }
+
+  bar <- hs_unwrap_parentheses(args[[bar_candidates]])
+  if (!hs_is_call(bar, "|") || length(bar) != 3L) {
+    stop(
+      "The first `metafounder()` argument must be a random-effect expression ",
+      "such as `1 | id`.",
+      call. = FALSE
+    )
+  }
+
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  if (!hs_is_one(lhs)) {
+    stop(
+      "Only random-intercept syntax `metafounder(1 | id, ...)` is implemented. ",
+      "Metafounder slopes are planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.symbol(group_expr)) {
+    stop(
+      "The grouping variable in `metafounder()` must be a bare column name.",
+      call. = FALSE
+    )
+  }
+
+  group <- as.character(group_expr)
+  if (!group %in% names(data)) {
+    stop(
+      "`metafounder()` grouping variable `",
+      group,
+      "` was not found in `data`.",
+      call. = FALSE
+    )
+  }
+
+  named_args <- args[arg_names != ""]
+  accepted <- c("pedigree", "group", "Gamma")
+  unsupported <- setdiff(names(named_args), accepted)
+  if (length(unsupported) > 0L) {
+    stop(
+      "`metafounder()` argument",
+      if (length(unsupported) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unsupported), collapse = ", "),
+      if (length(unsupported) > 1L) {
+        " are planned, not implemented."
+      } else {
+        " is planned, not implemented."
+      },
+      call. = FALSE
+    )
+  }
+  if (!all(c("group", "Gamma") %in% names(named_args))) {
+    stop(
+      "`metafounder()` requires both `group` and `Gamma`: ",
+      "`metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`.",
+      call. = FALSE
+    )
+  }
+
+  pedigree_input <- hs_resolve_animal_pedigree(
+    named_args,
+    data,
+    env,
+    model_data
+  )
+  pedigree_spec <- hs_validate_pedigree(
+    pedigree_input$data,
+    data_ids = data[[group]],
+    group = group
+  )
+  group_of <- hs_eval_metafounder_group(
+    named_args$group,
+    data,
+    env,
+    term = "metafounder"
+  )
+  group_of <- hs_validate_metafounder_group(
+    group_of,
+    pedigree_spec,
+    term = "metafounder"
+  )
+  gamma <- hs_eval_metafounder_gamma(
+    named_args$Gamma,
+    data,
+    env,
+    term = "metafounder"
+  )
+  gamma <- hs_validate_metafounder_gamma(
+    gamma,
+    group_of,
+    pedigree_spec,
+    term = "metafounder"
+  )
+
+  list(
+    type = "metafounder",
+    term = hs_deparse(call),
+    design = "intercept",
+    group = group,
+    values = as.character(data[[group]]),
+    relationship = "metafounder",
+    covariance = "scalar",
+    pedigree_source = pedigree_input$source,
+    pedigree = pedigree_spec,
+    group_of = group_of,
+    Gamma = gamma$Gamma,
+    gamma_labels = gamma$labels,
+    gamma_source = "supplied"
+  )
 }
 
 hs_parse_animal_call <- function(call, data, env, model_data) {
@@ -1532,12 +1683,20 @@ hs_parse_single_step_construct <- function(
   )
 }
 
-hs_eval_metafounder_group <- function(expr, data, env) {
+hs_eval_metafounder_group <- function(
+  expr,
+  data,
+  env,
+  term = "single_step"
+) {
+  label <- paste0("`", term, "()`")
   tryCatch(
     eval(expr, envir = data, enclos = env),
     error = function(err) {
       stop(
-        "Could not evaluate `single_step()` metafounder `group = ",
+        "Could not evaluate ",
+        label,
+        " metafounder `group = ",
         hs_deparse(expr),
         "`. Provide an ID-named vector of metafounder group labels.",
         call. = FALSE
@@ -1546,12 +1705,20 @@ hs_eval_metafounder_group <- function(expr, data, env) {
   )
 }
 
-hs_eval_metafounder_gamma <- function(expr, data, env) {
+hs_eval_metafounder_gamma <- function(
+  expr,
+  data,
+  env,
+  term = "single_step"
+) {
+  label <- paste0("`", term, "()`")
   tryCatch(
     eval(expr, envir = data, enclos = env),
     error = function(err) {
       stop(
-        "Could not evaluate `single_step()` `Gamma = ",
+        "Could not evaluate ",
+        label,
+        " `Gamma = ",
         hs_deparse(expr),
         "`. Provide a supplied metafounder relationship matrix.",
         call. = FALSE
@@ -1560,7 +1727,12 @@ hs_eval_metafounder_gamma <- function(expr, data, env) {
   )
 }
 
-hs_validate_metafounder_group <- function(group_of, pedigree) {
+hs_validate_metafounder_group <- function(
+  group_of,
+  pedigree,
+  term = "single_step"
+) {
+  label <- paste0("`", term, "()`")
   ped_ids <- pedigree$ids
   if (is.data.frame(group_of)) {
     nms <- names(group_of)
@@ -1568,7 +1740,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
     group_col <- intersect(c("group", "metafounder", "mf_group"), nms)
     if (length(id_col) == 0L || length(group_col) == 0L) {
       stop(
-        "`single_step()` metafounder `group` data frames must contain an ",
+        label,
+        " metafounder `group` data frames must contain an ",
         "`id` (or `animal`) column and a `group` column.",
         call. = FALSE
       )
@@ -1580,7 +1753,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   }
   if (is.matrix(group_of) || length(dim(group_of)) > 1L) {
     stop(
-      "`single_step()` metafounder `group` must be a vector or data frame, ",
+      label,
+      " metafounder `group` must be a vector or data frame, ",
       "not a matrix.",
       call. = FALSE
     )
@@ -1589,7 +1763,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   names_in <- names(group_of)
   if (is.null(names_in) || anyNA(names_in) || any(!nzchar(names_in))) {
     stop(
-      "`single_step()` metafounder `group` must be named by pedigree IDs so ",
+      label,
+      " metafounder `group` must be named by pedigree IDs so ",
       "it can be reordered to normalized pedigree order.",
       call. = FALSE
     )
@@ -1597,7 +1772,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   if (anyDuplicated(names_in)) {
     dup <- unique(names_in[duplicated(names_in)])[1L]
     stop(
-      "`single_step()` metafounder `group` has duplicated id `",
+      label,
+      " metafounder `group` has duplicated id `",
       dup,
       "`.",
       call. = FALSE
@@ -1607,7 +1783,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   if (length(missing_ids) > 0L) {
     shown <- missing_ids[seq_len(min(5L, length(missing_ids)))]
     stop(
-      "`single_step()` metafounder `group` is missing pedigree id(s): ",
+      label,
+      " metafounder `group` is missing pedigree id(s): ",
       paste(sprintf("`%s`", shown), collapse = ", "),
       ".",
       call. = FALSE
@@ -1617,7 +1794,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   if (length(extra_ids) > 0L) {
     shown <- extra_ids[seq_len(min(5L, length(extra_ids)))]
     stop(
-      "`single_step()` metafounder `group` includes id(s) not in the ",
+      label,
+      " metafounder `group` includes id(s) not in the ",
       "normalized pedigree: ",
       paste(sprintf("`%s`", shown), collapse = ", "),
       ".",
@@ -1630,7 +1808,8 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   if (any(bad_needed)) {
     shown <- ped_ids[bad_needed][seq_len(min(5L, sum(bad_needed)))]
     stop(
-      "`single_step()` metafounder `group` must provide non-missing labels ",
+      label,
+      " metafounder `group` must provide non-missing labels ",
       "for animals with unknown parents. Missing label(s): ",
       paste(sprintf("`%s`", shown), collapse = ", "),
       ".",
@@ -1642,36 +1821,45 @@ hs_validate_metafounder_group <- function(group_of, pedigree) {
   aligned
 }
 
-hs_validate_metafounder_gamma <- function(Gamma, group_of, pedigree) {
+hs_validate_metafounder_gamma <- function(
+  Gamma,
+  group_of,
+  pedigree,
+  term = "single_step"
+) {
+  label <- paste0("`", term, "()`")
   Gamma <- as.matrix(Gamma)
   if (!is.numeric(Gamma)) {
-    stop("`single_step()` `Gamma` must be a numeric matrix.", call. = FALSE)
+    stop(label, " `Gamma` must be a numeric matrix.", call. = FALSE)
   }
   if (nrow(Gamma) != ncol(Gamma)) {
-    stop("`single_step()` `Gamma` must be square.", call. = FALSE)
+    stop(label, " `Gamma` must be square.", call. = FALSE)
   }
   if (!all(is.finite(Gamma))) {
     stop(
-      "`single_step()` `Gamma` must contain only finite values.",
+      label,
+      " `Gamma` must contain only finite values.",
       call. = FALSE
     )
   }
   if (!isTRUE(all.equal(Gamma, t(Gamma), tolerance = 1e-10))) {
-    stop("`single_step()` `Gamma` must be symmetric.", call. = FALSE)
+    stop(label, " `Gamma` must be symmetric.", call. = FALSE)
   }
   needs <- is.na(pedigree$data$sire) | is.na(pedigree$data$dam)
   labels <- unique(unname(group_of[needs]))
   labels <- labels[nzchar(labels)]
   if (length(labels) == 0L) {
     stop(
-      "`single_step()` metafounder `group` resolved no unknown-parent ",
+      label,
+      " metafounder `group` resolved no unknown-parent ",
       "metafounder labels.",
       call. = FALSE
     )
   }
   if (nrow(Gamma) != length(labels)) {
     stop(
-      "`single_step()` `Gamma` must have one row/column per resolved ",
+      label,
+      " `Gamma` must have one row/column per resolved ",
       "metafounder group (",
       length(labels),
       "); got ",
@@ -1685,18 +1873,20 @@ hs_validate_metafounder_gamma <- function(Gamma, group_of, pedigree) {
   if (!is.null(rn) || !is.null(cn)) {
     if (is.null(rn) || is.null(cn) || !identical(rn, cn)) {
       stop(
-        "`single_step()` `Gamma` row names and column names must match.",
+        label,
+        " `Gamma` row names and column names must match.",
         call. = FALSE
       )
     }
     if (anyDuplicated(rn)) {
-      stop("`single_step()` `Gamma` group names must be unique.", call. = FALSE)
+      stop(label, " `Gamma` group names must be unique.", call. = FALSE)
     }
     missing_labels <- setdiff(labels, rn)
     extra_labels <- setdiff(rn, labels)
     if (length(missing_labels) > 0L || length(extra_labels) > 0L) {
       stop(
-        "`single_step()` `Gamma` dimnames must match the resolved ",
+        label,
+        " `Gamma` dimnames must match the resolved ",
         "metafounder group labels.",
         call. = FALSE
       )
@@ -1707,7 +1897,8 @@ hs_validate_metafounder_gamma <- function(Gamma, group_of, pedigree) {
   scale <- max(1, max(abs(Gamma)))
   if (min(ev) < -1e-10 * scale) {
     stop(
-      "`single_step()` `Gamma` must be positive semidefinite.",
+      label,
+      " `Gamma` must be positive semidefinite.",
       call. = FALSE
     )
   }
@@ -1906,6 +2097,11 @@ hs_rebuild_additive_rhs <- function(terms) {
 hs_is_animal_call <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   hs_is_call(expr, "animal")
+}
+
+hs_is_metafounder_primary_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "metafounder")
 }
 
 hs_is_permanent_call <- function(expr) {
