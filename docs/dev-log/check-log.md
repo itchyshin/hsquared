@@ -5909,3 +5909,27 @@ release".
   `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false
   Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual",
   error_on = "never")'` **0 errors / 0 warnings / 0 notes**.
+
+## 2026-06-21 (Julia PR #134 GWAS calibration sync)
+
+- Julia-lane sync reported HSquared.jl PR #134 merged at `beca371`, with #48's
+  opt-in threshold calibration harness now defaulting to a fixed-marker-panel
+  type-I smoke. Live GitHub issue check shows HSquared.jl #48 is closed, while
+  #45 and #61 remain open.
+- Updated R wording to avoid the stale implication that an open #48 gate is the
+  only blocker, while preserving the important public boundary: R `gwas()`
+  p-values remain nominal/Bonferroni/BH and are not genome-wide calibrated.
+  Julia's fixed-panel smoke does not activate an R significance threshold,
+  provide a PLINK/GenABEL-style external comparator, provide realistic-LD
+  production calibration, or promote the marker-scan row beyond partial.
+- Checks: `air format .` clean; `Rscript --vanilla -e 'devtools::document()'`
+  regenerated `man/gwas.Rd` and `man/hsquared-autoplot.Rd`; focused
+  `Rscript --vanilla -e 'devtools::test(filter = "gwas|autoplot|phase0-api|fit-object")'`
+  **354 pass / 0 fail / 0 warn / 2 skip**; full
+  `Rscript --vanilla -e 'devtools::test()'`
+  **1301 pass / 0 fail / 0 warn / 58 skip**;
+  `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
+  stale #48 wording audit clean; `git diff --check` clean;
+  `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e
+  'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+  **0 errors / 0 warnings / 0 notes**.

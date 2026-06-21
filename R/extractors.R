@@ -1398,8 +1398,8 @@ hs_marker_extractor_default <- function(name) {
     "use `gwas(fit, markers)` (experimental; nominal / Bonferroni / BH ",
     "p-values, NOT genome-wide calibrated). These tabular `gwas_table()` / ",
     "`qtl_table()` / `eqtl_table()` / `lod_scores()` extractors remain reserved ",
-    "for the planned map-annotated scan API (gated on calibrated thresholds, ",
-    "HSquared.jl#48).",
+    "for the planned map-annotated scan API and any future calibrated-threshold ",
+    "activation.",
     call. = FALSE
   )
 }

@@ -73,7 +73,9 @@ descriptive.
 \code{autoplot()} on a \code{gwas()} scan (\code{hs_gwas}) draws \code{type = "manhattan"}
 (default) or \code{type = "qq"} (observed vs expected \code{-log10(p)} with a \code{y = x}
 null and the genomic-inflation \code{lambda_GC} as a diagnostic). Both carry the
-EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate \code{HSquared.jl#48}).
+EXPERIMENTAL, NOT-genome-wide-calibrated caveat. The Julia lane has a
+fixed-panel calibration smoke harness, but R significance thresholds are not
+activated.
 
 The figure helpers are deliberately modular (each takes a tidy data frame and
 returns a \code{ggplot}) so they can be factored into a shared visualization

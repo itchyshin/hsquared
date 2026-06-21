@@ -9,9 +9,10 @@
 #' **The p-values are NOT genome-wide calibrated.** They are marker-by-marker
 #' Wald (nominal) p-values plus deterministic Bonferroni and Benjamini-Hochberg
 #' adjustments over the *supplied* marker set only. There is no realistic-LD /
-#' study-design calibration, no permutation, and no external comparator (the
-#' calibration gate is `HSquared.jl#48`). Do not report genome-wide significance
-#' from these values.
+#' study-design calibration activated in R, no permutation-backed threshold, and
+#' no external comparator. The Julia lane has a fixed-panel calibration smoke
+#' harness (HSquared.jl PR #134), but these R results remain uncalibrated. Do not
+#' report genome-wide significance from these values.
 #'
 #' A leave-one-group-out (LOCO) scan is available with `method = "loco"` and a
 #' `marker_groups` argument: when a marker is tested, the genomic relationship
@@ -372,7 +373,10 @@ print.hs_gwas <- function(x, ...) {
       "  relative ranking, not the magnitudes). p-values are NOT genome-wide\n"
     )
     cat(
-      "  calibrated (nominal Wald + Bonferroni/BH; engine gate HSquared.jl#48).\n"
+      "  calibrated (nominal Wald + Bonferroni/BH; Julia fixed-panel smoke is\n"
+    )
+    cat(
+      "  banked, but no R significance threshold is activated).\n"
     )
     cat("  Do not report genome-wide significance from these.\n")
     out <- x
@@ -389,10 +393,13 @@ print.hs_gwas <- function(x, ...) {
     "  Wald p-values + Bonferroni/BH over the supplied markers only (one whole-\n"
   )
   cat(
-    "  pedigree correction; no permutation, no external comparator; engine gate\n"
+    "  pedigree correction; no R threshold activation, no permutation, no\n"
   )
   cat(
-    "  HSquared.jl#48). `method = \"single\"`/`\"loco\"` give the relatedness-\n"
+    "  external comparator; Julia fixed-panel smoke banked in PR #134).\n"
+  )
+  cat(
+    "  `method = \"single\"`/`\"loco\"` give the relatedness-\n"
   )
   cat(
     "  uncorrected and leave-one-group-out variants. Do not report genome-wide\n"

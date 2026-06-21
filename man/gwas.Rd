@@ -60,9 +60,10 @@ experimental, validation-scale screen that surfaces the Julia-owned
 \strong{The p-values are NOT genome-wide calibrated.} They are marker-by-marker
 Wald (nominal) p-values plus deterministic Bonferroni and Benjamini-Hochberg
 adjustments over the \emph{supplied} marker set only. There is no realistic-LD /
-study-design calibration, no permutation, and no external comparator (the
-calibration gate is \code{HSquared.jl#48}). Do not report genome-wide significance
-from these values.
+study-design calibration activated in R, no permutation-backed threshold, and
+no external comparator. The Julia lane has a fixed-panel calibration smoke
+harness (HSquared.jl PR #134), but these R results remain uncalibrated. Do not
+report genome-wide significance from these values.
 
 A leave-one-group-out (LOCO) scan is available with \code{method = "loco"} and a
 \code{marker_groups} argument: when a marker is tested, the genomic relationship

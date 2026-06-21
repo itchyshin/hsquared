@@ -3,7 +3,8 @@
 # fits a tiny animal model, runs the scan, and verifies it matches the engine's
 # mixed_model_marker_scan element-wise (and differs from a fixed-effect scan, so
 # the relationship correction genuinely enters). The p-values are NOT
-# genome-wide calibrated (engine gate HSquared.jl#48).
+# genome-wide calibrated; Julia's fixed-panel smoke does not activate an R
+# threshold.
 
 hs_mock_gwas_fit <- function(
   n = 4,
