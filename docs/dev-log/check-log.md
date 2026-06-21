@@ -5067,3 +5067,4 @@ release".
   pass; live gwas all pass; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**. capability-status marker-scan row + NEWS
   gwas bullet updated.
+- CI (commit `0b9756a`, gwas single-marker): pkgdown run `27888126645` **success**; pages green.

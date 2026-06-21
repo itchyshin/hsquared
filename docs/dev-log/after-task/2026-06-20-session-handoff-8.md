@@ -83,8 +83,7 @@ mechanical: parser (§2) → `genotyped_rows` alignment (§3, the crux) → payl
    capability-status is now `partial (R)`. Remaining single-step follow-ups: the
    `hs_data()` pedigree shorthand (deferred), large-pedigree sparse `A`, and the
    twin-gated BLUPF90/AGHmatrix comparator to promote past `partial`.
-2. **LOCO / single-marker `gwas()`** (#4, now the top R-ownable item):
-   `single_marker_scan(fit, markers)` is a
+2. **LOCO `gwas()`** (#4, remaining half): the single-marker option is DONE (`gwas(method = "single")`, commit `0b9756a`). LOCO proper still needs a marker-group map + per-group relationship precisions. `single_marker_scan(fit, markers)` was a
    landed post-fit entry (relatedness-UNcorrected screen; `src/postfit.jl:51`) — a
    small `gwas(method=)` option. LOCO proper needs per-group precisions
    (`loco_relationship_precisions`) — check before wiring.
