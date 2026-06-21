@@ -47,7 +47,7 @@ group(formula, ...)
 
 unknown_parent_group(formula, ...)
 
-metafounder(formula, pedigree = NULL, Gamma = NULL, ...)
+metafounder(formula, pedigree = NULL, group = NULL, Gamma = NULL, ...)
 
 inbreeding(formula, ...)
 ```
@@ -81,6 +81,12 @@ inbreeding(formula, ...)
 - K, Kinv, Q:
 
   User-supplied relationship or precision matrices.
+
+- group:
+
+  Planned animal-to-metafounder group assignment, aligned to the
+  normalized pedigree IDs; reserved for the planned `metafounder()`
+  bridge.
 
 - Gamma:
 

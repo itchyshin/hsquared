@@ -141,20 +141,29 @@ a local Julia, <code>JuliaCall</code>, and a sibling
 <th>Target</th>
 <th>Variances</th>
 </tr></thead>
-<tbody><tr class="odd">
+<tbody>
+<tr class="odd">
 <td>supplied-H inverse single-step</td>
 <td><code>single_step(1 | id, Hinv = Hinv)</code></td>
 <td><code>target = "single_step"</code></td>
 <td>estimated by the Julia AI-REML path</td>
-</tr></tbody>
+</tr>
+<tr class="even">
+<td>constructed-H inverse single-step</td>
+<td><code>single_step(1 | id, pedigree = ped, markers = M)</code></td>
+<td><code>target = "single_step_construct"</code></td>
+<td>estimated after the engine builds Hinv</td>
+</tr>
+</tbody>
 </table>
-<p>Building <code>Hinv</code> from a pedigree and genomic relationship
-is planned. APY, low-rank marker solvers, weighted genomic
-relationships, and Bayesian marker models are also planned. A post-fit,
-relatedness-corrected marker scan is now available experimentally via
-<code>gwas(fit, markers)</code> (see <em>Post-fit marker scan</em>
-below) — its p-values are <strong>not</strong> genome-wide calibrated;
-QTL/eQTL scans remain planned.</p>
+<p>The constructed single-step path is experimental and
+validation-scale. APY, low-rank marker solvers, weighted genomic
+relationships, production-scale single-step construction, metafounder
+<code>H^Gamma</code>, and Bayesian marker models are planned. A
+post-fit, relatedness-corrected marker scan is now available
+experimentally via <code>gwas(fit, markers)</code> (see <em>Post-fit
+marker scan</em> below) — its p-values are <strong>not</strong>
+genome-wide calibrated; QTL/eQTL scans remain planned.</p>
 </div>
 <div class="section level2">
 <h2 id="supplied-ginv">Supplied Ginv<a class="anchor" aria-label="anchor" href="#supplied-ginv"></a>
@@ -262,7 +271,7 @@ records
 <div class="section level2">
 <h2 id="supplied-hinv-single-step">Supplied Hinv single-step<a class="anchor" aria-label="anchor" href="#supplied-hinv-single-step"></a>
 </h2>
-<p>Use this path only when you already have a single-step inverse
+<p>Use this path when you already have a single-step inverse
 relationship matrix <code>Hinv</code> with dimnames matching the
 phenotype IDs.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -280,22 +289,46 @@ phenotype IDs.</p>
 <span><span class="fu"><a href="../reference/variance_components.html">variance_components</a></span><span class="op">(</span><span class="va">fit_h</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/heritability.html">heritability</a></span><span class="op">(</span><span class="va">fit_h</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_h</span><span class="op">)</span></span></code></pre></div>
-<p>This is not yet automatic single-step HBLUP construction. The package
-does not currently build <code>Hinv</code> from pedigree and genotype
-inputs. That construction is planned as a separate validated
-relationship-matrix slice.</p>
+</div>
+<div class="section level2">
+<h2 id="constructed-hinv-single-step">Constructed Hinv single-step<a class="anchor" aria-label="anchor" href="#constructed-hinv-single-step"></a>
+</h2>
+<p>Use this path when you have a pedigree for all animals and a marker
+matrix for the genotyped subset. Marker rows must be named by animal ID.
+Phenotyped animals do not all need marker rows; ungenotyped animals are
+the point of single-step.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_h_construct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">single_step</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span>, markers <span class="op">=</span> <span class="va">M</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">pheno</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  REML <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  control <span class="op">=</span> <span class="fu"><a href="../reference/hs_control.html">hs_control</a></span><span class="op">(</span></span>
+<span>    engine <span class="op">=</span> <span class="st">"julia"</span>,</span>
+<span>    engine_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>target <span class="op">=</span> <span class="st">"single_step_construct"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/variance_components.html">variance_components</a></span><span class="op">(</span><span class="va">fit_h_construct</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/heritability.html">heritability</a></span><span class="op">(</span><span class="va">fit_h_construct</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_h_construct</span><span class="op">)</span></span></code></pre></div>
+<p>The engine builds the pedigree inverse, dense pedigree relationship,
+genomic relationship for the genotyped subset, and the single-step
+precision <code>H^-1</code>. Construction knobs (<code>tau</code>,
+<code>omega</code>, <code>blend_weight</code>, <code>ridge</code>) exist
+for validation work but are not comparator-validated defaults.</p>
 </div>
 <div class="section level2">
 <h2 id="output-checklist">Output checklist<a class="anchor" aria-label="anchor" href="#output-checklist"></a>
 </h2>
 <p>For the current genomic paths, start with:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/fit_diagnostics.html">fit_diagnostics</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/variance_components.html">variance_components</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/heritability.html">heritability</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span></code></pre></div>
 <p>For SNP-BLUP, also use:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_variance_explained</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -307,19 +340,21 @@ relationship-matrix slice.</p>
 scan on a fitted Gaussian animal model, reusing the fit’s estimated
 variance components and pedigree relationship. Markers are one row per
 animal (in the fit’s pedigree order), one column per marker.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">dat</span><span class="op">)</span></span>
 <span><span class="va">scan</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">markers</span><span class="op">)</span> <span class="co"># markers: animals x markers</span></span>
 <span><span class="va">scan</span> <span class="co"># effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod</span></span></code></pre></div>
 <p>The p-values are <strong>not genome-wide calibrated</strong>: they
 are nominal Wald p-values plus Bonferroni/Benjamini-Hochberg over the
-supplied markers only, with no realistic-LD/design calibration, no
-permutation, and no leave-one-chromosome-out (LOCO). Do not report
-genome-wide significance from them.</p>
+supplied markers only, with no realistic-LD/design calibration or
+permutation. A leave-one-group-out mode is available with
+<code>method = "loco"</code> and <code>marker_groups =</code>, but it is
+still validation-scale and uncalibrated. Do not report genome-wide
+significance from these p-values.</p>
 <p>The tabular <code><a href="../reference/marker_extractors.html">gwas_table()</a></code> / <code><a href="../reference/marker_extractors.html">qtl_table()</a></code> /
 <code><a href="../reference/marker_extractors.html">eqtl_table()</a></code> output names stay reserved for a planned
 map-annotated scan API:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">qtl_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>    <span class="co"># reserved (planned map-annotated API)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>   <span class="co"># reserved</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span>   <span class="co"># reserved</span></span></code></pre></div>
@@ -332,10 +367,11 @@ map-annotated scan API:</p>
 <p>Covered in the R lane:</p>
 <ul>
 <li>parser and payload checks for supplied <code>Ginv</code>, marker
-matrices, supplied <code>Hinv</code>, and SNP-BLUP variance inputs;</li>
+matrices, supplied <code>Hinv</code>, constructed single-step inputs,
+and SNP-BLUP variance inputs;</li>
 <li>skip-guarded live bridge tests for genomic GREML, marker-built G,
-supplied <code>Hinv</code>, and SNP-BLUP when Julia and the sibling
-engine are available;</li>
+supplied <code>Hinv</code>, constructed single-step, and SNP-BLUP when
+Julia and the sibling engine are available;</li>
 <li>extractor checks for variance components, genomic heritability,
 genomic breeding values, marker effects, and provenance
 diagnostics.</li>
@@ -344,7 +380,9 @@ diagnostics.</li>
 <ul>
 <li>production relationship-matrix construction and scaling/blending
 controls;</li>
-<li>building <code>Hinv</code> from pedigree plus genotype data;</li>
+<li>production-scale and externally comparator-validated single-step
+construction;</li>
+<li>metafounder single-step <code>H^Gamma</code>;</li>
 <li>APY and low-rank large-marker workflows;</li>
 <li>PLINK/VCF/BCF readers and on-disk marker storage;</li>
 <li>genomic comparator parity with sommer, BLUPF90-family tools, JWAS,

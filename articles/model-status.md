@@ -51,7 +51,7 @@ container, extractors, and advanced opt-in engine controls.
 - [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   (supplied `Ginv` or a `markers` matrix),
   [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-  (supplied `Hinv`),
+  (supplied `Hinv`, or constructed `Hinv` from `pedigree` + `markers`),
   [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   and
@@ -208,8 +208,10 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
   `genomic(1 | id, markers = M)` (the engine builds the genomic
   relationship from the marker matrix), `target = "genomic"`.
 - Single-step — `single_step(1 | id, Hinv = Hinv)` on a supplied
-  single-step inverse, `target = "single_step"`. Building `Hinv` from a
-  pedigree + G is planned.
+  single-step inverse, `target = "single_step"`, or
+  `single_step(1 | id, pedigree = ped, markers = M)`,
+  `target = "single_step_construct"`, where the engine builds `Hinv`
+  from the pedigree and genotyped-subset marker matrix.
 - SNP-BLUP / RR-BLUP marker effects — `genomic(1 | id, markers = M)`,
   `target = "snp_blup"`. Returns per-marker effects via
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)

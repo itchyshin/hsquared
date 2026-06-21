@@ -140,10 +140,12 @@ the fit’s variance components and pedigree.</p>
 <span><span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">M</span><span class="op">)</span> <span class="co"># M: animals x markers; returns effect/se/z/chisq/p_value/...</span></span></code></pre></div>
 <p>The p-values are <strong>not genome-wide calibrated</strong>: nominal
 Wald p-values plus Bonferroni/Benjamini-Hochberg over the supplied
-markers only, with no realistic-LD/design calibration, no permutation,
-and no LOCO. Do not report genome-wide significance from them. The
-calibrated thresholds and the formula-grammar / map-annotated path below
-remain planned.</p>
+markers only, with no realistic-LD/design calibration or permutation. A
+leave-one-group-out mode is available with <code>method = "loco"</code>
+and <code>marker_groups =</code>, but it is still validation-scale and
+uncalibrated. Do not report genome-wide significance from these
+p-values. The calibrated thresholds and the formula-grammar /
+map-annotated path below remain planned.</p>
 <p>Data diagnostics are also live:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bundle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hs_data.html">hs_data</a></span><span class="op">(</span></span>
