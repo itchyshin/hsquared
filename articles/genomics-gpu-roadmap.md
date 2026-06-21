@@ -1,6 +1,8 @@
 # Genomics, QTL, and CPU/GPU roadmap
 
-This page is a roadmap, not an implemented-feature page.
+This page is a roadmap and status map. Some genomic building blocks now
+exist as opt-in experimental paths, while production genomics, QTL/eQTL,
+GLLVM/omics, and CPU/GPU acceleration remain gated roadmap work.
 
 `hsquared` is designed to grow from a simple animal-model interface into
 a coherent modelling language for phenotypes, pedigrees, genotypes,
@@ -137,5 +139,6 @@ ordination, latent breeding values, and high-dimensional G matrices.
 ## Evidence gate
 
 The package will not claim ASReml-level performance, GPU speedup,
-genomic support, QTL/eQTL support, or GLLVM support until code, tests,
-docs, and validation evidence exist.
+production genomic support, QTL/eQTL support, or GLLVM support until
+code, tests, docs, and validation evidence exist. Current genomic and
+marker-scan paths are experimental, opt-in, and partial.
