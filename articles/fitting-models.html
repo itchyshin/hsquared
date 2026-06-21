@@ -283,70 +283,72 @@ validated.</p>
 <span><span class="co">##   parsed today: animal(1 | id, pedigree = ped); animal(1 | id) with an hs_data pedigree</span></span>
 <span><span class="co">##   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in</span></span>
 <span><span class="co">##   planned grammar: rows marked planned/reserved error before fitting</span></span>
-<span><span class="co">##                                                               term     phase</span></span>
-<span><span class="co">##                                     animal(1 | id, pedigree = ped)   Phase 1</span></span>
-<span><span class="co">##            animal(1 | id) with data = hs_data(..., pedigree = ped)   Phase 1</span></span>
-<span><span class="co">##                                                  permanent(1 | id)   Phase 2</span></span>
-<span><span class="co">##                                              common_env(1 | group)   Phase 2</span></span>
-<span><span class="co">##                                          maternal_genetic(1 | dam)   Phase 2</span></span>
-<span><span class="co">##              animal(rr(covariate, order = 2) | id, pedigree = ped)   Phase 2</span></span>
-<span><span class="co">##                                              maternal_env(1 | dam)   Phase 2</span></span>
-<span><span class="co">##                         paternal_genetic(1 | sire, pedigree = ped)   Phase 2</span></span>
-<span><span class="co">##                                             paternal_env(1 | sire)   Phase 2</span></span>
-<span><span class="co">##                                           group(1 | genetic_group)   Phase 2</span></span>
-<span><span class="co">##                                      unknown_parent_group(1 | upg)   Phase 2</span></span>
-<span><span class="co">##  metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)   Phase 2</span></span>
-<span><span class="co">##                                                 inbreeding(1 | id)   Phase 2</span></span>
-<span><span class="co">##                                     cytoplasmic(1 | maternal_line)  Phase 3+</span></span>
-<span><span class="co">##            imprinting(1 | id, pedigree = ped, parent = "maternal")  Phase 3+</span></span>
-<span><span class="co">##                                  dominance(1 | id, pedigree = ped)  Phase 3+</span></span>
-<span><span class="co">##                                  epistasis(1 | id, pedigree = ped)  Phase 3+</span></span>
-<span><span class="co">##                                              relmat(1 | id, K = K)  Phase 3+</span></span>
-<span><span class="co">##                                           precision(1 | id, Q = Q)  Phase 3+</span></span>
-<span><span class="co">##                                       genomic(1 | id, Ginv = Ginv)   Phase 5</span></span>
-<span><span class="co">##                                       genomic(1 | id, markers = M)   Phase 5</span></span>
-<span><span class="co">##                                   single_step(1 | id, Hinv = Hinv)   Phase 5</span></span>
-<span><span class="co">##                   single_step(1 | id, pedigree = ped, markers = M)   Phase 5</span></span>
-<span><span class="co">##                                       markers(M, model = "random")   Phase 5</span></span>
-<span><span class="co">##                                   marker_scan(M, map = marker_map)   Phase 5</span></span>
-<span><span class="co">##                         qtl_scan(position, genotype_probs = probs)   Phase 5</span></span>
-<span><span class="co">##             cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped) Phase 3-4</span></span>
-<span><span class="co">##                     animal(trait | id, pedigree = ped, cov = us()) Phase 3-4</span></span>
-<span><span class="co">##                   animal(trait | id, pedigree = ped, cov = diag()) Phase 3-4</span></span>
-<span><span class="co">##           animal(trait | id, pedigree = ped, cov = lowrank(K = 2)) Phase 3-4</span></span>
-<span><span class="co">##                animal(trait | id, pedigree = ped, cov = fa(K = 2)) Phase 3-4</span></span>
-<span><span class="co">##  syntax_status                           fitting_status</span></span>
-<span><span class="co">##         parsed                    fitted (v0.1 default)</span></span>
-<span><span class="co">##         parsed                    fitted (v0.1 default)</span></span>
-<span><span class="co">##         parsed            fitted (opt-in repeatability)</span></span>
-<span><span class="co">##         parsed       fitted (opt-in common-environment)</span></span>
-<span><span class="co">##         parsed                 fitted (opt-in maternal)</span></span>
-<span><span class="co">##         parsed        fitted (opt-in random-regression)</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##         parsed                  fitted (opt-in genomic)</span></span>
-<span><span class="co">##         parsed       fitted (opt-in genomic / SNP-BLUP)</span></span>
-<span><span class="co">##         parsed              fitted (opt-in single-step)</span></span>
-<span><span class="co">##         parsed fitted (opt-in single-step construction)</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##       reserved                            not available</span></span>
-<span><span class="co">##         parsed             fitted (opt-in multivariate)</span></span>
-<span><span class="co">##        planned                            not available</span></span>
-<span><span class="co">##        planned                            not available</span></span>
-<span><span class="co">##        planned                            not available</span></span>
-<span><span class="co">##        planned                            not available</span></span></code></pre>
+<span><span class="co">##                                                                            term</span></span>
+<span><span class="co">##                                                  animal(1 | id, pedigree = ped)</span></span>
+<span><span class="co">##                         animal(1 | id) with data = hs_data(..., pedigree = ped)</span></span>
+<span><span class="co">##                                                               permanent(1 | id)</span></span>
+<span><span class="co">##                                                           common_env(1 | group)</span></span>
+<span><span class="co">##                                                       maternal_genetic(1 | dam)</span></span>
+<span><span class="co">##                           animal(rr(covariate, order = 2) | id, pedigree = ped)</span></span>
+<span><span class="co">##                                                           maternal_env(1 | dam)</span></span>
+<span><span class="co">##                                      paternal_genetic(1 | sire, pedigree = ped)</span></span>
+<span><span class="co">##                                                          paternal_env(1 | sire)</span></span>
+<span><span class="co">##                                                        group(1 | genetic_group)</span></span>
+<span><span class="co">##                                                   unknown_parent_group(1 | upg)</span></span>
+<span><span class="co">##               metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)</span></span>
+<span><span class="co">##                                                              inbreeding(1 | id)</span></span>
+<span><span class="co">##                                                  cytoplasmic(1 | maternal_line)</span></span>
+<span><span class="co">##                         imprinting(1 | id, pedigree = ped, parent = "maternal")</span></span>
+<span><span class="co">##                                               dominance(1 | id, pedigree = ped)</span></span>
+<span><span class="co">##                                               epistasis(1 | id, pedigree = ped)</span></span>
+<span><span class="co">##                                                           relmat(1 | id, K = K)</span></span>
+<span><span class="co">##                                                        precision(1 | id, Q = Q)</span></span>
+<span><span class="co">##                                                    genomic(1 | id, Ginv = Ginv)</span></span>
+<span><span class="co">##                                                    genomic(1 | id, markers = M)</span></span>
+<span><span class="co">##                                                single_step(1 | id, Hinv = Hinv)</span></span>
+<span><span class="co">##                                single_step(1 | id, pedigree = ped, markers = M)</span></span>
+<span><span class="co">##  single_step(1 | id, pedigree = ped, markers = M, group = group, Gamma = Gamma)</span></span>
+<span><span class="co">##                                                    markers(M, model = "random")</span></span>
+<span><span class="co">##                                                marker_scan(M, map = marker_map)</span></span>
+<span><span class="co">##                                      qtl_scan(position, genotype_probs = probs)</span></span>
+<span><span class="co">##                          cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)</span></span>
+<span><span class="co">##                                  animal(trait | id, pedigree = ped, cov = us())</span></span>
+<span><span class="co">##                                animal(trait | id, pedigree = ped, cov = diag())</span></span>
+<span><span class="co">##                        animal(trait | id, pedigree = ped, cov = lowrank(K = 2))</span></span>
+<span><span class="co">##                             animal(trait | id, pedigree = ped, cov = fa(K = 2))</span></span>
+<span><span class="co">##      phase syntax_status                           fitting_status</span></span>
+<span><span class="co">##    Phase 1        parsed                    fitted (v0.1 default)</span></span>
+<span><span class="co">##    Phase 1        parsed                    fitted (v0.1 default)</span></span>
+<span><span class="co">##    Phase 2        parsed            fitted (opt-in repeatability)</span></span>
+<span><span class="co">##    Phase 2        parsed       fitted (opt-in common-environment)</span></span>
+<span><span class="co">##    Phase 2        parsed                 fitted (opt-in maternal)</span></span>
+<span><span class="co">##    Phase 2        parsed        fitted (opt-in random-regression)</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##    Phase 2      reserved                            not available</span></span>
+<span><span class="co">##   Phase 3+      reserved                            not available</span></span>
+<span><span class="co">##   Phase 3+      reserved                            not available</span></span>
+<span><span class="co">##   Phase 3+      reserved                            not available</span></span>
+<span><span class="co">##   Phase 3+      reserved                            not available</span></span>
+<span><span class="co">##   Phase 3+      reserved                            not available</span></span>
+<span><span class="co">##   Phase 3+      reserved                            not available</span></span>
+<span><span class="co">##    Phase 5        parsed                  fitted (opt-in genomic)</span></span>
+<span><span class="co">##    Phase 5        parsed       fitted (opt-in genomic / SNP-BLUP)</span></span>
+<span><span class="co">##    Phase 5        parsed              fitted (opt-in single-step)</span></span>
+<span><span class="co">##    Phase 5        parsed fitted (opt-in single-step construction)</span></span>
+<span><span class="co">##    Phase 5        parsed    not available (contract-only payload)</span></span>
+<span><span class="co">##    Phase 5      reserved                            not available</span></span>
+<span><span class="co">##    Phase 5      reserved                            not available</span></span>
+<span><span class="co">##    Phase 5      reserved                            not available</span></span>
+<span><span class="co">##  Phase 3-4        parsed             fitted (opt-in multivariate)</span></span>
+<span><span class="co">##  Phase 3-4       planned                            not available</span></span>
+<span><span class="co">##  Phase 3-4       planned                            not available</span></span>
+<span><span class="co">##  Phase 3-4       planned                            not available</span></span>
+<span><span class="co">##  Phase 3-4       planned                            not available</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/validation_status.html">validation_status</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## &lt;hs_validation_status&gt;</span></span>

@@ -78,70 +78,72 @@ It is a status table, not a model-fitting helper.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   parsed today: animal(1 | id, pedigree = ped); animal(1 | id) with an hs_data pedigree</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   planned grammar: rows marked planned/reserved error before fitting</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                               term     phase</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                     animal(1 | id, pedigree = ped)   Phase 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            animal(1 | id) with data = hs_data(..., pedigree = ped)   Phase 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  permanent(1 | id)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                              common_env(1 | group)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                          maternal_genetic(1 | dam)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              animal(rr(covariate, order = 2) | id, pedigree = ped)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                              maternal_env(1 | dam)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         paternal_genetic(1 | sire, pedigree = ped)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                             paternal_env(1 | sire)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                           group(1 | genetic_group)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                      unknown_parent_group(1 | upg)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                 inbreeding(1 | id)   Phase 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                     cytoplasmic(1 | maternal_line)  Phase 3+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            imprinting(1 | id, pedigree = ped, parent = "maternal")  Phase 3+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                  dominance(1 | id, pedigree = ped)  Phase 3+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                  epistasis(1 | id, pedigree = ped)  Phase 3+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                              relmat(1 | id, K = K)  Phase 3+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                           precision(1 | id, Q = Q)  Phase 3+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                       genomic(1 | id, Ginv = Ginv)   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                       genomic(1 | id, markers = M)   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                   single_step(1 | id, Hinv = Hinv)   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   single_step(1 | id, pedigree = ped, markers = M)   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                       markers(M, model = "random")   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                   marker_scan(M, map = marker_map)   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         qtl_scan(position, genotype_probs = probs)   Phase 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped) Phase 3-4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                     animal(trait | id, pedigree = ped, cov = us()) Phase 3-4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   animal(trait | id, pedigree = ped, cov = diag()) Phase 3-4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           animal(trait | id, pedigree = ped, cov = lowrank(K = 2)) Phase 3-4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                animal(trait | id, pedigree = ped, cov = fa(K = 2)) Phase 3-4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  syntax_status                           fitting_status</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed                    fitted (v0.1 default)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed                    fitted (v0.1 default)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed            fitted (opt-in repeatability)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed       fitted (opt-in common-environment)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed                 fitted (opt-in maternal)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed        fitted (opt-in random-regression)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed                  fitted (opt-in genomic)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed       fitted (opt-in genomic / SNP-BLUP)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed              fitted (opt-in single-step)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed fitted (opt-in single-step construction)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       reserved                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         parsed             fitted (opt-in multivariate)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        planned                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        planned                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        planned                            not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        planned                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                            term</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  animal(1 | id, pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         animal(1 | id) with data = hs_data(..., pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                               permanent(1 | id)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                           common_env(1 | group)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       maternal_genetic(1 | dam)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           animal(rr(covariate, order = 2) | id, pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                           maternal_env(1 | dam)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                      paternal_genetic(1 | sire, pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                          paternal_env(1 | sire)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        group(1 | genetic_group)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                   unknown_parent_group(1 | upg)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                              inbreeding(1 | id)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  cytoplasmic(1 | maternal_line)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         imprinting(1 | id, pedigree = ped, parent = "maternal")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                               dominance(1 | id, pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                               epistasis(1 | id, pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                           relmat(1 | id, K = K)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        precision(1 | id, Q = Q)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                    genomic(1 | id, Ginv = Ginv)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                    genomic(1 | id, markers = M)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                single_step(1 | id, Hinv = Hinv)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                single_step(1 | id, pedigree = ped, markers = M)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  single_step(1 | id, pedigree = ped, markers = M, group = group, Gamma = Gamma)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                    markers(M, model = "random")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                marker_scan(M, map = marker_map)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                      qtl_scan(position, genotype_probs = probs)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  animal(trait | id, pedigree = ped, cov = us())</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                animal(trait | id, pedigree = ped, cov = diag())</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        animal(trait | id, pedigree = ped, cov = lowrank(K = 2))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                             animal(trait | id, pedigree = ped, cov = fa(K = 2))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      phase syntax_status                           fitting_status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 1        parsed                    fitted (v0.1 default)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 1        parsed                    fitted (v0.1 default)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed            fitted (opt-in repeatability)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed       fitted (opt-in common-environment)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                 fitted (opt-in maternal)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed        fitted (opt-in random-regression)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed                  fitted (opt-in genomic)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed       fitted (opt-in genomic / SNP-BLUP)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed              fitted (opt-in single-step)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed fitted (opt-in single-step construction)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed    not available (contract-only payload)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4        parsed             fitted (opt-in multivariate)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                            not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                            not available</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

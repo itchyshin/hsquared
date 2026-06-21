@@ -227,70 +227,72 @@ formula_status()
     ##   parsed today: animal(1 | id, pedigree = ped); animal(1 | id) with an hs_data pedigree
     ##   fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in
     ##   planned grammar: rows marked planned/reserved error before fitting
-    ##                                                               term     phase
-    ##                                     animal(1 | id, pedigree = ped)   Phase 1
-    ##            animal(1 | id) with data = hs_data(..., pedigree = ped)   Phase 1
-    ##                                                  permanent(1 | id)   Phase 2
-    ##                                              common_env(1 | group)   Phase 2
-    ##                                          maternal_genetic(1 | dam)   Phase 2
-    ##              animal(rr(covariate, order = 2) | id, pedigree = ped)   Phase 2
-    ##                                              maternal_env(1 | dam)   Phase 2
-    ##                         paternal_genetic(1 | sire, pedigree = ped)   Phase 2
-    ##                                             paternal_env(1 | sire)   Phase 2
-    ##                                           group(1 | genetic_group)   Phase 2
-    ##                                      unknown_parent_group(1 | upg)   Phase 2
-    ##  metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)   Phase 2
-    ##                                                 inbreeding(1 | id)   Phase 2
-    ##                                     cytoplasmic(1 | maternal_line)  Phase 3+
-    ##            imprinting(1 | id, pedigree = ped, parent = "maternal")  Phase 3+
-    ##                                  dominance(1 | id, pedigree = ped)  Phase 3+
-    ##                                  epistasis(1 | id, pedigree = ped)  Phase 3+
-    ##                                              relmat(1 | id, K = K)  Phase 3+
-    ##                                           precision(1 | id, Q = Q)  Phase 3+
-    ##                                       genomic(1 | id, Ginv = Ginv)   Phase 5
-    ##                                       genomic(1 | id, markers = M)   Phase 5
-    ##                                   single_step(1 | id, Hinv = Hinv)   Phase 5
-    ##                   single_step(1 | id, pedigree = ped, markers = M)   Phase 5
-    ##                                       markers(M, model = "random")   Phase 5
-    ##                                   marker_scan(M, map = marker_map)   Phase 5
-    ##                         qtl_scan(position, genotype_probs = probs)   Phase 5
-    ##             cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped) Phase 3-4
-    ##                     animal(trait | id, pedigree = ped, cov = us()) Phase 3-4
-    ##                   animal(trait | id, pedigree = ped, cov = diag()) Phase 3-4
-    ##           animal(trait | id, pedigree = ped, cov = lowrank(K = 2)) Phase 3-4
-    ##                animal(trait | id, pedigree = ped, cov = fa(K = 2)) Phase 3-4
-    ##  syntax_status                           fitting_status
-    ##         parsed                    fitted (v0.1 default)
-    ##         parsed                    fitted (v0.1 default)
-    ##         parsed            fitted (opt-in repeatability)
-    ##         parsed       fitted (opt-in common-environment)
-    ##         parsed                 fitted (opt-in maternal)
-    ##         parsed        fitted (opt-in random-regression)
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##         parsed                  fitted (opt-in genomic)
-    ##         parsed       fitted (opt-in genomic / SNP-BLUP)
-    ##         parsed              fitted (opt-in single-step)
-    ##         parsed fitted (opt-in single-step construction)
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##       reserved                            not available
-    ##         parsed             fitted (opt-in multivariate)
-    ##        planned                            not available
-    ##        planned                            not available
-    ##        planned                            not available
-    ##        planned                            not available
+    ##                                                                            term
+    ##                                                  animal(1 | id, pedigree = ped)
+    ##                         animal(1 | id) with data = hs_data(..., pedigree = ped)
+    ##                                                               permanent(1 | id)
+    ##                                                           common_env(1 | group)
+    ##                                                       maternal_genetic(1 | dam)
+    ##                           animal(rr(covariate, order = 2) | id, pedigree = ped)
+    ##                                                           maternal_env(1 | dam)
+    ##                                      paternal_genetic(1 | sire, pedigree = ped)
+    ##                                                          paternal_env(1 | sire)
+    ##                                                        group(1 | genetic_group)
+    ##                                                   unknown_parent_group(1 | upg)
+    ##               metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)
+    ##                                                              inbreeding(1 | id)
+    ##                                                  cytoplasmic(1 | maternal_line)
+    ##                         imprinting(1 | id, pedigree = ped, parent = "maternal")
+    ##                                               dominance(1 | id, pedigree = ped)
+    ##                                               epistasis(1 | id, pedigree = ped)
+    ##                                                           relmat(1 | id, K = K)
+    ##                                                        precision(1 | id, Q = Q)
+    ##                                                    genomic(1 | id, Ginv = Ginv)
+    ##                                                    genomic(1 | id, markers = M)
+    ##                                                single_step(1 | id, Hinv = Hinv)
+    ##                                single_step(1 | id, pedigree = ped, markers = M)
+    ##  single_step(1 | id, pedigree = ped, markers = M, group = group, Gamma = Gamma)
+    ##                                                    markers(M, model = "random")
+    ##                                                marker_scan(M, map = marker_map)
+    ##                                      qtl_scan(position, genotype_probs = probs)
+    ##                          cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)
+    ##                                  animal(trait | id, pedigree = ped, cov = us())
+    ##                                animal(trait | id, pedigree = ped, cov = diag())
+    ##                        animal(trait | id, pedigree = ped, cov = lowrank(K = 2))
+    ##                             animal(trait | id, pedigree = ped, cov = fa(K = 2))
+    ##      phase syntax_status                           fitting_status
+    ##    Phase 1        parsed                    fitted (v0.1 default)
+    ##    Phase 1        parsed                    fitted (v0.1 default)
+    ##    Phase 2        parsed            fitted (opt-in repeatability)
+    ##    Phase 2        parsed       fitted (opt-in common-environment)
+    ##    Phase 2        parsed                 fitted (opt-in maternal)
+    ##    Phase 2        parsed        fitted (opt-in random-regression)
+    ##    Phase 2      reserved                            not available
+    ##    Phase 2      reserved                            not available
+    ##    Phase 2      reserved                            not available
+    ##    Phase 2      reserved                            not available
+    ##    Phase 2      reserved                            not available
+    ##    Phase 2      reserved                            not available
+    ##    Phase 2      reserved                            not available
+    ##   Phase 3+      reserved                            not available
+    ##   Phase 3+      reserved                            not available
+    ##   Phase 3+      reserved                            not available
+    ##   Phase 3+      reserved                            not available
+    ##   Phase 3+      reserved                            not available
+    ##   Phase 3+      reserved                            not available
+    ##    Phase 5        parsed                  fitted (opt-in genomic)
+    ##    Phase 5        parsed       fitted (opt-in genomic / SNP-BLUP)
+    ##    Phase 5        parsed              fitted (opt-in single-step)
+    ##    Phase 5        parsed fitted (opt-in single-step construction)
+    ##    Phase 5        parsed    not available (contract-only payload)
+    ##    Phase 5      reserved                            not available
+    ##    Phase 5      reserved                            not available
+    ##    Phase 5      reserved                            not available
+    ##  Phase 3-4        parsed             fitted (opt-in multivariate)
+    ##  Phase 3-4       planned                            not available
+    ##  Phase 3-4       planned                            not available
+    ##  Phase 3-4       planned                            not available
+    ##  Phase 3-4       planned                            not available
 
 ``` r
 

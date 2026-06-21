@@ -154,12 +154,20 @@ a local Julia, <code>JuliaCall</code>, and a sibling
 <td><code>target = "single_step_construct"</code></td>
 <td>estimated after the engine builds Hinv</td>
 </tr>
+<tr class="odd">
+<td>supplied-Gamma H^Gamma payload gate</td>
+<td><code>single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)</code></td>
+<td><code>target = "metafounder_single_step"</code></td>
+<td>not fit-wired yet</td>
+</tr>
 </tbody>
 </table>
 <p>The constructed single-step path is experimental and
-validation-scale. APY, low-rank marker solvers, weighted genomic
-relationships, production-scale single-step construction, metafounder
-<code>H^Gamma</code>, and Bayesian marker models are planned. A
+validation-scale. <code>H^Gamma</code> currently stops at a
+parser/payload gate: R validates the supplied metafounder labels and
+<code>Gamma</code>, but the live Julia fit is not wired. APY, low-rank
+marker solvers, weighted genomic relationships, production-scale
+single-step construction, and Bayesian marker models are planned. A
 post-fit, relatedness-corrected marker scan is now available
 experimentally via <code>gwas(fit, markers)</code> (see <em>Post-fit
 marker scan</em> below) — its p-values are <strong>not</strong>
@@ -368,7 +376,8 @@ map-annotated scan API:</p>
 <ul>
 <li>parser and payload checks for supplied <code>Ginv</code>, marker
 matrices, supplied <code>Hinv</code>, constructed single-step inputs,
-and SNP-BLUP variance inputs;</li>
+supplied-<code>Gamma</code> <code>H^Gamma</code> payload inputs, and
+SNP-BLUP variance inputs;</li>
 <li>skip-guarded live bridge tests for genomic GREML, marker-built G,
 supplied <code>Hinv</code>, constructed single-step, and SNP-BLUP when
 Julia and the sibling engine are available;</li>
@@ -382,7 +391,8 @@ diagnostics.</li>
 controls;</li>
 <li>production-scale and externally comparator-validated single-step
 construction;</li>
-<li>metafounder single-step <code>H^Gamma</code>;</li>
+<li>live fitting and external validation for metafounder single-step
+<code>H^Gamma</code>;</li>
 <li>APY and low-rank large-marker workflows;</li>
 <li>PLINK/VCF/BCF readers and on-disk marker storage;</li>
 <li>genomic comparator parity with sommer, BLUPF90-family tools, JWAS,
