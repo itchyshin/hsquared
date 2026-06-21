@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync marker-scan issue #23 after Julia #146
+
+- Active lenses: Ada, Shannon, Hopper, Jason, Fisher, Pat, Rose, Grace.
+- Branch: `codex/issue-23-scan-sync`.
+- Scope:
+  - updated live R #23 with the R #83 marker-scan tool-availability blocker and
+    the Julia PR #146 scan-result table status mirror;
+  - updated the issue map and cross-lane marker-scan row.
+- Live GitHub action:
+  - `gh issue edit 23 --repo itchyshin/hsquared --body-file -` updated the
+    marker-scan bridge issue body.
+- Claim boundary: issue/docs sync only. No R threshold activation, no
+  formula-level `marker_scan()` grammar, no map-annotated table workflow, no
+  PLINK/GenABEL/GEMMA/GCTA/SAIGE comparator evidence, no production
+  calibration, and no validation/public-claim promotion.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-23-scan-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync roadmap issue #9 status
 
 - Active lenses: Ada, Shannon, Boole, Jason, Fisher, Pat, Rose, Grace.
