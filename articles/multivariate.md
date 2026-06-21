@@ -6,11 +6,13 @@ traits share additive-genetic variation, what are the genetic
 correlations, and what are the trait-specific heritabilities?
 
 This path is experimental and opt-in. It is useful for tiny
-validation-scale Gaussian examples, but it is not yet an ASReml-style
-production multi-trait claim and not yet supported by a committed
-known-truth recovery fixture. The examples are not run when this page is
-built because they require a local Julia, `JuliaCall`, and a sibling
-`HSquared.jl` checkout.
+validation-scale Gaussian examples, and the validation ledger now
+records cold-start recovery, one full-unstructured `sommer` REML
+comparator, a published supplied-covariance Mrode anchor, and a
+`MCMCglmm` Bayesian agreement probe. It is still not an ASReml-style
+production multi-trait claim and is not promoted beyond `partial`. The
+examples are not run when this page is built because they require a
+local Julia, `JuliaCall`, and a sibling `HSquared.jl` checkout.
 
 ## Model
 
@@ -189,8 +191,14 @@ This page describes a partial capability:
 - missing response cells allowed, missing fixed-effect cells rejected;
 - no `cov = us()`, `cov = diag()`, `cov = lowrank(K)`, or `cov = fa(K)`
   grammar yet;
-- no external comparator or committed `t >= 2` known-truth recovery
-  claim yet.
+- R-lane evidence includes a 100-replicate cold-start recovery study,
+  one full-unstructured `sommer` REML comparator, a published Mrode
+  Example 5.1 supplied-covariance BLUP/MME anchor, and a `MCMCglmm`
+  Bayesian agreement probe;
+- covered promotion still needs the recovery gate accepted or broadened
+  plus a second independent same-estimand comparator beyond `sommer`;
+- `MCMCglmm` is Bayesian/MCMC agreement evidence, not same-estimand REML
+  parity.
 
 Use
 [`validation_status()`](https://itchyshin.github.io/hsquared/reference/validation_status.md)

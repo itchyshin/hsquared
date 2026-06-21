@@ -223,10 +223,12 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
   `cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)`,
   `target = "multivariate"`. Returns G/R covariance and correlation
   matrices, per-trait h2, and cross-trait EBVs; missing trait cells may
-  be `NA`. Dense validation-scale only; t\>=2 recovery and full
-  same-estimand external-comparator evidence remain planned. A partial
-  optional `sommer` diagonal-residual check exists for G0, diag(R0), and
-  diagonal-target h2.
+  be `NA`. Dense validation-scale only; R-lane evidence includes
+  cold-start recovery, one full-unstructured `sommer` REML comparator, a
+  published Mrode supplied-covariance BLUP/MME anchor, and a `MCMCglmm`
+  Bayesian agreement probe. Covered promotion still needs recovery-gate
+  acceptance or broadening plus a second independent same-estimand
+  comparator beyond `sommer`; `MCMCglmm` is not REML parity.
 
 ## Current limits
 

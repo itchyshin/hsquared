@@ -310,10 +310,14 @@ Mirrors the twin <code>V2-SNPBLUP</code> gate.</li>
 <code>cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)</code>,
 <code>target = "multivariate"</code>. Returns G/R covariance and
 correlation matrices, per-trait h2, and cross-trait EBVs; missing trait
-cells may be <code>NA</code>. Dense validation-scale only; t&gt;=2
-recovery and full same-estimand external-comparator evidence remain
-planned. A partial optional <code>sommer</code> diagonal-residual check
-exists for G0, diag(R0), and diagonal-target h2.</li>
+cells may be <code>NA</code>. Dense validation-scale only; R-lane
+evidence includes cold-start recovery, one full-unstructured
+<code>sommer</code> REML comparator, a published Mrode
+supplied-covariance BLUP/MME anchor, and a <code>MCMCglmm</code>
+Bayesian agreement probe. Covered promotion still needs recovery-gate
+acceptance or broadening plus a second independent same-estimand
+comparator beyond <code>sommer</code>; <code>MCMCglmm</code> is not REML
+parity.</li>
 </ul>
 </div>
 <div class="section level2">

@@ -319,8 +319,8 @@
   validated test
   ([\#47](https://github.com/itchyshin/hsquared/issues/47)).
 - **Validation evidence (multivariate, t = 2).** Two reproducible
-  studies now back the experimental multivariate target (both
-  `.Rbuildignore`d, not part of the build).
+  studies plus one Bayesian agreement probe now back the experimental
+  multivariate target (all `.Rbuildignore`d, not part of the build).
   `data-raw/multivariate-recovery-study.R` is a 100-replicate
   **cold-start** known-truth recovery study in which all six G0/R0
   elements, the genetic correlation, and both per-trait `h²` fall within
@@ -332,8 +332,13 @@
   reproduces the engine’s serialized `phase4_multitrait_parity`
   G0/R0/β/`h²`/EBV to ≤ 8e-5 and additionally recovers the off-diagonal
   residual covariance the in-suite diagonal-residual `sommer` check
-  cannot. The multivariate capability **stays `partial`** — this is
-  evidence toward, not promotion of, the twin-gated covered gate
+  cannot. `data-raw/multivariate-mcmcglmm-agreement-study.R` is a
+  **Bayesian agreement probe**: the serialized Julia target lies inside
+  95% HPD intervals for all 8 covariance elements, all 4 fixed effects,
+  and both per-trait `h²` values, with posterior-mean EBV correlations
+  \> 0.9997. The `MCMCglmm` leg is not same-estimand REML parity, and
+  the multivariate capability **stays `partial`** — this is evidence
+  toward, not promotion of, the twin-gated covered gate
   ([\#10](https://github.com/itchyshin/hsquared/issues/10)).
 
 ## hsquared 0.1.0
