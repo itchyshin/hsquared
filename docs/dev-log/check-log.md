@@ -3,6 +3,30 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #149 parent ledgers
+
+- Active lenses: Ada, Shannon, Hopper, Jason, Rose, Grace.
+- Branch: `codex/julia-149-parent-ledger-sync`.
+- Scope:
+  - recorded HSquared.jl PR #149 (`bcdcd4c`) in the selected Julia issue-map
+    anchors for #6, #7, and #49;
+  - updated the coordination board and after-task report.
+- Live GitHub verification:
+  - `gh pr view 149 --repo itchyshin/HSquared.jl --json number,state,mergeStateStatus,statusCheckRollup,url,title,mergeCommit,mergedAt`
+    showed PR #149 merged at `bcdcd4c` with Julia 1, Julia 1.10, docs, and
+    documenter/deploy successful.
+- Claim boundary: issue/docs sync only. No R or Julia behavior changed; no
+  external comparator evidence, calibrated threshold activation,
+  formula/model-spec activation, validation/public-claim promotion, or covered
+  status change.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-149-parent-ledger-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync innovation issues #24/#25 gates
 
 - Active lenses: Ada, Shannon, Jason, Gauss, Karpinski, Rose, Grace.
