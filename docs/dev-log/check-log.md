@@ -22,6 +22,33 @@ with private memory.
   - `rg -n "no threshold is activated|gwas\\(\\) remains experimental and uncalibrated|required calibrated-result fields|Validation Gates|external scan comparator|covered-status promotion" docs/design/28-gwas-threshold-activation-contract.md docs/design/11-next-50-slices.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-gwas-threshold-activation-contract.md`
     confirms the contract/non-activation boundary.
 
+## 2026-06-21 Julia #135/#136/#137 issue-map sync
+
+- Scope: coordination docs only. Refreshed the R issue map and next-50 board
+  after Julia-lane sync reported:
+  - HSquared.jl PR #135 merged at `a815097`, reopening #48 as the active
+    GWAS threshold calibration/evidence gate;
+  - HSquared.jl PR #136 merged at `ff1fbab`, closing #93 after reconciling the
+    plotting plot-data contract with R A3/PR #35;
+  - HSquared.jl PR #137 merged at `ad7848c`, closing #47 as an issue-ledger
+    closeout for already-landed multivariate covariance SE/LRT work.
+- Live issue checks:
+  - `gh issue view 48 --repo itchyshin/HSquared.jl --json number,title,state,labels,updatedAt,url`
+    returned `state = "OPEN"`.
+  - `gh issue view 93 --repo itchyshin/HSquared.jl --json number,title,state,closedAt,updatedAt,url`
+    returned `state = "CLOSED"`, `closedAt = "2026-06-21T19:25:40Z"`.
+  - `gh issue view 47 --repo itchyshin/HSquared.jl --json number,title,state,closedAt,updatedAt,url`
+    returned `state = "CLOSED"`, `closedAt = "2026-06-21T19:32:38Z"`.
+- Claim boundary: no R code, capability status, or `validation_status()` row
+  changed. #48 reopening does not activate R thresholds; #93/#47 closure does
+  not promote plotting, marker-scan, structured covariance, or multivariate
+  validation status.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#135|#136|#137|a815097|ff1fbab|ad7848c|#48|#93|#47|no R threshold|does not promote|no R code" docs/dev-log/issue-map.md docs/design/11-next-50-slices.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-julia-135-137-issue-map-sync.md`
+    confirms the live issue-state sync and no-promotion boundary.
+
 ## 2026-06-21 GWAS calibration metadata validator
 
 - Scope: internal R validation scaffold only. Added strict validation for
