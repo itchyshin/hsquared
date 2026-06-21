@@ -3,6 +3,32 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 structured diagonal claims reconciliation
+
+- Scope: public-claim/status wording only. Reconciled the structured
+  covariance claim boundary after the diagonal-G bridge had already landed:
+  `engine_control$genetic_structure = "diagonal"` is experimental/partial,
+  while `lowrank`, `factor_analytic`, `rank`, and long-format
+  `cov = us()/diag()/lowrank()/fa()` grammar remain planned/fenced.
+- Updated `R/hs_control.R` roxygen and
+  `docs/design/06-public-claims-register.md`.
+- Claim boundary: no parser or fitting behavior changed, no factor-analytic or
+  low-rank bridge activated, no loading extractor activated, no validation row
+  promoted.
+- Checks:
+  - `Rscript --vanilla -e 'devtools::document()'` regenerated
+    `man/hs_control.Rd`.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api|formula-animal|multivariate|diagonal-multivariate|covariance-structure-lrt")'`:
+    269 pass / 0 fail / 0 warn / 4 skip.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - Rose overclaim grep over the structured-covariance claim surfaces confirms
+    diagonal is framed as experimental/partial while `lowrank`,
+    `factor_analytic`, `rank`, and long-format `cov = ...` grammar remain
+    planned/fenced.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = tempfile("hsq-check-"))'`:
+    0 errors / 0 warnings / 0 notes.
+
 ## 2026-06-21 H^Gamma result-surface evidence
 
 - Scope: R bridge evidence only. Strengthened the skip-guarded live
