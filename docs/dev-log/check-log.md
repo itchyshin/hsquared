@@ -3,6 +3,40 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 metafounder H^Gamma live bridge probe
+
+- Scope: R bridge activation for supplied-`Gamma` single-step `H^Gamma` only.
+  `target = "metafounder_single_step"` now calls the Julia-owned
+  `fit_metafounder_single_step_reml()` path. Animal-only `metafounder()` remains
+  a syntax reservation; no `Gamma` estimation, metafounder-specific extractor,
+  BLUPF90 comparator evidence, production-scale claim, or covered-status
+  promotion is claimed.
+- Bridge details:
+  - added `hs_fit_julia_metafounder_single_step_payload()`;
+  - reused the existing single-step construction payload (`pedigree`, markers,
+    `genotyped_rows`, `group_of`, supplied `Gamma`, and knobs);
+  - explicitly reconstructs `Gamma` as a Julia matrix because JuliaCall collapses
+    a 1x1 R matrix to a scalar.
+- Local live check:
+  - `air format .` - passed.
+  - `Rscript --vanilla -e 'devtools::document()'` - regenerated
+    `man/genomic_markers.Rd` and `man/hs_control.Rd`.
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" NOT_CRAN=true Rscript --vanilla -e 'devtools::test(filter = "single-step-construct")'`
+    - 92 passed, 0 failed, 0 warnings, 0 skipped.
+    - Evidence includes `Gamma = 0` reduction to ordinary single-step
+      construction and nonzero-`Gamma` prediction sensitivity with stable labels
+      and dimensions.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api|single-step-construct")'`
+    - 159 passed, 0 failed, 0 warnings, 7 skipped.
+  - `Rscript --vanilla -e 'devtools::test()'` - 1247 passed, 0 failed, 0
+    warnings, 57 skipped. Skips were optional packages and live Julia bridge
+    legs under the plain Rscript environment.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean.
+  - `git diff --check` - clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` -
+    Status OK, 0 errors, 0 warnings, 0 notes. Missing optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` were INFO only.
+
 ## 2026-06-21 PEV/reliability standard-field status reconciliation
 
 - Scope: R-lane docs/status reconciliation only. No R behavior changed. Updated

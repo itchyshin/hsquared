@@ -40,8 +40,10 @@ experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"genomic"},
-\code{"single_step"}, \code{"snp_blup"}, \code{"multivariate"}, and \code{"nongaussian"},
-described below. \code{marginal} applies only to \code{target = "nongaussian"}.
+\code{"single_step"}, \code{"single_step_construct"},
+\code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"multivariate"}, and
+\code{"nongaussian"}, described below. \code{marginal} applies only to
+\code{target = "nongaussian"}.
 With \code{engine = "julia"} and no \code{target}, the bridge defaults to
 \code{target = "fit_animal_model"}: it surfaces the Julia-owned
 \code{HSquared.fit_animal_model()} dense NelderMead optimizer, honouring the
@@ -86,6 +88,12 @@ paths that fit a single effect whose relationship is a user-supplied inverse:
 genomic relationship), and \code{single_step(1 | id, Hinv = Hinv)} (a single-step
 relationship inverse). All surface \code{HSquared.fit_ai_reml()}. They are REML
 only and not the default.
+\code{target = "single_step_construct"} fits
+\code{single_step(1 | id, pedigree = ped, markers = M)} after the engine builds
+\code{H^-1} from the pedigree and genotyped-subset markers. \code{target = "metafounder_single_step"} fits
+\code{single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)} through the Julia-owned supplied-\code{Gamma} \code{H^Gamma} path. Both are
+experimental, opt-in, dense/validation-scale, REML-only, and not
+comparator-validated; \code{Gamma} is supplied, not estimated.
 \code{target = "snp_blup"} is an experimental, opt-in path for the SNP-BLUP /
 RR-BLUP marker-effect model. It requires \code{genomic(1 | id, markers = M)} (a
 raw marker matrix) and estimates per-marker effects (\code{marker_effects()}) and

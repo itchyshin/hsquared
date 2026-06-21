@@ -74,8 +74,8 @@ precision(1 | id, Q = custom_Q)
 Some later markers are now opt-in experimental (`genomic()`, the supplied-`Hinv`
 and constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and
 `maternal_genetic()` in their gated targets). `single_step(..., group =, Gamma =)`
-is parsed only as a contract-only supplied-`Gamma` `H^Gamma` payload gate; the
-future `target = "metafounder_single_step"` fit is recognized but not wired.
+is an opt-in experimental supplied-`Gamma` `H^Gamma` single-step path through
+`target = "metafounder_single_step"`; `Gamma` is supplied, not estimated.
 `metafounder()` is reserved as a contract-only syntax for a supplied `Gamma`
 matrix and animal-to-metafounder `group` labels; it still errors explicitly as
 planned, not implemented. None of the later markers changes the default v0.1

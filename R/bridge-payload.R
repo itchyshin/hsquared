@@ -170,7 +170,7 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
   # single_step CONSTRUCTION payload: carry the pedigree (id/sire/dam -> Ainv, A),
   # the genotyped-subset markers (-> G), the genotyped_rows alignment, and the
   # construction knobs. The metafounder variant additionally carries group_of +
-  # Gamma, but remains a payload gate until the live bridge is wired.
+  # Gamma for the opt-in supplied-Gamma H^Gamma bridge.
   if (source %in% c("construct", "metafounder_construct")) {
     ped <- primary$pedigree$data
     is_metafounder <- identical(source, "metafounder_construct")

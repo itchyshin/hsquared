@@ -86,8 +86,8 @@ or \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
 inverse) or \code{single_step(1 | id, pedigree = ped, markers = M)} (the engine
 constructs \code{H^-1} from the pedigree + genotyped-subset markers via
 \code{target = "single_step_construct"}). Adding \code{group} plus supplied \code{Gamma}
-validates a contract-only \code{H^Gamma} payload gate for the future
-\code{target = "metafounder_single_step"} path; the live Julia fit is not wired yet.
+fits a supplied-\code{Gamma}, validation-scale \code{H^Gamma} path through
+\code{target = "metafounder_single_step"}; \code{Gamma} is supplied, not estimated.
 When \code{data} is an \code{\link[=hs_data]{hs_data()}} container that bundles a pedigree and genotypes,
 \code{single_step(1 | id)} resolves both from the bundle (the \code{animal(1 | id)}
 precedent), so neither \verb{pedigree =} nor \verb{markers =} is required; explicit

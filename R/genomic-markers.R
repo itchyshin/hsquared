@@ -11,8 +11,8 @@
 #' inverse) or `single_step(1 | id, pedigree = ped, markers = M)` (the engine
 #' constructs `H^-1` from the pedigree + genotyped-subset markers via
 #' `target = "single_step_construct"`). Adding `group` plus supplied `Gamma`
-#' validates a contract-only `H^Gamma` payload gate for the future
-#' `target = "metafounder_single_step"` path; the live Julia fit is not wired yet.
+#' fits a supplied-`Gamma`, validation-scale `H^Gamma` path through
+#' `target = "metafounder_single_step"`; `Gamma` is supplied, not estimated.
 #' When `data` is an [hs_data()] container that bundles a pedigree and genotypes,
 #' `single_step(1 | id)` resolves both from the bundle (the `animal(1 | id)`
 #' precedent), so neither `pedigree =` nor `markers =` is required; explicit

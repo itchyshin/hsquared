@@ -160,7 +160,11 @@ hs_validation_status_evidence <- function() {
       "the pedigree, builds G from genotyped-subset markers, assembles H^-1,",
       "and fits by REML. Live tests cover marker-row reorder invariance,",
       "all-pedigree GEBV labels including ungenotyped animals, differs-from-",
-      "pedigree-model behavior, ridge handling, and hs_data() shorthand."
+      "pedigree-model behavior, ridge handling, and hs_data() shorthand. The",
+      "supplied-Gamma H^Gamma path (`single_step(..., group =, Gamma =)`,",
+      "target = \"metafounder_single_step\") calls fit_metafounder_single_step_reml;",
+      "live tests pin Gamma = 0 reduction to ordinary single-step construction",
+      "and nonzero-Gamma prediction sensitivity with stable labels/dimensions."
     ),
     paste(
       "Pure-R control/validator tests plus skip-guarded live tests running Julia",
@@ -289,8 +293,11 @@ hs_validation_status_boundaries <- function() {
       "Genomic accepts a supplied Ginv or a marker matrix (engine-built G);",
       "single-step accepts either a supplied Hinv or R-surfaced H^-1 construction",
       "from pedigree + genotyped-subset markers (`target =",
-      "\"single_step_construct\"`). The construction knobs (tau/omega/blend/ridge)",
-      "are not comparator-validated. Low-rank m>>n solves, APY, and",
+      "\"single_step_construct\"`) or supplied-Gamma H^Gamma construction",
+      "(`target = \"metafounder_single_step\"`). The construction knobs",
+      "(tau/omega/blend/ridge) are not comparator-validated. Gamma is supplied,",
+      "not estimated; animal-only metafounder fitting and metafounder-specific",
+      "extractors are not implemented. Low-rank m>>n solves, APY, and",
       "AGHmatrix/sommer/BLUPF90 comparator parity are planned. Not the default,",
       "not ML, not production or comparator-validated."
     ),

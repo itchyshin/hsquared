@@ -1738,6 +1738,114 @@ hs_fit_julia_single_step_construct_payload <- function(
   )
 }
 
+# Opt-in, experimental supplied-Gamma H^Gamma single-step bridge. This mirrors
+# the ordinary construction helper above, but delegates H construction to the
+# Julia-owned metafounder precision path. Gamma is supplied by the user; this
+# bridge does not estimate Gamma or expose metafounder-specific extractors.
+hs_fit_julia_metafounder_single_step_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  initial = c(sigma_a2 = 1, sigma_e2 = 1),
+  iterations = 100L
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (
+    !identical(payload$relationship_source, "metafounder_single_step") ||
+      is.null(payload$markers) ||
+      is.null(payload$pedigree) ||
+      is.null(payload$genotyped_rows) ||
+      is.null(payload$group_of) ||
+      is.null(payload$Gamma)
+  ) {
+    stop(
+      "Internal bridge error: the metafounder single-step payload is ",
+      "incomplete (needs pedigree, markers, genotyped_rows, group_of, and ",
+      "Gamma).",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  initial <- hs_validate_initial_variances(initial)
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  JuliaCall::julia_assign("hsq_markers", payload$markers)
+  JuliaCall::julia_assign(
+    "hsq_grows",
+    as.integer(payload$genotyped_rows)
+  )
+  JuliaCall::julia_assign("hsq_group_of", unname(payload$group_of))
+  JuliaCall::julia_assign("hsq_Gamma_vec", as.numeric(payload$Gamma))
+  JuliaCall::julia_assign("hsq_Gamma_n", as.integer(nrow(payload$Gamma)))
+  JuliaCall::julia_assign("hsq_tau", payload$single_step$tau)
+  JuliaCall::julia_assign("hsq_omega", payload$single_step$omega)
+  JuliaCall::julia_assign("hsq_bw", payload$single_step$blend_weight)
+  JuliaCall::julia_assign("hsq_ssridge", payload$single_step$ridge)
+  JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
+  JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_command(paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "collect(String, hsq_ped.ids) == hsq_id ||",
+    "error(\"metafounder single_step: engine pedigree order != R order\");",
+    "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+    "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
+    "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
+    "hsq_fit = HSquared.fit_metafounder_single_step_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma, hsq_G, hsq_grows;",
+    "ids = hsq_ped.ids,",
+    "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
+    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+    "sigma_e2 = hsq_initial_sigma_e2));",
+    "hsq_result = HSquared.result_payload(hsq_fit);"
+  ))
+  hs_julia_attach_standard_plot_data()
+
+  raw <- JuliaCall::julia_eval(
+    "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
+  )
+  rel <- payload$relationship
+  result <- hs_normalize_julia_result(raw, payload)
+  result$variance_components$component[
+    result$variance_components$component == "animal"
+  ] <- rel
+  result$heritability$term[result$heritability$term == "animal"] <- rel
+  names(result$random_effects)[
+    names(result$random_effects) == "animal"
+  ] <- rel
+  result$diagnostics$target <- "metafounder_single_step"
+  result$diagnostics$variance_components <-
+    "estimated_metafounder_single_step_ai_reml"
+  result$diagnostics$gamma_source <- "supplied"
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "metafounder_single_step"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_fit_julia_snp_blup_payload <- function(
   payload,
   project = hs_default_julia_project(),
