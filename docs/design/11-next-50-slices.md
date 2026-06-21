@@ -137,6 +137,11 @@ check-log evidence, an after-task report, and an updated claim boundary.
   but R `gwas()` significance thresholds remain inactive. The R surface still
   reports nominal/Bonferroni/BH p-values only, with no realistic-LD production
   calibration, no permutation-backed cutoff, and no external comparator claim.
+- GWAS threshold activation contract: `docs/design/
+  28-gwas-threshold-activation-contract.md` now records the R-side activation
+  surface, required calibrated-result fields, validation gates, and non-goals.
+  This is a contract only; no threshold is activated and marker-scan status
+  remains partial.
 
 ## Programme Board
 
@@ -177,7 +182,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 33 | Julia | Add single-marker scan kernel with kinship correction. | done for engine scan kernels used by R `gwas()`; still no production threshold claim. |
 | 34 | R | Expose post-fit marker scan as opt-in once engine scan results are stable. | done: `gwas(fit, markers)` exposes mixed, single-marker, and LOCO methods with uncalibrated-significance wording; no `marker_scan()` formula grammar or map-annotated QTL/eQTL table activation. |
 | 35 | Julia/R | Add LOCO support for mixed-model scans. | done at validation scale: R live-verifies LOCO against the engine; genomic-LOCO uses pedigree-estimated VCs and remains uncalibrated. |
-| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; marker scans are now live through `gwas()` but remain experimental/uncalibrated; QTL/eQTL tables, production calibration, and extension-scale scans remain planned. |
+| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; marker scans are now live through `gwas()` but remain experimental/uncalibrated; `docs/design/28-gwas-threshold-activation-contract.md` records what must be true before threshold activation; QTL/eQTL tables, production calibration, and extension-scale scans remain planned. |
 | 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
 | 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | done: core keeps simple vocabulary/result contract; heavy scans, file-backed data, plots, fine-mapping, and accelerator scan kernels are extension-bound |
 | 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |
