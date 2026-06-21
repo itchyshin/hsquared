@@ -93,14 +93,19 @@
   Bonferroni/BH over the supplied markers only, with no
   realistic-LD/design calibration, no permutation, and no external
   comparator (engine gate `HSquared.jl#48`); the wrapper applies one
-  whole-pedigree relationship correction, and although a
-  leave-one-group-out (LOCO) scan exists engine-side
-  (`HSquared.loco_mixed_model_marker_scan()`) this R
-  [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
-  does not yet surface it (R LOCO surfacing in progress);
-  [`print()`](https://rdrr.io/r/base/print.html) restates this. Verified
-  live to match the engine element-wise. Experimental,
-  dense/validation-scale; the reserved tabular
+  whole-pedigree relationship correction.
+  `gwas(fit, markers, method = "single")` additionally surfaces the
+  relatedness-**un**corrected single-marker (OLS) scan
+  (`HSquared.single_marker_scan()`) as a naive contrast — it carries a
+  `scan_method` attribute and
+  [`print()`](https://rdrr.io/r/base/print.html)/[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+  flag the absence of any relatedness correction. A leave-one-group-out
+  (LOCO) scan exists engine-side
+  (`HSquared.loco_mixed_model_marker_scan()`) but is not yet surfaced (R
+  LOCO surfacing in progress);
+  [`print()`](https://rdrr.io/r/base/print.html) restates the
+  calibration caveat. Verified live to match the engine element-wise.
+  Experimental, dense/validation-scale; the reserved tabular
   [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   extractors stay reserved for the planned map-annotated API
   ([\#23](https://github.com/itchyshin/hsquared/issues/23)).

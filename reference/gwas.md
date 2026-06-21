@@ -9,7 +9,7 @@ that surfaces the Julia-owned `HSquared.mixed_model_marker_scan()`.
 ## Usage
 
 ``` r
-gwas(object, markers, marker_ids = NULL, ...)
+gwas(object, markers, marker_ids = NULL, method = c("mixed", "single"), ...)
 ```
 
 ## Arguments
@@ -31,6 +31,14 @@ gwas(object, markers, marker_ids = NULL, ...)
   Optional marker names; defaults to the `markers` column names, then to
   sequential ids.
 
+- method:
+
+  `"mixed"` (default) for the relatedness-corrected mixed-model (GLS)
+  scan, or `"single"` for the relatedness-**un**corrected single-marker
+  (OLS) scan. The single-marker scan ignores the pedigree relationship —
+  it is a naive screen useful mainly as a contrast (it is more inflated
+  by relatedness than the mixed scan).
+
 - ...:
 
   Unused.
@@ -38,9 +46,11 @@ gwas(object, markers, marker_ids = NULL, ...)
 ## Value
 
 An `hs_gwas` data frame with one row per marker: `marker`, `effect`,
-`se`, `z`, `chisq`, `p_value`, `bonferroni_p`, `bh_qvalue`, `lod`. Its
+`se`, `z`, `chisq`, `p_value`, `bonferroni_p`, `bh_qvalue`, `lod`,
+carrying a `scan_method` attribute. Its
 [`print()`](https://rdrr.io/r/base/print.html) method restates the
-uncalibrated-significance caveat.
+uncalibrated-significance caveat (and, for `method = "single"`, the
+absence of any relatedness correction).
 
 ## Details
 
