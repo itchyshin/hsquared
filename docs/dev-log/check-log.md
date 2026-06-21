@@ -3,6 +3,33 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Reconcile public GWAS/marker-scan claims
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Pat, Rose, Grace.
+- Branch: `codex/public-claims-gwas-reconcile`.
+- Scope:
+  - corrected stale public-claims wording that still implied no post-fit marker
+    scan/GWAS fitting exists;
+  - clarified that formula-level `marker_scan()`, QTL, and eQTL workflows remain
+    planned;
+  - clarified that experimental `gwas(fit, markers)` is live for mixed,
+    single-marker, and LOCO post-fit scans, but stays dense/validation-scale and
+    uncalibrated;
+  - kept `qtl_table()`, `gwas_table()`, `eqtl_table()`, and `lod_scores()` as
+    reserved output vocabulary for the planned map-annotated API.
+- Claim boundary: documentation/status only. No R behavior changed, no
+  significance threshold was activated, no QTL/eQTL workflow or map-annotated
+  table extractor was implemented, no external comparator/calibration evidence
+  was added, and no status was promoted.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-public-claims-gwas-reconcile.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep confirms the stale no-GWAS wording is gone from the touched
+    public claim row and that `gwas()` remains experimental/uncalibrated with
+    map-annotated table extractors reserved.
+
 ## 2026-06-21 Sync Julia #140 genomic comparator target fixture
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
