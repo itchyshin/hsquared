@@ -150,9 +150,10 @@ container, extractors, and advanced opt-in engine controls.
   returns the per-marker effects of an opt-in SNP-BLUP fit, and
   [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   returns descriptive fitted-marker shares for that same path (see
-  above). Scan tables and LOD outputs are still reserved and only return
-  values for future `hsquared_fit` objects that contain matching result
-  fields.
+  above). `gwas_table(scan)` and `lod_scores(scan)` work for an
+  already-computed `hs_gwas` object, but they are uncalibrated and not
+  map-annotated. Fit-level QTL/GWAS/eQTL tables still require future
+  `hsquared_fit` result fields.
 - [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   as a lightweight input container with ID maps for phenotype, pedigree,
   genotype, expression, marker, annotation, and environment inputs.

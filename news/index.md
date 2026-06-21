@@ -59,6 +59,14 @@
   missing predictor. This is a grammar contract only; `mi()`,
   `miss_control()`, `impute_model()`, and `imputed()` are not exported
   and no missing-data fitting path is active.
+- [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  and
+  [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
+  now accept an already-computed `hs_gwas` object from
+  `gwas(fit, markers)`, returning the current uncalibrated marker-scan
+  table and marker-level LOD scores. Fit-level GWAS/QTL/eQTL tables, map
+  joins, and calibrated thresholds remain planned
+  ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
 - Synced the Julia-owned genomic GBLUP/SNP-BLUP target fixture from
   HSquared.jl PR
   [\#140](https://github.com/itchyshin/hsquared/issues/140) (`008ea4d`)

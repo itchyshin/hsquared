@@ -8,8 +8,11 @@ corresponding result field. `marker_effects()` and
 fitted-marker share, computed as effect squared times centered marker
 variance and normalized across markers; it is not a marker-scan p-value,
 QTL statistic, or causal decomposition under linkage disequilibrium. The
-remaining names are reserved for future results. The current package
-does not fit marker-scan, QTL, GWAS, or eQTL models.
+`gwas_table()` and `lod_scores()` methods for an already-computed
+`hs_gwas` object expose the current uncalibrated marker-scan table and
+marker-level LOD scores. Fit-level QTL/GWAS/eQTL result tables and
+map-annotated / calibrated scan outputs remain reserved for future
+results.
 
 ## Usage
 

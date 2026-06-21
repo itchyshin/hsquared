@@ -10,15 +10,18 @@ The short version:
 - `gwas(fit, markers)` runs an experimental post-fit,
   relatedness-corrected marker scan with **uncalibrated** significance
   (see *Post-fit GWAS* below).
-- [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+- `gwas_table(scan)` and `lod_scores(scan)` work on an already-computed
+  `hs_gwas` object;
+  [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`qtl_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+  fit-level
   [`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
   [`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md),
-  and
+  and map-annotated
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-  are reserved vocabulary (the planned map-annotated / formula-grammar
-  API).
+  remain reserved vocabulary for the planned map-annotated /
+  formula-grammar API.
 - No QTL or eQTL model, and no *calibrated* genome-wide GWAS, is fitted
   today.
 
@@ -67,7 +70,9 @@ and pedigree.
 ``` r
 
 fit <- hsquared(y ~ batch + animal(1 | id, pedigree = ped), data = pheno)
-gwas(fit, M) # M: animals x markers; returns effect/se/z/chisq/p_value/...
+scan <- gwas(fit, M) # M: animals x markers
+gwas_table(scan)     # effect/se/z/chisq/p_value/bonferroni_p/bh_qvalue/lod
+lod_scores(scan)     # marker + LOD only
 ```
 
 The p-values are **not genome-wide calibrated**: nominal Wald p-values
@@ -104,26 +109,30 @@ become hard-to-debug scan errors later.
 
 ## Reserved output vocabulary
 
-These names are already part of the fitted-object contract:
+These names are already part of the fitted-object and scan-result
+contract:
 
 ``` r
 
 marker_effects(fit)
 marker_variance_explained(fit)
+gwas_table(scan)
+lod_scores(scan)
 qtl_table(fit)
 gwas_table(fit)
 eqtl_table(fit)
-lod_scores(fit)
 ```
 
-Only
 [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
 and
 [`marker_variance_explained()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-have live producers today, and only for the opt-in SNP-BLUP path. The
-variance-explained table is a descriptive fitted-marker share, not a
-scan statistic or QTL claim. The other extractors return values only if
-a future engine target has produced the matching result field.
+have live producers for the opt-in SNP-BLUP path. `gwas_table(scan)` and
+`lod_scores(scan)` are thin views of an already-computed `hs_gwas`
+object. The variance-explained table is a descriptive fitted-marker
+share, not a scan statistic or QTL claim; the scan table is still
+uncalibrated and not map-annotated. Fit-level QTL/GWAS/eQTL tables
+return values only if a future engine target has produced the matching
+result field.
 
 ## Planned formula-grammar GWAS path
 

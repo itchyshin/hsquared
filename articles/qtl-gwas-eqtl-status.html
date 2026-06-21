@@ -91,10 +91,13 @@ path.</li>
 relatedness-corrected marker scan with <strong>uncalibrated</strong>
 significance (see <em>Post-fit GWAS</em> below).</li>
 <li>
-<code><a href="../reference/genomic_markers.html">marker_scan()</a></code>, <code><a href="../reference/genomic_markers.html">qtl_scan()</a></code>,
+<code>gwas_table(scan)</code> and <code>lod_scores(scan)</code> work
+on an already-computed <code>hs_gwas</code> object;
+<code><a href="../reference/genomic_markers.html">marker_scan()</a></code>, <code><a href="../reference/genomic_markers.html">qtl_scan()</a></code>, fit-level
 <code><a href="../reference/marker_extractors.html">qtl_table()</a></code>, <code><a href="../reference/marker_extractors.html">gwas_table()</a></code>,
-<code><a href="../reference/marker_extractors.html">eqtl_table()</a></code>, and <code><a href="../reference/marker_extractors.html">lod_scores()</a></code> are reserved
-vocabulary (the planned map-annotated / formula-grammar API).</li>
+<code><a href="../reference/marker_extractors.html">eqtl_table()</a></code>, and map-annotated <code><a href="../reference/marker_extractors.html">lod_scores()</a></code>
+remain reserved vocabulary for the planned map-annotated /
+formula-grammar API.</li>
 <li>No QTL or eQTL model, and no <em>calibrated</em> genome-wide GWAS,
 is fitted today.</li>
 </ul>
@@ -137,7 +140,9 @@ mixed-model (GLS) Wald scan on a fitted Gaussian animal model, reusing
 the fit’s variance components and pedigree.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">pheno</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">M</span><span class="op">)</span> <span class="co"># M: animals x markers; returns effect/se/z/chisq/p_value/...</span></span></code></pre></div>
+<span><span class="va">scan</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">M</span><span class="op">)</span> <span class="co"># M: animals x markers</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">scan</span><span class="op">)</span>     <span class="co"># effect/se/z/chisq/p_value/bonferroni_p/bh_qvalue/lod</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">lod_scores</a></span><span class="op">(</span><span class="va">scan</span><span class="op">)</span>     <span class="co"># marker + LOD only</span></span></code></pre></div>
 <p>The p-values are <strong>not genome-wide calibrated</strong>: nominal
 Wald p-values plus Bonferroni/Benjamini-Hochberg over the supplied
 markers only, with no R-side threshold activation, no permutation-backed
@@ -170,19 +175,24 @@ become hard-to-debug scan errors later.</p>
 <div class="section level2">
 <h2 id="reserved-output-vocabulary">Reserved output vocabulary<a class="anchor" aria-label="anchor" href="#reserved-output-vocabulary"></a>
 </h2>
-<p>These names are already part of the fitted-object contract:</p>
+<p>These names are already part of the fitted-object and scan-result
+contract:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_variance_explained</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">scan</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/marker_extractors.html">lod_scores</a></span><span class="op">(</span><span class="va">scan</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">qtl_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/marker_extractors.html">lod_scores</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>Only <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> and
-<code><a href="../reference/marker_extractors.html">marker_variance_explained()</a></code> have live producers today, and
-only for the opt-in SNP-BLUP path. The variance-explained table is a
-descriptive fitted-marker share, not a scan statistic or QTL claim. The
-other extractors return values only if a future engine target has
+<span><span class="fu"><a href="../reference/marker_extractors.html">eqtl_table</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/marker_extractors.html">marker_effects()</a></code> and
+<code><a href="../reference/marker_extractors.html">marker_variance_explained()</a></code> have live producers for the
+opt-in SNP-BLUP path. <code>gwas_table(scan)</code> and
+<code>lod_scores(scan)</code> are thin views of an already-computed
+<code>hs_gwas</code> object. The variance-explained table is a
+descriptive fitted-marker share, not a scan statistic or QTL claim; the
+scan table is still uncalibrated and not map-annotated. Fit-level
+QTL/GWAS/eQTL tables return values only if a future engine target has
 produced the matching result field.</p>
 </div>
 <div class="section level2">
