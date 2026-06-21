@@ -13,6 +13,14 @@ a twin result-payload change.
 > is fixture-verified against `test/fixtures/structured_covariance_parity/` (live fit skip-guarded).
 > (2) A committed `V6-LAPLACE` (partial) validation row now exists (`d7c7ffa`).
 
+> **Update 2026-06-21 (R main `6a1065e`, Julia main `758349d`).** The ordinary
+> single-step construction gap in row 44 is closed on the R side:
+> `single_step(1 | id, pedigree = ped, markers = M)` + `target =
+> "single_step_construct"` now surfaces `fit_single_step_reml()` experimentally.
+> The next R-side gap is metafounder / single-step `H^Gamma`: the Julia primitives
+> exist and were banked in HSquared.jl PR #128, but R has no model-spec branch,
+> bridge payload, or extractor contract yet.
+
 > **The twin is actively reshaping `main`** (it advanced abf777d → c4fb442 → 4e8ffde within one
 > hour, and closed all 19 open PRs via the trunk merge PR #36). Pin each WS2 slice to a known
 > `origin/main` SHA and coordinate the result-payload shape via the bridge-activation issues
@@ -41,7 +49,7 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 | `repeatability_interval` | V3-REPEAT-REML · partial | repeatability target, no CI | **Yes (Class A)** | same, on the repeatability target — #12 |
 | `prediction_error_variance(...; method=:selinv)`, `reliability` | V1-SELINV-PEV · partial (engine: selinv==dense PEV-diagonal + reliability parity to rtol 1e-8 on a **110-animal 4-generation pedigree**, nfixed=2, off-diag Ainv nnz=550 — `HSquared.jl` test/runtests.jl, gate #81) | enrichment path R-side; the standard `:selinv` field is unpacked when present | **Yes (Class A)** | call selinv methods on the fit; normalize fields — #21. Engine has 110-animal correctness evidence; R surfacing is enrichment-only, no production-sparse or comparator claim. |
 | `fit_gblup_reml` / `fit_snp_blup_reml` | V2-GREML · partial | supplied-variance fitters only | **Yes (Class A)** | route genomic/snp_blup to the `_reml` variant when variances absent — #13 |
-| `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · partial | **verified correct (#14)**: supplied `Hinv` → `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP | Hinv-construction surfacing No yet (R bridge still takes a supplied `Hinv`) | `single_step_inverse` + `fit_single_step_reml` (H⁻¹ construction from pedigree + G) are **engine-shipped/exported**; the R bridge does not yet surface them (R surfacing pending) |
+| `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · partial | **verified correct (#14)**: supplied `Hinv` → `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP; construction path now surfaced with `target = "single_step_construct"` | **Done for ordinary single-step construction**; next gap is metafounder `H^Gamma` | R surfaces `single_step(1 \| id, pedigree = ped, markers = M)` experimentally; live tests cover marker-row reorder invariance, ungenotyped animal GEBVs, ridge handling, and `hs_data()` shorthand. Metafounder `H^Gamma` remains contract-only. |
 | `factor_analytic_covariance` + `genetic_structure`/`genetic_loadings`/`genetic_uniqueness` | V4-FA · partial (calibration failed 8/10, 9/10); V4-BRIDGE · partial (diagonal payload `ad6006d`) | bridge accepts `unstructured` + `diagonal` (rotation-free); rejects `lowrank`/`fa`; reserved loading extractors error | **Diagonal done (Class A); lowrank/fa No yet (Class B)** | `diagonal` shipped + LRT fixture-verified (#61); loadings/uniqueness still need the result payload to expose them (twin #42) + failing calibration — #22 |
 | `single_marker_scan`/`mixed_model_marker_scan`/`loco_*`, `gwas_table`/`qtl_table`/`eqtl_table` | V5-MARKER-* · partial | reserved extractors error | **No yet (Class B)** | needs the twin's post-fit scan payload (#45) + calibrated thresholds — #23 |
 | `fit_laplace_reml`, `laplace_reml_interval`, `NonGaussianFit` | V6-LAPLACE · partial (committed `d7c7ffa`) | R parser rejects non-Gaussian `family`, error now cites the V6-LAPLACE gated foundation | **No yet (Class B)** | committed row exists, but no exported result-payload NamedTuple / `MarginalMethod` dispatch yet; needs `NonGaussianFit` result shape + R `family=` acceptance (twin #44) — #18 |

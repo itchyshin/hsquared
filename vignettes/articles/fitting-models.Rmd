@@ -121,8 +121,11 @@ relationship inverse `Ginv` (with id dimnames) instead of a pedigree. This
 estimates the genomic and residual variances, genomic heritability, and genomic
 breeding values (GEBVs). You can either supply a precomputed `Ginv`, or pass a
 raw marker matrix `M` (rows = individuals) as `genomic(1 | id, markers = M)` and
-let the engine build the genomic relationship and its inverse. Single-step
-(`Hinv`) and external-comparator validation are planned.
+let the engine build the genomic relationship and its inverse. Single-step can
+use either a supplied `Hinv` or the experimental constructed path
+`single_step(1 | id, pedigree = ped, markers = M)` with
+`target = "single_step_construct"`. External-comparator validation remains
+planned.
 
 ```{r}
 fit_g <- hsquared(

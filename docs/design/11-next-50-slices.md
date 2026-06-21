@@ -79,9 +79,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
   while fencing `P_matrix()`, factor-analytic loadings, evolvability, and
   selection-response tools as future gated work.
 - Genomic prediction article: a pkgdown article now separates supplied-`Ginv`
-  GREML, marker-built GREML, supplied-variance SNP-BLUP, and supplied-`Hinv`
-  single-step from planned H construction, APY, QTL/GWAS/eQTL, and production
-  comparator work.
+  GREML, marker-built GREML, supplied-variance SNP-BLUP, supplied-`Hinv`
+  single-step, and constructed-`Hinv` single-step from APY, QTL/GWAS/eQTL,
+  metafounder `H^Gamma`, and production comparator work.
 - QTL/GWAS/eQTL status article: a pkgdown article now separates the reserved
   scan vocabulary and live SNP-BLUP `marker_effects()` /
   `marker_variance_explained()` output from planned marker scans, QTL interval
@@ -159,8 +159,8 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | done: `G_matrix()` and `R_matrix()` are aliases over the existing covariance extractors; no new `P_matrix()` estimand or capability claim |
 | 25 | Julia | Implement genomic relationship scaling/blending options. | G/GINV tests against known formulas. |
 | 26 | R | Expose marker-to-G controls with simple names and safe defaults. | Jason/Hopper review. |
-| 27 | Julia | Add single-step `Hinv` construction from A and G. | Tiny and Mrode-style H checks. |
-| 28 | R | Expose `single_step(..., pedigree = ped, genotypes = ...)` only after Hinv is engine-covered. | No supplied-Hinv confusion. |
+| 27 | Julia | Add single-step `Hinv` construction from A and G. | done: `single_step_inverse` / `fit_single_step_reml` support the ordinary single-step construction. |
+| 28 | R | Expose `single_step(..., pedigree = ped, markers = M)` only after Hinv is engine-covered. | done: `target = "single_step_construct"` with parser, bridge, and live alignment guards; remains experimental/partial. |
 | 29 | Julia | Add APY approximation prototype. | Numerical agreement and memory benchmarks. |
 | 30 | R/docs | Add genomic prediction vignette: GBLUP, SNP-BLUP, supplied variances, and boundaries. | done: article added; no JWAS/ASReml replacement, APY, marker-scan, H-construction, or production-comparator claim |
 | 31 | Julia | Add marker-effect REML or AI-REML variance estimation for SNP-BLUP. | Supplied-variance status can move only after recovery. |
@@ -230,7 +230,7 @@ coordinate without guessing.
 | 37 | Add two-effect recovery/comparator evidence | pending |
 | 38 | Promote two-effect after Rose audit | pending |
 | 39 | Add genomic inverse / GBLUP bridge slice | done in R for supplied `Ginv` and marker-built G; broader bridge pending |
-| 40 | Add single-step H inverse validation | pending beyond supplied `Hinv` surface |
+| 40 | Add single-step H inverse validation | partial: ordinary construction is surfaced and live-tested; APY/metafounder `H^Gamma` and production comparator parity remain pending |
 | 41 | Add APY design/evidence gate | pending |
 | 42 | Add standard QG comparator fixtures | pending |
 | 43 | Tighten validation-status public table | ongoing |

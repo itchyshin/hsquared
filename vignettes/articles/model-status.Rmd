@@ -44,9 +44,10 @@ advanced opt-in engine controls.
   normalized pedigree ordering, and Julia target metadata. It does not fit a
   model.
 - `genomic()` (supplied `Ginv` or a `markers` matrix), `single_step()`
-  (supplied `Hinv`), `permanent()`, `common_env()`, and `maternal_genetic()`
-  parse and fit only opt-in and experimentally (see "Opt-in and experimental"
-  below); the default `engine = "fit"` path rejects them.
+  (supplied `Hinv`, or constructed `Hinv` from `pedigree` + `markers`),
+  `permanent()`, `common_env()`, and `maternal_genetic()` parse and fit only
+  opt-in and experimentally (see "Opt-in and experimental" below); the default
+  `engine = "fit"` path rejects them.
 - `markers()`, `marker_scan()`, and `qtl_scan()` reserve planned genomic/QTL
   formula vocabulary and currently error as not implemented.
 - `maternal_env()`, `paternal_genetic()`, `paternal_env()`, `cytoplasmic()`,
@@ -155,8 +156,9 @@ a `partial` gate in the `HSquared.jl` twin.
   `genomic(1 | id, markers = M)` (the engine builds the genomic relationship
   from the marker matrix), `target = "genomic"`.
 - Single-step — `single_step(1 | id, Hinv = Hinv)` on a supplied single-step
-  inverse, `target = "single_step"`. Building `Hinv` from a pedigree + G is
-  planned.
+  inverse, `target = "single_step"`, or `single_step(1 | id, pedigree = ped,
+  markers = M)`, `target = "single_step_construct"`, where the engine builds
+  `Hinv` from the pedigree and genotyped-subset marker matrix.
 - SNP-BLUP / RR-BLUP marker effects — `genomic(1 | id, markers = M)`,
   `target = "snp_blup"`. Returns per-marker effects via `marker_effects()` plus
   per-individual genomic breeding values. `variance_components` is optional: with

@@ -64,7 +64,7 @@ hs_formula_status_terms <- function() {
     "paternal_env(1 | sire)",
     "group(1 | genetic_group)",
     "unknown_parent_group(1 | upg)",
-    "metafounder(1 | id, pedigree = ped)",
+    "metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)",
     "inbreeding(1 | id)",
     "cytoplasmic(1 | maternal_line)",
     "imprinting(1 | id, pedigree = ped, parent = \"maternal\")",
@@ -75,6 +75,7 @@ hs_formula_status_terms <- function() {
     "genomic(1 | id, Ginv = Ginv)",
     "genomic(1 | id, markers = M)",
     "single_step(1 | id, Hinv = Hinv)",
+    "single_step(1 | id, pedigree = ped, markers = M)",
     "markers(M, model = \"random\")",
     "marker_scan(M, map = marker_map)",
     "qtl_scan(position, genotype_probs = probs)",
@@ -91,7 +92,7 @@ hs_formula_status_categories <- function() {
     rep("v0.1 animal model", 2L),
     rep("standard quantitative genetics", 11L),
     rep("inheritance and relationship kernels", 6L),
-    rep("genomic and marker models", 6L),
+    rep("genomic and marker models", 7L),
     rep("multivariate and factor analytic", 5L)
   )
 }
@@ -101,7 +102,7 @@ hs_formula_status_phases <- function() {
     rep("Phase 1", 2L),
     rep("Phase 2", 11L),
     rep("Phase 3+", 6L),
-    rep("Phase 5", 6L),
+    rep("Phase 5", 7L),
     rep("Phase 3-4", 5L)
   )
 }
@@ -110,7 +111,7 @@ hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 6L),
     rep("reserved", 13L),
-    rep("parsed", 3L),
+    rep("parsed", 4L),
     rep("reserved", 3L),
     "parsed",
     rep("planned", 4L)
@@ -128,6 +129,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in genomic)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
+    "fitted (opt-in single-step construction)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
     rep("not available", 4L)
@@ -170,7 +172,13 @@ hs_formula_status_behavior <- function() {
       "grammar (HSquared.jl#61); homogeneous residual, no permanent-environment",
       "term yet."
     ),
-    rep(inert_marker_text, 6L),
+    rep(inert_marker_text, 5L),
+    paste(
+      "Exported as an inert marker; hsquared() errors as planned, not",
+      "implemented. Reserved contract: supplied `Gamma` and animal-to-",
+      "metafounder `group` labels will define an A^Gamma relationship; Gamma",
+      "is supplied, not estimated."
+    ),
     paste(
       "Exported as an inert marker; hsquared() errors as planned, not",
       "implemented. Inbreeding coefficients F are already computed internally",
@@ -190,6 +198,12 @@ hs_formula_status_behavior <- function() {
     paste(
       "Primary single-step effect of the opt-in, experimental model; requires a",
       "user-supplied `Hinv` and engine = \"julia\", target = \"single_step\"."
+    ),
+    paste(
+      "Primary single-step effect of the opt-in, experimental construction path;",
+      "requires `pedigree` + `markers` or an hs_data() bundle carrying both, and",
+      "engine = \"julia\", target = \"single_step_construct\". The engine builds",
+      "H^-1 from pedigree and genotyped-subset markers at validation scale."
     ),
     rep(inert_marker_text, 3L),
     paste(

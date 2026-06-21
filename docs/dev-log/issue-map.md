@@ -37,6 +37,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 23 | Bridge: post-fit `gwas()`/scan wrapper | 5 | bridge | partial · **blocked** | twin #45; Phase 5 engine landed (PR #36) — now gated on post-fit scan payload + thresholds |
 | 24 | Innovation: augmented AI-REML single-solve (Strandén 2024) | 8 | innovation/perf | planned | engine-led; twin #58; scout note |
 | 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
+| — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | planned | Candidate A Big 3 slice; R syntax reserves `metafounder(..., group =, Gamma =)` and `docs/design/27-metafounder-single-step-contract.md` pins the future payload; no R bridge/extractor/comparator evidence yet |
 
 ## HSquared.jl (twin engine) — open
 
@@ -65,6 +66,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | PEV/reliability | #21 | #43 | twin payload promotion (lowest-delta) |
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 (+ #39) | Phase 5 stack on main + thresholds |
+| Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + extractor branch; supplied `Gamma`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
 | 03-engine-contract reword | #16 (R-side eigen_G) | #38 | twin doc edit |
 | Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + published/Mrode-style target + second independent comparator |
 | HSData marshalling | #8 | #8 | live bridge marshalling |

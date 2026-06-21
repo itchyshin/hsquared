@@ -54,6 +54,8 @@ Current bridge-payload notes:
 ```r
 genomic(1 | id, Ginv = Ginv)
 single_step(1 | id, Hinv = Hinv)
+single_step(1 | id, pedigree = ped, markers = M)
+metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)
 permanent(1 | id)
 common_env(1 | litter)
 maternal_genetic(1 | dam, pedigree = ped)
@@ -68,11 +70,12 @@ relmat(1 | id, K = custom_K)
 precision(1 | id, Q = custom_Q)
 ```
 
-Some later markers are now opt-in experimental (`genomic()`, `single_step()`,
-`permanent()`, `common_env()`, and `maternal_genetic()` in their gated targets).
-The rest are exported or reserved vocabulary that errors explicitly as planned,
-not implemented. None of the later markers changes the default v0.1 animal-model
-fit path.
+Some later markers are now opt-in experimental (`genomic()`, the supplied-`Hinv`
+and constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and
+`maternal_genetic()` in their gated targets). `metafounder()` is reserved as a
+contract-only syntax for a supplied `Gamma` matrix and animal-to-metafounder
+`group` labels; it still errors explicitly as planned, not implemented. None of
+the later markers changes the default v0.1 animal-model fit path.
 
 ## Later Covariance Grammar
 
