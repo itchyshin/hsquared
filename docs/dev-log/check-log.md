@@ -3,6 +3,32 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 hs_data live HSData marshalling parity
+
+- Scope: R bridge/data test plus status ledgers. Added a skip-guarded live
+  JuliaCall test proving that R `hs_data()` phenotype, pedigree, and genotype
+  data-frame components can be marshalled into `HSquared.HSData`, preserving
+  phenotype IDs, genotype IDs, missing-genotype overlap (`b`), and Julia
+  `data_status()` components.
+- Claim boundary: live HSData marshalling parity only. No file-backed storage,
+  PLINK/VCF parsing, genotype imputation, pedigree inverse or relationship
+  construction, marker scanning, eQTL/omics modelling, environment-effect model,
+  or fitting claim.
+- Checks:
+  - `HSQUARED_JULIA_PROJECT='/Users/z3437171/Dropbox/Github Local/HSquared.jl' NOT_CRAN=true Rscript --vanilla -e 'devtools::test(filter = "julia-bridge")'`
+    passed live: 117 pass / 0 fail / 0 warn / 0 skip.
+  - `air format .` clean.
+  - `devtools::document()` clean.
+  - `devtools::test(filter = "hs-data|julia-bridge|phase0-api")` passed.
+    Non-live default run: 243 pass / 0 fail / 0 warn / 10 skip.
+  - `devtools::test()` passed: 1314 pass / 0 fail / 0 warn / 59 skip.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")'`
+    clean: 0 errors / 0 warnings / 0 notes.
+  - `git diff --check` clean.
+  - Boundary grep over the changed tests/status docs confirmed the live
+    marshalling/no-fitting boundary.
+
 ## 2026-06-21 Julia #138 Mrode/MCMCglmm V4 ledger sync
 
 - Scope: R coordination/status docs only. Mirrored Julia-lane confirmation that

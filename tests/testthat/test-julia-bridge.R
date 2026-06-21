@@ -43,6 +43,82 @@ test_that("Julia result normalizer accepts optional PEV and reliability fields",
   )
 })
 
+test_that("hs_data components marshal to Julia HSData [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live HSData marshalling."
+  )
+
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(
+    id = c("a", "b", "c"),
+    y = c(1, 2, 3)
+  )
+  genotypes <- data.frame(
+    id = c("a", "c"),
+    m1 = c(0, 2),
+    m2 = c(1, 1)
+  )
+
+  bundle <- hs_data(
+    phenotypes = dat,
+    pedigree = ped,
+    genotypes = genotypes
+  )
+  status <- data_status(bundle)
+  expect_equal(
+    status$id_overlap$count[
+      status$id_overlap$metric == "phenotypes_without_genotypes"
+    ],
+    1L
+  )
+
+  hsquared:::hs_julia_setup(Sys.getenv("HSQUARED_JULIA_PROJECT"))
+  JuliaCall::julia_assign("hsq_hsdata_pheno", bundle$phenotypes)
+  JuliaCall::julia_assign("hsq_hsdata_ped", bundle$pedigree)
+  JuliaCall::julia_assign("hsq_hsdata_geno", bundle$genotypes)
+  JuliaCall::julia_command(paste(
+    "hsq_hsdata = HSquared.HSData(",
+    "hsq_hsdata_pheno;",
+    "id = :id,",
+    "pedigree = hsq_hsdata_ped,",
+    "pedigree_id = :id,",
+    "genotypes = hsq_hsdata_geno,",
+    "genotype_id = :id",
+    ");"
+  ))
+
+  expect_equal(
+    JuliaCall::julia_eval(
+      "collect(String, string.(HSquared.id_map(hsq_hsdata).phenotype_ids))"
+    ),
+    c("a", "b", "c")
+  )
+  expect_equal(
+    JuliaCall::julia_eval(
+      "collect(String, string.(HSquared.id_map(hsq_hsdata).genotype_ids))"
+    ),
+    c("a", "c")
+  )
+  expect_equal(
+    JuliaCall::julia_eval(
+      "collect(String, string.(HSquared.id_map(hsq_hsdata).phenotypes_without_genotypes))"
+    ),
+    "b"
+  )
+  expect_equal(
+    JuliaCall::julia_eval(
+      "collect(String, string.(HSquared.data_status(hsq_hsdata).components))"
+    ),
+    c("phenotypes", "pedigree", "genotypes")
+  )
+})
+
 test_that("experimental Julia bridge smoke fits the tiny payload", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
