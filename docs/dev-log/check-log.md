@@ -3,6 +3,33 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 H^Gamma result-surface evidence
+
+- Scope: R bridge evidence only. Strengthened the skip-guarded live
+  nonzero-`Gamma` single-step `H^Gamma` probe to assert the standard
+  fitted-object surface from `fit_metafounder_single_step_reml()`:
+  `fit_diagnostics()`, `prediction_error_variance()`, `reliability()`, and
+  derived `accuracy()`.
+- Updated status ledgers:
+  `docs/design/capability-status.md` and
+  `docs/design/validation-debt-register.md`.
+- Claim boundary: this is result-surface/bridge-readiness evidence only. It
+  does not estimate `Gamma`, does not expose `metafounder_effects()`, does not
+  add BLUPF90/ASReml comparator evidence, does not make a production-scale
+  claim, and does not promote any metafounder or `H^Gamma` row to covered.
+- Checks:
+  - `air format tests/testthat/test-single-step-construct.R` clean.
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" NOT_CRAN=true Rscript --vanilla -e 'devtools::test(filter = "single-step-construct")'`:
+    105 pass / 0 fail / 0 warn / 0 skip.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api|single-step-construct|fit-object")'`:
+    262 pass / 0 fail / 0 warn / 7 skip.
+  - `Rscript --vanilla -e 'devtools::test()'`: 1290 pass / 0 fail /
+    0 warn / 58 skip.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = tempfile("hsq-check-"))'`:
+    0 errors / 0 warnings / 0 notes.
+
 ## 2026-06-21 issue-map #15 correction
 
 - Scope: docs/dev-log coordination only. Corrected
