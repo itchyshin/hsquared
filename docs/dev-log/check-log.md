@@ -3,6 +3,40 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 multivariate MCMCglmm Bayesian agreement probe
+
+- Scope: recorded a reproducible, opt-in `MCMCglmm` Bayesian agreement probe for
+  the shared `phase4_multitrait_parity` two-trait animal-model fixture. This is
+  agreement evidence only, not a same-estimand REML comparator and not a
+  `V4-MV-REML` covered promotion.
+- Evidence script:
+  - `Rscript --vanilla data-raw/multivariate-mcmcglmm-agreement-study.R`
+  - Result: `MCMCglmm` 2.36; seed 20260621; `nitt = 50000`, `burnin = 10000`,
+    `thin = 40`; posterior samples = 1000.
+  - Serialized HSquared.jl target inside 95% HPD intervals for all 8 covariance
+    elements, all 4 fixed effects, and both per-trait h2 values.
+  - Posterior-mean agreement: `max|dG0| = 0.0385`, `max|dR0| = 0.00647`,
+    `max|dbeta| = 0.00697`, `max|dh2| = 0.0253`; EBV correlations 0.9998 and
+    0.9997; `max|dEBV| = 0.0458`; minimum effective sample sizes VCV 777.4 and
+    Sol 867.4.
+- Local comparator availability:
+  - `Rscript --vanilla -e 'pkgs <- c("sommer", "MCMCglmm", "nadiv", "asreml", "pedigreemm", "enhancer", "AGHmatrix"); for (p in pkgs) cat(p, ": ", if (requireNamespace(p, quietly=TRUE)) as.character(packageVersion(p)) else "not installed", "\n", sep="")'`
+  - Result: `sommer` 4.4.3 and `MCMCglmm` 2.36 installed; `nadiv`, `asreml`,
+    `pedigreemm`, `enhancer`, and `AGHmatrix` not installed.
+- Status/docs touched: `validation_status()`, capability status, validation
+  canon, validation debt, public claims, issue map, comparator plan, NEWS, and
+  multivariate/model-status/G-matrix articles now include the MCMCglmm leg while
+  keeping the second same-estimand comparator blocker explicit.
+- Checks:
+  - `air format .` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api|comparator-scripts")'`
+    **134 pass / 0 fail / 0 warn / 0 skip**.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+    **0 errors / 0 warnings / 0 notes**. Expected INFO only: optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.
+
 ## 2026-06-21 metafounder result-surface provenance extractors
 
 - Scope: R fitted-object result surface only. Added `gamma_matrix(fit)` and

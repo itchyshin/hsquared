@@ -185,8 +185,9 @@ Covered in the R lane:
 
 Still planned:
 
-- a committed `t >= 2` known-truth recovery fixture;
-- full external comparator parity for unstructured `G` and full `R`;
+- acceptance or broadening of the current `t >= 2` recovery gate;
+- a second independent same-estimand comparator beyond `sommer` for
+  unstructured `G` and full `R`;
 - *validated*, coverage-calibrated standard errors and confidence intervals for
   G/R entries, correlations, and heritabilities (experimental, asymptotic SEs are
   already available via `covariance_standard_errors()` for an unstructured fit —

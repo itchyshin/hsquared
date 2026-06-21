@@ -42,6 +42,39 @@ run_comparator_script <- function(script, args = character()) {
   list(status = status, output = paste(output, collapse = "\n"))
 }
 
+test_that("MCMCglmm agreement probe is reproducible and fenced", {
+  script <- testthat::test_path(
+    "..",
+    "..",
+    "data-raw",
+    "multivariate-mcmcglmm-agreement-study.R"
+  )
+  testthat::skip_if_not(
+    file.exists(script),
+    "data-raw MCMCglmm agreement script is not available in built-package checks."
+  )
+  script <- normalizePath(
+    testthat::test_path(
+      "..",
+      "..",
+      "data-raw",
+      "multivariate-mcmcglmm-agreement-study.R"
+    ),
+    mustWork = TRUE
+  )
+  lines <- readLines(script, warn = FALSE)
+  text <- paste(lines, collapse = "\n")
+
+  expect_match(text, "MCMCglmm::MCMCglmm", fixed = TRUE)
+  expect_match(text, "set.seed(20260621)", fixed = TRUE)
+  expect_match(text, "nitt = 50000", fixed = TRUE)
+  expect_match(text, "burnin = 10000", fixed = TRUE)
+  expect_match(text, "thin = 40", fixed = TRUE)
+  expect_match(text, "targets_inside_95_HPD", fixed = TRUE)
+  expect_match(text, "not a same-estimand REML comparator", fixed = TRUE)
+  expect_match(text, "must not promote V4-MV-REML", fixed = TRUE)
+})
+
 test_that("manual ASReml comparator script has a dry-run mode", {
   script <- local_comparator_script("asreml", "multivariate-animal.R")
 
