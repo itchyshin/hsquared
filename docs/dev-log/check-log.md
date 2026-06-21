@@ -3,6 +3,31 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #147 validation status
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
+- Branch: `codex/julia-147-validation-sync`.
+- Scope:
+  - updated live R #7 to record R PR #84 genomic target consumption and R PR #83
+    marker-scan tool blocker after HSquared.jl PR #147 mirrored both in Julia;
+  - updated the selected issue map for Julia #49 / validation gates and the
+    recent Julia checkpoint list.
+- Live GitHub action:
+  - `gh issue edit 7 --repo itchyshin/hsquared --body-file -` updated the
+    validation-canon parent issue body.
+- Claim boundary: status/docs/issue sync only. No AGHmatrix, rrBLUP, sommer,
+  JWAS, BGLR, BLUPF90, PLINK, GenABEL, GEMMA, GCTA, SAIGE, or other external
+  comparator evidence is claimed; no calibrated threshold, R genomic
+  formula/model-spec activation, validation/public-claim promotion, or covered
+  status change.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-147-validation-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync extractor issue #5 after scan-table banking
 
 - Active lenses: Ada, Shannon, Emmy, Hopper, Boole, Pat, Rose, Grace.
