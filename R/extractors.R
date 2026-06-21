@@ -298,6 +298,42 @@ metafounder_groups.hsquared_fit <- function(object, ...) {
   )
 }
 
+#' Reserved metafounder effect extractor
+#'
+#' `metafounder_effects()` reserves the extractor name for future fitted
+#' metafounder solutions. Current experimental metafounder and `H^Gamma` fits
+#' expose supplied `Gamma` and group-assignment provenance via [gamma_matrix()]
+#' and [metafounder_groups()], but the engine does not yet return explicit
+#' combined-system metafounder effects for extraction.
+#'
+#' @inheritParams variance_components
+#'
+#' @return This extractor currently errors for all objects.
+#' @export
+metafounder_effects <- function(object, ...) {
+  UseMethod("metafounder_effects")
+}
+
+#' @export
+metafounder_effects.default <- function(object, ...) {
+  stop(
+    "`metafounder_effects()` requires an `hsquared_fit` object from a future ",
+    "metafounder result that returns explicit metafounder solutions.",
+    call. = FALSE
+  )
+}
+
+#' @export
+metafounder_effects.hsquared_fit <- function(object, ...) {
+  stop(
+    "`metafounder_effects()` is reserved but not implemented. Current ",
+    "experimental metafounder and `H^Gamma` fits expose supplied provenance ",
+    "through `gamma_matrix()` and `metafounder_groups()` only; the engine does ",
+    "not yet return explicit metafounder solutions for this extractor.",
+    call. = FALSE
+  )
+}
+
 #' Reserved factor-analytic and G-matrix extractors
 #'
 #' These extractor names are reserved for future factor-analytic G-matrix

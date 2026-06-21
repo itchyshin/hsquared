@@ -194,6 +194,11 @@ test_that("extractor defaults do not imply fitted model support", {
     fixed = TRUE
   )
   expect_error(
+    metafounder_effects(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
     breeding_values(list()),
     "requires an `hsquared_fit` object",
     fixed = TRUE
@@ -391,6 +396,16 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     metafounder_groups(fit),
     "does not contain supplied metafounder group assignments",
+    fixed = TRUE
+  )
+  expect_error(
+    metafounder_effects(fit),
+    "reserved but not implemented",
+    fixed = TRUE
+  )
+  expect_error(
+    metafounder_effects(fit),
+    "gamma_matrix",
     fixed = TRUE
   )
   expect_error(
