@@ -109,6 +109,11 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   itself. Promotion still needs the broader or re-declared recovery gate and one
   more independent same-estimand comparator such as ASReml, BLUPF90/AIREMLF90,
   JWAS/equivalent, or another accepted tool.
+- Julia ledger sync: HSquared.jl PR #138 (`945bd2a`) mirrored the R-lane
+  Mrode Example 5.1 supplied-covariance anchor and `MCMCglmm` Bayesian agreement
+  probe into the Julia V4 ledger. This is cross-lane evidence bookkeeping only:
+  it does not change the R validation status, it does not make `MCMCglmm` a
+  same-estimand REML comparator, and it does not close the twin #46/#49 gates.
 - Multivariate MCMCglmm Bayesian agreement probe: an opt-in `data-raw` script
   fits the same two-trait animal-model fixture with `MCMCglmm` using an
   unstructured animal covariance and unstructured residual covariance. With
