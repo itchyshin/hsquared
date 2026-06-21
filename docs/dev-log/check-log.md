@@ -5284,3 +5284,4 @@ release".
   `test-plot-data-parity.R` **32/0/0/0** on the bridge; `pkgdown::check_pkgdown()`
   clean; `rcmdcheck(args="--no-manual")` **0/0/0**. doc 24 updated (all-seven
   preparers). No engine edit.
+- CI (commit `f5e00b7`, breeding_values_plot_data consumer): pkgdown run `27892365616` **success**; pages green.
