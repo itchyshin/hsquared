@@ -18,3 +18,10 @@ Do not commit licensed/proprietary output if the license forbids redistribution.
 Use `TEMPLATE.md` for the first pass of each ASReml-R, BLUPF90/AIREMLF90,
 DMU, WOMBAT, sommer, JWAS, or other external-comparator run. The template is a
 review surface, not evidence by itself.
+
+Current blocker reports:
+
+- `2026-06-21-multivariate-tool-availability.md` records that this local host
+  lacks ASReml/BLUPF90-family/DMU/WOMBAT executables and R packages needed for a
+  second independent same-estimand multivariate REML comparator beyond the
+  existing `sommer` leg.

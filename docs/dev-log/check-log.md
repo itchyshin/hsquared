@@ -15,6 +15,25 @@ with private memory.
   - `git diff --check` clean.
   - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
 
+## 2026-06-21 multivariate comparator availability
+
+- Scope: R validation/comparator coordination only. Probed local availability
+  for the next same-estimand multivariate REML comparator beyond `sommer`.
+- Executable probe:
+  `renumf90`, `airemlf90`, `blupf90`, `remlf90`, `gibbsf90`, `asreml`,
+  `dmuai`, `dmu1`, and `wombat` are all missing from `PATH`.
+- R package probe:
+  `sommer` 4.4.3 and `MCMCglmm` 2.36 are installed; `nadiv`, `pedigreemm`,
+  `asreml`, `AGHmatrix`, `enhancer`, and `JWAS` are missing.
+- Recorded blocker report:
+  `docs/dev-log/comparator-runs/2026-06-21-multivariate-tool-availability.md`.
+- Claim boundary: this is not comparator evidence and does not promote
+  V4-MV-REML; the row remains partial until recovery-gate acceptance/broadening
+  plus another independent same-estimand comparator beyond `sommer`.
+- Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
+  `git diff --check` clean; claim-boundary grep over the changed files confirms
+  the slice is framed as a blocker report, not new comparator evidence.
+
 ## 2026-06-21 issue-map live refresh
 
 - Scope: docs/dev-log coordination only. Refreshed
