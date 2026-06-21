@@ -51,22 +51,23 @@
   [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
   still recomputes when a payload is absent or when a random-regression
   user supplies a custom grid.
-- Added an experimental live R bridge for supplied-`Gamma` single-step
-  `H^Gamma`:
+- Added experimental live R bridges for supplied-`Gamma` metafounder
+  relationships.
+  `metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`
+  now parses, validates ID-keyed metafounder `group` labels and a finite
+  symmetric positive-semidefinite supplied `Gamma`, and fits an
+  animal-only supplied-variance `A^Gamma` model through
+  `engine_control = list(target = "metafounder", variance_components = c(sigma_a2 = ..., sigma_e2 = ...))`
+  by calling the Julia-owned `metafounder_animal_model()` path.
   `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)`
-  now parses, validates ID-keyed metafounder `group` labels, validates a
-  finite symmetric positive-semidefinite supplied `Gamma`, preserves
-  marker ordering / `genotyped_rows`, and fits through
-  `engine_control = list(target = "metafounder_single_step")` by calling
-  the Julia-owned `fit_metafounder_single_step_reml()` path.
-  Skip-guarded live tests pin the `Gamma = 0` reduction to ordinary
-  single-step construction and a nonzero-`Gamma` sensitivity probe with
-  stable labels/dimensions.
-  [`metafounder()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-  remains an inert syntax reservation for the future animal-only
-  `A^Gamma` path; no `Gamma` estimation, metafounder-specific extractor,
-  BLUPF90 comparator evidence, production-scale claim, or covered
-  support is claimed.
+  continues to fit through `target = "metafounder_single_step"` by
+  calling `fit_metafounder_single_step_reml()`. Skip-guarded live tests
+  pin the animal-only `Gamma = 0` reduction to the ordinary Henderson
+  MME supplied-variance path, the single-step `Gamma = 0` reduction to
+  ordinary single-step construction, and nonzero-`Gamma` sensitivity
+  probes with stable labels/dimensions. No `Gamma` estimation,
+  metafounder-specific extractor, BLUPF90 comparator evidence,
+  production-scale claim, or covered support is claimed.
 - Reconciled the PEV/reliability standard-field bridge status. Default,
   sparse, and explicit AI-REML Julia result-payload paths consume engine
   `prediction_error_variance` and `reliability` fields when present
@@ -567,10 +568,10 @@
   factor-analytic loadings, and selection-response claims.
 - Added a “Genomic prediction” pkgdown article that separates the
   current opt-in supplied-`Ginv`, marker-built GREML, SNP-BLUP,
-  supplied-`Hinv` single-step, constructed-`Hinv` single-step paths, and
-  experimental supplied-`Gamma` `H^Gamma` single-step bridge from APY,
-  animal-only metafounder fitting, GWAS/QTL/eQTL, and
-  production-comparator work.
+  supplied-`Hinv` single-step, constructed-`Hinv` single-step,
+  animal-only supplied-`Gamma` metafounder, and supplied-`Gamma`
+  `H^Gamma` single-step paths from APY, external metafounder validation,
+  GWAS/QTL/eQTL, and production-comparator work.
 - Added a “QTL, GWAS, and eQTL status” pkgdown article that explains the
   current reserved scan vocabulary, live SNP-BLUP marker effects /
   descriptive marker variance shares, scale caveats, and validation

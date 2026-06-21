@@ -5,20 +5,24 @@ directly they are inert (they return NULL); they take meaning only inside an
 hsquared() formula. permanent(), common_env(), and maternal_genetic()
 now fit through an opt-in, experimental engine path (engine = "julia",
 REML-only, not the default, mirroring a partial validation gate) as the
-second random effect alongside animal(). The remaining markers
-(paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision, genetic groups /
-unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
+second random effect alongside animal(). metafounder() now fits through an
+opt-in, supplied-variance, experimental engine path (engine = "julia",
+target = "metafounder"); Gamma and the variance components are supplied,
+not estimated. The remaining markers (paternal/maternal-environment,
+dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.'><meta property="og:description" content='These functions provide readable formula vocabulary for standard
 quantitative-genetic, parental, inheritance, and custom-kernel models. Called
 directly they are inert (they return NULL); they take meaning only inside an
 hsquared() formula. permanent(), common_env(), and maternal_genetic()
 now fit through an opt-in, experimental engine path (engine = "julia",
 REML-only, not the default, mirroring a partial validation gate) as the
-second random effect alongside animal(). The remaining markers
-(paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision, genetic groups /
-unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
+second random effect alongside animal(). metafounder() now fits through an
+opt-in, supplied-variance, experimental engine path (engine = "julia",
+target = "metafounder"); Gamma and the variance components are supplied,
+not estimated. The remaining markers (paternal/maternal-environment,
+dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -77,10 +81,12 @@ directly they are inert (they return <code>NULL</code>); they take meaning only 
 <code><a href="hsquared.html">hsquared()</a></code> formula. <code>permanent()</code>, <code>common_env()</code>, and <code>maternal_genetic()</code>
 now fit through an opt-in, experimental engine path (<code>engine = "julia"</code>,
 REML-only, not the default, mirroring a <code>partial</code> validation gate) as the
-second random effect alongside <code><a href="animal.html">animal()</a></code>. The remaining markers
-(paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision, genetic groups /
-unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
+second random effect alongside <code><a href="animal.html">animal()</a></code>. <code>metafounder()</code> now fits through an
+opt-in, supplied-variance, experimental engine path (<code>engine = "julia"</code>,
+<code>target = "metafounder"</code>); <code>Gamma</code> and the variance components are supplied,
+not estimated. The remaining markers (paternal/maternal-environment,
+dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.</p>
     </div>
 
@@ -153,15 +159,15 @@ effects.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
-<dd><p>Planned animal-to-metafounder group assignment, aligned to the
-normalized pedigree IDs; reserved for the planned <code>metafounder()</code> bridge.</p></dd>
+<dd><p>Animal-to-metafounder group assignment, aligned to the normalized
+pedigree IDs for the opt-in supplied-variance <code>metafounder()</code> bridge.</p></dd>
 
 
 <dt id="arg-gamma">Gamma<a class="anchor" aria-label="anchor" href="#arg-gamma"></a></dt>
 <dd><p>A supplied metafounder relationship matrix (an <code>m</code>-by-<code>m</code>
 covariance over the <code>m</code> metafounder pseudo-populations; Legarra et al.
-2015). Supplied, not estimated; reserved for the planned <code>metafounder()</code>
-bridge.</p></dd>
+2015). Supplied, not estimated; used by the opt-in supplied-variance
+<code>metafounder()</code> bridge.</p></dd>
 
 </dl></div>
     <div class="section level2">

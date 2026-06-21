@@ -59,7 +59,7 @@ hs_control(
   effect under the default `engine = "fit"` path. The supported targets
   are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"genomic"`,
-  `"single_step"`, `"single_step_construct"`,
+  `"single_step"`, `"single_step_construct"`, `"metafounder"`,
   `"metafounder_single_step"`, `"snp_blup"`, `"multivariate"`, and
   `"nongaussian"`, described below. `marginal` applies only to
   `target = "nongaussian"`. With `engine = "julia"` and no `target`, the
@@ -74,12 +74,16 @@ hs_control(
   `engine = "fit"` (the ordinary path) or with `engine = "julia"` and
   `target = "ai_reml"`. `target = "henderson_mme"` is a
   supplied-variance validation path and requires `variance_components`
-  with named `sigma_a2` and `sigma_e2` values. `target = "sparse_reml"`
-  is an experimental, opt-in validation path that surfaces the
-  Julia-owned `HSquared.fit_sparse_reml()` REML-only sparse optimizer;
-  it accepts `initial` (named `sigma_a2`/`sigma_e2`) and `iterations`.
-  It is not the default, not production fitting, and not a
-  variance-component estimation claim for the public R interface.
+  with named `sigma_a2` and `sigma_e2` values. `target = "metafounder"`
+  is an experimental supplied-variance validation path for
+  `metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`.
+  It builds the Julia-owned animal-only `A^Gamma` relationship; `Gamma`
+  and the variance components are supplied, not estimated.
+  `target = "sparse_reml"` is an experimental, opt-in validation path
+  that surfaces the Julia-owned `HSquared.fit_sparse_reml()` REML-only
+  sparse optimizer; it accepts `initial` (named `sigma_a2`/`sigma_e2`)
+  and `iterations`. It is not the default, not production fitting, and
+  not a variance-component estimation claim for the public R interface.
   `target = "ai_reml"` exposes the same average-information REML
   estimator (`HSquared.fit_ai_reml()`) that the default `engine = "fit"`
   path uses, with explicit `initial` and `iterations` control. This is

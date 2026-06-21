@@ -260,39 +260,39 @@ formula_status()
     ##                                animal(trait | id, pedigree = ped, cov = diag())
     ##                        animal(trait | id, pedigree = ped, cov = lowrank(K = 2))
     ##                             animal(trait | id, pedigree = ped, cov = fa(K = 2))
-    ##      phase syntax_status                           fitting_status
-    ##    Phase 1        parsed                    fitted (v0.1 default)
-    ##    Phase 1        parsed                    fitted (v0.1 default)
-    ##    Phase 2        parsed            fitted (opt-in repeatability)
-    ##    Phase 2        parsed       fitted (opt-in common-environment)
-    ##    Phase 2        parsed                 fitted (opt-in maternal)
-    ##    Phase 2        parsed        fitted (opt-in random-regression)
-    ##    Phase 2      reserved                            not available
-    ##    Phase 2      reserved                            not available
-    ##    Phase 2      reserved                            not available
-    ##    Phase 2      reserved                            not available
-    ##    Phase 2      reserved                            not available
-    ##    Phase 2      reserved                            not available
-    ##    Phase 2      reserved                            not available
-    ##   Phase 3+      reserved                            not available
-    ##   Phase 3+      reserved                            not available
-    ##   Phase 3+      reserved                            not available
-    ##   Phase 3+      reserved                            not available
-    ##   Phase 3+      reserved                            not available
-    ##   Phase 3+      reserved                            not available
-    ##    Phase 5        parsed                  fitted (opt-in genomic)
-    ##    Phase 5        parsed       fitted (opt-in genomic / SNP-BLUP)
-    ##    Phase 5        parsed              fitted (opt-in single-step)
-    ##    Phase 5        parsed fitted (opt-in single-step construction)
-    ##    Phase 5        parsed   fitted (opt-in supplied-Gamma H^Gamma)
-    ##    Phase 5      reserved                            not available
-    ##    Phase 5      reserved                            not available
-    ##    Phase 5      reserved                            not available
-    ##  Phase 3-4        parsed             fitted (opt-in multivariate)
-    ##  Phase 3-4       planned                            not available
-    ##  Phase 3-4       planned                            not available
-    ##  Phase 3-4       planned                            not available
-    ##  Phase 3-4       planned                            not available
+    ##      phase syntax_status                             fitting_status
+    ##    Phase 1        parsed                      fitted (v0.1 default)
+    ##    Phase 1        parsed                      fitted (v0.1 default)
+    ##    Phase 2        parsed              fitted (opt-in repeatability)
+    ##    Phase 2        parsed         fitted (opt-in common-environment)
+    ##    Phase 2        parsed                   fitted (opt-in maternal)
+    ##    Phase 2        parsed          fitted (opt-in random-regression)
+    ##    Phase 2      reserved                              not available
+    ##    Phase 2      reserved                              not available
+    ##    Phase 2      reserved                              not available
+    ##    Phase 2      reserved                              not available
+    ##    Phase 2      reserved                              not available
+    ##    Phase 2        parsed fitted (opt-in supplied-Gamma metafounder)
+    ##    Phase 2      reserved                              not available
+    ##   Phase 3+      reserved                              not available
+    ##   Phase 3+      reserved                              not available
+    ##   Phase 3+      reserved                              not available
+    ##   Phase 3+      reserved                              not available
+    ##   Phase 3+      reserved                              not available
+    ##   Phase 3+      reserved                              not available
+    ##    Phase 5        parsed                    fitted (opt-in genomic)
+    ##    Phase 5        parsed         fitted (opt-in genomic / SNP-BLUP)
+    ##    Phase 5        parsed                fitted (opt-in single-step)
+    ##    Phase 5        parsed   fitted (opt-in single-step construction)
+    ##    Phase 5        parsed     fitted (opt-in supplied-Gamma H^Gamma)
+    ##    Phase 5      reserved                              not available
+    ##    Phase 5      reserved                              not available
+    ##    Phase 5      reserved                              not available
+    ##  Phase 3-4        parsed               fitted (opt-in multivariate)
+    ##  Phase 3-4       planned                              not available
+    ##  Phase 3-4       planned                              not available
+    ##  Phase 3-4       planned                              not available
+    ##  Phase 3-4       planned                              not available
 
 ``` r
 

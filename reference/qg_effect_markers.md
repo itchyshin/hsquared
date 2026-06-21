@@ -10,11 +10,14 @@ through an opt-in, experimental engine path (`engine = "julia"`,
 REML-only, not the default, mirroring a `partial` validation gate) as
 the second random effect alongside
 [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md).
-The remaining markers (paternal/maternal-environment, dominance,
-epistasis, cytoplasmic, imprinting, custom relationship/precision,
-genetic groups / unknown-parent-groups, metafounders, and inbreeding)
-are still inert syntax reservations that the parser rejects with a
-planned-not-implemented message.
+`metafounder()` now fits through an opt-in, supplied-variance,
+experimental engine path (`engine = "julia"`, `target = "metafounder"`);
+`Gamma` and the variance components are supplied, not estimated. The
+remaining markers (paternal/maternal-environment, dominance, epistasis,
+cytoplasmic, imprinting, custom relationship/precision, genetic groups /
+unknown-parent-groups, and inbreeding) are still inert syntax
+reservations that the parser rejects with a planned-not-implemented
+message.
 
 ## Usage
 
@@ -84,16 +87,15 @@ inbreeding(formula, ...)
 
 - group:
 
-  Planned animal-to-metafounder group assignment, aligned to the
-  normalized pedigree IDs; reserved for the planned `metafounder()`
-  bridge.
+  Animal-to-metafounder group assignment, aligned to the normalized
+  pedigree IDs for the opt-in supplied-variance `metafounder()` bridge.
 
 - Gamma:
 
   A supplied metafounder relationship matrix (an `m`-by-`m` covariance
   over the `m` metafounder pseudo-populations; Legarra et al. 2015).
-  Supplied, not estimated; reserved for the planned `metafounder()`
-  bridge.
+  Supplied, not estimated; used by the opt-in supplied-variance
+  `metafounder()` bridge.
 
 ## Value
 
