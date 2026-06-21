@@ -312,23 +312,26 @@ hs_fit_julia_ai_reml_payload <- function(
   )
 }
 
-# Map an R `family` object to the engine's non-Gaussian family symbol. Only the
-# experimental non-Gaussian families are surfaced: `poisson(log)` -> "poisson"
-# and `binomial(logit)` -> "bernoulli" (binary 0/1). `binomial` with a trial
-# count (`cbind()`/weights) and other families remain planned.
-hs_nongaussian_family_symbol <- function(family) {
+# Map an R `family` object to the engine's non-Gaussian family symbol:
+# `poisson(log)` -> "poisson"; `binomial(logit)` -> "bernoulli" for a binary 0/1
+# response, or "binomial" when a per-record trial count `n_trials` (> 1) is
+# supplied (a `cbind(successes, failures)` counts response). Other families are
+# planned.
+hs_nongaussian_family_symbol <- function(family, n_trials = NULL) {
   if (identical(family$family, "poisson") && identical(family$link, "log")) {
     return("poisson")
   }
   if (identical(family$family, "binomial") && identical(family$link, "logit")) {
+    if (!is.null(n_trials) && n_trials > 1L) {
+      return("binomial")
+    }
     return("bernoulli")
   }
   stop(
     "The opt-in non-Gaussian target fits `poisson(log)` and `binomial(logit)` ",
-    "(binary 0/1) only; `",
+    "(binary 0/1, or `cbind(successes, failures)` counts) only; `",
     hs_family_label(family),
-    "` is not implemented. `binomial` with a trial count and other families ",
-    "are planned.",
+    "` is not implemented. Other families are planned.",
     call. = FALSE
   )
 }
@@ -397,7 +400,8 @@ hs_fit_julia_nongaussian_payload <- function(
     )
   }
 
-  family_symbol <- hs_nongaussian_family_symbol(family)
+  n_trials <- payload$n_trials
+  family_symbol <- hs_nongaussian_family_symbol(family, n_trials)
   marginal <- hs_validate_marginal_method(marginal)
   iterations <- hs_validate_iterations(iterations)
   hs_julia_setup(project)
@@ -413,12 +417,21 @@ hs_fit_julia_nongaussian_payload <- function(
   JuliaCall::julia_assign("hsq_family", family_symbol)
   JuliaCall::julia_assign("hsq_marginal", marginal)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+  # A binomial-counts response carries a single common trial count; the engine's
+  # BinomialResponse takes it via the n_trials keyword (Bernoulli == n_trials 1,
+  # so the keyword is omitted for every non-binomial family).
+  n_trials_kw <- ""
+  if (identical(family_symbol, "binomial")) {
+    JuliaCall::julia_assign("hsq_n_trials", as.integer(n_trials))
+    n_trials_kw <- "n_trials = Int(hsq_n_trials), "
+  }
+  JuliaCall::julia_command(paste0(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped); ",
     "hsq_fit = HSquared.fit_laplace_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal),",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv; ",
+    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal), ",
+    n_trials_kw,
     "ids = hsq_ped.ids, iterations = hsq_iterations);",
     "hsq_result = HSquared.nongaussian_result_payload(hsq_fit);",
     "hsq_ng_raw = Dict(",

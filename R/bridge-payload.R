@@ -84,6 +84,9 @@ hs_build_bridge_payload <- function(spec) {
       Ainv = NULL,
       method = spec$method,
       family = spec$family$family,
+      # Common per-record trial count for a cbind(successes, failures) binomial
+      # response; NULL for every other response (Bernoulli/Poisson/Gaussian).
+      n_trials = spec$response$n_trials,
       ids = ids,
       pedigree = list(
         id = pedigree$data$id,

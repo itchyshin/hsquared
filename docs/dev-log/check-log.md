@@ -5171,3 +5171,35 @@ release".
   capability-status + NEWS updated. No engine edit (the engine pre-built the
   `MarginalMethod` R-name mapping).
 - CI (commit `5f0e25f`, VA marginal): pkgdown run `27889972721` **success**; pages green.
+
+## 2026-06-20 (session 6 — binomial cbind(successes,failures) counts: correctness fix)
+
+- **Bug fixed (silently-wrong):** on the opt-in non-Gaussian path,
+  `hsquared(cbind(succ, fail) ~ ..., family = binomial())` was mis-detected as a
+  TWO-TRAIT multivariate Gaussian (family-blind `multivariate <- is.matrix(response)`),
+  silently fitting successes/failures as two Gaussian traits. `cbind(s,f) ~ x` is
+  the canonical R `glm` binomial-counts syntax, so it is user-reachable (verified
+  via `hs_build_model_spec` with widened families). Found by the cross-lane
+  opportunity scout (ranked A1, correctness-first).
+- **Fix:** `hs_build_response_spec(lhs, response, family)` is now family-aware — a
+  2-col `cbind` under `family = binomial(logit)` routes to the new
+  `hs_build_binomial_counts_response()` (successes = col1, n_trials = succ+fail;
+  validates non-negative integers, ≥1 trial, and **equal row totals** since the
+  engine `BinomialResponse` holds one scalar `n_trials` — varying totals error,
+  per-record trials deferred to a twin issue). `n_trials` flows
+  spec→payload (`bridge-payload.R`)→`fit_laplace_reml(family=:binomial, n_trials=)`
+  (`julia-bridge.R`); `hs_nongaussian_family_symbol(family, n_trials)` → "binomial"
+  when n_trials>1, else "bernoulli".
+- Adversarial verify (Workflow, 6 lenses: Boole/Hopper/Fisher/Curie/Pat/Rose):
+  **code/bridge/tests CLEAN** (Boole/Hopper/Fisher/Curie). FIX-FIRST on 2 stale-doc
+  blockers (validation-debt-register + doc 21 still said "binomial trial count
+  planned") + 2 Pat majors (the family-rejection message + `formula_status()` cbind
+  row both said "binary 0/1" only) — all reconciled; Rose-principle sweep confirmed
+  no remaining stale "binomial binary-only/trial-count-planned" text.
+- `air`; `devtools::document()`; pure-R `test-binomial-counts` **12/0/0/2**; **LIVE**
+  `test-binomial-counts.R` **20/0/0/0** on the bridge (balanced counts fit matches a
+  direct engine `fit_laplace_reml(family=:binomial, n_trials=)` to 1e-6;
+  one-trial `cbind` reduces to the bernoulli fit; varying-totals error; gaussian
+  `cbind` still multivariate); `pkgdown::check_pkgdown()` clean;
+  `rcmdcheck(args="--no-manual")` **0/0/0**. capability-status + NEWS + doc 21 +
+  validation-debt-register + `formula_status()` updated. No engine edit.

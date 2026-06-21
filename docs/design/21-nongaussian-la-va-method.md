@@ -253,11 +253,13 @@ public claims register / `capability-status.md` may move non-Gaussian off
 through the opt-in `target = "nongaussian"` (`HSquared.fit_laplace_reml`),
 reporting the latent-scale additive-genetic variance, breeding values, and
 marginal log-likelihood, and **no heritability** (no residual-variance scale) —
-mirroring the twin `V6-LAPLACE` `partial` gate. What remains `planned` behind the
-gates below: the `method = "LA" | "VA"` control (the wire token is now frozen as
-the engine's `"laplace"`/`"variational"`, with R mapping `"LA"`/`"VA"` onto
-them — `HSquared.jl#61`), variational (VA), `binomial` with `n_trials` (only
-binary Bernoulli is surfaced today), and promotion past `partial`.
+mirroring the twin `V6-LAPLACE`/`VA` `partial` gate. **Now SURFACED** (this and the
+prior session): the marginal control as `engine_control$marginal = "laplace" |
+"variational"` (with R mapping the DRM-style `"la"`/`"va"` aliases onto the engine's
+`"laplace"`/`"variational"`, `5f0e25f`), and `binomial` with `n_trials` via a
+`cbind(successes, failures)` counts response (single common trial count). What
+remains `planned`: per-record varying `n_trials` (the engine `BinomialResponse`
+holds one common count), and promotion past `partial` (the validation gates below).
 
 ---
 
@@ -271,9 +273,11 @@ marginal loglik and VA returns an ELBO lower bound). The twin's experimental
 caveats — Bernoulli `sigma_a2` downward bias from the information effect, the
 hard `m = 20` Gauss–Hermite gate, VA `:full`-covariance densification, and
 Poisson-only intervals — none of which `hsquared` may paper over.
-The Laplace path now fits **experimentally** (`31f200c`; see the update above);
-VA, the `method =` control, and `binomial` with `n_trials` remain `planned`, and
-promotion past `partial` stays gated behind the validation gates (Gaussian
+The Laplace path fits **experimentally** (`31f200c`), and so now do VA
+(`5f0e25f`), the `marginal =` control (`"laplace"`/`"variational"` + `"la"`/`"va"`),
+and `binomial` with `n_trials` (`cbind(successes, failures)` counts); per-record
+varying `n_trials` and promotion past `partial` stay gated behind the validation
+gates (Gaussian
 self-consistency, Poisson/binomial recovery, LA-vs-VA envelope, external
 comparator, bridge parity, Rose audit) and the `HSquared.jl#44` `MarginalMethod`
 refactor.

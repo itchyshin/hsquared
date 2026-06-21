@@ -166,7 +166,8 @@ hs_build_model_spec <- function(
     formula[[2L]],
     stats::model.response(
       model_frame
-    )
+    ),
+    family
   )
 
   fixed_terms_obj <- stats::terms(fixed_formula)
@@ -269,9 +270,26 @@ hs_build_model_spec <- function(
   )
 }
 
-hs_build_response_spec <- function(lhs, response) {
+hs_build_response_spec <- function(lhs, response, family = NULL) {
+  is_cbind <- hs_is_call(hs_unwrap_parentheses(lhs), "cbind")
+
+  # A `cbind(successes, failures)` matrix under `family = binomial()` is the
+  # canonical binomial-COUNTS response (the R glm convention), NOT a two-trait
+  # multivariate Gaussian. Detect it before the family-blind multivariate branch
+  # so it is never silently fitted as two Gaussian traits.
+  if (
+    is.matrix(response) &&
+      ncol(response) == 2L &&
+      is_cbind &&
+      !is.null(family) &&
+      identical(family$family, "binomial") &&
+      identical(family$link, "logit")
+  ) {
+    return(hs_build_binomial_counts_response(lhs, response))
+  }
+
   multivariate <- is.matrix(response)
-  if (multivariate && !hs_is_call(hs_unwrap_parentheses(lhs), "cbind")) {
+  if (multivariate && !is_cbind) {
     stop(
       "Multivariate responses must use `cbind(trait1, trait2, ...)` on the ",
       "left-hand side.",
@@ -348,6 +366,64 @@ hs_build_response_spec <- function(lhs, response) {
     values = as.numeric(response),
     trait_names = NULL,
     multivariate = FALSE
+  )
+}
+
+# `cbind(successes, failures) ~ ...` under `family = binomial()`: a binomial-counts
+# response. The success counts are the modelled response; the per-record number of
+# trials is successes + failures. The engine's `BinomialResponse` carries ONE
+# common `n_trials`, so all row totals must be equal (per-record varying trials
+# are an engine follow-up); varying totals error rather than silently mis-fit.
+hs_build_binomial_counts_response <- function(lhs, response) {
+  hs_validate_cbind_bare_columns(hs_unwrap_parentheses(lhs))
+  values <- unname(as.matrix(response))
+  if (!is.numeric(values)) {
+    stop(
+      "A `cbind(successes, failures)` binomial response must be numeric.",
+      call. = FALSE
+    )
+  }
+  if (anyNA(values) || any(!is.finite(values))) {
+    stop(
+      "A `cbind(successes, failures)` binomial response must be finite (no NA).",
+      call. = FALSE
+    )
+  }
+  successes <- values[, 1L]
+  failures <- values[, 2L]
+  if (any(values < 0) || any(values != round(values))) {
+    stop(
+      "`cbind(successes, failures)` binomial counts must be non-negative ",
+      "integers.",
+      call. = FALSE
+    )
+  }
+  totals <- successes + failures
+  if (any(totals < 1)) {
+    stop(
+      "Each `cbind(successes, failures)` record must have at least one trial ",
+      "(successes + failures >= 1).",
+      call. = FALSE
+    )
+  }
+  n_trials <- unique(totals)
+  if (length(n_trials) != 1L) {
+    stop(
+      "`cbind(successes, failures)` row totals (successes + failures) must all ",
+      "be equal: the engine's binomial family uses a single common trial count. ",
+      "Per-record varying trial counts are a planned engine follow-up ",
+      "(HSquared.jl binomial per-record n_trials).",
+      call. = FALSE
+    )
+  }
+  trait_names <- all.vars(hs_unwrap_parentheses(lhs))
+  list(
+    name = hs_deparse(lhs),
+    values = as.numeric(successes),
+    trait_names = if (length(trait_names) >= 1L) trait_names[[1L]] else NULL,
+    multivariate = FALSE,
+    binomial_counts = TRUE,
+    n_trials = as.integer(n_trials)
   )
 }
 
@@ -571,7 +647,8 @@ hs_validate_model_inputs <- function(
       hs_family_label(family),
       "` is not fitted on this path. The default `hsquared()` path fits ",
       "`family = gaussian()` (identity link). Non-Gaussian `poisson(log)` and ",
-      "`binomial(logit)` (binary 0/1) fit through the experimental, opt-in ",
+      "`binomial(logit)` (binary 0/1, or `cbind(successes, failures)` counts) ",
+      "fit through the experimental, opt-in ",
       "`hs_control(engine = \"julia\", engine_control = list(target = ",
       "\"nongaussian\"))` path: a latent-scale GLMM (engine row V6-LAPLACE/VA, ",
       "partial) with `marginal = \"laplace\"` (default) or `\"variational\"`; ",
