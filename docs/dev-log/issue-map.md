@@ -13,7 +13,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 
 | # | Title | Phase | Type | Status | Capability / validation anchor |
 | --- | --- | --- | --- | --- | --- |
-| 5 | R fitted object & extractor contract | 1 | r-package | partial | extractor contract; children #11/#12/#21/#22/#23 |
+| 5 | R fitted object & extractor contract | 1 | r-package | partial | extractor contract; scan-object `gwas_table(scan)` / `lod_scores(scan)` banked; fit-level map-annotated QTL/GWAS/eQTL tables, lowrank/fa loading outputs, metafounder effects, and production PEV/reliability still gated by #22/#23 and status rows |
 | 6 | R-to-Julia bridge payload design | 1 | bridge | partial | **bridge epic**; children #11–#15, #21–#23 |
 | 7 | Validation canon | 1 | validation | partial | mirrors HSquared.jl#7/#41 |
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | partial / planned | genomic GREML, SNP-BLUP, constructed single-step, simple non-Gaussian fits, and post-fit marker scans are opt-in partial; QTL/eQTL, GLLVM/omics, APY/low-rank production scaling, GPU acceleration, and external genomic/scan comparator evidence remain planned/gated |
