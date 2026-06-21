@@ -83,10 +83,12 @@ mechanical: parser (§2) → `genotyped_rows` alignment (§3, the crux) → payl
    capability-status is now `partial (R)`. Remaining single-step follow-ups: the
    `hs_data()` pedigree shorthand (deferred), large-pedigree sparse `A`, and the
    twin-gated BLUPF90/AGHmatrix comparator to promote past `partial`.
-2. **LOCO `gwas()`** (#4, remaining half): the single-marker option is DONE (`gwas(method = "single")`, commit `0b9756a`). LOCO proper still needs a marker-group map + per-group relationship precisions. `single_marker_scan(fit, markers)` was a
-   landed post-fit entry (relatedness-UNcorrected screen; `src/postfit.jl:51`) — a
-   small `gwas(method=)` option. LOCO proper needs per-group precisions
-   (`loco_relationship_precisions`) — check before wiring.
+2. **LOCO `gwas()`** (#4, remaining half): the single-marker option is DONE
+   (`gwas(method = "single")`, commit `0b9756a`). LOCO proper
+   (`HSquared.loco_mixed_model_marker_scan()`) still needs a new R surface — a
+   marker→chromosome-group map + per-group relationship precisions
+   (`loco_relationship_precisions`); scope the marker-map API before wiring (a
+   fresh-context build, like single-step was — a build-spec first would help).
 2b. **Plotting figures: DONE** — the full §1 catalog is built (s5). The only
    remaining plot-data parity gap is `breeding_values_plot_data`, which awaits its
    engine preparer (a #93 ask); wire it when the twin lands it.
