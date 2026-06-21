@@ -3,6 +3,23 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Close R issue #19 after missing-data grammar contract
+
+- Active lenses: Ada, Shannon, Boole, Jason, Rose, Grace.
+- Branch: `codex/issue-map-close-19`.
+- Scope: issue-map/coordination docs only after live GitHub close.
+- Live GitHub action: `gh issue close 19 --repo itchyshin/hsquared --comment ...`
+  closed R issue #19 because PR #68 ratified the planned M0
+  `mi()`/`miss_control()` grammar contract.
+- Claim boundary: issue close only. No missing-data API is exported, no
+  missing-data fitting/FIML/imputation/engine payload exists, and no capability
+  or validation row was promoted.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-map-close-19.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 `mi()` / `miss_control()` grammar contract
 
 - Active lenses: Ada, Shannon, Boole, Noether, Jason, Pat, Rose, Grace.

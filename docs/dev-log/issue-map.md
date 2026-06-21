@@ -18,7 +18,6 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 7 | Validation canon | 1 | validation | partial | mirrors HSquared.jl#7/#41 |
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | planned | innovation children #17/#18/#19/#20 |
 | 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); R evidence legs now include cold-start recovery, full-unstructured `sommer`, Mrode Example 5.1 supplied-G0/R0 BLUP/MME, and a Bayesian `MCMCglmm` agreement probe; twin #41/#49 still own promotion gates |
-| 19 | Innovation: `mi()`/`miss_control()` grammar | 8 | innovation | planned · contract ratified | M0 grammar contract in `08-missing-data-plan.md`; `formula_status()` now lists planned `miss_control()`/`mi()` rows; no exported missing-data API or fitting support |
 | 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial · **univariate/Henderson done** | Standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson dense validation fields attach unconditionally; twin #43 still gates multivariate per-trait and production sparse/comparator work |
 | 22 | Bridge: activate structured mv covariance | 4 | bridge | partial · **diagonal shipped** | **`:diagonal` subset SHIPPED** (guardrail relaxed + `genetic_structure` threaded + `covariance_structure_lrt`, built to twin contract #61; live fit skip-guarded until the twin payload lands). `lowrank`/`fa` stay **blocked** on the rotation convention (twin #42/#37) |
 | 23 | Bridge: post-fit `gwas()`/marker-scan wrapper | 5 | bridge | partial | Mixed, single-marker, and LOCO scan bridges are live and experimental; Julia PR #134 banked a fixed-panel calibration smoke harness, and Julia PR #135 reopened #48 as the active calibration/evidence gate. R significance thresholds remain inactive. Future gates are permutation/realistic-LD threshold activation, external comparator/calibration evidence, and map-annotated QTL/eQTL result tables (twin #45/#48/#61). |
@@ -27,8 +26,9 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | partial | Candidate A Big 3 slice; `metafounder(..., group =, Gamma =)` now validates the supplied-`Gamma` animal-only payload and fits the experimental supplied-variance `target = "metafounder"` path; `single_step(..., group =, Gamma =)` validates the supplied-`Gamma` `H^Gamma` payload and fits the experimental live `target = "metafounder_single_step"` path. `gamma_matrix()` and `metafounder_groups()` expose supplied provenance; `metafounder_effects()` is reserved/error-only. No returned metafounder-specific effects, `Gamma` estimation, BLUPF90-family comparator evidence, or covered promotion yet |
 
 Recently banked / no longer open in the R issue list: #2, #8, #11, #12, #13,
-#14, #15, #16, #17, #18, #20, and #26. Shipped features remain partial/experimental where the
-capability ledgers say so; a closed issue does not imply covered validation.
+#14, #15, #16, #17, #18, #19, #20, and #26. Shipped features remain
+partial/experimental where the capability ledgers say so; a closed issue does
+not imply covered validation.
 
 ## HSquared.jl (twin engine) — selected open anchors
 
