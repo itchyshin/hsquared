@@ -41,7 +41,7 @@ the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 | 61 | Joint critical path / cross-lane coordination | — | open · cross-lane | Holds ratified bridge conventions that feed R #22/#23/metafounder/RR follow-ups |
 | 58 | Engine perf ideas (augmented AI-REML / SQUAREM / Woodbury) | 8 | planned · cross-lane | hsquared#24/#25/#17 |
 | 53 | Innovation: metafounders / unknown-parent groups for ssGBLUP | 2/5 | planned / partial primitives | R contract row; supplied-`Gamma` bridge exists, no estimation or comparator claim |
-| 49 | Validation: external comparator target fixtures | — | partial · cross-lane | hsquared#10/#7 promotion gate; Julia PR #132 hardened the BLUPF90 packet preflight and skip-safe runner; Julia PR #140 (`008ea4d`) added a genomic GBLUP/SNP-BLUP target fixture; Julia PR #145 (`b0d14ba`) added a machine-readable comparator target manifest for current fixture handoffs. No BLUPF90 executable, genomic external-comparator evidence, or new comparator parity exists yet |
+| 49 | Validation: external comparator target fixtures | — | partial · cross-lane | hsquared#10/#7 promotion gate; Julia PR #132 hardened the BLUPF90 packet preflight and skip-safe runner; Julia PR #140 (`008ea4d`) added a genomic GBLUP/SNP-BLUP target fixture; Julia PR #145 (`b0d14ba`) added a machine-readable comparator target manifest for current fixture handoffs; Julia PR #147 (`943c790`) records the R PR #84 fixture-consumer check as `julia_target_r_consumed` and the R #83 scan-tool blocker as status evidence only. No BLUPF90 executable, genomic external-comparator evidence, marker-scan external-comparator evidence, or new comparator parity exists yet |
 | 46 | Validation: fitted Mrode/textbook target evidence | 1/3 | partial · open | Julia PR #138 (`945bd2a`) synced the R Mrode Example 5.1 supplied-covariance BLUP/MME anchor and `MCMCglmm` Bayesian agreement probe into the Julia V4 ledger; Julia PR #139 (`934a91e`) added a native Mrode (2014) Example 3.1 supplied-variance anchor at `sigma_a2 = 20`, `sigma_e2 = 40`, pinning published EBVs for animals 1-8 and the invariant male-minus-female sex contrast. #46 remains open for fitted estimated-VC/textbook target work; neither sync promotes V4-MV-REML or adds comparator parity |
 | 5 | Gaussian animal model REML/ML engine | 1 | partial | — (epic) |
 | 6 | Engine result object and diagnostics | 1 | partial | hsquared#6 |
@@ -61,7 +61,7 @@ the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 closed + #48 (+ PR #134 smoke, PR #135 reopen, PR #143 status row, PR #146 R-table sync) | Phase 5 scan payload fixture banked by Julia PR #142 and mirrored by R payload-normalization parity; R now has thin `gwas_table(scan)` / `lod_scores(scan)` views for existing `hs_gwas` results, mirrored into Julia docs/status by PR #146 only; local scan-comparator tools are unavailable on this host; fixed-panel threshold smoke and Julia validation-status hygiene are banked and #48 remains the active evidence gate, but no R significance threshold activation, formula-level scan grammar, map-annotated table workflow, or production calibration claim |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, provenance extractors, reserved/error-only `metafounder_effects()`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
-| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity; Julia PR #132 banked BLUPF90 preflight/runner hardening only; Julia PR #140 banked a genomic target fixture for future external comparator consumption; Julia PR #145 banked a fixture index/manifest only, not comparator evidence |
+| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity; Julia PR #132 banked BLUPF90 preflight/runner hardening only; Julia PR #140 banked a genomic target fixture for future external comparator consumption; Julia PR #145 banked a fixture index/manifest; Julia PR #147 records R internal target consumption and local tool blockers only, not external comparator evidence |
 | HSData marshalling | #8 | #8 | skip-guarded live bridge marshalling now checks phenotype/pedigree/genotype data-frame components into `HSquared.HSData`; no file-backed storage, relationship construction, or fitting claim |
 
 Recently banked / no longer open in the selected Julia anchor list: #38
@@ -146,6 +146,15 @@ Recent Julia-side coordination checkpoints that keep current gates honest:
   wording/status only: no Julia behavior change, no R file change, no calibrated
   threshold, no formula-level `marker_scan()` syntax, no map-annotated
   GWAS/QTL/eQTL workflow, no external comparator evidence, and no promotion.
+- HSquared.jl PR #147 (`943c790`, post-merge main CI/Documenter green) synced
+  Julia comparator/status ledgers after R PR #83 and R PR #84. It marks the
+  genomic target fixture as
+  `julia_target_r_consumed` because R recomputes supplied-frequency VanRaden
+  `G`, `Ginv`, supplied-variance GBLUP MME, and SNP-BLUP route agreement; it
+  also records the R marker-scan tool-availability blocker. It is status and
+  internal target-consumption evidence only: no AGHmatrix/rrBLUP/sommer/JWAS/
+  BLUPF90 genomic comparator, no marker-scan external comparator, no calibrated
+  threshold, no R formula/model-spec activation, and no promotion.
 
 ## Historical WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
 
