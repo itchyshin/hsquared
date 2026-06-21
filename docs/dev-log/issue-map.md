@@ -32,7 +32,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 18 | Innovation: Phase 6 LA + VA `method=` note | 6 | innovation | planned | from DRM.jl/GLLVM.jl; twin #40/#44 |
 | 19 | Innovation: `mi()`/`miss_control()` grammar | 8 | innovation | planned | `08-missing-data-plan.md`; drmTMB/gllvmTMB |
 | 20 | Infra: recurring innovation scout (weekly) | — | innovation/infra | planned | WS3 cadence |
-| 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial | **WS2 lowest-delta**; twin #43 |
+| 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial · **univariate/Henderson done** | Standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson dense validation fields attach unconditionally; twin #43 still gates multivariate per-trait and production sparse/comparator work |
 | 22 | Bridge: activate structured mv covariance | 4 | bridge | partial · **diagonal shipped** | **`:diagonal` subset SHIPPED** (guardrail relaxed + `genetic_structure` threaded + `covariance_structure_lrt`, built to twin contract #61; live fit skip-guarded until the twin payload lands). `lowrank`/`fa` stay **blocked** on the rotation convention (twin #42/#37) |
 | 23 | Bridge: post-fit `gwas()`/scan wrapper | 5 | bridge | partial · **blocked** | twin #45; Phase 5 engine landed (PR #36) — now gated on post-fit scan payload + thresholds |
 | 24 | Innovation: augmented AI-REML single-solve (Strandén 2024) | 8 | innovation/perf | planned | engine-led; twin #58; scout note |
@@ -63,7 +63,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | Topic | R (hsquared) | Twin (HSquared.jl) | Gate |
 | --- | --- | --- | --- |
 | Structured/FA G | #22 (+ #17 method) | #42 (+ #37 calibration) | twin bridge payload+fixture (#42) + V4-FA calibration; PR #17 closed, FA core already on main |
-| PEV/reliability | #21 | #43 | twin payload promotion (lowest-delta) |
+| PEV/reliability | #21 | #43 | univariate/default payload consumed and Henderson dense unconditional; remaining gate = multivariate per-trait fields + production sparse/comparator validation |
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 (+ #39) | Phase 5 stack on main + thresholds |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + extractor branch; supplied `Gamma`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
@@ -79,7 +79,7 @@ function is on `origin/main` and exported.** Honesty unchanged (7 covered/extern
 rows `partial`) → R surfaces stay experimental/partial.
 
 - **Class A — R-buildable now** (R calls the exported fn on the returned fit; no twin change):
-  #21 (PEV/reliability via `:selinv`, lowest-delta) → #11 (heritability_interval) →
+  #21 (PEV/reliability univariate/Henderson step done; MV/prod sparse remains) → #11 (heritability_interval) →
   #12 (repeatability_interval) → #14 (single_step routing) → #13 (REML genomic variants).
 - **Class B — gated on a twin result-payload / refactor:** #22 (structured covariance — twin
   exposes loadings/uniqueness in the multivariate payload #42 + V4-FA calibration), #23 (post-fit

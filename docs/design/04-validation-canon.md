@@ -42,9 +42,8 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   optional dependencies are available.
 - Supplied-variance Henderson MME fixture: checks an independent R solve
   against Julia `henderson_mme()` for fixed effects, EBVs, fitted values, h2,
-  and optional dense validation-path PEV/reliability when the sibling Julia
-  checkout exposes those extractors. This does not estimate variance
-  components.
+  and dense validation-path PEV/reliability. This does not estimate variance
+  components and does not claim production sparse reliability.
 - Mrode-style supplied-variance output fixture: checks a twelve-animal
   pedigree example against independent R reference calculations and optional
   live Julia calls for Ainv, fixed effects, EBVs, fitted values, PEV,

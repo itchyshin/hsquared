@@ -42,12 +42,10 @@ hs_control(
 ```
 
 That path calls Julia `henderson_mme()` after building `Ainv`. It returns fixed
-effects, EBVs/BLUPs, fitted values, variance components, and h2 for tiny
-validation examples. When the sibling Julia checkout exposes applicable
-`prediction_error_variance()` and `reliability()` methods for the MME result,
-the R bridge also attaches dense validation-path PEV and reliability fields. It
-does not optimize variance components, does not return a log-likelihood, and is
-not a production sparse fitting claim.
+effects, EBVs/BLUPs, fitted values, variance components, h2, and dense
+validation-path PEV/reliability for tiny validation examples. It does not
+optimize variance components, does not return a log-likelihood, and is not a
+production sparse fitting or production reliability claim.
 
 ## Initial Julia Result
 
@@ -73,12 +71,13 @@ compact result list. Extractor methods are already defined for
 `variance_components`, `heritability`, `breeding_values`, `fixed_effects`,
 `random_effects`, `loglik`, `df`, `nobs`, `predictions`, `diagnostics`, and
 `converged`. The experimental Julia engine path can normalize the current Julia
-result into this shape for a tiny example; default `hsquared()` calls still stop
-before returning a fitted object. The R extractor contract also includes
-`prediction_error_variance` and `reliability`. The current R bridge enriches
-tiny opt-in Julia results by calling exported Julia dense validation extractors
-when those functions exist, while Julia's base `result_payload()` remains
-stable. R `fitted()` and `residuals()` methods use the normalized
+result into this shape for a tiny example. Default, sparse, and explicit
+AI-REML bridge routes consume the standard `prediction_error_variance` and
+`reliability` fields from Julia `result_payload()` when present; current engines
+emit them via `:selinv`. Direct calls to exported dense validation extractors
+are retained only as a backward-compatible fallback for older local engines
+whose payloads do not yet carry those fields. R `fitted()` and `residuals()`
+methods use the normalized
 `predictions` field and stored response vector when both are available. R
 `EBV()` and `BLUP()` are aliases for `breeding_values()`, and `accuracy()` is a
 derived square-root reliability extractor when reliability estimates are
@@ -100,9 +99,9 @@ diagnostics
 converged
 ```
 
-It deliberately omits `loglik` and `df`. The PEV and reliability fields are
-optional and appear only when the local Julia result exposes applicable dense
-validation extractors.
+It deliberately omits `loglik` and `df`. PEV and reliability are attached
+unconditionally on the current Henderson MME bridge as dense validation-path
+fields; they are not production sparse reliability.
 
 ## Sparse REML Estimator Path (experimental)
 
