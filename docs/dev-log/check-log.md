@@ -3,6 +3,23 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 issue-map live refresh
+
+- Scope: docs/dev-log coordination only. Refreshed
+  `docs/dev-log/issue-map.md` against live open issue lists for `hsquared` and
+  `HSquared.jl`, moved closed R issue rows (#11, #12, #13, #14, #16, #17, #18,
+  #26) into a "recently banked" note, clarified `hsquared#23` as live but still
+  partial, and made the Julia table a selected cross-lane anchor map rather than
+  an exhaustive issue dump.
+- Live commands:
+  - `gh issue list --repo itchyshin/hsquared --state open --limit 80 --json number,title,labels,url`
+  - `gh issue list --repo itchyshin/HSquared.jl --state open --limit 80 --json number,title,labels,url`
+- Claim boundary: no capability status changed, no `validation_status()` rows
+  changed, and no covered promotion is implied by closed issues.
+- Checks:
+  - `git diff --check` clean.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+
 ## 2026-06-21 formula_status single-step bundle shorthand row
 
 - Scope: formula/status diagnostics only. Added a distinct parsed
@@ -5728,3 +5745,16 @@ release".
   'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
   **0 errors / 0 warnings / 0 notes**. Expected INFO only: optional suggested
   packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.
+
+## 2026-06-21 (live issue-map refresh)
+
+- Refreshed `docs/dev-log/issue-map.md` from live GitHub issue/PR state:
+  `gh issue list --repo itchyshin/hsquared --state open --limit 100`,
+  `gh issue list --repo itchyshin/HSquared.jl --state open --limit 100`, and
+  `gh pr list --repo itchyshin/HSquared.jl --state open --limit 20`.
+- Removed stale closed R rows (#11, #12, #13, #14, #16, #17, #18, #26) from
+  the open-issue table and recorded them as recently banked. Refreshed the R
+  #10/#21/#23 anchors, added the live Julia #93 row, removed closed Julia
+  #39/#40 rows, and restored the current metafounder mirror row.
+- Scope is coordination/docs only: no package code, examples, user-facing
+  vignettes, or capability claims changed.
