@@ -5717,7 +5717,7 @@ release".
   public-claims register, NEWS, and pkgdown reference index so the public
   surface says "reserved/error-only" rather than implying a returned effect
   table.
-- Checks so far: `air format .` clean; `Rscript --vanilla -e
+- Checks: `air format .` clean; `Rscript --vanilla -e
   'devtools::document()'` regenerated `NAMESPACE` and
   `man/metafounder_effects.Rd`; focused `Rscript --vanilla -e
   'devtools::test(filter = "fit-object|phase0-api")'` **198 pass / 0 fail /
@@ -5726,4 +5726,5 @@ release".
   'devtools::test()'` **1290 pass / 0 fail / 0 warn / 58 skip**;
   `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e
   'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
-  **0 errors / 0 warnings / 0 notes**.
+  **0 errors / 0 warnings / 0 notes**. Expected INFO only: optional suggested
+  packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.

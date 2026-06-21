@@ -41,11 +41,11 @@ The two pre-existing untracked Codex handover files were left untouched.
   - 198 passed, 0 failed, 0 warnings, 0 skipped.
 - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean.
 - `git diff --check` - clean.
-- `Rscript --vanilla -e 'devtools::test()'` - 1290 passed, 0 failed,
-  0 warnings, 58 skipped.
-- `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e
-  'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` -
-  0 errors, 0 warnings, 0 notes.
+- `Rscript --vanilla -e 'devtools::test()'` - 1290 passed, 0 failed, 0
+  warnings, 58 skipped.
+- `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+  - 0 errors, 0 warnings, 0 notes. Expected INFO only: optional suggested
+  packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.
 
 ## Public claim audit
 
@@ -73,6 +73,5 @@ payloads, Julia execution, or fitted results.
 
 ## Next actions
 
-1. Run the full local package checks.
-2. Bank as a narrow PR if green.
-3. Continue with the next validation/result-surface slice from refreshed main.
+1. Bank as a narrow PR.
+2. Continue with the next validation/result-surface slice from refreshed main.
