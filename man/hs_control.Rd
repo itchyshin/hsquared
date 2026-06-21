@@ -113,10 +113,11 @@ optimizer, and returns G/R covariance matrices, genetic and residual
 correlations, per-trait heritability, and cross-trait breeding values. It is
 not the default and remains a \code{partial} validation claim until t>=2
 known-truth recovery and external-comparator evidence are committed. The
-reserved \code{genetic_structure} control accepts only \code{"unstructured"} on the
-current R bridge; \code{"diagonal"}, \code{"lowrank"}, and \code{"factor_analytic"} remain
-planned until the structured-covariance Julia engine surface lands on main
-and R bridge tests are committed. The future \code{rank} control is also
+reserved \code{genetic_structure} control currently accepts \code{"unstructured"} and
+\code{"diagonal"} on the R bridge. \code{"diagonal"} is the rotation-free structured
+subset: off-diagonal genetic covariances are fixed at zero. \code{"lowrank"} and
+\code{"factor_analytic"} remain planned until the loading rotation and
+interpretation contract is validated. The future \code{rank} control is also
 reserved and currently errors instead of being ignored.
 
 \code{target = "nongaussian"} is an experimental, opt-in latent-scale GLMM for
