@@ -5138,3 +5138,4 @@ release".
   full suite earlier 1167/0/0; `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**. No new engine contract consumed (pure
   R sugar over the existing construct path), so no twin coordination needed.
+- CI (commit `6adc24f`, bundle shorthand): pkgdown run `27889443212` **success**; pages green.

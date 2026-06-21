@@ -27,14 +27,18 @@ file. Supersedes handoff-7.
 
 ## Current state (repo = truth)
 
-- R `main` clean @ **`a448f79`** (CI-record tip, LOCO gwas), synced; CI green
-  throughout (pkgdown `27888780206`). `rcmdcheck(--no-manual)` 0/0/0;
-  `check_pkgdown` clean; live `test-gwas` **59/59** on the bridge.
-- **s6 (this session):** LOCO gwas landed — `gwas(method = "loco", marker_groups
-  = chrom)` completes #4. Live dimension probe resolved the design Q (animal-level
-  precisions, record-level scan markers, reused pedigree VCs); 5-lens adversarial
-  verify (no blocker) added a non-square-Z regression that errors on the wrong
-  wiring. Doc `26-loco-gwas-bridge.md` IMPLEMENTED.
+- R `main` clean @ **`6adc24f`** (CI-record tip, bundle shorthand), synced; CI
+  green throughout (pkgdown `27889443212`). `rcmdcheck(--no-manual)` 0/0/0;
+  `check_pkgdown` clean; live `test-single-step-construct` **54/54**, `test-gwas`
+  **59/59** on the bridge.
+- **s6 (this session):** (1) LOCO gwas landed — `gwas(method = "loco",
+  marker_groups = chrom)` completes #4 (live dimension probe resolved the design
+  Q; 5-lens verify added a non-square-Z regression; doc 26 IMPLEMENTED).
+  (2) `single_step(1 | id)` `hs_data()` bundle shorthand landed — resolves
+  pedigree + genotypes from the container (closes the doc-25 deferral); 6-lens
+  verify caught + fixed a shipped failing test (a `fixed=TRUE`/backtick mismatch
+  that an `as.data.frame(test_file)` summary had masked — trust rcmdcheck) + a
+  stale `?single_step` roxygen + a misleading bare-call error.
 - Twin `HSquared.jl` `main` @ **`4559f16`** — landed `variance_components_plot_data`
   (set B, #95), plus the earlier RR/G-geometry/g-correlation preparers (#88/#91/#92)
   and the #93/#94 plotting coordination.
