@@ -731,6 +731,7 @@ test_that("metafounder single-step Gamma = 0 reduces to ordinary construction [l
     ],
     "supplied"
   )
+  expect_equal(gamma_matrix(hgamma0), Gamma0)
   expect_equal(
     variance_components(hgamma0)$estimate,
     variance_components(ordinary)$estimate,
@@ -795,6 +796,17 @@ test_that("metafounder single-step nonzero Gamma changes predictions [live]", {
 
   bv0 <- breeding_values(hgamma0)
   bvg <- breeding_values(hgamma)
+  expect_equal(gamma_matrix(hgamma0), Gamma0)
+  expect_equal(gamma_matrix(hgamma), Gamma)
+  expect_equal(
+    metafounder_groups(hgamma),
+    data.frame(
+      id = as.character(ped$id),
+      metafounder_group = ifelse(nzchar(group[ped$id]), group[ped$id], NA),
+      is_metafounder = nzchar(group[ped$id]),
+      stringsAsFactors = FALSE
+    )
+  )
   expect_setequal(bvg$id, as.character(ped$id))
   expect_equal(nrow(bvg), nrow(ped))
   expect_true(all(is.finite(bvg$value)))

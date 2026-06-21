@@ -143,13 +143,15 @@ The `genotyped_rows` and marker-row ordering rules are inherited from
 
 ## 4. Extractor contract
 
-Do not expose metafounder-specific extractors until the result shape is pinned.
-Candidate extractors:
+Do not expose metafounder-specific effect extractors until the result shape is
+pinned. Current and candidate extractors:
 
 - `metafounder_effects(fit)` only if the engine returns explicit combined-system
   metafounder solutions, not merely animal EBVs from `inv(A^Gamma)`.
-- `gamma_matrix(fit)` or a fit-diagnostic `Gamma` field only as supplied input
-  provenance, not an estimated parameter.
+- `gamma_matrix(fit)` is implemented as supplied input provenance, not an
+  estimated parameter.
+- `metafounder_groups(fit)` is implemented as supplied input provenance, not
+  estimated grouping.
 - ordinary `breeding_values()`, `variance_components()`, `heritability()`, and
   `fit_diagnostics()` for animal-only metafounder and `H^Gamma` fits, using the
   same partial/experimental wording as genomic and single-step surfaces.
@@ -188,6 +190,8 @@ Allowed wording after this contract slice:
   metafounder `A^Gamma` bridge at dense validation scale."
 - "The R package fits an experimental, opt-in, supplied-`Gamma` single-step
   `H^Gamma` bridge at dense validation scale."
+- "`gamma_matrix(fit)` and `metafounder_groups(fit)` report supplied
+  metafounder inputs as provenance."
 - "The Julia twin has dense validation-scale primitives for supplied-`Gamma`
   metafounder relationships and `H^Gamma` single-step."
 

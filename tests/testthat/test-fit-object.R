@@ -37,11 +37,21 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
     ),
     converged = TRUE
   )
+  Gamma <- matrix(
+    c(0.25, 0.05, 0.05, 0.2),
+    nrow = 2,
+    dimnames = list(c("base1", "base2"), c("base1", "base2"))
+  )
 
   fit <- hsquared:::hs_new_fit(
     call = quote(hsquared(y ~ animal(1 | id, pedigree = ped), data = dat)),
     spec = list(method = "REML", family = list(family = "gaussian")),
-    payload = list(y = seq_len(10)),
+    payload = list(
+      y = seq_len(10),
+      ids = c("a", "b"),
+      group_of = c(a = "base1", b = ""),
+      Gamma = Gamma
+    ),
     result = result
   )
 
@@ -54,6 +64,16 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   expect_equal(R_matrix(fit), result$residual_covariance)
   expect_equal(genetic_correlation(fit), result$genetic_correlation)
   expect_equal(residual_correlation(fit), result$residual_correlation)
+  expect_equal(gamma_matrix(fit), Gamma)
+  expect_equal(
+    metafounder_groups(fit),
+    data.frame(
+      id = c("a", "b"),
+      metafounder_group = c("base1", NA),
+      is_metafounder = c(TRUE, FALSE),
+      stringsAsFactors = FALSE
+    )
+  )
   expect_equal(breeding_values(fit), result$breeding_values)
   expect_equal(EBV(fit), result$breeding_values)
   expect_equal(BLUP(fit), result$breeding_values)
@@ -113,6 +133,23 @@ test_that("internal hsquared_fit object supports v0.1 extractors", {
   )
   expect_match(capture.output(print(diagnostics))[[1L]], "<hs_fit_diagnostics>")
   expect_s3_class(summary(fit), "summary_hsquared_fit")
+
+  mf_result <- result
+  mf_result$variance_components$component <- c("metafounder", "residual")
+  mf_fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(
+      y = seq_len(10),
+      ids = c("a", "b"),
+      group_of = c("base", "")
+    ),
+    result = mf_result
+  )
+  mf_diag <- fit_diagnostics(mf_fit)
+  expect_equal(
+    mf_diag$value[mf_diag$metric == "at_boundary"],
+    "FALSE"
+  )
 })
 
 test_that("extractor defaults do not imply fitted model support", {
@@ -143,6 +180,16 @@ test_that("extractor defaults do not imply fitted model support", {
   )
   expect_error(
     residual_correlation(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    gamma_matrix(list()),
+    "requires an `hsquared_fit` object",
+    fixed = TRUE
+  )
+  expect_error(
+    metafounder_groups(list()),
     "requires an `hsquared_fit` object",
     fixed = TRUE
   )
@@ -334,6 +381,16 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     marker_variance_explained(fit),
     "does not contain marker variance explained",
+    fixed = TRUE
+  )
+  expect_error(
+    gamma_matrix(fit),
+    "does not contain a supplied metafounder `Gamma` matrix",
+    fixed = TRUE
+  )
+  expect_error(
+    metafounder_groups(fit),
+    "does not contain supplied metafounder group assignments",
     fixed = TRUE
   )
   expect_error(

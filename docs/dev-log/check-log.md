@@ -3,6 +3,47 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 metafounder result-surface provenance extractors
+
+- Scope: R fitted-object result surface only. Added `gamma_matrix(fit)` and
+  `metafounder_groups(fit)` for the experimental supplied-`Gamma`
+  `metafounder()` and `H^Gamma` single-step bridge paths. These extractors
+  return supplied input provenance (`Gamma` and ID-keyed group assignments),
+  not estimated parameters or metafounder effects. Ordinary
+  `variance_components()`, `heritability()`, `breeding_values()`, PEV,
+  reliability, and diagnostics continue to use the existing result surface.
+- Code/details:
+  - exported `gamma_matrix()` and `metafounder_groups()`;
+  - added mock-object tests for both extractors and missing-field errors;
+  - added live bridge assertions for animal-only metafounder and H^Gamma
+    single-step results;
+  - extended the boundary diagnostic's primary-effect vocabulary to include the
+    `metafounder` variance-component label;
+  - updated NEWS and status ledgers to say provenance extractors are available
+    while metafounder effect extractors, Gamma estimation, and external
+    comparator evidence remain absent.
+- Local checks:
+  - `air format .` - passed.
+  - `Rscript --vanilla -e 'devtools::document()'` - passed; regenerated
+    `NAMESPACE`, `man/gamma_matrix.Rd`, and `man/metafounder_groups.Rd`.
+  - `Rscript --vanilla -e 'devtools::test(filter = "fit-object|julia-bridge|single-step-construct|phase0-api")'`
+    - 283 passed, 0 failed, 0 warnings, 16 skipped.
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" NOT_CRAN=true Rscript --vanilla -e 'devtools::test(filter = "julia-bridge|single-step-construct")'`
+    - 208 passed, 0 failed, 0 warnings, 0 skipped.
+  - `Rscript --vanilla -e 'devtools::test()'` - 1272 passed, 0 failed, 0
+    warnings, 58 skipped.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean after adding the
+    new topics to `_pkgdown.yml`.
+  - `git diff --check` - clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` -
+    Status OK, 0 errors, 0 warnings, 0 notes. Missing optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` were INFO only in the
+    built-package sandbox.
+- Rose boundary: this is a result-shape/provenance slice. It does not add
+  `metafounder_effects()`, does not estimate `Gamma`, does not add BLUPF90 or
+  ASReml comparator evidence, and does not promote the metafounder rows beyond
+  `partial`.
+
 ## 2026-06-21 animal-only supplied-Gamma metafounder bridge
 
 - Scope: R bridge activation for animal-only supplied-`Gamma` metafounder
