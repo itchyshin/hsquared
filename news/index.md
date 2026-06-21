@@ -185,11 +185,20 @@
   `"la"`/`"va"`, mirroring the sister-package method-string convention)
   — the variational fit is surfaced as `Variational-REML` in
   [`print()`](https://rdrr.io/r/base/print.html)/[`summary()`](https://rdrr.io/r/base/summary.html)
-  and is verified live to match the engine element-wise. Experimental,
-  REML-only (`binomial` with a trial count is planned); mirrors the
-  engine row `V6-LAPLACE`/`VA` (`partial`): not coverage-calibrated, no
-  external comparator, and Bernoulli `σ²a` is prone to a search-bound
-  boundary at small scale. Not the default
+  and is verified live to match the engine element-wise.
+  `binomial(logit)` now also accepts a **`cbind(successes, failures)`
+  counts response** (Binomial), not only a binary 0/1 response
+  (Bernoulli): the canonical R `glm` binomial syntax. The engine uses a
+  single common trial count, so the `cbind` row totals (successes +
+  failures) must be equal — varying per-record trials error with a
+  directing message (a planned engine follow-up). **Bug fix:** a
+  `cbind(successes, failures)` response under `family = binomial()` was
+  previously mis-detected as a two-trait multivariate Gaussian
+  (family-blind `cbind` detection); it is now correctly a
+  binomial-counts model. Experimental, REML-only; mirrors the engine row
+  `V6-LAPLACE`/`VA` (`partial`): not coverage-calibrated, no external
+  comparator, and Bernoulli `σ²a` is prone to a search-bound boundary at
+  small scale. Not the default
   ([\#44](https://github.com/itchyshin/hsquared/issues/44)).
 - **Experimental:**
   [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
