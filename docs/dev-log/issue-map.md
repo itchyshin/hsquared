@@ -51,7 +51,6 @@ the full innovation backlog (#50-#58, #61, #93, and bridge/validation anchors).
 | 7 | Julia-side validation canon | 1 | partial | hsquared#7/#10 |
 | 8 | HSData input container and bridge parity | 1 | partial | hsquared#8 |
 | 37 | [from R] PR #17 calibration: em_fa.jl warm-start; merge? | 4 | partial · cross-lane | hsquared#17/#22 |
-| 38 | [from R] reword "250-animal ratio ~0.99" in 03-engine-contract | 1 | cross-lane | hsquared#16 |
 | 41 | [from R] Validation gates R needs (partial→covered) | — | partial · cross-lane | hsquared#10/#7 |
 | 42 | Bridge activation: structured mv covariance (FA/low-rank) | 4 | partial · cross-lane | hsquared#22 |
 | 43 | Bridge activation: PEV/reliability standard fields | 1 | partial · cross-lane | hsquared#21 |
@@ -67,9 +66,14 @@ the full innovation backlog (#50-#58, #61, #93, and bridge/validation anchors).
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 (+ #39) | Phase 5 stack on main + thresholds |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, provenance extractors, reserved/error-only `metafounder_effects()`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
-| 03-engine-contract reword | #16 (R-side eigen_G) | #38 | twin doc edit |
 | Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity |
 | HSData marshalling | #8 | #8 | live bridge marshalling |
+
+Recently banked / no longer open in the selected Julia anchor list: #38
+(`docs/design/03-engine-contract.md` AI-matrix claim hygiene, merged in
+HSquared.jl PR #133 at `4526481`). Historical R-lane notes may still mention the
+old `250-animal` wording as the problem statement; the live Julia issue is now
+closed.
 
 ## Historical WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
 
