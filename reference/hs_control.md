@@ -54,13 +54,14 @@ hs_control(
 
   A named list for engine-specific controls. The current experimental
   Julia bridge recognizes `julia_project`, `initial`, `iterations`,
-  `target`, and `variance_components`. `target` selects which Julia
-  estimator the `engine = "julia"` bridge runs; it has no effect under
-  the default `engine = "fit"` path. The supported targets are
-  `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`, `"henderson_mme"`,
-  `"repeatability"`, `"two_effect"`, `"genomic"`, `"single_step"`,
-  `"snp_blup"`, and `"multivariate"`, described below. With
-  `engine = "julia"` and no `target`, the bridge defaults to
+  `target`, `variance_components`, and `marginal`. `target` selects
+  which Julia estimator the `engine = "julia"` bridge runs; it has no
+  effect under the default `engine = "fit"` path. The supported targets
+  are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
+  `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"genomic"`,
+  `"single_step"`, `"snp_blup"`, `"multivariate"`, and `"nongaussian"`,
+  described below. `marginal` applies only to `target = "nongaussian"`.
+  With `engine = "julia"` and no `target`, the bridge defaults to
   `target = "fit_animal_model"`: it surfaces the Julia-owned
   `HSquared.fit_animal_model()` dense NelderMead optimizer, honouring
   the `REML` flag. This is **not** the same estimator as the default
@@ -129,6 +130,20 @@ hs_control(
   lands on main and R bridge tests are committed. The future `rank`
   control is also reserved and currently errors instead of being
   ignored.
+
+  `target = "nongaussian"` is an experimental, opt-in latent-scale GLMM
+  for
+  `family = poisson()`/[`binomial()`](https://rdrr.io/r/stats/family.html)
+  (binary 0/1) on `animal(1 | id, pedigree = ped)`, surfacing the
+  Julia-owned `HSquared.fit_laplace_reml()` REML optimizer. The
+  `marginal` control selects the approximation: `"laplace"` (the Laplace
+  approximation, default) or `"variational"` (the variational/ELBO
+  marginal; aliases `"la"`/`"va"`). Because a non-Gaussian family has no
+  residual-variance scale, **no heritability** is reported. The
+  variational objective is the ELBO (a lower bound on the marginal
+  log-likelihood), so a variational fit's `logLik`/`AIC` are **not**
+  comparable with a Laplace fit's. Experimental, REML-only, not
+  coverage-calibrated (twin gate `V6-LAPLACE`/`VA`, partial).
 
 ## Value
 

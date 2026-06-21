@@ -13,8 +13,9 @@ v0.1 fits the univariate Gaussian animal model
 call fits when a local Julia and `HSquared.jl` are available, and
 otherwise errors with install guidance. Genomic, single-step,
 repeatability, two-effect, multivariate Gaussian, and non-Gaussian
-(`poisson`/`binomial`, Laplace-REML) models also fit through opt-in,
-experimental engine paths; factor-analytic models remain planned.
+(`poisson`/`binomial`, Laplace or variational REML) models also fit
+through opt-in, experimental engine paths; factor-analytic models remain
+planned.
 
 ## See also
 

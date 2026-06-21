@@ -179,11 +179,17 @@
   variance, breeding values, fixed effects, and the marginal
   log-likelihood. Because a non-Gaussian family has no residual-variance
   scale, **no heritability is reported** (a liability-scale `h²` would
-  be an unbacked claim). Experimental and REML/Laplace-only
-  (`marginal = "laplace"`; variational and `binomial` with a trial count
-  are planned); mirrors the engine row `V6-LAPLACE` (`partial`): not
-  coverage-calibrated, no external comparator, and Bernoulli `σ²a` is
-  prone to a search-bound boundary at small scale. Not the default
+  be an unbacked claim). The marginal is selected with
+  `engine_control$marginal`: `"laplace"` (the Laplace approximation,
+  default) or `"variational"` (the variational/ELBO marginal; aliases
+  `"la"`/`"va"`, mirroring the sister-package method-string convention)
+  — the variational fit is surfaced as `Variational-REML` in
+  [`print()`](https://rdrr.io/r/base/print.html)/[`summary()`](https://rdrr.io/r/base/summary.html)
+  and is verified live to match the engine element-wise. Experimental,
+  REML-only (`binomial` with a trial count is planned); mirrors the
+  engine row `V6-LAPLACE`/`VA` (`partial`): not coverage-calibrated, no
+  external comparator, and Bernoulli `σ²a` is prone to a search-bound
+  boundary at small scale. Not the default
   ([\#44](https://github.com/itchyshin/hsquared/issues/44)).
 - **Experimental:**
   [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
