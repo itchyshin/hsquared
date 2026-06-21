@@ -3,6 +3,23 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Close R issue #8 after live HSData marshalling parity
+
+- Scope: issue-map/coordination docs only after live GitHub close.
+- Live GitHub action: `gh issue close 8 --repo itchyshin/hsquared --comment ...`
+  closed R issue #8 because PR #63 banked the skip-guarded live JuliaCall parity
+  test for `hs_data()` phenotype, pedigree, and genotype data-frame components
+  into `HSquared.HSData`.
+- Claim boundary: issue close only. The `hs_data()` capability remains partial
+  in capability ledgers. No code changed; no file-backed storage, genotype
+  parsing, relationship construction, marker scan, omics/environment model
+  construction, fitting claim, or covered promotion.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#8|HSData|partial|no new code|covered promotion|relationship construction|fitting claim" docs/dev-log/issue-map.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-issue-map-close-8.md`
+    confirms the close/no-promotion boundary.
+
 ## 2026-06-21 Julia #139 Mrode 3.1 published-anchor sync
 
 - Scope: R coordination/status docs only. Mirrored Julia-lane confirmation that
