@@ -3,6 +3,24 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Julia #138 Mrode/MCMCglmm V4 ledger sync
+
+- Scope: R coordination/status docs only. Mirrored Julia-lane confirmation that
+  HSquared.jl PR #138 merged at `945bd2a` and synced the R-lane Mrode Example
+  5.1 supplied-covariance BLUP/MME anchor (`hsquared` `6a1065e`) plus the
+  `MCMCglmm` Bayesian agreement probe (`hsquared` `dbf97a7`) into the Julia V4
+  validation ledger.
+- Claim boundary: no R code changed, no `validation_status()` row changed, and
+  no capability moved to covered. V4-MV-REML remains partial. `MCMCglmm` remains
+  Bayesian/MCMC agreement evidence, not a same-estimand REML comparator. #46
+  still owns fitted textbook/Mrode target work and #49 still needs a second
+  independent same-estimand comparator beyond `sommer`.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#138|945bd2a|MCMCglmm.*Bayesian agreement|same-estimand REML|V4-MV-REML remains partial|#46|#49" docs/dev-log/issue-map.md docs/design/04-validation-canon.md docs/design/11-next-50-slices.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-julia-138-mrode-sync.md`
+    confirms the sync/no-promotion boundary.
+
 ## 2026-06-21 GWAS threshold activation contract
 
 - Scope: R design/claim contract only. Added

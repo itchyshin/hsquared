@@ -132,6 +132,12 @@ check-log evidence, an after-task report, and an updated claim boundary.
   executable handoff packet and an internal sanitized-summary CSV ingester for a
   future host with `renumf90` and `airemlf90`. These are protocols/review aids,
   not comparator evidence. V4 remains `partial`.
+- Julia V4 ledger sync: HSquared.jl PR #138 (`945bd2a`) mirrored the R Mrode
+  Example 5.1 supplied-covariance BLUP/MME anchor and `MCMCglmm` Bayesian
+  agreement probe into the engine-side ledger. This reduces cross-lane drift
+  but does not change R coverage: V4 stays `partial`, #46 remains open for
+  fitted textbook-target evidence, and #49 still needs a second independent
+  same-estimand comparator beyond `sommer`.
 - GWAS threshold calibration status: HSquared.jl PR #134 banked a fixed-marker-
   panel type-I calibration smoke harness, and HSquared.jl PR #135 reopened #48
   as the active calibration/evidence gate. R `gwas()` significance thresholds
