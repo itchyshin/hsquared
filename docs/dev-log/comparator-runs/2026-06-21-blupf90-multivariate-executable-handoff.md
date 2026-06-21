@@ -101,6 +101,12 @@ The run report must include:
 - warnings, boundary flags, singularity, or non-positive-definite diagnostics;
 - exact scale mapping between BLUPF90 output and the fixture target.
 
+When possible, include a sanitized companion CSV with columns `quantity`,
+`target`, `estimate`, `difference`, `tolerance`, and `verdict`. The R package has
+an internal scaffold ingester for that CSV shape so a future review can check
+missing core quantities and non-pass verdicts without parsing raw BLUPF90 logs.
+The ingester is not comparator evidence by itself.
+
 ## Comparison Target
 
 Compare against:
