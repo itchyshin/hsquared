@@ -3,6 +3,23 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 BLUPF90 multivariate executable handoff
+
+- Scope: R validation/comparator handoff documentation only. Added
+  `docs/dev-log/comparator-runs/2026-06-21-blupf90-multivariate-executable-handoff.md`
+  and linked it from `docs/dev-log/comparator-runs/README.md`.
+- The packet records host requirements, exact file-generation command, BLUPF90
+  run commands, required result fields, proposed review bands, and report
+  location for an executable-backed second-comparator run.
+- Claim boundary: this is a run protocol, not comparator evidence. No
+  BLUPF90-family executable was run, no `validation_status()` row changed, and
+  V4-MV-REML remains partial.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "not comparator evidence|not evidence|no BLUPF90|V4-MV-REML remains partial|renumf90|airemlf90|acceptance|same-estimand" docs/dev-log/comparator-runs/2026-06-21-blupf90-multivariate-executable-handoff.md docs/dev-log/comparator-runs/README.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-blupf90-executable-handoff.md`
+    confirms the protocol/evidence boundary and executable requirements.
+
 ## 2026-06-21 Julia #132/#133 issue-map sync
 
 - Scope: coordination docs only. Refreshed `docs/dev-log/issue-map.md` after

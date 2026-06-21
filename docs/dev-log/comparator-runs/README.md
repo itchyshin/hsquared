@@ -25,3 +25,10 @@ Current blocker reports:
   lacks ASReml/BLUPF90-family/DMU/WOMBAT executables and R packages needed for a
   second independent same-estimand multivariate REML comparator beyond the
   existing `sommer` leg.
+
+Run handoff packets:
+
+- `2026-06-21-blupf90-multivariate-executable-handoff.md` gives the exact
+  BLUPF90-family host requirements, file-generation command, run commands,
+  result fields, proposed review bands, and reporting boundary for the next
+  executable-backed multivariate comparator run. It is a protocol, not evidence.
