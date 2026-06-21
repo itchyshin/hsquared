@@ -5203,3 +5203,4 @@ release".
   `cbind` still multivariate); `pkgdown::check_pkgdown()` clean;
   `rcmdcheck(args="--no-manual")` **0/0/0**. capability-status + NEWS + doc 21 +
   validation-debt-register + `formula_status()` updated. No engine edit.
+- CI (commit `2322ba4`, binomial counts): pkgdown run `27891149133` **success**; pages green.

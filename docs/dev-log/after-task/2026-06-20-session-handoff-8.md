@@ -27,10 +27,15 @@ file. Supersedes handoff-7.
 
 ## Current state (repo = truth)
 
-- R `main` clean @ **`5f0e25f`** (CI-record tip, VA marginal), synced; CI green
-  throughout (pkgdown `27889972721`). `rcmdcheck(--no-manual)` 0/0/0;
+- R `main` clean @ **`2322ba4`** (CI-record tip, binomial counts), synced; CI green
+  throughout (pkgdown `27891149133`). `rcmdcheck(--no-manual)` 0/0/0;
   `check_pkgdown` clean; live `test-single-step-construct` **54/54**, `test-gwas`
-  **59/59**, `test-nongaussian` **39/39** on the bridge.
+  **59/59**, `test-nongaussian` **39/39**, `test-binomial-counts` **20/20** on the
+  bridge.
+- **Cross-lane opportunity scout** (4-agent Workflow) ranked the actionable work;
+  its plan drives the rest of this session: A1 binomial counts (DONE), A2 SNP-BLUP
+  REML (#13, next), A3 attach plot_data at fit time (#93), A4 Henderson PEV
+  unconditional, plus issue hygiene + twin coordination.
 - **s6 (this session):** (1) LOCO gwas landed — `gwas(method = "loco",
   marker_groups = chrom)` completes #4 (live dimension probe resolved the design
   Q; 5-lens verify added a non-square-Z regression; doc 26 IMPLEMENTED).
