@@ -261,6 +261,8 @@ formula_status()
     ##                                animal(trait | id, pedigree = ped, cov = diag())
     ##                        animal(trait | id, pedigree = ped, cov = lowrank(K = 2))
     ##                             animal(trait | id, pedigree = ped, cov = fa(K = 2))
+    ##                                    missing = miss_control(response = "include")
+    ##                          mi(x) with missing = miss_control(predictor = "model")
     ##      phase syntax_status                                  fitting_status
     ##    Phase 1        parsed                           fitted (v0.1 default)
     ##    Phase 1        parsed                           fitted (v0.1 default)
@@ -295,6 +297,8 @@ formula_status()
     ##  Phase 3-4       planned                                   not available
     ##  Phase 3-4       planned                                   not available
     ##  Phase 3-4       planned                                   not available
+    ##    Phase 8       planned                                   not available
+    ##    Phase 8       planned                                   not available
 
 ``` r
 

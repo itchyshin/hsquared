@@ -51,6 +51,14 @@
   [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
   still recomputes when a payload is absent or when a random-regression
   user supplies a custom grid.
+- [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
+  now lists the ratified planned missing-data grammar:
+  `missing = miss_control(response = "include")` for future
+  masked-response rows and `mi(x)` with
+  `missing = miss_control(predictor = "model")` for a future modelled
+  missing predictor. This is a grammar contract only; `mi()`,
+  `miss_control()`, `impute_model()`, and `imputed()` are not exported
+  and no missing-data fitting path is active.
 - Reserved
   [`metafounder_effects()`](https://itchyshin.github.io/hsquared/reference/metafounder_effects.md)
   as an exported, error-only extractor so the future metafounder result
