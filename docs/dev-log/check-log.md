@@ -5252,3 +5252,17 @@ release".
 - `air`; `devtools::document()`; **LIVE** `test-julia-bridge.R` **96/0/0/0** on the
   bridge; `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")`
   **0/0/0**. Dense/validation-scale label unchanged (no capability promotion).
+- CI (commit `c49614d`, Henderson PEV unconditional): pkgdown run `27892075172` **success**; pages green.
+
+## 2026-06-20 (session 6 — validation depth: GBLUP <-> SNP-BLUP GEBV equivalence)
+
+- Added a live cross-path validation atom (`test-snp-blup.R`): fitting the same
+  markers as a genomic relationship (GREML, `target = "genomic"`) vs as marker
+  effects (REML SNP-BLUP, `target = "snp_blup"`) — each REML-estimating its own
+  variances — yields **equivalent** per-individual GEBVs (the textbook
+  GBLUP<->SNP-BLUP equivalence; the twin V2-SNPBLUP pinned property). Probed:
+  GEBV correlation **0.999998**, relative max-diff **~0.6%** (the small residual
+  is the ridge the genomic path applies to G, not a discrepancy). Test asserts
+  `cor > 0.999` and relative max-diff `< 0.02`.
+- Test-only addition; **LIVE** `test-snp-blup.R` **40/0/0/1** on the bridge;
+  `rcmdcheck(args="--no-manual")` **0/0/0**.

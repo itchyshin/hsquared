@@ -284,3 +284,56 @@ test_that("hsquared fits REML-estimated SNP-BLUP when variances are unsupplied",
     tolerance = 1e-6
   )
 })
+
+test_that("GBLUP and REML SNP-BLUP give equivalent GEBVs on the same markers", {
+  # The textbook GBLUP <-> SNP-BLUP equivalence (the twin V2-SNPBLUP pinned
+  # property): fitting markers as a genomic relationship (GREML) or as marker
+  # effects (SNP-BLUP), each REML-estimating its own variances, yields the same
+  # per-individual genomic breeding values. The small residual is the ridge the
+  # genomic path applies to G (genomic_relationship_inverse), not a discrepancy.
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live SNP-BLUP."
+  )
+
+  set.seed(31)
+  na <- 30
+  ids <- paste0("g", seq_len(na))
+  m <- 80
+  M <- matrix(stats::rbinom(na * m, 2, 0.3), na, m)
+  rownames(M) <- ids
+  colnames(M) <- paste0("snp", seq_len(m))
+  Wc <- scale(M, center = TRUE, scale = FALSE)
+  gv <- stats::setNames(as.numeric(Wc %*% stats::rnorm(m, 0, 0.25)), ids)
+  n <- 90
+  rec <- rep(ids, length.out = n)
+  dat <- data.frame(y = 3 + gv[rec] + stats::rnorm(n, 0, 1), id = rec)
+
+  fit_gblup <- hsquared(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+  fit_snp <- hsquared(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "snp_blup")
+    )
+  )
+  bg <- breeding_values(fit_gblup)
+  bs <- breeding_values(fit_snp)
+  bg <- bg[order(bg$id), ]
+  bs <- bs[order(bs$id), ]
+  expect_equal(bg$id, bs$id)
+  # GEBVs are equivalent: near-perfect correlation, small relative difference.
+  expect_gt(stats::cor(bg$value, bs$value), 0.999)
+  expect_lt(max(abs(bg$value - bs$value)) / stats::sd(bg$value), 0.02)
+})
