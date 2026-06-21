@@ -136,12 +136,15 @@
   per-marker table (`effect`, `se`, `z`, `chisq`, `p_value`,
   `bonferroni_p`, `bh_qvalue`, `lod`). **The p-values are NOT
   genome-wide calibrated** — they are nominal Wald p-values plus
-  Bonferroni/BH over the supplied markers only, with no
-  realistic-LD/design calibration, no permutation, and no external
-  comparator (engine gate `HSquared.jl#48`); the wrapper applies one
-  whole-pedigree relationship correction.
-  `gwas(fit, markers, method = "single")` additionally surfaces the
-  relatedness-**un**corrected single-marker (OLS) scan
+  Bonferroni/BH over the supplied markers only, with no R threshold
+  activation, no permutation-backed cutoff, and no external comparator.
+  HSquared.jl PR
+  [\#134](https://github.com/itchyshin/hsquared/issues/134) banked a
+  fixed-marker-panel calibration smoke harness, but it does not activate
+  R significance thresholds or provide realistic-LD production
+  calibration; the wrapper applies one whole-pedigree relationship
+  correction. `gwas(fit, markers, method = "single")` additionally
+  surfaces the relatedness-**un**corrected single-marker (OLS) scan
   (`HSquared.single_marker_scan()`) as a naive contrast — it carries a
   `scan_method` attribute and
   [`print()`](https://rdrr.io/r/base/print.html)/[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)

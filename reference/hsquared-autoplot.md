@@ -95,7 +95,9 @@ a [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
 scan (`hs_gwas`) draws `type = "manhattan"` (default) or `type = "qq"`
 (observed vs expected `-log10(p)` with a `y = x` null and the
 genomic-inflation `lambda_GC` as a diagnostic). Both carry the
-EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate `HSquared.jl#48`).
+EXPERIMENTAL, NOT-genome-wide-calibrated caveat. The Julia lane has a
+fixed-panel calibration smoke harness, but R significance thresholds are
+not activated.
 
 The figure helpers are deliberately modular (each takes a tidy data
 frame and returns a `ggplot`) so they can be factored into a shared

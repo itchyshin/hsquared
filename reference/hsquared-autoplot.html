@@ -140,7 +140,9 @@ descriptive.</p></li>
 </ul><p><code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot()</a></code> on a <code><a href="gwas.html">gwas()</a></code> scan (<code>hs_gwas</code>) draws <code>type = "manhattan"</code>
 (default) or <code>type = "qq"</code> (observed vs expected <code>-log10(p)</code> with a <code>y = x</code>
 null and the genomic-inflation <code>lambda_GC</code> as a diagnostic). Both carry the
-EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate <code>HSquared.jl#48</code>).</p>
+EXPERIMENTAL, NOT-genome-wide-calibrated caveat. The Julia lane has a
+fixed-panel calibration smoke harness, but R significance thresholds are not
+activated.</p>
 <p>The figure helpers are deliberately modular (each takes a tidy data frame and
 returns a <code>ggplot</code>) so they can be factored into a shared visualization
 package later.</p>
