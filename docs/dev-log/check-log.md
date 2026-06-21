@@ -5170,3 +5170,4 @@ release".
   `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
   capability-status + NEWS updated. No engine edit (the engine pre-built the
   `MarginalMethod` R-name mapping).
+- CI (commit `5f0e25f`, VA marginal): pkgdown run `27889972721` **success**; pages green.

@@ -27,10 +27,10 @@ file. Supersedes handoff-7.
 
 ## Current state (repo = truth)
 
-- R `main` clean @ **`6adc24f`** (CI-record tip, bundle shorthand), synced; CI
-  green throughout (pkgdown `27889443212`). `rcmdcheck(--no-manual)` 0/0/0;
+- R `main` clean @ **`5f0e25f`** (CI-record tip, VA marginal), synced; CI green
+  throughout (pkgdown `27889972721`). `rcmdcheck(--no-manual)` 0/0/0;
   `check_pkgdown` clean; live `test-single-step-construct` **54/54**, `test-gwas`
-  **59/59** on the bridge.
+  **59/59**, `test-nongaussian` **39/39** on the bridge.
 - **s6 (this session):** (1) LOCO gwas landed — `gwas(method = "loco",
   marker_groups = chrom)` completes #4 (live dimension probe resolved the design
   Q; 5-lens verify added a non-square-Z regression; doc 26 IMPLEMENTED).
@@ -39,6 +39,13 @@ file. Supersedes handoff-7.
   verify caught + fixed a shipped failing test (a `fixed=TRUE`/backtick mismatch
   that an `as.data.frame(test_file)` summary had masked — trust rcmdcheck) + a
   stale `?single_step` roxygen + a misleading bare-call error.
+  (3) **Variational (VA) non-Gaussian marginal** landed — `engine_control =
+  list(target = "nongaussian", marginal = "variational")` (aliases `la`/`va`)
+  surfaces the engine's VA/ELBO marginal, answering the twin's "pending R-lane
+  coordination" method-string item (no engine edit — the engine pre-built the
+  R-name map). 5-lens verify: Hopper+Curie clean; fixed a stale-claim blocker +
+  the ELBO-scale honesty surface + a Rose-principle sweep of "Laplace-only" text
+  across 6 files. Next non-Gaussian bridge slice: Binomial(n-trials) (engine-ready).
 - Twin `HSquared.jl` `main` @ **`4559f16`** — landed `variance_components_plot_data`
   (set B, #95), plus the earlier RR/G-geometry/g-correlation preparers (#88/#91/#92)
   and the #93/#94 plotting coordination.
