@@ -3,6 +3,32 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #148 extractor mirror
+
+- Active lenses: Ada, Shannon, Emmy, Hopper, Boole, Pat, Rose, Grace.
+- Branch: `codex/julia-148-extractor-mirror-sync`.
+- Scope:
+  - updated live R #5 after HSquared.jl PR #148 (`b6345f1`) mirrored the R
+    extractor/table wording and recorded the R #83 marker-scan tool blocker in
+    Julia docs/issues;
+  - refreshed the R issue-map extractor row, Julia #48 marker-threshold row,
+    marker-scan mirror row, and coordination board.
+- Live GitHub action:
+  - `gh issue edit 5 --repo itchyshin/hsquared --body-file -` updated the
+    extractor-parent issue body.
+- Claim boundary: issue/docs sync only. No R or Julia behavior changed; no
+  external genomic or marker-scan comparator evidence is claimed; no calibrated
+  threshold activation, formula-level `marker_scan()` activation,
+  map-annotated QTL/GWAS/eQTL workflow, validation/public-claim promotion, or
+  covered status change.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-148-extractor-mirror-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync bridge parent issue #6 after scan/genomic handoffs
 
 - Active lenses: Ada, Shannon, Hopper, Emmy, Pat, Rose, Grace.
