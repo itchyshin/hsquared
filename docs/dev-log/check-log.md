@@ -3,6 +3,23 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 issue-map live refresh
+
+- Scope: docs/dev-log coordination only. Refreshed
+  `docs/dev-log/issue-map.md` against live open issue lists for `hsquared` and
+  `HSquared.jl`, moved closed R issue rows (#11, #12, #13, #14, #16, #17, #18,
+  #26) into a "recently banked" note, clarified `hsquared#23` as live but still
+  partial, and made the Julia table a selected cross-lane anchor map rather than
+  an exhaustive issue dump.
+- Live commands:
+  - `gh issue list --repo itchyshin/hsquared --state open --limit 80 --json number,title,labels,url`
+  - `gh issue list --repo itchyshin/HSquared.jl --state open --limit 80 --json number,title,labels,url`
+- Claim boundary: no capability status changed, no `validation_status()` rows
+  changed, and no covered promotion is implied by closed issues.
+- Checks:
+  - `git diff --check` clean.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+
 ## 2026-06-21 formula_status single-step bundle shorthand row
 
 - Scope: formula/status diagnostics only. Added a distinct parsed
