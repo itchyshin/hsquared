@@ -133,15 +133,21 @@ check-log evidence, an after-task report, and an updated claim boundary.
   future host with `renumf90` and `airemlf90`. These are protocols/review aids,
   not comparator evidence. V4 remains `partial`.
 - GWAS threshold calibration status: HSquared.jl PR #134 banked a fixed-marker-
-  panel type-I calibration smoke harness and closed the live Julia #48 issue,
-  but R `gwas()` significance thresholds remain inactive. The R surface still
-  reports nominal/Bonferroni/BH p-values only, with no realistic-LD production
-  calibration, no permutation-backed cutoff, and no external comparator claim.
+  panel type-I calibration smoke harness, and HSquared.jl PR #135 reopened #48
+  as the active calibration/evidence gate. R `gwas()` significance thresholds
+  remain inactive. The R surface still reports nominal/Bonferroni/BH p-values
+  only, with no realistic-LD production calibration, no permutation-backed
+  cutoff, and no external comparator claim.
 - GWAS threshold activation contract: `docs/design/
   28-gwas-threshold-activation-contract.md` now records the R-side activation
   surface, required calibrated-result fields, validation gates, and non-goals.
   This is a contract only; no threshold is activated and marker-scan status
   remains partial.
+- Plot-data contract and multivariate SE/LRT ledger sync: HSquared.jl PR #136
+  closed #93 after the R A3/PR #35 fit-time plot-data payload attachment, and
+  HSquared.jl PR #137 closed #47 as an issue-ledger cleanup for already-landed
+  covariance SE/LRT work. No R claim or validation row is promoted by those
+  ledger closures.
 
 ## Programme Board
 

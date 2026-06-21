@@ -24,7 +24,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 20 | Infra: recurring innovation scout (weekly) | — | innovation/infra | planned | WS3 cadence |
 | 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial · **univariate/Henderson done** | Standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson dense validation fields attach unconditionally; twin #43 still gates multivariate per-trait and production sparse/comparator work |
 | 22 | Bridge: activate structured mv covariance | 4 | bridge | partial · **diagonal shipped** | **`:diagonal` subset SHIPPED** (guardrail relaxed + `genetic_structure` threaded + `covariance_structure_lrt`, built to twin contract #61; live fit skip-guarded until the twin payload lands). `lowrank`/`fa` stay **blocked** on the rotation convention (twin #42/#37) |
-| 23 | Bridge: post-fit `gwas()`/marker-scan wrapper | 5 | bridge | partial | Mixed, single-marker, and LOCO scan bridges are live and experimental; Julia PR #134 banked a fixed-panel calibration smoke harness, but R significance thresholds remain inactive. Future gates are permutation/realistic-LD threshold activation, external comparator/calibration evidence, and map-annotated QTL/eQTL result tables (twin #45/#61). |
+| 23 | Bridge: post-fit `gwas()`/marker-scan wrapper | 5 | bridge | partial | Mixed, single-marker, and LOCO scan bridges are live and experimental; Julia PR #134 banked a fixed-panel calibration smoke harness, and Julia PR #135 reopened #48 as the active calibration/evidence gate. R significance thresholds remain inactive. Future gates are permutation/realistic-LD threshold activation, external comparator/calibration evidence, and map-annotated QTL/eQTL result tables (twin #45/#48/#61). |
 | 24 | Innovation: augmented AI-REML single-solve (Strandén 2024) | 8 | innovation/perf | planned | engine-led; twin #58; scout note |
 | 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
 | — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | partial | Candidate A Big 3 slice; `metafounder(..., group =, Gamma =)` now validates the supplied-`Gamma` animal-only payload and fits the experimental supplied-variance `target = "metafounder"` path; `single_step(..., group =, Gamma =)` validates the supplied-`Gamma` `H^Gamma` payload and fits the experimental live `target = "metafounder_single_step"` path. `gamma_matrix()` and `metafounder_groups()` expose supplied provenance; `metafounder_effects()` is reserved/error-only. No returned metafounder-specific effects, `Gamma` estimation, BLUPF90-family comparator evidence, or covered promotion yet |
@@ -37,11 +37,11 @@ capability ledgers say so; a closed issue does not imply covered validation.
 
 This table is a selected cross-lane map, not an exhaustive issue dump. The live
 `gh issue list --repo itchyshin/HSquared.jl` output remains authoritative for
-the full innovation backlog (#50-#58, #61, #93, and bridge/validation anchors).
+the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 
 | # | Title | Phase | Status | R mirror |
 | --- | --- | --- | --- | --- |
-| 93 | Bridge activation: plotting plot-data contract | — | open · cross-lane | R consumed all seven preparers and then attached available engine `*_plot_data` payloads at fit time; remaining issue state is Julia/coordinator cleanup |
+| 48 | Validation: calibrated genome-wide significance thresholds | 5 | open · partial | R #23; PR #134 banked fixed-panel smoke, PR #135 reopened #48 as the active evidence gate; R #59/#60 banked the activation contract and inert metadata validator, but no R threshold is active |
 | 61 | Joint critical path / cross-lane coordination | — | open · cross-lane | Holds ratified bridge conventions that feed R #22/#23/metafounder/RR follow-ups |
 | 58 | Engine perf ideas (augmented AI-REML / SQUAREM / Woodbury) | 8 | planned · cross-lane | hsquared#24/#25/#17 |
 | 53 | Innovation: metafounders / unknown-parent groups for ssGBLUP | 2/5 | planned / partial primitives | R contract row; supplied-`Gamma` bridge exists, no estimation or comparator claim |
@@ -64,17 +64,20 @@ the full innovation backlog (#50-#58, #61, #93, and bridge/validation anchors).
 | Structured/FA G | #22 (+ #17 method) | #42 (+ #37 calibration) | twin bridge payload+fixture (#42) + V4-FA calibration; PR #17 closed, FA core already on main |
 | PEV/reliability | #21 | #43 | univariate/default payload consumed and Henderson dense unconditional; remaining gate = multivariate per-trait fields + production sparse/comparator validation |
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
-| Marker scans | #23 | #45 (+ PR #134 calibration smoke) | Phase 5 stack on main; fixed-panel threshold smoke banked, but no R significance threshold activation or production calibration claim |
+| Marker scans | #23 | #45 + #48 (+ PR #134 smoke, PR #135 reopen) | Phase 5 stack on main; fixed-panel threshold smoke banked and #48 reopened as the active evidence gate, but no R significance threshold activation or production calibration claim |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, provenance extractors, reserved/error-only `metafounder_effects()`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
 | Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity; Julia PR #132 banked BLUPF90 preflight/runner hardening only |
 | HSData marshalling | #8 | #8 | live bridge marshalling |
 
 Recently banked / no longer open in the selected Julia anchor list: #38
 (`docs/design/03-engine-contract.md` AI-matrix claim hygiene, merged in
-HSquared.jl PR #133 at `4526481`) and #48 (fixed-marker-panel threshold
-calibration smoke, merged in HSquared.jl PR #134 at `beca371`). Historical
-R-lane notes may still mention the old `250-animal` wording or the open #48 gate
-as the problem statement; the live Julia issues are now closed.
+HSquared.jl PR #133 at `4526481`), #93 (plotting plot-data contract, closed by
+HSquared.jl PR #136 at `ff1fbab` after R PR #35/A3 attached available fit-time
+plot-data payloads), and #47 (multivariate covariance SE/LRT ledger, closed by
+HSquared.jl PR #137 at `ad7848c` for already-landed work). Historical R-lane
+notes may still mention the old `250-animal` wording, #93 as an open cleanup
+item, or #47 as an active ledger row; the live selected issue map now treats
+those as banked.
 
 Recent Julia-side coordination checkpoints that keep current gates honest:
 
@@ -85,10 +88,16 @@ Recent Julia-side coordination checkpoints that keep current gates honest:
 - HSquared.jl PR #133 (`4526481`) cleaned the stale AI-matrix validation claim
   and closed #38. R current public capability rows already avoid the old claim.
 - HSquared.jl PR #134 (`beca371`) hardened the opt-in fixed-marker-panel
-  threshold calibration smoke harness and closed #48. It does not activate R
-  `gwas()` significance thresholds, does not add a PLINK/GenABEL-style external
-  comparator, does not provide realistic-LD production calibration, and does not
-  promote the R marker-scan row beyond partial.
+  threshold calibration smoke harness. HSquared.jl PR #135 (`a815097`) then
+  reopened #48 as the active calibration/evidence gate. Neither PR activates R
+  `gwas()` significance thresholds, adds a PLINK/GenABEL-style external
+  comparator, provides realistic-LD production calibration, or promotes the R
+  marker-scan row beyond partial.
+- HSquared.jl PR #136 (`ff1fbab`) closed #93 after reconciling the plotting
+  plot-data contract with the R A3/PR #35 fit-time payload attachment.
+- HSquared.jl PR #137 (`ad7848c`) closed #47 as an issue-ledger closeout for
+  already-landed multivariate covariance SE/LRT work. It does not add a new
+  structured-fit covariance SE claim or promote multivariate coverage.
 
 ## Historical WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
 
@@ -104,9 +113,9 @@ current backlog snapshot.
 - #22: the diagonal structured-covariance subset is banked; low-rank and FA
   remain twin/rotation-convention gated.
 - #23: mixed, single-marker, and LOCO marker scans are banked; Julia has a
-  fixed-panel calibration smoke, but R threshold activation, production
-  calibration, external comparator evidence, and map-annotated QTL/eQTL tables
-  remain gated.
+  fixed-panel calibration smoke and #48 is open as the active evidence gate, but
+  R threshold activation, production calibration, external comparator evidence,
+  and map-annotated QTL/eQTL tables remain gated.
 - #18/#44: Laplace/VA marginal dispatch and binomial counts are banked; further
   family breadth remains validation-gated.
 
