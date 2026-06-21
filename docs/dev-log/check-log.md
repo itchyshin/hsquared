@@ -3,6 +3,33 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync bridge parent issue #6 after scan/genomic handoffs
+
+- Active lenses: Ada, Shannon, Hopper, Emmy, Pat, Rose, Grace.
+- Branch: `codex/issue-6-bridge-parent-sync`.
+- Scope:
+  - updated live R #6 to record the recent bridge handoffs: Julia PR #142
+    marker-scan payload fixture mirrored by R, R PR #82 scan-object
+    `gwas_table(scan)` / `lod_scores(scan)`, Julia PR #140 genomic
+    GBLUP/SNP-BLUP target mirrored by R PR #84, and Julia PR #147 manifest /
+    status recording of R fixture consumption and blocker context;
+  - refreshed the R issue-map parent row and coordination board.
+- Live GitHub action:
+  - `gh issue edit 6 --repo itchyshin/hsquared --body-file -` updated the
+    bridge-parent issue body.
+- Claim boundary: issue/docs sync only. No R bridge behavior changed; no
+  AGHmatrix, rrBLUP, sommer, JWAS, BGLR, BLUPF90, PLINK, GenABEL, GEMMA, GCTA,
+  SAIGE, or other external comparator evidence is claimed; no calibrated
+  threshold, R genomic formula/model-spec activation, validation/public-claim
+  promotion, or covered status change.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-6-bridge-parent-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync Julia #147 validation status
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
