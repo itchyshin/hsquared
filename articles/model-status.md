@@ -211,12 +211,12 @@ Each mirrors a `partial` gate in the `HSquared.jl` twin.
   single-step inverse, `target = "single_step"`. Building `Hinv` from a
   pedigree + G is planned.
 - SNP-BLUP / RR-BLUP marker effects — `genomic(1 | id, markers = M)`,
-  `target = "snp_blup"`, with supplied
-  `variance_components = c(sigma_g2 = ..., sigma_e2 = ...)`. Returns
-  per-marker effects via
+  `target = "snp_blup"`. Returns per-marker effects via
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
-  plus per-individual genomic breeding values at the supplied variances
-  (it does not estimate them). Mirrors the twin `V2-SNPBLUP` gate.
+  plus per-individual genomic breeding values. `variance_components` is
+  optional: with supplied `c(sigma_g2 = ..., sigma_e2 = ...)` it solves
+  at those variances; when omitted it estimates `sigma_g2`/`sigma_e2` by
+  REML from the markers. Mirrors the twin `V2-SNPBLUP` gate.
 - Multivariate Gaussian animal model —
   `cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)`,
   `target = "multivariate"`. Returns G/R covariance and correlation
@@ -255,8 +255,10 @@ deliberately narrow; these are the structural limits (not yet
 - **Gaussian identity link only.** Other families are planned, not
   implemented.
 - **REML only on the fit path.** `REML = FALSE` (ML) is rejected; the
-  supplied-variance paths (`henderson_mme`, `snp_blup`) solve at given
-  variances rather than estimating them.
+  supplied-variance paths (`henderson_mme`, and `snp_blup` *when
+  variances are supplied*) solve at given variances rather than
+  estimating them (`snp_blup` with variances omitted estimates them by
+  REML).
 - **Fixed effects are unrestricted** otherwise: any number of ordinary
   fixed-effect terms (`sex + age + ...`) on the right-hand side is fine.
 

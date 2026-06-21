@@ -20,7 +20,7 @@ The current R surface has three distinct genomic paths.
 |----|----|----|----|
 | GBLUP / genomic GREML from a supplied inverse | `genomic(1 | id, Ginv = Ginv)` | `target = "genomic"` | estimated by the Julia AI-REML path |
 | GBLUP / genomic GREML from raw markers | `genomic(1 | id, markers = M)` | `target = "genomic"` | estimated after the engine builds and regularizes G |
-| SNP-BLUP / RR-BLUP marker effects | `genomic(1 | id, markers = M)` | `target = "snp_blup"` | supplied by the user |
+| SNP-BLUP / RR-BLUP marker effects | `genomic(1 | id, markers = M)` | `target = "snp_blup"` | supplied by the user, or REML-estimated when omitted |
 
 There is also a single-step surface:
 
@@ -98,11 +98,16 @@ production genotype pipeline: PLINK/VCF readers, imputation hooks,
 scaling/blending choices, APY, and large on-disk marker workflows remain
 future work.
 
-## SNP-BLUP at supplied variances
+## SNP-BLUP marker effects
 
-Use this path when you want marker effects at variance components you
-already trust, for example from a prior genomic GREML fit. This is a
-supplied-variance solve, not variance-component estimation.
+Use this path for per-marker effects. Supply `variance_components` when
+you want the effects at variance components you already trust (for
+example from a prior genomic GREML fit) — a supplied-variance solve.
+Omit `variance_components` to have
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+estimate `sigma_g2`/`sigma_e2` by REML from the markers
+(`fit_snp_blup_reml`); the example below shows the supplied-variance
+form.
 
 ``` r
 
@@ -132,11 +137,13 @@ genomic breeding values are the marker-derived predictions for each
 genotyped individual. `marker_variance_explained(fit_snp)` returns a
 descriptive table with each marker’s fitted contribution, computed as
 effect squared times the centered marker variance and normalized across
-markers. Treat it as a summary of the fitted supplied-variance SNP-BLUP,
-not as a marker-scan p-value, QTL signal, or causal decomposition under
-linkage disequilibrium. The fitted object records
-`variance_components_source = "supplied"` because this target uses the
-supplied `sigma_g2` and `sigma_e2`.
+markers. Treat it as a summary of the fitted SNP-BLUP, not as a
+marker-scan p-value, QTL signal, or causal decomposition under linkage
+disequilibrium. When you supply `sigma_g2`/`sigma_e2` the fitted object
+records `variance_components_source = "supplied"`; if you omit them,
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+estimates the variances by REML and records
+`variance_components_source = "estimated_snp_blup_reml"`.
 
 ## Supplied Hinv single-step
 

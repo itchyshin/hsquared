@@ -51,10 +51,11 @@ marker_variance_explained(fit_snp)
 breeding_values(fit_snp)
 ```
 
-This is a supplied-variance marker-effect solve. The variance-explained
-table is a descriptive fitted-marker share, not a scan statistic. This
-path does not scan markers for association, estimate p-values, compute
-LOD scores, or identify QTL intervals.
+This is a marker-effect solve (supplied-variance, or REML-estimated when
+`variance_components` are omitted). The variance-explained table is a
+descriptive fitted-marker share, not a scan statistic. This path does
+not scan markers for association, estimate p-values, compute LOD scores,
+or identify QTL intervals.
 
 ### Post-fit GWAS (experimental)
 

@@ -123,7 +123,8 @@ supplied variance components:</p>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">marker_variance_explained</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span></code></pre></div>
-<p>This is a supplied-variance marker-effect solve. The
+<p>This is a marker-effect solve (supplied-variance, or REML-estimated
+when <code>variance_components</code> are omitted). The
 variance-explained table is a descriptive fitted-marker share, not a
 scan statistic. This path does not scan markers for association,
 estimate p-values, compute LOD scores, or identify QTL intervals.</p>

@@ -123,7 +123,7 @@ a local Julia, <code>JuliaCall</code>, and a sibling
 <td>SNP-BLUP / RR-BLUP marker effects</td>
 <td><code>genomic(1 | id, markers = M)</code></td>
 <td><code>target = "snp_blup"</code></td>
-<td>supplied by the user</td>
+<td>supplied by the user, or REML-estimated when omitted</td>
 </tr>
 </tbody>
 </table>
@@ -215,11 +215,16 @@ scaling/blending choices, APY, and large on-disk marker workflows remain
 future work.</p>
 </div>
 <div class="section level2">
-<h2 id="snp-blup-at-supplied-variances">SNP-BLUP at supplied variances<a class="anchor" aria-label="anchor" href="#snp-blup-at-supplied-variances"></a>
+<h2 id="snp-blup-marker-effects">SNP-BLUP marker effects<a class="anchor" aria-label="anchor" href="#snp-blup-marker-effects"></a>
 </h2>
-<p>Use this path when you want marker effects at variance components you
-already trust, for example from a prior genomic GREML fit. This is a
-supplied-variance solve, not variance-component estimation.</p>
+<p>Use this path for per-marker effects. Supply
+<code>variance_components</code> when you want the effects at variance
+components you already trust (for example from a prior genomic GREML
+fit) — a supplied-variance solve. Omit <code>variance_components</code>
+to have <code><a href="../reference/hsquared.html">hsquared()</a></code> estimate
+<code>sigma_g2</code>/<code>sigma_e2</code> by REML from the markers
+(<code>fit_snp_blup_reml</code>); the example below shows the
+supplied-variance form.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_snp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">batch</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, markers <span class="op">=</span> <span class="va">M</span><span class="op">)</span>,</span>
@@ -246,11 +251,13 @@ for each genotyped individual.
 <code>marker_variance_explained(fit_snp)</code> returns a descriptive
 table with each marker’s fitted contribution, computed as effect squared
 times the centered marker variance and normalized across markers. Treat
-it as a summary of the fitted supplied-variance SNP-BLUP, not as a
-marker-scan p-value, QTL signal, or causal decomposition under linkage
-disequilibrium. The fitted object records
-<code>variance_components_source = "supplied"</code> because this target
-uses the supplied <code>sigma_g2</code> and <code>sigma_e2</code>.</p>
+it as a summary of the fitted SNP-BLUP, not as a marker-scan p-value,
+QTL signal, or causal decomposition under linkage disequilibrium. When
+you supply <code>sigma_g2</code>/<code>sigma_e2</code> the fitted object
+records <code>variance_components_source = "supplied"</code>; if you
+omit them, <code><a href="../reference/hsquared.html">hsquared()</a></code> estimates the variances by REML and
+records
+<code>variance_components_source = "estimated_snp_blup_reml"</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="supplied-hinv-single-step">Supplied Hinv single-step<a class="anchor" aria-label="anchor" href="#supplied-hinv-single-step"></a>

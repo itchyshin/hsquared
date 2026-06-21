@@ -469,11 +469,18 @@
   reports a descriptive fitted-marker contribution table for this path,
   computed from effect squared times centered marker variance and
   normalized across markers; it is not a marker-scan, p-value, or QTL
-  claim. This is a supplied-variance solve (it does not estimate the
-  variance components), opt-in, and not the default; it mirrors the twin
-  `V2-SNPBLUP` gate (the GBLUP↔︎SNP-BLUP genomic-breeding-value
-  equivalence). REML estimation of the marker variance,
-  weighted/Bayesian marker priors, and comparator parity remain planned.
+  claim. When `variance_components` are supplied this is a
+  supplied-variance solve; **when they are omitted,
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now estimates σ²g/σ²e by REML** from the markers (surfacing the
+  Julia-owned `HSquared.fit_snp_blup_reml()`) — so
+  `genomic(1 | id, markers = M)` with `target = "snp_blup"` and no
+  variances fits end-to-end. The REML path reports
+  `variance_components_source = "estimated_snp_blup_reml"` and is
+  live-verified to match a direct engine `fit_snp_blup_reml()`
+  element-wise. Opt-in, not the default; mirrors the twin `V2-SNPBLUP`
+  gate (the GBLUP↔︎SNP-BLUP genomic-breeding-value equivalence).
+  Weighted/Bayesian marker priors and comparator parity remain planned.
 - **Experimental, opt-in multivariate Gaussian animal model.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now parses

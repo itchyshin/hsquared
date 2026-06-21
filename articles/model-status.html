@@ -295,12 +295,13 @@ supplied single-step inverse, <code>target = "single_step"</code>.
 Building <code>Hinv</code> from a pedigree + G is planned.</li>
 <li>SNP-BLUP / RR-BLUP marker effects —
 <code>genomic(1 | id, markers = M)</code>,
-<code>target = "snp_blup"</code>, with supplied
-<code>variance_components = c(sigma_g2 = ..., sigma_e2 = ...)</code>.
-Returns per-marker effects via <code><a href="../reference/marker_extractors.html">marker_effects()</a></code> plus
-per-individual genomic breeding values at the supplied variances (it
-does not estimate them). Mirrors the twin <code>V2-SNPBLUP</code>
-gate.</li>
+<code>target = "snp_blup"</code>. Returns per-marker effects via
+<code><a href="../reference/marker_extractors.html">marker_effects()</a></code> plus per-individual genomic breeding
+values. <code>variance_components</code> is optional: with supplied
+<code>c(sigma_g2 = ..., sigma_e2 = ...)</code> it solves at those
+variances; when omitted it estimates
+<code>sigma_g2</code>/<code>sigma_e2</code> by REML from the markers.
+Mirrors the twin <code>V2-SNPBLUP</code> gate.</li>
 <li>Multivariate Gaussian animal model —
 <code>cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)</code>,
 <code>target = "multivariate"</code>. Returns G/R covariance and
@@ -351,8 +352,10 @@ planned, not implemented.</li>
 <li>
 <strong>REML only on the fit path.</strong>
 <code>REML = FALSE</code> (ML) is rejected; the supplied-variance paths
-(<code>henderson_mme</code>, <code>snp_blup</code>) solve at given
-variances rather than estimating them.</li>
+(<code>henderson_mme</code>, and <code>snp_blup</code> <em>when
+variances are supplied</em>) solve at given variances rather than
+estimating them (<code>snp_blup</code> with variances omitted estimates
+them by REML).</li>
 <li>
 <strong>Fixed effects are unrestricted</strong> otherwise: any
 number of ordinary fixed-effect terms (<code>sex + age + ...</code>) on
