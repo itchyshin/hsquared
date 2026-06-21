@@ -64,6 +64,16 @@
   remains an inert syntax reservation for the future animal-only
   `A^Gamma` path; no `Gamma` estimation, extractor, BLUPF90 comparator
   evidence, or covered support is claimed.
+- Reconciled the PEV/reliability standard-field bridge status. Default,
+  sparse, and explicit AI-REML Julia result-payload paths consume engine
+  `prediction_error_variance` and `reliability` fields when present
+  (current engines emit them via `:selinv`) and only use dense extractor
+  calls as a backward-compatible fallback; the supplied-variance
+  Henderson MME target now attaches dense validation-path
+  PEV/reliability unconditionally. The bridge remains partial for
+  multivariate per-trait PEV/reliability, production sparse strategy,
+  and comparator validation
+  ([\#21](https://github.com/itchyshin/hsquared/issues/21)/#43).
 - **Experimental random-regression (reaction-norm) model.** A new opt-in
   target surfaces the Julia-owned
   `HSquared.fit_random_regression_reml()`:
