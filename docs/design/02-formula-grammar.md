@@ -102,3 +102,30 @@ Definitions:
 
 Avoid naming the reduced-rank form `rr()` because that often suggests random
 regression in quantitative genetics.
+
+## Later Missing-Data Grammar
+
+The ratified M0 missing-data grammar is planned and intentionally not exported
+yet:
+
+```r
+missing = miss_control(response = "include")
+mi(x)
+missing = miss_control(predictor = "model")
+impute = list(x = x ~ fixed + animal(1 | id, pedigree = ped))
+```
+
+Definitions:
+
+- `miss_control(response = "include")` will keep rows with missing responses in
+  the model frame and mask their direct likelihood contribution.
+- `mi(x)` will mark one bare missing predictor to be modelled jointly, with the
+  predictor model supplied through `impute = list(x = x ~ ...)`.
+- The first missing-predictor target is one Gaussian covariate at the
+  animal/individual level, with level-aware covariance supplied explicitly in
+  the impute formula.
+
+Deferred syntax includes transformed or interacting `mi()` terms, multiple
+simultaneous `mi()` predictors, missing values in the impute-model predictors,
+MNAR sensitivity models, multiple imputation, and REML claims for the missing
+data path. See `docs/design/08-missing-data-plan.md`.
