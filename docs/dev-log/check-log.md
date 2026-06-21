@@ -3,6 +3,34 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Mirror genomic GBLUP / SNP-BLUP target fixture
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Kirkpatrick, Curie, Rose, Grace.
+- Branch: `codex/genomic-target-fixture-mirror`.
+- Scope:
+  - mirrored the HSquared.jl PR #140 (`008ea4d`) fixture
+    `test/fixtures/genomic_gblup_snpblup_target/` into the R test fixture tree;
+  - added a Julia-free integrity/parity test that recomputes supplied-frequency
+    VanRaden `G`, `Ginv`, the supplied-variance GBLUP mixed-model-equation
+    solution, and SNP-BLUP marker-effect-to-GEBV route agreement;
+  - updated NEWS, capability/public-claims/validation debt rows, comparator
+    run index, and issue map.
+- Claim boundary: target/internal route evidence only. No AGHmatrix, rrBLUP,
+  sommer, JWAS, BGLR, BLUPF90, or other external same-estimand comparator
+  evidence is claimed; no APY/low-rank/weighted/Bayesian marker-prior claim; no
+  R genomic model-spec activation or covered-status promotion.
+- Checks:
+  - `air format tests/testthat/test-genomic.R && /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::test(filter = "genomic")'`
+    initially caught a dimname-only identity-check mismatch, then passed
+    54/0/0/2 after normalizing the identity matrix comparison.
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::test()'`
+    passed 1368/0/0/59.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'chk <- rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never"); print(chk); if (length(chk$errors) || length(chk$warnings)) quit(status = 1)'`
+    passed 0 errors, 0 warnings, 0 notes.
+
 ## 2026-06-21 Record marker-scan comparator tool availability
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.

@@ -255,6 +255,121 @@ test_that("genomic() marker ids must cover the data ids", {
   )
 })
 
+test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", {
+  fixture <- testthat::test_path(
+    "fixtures",
+    "genomic_gblup_snpblup_target"
+  )
+  phenotypes <- utils::read.csv(
+    file.path(fixture, "phenotypes.csv"),
+    stringsAsFactors = FALSE
+  )
+  markers_df <- utils::read.csv(
+    file.path(fixture, "markers.csv"),
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  frequencies <- utils::read.csv(
+    file.path(fixture, "allele_frequencies.csv"),
+    stringsAsFactors = FALSE
+  )
+  expected_g <- utils::read.csv(
+    file.path(fixture, "expected_genomic_relationship.csv"),
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  expected_ginv <- utils::read.csv(
+    file.path(fixture, "expected_genomic_precision.csv"),
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  expected_beta <- utils::read.csv(
+    file.path(fixture, "expected_beta.csv"),
+    stringsAsFactors = FALSE
+  )
+  expected_gebv <- utils::read.csv(
+    file.path(fixture, "expected_gebv.csv"),
+    stringsAsFactors = FALSE
+  )
+  expected_marker_effects <- utils::read.csv(
+    file.path(fixture, "expected_marker_effects.csv"),
+    stringsAsFactors = FALSE
+  )
+  metadata <- utils::read.csv(
+    file.path(fixture, "expected_metadata.csv"),
+    stringsAsFactors = FALSE
+  )
+  meta <- stats::setNames(metadata$value, metadata$key)
+
+  ids <- markers_df$id
+  markers <- as.matrix(markers_df[, -1, drop = FALSE])
+  rownames(markers) <- ids
+  storage.mode(markers) <- "numeric"
+
+  expect_equal(phenotypes$id, ids)
+  expect_equal(frequencies$marker, colnames(markers))
+  expect_equal(expected_marker_effects$marker, colnames(markers))
+  expect_equal(expected_gebv$id, ids)
+  expect_equal(as.numeric(meta[["sigma_g2"]]), 2)
+  expect_equal(as.numeric(meta[["sigma_e2"]]), 1)
+
+  centered <- sweep(markers, 2, 2 * frequencies$frequency, "-")
+  vanraden_scale <- 2 * sum(frequencies$frequency * (1 - frequencies$frequency))
+  G <- tcrossprod(centered) / vanraden_scale
+  rownames(G) <- colnames(G) <- ids
+
+  G_expected <- as.matrix(expected_g[, -1, drop = FALSE])
+  rownames(G_expected) <- expected_g$id
+  storage.mode(G_expected) <- "numeric"
+  expect_equal(rownames(G_expected), ids)
+  expect_equal(colnames(G_expected), ids)
+  expect_equal(G, G_expected, tolerance = 1e-12)
+  expect_true(all(eigen(G, symmetric = TRUE, only.values = TRUE)$values > 0))
+  expect_equal(as.numeric(meta[["k"]]), vanraden_scale, tolerance = 1e-12)
+
+  Ginv <- solve(G)
+  Ginv_expected <- as.matrix(expected_ginv[, -1, drop = FALSE])
+  rownames(Ginv_expected) <- expected_ginv$id
+  storage.mode(Ginv_expected) <- "numeric"
+  expect_equal(rownames(Ginv_expected), ids)
+  expect_equal(colnames(Ginv_expected), ids)
+  expect_equal(Ginv, Ginv_expected, tolerance = 1e-12)
+  expect_equal(unname(G %*% Ginv), diag(length(ids)), tolerance = 1e-12)
+
+  X <- matrix(1, nrow(phenotypes), 1)
+  sigma_ratio <- as.numeric(meta[["sigma_e2"]]) / as.numeric(meta[["sigma_g2"]])
+  mme <- rbind(
+    cbind(crossprod(X), t(X)),
+    cbind(X, diag(length(ids)) + sigma_ratio * Ginv)
+  )
+  solution <- solve(mme, c(crossprod(X, phenotypes$y), phenotypes$y))
+  beta <- unname(solution[1])
+  gblup <- stats::setNames(unname(solution[-1]), ids)
+
+  expect_equal(beta, expected_beta$value[1], tolerance = 1e-12)
+  expect_equal(unname(gblup), expected_gebv$gblup, tolerance = 1e-12)
+  expect_equal(
+    max(abs(expected_gebv$gblup - expected_gebv$snp_blup)),
+    as.numeric(meta[["gblup_snp_blup_max_abs_gebv_diff"]]),
+    tolerance = 1e-12
+  )
+
+  snp_gebv <- centered %*% expected_marker_effects$effect
+  expect_equal(as.numeric(snp_gebv), expected_gebv$snp_blup, tolerance = 1e-12)
+
+  perturbed_g <- G_expected
+  perturbed_g[1, 1] <- perturbed_g[1, 1] + 0.01
+  expect_gt(max(abs(G - perturbed_g)), 0.001)
+  perturbed_effects <- expected_marker_effects$effect
+  perturbed_effects[1] <- perturbed_effects[1] + 0.01
+  expect_gt(
+    max(abs(
+      as.numeric(centered %*% perturbed_effects) - expected_gebv$snp_blup
+    )),
+    0.001
+  )
+})
+
 test_that("hsquared fits the opt-in genomic model from a marker matrix", {
   testthat::skip_on_cran()
   testthat::skip_if_not(

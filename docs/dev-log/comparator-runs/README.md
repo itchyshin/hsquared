@@ -39,7 +39,9 @@ Run handoff packets:
 - `2026-06-21-genomic-gblup-snpblup-target-handoff.md` records the HSquared.jl
   PR #140 (`008ea4d`) genomic GBLUP / SNP-BLUP target fixture shape, local
   comparator-tool availability, required external-run fields, and claim
-  boundary. It is a protocol, not evidence.
+  boundary. The R test suite now mirrors the fixture and checks its internal
+  VanRaden/GBLUP/SNP-BLUP algebra; it is still a target/protocol, not external
+  comparator evidence.
 
 For BLUPF90-family multivariate runs, attach a sanitized companion CSV when
 possible with these columns:
