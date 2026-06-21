@@ -140,10 +140,11 @@ hs_control(
   heritability, and cross-trait breeding values. It is not the default
   and remains a `partial` validation claim until t\>=2 known-truth
   recovery and external-comparator evidence are committed. The reserved
-  `genetic_structure` control accepts only `"unstructured"` on the
-  current R bridge; `"diagonal"`, `"lowrank"`, and `"factor_analytic"`
-  remain planned until the structured-covariance Julia engine surface
-  lands on main and R bridge tests are committed. The future `rank`
+  `genetic_structure` control currently accepts `"unstructured"` and
+  `"diagonal"` on the R bridge. `"diagonal"` is the rotation-free
+  structured subset: off-diagonal genetic covariances are fixed at zero.
+  `"lowrank"` and `"factor_analytic"` remain planned until the loading
+  rotation and interpretation contract is validated. The future `rank`
   control is also reserved and currently errors instead of being
   ignored.
 
