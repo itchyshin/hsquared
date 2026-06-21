@@ -3,6 +3,44 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Mirror Julia marker-scan payload fixture
+
+- Active lenses: Ada, Shannon, Hopper, Jason, Fisher, Curie, Rose, Grace.
+- Branch: `codex/marker-scan-payload-fixture`.
+- Scope:
+  - consumed the HSquared.jl PR #142 (`f9fbbb1`) `marker_scan_parity` fixture
+    as a Julia-free R test fixture;
+  - added a normalizer test that maps the row-aligned
+    `marker_scan_result_payload()` fields into the current public `hs_gwas`
+    table and keeps denominator / allele-frequency fields off the R table for
+    now;
+  - updated marker-scan status ledgers and the issue map so Julia #45 is treated
+    as closed while #48 remains the active calibrated-threshold evidence gate;
+  - folded in the later Julia PR #143 (`07a3c63`) sync as status context only:
+    Julia now has a `V5-MARKER-THRESHOLD` validation-status/source-doc row, but
+    #48 remains open and R thresholds remain inactive.
+- Live GitHub action:
+  - `gh issue edit 23 --repo itchyshin/hsquared --body ...` updated R issue #23
+    after Julia #45 closed.
+- Claim boundary: fixture consumption and status sync only. No live R `gwas()`
+  behavior changed, no calibrated threshold was activated, no map-annotated
+  `gwas_table()` / `qtl_table()` / `eqtl_table()` / `lod_scores()` workflow was
+  added, no formula-level `marker_scan()` route was activated, no sparse
+  production scan or external PLINK/GenABEL comparator evidence was claimed, and
+  no covered-status promotion was made.
+- Checks:
+  - `air format .` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "gwas")'` passed
+    65/0/0/2.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-marker-scan-payload-fixture.md`
+    clean.
+  - `git diff --check` clean.
+  - `Rscript --vanilla -e 'devtools::test()'` passed 1339/0/0/59.
+  - Boundary grep / ledger audit confirms Julia #45 is treated as banked, #48
+    remains open, and no R threshold, map-table, formula-scan, external
+    comparator, sparse-production, or covered-status claim was added.
+
 ## 2026-06-21 Retarget R issues #5/#6 parent-ledger bodies
 
 - Active lenses: Ada, Shannon, Emmy, Hopper, Boole, Pat, Rose, Grace.
