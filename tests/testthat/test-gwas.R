@@ -74,6 +74,70 @@ test_that("the gwas normalizer assembles the marker-scan table with the caveat",
   g1 <- hsquared:::hs_normalize_gwas_result(raw, method = "single")
   expect_equal(attr(g1, "scan_method"), "single")
   expect_output(print(g1), "relatedness-UNcorrected")
+
+  # the LOCO variant carries its method + a scale-mismatch / LOCO print
+  gl <- hsquared:::hs_normalize_gwas_result(raw, method = "loco")
+  expect_equal(attr(gl, "scan_method"), "loco")
+  expect_output(print(gl), "leave-one-group-out")
+  expect_output(print(gl), "scale mismatch")
+})
+
+test_that("hs_gwas_marker_groups guards the LOCO group map (no engine needed)", {
+  M <- matrix(0, 4, 4)
+
+  # non-LOCO methods reject a supplied group map outright (both mixed and single)
+  expect_null(hsquared:::hs_gwas_marker_groups(NULL, M, "mixed"))
+  expect_null(hsquared:::hs_gwas_marker_groups(NULL, M, "single"))
+  expect_error(
+    hsquared:::hs_gwas_marker_groups(c("a", "a", "b", "b"), M, "mixed"),
+    "only used when"
+  )
+  expect_error(
+    hsquared:::hs_gwas_marker_groups(c("a", "a", "b", "b"), M, "single"),
+    "only used when"
+  )
+
+  # LOCO requires the map, the right length, no NA/empty, >= 2 distinct groups
+  expect_error(hsquared:::hs_gwas_marker_groups(NULL, M, "loco"), "requires")
+  expect_error(
+    hsquared:::hs_gwas_marker_groups(c("a", "b"), M, "loco"),
+    "one entry per marker"
+  )
+  expect_error(
+    hsquared:::hs_gwas_marker_groups(c("a", "a", NA, "b"), M, "loco"),
+    "missing"
+  )
+  expect_error(
+    hsquared:::hs_gwas_marker_groups(c("a", "a", "", "b"), M, "loco"),
+    "empty"
+  )
+  expect_error(
+    hsquared:::hs_gwas_marker_groups(rep("chr1", 4), M, "loco"),
+    "at least two distinct"
+  )
+  # the success path coerces non-character labels (a chromosome integer/factor
+  # column is what real callers pass) via as.character
+  expect_identical(
+    hsquared:::hs_gwas_marker_groups(c(1L, 1L, 2L, 2L), M, "loco"),
+    c("1", "1", "2", "2")
+  )
+  expect_identical(
+    hsquared:::hs_gwas_marker_groups(factor(c("a", "a", "b", "b")), M, "loco"),
+    c("a", "a", "b", "b")
+  )
+})
+
+test_that("gwas() routes method='loco' through the group guard before the bridge", {
+  # engine-free: the guard fires before any Julia call, so a mock fit suffices
+  fit <- hs_mock_gwas_fit(n = 4)
+  expect_error(
+    gwas(fit, matrix(0, 4, 2), method = "loco"),
+    "requires"
+  )
+  expect_error(
+    gwas(fit, matrix(0, 4, 2), marker_groups = c("a", "b")),
+    "only used when"
+  )
 })
 
 test_that("gwas() guards the fit type and the markers shape (no engine needed)", {
@@ -168,4 +232,123 @@ test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   expect_equal(g_single$p_value, fixed_p, tolerance = 1e-10)
   # ... and it differs from the relatedness-corrected mixed scan.
   expect_false(isTRUE(all.equal(g_single$p_value, g$p_value)))
+
+  # method = "loco": per-group genomic relationship correction. Two chromosomes.
+  grp <- c("chr1", "chr1", "chr2", "chr2")
+  g_loco <- gwas(
+    fit,
+    M,
+    marker_ids = paste0("m", 1:4),
+    method = "loco",
+    marker_groups = grp
+  )
+  expect_s3_class(g_loco, "hs_gwas")
+  expect_equal(attr(g_loco, "scan_method"), "loco")
+  expect_equal(nrow(g_loco), 4L)
+  expect_true(all(g_loco$p_value >= 0 & g_loco$p_value <= 1))
+
+  # The loco branch left hsq_prec / hsq_groups / hsq_markers(record-level)
+  # assigned; recompute the engine LOCO scan directly and assert parity.
+  loco_p <- JuliaCall::julia_eval(
+    "HSquared.loco_mixed_model_marker_scan(hsq_y, hsq_X, hsq_Z, hsq_prec, hsq_groups, hsq_markers, hsq_sigma_a2, hsq_sigma_e2).p_values"
+  )
+  expect_equal(g_loco$p_value, loco_p, tolerance = 1e-10)
+
+  # A chr1 marker matches a single mixed scan that uses the chr1 precision
+  # (the leave-out genuinely selects the per-group relationship).
+  chr1_p <- JuliaCall::julia_eval(
+    "HSquared.mixed_model_marker_scan(hsq_y, hsq_X, hsq_Z, hsq_prec[\"chr1\"], hsq_markers, hsq_sigma_a2, hsq_sigma_e2).p_values"
+  )
+  expect_equal(g_loco$p_value[1:2], chr1_p[1:2], tolerance = 1e-10)
+  # ... and the chr2 markers differ from the chr1-precision scan.
+  expect_false(isTRUE(all.equal(g_loco$p_value[3:4], chr1_p[3:4])))
+  # the symmetric positive check: chr2 markers match the chr2-precision scan.
+  chr2_p <- JuliaCall::julia_eval(
+    "HSquared.mixed_model_marker_scan(hsq_y, hsq_X, hsq_Z, hsq_prec[\"chr2\"], hsq_markers, hsq_sigma_a2, hsq_sigma_e2).p_values"
+  )
+  expect_equal(g_loco$p_value[3:4], chr2_p[3:4], tolerance = 1e-10)
+
+  # LOCO differs from the whole-pedigree mixed scan and the naive single scan.
+  expect_false(isTRUE(all.equal(g_loco$p_value, g$p_value)))
+  expect_false(isTRUE(all.equal(g_loco$p_value, g_single$p_value)))
+})
+
+test_that("loco gwas() uses ANIMAL-level precisions under a non-square Z", {
+  # The dimensional crux (doc 26 §2): the LOCO precision enters the Ainv slot, so
+  # it must be (n_animals x n_animals) -- built from ANIMAL-level markers -- while
+  # the scan tests RECORD-level markers (Z %*% markers). With one record per
+  # animal (Z square) the two are identical and a markers/markers_rec swap would
+  # pass undetected. A repeated-records fit makes Z NON-square, so the engine's
+  # size(Z,2) == size(precision,1) guard fires on the wrong wiring.
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
+  )
+
+  ped <- hs_sim_pedigree(n_founder = 20, n_per_gen = 30, n_gen = 2, seed = 7)
+  n_animals <- nrow(ped)
+  # animal-level breeding values by gene-drop (keeps sigma_a2 off the boundary)
+  set.seed(7)
+  u <- stats::setNames(numeric(n_animals), ped$id)
+  for (i in seq_len(n_animals)) {
+    s <- ped$sire[i]
+    d <- ped$dam[i]
+    u[i] <- if (is.na(s)) {
+      stats::rnorm(1)
+    } else {
+      0.5 * (u[[s]] + u[[d]]) + stats::rnorm(1, sd = sqrt(0.5))
+    }
+  }
+  # the youngest generation is measured twice -> more records than animals
+  young <- utils::tail(ped$id, 30)
+  obs <- c(ped$id, young)
+  set.seed(99)
+  dat <- data.frame(
+    y = as.numeric(u[obs]) + stats::rnorm(length(obs)),
+    id = obs
+  )
+
+  fit <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  # the design is genuinely non-square (records > animals) with interior sigma_a2
+  expect_gt(nrow(fit$payload$Z), ncol(fit$payload$Z))
+  vc <- fit$result$variance_components
+  expect_gt(vc$estimate[vc$component == "animal"], 1e-4)
+
+  set.seed(3)
+  M <- matrix(sample(0:2, n_animals * 4L, replace = TRUE), n_animals, 4L)
+  grp <- c("chr1", "chr1", "chr2", "chr2")
+
+  # If the wrapper fed record-level markers to loco_relationship_precisions, the
+  # precision would be (n_records x n_records) and the engine size guard would
+  # throw -> gwas() would error. Reaching the assertions proves animal-level use.
+  g_loco <- gwas(
+    fit,
+    M,
+    marker_ids = paste0("m", 1:4),
+    method = "loco",
+    marker_groups = grp
+  )
+  expect_s3_class(g_loco, "hs_gwas")
+  expect_equal(nrow(g_loco), 4L)
+
+  # Parity against a direct engine LOCO scan built from ANIMAL-level precisions
+  # (hsq_markers_animal, 80x4) + RECORD-level scan markers (hsq_markers, 110x4).
+  loco_p <- JuliaCall::julia_eval(
+    "HSquared.loco_mixed_model_marker_scan(hsq_y, hsq_X, hsq_Z, HSquared.loco_relationship_precisions(hsq_markers_animal, hsq_groups), hsq_groups, hsq_markers, hsq_sigma_a2, hsq_sigma_e2).p_values"
+  )
+  expect_equal(g_loco$p_value, loco_p, tolerance = 1e-10)
+
+  # The wrong wiring (record-level markers -> precisions) genuinely errors under
+  # the non-square Z: this is what the square-Z block could not detect.
+  expect_error(
+    JuliaCall::julia_eval(
+      "HSquared.loco_mixed_model_marker_scan(hsq_y, hsq_X, hsq_Z, HSquared.loco_relationship_precisions(hsq_markers, hsq_groups), hsq_groups, hsq_markers, hsq_sigma_a2, hsq_sigma_e2).p_values"
+    )
+  )
 })

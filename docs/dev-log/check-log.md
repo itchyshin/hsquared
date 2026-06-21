@@ -5068,3 +5068,43 @@ release".
   `rcmdcheck(args="--no-manual")` **0/0/0**. capability-status marker-scan row + NEWS
   gwas bullet updated.
 - CI (commit `0b9756a`, gwas single-marker): pkgdown run `27888126645` **success**; pages green.
+
+## 2026-06-20 (session 6 — LOCO marker-scan bridge, completes #4)
+
+- Added `gwas(fit, markers, method = "loco", marker_groups = chrom)`: a
+  leave-one-group-out scan surfacing `HSquared.loco_relationship_precisions()` +
+  `HSquared.loco_mixed_model_marker_scan()`. Build-spec `docs/design/26` (IMPLEMENTED).
+- **Live dimension probe first** (`/tmp/loco_probe.R`, on the bridge): resolved the
+  handoff-8 open design question. The LOCO precision enters the `Ainv` slot
+  (engine guards `size(Z,2)==size(precision,1)`), so precisions are built from
+  **animal-level** markers → (n_animals × n_animals), while the scan tests
+  **record-level** markers (`Z %*% markers`); a single supplied σ²a/σ²e is reused
+  from the pedigree fit. Probe confirmed: precisions 80×80; chr1 markers match a
+  single `mixed_model_marker_scan` with the chr1 precision to **max|diff| = 0.0**;
+  LOCO differs from the whole-G scan.
+- R wiring: `R/gwas.R` (method enum + `marker_groups`; `hs_gwas_marker_groups`
+  validator: required-under-loco / rejected-otherwise / length / NA / empty /
+  ≥2-distinct / `as.character` coercion; loco bridge branch; loco `print()` with the
+  genomic-vs-pedigree scale-mismatch + uncalibrated caveat); `R/autoplot.R`
+  (Manhattan/QQ LOCO note).
+- Adversarial verify (Workflow, 5 lenses: Boole/Hopper/Fisher/Curie/Rose): Hopper
+  CLEAN; others changes-needed, **no true blocker**. Fixed: (1) the stale
+  `mixed`-branch `print()` line ("LOCO … not yet surfaced") → now points to
+  `method = "single"`/`"loco"`; (2) **Curie's real gap** — the live tests used a
+  square `Z` (one record per animal), so animal-level ≡ record-level markers and a
+  markers/markers_rec swap passed undetected. Added a **non-square-Z** (repeated
+  records, 110 records / 80 animals, interior σ²a=1.12) live test that (a) asserts
+  the scan runs, (b) parity vs a direct engine LOCO scan from animal-level
+  precisions + record-level scan markers, and (c) `expect_error` on the wrong path
+  (record-level markers → precisions, which the engine size guard rejects);
+  (3) test hardening — single-method branch coverage, dispatch-level loco guards,
+  factor/integer coercion, symmetric chr2-precision match; (4) tightened the
+  autoplot note test to the honesty half ("pedigree-estimated VCs"); (5) Fisher's
+  honesty clause in the loco `print()` (effect/SE scale is not a calibrated
+  genomic-VC quantity).
+- `air`; `devtools::document()`; pure-R `test-gwas` **30/0/0/2** + `test-autoplot`
+  **117/0/0/0**; **LIVE** `test-gwas.R` **59/0/0/0** (both the square and the
+  non-square dimensional blocks, on the bridge with Julia on PATH);
+  `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
+  capability-status marker-scan row + NEWS gwas bullet updated (LOCO surfaced,
+  live-verified element-wise); doc 26 → IMPLEMENTED.

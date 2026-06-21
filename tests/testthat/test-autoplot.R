@@ -664,6 +664,23 @@ test_that("autoplot.hs_gwas notes a relatedness-uncorrected single-marker scan",
   expect_false(grepl("UNcorrected", autoplot(mock_gwas())$labels$subtitle))
 })
 
+test_that("autoplot.hs_gwas notes a LOCO genomic scan", {
+  g <- mock_gwas()
+  attr(g, "scan_method") <- "loco"
+  # the note carries the load-bearing honesty half (the pedigree-VC caveat),
+  # not just the bare word "LOCO"
+  expect_true(grepl(
+    "LOCO genomic correction \\(pedigree-estimated VCs\\)",
+    autoplot(g, "manhattan")$labels$subtitle
+  ))
+  expect_true(grepl(
+    "pedigree-estimated VCs",
+    autoplot(g, "qq")$labels$subtitle
+  ))
+  # the default (mixed) scan carries no LOCO note
+  expect_false(grepl("LOCO", autoplot(mock_gwas())$labels$subtitle))
+})
+
 test_that("autoplot.hs_gwas defaults to the Manhattan", {
   expect_equal(attr(autoplot(mock_gwas()), "hsquared_meta")$type, "manhattan")
   expect_equal(

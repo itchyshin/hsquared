@@ -887,6 +887,8 @@ autoplot.hs_gwas <- function(object, type = c("manhattan", "qq"), ...) {
 hs_gwas_method_note <- function(method) {
   if (identical(method, "single")) {
     "; relatedness-UNcorrected (single-marker, OLS)"
+  } else if (identical(method, "loco")) {
+    "; LOCO genomic correction (pedigree-estimated VCs)"
   } else {
     ""
   }

@@ -10,12 +10,16 @@
 #' Wald (nominal) p-values plus deterministic Bonferroni and Benjamini-Hochberg
 #' adjustments over the *supplied* marker set only. There is no realistic-LD /
 #' study-design calibration, no permutation, and no external comparator (the
-#' calibration gate is `HSquared.jl#48`). A leave-one-group-out (LOCO) scan is
-#' available engine-side (`HSquared.loco_mixed_model_marker_scan()`); this R
-#' `gwas()` wrapper does **not** yet surface it (R LOCO surfacing is in
-#' progress), so the scan it runs applies one whole-pedigree relationship
-#' correction across all markers. Do not report genome-wide significance from
-#' these values.
+#' calibration gate is `HSquared.jl#48`). Do not report genome-wide significance
+#' from these values.
+#'
+#' A leave-one-group-out (LOCO) scan is available with `method = "loco"` and a
+#' `marker_groups` argument: when a marker is tested, the genomic relationship
+#' correction is built from the markers **not** in that marker's group (e.g. its
+#' chromosome), so the marker's own signal does not leak into the background
+#' relationship. The LOCO relationship is **genomic** (VanRaden) while the reused
+#' variance components are **pedigree**-estimated — a scale mismatch that keeps
+#' this validation-scale (see `method`).
 #'
 #' @param object A fitted Gaussian animal model (`hsquared_fit` from the default
 #'   pedigree path); its variance components and pedigree relationship are reused
@@ -25,23 +29,33 @@
 #' @param marker_ids Optional marker names; defaults to the `markers` column
 #'   names, then to sequential ids.
 #' @param method `"mixed"` (default) for the relatedness-corrected mixed-model
-#'   (GLS) scan, or `"single"` for the relatedness-**un**corrected single-marker
-#'   (OLS) scan. The single-marker scan ignores the pedigree relationship — it is
-#'   a naive screen useful mainly as a contrast (it is more inflated by relatedness
-#'   than the mixed scan).
+#'   (GLS) scan with one whole-pedigree relationship correction across all
+#'   markers; `"single"` for the relatedness-**un**corrected single-marker (OLS)
+#'   scan (a naive screen useful mainly as a contrast — it is more inflated by
+#'   relatedness than the mixed scan); or `"loco"` for a leave-one-group-out scan
+#'   with a per-group **genomic** relationship correction (requires
+#'   `marker_groups`). The LOCO scan reuses the pedigree fit's variance components
+#'   while correcting with a genomic relationship (a scale mismatch), so it is
+#'   validation-scale and uncalibrated like the others.
+#' @param marker_groups Required for `method = "loco"` (and only then): a vector
+#'   with one group label per marker column (for example a chromosome label).
+#'   Markers in a group are tested with a genomic relationship built from all
+#'   **other** groups. Needs at least two distinct, non-missing labels.
 #' @param ... Unused.
 #'
 #' @return An `hs_gwas` data frame with one row per marker: `marker`, `effect`,
 #'   `se`, `z`, `chisq`, `p_value`, `bonferroni_p`, `bh_qvalue`, `lod`, carrying a
 #'   `scan_method` attribute. Its `print()` method restates the
 #'   uncalibrated-significance caveat (and, for `method = "single"`, the absence of
-#'   any relatedness correction).
+#'   any relatedness correction; for `method = "loco"`, the genomic-vs-pedigree
+#'   scale mismatch).
 #' @export
 gwas <- function(
   object,
   markers,
   marker_ids = NULL,
-  method = c("mixed", "single"),
+  method = c("mixed", "single", "loco"),
+  marker_groups = NULL,
   ...
 ) {
   UseMethod("gwas")
@@ -52,7 +66,8 @@ gwas.default <- function(
   object,
   markers,
   marker_ids = NULL,
-  method = c("mixed", "single"),
+  method = c("mixed", "single", "loco"),
+  marker_groups = NULL,
   ...
 ) {
   stop(
@@ -66,7 +81,8 @@ gwas.hsquared_fit <- function(
   object,
   markers,
   marker_ids = NULL,
-  method = c("mixed", "single"),
+  method = c("mixed", "single", "loco"),
+  marker_groups = NULL,
   ...
 ) {
   method <- match.arg(method)
@@ -78,6 +94,7 @@ gwas.hsquared_fit <- function(
 
   markers <- hs_validate_gwas_markers(markers, payload)
   marker_ids <- hs_gwas_marker_ids(marker_ids, markers)
+  marker_groups <- hs_gwas_marker_groups(marker_groups, markers, method)
 
   project <- hs_default_julia_project()
   if (!hs_julia_bridge_available(project)) {
@@ -113,6 +130,22 @@ gwas.hsquared_fit <- function(
       "hsq_scan = HSquared.mixed_model_marker_scan(",
       "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_markers, hsq_sigma_a2, hsq_sigma_e2;",
       "marker_ids = hsq_marker_ids);"
+    )
+  } else if (identical(method, "loco")) {
+    # leave-one-group-out: precisions from ANIMAL-level markers (n_animals x
+    # n_animals, the Ainv slot); the scan tests the RECORD-level markers. Reuses
+    # the pedigree fit's variance components (genomic-vs-pedigree scale mismatch
+    # is stated in print()/docs).
+    hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+    JuliaCall::julia_assign("hsq_markers_animal", markers)
+    JuliaCall::julia_assign("hsq_groups", as.character(marker_groups))
+    JuliaCall::julia_assign("hsq_sigma_a2", as.numeric(sigma_a2))
+    scan_cmd <- paste(
+      "hsq_prec = HSquared.loco_relationship_precisions(",
+      "hsq_markers_animal, hsq_groups);",
+      "hsq_scan = HSquared.loco_mixed_model_marker_scan(",
+      "hsq_y, hsq_X, hsq_Z, hsq_prec, hsq_groups, hsq_markers,",
+      "hsq_sigma_a2, hsq_sigma_e2; marker_ids = hsq_marker_ids);"
     )
   } else {
     # relatedness-UNcorrected single-marker (OLS) scan: no Z / Ainv / sigma_a2
@@ -231,6 +264,53 @@ hs_gwas_marker_ids <- function(marker_ids, markers) {
   labels
 }
 
+# LOCO needs one group label per marker column; the genomic relationship for a
+# marker is built from all OTHER groups, so at least two distinct groups are
+# required. marker_groups is meaningful only for method = "loco".
+hs_gwas_marker_groups <- function(marker_groups, markers, method) {
+  if (!identical(method, "loco")) {
+    if (!is.null(marker_groups)) {
+      stop(
+        "`marker_groups` is only used when `method = \"loco\"`.",
+        call. = FALSE
+      )
+    }
+    return(NULL)
+  }
+  if (is.null(marker_groups)) {
+    stop(
+      "`method = \"loco\"` requires `marker_groups` (one group label per ",
+      "marker column, e.g. a chromosome).",
+      call. = FALSE
+    )
+  }
+  if (length(marker_groups) != ncol(markers)) {
+    stop(
+      "`marker_groups` must have one entry per marker column (",
+      ncol(markers),
+      "); got ",
+      length(marker_groups),
+      ".",
+      call. = FALSE
+    )
+  }
+  if (any(is.na(marker_groups))) {
+    stop("`marker_groups` must not contain missing labels.", call. = FALSE)
+  }
+  groups <- as.character(marker_groups)
+  if (any(!nzchar(groups))) {
+    stop("`marker_groups` must not contain empty labels.", call. = FALSE)
+  }
+  if (length(unique(groups)) < 2L) {
+    stop(
+      "LOCO needs at least two distinct marker groups (a marker's relationship ",
+      "correction is built from the other groups).",
+      call. = FALSE
+    )
+  }
+  groups
+}
+
 hs_normalize_gwas_result <- function(raw, method = "mixed") {
   out <- data.frame(
     marker = as.character(raw$marker_ids),
@@ -272,6 +352,35 @@ print.hs_gwas <- function(x, ...) {
     print(utils::head(out, ...), row.names = FALSE)
     return(invisible(x))
   }
+  if (identical(method, "loco")) {
+    cat(
+      "<hs_gwas> dense leave-one-group-out (LOCO) genomic marker scan\n"
+    )
+    cat(
+      "  EXPERIMENTAL: each marker is corrected by a genomic relationship built\n"
+    )
+    cat(
+      "  from the OTHER marker groups. Variance components are reused from the\n"
+    )
+    cat(
+      "  pedigree fit while the LOCO relationship is genomic (a scale mismatch),\n"
+    )
+    cat(
+      "  so the effect/SE scale is not a calibrated genomic-VC quantity (use the\n"
+    )
+    cat(
+      "  relative ranking, not the magnitudes). p-values are NOT genome-wide\n"
+    )
+    cat(
+      "  calibrated (nominal Wald + Bonferroni/BH; engine gate HSquared.jl#48).\n"
+    )
+    cat("  Do not report genome-wide significance from these.\n")
+    out <- x
+    class(out) <- "data.frame"
+    attr(out, "scan_method") <- NULL
+    print(utils::head(out, ...), row.names = FALSE)
+    return(invisible(x))
+  }
   cat("<hs_gwas> dense supplied-variance relatedness-corrected marker scan\n")
   cat(
     "  EXPERIMENTAL: p-values are NOT genome-wide calibrated. They are nominal\n"
@@ -283,9 +392,12 @@ print.hs_gwas <- function(x, ...) {
     "  pedigree correction; no permutation, no external comparator; engine gate\n"
   )
   cat(
-    "  HSquared.jl#48). LOCO exists engine-side but is not yet surfaced here.\n"
+    "  HSquared.jl#48). `method = \"single\"`/`\"loco\"` give the relatedness-\n"
   )
-  cat("  Do not report genome-wide significance from these.\n")
+  cat(
+    "  uncorrected and leave-one-group-out variants. Do not report genome-wide\n"
+  )
+  cat("  significance from these.\n")
   out <- x
   class(out) <- "data.frame"
   print(utils::head(out, ...), row.names = FALSE)
