@@ -32,6 +32,10 @@ Run handoff packets:
   BLUPF90-family host requirements, file-generation command, run commands,
   result fields, proposed review bands, and reporting boundary for the next
   executable-backed multivariate comparator run. It is a protocol, not evidence.
+- `2026-06-21-genomic-gblup-snpblup-target-handoff.md` records the HSquared.jl
+  PR #140 (`008ea4d`) genomic GBLUP / SNP-BLUP target fixture shape, local
+  comparator-tool availability, required external-run fields, and claim
+  boundary. It is a protocol, not evidence.
 
 For BLUPF90-family multivariate runs, attach a sanitized companion CSV when
 possible with these columns:
