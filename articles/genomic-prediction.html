@@ -402,11 +402,17 @@ available;</li>
 <li>extractor checks for variance components, genomic heritability,
 genomic breeding values, marker effects, and provenance
 diagnostics.</li>
+<li>a Julia-native supplied-variance GBLUP/SNP-BLUP target fixture
+(<code>HSquared.jl</code> PR #140, commit <code>008ea4d</code>) for
+future external comparator runs. This is a target fixture, not
+comparator evidence.</li>
 </ul>
 <p>Still planned:</p>
 <ul>
 <li>production relationship-matrix construction and scaling/blending
 controls;</li>
+<li>external same-estimand genomic comparator evidence against the PR
+#140 target fixture;</li>
 <li>production-scale and externally comparator-validated single-step
 construction;</li>
 <li>external validation for animal-only metafounder and single-step

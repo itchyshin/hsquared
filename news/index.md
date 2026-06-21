@@ -59,6 +59,13 @@
   missing predictor. This is a grammar contract only; `mi()`,
   `miss_control()`, `impute_model()`, and `imputed()` are not exported
   and no missing-data fitting path is active.
+- Synced the Julia-owned genomic GBLUP/SNP-BLUP target fixture from
+  HSquared.jl PR
+  [\#140](https://github.com/itchyshin/hsquared/issues/140) (`008ea4d`)
+  into the R validation/comparator ledgers. The fixture is available for
+  future external comparator runs, but no
+  AGHmatrix/rrBLUP/sommer/JWAS/BGLR/BLUPF90 comparator evidence is
+  claimed and the genomic/SNP-BLUP rows remain partial.
 - Reserved
   [`metafounder_effects()`](https://itchyshin.github.io/hsquared/reference/metafounder_effects.md)
   as an exported, error-only extractor so the future metafounder result

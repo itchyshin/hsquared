@@ -285,11 +285,16 @@ Covered in the R lane:
   the sibling engine are available;
 - extractor checks for variance components, genomic heritability,
   genomic breeding values, marker effects, and provenance diagnostics.
+- a Julia-native supplied-variance GBLUP/SNP-BLUP target fixture
+  (`HSquared.jl` PR \#140, commit `008ea4d`) for future external
+  comparator runs. This is a target fixture, not comparator evidence.
 
 Still planned:
 
 - production relationship-matrix construction and scaling/blending
   controls;
+- external same-estimand genomic comparator evidence against the PR
+  \#140 target fixture;
 - production-scale and externally comparator-validated single-step
   construction;
 - external validation for animal-only metafounder and single-step
