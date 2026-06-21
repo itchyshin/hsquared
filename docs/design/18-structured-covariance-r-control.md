@@ -15,11 +15,11 @@ convention for the loadings.
 
 ## Purpose
 
-The Julia twin has a Phase 4B branch with partial structured genetic covariance
-support (`diagonal`, `lowrank`, and `factor_analytic`). The branch has green PR
-checks, but the commits are not on `HSquared.jl` `origin/main`, and R has no
-bridge tests for the structured result shape. This note defines the R contract
-to implement once that engine surface is on main and R can verify it.
+The Julia twin and R bridge now expose the rotation-free `diagonal` subset of
+structured genetic covariance as an experimental control. This note records the
+current R contract for that shipped subset and the still-gated contract for
+`lowrank`/`factor_analytic` support once loading metadata, rotation semantics,
+and validation evidence are ready.
 
 ## Current Live Path
 
@@ -200,23 +200,24 @@ Until formula-level grammar is live, R should keep failing loudly:
 `animal()` argument `cov` is planned, not implemented.
 ```
 
-The R bridge now accepts the reserved expert control only for the current
-unstructured case and blocks the structured cases before Julia marshalling:
+The R bridge accepts the reserved expert control for the current unstructured
+and diagonal cases, and blocks the rotation-ambiguous structured cases before
+Julia marshalling:
 
 ```text
 `engine_control$genetic_structure` must be one of "unstructured", "diagonal",
 "lowrank", or "factor_analytic".
 
 Structured multivariate genetic covariance controls
-(`genetic_structure = "diagonal"`, "lowrank", or "factor_analytic") are
-planned, not implemented in the R bridge. The current opt-in multivariate path
-estimates unstructured G0/R0 only; omit `genetic_structure` or set it to
-"unstructured".
+(`genetic_structure = "lowrank"` or "factor_analytic") are planned, not
+implemented in the R bridge. The current opt-in multivariate path estimates
+unstructured or diagonal G0 with unstructured R0; use "unstructured" or
+"diagonal".
 
 `engine_control$rank` is reserved for future `lowrank` and `factor_analytic`
 structured covariance controls. The current multivariate bridge estimates
-unstructured G0/R0 only; remove `rank` until structured covariance support is
-available.
+unstructured or diagonal G0 only; remove `rank` until low-rank or
+factor-analytic support is available.
 ```
 
 For formula-level `cov = ...`, the error should continue pointing users to the
@@ -225,14 +226,14 @@ planned.
 
 ## Validation Gates
 
-Before exposing any structured bridge in R:
+Before exposing more structured bridge support in R:
 
 1. The Julia structured covariance commits are on `HSquared.jl` `main`.
 2. Julia `validation_status()` keeps the row `partial` unless recovery evidence
    passes signed-off thresholds.
-3. R bridge tests cover `genetic_structure = "diagonal"` with a deterministic
-   fixture and expected zero off-diagonal `G0`.
-4. R bridge tests cover `rank` and initial-value validation for `lowrank` and
+3. R bridge tests continue to cover `genetic_structure = "diagonal"` with a
+   deterministic fixture and expected zero off-diagonal `G0`.
+4. New R bridge tests cover `rank` and initial-value validation for `lowrank` and
    `factor_analytic`.
 5. Extractor tests confirm `G_matrix()` reconstructs
    `Lambda Lambda' (+ Psi)` from returned metadata.
@@ -250,8 +251,9 @@ Local lessons:
 - `GLLVM.jl` shows the computation pattern for low-rank-plus-diagonal
   covariance: keep `Lambda Lambda' + diag(d)` explicit and use Woodbury-style
   operations rather than materialising large dense matrices.
-- `HSquared.jl` already has a structured covariance branch with tests and
-  partial validation rows, but it is not on main.
+- `HSquared.jl` already has partial structured covariance support on main. R
+  only surfaces the rotation-free diagonal subset; loading-bearing
+  low-rank/factor-analytic support remains gated.
 
 External lessons:
 
@@ -264,11 +266,9 @@ External lessons:
 
 ## Immediate Next Slices
 
-1. Watch `HSquared.jl#17` and only build R bridge code after the branch reaches
-   Julia `main`.
-2. Add R tests for diagonal `genetic_structure` first, because it has the
-   clearest invariant (`G0` off-diagonal entries are zero).
-3. Add low-rank and factor-analytic R bridge tests only after rank and loading
+1. Keep `genetic_structure = "diagonal"` fixture coverage green while validation
+   evidence remains partial.
+2. Add low-rank and factor-analytic R bridge tests only after rank and loading
    metadata are stable.
-4. Keep `cov = diag()` / `lowrank()` / `fa()` as planned formula grammar until
+3. Keep `cov = diag()` / `lowrank()` / `fa()` as planned formula grammar until
    long-format trait ordering and residual-structure semantics are settled.

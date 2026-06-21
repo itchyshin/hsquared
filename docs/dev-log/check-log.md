@@ -3,6 +3,30 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Reconcile structured diagonal R-control design note
+
+- Active lenses: Ada, Shannon, Boole, Hopper, Kirkpatrick, Rose, Grace.
+- Branch: `codex/structured-diagonal-doc-reconcile`.
+- Scope:
+  - corrected stale text in `docs/design/18-structured-covariance-r-control.md`
+    that still described all structured covariance controls as blocked before
+    Julia marshalling;
+  - recorded the current state: `genetic_structure = "diagonal"` is an
+    experimental R-surfaced opt-in multivariate control, while
+    `lowrank`/`factor_analytic`, `rank`, and formula-level `cov = ...` grammar
+    remain planned/gated;
+  - refreshed the validation-gate, scout, and immediate-next-slice wording.
+- Claim boundary: documentation/status only. No R behavior changed, no
+  lowrank/factor-analytic bridge, loading extractor, formula-level covariance
+  grammar, recovery/comparator evidence, or covered-status promotion was added.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-structured-diagonal-doc-reconcile.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep confirms the stale planned-only diagonal wording is gone and
+    the lowrank/factor-analytic/no-promotion boundary remains explicit.
+
 ## 2026-06-21 Reconcile public GWAS/marker-scan claims
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Pat, Rose, Grace.
