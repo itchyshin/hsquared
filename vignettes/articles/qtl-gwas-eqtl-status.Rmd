@@ -79,9 +79,11 @@ gwas(fit, M) # M: animals x markers; returns effect/se/z/chisq/p_value/...
 
 The p-values are **not genome-wide calibrated**: nominal Wald p-values plus
 Bonferroni/Benjamini-Hochberg over the supplied markers only, with no
-realistic-LD/design calibration, no permutation, and no LOCO. Do not report
-genome-wide significance from them. The calibrated thresholds and the
-formula-grammar / map-annotated path below remain planned.
+realistic-LD/design calibration or permutation. A leave-one-group-out mode is
+available with `method = "loco"` and `marker_groups =`, but it is still
+validation-scale and uncalibrated. Do not report genome-wide significance from
+these p-values. The calibrated thresholds and the formula-grammar /
+map-annotated path below remain planned.
 
 Data diagnostics are also live:
 

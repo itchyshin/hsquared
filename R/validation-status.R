@@ -154,10 +154,13 @@ hs_validation_status_evidence <- function() {
       "\"estimated_<genomic|single_step>_ai_reml\". For genomic, a skip-guarded",
       "live test also fits from a raw marker matrix (`genomic(1 | id, markers =",
       "M)`): the engine builds G (genomic_relationship_matrix) and its regularized",
-      "inverse, then fits. The R single_step bridge still needs a supplied Hinv;",
-      "building Hinv from a pedigree and genomic relationship is engine-shipped",
-      "(single_step_inverse / fit_single_step_reml), but the R bridge does not",
-      "yet surface that construction (R surfacing pending)."
+      "inverse, then fits. The R single_step bridge also has a construction",
+      "target (`single_step(1 | id, pedigree = ped, markers = M)`,",
+      "target = \"single_step_construct\"): the engine builds Ainv + dense A from",
+      "the pedigree, builds G from genotyped-subset markers, assembles H^-1,",
+      "and fits by REML. Live tests cover marker-row reorder invariance,",
+      "all-pedigree GEBV labels including ungenotyped animals, differs-from-",
+      "pedigree-model behavior, ridge handling, and hs_data() shorthand."
     ),
     paste(
       "Pure-R control/validator tests plus skip-guarded live tests running Julia",
@@ -283,12 +286,13 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
       "a relationship-inverse spec) that R surfaces; mirrors the twin V2-GREML /",
       "V2-GRM / V2-GINV (genomic) and V2-SSHINV (single-step) gates (partial).",
-      "Genomic accepts a supplied Ginv or a marker matrix (engine-built G); the R",
-      "single-step bridge needs a supplied Hinv. Building Hinv from a pedigree + G",
-      "is engine-shipped (single_step_inverse / fit_single_step_reml), but the R",
-      "bridge does not yet surface that construction (R surfacing pending).",
-      "Low-rank m>>n solves and AGHmatrix/sommer/BLUPF90 comparator parity are",
-      "planned. Not the default, not ML, not production or comparator-validated."
+      "Genomic accepts a supplied Ginv or a marker matrix (engine-built G);",
+      "single-step accepts either a supplied Hinv or R-surfaced H^-1 construction",
+      "from pedigree + genotyped-subset markers (`target =",
+      "\"single_step_construct\"`). The construction knobs (tau/omega/blend/ridge)",
+      "are not comparator-validated. Low-rank m>>n solves, APY, and",
+      "AGHmatrix/sommer/BLUPF90 comparator parity are planned. Not the default,",
+      "not ML, not production or comparator-validated."
     ),
     paste(
       "Experimental opt-in path only; Julia-owned VanRaden method-1 marker model",

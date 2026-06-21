@@ -45,13 +45,14 @@ There is also a single-step surface:
 | Path | Formula term | Target | Variances |
 | --- | --- | --- | --- |
 | supplied-H inverse single-step | `single_step(1 | id, Hinv = Hinv)` | `target = "single_step"` | estimated by the Julia AI-REML path |
+| constructed-H inverse single-step | `single_step(1 | id, pedigree = ped, markers = M)` | `target = "single_step_construct"` | estimated after the engine builds Hinv |
 
-Building `Hinv` from a pedigree and genomic relationship is planned. APY,
-low-rank marker solvers, weighted genomic relationships, and Bayesian marker
-models are also planned. A post-fit, relatedness-corrected marker scan is now
-available experimentally via `gwas(fit, markers)` (see *Post-fit marker scan*
-below) — its p-values are **not** genome-wide calibrated; QTL/eQTL scans remain
-planned.
+The constructed single-step path is experimental and validation-scale. APY,
+low-rank marker solvers, weighted genomic relationships, production-scale
+single-step construction, metafounder `H^Gamma`, and Bayesian marker models are
+planned. A post-fit, relatedness-corrected marker scan is now available
+experimentally via `gwas(fit, markers)` (see *Post-fit marker scan* below) — its
+p-values are **not** genome-wide calibrated; QTL/eQTL scans remain planned.
 
 ## Supplied Ginv
 
@@ -155,8 +156,8 @@ them, `hsquared()` estimates the variances by REML and records
 
 ## Supplied Hinv single-step
 
-Use this path only when you already have a single-step inverse relationship
-matrix `Hinv` with dimnames matching the phenotype IDs.
+Use this path when you already have a single-step inverse relationship matrix
+`Hinv` with dimnames matching the phenotype IDs.
 
 ```{r}
 fit_h <- hsquared(
@@ -175,9 +176,33 @@ heritability(fit_h)
 breeding_values(fit_h)
 ```
 
-This is not yet automatic single-step HBLUP construction. The package does not
-currently build `Hinv` from pedigree and genotype inputs. That construction is
-planned as a separate validated relationship-matrix slice.
+## Constructed Hinv single-step
+
+Use this path when you have a pedigree for all animals and a marker matrix for the
+genotyped subset. Marker rows must be named by animal ID. Phenotyped animals do
+not all need marker rows; ungenotyped animals are the point of single-step.
+
+```{r}
+fit_h_construct <- hsquared(
+  y ~ batch + single_step(1 | id, pedigree = ped, markers = M),
+  data = pheno,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "single_step_construct")
+  )
+)
+
+variance_components(fit_h_construct)
+heritability(fit_h_construct)
+breeding_values(fit_h_construct)
+```
+
+The engine builds the pedigree inverse, dense pedigree relationship, genomic
+relationship for the genotyped subset, and the single-step precision `H^-1`.
+Construction knobs (`tau`, `omega`, `blend_weight`, `ridge`) exist for validation
+work but are not comparator-validated defaults.
 
 ## Output checklist
 
@@ -212,8 +237,10 @@ scan # effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod
 
 The p-values are **not genome-wide calibrated**: they are nominal Wald p-values
 plus Bonferroni/Benjamini-Hochberg over the supplied markers only, with no
-realistic-LD/design calibration, no permutation, and no leave-one-chromosome-out
-(LOCO). Do not report genome-wide significance from them.
+realistic-LD/design calibration or permutation. A leave-one-group-out mode is
+available with `method = "loco"` and `marker_groups =`, but it is still
+validation-scale and uncalibrated. Do not report genome-wide significance from
+these p-values.
 
 The tabular `gwas_table()` / `qtl_table()` / `eqtl_table()` output names stay
 reserved for a planned map-annotated scan API:
@@ -231,16 +258,18 @@ The current genomic and single-step rows are `partial`.
 Covered in the R lane:
 
 - parser and payload checks for supplied `Ginv`, marker matrices, supplied
-  `Hinv`, and SNP-BLUP variance inputs;
+  `Hinv`, constructed single-step inputs, and SNP-BLUP variance inputs;
 - skip-guarded live bridge tests for genomic GREML, marker-built G, supplied
-  `Hinv`, and SNP-BLUP when Julia and the sibling engine are available;
+  `Hinv`, constructed single-step, and SNP-BLUP when Julia and the sibling engine
+  are available;
 - extractor checks for variance components, genomic heritability, genomic
   breeding values, marker effects, and provenance diagnostics.
 
 Still planned:
 
 - production relationship-matrix construction and scaling/blending controls;
-- building `Hinv` from pedigree plus genotype data;
+- production-scale and externally comparator-validated single-step construction;
+- metafounder single-step `H^Gamma`;
 - APY and low-rank large-marker workflows;
 - PLINK/VCF/BCF readers and on-disk marker storage;
 - genomic comparator parity with sommer, BLUPF90-family tools, JWAS, or other

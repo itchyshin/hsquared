@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 30L)
+  expect_equal(nrow(status), 31L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -141,6 +141,20 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     "planned grammar: rows marked planned/reserved error before fitting",
     fixed = TRUE
   )
+  expect_true(any(
+    status$term == "single_step(1 | id, pedigree = ped, markers = M)" &
+      status$fitting_status == "fitted (opt-in single-step construction)"
+  ))
+  metafounder_row <- status[
+    grepl("metafounder", status$term, fixed = TRUE),
+  ]
+  expect_equal(metafounder_row$syntax_status, "reserved")
+  expect_match(metafounder_row$current_behavior, "Gamma", fixed = TRUE)
+  expect_match(
+    metafounder_row$current_behavior,
+    "supplied, not estimated",
+    fixed = TRUE
+  )
   subset <- status[
     status$category == "multivariate and factor analytic",
     c("term", "syntax_status", "fitting_status")
@@ -161,6 +175,12 @@ test_that("validation_status separates evidence from planned validation", {
     ],
     "partial"
   )
+  supplied_row <- status[
+    status$capability ==
+      "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
+  ]
+  expect_match(supplied_row$evidence, "single_step_construct", fixed = TRUE)
+  expect_match(supplied_row$claim_boundary, "supplied Hinv", fixed = TRUE)
   expect_equal(
     status$status[
       status$capability == "experimental repeatability estimator (opt-in)"

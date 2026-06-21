@@ -5430,3 +5430,38 @@ release".
   55 skip**; `pkgdown::check_pkgdown()` clean; `git diff --check` clean;
   `_R_CHECK_FORCE_SUGGESTS_=false rcmdcheck::rcmdcheck(args = "--no-manual")`
   **0/0/0**.
+
+## 2026-06-21 (metafounder + H^Gamma R contract/status)
+
+- Cross-lane state before this slice: R PR #37 was squash-merged, refreshing R
+  `main` to `6a1065e`; Julia PR #128 was squash-merged to HSquared.jl `main`
+  at `758349d`. Julia PR #128 scope was the supplied-`Gamma`
+  `metafounder_single_step_inverse`, `fit_metafounder_single_step`, and
+  `fit_metafounder_single_step_reml` engine primitives only; no R payload or
+  covered-status claim.
+- Reconciled stale R status wording after the ordinary single-step construction
+  merge: `validation_status()`, the genomic/model-status/fitting-model/QTL-GWAS
+  articles, public claims, capability status, validation debt, issue map, and the
+  bridge-gap ledger now distinguish supplied-`Hinv` single-step from constructed
+  `Hinv` (`single_step(1 | id, pedigree = ped, markers = M)`,
+  `target = "single_step_construct"`).
+- Reserved the R-side metafounder syntax contract without fitting it:
+  `metafounder()` now explicitly accepts inert `group =` alongside supplied
+  `Gamma =`; `formula_status()` reports
+  `metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)` as
+  reserved/planned, and adds the already-live constructed single-step row.
+- Added `docs/design/27-metafounder-single-step-contract.md` as the R payload
+  target for Candidate A: future `target = "metafounder"` and
+  `target = "metafounder_single_step"` payloads, group/Gamma alignment,
+  extractor questions, validation gates, and Rose-blocked wording.
+- BLUPF90-family second-comparator evidence remains locally blocked: Julia
+  successfully banked the starter-packet generator, but this machine lacks
+  `renumf90`, `airemlf90`, `blupf90`, `remlf90`, and `gibbsf90` on PATH, so no
+  BLUPF90 comparator run is claimed.
+- Checks: `air format .` clean; `devtools::document()` regenerated
+  `man/qg_effect_markers.Rd`; focused
+  `devtools::test(filter = "phase0-api|formula-animal|single-step-construct")`
+  **190 pass / 0 fail / 0 warn / 5 skip**; full `devtools::test()`
+  **1220 pass / 0 fail / 0 warn / 55 skip**; `pkgdown::check_pkgdown()` clean;
+  `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false
+  rcmdcheck::rcmdcheck(args = "--no-manual")` **0/0/0**.

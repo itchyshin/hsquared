@@ -24,6 +24,15 @@ test_that("planned quantitative-genetic effect markers are inert", {
   expect_null(epistasis(1 | id, pedigree = ped, Einv = Einv))
   expect_null(relmat(1 | id, K = K))
   expect_null(precision(1 | id, Q = Q))
+  expect_null(group(1 | genetic_group))
+  expect_null(unknown_parent_group(1 | upg))
+  expect_null(metafounder(
+    1 | id,
+    pedigree = ped,
+    group = mf_group,
+    Gamma = Gamma
+  ))
+  expect_null(inbreeding(1 | id))
 })
 
 test_that("hs_build_model_spec parses the v0.1 animal contract", {
@@ -280,7 +289,7 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
   for (term in c(
     "group(1 | id)",
     "unknown_parent_group(1 | id)",
-    "metafounder(1 | id, pedigree = ped)",
+    "metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)",
     "inbreeding(1 | id)"
   )) {
     marker <- sub("\\(.*$", "", term)
