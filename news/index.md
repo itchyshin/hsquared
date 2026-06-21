@@ -131,13 +131,20 @@
   animals must be in the pedigree, but phenotyped animals need **not**
   be genotyped (the point of single-step), and GEBVs are returned for
   **all** pedigree animals. Construction knobs (`tau`, `omega`,
-  `blend_weight`, `ridge`) are exposed but not comparator-validated; an
-  explicit `pedigree =` is required. Experimental, opt-in, REML-only,
+  `blend_weight`, `ridge`) are exposed but not comparator-validated.
+  When the data is an
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  container that bundles a pedigree and genotypes, `single_step(1 | id)`
+  resolves both from the bundle (the `animal(1 | id)` precedent), so
+  neither `pedigree =` nor `markers =` is required; explicit arguments
+  still override the bundle. Experimental, opt-in, REML-only,
   dense/validation-scale; mirrors the twin `V2-SSHINV` (partial).
   Verified live: marker-row-order invariance (the genotyped-rows
-  alignment guard), id-labelled GEBVs covering ungenotyped animals, and
-  a differs-from-pedigree-model anchor. Not the default; promotion past
-  `partial` is twin-gated (`docs/design/25`).
+  alignment guard), id-labelled GEBVs covering ungenotyped animals, a
+  differs-from-pedigree-model anchor, and the
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  shorthand fitting identically to the explicit call. Not the default;
+  promotion past `partial` is twin-gated (`docs/design/25`).
 - **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008)
   for opt-in multivariate fits:
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
