@@ -23,12 +23,13 @@ conventions**:
   `13-plotting-layer.md`), reproducing each figure to this standard.
 - **Julia ships the plot-DATA** (`*_plot_data` NamedTuple preparers); R consumes
   those payloads **or** recomputes from the fit. A live parity test keeping the
-  two in step has **LANDED for four preparers** (`genetic_correlation`,
-  `genetic_pca`, `rr_genetic_variance`, `variance_components`; skip-guarded live in
-  `tests/testthat/test-plot-data-parity.R`) and is extended per preparer as the
-  rest land (see §7). The recompute fallback is still the live source today
-  (the bridge does not yet attach the payloads at fit time); the engine preparers
-  are the cross-check.
+  two in step has **LANDED for all seven preparers** (`genetic_correlation`,
+  `genetic_pca`, `variance_components`, `rr_genetic_variance`,
+  `rr_eigenfunctions`, `rr_covariance_surface`, and `breeding_values`;
+  skip-guarded live in `tests/testthat/test-plot-data-parity.R`) — the **#93
+  plot-data contract is fully consumed R-side**. The recompute fallback is still
+  the live source today (the bridge does not yet attach the payloads at fit time);
+  the engine preparers are the cross-check.
 
 Goal: an R user and a Julia user looking at the same figure see the same encoding,
 caveats, and honest-status — only the rendering engine differs.

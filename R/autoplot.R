@@ -281,32 +281,89 @@ hs_autoplot_variance <- function(object, ...) {
   )
 }
 
+# Extract a tidy breeding-values frame (id, value, pev[, trait]) from an attached
+# engine `breeding_values_plot_data` payload. Rename-robust (value/breeding_value;
+# pev/prediction_error_variance). Returns NULL when no usable payload is present,
+# so the caller falls back to the `breeding_values()` recompute path.
+hs_breeding_values_from_payload <- function(payload) {
+  if (is.null(payload)) {
+    return(NULL)
+  }
+  payload <- as.list(payload)
+  pick <- function(...) {
+    for (nm in c(...)) {
+      if (!is.null(payload[[nm]])) {
+        return(payload[[nm]])
+      }
+    }
+    NULL
+  }
+  id <- pick("id", "ids")
+  value <- pick("value", "values", "breeding_value", "breeding_values")
+  if (is.null(id) || is.null(value) || length(id) != length(value)) {
+    return(NULL)
+  }
+  pev <- pick("pev", "prediction_error_variance")
+  trait <- pick("trait")
+  out <- data.frame(
+    id = as.character(id),
+    value = as.numeric(value),
+    stringsAsFactors = FALSE
+  )
+  if (!is.null(pev) && length(pev) == nrow(out)) {
+    out$pev <- as.numeric(pev)
+  }
+  if (!is.null(trait) && length(trait) == nrow(out)) {
+    out$trait <- trait
+  }
+  out
+}
+
 hs_autoplot_breeding_values <- function(object, ...) {
-  bv <- tryCatch(breeding_values(object), error = function(e) NULL)
-  if (is.null(bv) || !all(c("id", "value") %in% names(bv))) {
-    stop(
-      "This `hsquared_fit` has no breeding values to plot.",
-      call. = FALSE
-    )
+  # Auto-detect the engine `breeding_values_plot_data` payload when the bridge
+  # attaches it to the fit (id/value/pev, rename-robust); otherwise assemble from
+  # the `breeding_values()` + `prediction_error_variance()` extractors (recompute
+  # fallback). NOTE: the bridge does NOT attach this payload at fit time yet -- the
+  # recompute is the live path; the live R<->engine parity test
+  # (`test-plot-data-parity.R`) pins that the recompute matches the engine.
+  bv <- hs_breeding_values_from_payload(
+    object$result$breeding_values_plot_data
+  )
+  from_payload <- !is.null(bv)
+  if (!from_payload) {
+    bv <- tryCatch(breeding_values(object), error = function(e) NULL)
+    if (is.null(bv) || !all(c("id", "value") %in% names(bv))) {
+      stop(
+        "This `hsquared_fit` has no breeding values to plot.",
+        call. = FALSE
+      )
+    }
   }
   bv <- bv[is.finite(bv$value), , drop = FALSE]
   has_trait <- "trait" %in% names(bv)
-  # PEV band if available
-  pev <- object$result$prediction_error_variance
-  if (!is.null(pev) && all(c("id", "value") %in% names(pev))) {
-    key <- if (has_trait && "trait" %in% names(pev)) {
-      paste(bv$id, bv$trait)
-    } else {
-      bv$id
+  # PEV band: carried in the payload (already on `bv$pev`) or looked up from the
+  # `prediction_error_variance()` extractor on the recompute path.
+  if (from_payload) {
+    if (is.null(bv$pev)) {
+      bv$pev <- NA_real_
     }
-    pkey <- if (has_trait && "trait" %in% names(pev)) {
-      paste(pev$id, pev$trait)
-    } else {
-      pev$id
-    }
-    bv$pev <- as.numeric(pev$value)[match(key, pkey)]
   } else {
-    bv$pev <- NA_real_
+    pev <- object$result$prediction_error_variance
+    if (!is.null(pev) && all(c("id", "value") %in% names(pev))) {
+      key <- if (has_trait && "trait" %in% names(pev)) {
+        paste(bv$id, bv$trait)
+      } else {
+        bv$id
+      }
+      pkey <- if (has_trait && "trait" %in% names(pev)) {
+        paste(pev$id, pev$trait)
+      } else {
+        pev$id
+      }
+      bv$pev <- as.numeric(pev$value)[match(key, pkey)]
+    } else {
+      bv$pev <- NA_real_
+    }
   }
   # rank within trait (or overall)
   split_key <- if (has_trait) bv$trait else rep("1", nrow(bv))

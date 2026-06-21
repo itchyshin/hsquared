@@ -5245,10 +5245,10 @@ release".
   default-fit path already emitted them unconditionally; this closes the Henderson
   half (small slice from the scout's A4 / issue #21).
 - Test hardened: the live Henderson-MME-fixture test now asserts PEV + reliability
-  are **present** + finite (not merely "if present"). Observation (flagged to the
-  twin): the dense validation-scale `reliability` is not bounded to [0,1] on this
-  small supplied-variance fixture — left as a twin/Fisher validation concern, not
-  asserted R-side.
+  are **present** + finite (not merely "if present"). A strict `[0,1]` reliability
+  assertion was tried then dropped: on this fixture reliability ranges `[~0, 0.17]`
+  and the apparent `< 0` is a floating-point `-0.0` (numerical zero), not a real
+  out-of-bounds — no twin concern, the assertion was simply over-strong.
 - `air`; `devtools::document()`; **LIVE** `test-julia-bridge.R` **96/0/0/0** on the
   bridge; `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")`
   **0/0/0**. Dense/validation-scale label unchanged (no capability promotion).
@@ -5266,3 +5266,21 @@ release".
   `cor > 0.999` and relative max-diff `< 0.02`.
 - Test-only addition; **LIVE** `test-snp-blup.R` **40/0/0/1** on the bridge;
   `rcmdcheck(args="--no-manual")` **0/0/0**.
+
+## 2026-06-20 (session 6 — consume breeding_values_plot_data: #93 loop closed R-side)
+
+- The twin landed `breeding_values_plot_data` (#116) — the last #93 preparer.
+  `autoplot("breeding_values")` now auto-detects an attached
+  `breeding_values_plot_data` payload (rename-robust via the new
+  `hs_breeding_values_from_payload`) and falls back to the
+  `breeding_values()`+`prediction_error_variance()` recompute (the live path; the
+  bridge does not attach payloads at fit time yet). **All 7 #93 preparers are now
+  consumed with live parity** — the plot-data contract is closed R-side.
+- Tests: pure-R consume + the helper rename-robustness/guards (`test-autoplot.R`);
+  **LIVE** parity (`test-plot-data-parity.R`): the engine
+  `breeding_values_plot_data(hsq_fit)` id/value/pev match the R recompute to 1e-8,
+  `pev_scale == "validation"`, and a marshalled payload draws the same EBVs.
+- `air`; `devtools::document()`; pure-R `test-autoplot` **126/0**; **LIVE**
+  `test-plot-data-parity.R` **32/0/0/0** on the bridge; `pkgdown::check_pkgdown()`
+  clean; `rcmdcheck(args="--no-manual")` **0/0/0**. doc 24 updated (all-seven
+  preparers). No engine edit.

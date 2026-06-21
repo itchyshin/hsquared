@@ -224,6 +224,54 @@ test_that("autoplot.hsquared_fit breeding_values returns a ggplot", {
   )))
 })
 
+test_that("breeding_values autoplot consumes the engine breeding_values_plot_data", {
+  # a fit carrying ONLY the engine payload (no extractable breeding_values), so
+  # autoplot must use the payload (the forward-looking auto-detect branch; the
+  # bridge does not attach it at fit time yet -- recompute is the live path)
+  fit <- structure(
+    list(
+      result = list(
+        breeding_values_plot_data = list(
+          id = letters[1:5],
+          trait = rep(1L, 5),
+          value = c(-0.8, -0.2, 0.1, 0.4, 0.9),
+          pev = c(0.20, 0.22, 0.19, 0.21, 0.18),
+          pev_scale = "validation"
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit, "breeding_values")
+  expect_s3_class(p, "ggplot")
+  # the plotted values come from the payload (sorted EBV caterpillar)
+  expect_setequal(p$data$value, c(-0.8, -0.2, 0.1, 0.4, 0.9))
+  # the PEV band is drawn from the payload pev
+  expect_true(all(is.finite(p$data$lo)) && all(is.finite(p$data$hi)))
+  expect_true(any(vapply(
+    p$layers,
+    function(l) inherits(l$geom, "GeomRibbon"),
+    logical(1)
+  )))
+})
+
+test_that("hs_breeding_values_from_payload is rename-robust and guards bad input", {
+  pl <- list(
+    ids = c("a", "b"),
+    values = c(1, 2),
+    prediction_error_variance = c(0.1, 0.2)
+  )
+  out <- hsquared:::hs_breeding_values_from_payload(pl)
+  expect_equal(out$id, c("a", "b"))
+  expect_equal(out$value, c(1, 2))
+  expect_equal(out$pev, c(0.1, 0.2))
+  # NULL / mismatched payloads fall back (return NULL)
+  expect_null(hsquared:::hs_breeding_values_from_payload(NULL))
+  expect_null(hsquared:::hs_breeding_values_from_payload(
+    list(id = c("a", "b"), value = 1)
+  ))
+})
+
 test_that("autoplot.hsquared_fit g_matrix returns a ggplot for multivariate", {
   p <- autoplot(mock_mv_fit(), "g_matrix")
   expect_s3_class(p, "ggplot")

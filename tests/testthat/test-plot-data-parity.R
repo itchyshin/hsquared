@@ -318,3 +318,54 @@ test_that("variance_components_plot_data engine preparer feeds the variance fore
   expect_true(all(is.na(lo_out[c(1, 3)]))) # engine NaN -> R NA
   expect_equal(lo_out[2], 1.0) # finite value survives
 })
+
+test_that("breeding_values_plot_data engine preparer matches the R recompute [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live plot-data parity."
+  )
+
+  ped <- hs_sim_pedigree(n_founder = 12, n_per_gen = 24, n_gen = 2, seed = 41)
+  dat <- hs_sim_genedrop_phenotypes(
+    ped,
+    sigma_a2 = 0.5,
+    sigma_e2 = 0.5,
+    seed = 41
+  )
+  fit <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  # the default fit leaves the engine AnimalModelFit as `hsq_fit`; call the
+  # preparer on it and marshal id/value/pev back.
+  bvpd <- JuliaCall::julia_eval(paste(
+    "let pd = HSquared.breeding_values_plot_data(hsq_fit);",
+    "Dict(\"id\" => string.(collect(pd.id)),",
+    "\"value\" => collect(Float64, pd.value),",
+    "\"pev\" => collect(Float64, pd.pev),",
+    "\"pev_scale\" => String(pd.pev_scale)) end"
+  ))
+  expect_equal(bvpd$pev_scale, "validation")
+
+  # R recompute path (what autoplot uses): breeding_values + PEV extractors
+  bv <- breeding_values(fit)
+  pev <- prediction_error_variance(fit)
+  o <- match(bvpd$id, bv$id)
+  expect_false(anyNA(o))
+  expect_equal(bv$value[o], bvpd$value, tolerance = 1e-8)
+  po <- match(bvpd$id, pev$id)
+  expect_equal(pev$value[po], bvpd$pev, tolerance = 1e-8)
+
+  # consume: a fit carrying the marshalled payload draws the same EBVs
+  fit2 <- structure(
+    list(result = list(breeding_values_plot_data = bvpd)),
+    class = "hsquared_fit"
+  )
+  p <- autoplot(fit2, "breeding_values")
+  expect_s3_class(p, "ggplot")
+  expect_setequal(round(p$data$value, 8), round(bvpd$value, 8))
+})
