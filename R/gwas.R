@@ -327,7 +327,182 @@ hs_normalize_gwas_result <- function(raw, method = "mixed") {
   )
   class(out) <- c("hs_gwas", "data.frame")
   attr(out, "scan_method") <- method
+  calibration <- hs_validate_gwas_calibration_metadata(
+    raw$calibration %||% NULL,
+    scan_method = method
+  )
+  if (!is.null(calibration)) {
+    attr(out, "calibration") <- calibration
+  }
   out
+}
+
+hs_gwas_calibration_required_fields <- function() {
+  c(
+    "calibration_method",
+    "threshold_scale",
+    "threshold",
+    "alpha",
+    "empirical_type1",
+    "marker_panel_mode",
+    "scan_method",
+    "n_replicates",
+    "seed",
+    "engine",
+    "package_version"
+  )
+}
+
+hs_validate_gwas_calibration_metadata <- function(
+  calibration,
+  scan_method = "mixed"
+) {
+  if (is.null(calibration)) {
+    return(NULL)
+  }
+  if (!is.list(calibration)) {
+    stop("GWAS calibration metadata must be a named list.", call. = FALSE)
+  }
+  missing <- setdiff(
+    hs_gwas_calibration_required_fields(),
+    names(calibration)
+  )
+  if (length(missing) > 0L) {
+    stop(
+      "GWAS calibration metadata is incomplete; missing field",
+      if (length(missing) == 1L) " " else "s ",
+      "`",
+      paste(missing, collapse = "`, `"),
+      "`.",
+      call. = FALSE
+    )
+  }
+
+  method <- hs_scalar_character(calibration$calibration_method)
+  if (is.na(method) || !nzchar(method) || identical(method, "none")) {
+    stop(
+      "GWAS calibration metadata must name an activated calibration method ",
+      "other than `none`.",
+      call. = FALSE
+    )
+  }
+
+  scale <- hs_scalar_character(calibration$threshold_scale)
+  if (!scale %in% c("p_value", "lod")) {
+    stop(
+      "GWAS calibration `threshold_scale` must be `p_value` or `lod`.",
+      call. = FALSE
+    )
+  }
+
+  threshold <- hs_scalar_numeric(calibration$threshold)
+  if (!is.finite(threshold) || threshold <= 0) {
+    stop(
+      "GWAS calibration `threshold` must be positive and finite.",
+      call. = FALSE
+    )
+  }
+  if (identical(scale, "p_value") && threshold > 1) {
+    stop(
+      "GWAS calibration p-value thresholds must be between 0 and 1.",
+      call. = FALSE
+    )
+  }
+
+  alpha <- hs_scalar_numeric(calibration$alpha)
+  empirical_type1 <- hs_scalar_numeric(calibration$empirical_type1)
+  if (!is.finite(alpha) || alpha <= 0 || alpha >= 1) {
+    stop("GWAS calibration `alpha` must be between 0 and 1.", call. = FALSE)
+  }
+  if (
+    !is.finite(empirical_type1) ||
+      empirical_type1 < 0 ||
+      empirical_type1 > 1
+  ) {
+    stop(
+      "GWAS calibration `empirical_type1` must be between 0 and 1.",
+      call. = FALSE
+    )
+  }
+
+  panel_mode <- hs_scalar_character(calibration$marker_panel_mode)
+  if (!panel_mode %in% c("fixed", "fresh", "realistic_ld", "real_panel")) {
+    stop(
+      "GWAS calibration `marker_panel_mode` must be one of `fixed`, `fresh`, ",
+      "`realistic_ld`, or `real_panel`.",
+      call. = FALSE
+    )
+  }
+
+  payload_method <- hs_scalar_character(calibration$scan_method)
+  if (!identical(payload_method, scan_method)) {
+    stop(
+      "GWAS calibration `scan_method` must match the scan result method (`",
+      scan_method,
+      "`).",
+      call. = FALSE
+    )
+  }
+
+  n_replicates <- hs_scalar_numeric(calibration$n_replicates)
+  if (
+    !is.finite(n_replicates) ||
+      n_replicates < 1 ||
+      n_replicates != as.integer(n_replicates)
+  ) {
+    stop(
+      "GWAS calibration `n_replicates` must be a positive whole number.",
+      call. = FALSE
+    )
+  }
+
+  seed <- calibration$seed
+  if (length(seed) < 1L || any(is.na(seed))) {
+    stop(
+      "GWAS calibration `seed` must contain at least one non-missing value.",
+      call. = FALSE
+    )
+  }
+
+  engine <- hs_scalar_character(calibration$engine)
+  package_version <- hs_scalar_character(calibration$package_version)
+  if (is.na(engine) || !nzchar(engine)) {
+    stop("GWAS calibration `engine` must be a non-empty string.", call. = FALSE)
+  }
+  if (is.na(package_version) || !nzchar(package_version)) {
+    stop(
+      "GWAS calibration `package_version` must be a non-empty string.",
+      call. = FALSE
+    )
+  }
+
+  list(
+    calibration_method = method,
+    threshold_scale = scale,
+    threshold = threshold,
+    alpha = alpha,
+    empirical_type1 = empirical_type1,
+    marker_panel_mode = panel_mode,
+    scan_method = payload_method,
+    n_replicates = as.integer(n_replicates),
+    seed = seed,
+    engine = engine,
+    package_version = package_version
+  )
+}
+
+hs_scalar_character <- function(x) {
+  if (length(x) != 1L) {
+    return(NA_character_)
+  }
+  as.character(x)
+}
+
+hs_scalar_numeric <- function(x) {
+  if (length(x) != 1L) {
+    return(NA_real_)
+  }
+  as.numeric(x)
 }
 
 #' @export
