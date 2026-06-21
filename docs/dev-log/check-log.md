@@ -5705,3 +5705,25 @@ release".
   `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla
   -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")'`
   **0 errors / 0 warnings / 0 notes**.
+
+## 2026-06-21 (metafounder_effects reserved extractor)
+
+- Added the exported, error-only `metafounder_effects()` generic and
+  `hsquared_fit` method. The method deliberately errors until a future engine
+  result returns explicit combined-system metafounder solutions; current
+  metafounder and `H^Gamma` fits continue to expose only supplied provenance
+  through `gamma_matrix()` and `metafounder_groups()`.
+- Reconciled the metafounder contract, capability status, validation debt,
+  public-claims register, NEWS, and pkgdown reference index so the public
+  surface says "reserved/error-only" rather than implying a returned effect
+  table.
+- Checks so far: `air format .` clean; `Rscript --vanilla -e
+  'devtools::document()'` regenerated `NAMESPACE` and
+  `man/metafounder_effects.Rd`; focused `Rscript --vanilla -e
+  'devtools::test(filter = "fit-object|phase0-api")'` **198 pass / 0 fail /
+  0 warn / 0 skip**; `Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+  clean; `git diff --check` clean; full `Rscript --vanilla -e
+  'devtools::test()'` **1290 pass / 0 fail / 0 warn / 58 skip**;
+  `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e
+  'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+  **0 errors / 0 warnings / 0 notes**.

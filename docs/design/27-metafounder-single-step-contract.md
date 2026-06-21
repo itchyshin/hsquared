@@ -146,7 +146,8 @@ The `genotyped_rows` and marker-row ordering rules are inherited from
 Do not expose metafounder-specific effect extractors until the result shape is
 pinned. Current and candidate extractors:
 
-- `metafounder_effects(fit)` only if the engine returns explicit combined-system
+- `metafounder_effects(fit)` is exported as a reserved/error-only extractor;
+  it must not return values unless the engine returns explicit combined-system
   metafounder solutions, not merely animal EBVs from `inv(A^Gamma)`.
 - `gamma_matrix(fit)` is implemented as supplied input provenance, not an
   estimated parameter.

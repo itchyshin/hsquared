@@ -74,6 +74,7 @@ reference:
       - covariance_structure_lrt
       - gamma_matrix
       - metafounder_groups
+      - metafounder_effects
       - factor_g_extractors
       - g_matrix_geometry
       - breeding_values
