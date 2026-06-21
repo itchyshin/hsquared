@@ -3,6 +3,34 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #151 BLUPF90 packet hardening
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
+- Branch: `codex/julia-151-blupf90-packet-sync`.
+- Scope:
+  - updated live R #10 after HSquared.jl PR #151 (`c25bcc1`) hardened the
+    BLUPF90/AIREMLF90 multivariate starter packet;
+  - recorded PR #151 in the R issue-map rows for #10, selected Julia #49, the
+    validation-gates mirror, and the recent Julia-side checkpoint list;
+  - updated the coordination board and after-task report.
+- Live GitHub verification:
+  - `gh pr view 151 --repo itchyshin/HSquared.jl --json number,state,mergeCommit,statusCheckRollup,url,title,mergedAt,body`
+    showed PR #151 merged at `c25bcc1` with Julia 1, Julia 1.10, docs, and
+    documenter/deploy successful.
+  - `gh issue edit 10 --repo itchyshin/hsquared --body-file -` updated the
+    multivariate validation parent issue body.
+- Claim boundary: issue/docs sync only. No R or Julia behavior changed; no
+  BLUPF90-family executable was run; no aligned comparator estimates, second
+  same-estimand comparator evidence, validation/public-claim promotion, or
+  covered status change is claimed.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-151-blupf90-packet-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync Julia #150 innovation gate
 
 - Active lenses: Ada, Shannon, Jason, Gauss, Karpinski, Rose, Grace.
