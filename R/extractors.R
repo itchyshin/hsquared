@@ -198,6 +198,106 @@ hs_multivariate_extractor_default <- function(name) {
   )
 }
 
+#' Extract a supplied metafounder Gamma matrix
+#'
+#' `gamma_matrix()` returns the supplied metafounder `Gamma` matrix carried by
+#' an experimental metafounder or `H^Gamma` single-step `hsquared_fit` object.
+#' It is provenance for the fitted relationship, not an estimated parameter.
+#'
+#' @inheritParams variance_components
+#'
+#' @return A numeric matrix with metafounder labels when the fitted object
+#'   contains a supplied `Gamma` payload.
+#' @export
+gamma_matrix <- function(object, ...) {
+  UseMethod("gamma_matrix")
+}
+
+#' @export
+gamma_matrix.default <- function(object, ...) {
+  stop(
+    "`gamma_matrix()` requires an `hsquared_fit` object from an opt-in ",
+    "metafounder or `H^Gamma` model.",
+    call. = FALSE
+  )
+}
+
+#' @export
+gamma_matrix.hsquared_fit <- function(object, ...) {
+  gamma <- object$payload$Gamma
+  if (is.null(gamma)) {
+    stop(
+      "This `hsquared_fit` object does not contain a supplied metafounder ",
+      "`Gamma` matrix. Use it only for opt-in metafounder or `H^Gamma` fits.",
+      call. = FALSE
+    )
+  }
+  gamma <- as.matrix(gamma)
+  storage.mode(gamma) <- "double"
+  labels <- object$payload$gamma_labels
+  if (
+    !is.null(labels) &&
+      length(labels) == nrow(gamma) &&
+      length(labels) == ncol(gamma)
+  ) {
+    dimnames(gamma) <- list(as.character(labels), as.character(labels))
+  }
+  gamma
+}
+
+#' Extract supplied metafounder group assignments
+#'
+#' `metafounder_groups()` returns the ID-keyed metafounder group assignments
+#' carried by an experimental metafounder or `H^Gamma` single-step
+#' `hsquared_fit` object. These assignments are provenance for the supplied
+#' relationship, not estimated grouping parameters.
+#'
+#' @inheritParams variance_components
+#'
+#' @return A data frame with columns `id`, `metafounder_group`, and
+#'   `is_metafounder`.
+#' @export
+metafounder_groups <- function(object, ...) {
+  UseMethod("metafounder_groups")
+}
+
+#' @export
+metafounder_groups.default <- function(object, ...) {
+  stop(
+    "`metafounder_groups()` requires an `hsquared_fit` object from an opt-in ",
+    "metafounder or `H^Gamma` model.",
+    call. = FALSE
+  )
+}
+
+#' @export
+metafounder_groups.hsquared_fit <- function(object, ...) {
+  group_of <- object$payload$group_of
+  if (is.null(group_of)) {
+    stop(
+      "This `hsquared_fit` object does not contain supplied metafounder ",
+      "group assignments. Use it only for opt-in metafounder or `H^Gamma` ",
+      "fits.",
+      call. = FALSE
+    )
+  }
+  group_of <- as.character(group_of)
+  ids <- object$payload$ids %||% names(group_of)
+  if (is.null(ids) || length(ids) != length(group_of)) {
+    stop(
+      "This `hsquared_fit` object has malformed metafounder group metadata; ",
+      "the ID and group vectors do not align.",
+      call. = FALSE
+    )
+  }
+  data.frame(
+    id = as.character(ids),
+    metafounder_group = ifelse(nzchar(group_of), group_of, NA_character_),
+    is_metafounder = nzchar(group_of),
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Reserved factor-analytic and G-matrix extractors
 #'
 #' These extractor names are reserved for future factor-analytic G-matrix
@@ -1015,7 +1115,7 @@ hs_fit_boundary_class <- function(object, tol = 1e-4) {
     return(NULL)
   }
   est <- as.numeric(vc$estimate)
-  primary_names <- c("animal", "genomic", "single_step")
+  primary_names <- c("animal", "genomic", "single_step", "metafounder")
   primary <- est[vc$component %in% primary_names]
   if (length(primary) != 1L) {
     return(NULL)

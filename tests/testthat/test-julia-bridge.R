@@ -240,6 +240,17 @@ test_that("metafounder supplied-variance bridge matches Gamma-zero Henderson pat
   )
   expect_equal(variance_components(mf0)$component, c("metafounder", "residual"))
   expect_equal(heritability(mf0)$term, "metafounder")
+  expect_equal(gamma_matrix(mf0), Gamma0)
+  expect_equal(gamma_matrix(mfg), Gammag)
+  expect_equal(
+    metafounder_groups(mfg),
+    data.frame(
+      id = c("sire", "dam", "calf", "sib"),
+      metafounder_group = c("base", "base", NA, NA),
+      is_metafounder = c(TRUE, TRUE, FALSE, FALSE),
+      stringsAsFactors = FALSE
+    )
+  )
   expect_equal(
     breeding_values(mf0)$value,
     breeding_values(ordinary)$value,

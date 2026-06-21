@@ -72,6 +72,8 @@ reference:
       - multivariate_extractors
       - covariance_standard_errors
       - covariance_structure_lrt
+      - gamma_matrix
+      - metafounder_groups
       - factor_g_extractors
       - g_matrix_geometry
       - breeding_values
