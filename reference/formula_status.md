@@ -81,7 +81,7 @@ formula_status()
 #>    Phase 5        parsed       fitted (opt-in genomic / SNP-BLUP)
 #>    Phase 5        parsed              fitted (opt-in single-step)
 #>    Phase 5        parsed fitted (opt-in single-step construction)
-#>    Phase 5        parsed    not available (contract-only payload)
+#>    Phase 5        parsed   fitted (opt-in supplied-Gamma H^Gamma)
 #>    Phase 5      reserved                            not available
 #>    Phase 5      reserved                            not available
 #>    Phase 5      reserved                            not available

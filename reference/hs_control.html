@@ -122,8 +122,10 @@ experimental Julia bridge recognizes <code>julia_project</code>, <code>initial</
 it has no effect under the default <code>engine = "fit"</code> path. The supported
 targets are <code>"fit_animal_model"</code>, <code>"ai_reml"</code>, <code>"sparse_reml"</code>,
 <code>"henderson_mme"</code>, <code>"repeatability"</code>, <code>"two_effect"</code>, <code>"genomic"</code>,
-<code>"single_step"</code>, <code>"snp_blup"</code>, <code>"multivariate"</code>, and <code>"nongaussian"</code>,
-described below. <code>marginal</code> applies only to <code>target = "nongaussian"</code>.
+<code>"single_step"</code>, <code>"single_step_construct"</code>,
+<code>"metafounder_single_step"</code>, <code>"snp_blup"</code>, <code>"multivariate"</code>, and
+<code>"nongaussian"</code>, described below. <code>marginal</code> applies only to
+<code>target = "nongaussian"</code>.
 With <code>engine = "julia"</code> and no <code>target</code>, the bridge defaults to
 <code>target = "fit_animal_model"</code>: it surfaces the Julia-owned
 <code>HSquared.fit_animal_model()</code> dense NelderMead optimizer, honouring the
@@ -168,6 +170,12 @@ paths that fit a single effect whose relationship is a user-supplied inverse:
 genomic relationship), and <code>single_step(1 | id, Hinv = Hinv)</code> (a single-step
 relationship inverse). All surface <code>HSquared.fit_ai_reml()</code>. They are REML
 only and not the default.
+<code>target = "single_step_construct"</code> fits
+<code>single_step(1 | id, pedigree = ped, markers = M)</code> after the engine builds
+<code>H^-1</code> from the pedigree and genotyped-subset markers. <code>target = "metafounder_single_step"</code> fits
+<code>single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)</code> through the Julia-owned supplied-<code>Gamma</code> <code>H^Gamma</code> path. Both are
+experimental, opt-in, dense/validation-scale, REML-only, and not
+comparator-validated; <code>Gamma</code> is supplied, not estimated.
 <code>target = "snp_blup"</code> is an experimental, opt-in path for the SNP-BLUP /
 RR-BLUP marker-effect model. It requires <code>genomic(1 | id, markers = M)</code> (a
 raw marker matrix) and estimates per-marker effects (<code><a href="marker_extractors.html">marker_effects()</a></code>) and

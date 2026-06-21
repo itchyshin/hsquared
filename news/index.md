@@ -51,19 +51,22 @@
   [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
   still recomputes when a payload is absent or when a random-regression
   user supplies a custom grid.
-- Added a contract-only R payload gate for supplied-`Gamma` single-step
+- Added an experimental live R bridge for supplied-`Gamma` single-step
   `H^Gamma`:
   `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)`
   now parses, validates ID-keyed metafounder `group` labels, validates a
   finite symmetric positive-semidefinite supplied `Gamma`, preserves
-  marker ordering / `genotyped_rows`, and builds the bridge payload for
-  the future `target = "metafounder_single_step"` path. The target is
-  recognized but intentionally errors before fitting because the live
-  Julia bridge is not wired yet.
+  marker ordering / `genotyped_rows`, and fits through
+  `engine_control = list(target = "metafounder_single_step")` by calling
+  the Julia-owned `fit_metafounder_single_step_reml()` path.
+  Skip-guarded live tests pin the `Gamma = 0` reduction to ordinary
+  single-step construction and a nonzero-`Gamma` sensitivity probe with
+  stable labels/dimensions.
   [`metafounder()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   remains an inert syntax reservation for the future animal-only
-  `A^Gamma` path; no `Gamma` estimation, extractor, BLUPF90 comparator
-  evidence, or covered support is claimed.
+  `A^Gamma` path; no `Gamma` estimation, metafounder-specific extractor,
+  BLUPF90 comparator evidence, production-scale claim, or covered
+  support is claimed.
 - Reconciled the PEV/reliability standard-field bridge status. Default,
   sparse, and explicit AI-REML Julia result-payload paths consume engine
   `prediction_error_variance` and `reliability` fields when present
@@ -565,8 +568,8 @@
 - Added a “Genomic prediction” pkgdown article that separates the
   current opt-in supplied-`Ginv`, marker-built GREML, SNP-BLUP,
   supplied-`Hinv` single-step, constructed-`Hinv` single-step paths, and
-  the contract-only supplied-`Gamma` `H^Gamma` payload gate from APY,
-  live metafounder `H^Gamma` fitting, GWAS/QTL/eQTL, and
+  experimental supplied-`Gamma` `H^Gamma` single-step bridge from APY,
+  animal-only metafounder fitting, GWAS/QTL/eQTL, and
   production-comparator work.
 - Added a “QTL, GWAS, and eQTL status” pkgdown article that explains the
   current reserved scan vocabulary, live SNP-BLUP marker effects /

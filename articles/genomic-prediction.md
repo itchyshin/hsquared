@@ -28,17 +28,19 @@ There is also a single-step surface:
 |----|----|----|----|
 | supplied-H inverse single-step | `single_step(1 | id, Hinv = Hinv)` | `target = "single_step"` | estimated by the Julia AI-REML path |
 | constructed-H inverse single-step | `single_step(1 | id, pedigree = ped, markers = M)` | `target = "single_step_construct"` | estimated after the engine builds Hinv |
-| supplied-Gamma H^Gamma payload gate | `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)` | `target = "metafounder_single_step"` | not fit-wired yet |
+| supplied-Gamma H^Gamma single-step | `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)` | `target = "metafounder_single_step"` | estimated after the engine builds H^Gamma-inverse |
 
 The constructed single-step path is experimental and validation-scale.
-`H^Gamma` currently stops at a parser/payload gate: R validates the
-supplied metafounder labels and `Gamma`, but the live Julia fit is not
-wired. APY, low-rank marker solvers, weighted genomic relationships,
-production-scale single-step construction, and Bayesian marker models
-are planned. A post-fit, relatedness-corrected marker scan is now
-available experimentally via `gwas(fit, markers)` (see *Post-fit marker
-scan* below) — its p-values are **not** genome-wide calibrated; QTL/eQTL
-scans remain planned.
+`H^Gamma` is also experimental and validation-scale: R validates the
+supplied metafounder labels and `Gamma`, then calls the Julia-owned
+`fit_metafounder_single_step_reml()` path. `Gamma` is supplied, not
+estimated, and there is no metafounder-specific extractor or external
+comparator evidence. APY, low-rank marker solvers, weighted genomic
+relationships, production-scale single-step construction, and Bayesian
+marker models are planned. A post-fit, relatedness-corrected marker scan
+is now available experimentally via `gwas(fit, markers)` (see *Post-fit
+marker scan* below) — its p-values are **not** genome-wide calibrated;
+QTL/eQTL scans remain planned.
 
 ## Supplied Ginv
 
@@ -269,10 +271,10 @@ Covered in the R lane:
 
 - parser and payload checks for supplied `Ginv`, marker matrices,
   supplied `Hinv`, constructed single-step inputs, supplied-`Gamma`
-  `H^Gamma` payload inputs, and SNP-BLUP variance inputs;
+  `H^Gamma` inputs, and SNP-BLUP variance inputs;
 - skip-guarded live bridge tests for genomic GREML, marker-built G,
-  supplied `Hinv`, constructed single-step, and SNP-BLUP when Julia and
-  the sibling engine are available;
+  supplied `Hinv`, constructed single-step, supplied-`Gamma` `H^Gamma`,
+  and SNP-BLUP when Julia and the sibling engine are available;
 - extractor checks for variance components, genomic heritability,
   genomic breeding values, marker effects, and provenance diagnostics.
 
@@ -282,8 +284,8 @@ Still planned:
   controls;
 - production-scale and externally comparator-validated single-step
   construction;
-- live fitting and external validation for metafounder single-step
-  `H^Gamma`;
+- animal-only metafounder fitting and external validation for
+  metafounder single-step `H^Gamma`;
 - APY and low-rank large-marker workflows;
 - PLINK/VCF/BCF readers and on-disk marker storage;
 - genomic comparator parity with sommer, BLUPF90-family tools, JWAS, or

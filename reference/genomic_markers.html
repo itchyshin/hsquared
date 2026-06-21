@@ -10,8 +10,8 @@ target = "snp_blup"), and single_step(1 | id, Hinv = Hinv) (a precomputed
 inverse) or single_step(1 | id, pedigree = ped, markers = M) (the engine
 constructs H^-1 from the pedigree + genotyped-subset markers via
 target = "single_step_construct"). Adding group plus supplied Gamma
-validates a contract-only H^Gamma payload gate for the future
-target = "metafounder_single_step" path; the live Julia fit is not wired yet.
+fits a supplied-Gamma, validation-scale H^Gamma path through
+target = "metafounder_single_step"; Gamma is supplied, not estimated.
 When data is an hs_data() container that bundles a pedigree and genotypes,
 single_step(1 | id) resolves both from the bundle (the animal(1 | id)
 precedent), so neither pedigree = nor markers = is required; explicit
@@ -28,8 +28,8 @@ target = "snp_blup"), and single_step(1 | id, Hinv = Hinv) (a precomputed
 inverse) or single_step(1 | id, pedigree = ped, markers = M) (the engine
 constructs H^-1 from the pedigree + genotyped-subset markers via
 target = "single_step_construct"). Adding group plus supplied Gamma
-validates a contract-only H^Gamma payload gate for the future
-target = "metafounder_single_step" path; the live Julia fit is not wired yet.
+fits a supplied-Gamma, validation-scale H^Gamma path through
+target = "metafounder_single_step"; Gamma is supplied, not estimated.
 When data is an hs_data() container that bundles a pedigree and genotypes,
 single_step(1 | id) resolves both from the bundle (the animal(1 | id)
 precedent), so neither pedigree = nor markers = is required; explicit
@@ -98,8 +98,8 @@ or <code>genomic(1 | id, markers = M)</code> (GREML, or SNP-BLUP via
 inverse) or <code>single_step(1 | id, pedigree = ped, markers = M)</code> (the engine
 constructs <code>H^-1</code> from the pedigree + genotyped-subset markers via
 <code>target = "single_step_construct"</code>). Adding <code>group</code> plus supplied <code>Gamma</code>
-validates a contract-only <code>H^Gamma</code> payload gate for the future
-<code>target = "metafounder_single_step"</code> path; the live Julia fit is not wired yet.
+fits a supplied-<code>Gamma</code>, validation-scale <code>H^Gamma</code> path through
+<code>target = "metafounder_single_step"</code>; <code>Gamma</code> is supplied, not estimated.
 When <code>data</code> is an <code><a href="hs_data.html">hs_data()</a></code> container that bundles a pedigree and genotypes,
 <code>single_step(1 | id)</code> resolves both from the bundle (the <code>animal(1 | id)</code>
 precedent), so neither <code>pedigree =</code> nor <code>markers =</code> is required; explicit

@@ -13,9 +13,9 @@ gate): `genomic(1 | id, Ginv = Ginv)` or `genomic(1 | id, markers = M)`
 `single_step(1 | id, pedigree = ped, markers = M)` (the engine
 constructs `H^-1` from the pedigree + genotyped-subset markers via
 `target = "single_step_construct"`). Adding `group` plus supplied
-`Gamma` validates a contract-only `H^Gamma` payload gate for the future
-`target = "metafounder_single_step"` path; the live Julia fit is not
-wired yet. When `data` is an
+`Gamma` fits a supplied-`Gamma`, validation-scale `H^Gamma` path through
+`target = "metafounder_single_step"`; `Gamma` is supplied, not
+estimated. When `data` is an
 [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
 container that bundles a pedigree and genotypes, `single_step(1 | id)`
 resolves both from the bundle (the `animal(1 | id)` precedent), so
