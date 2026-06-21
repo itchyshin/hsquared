@@ -3,6 +3,25 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Close R issue #20 with weekly innovation scout automation
+
+- Scope: infra/coordination docs only after creating a Codex app automation and
+  closing the GitHub issue.
+- Automation created: `hsquared-weekly-innovation-scout`. It runs weekly across
+  the `hsquared` and `HSquared.jl` workspaces and reports newly actionable R and
+  Julia slices, cross-lane blockers, stale issue-map/capability wording, and the
+  next three recommended small slices.
+- Live GitHub action: `gh issue close 20 --repo itchyshin/hsquared --comment ...`
+  closed R issue #20.
+- Claim boundary: automation/reporting only. The automation prompt is read-only:
+  no file edits, issue closures, or PRs unless explicitly instructed in a
+  follow-up. No capability status changed and no validation row was promoted.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#20|hsquared-weekly-innovation-scout|read-only|no file edits|no capability|validation row|promoted" docs/dev-log/issue-map.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-issue-map-close-20.md`
+    confirms the automation/no-promotion boundary.
+
 ## 2026-06-21 Close R issue #2 after v0.1 contract coverage
 
 - Scope: issue-map/coordination docs only after live GitHub close.
