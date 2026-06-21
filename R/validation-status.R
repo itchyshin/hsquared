@@ -181,9 +181,16 @@ hs_validation_status_evidence <- function() {
       "diagnostics; fit provenance tagged variance_components_source =",
       "\"estimated_multivariate_reml\". The shared Phase 4 fixture pins R",
       "payload/extractor parity against serialized Julia targets, and an",
-      "optional sommer comparator checks the same fixture's G0, diag(R0), and",
-      "diagonal-target h2. Mirrors the twin V4-MULTIVARIATE / V4-MV-REML gates",
-      "(partial)."
+      "optional in-suite sommer comparator checks the same fixture's G0,",
+      "diag(R0), and diagonal-target h2. Two reproducible R-lane studies now",
+      "extend that evidence without promoting the row: a 100-replicate",
+      "cold-start t=2 known-truth recovery study has all six G0/R0 elements,",
+      "genetic correlation, and both per-trait h2 within bias +/- 2*MCSE",
+      "(100/100 converged; EBV accuracy 0.79/0.74), and a full-unstructured",
+      "residual sommer comparator reproduces the serialized phase4_multitrait",
+      "target's G0/R0/beta/h2/EBV to <= 8e-5 while recovering the off-diagonal",
+      "R0 residual covariance. Mirrors the twin V4-MULTIVARIATE / V4-MV-REML",
+      "gates (partial)."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -293,12 +300,14 @@ hs_validation_status_boundaries <- function() {
       "Experimental opt-in path only; Julia-owned dense/validation-scale",
       "multivariate REML estimator that R surfaces; mirrors the twin V4 rows",
       "(partial). `cbind()` responses with missing trait cells are supported,",
-      "but this is REML-only, animal-model-only, not the default, not full",
-      "external-comparator validated, and not a known-truth t>=2 recovery claim.",
-      "The optional sommer check is diagonal-residual only, so it does not",
-      "validate the off-diagonal residual covariance. The Julia engine currently",
-      "inverts Ainv internally, so deep-inbreeding or high-condition-number",
-      "pedigrees remain a twin-side hardening item."
+      "but this is REML-only, animal-model-only, and not the default. The R lane",
+      "has cold-start recovery and one reproduced full-unstructured sommer",
+      "comparator leg, but covered promotion remains twin-gated and still needs",
+      "a broader/redeclared recovery gate, a published or Mrode-style",
+      "multivariate target, and another independent same-estimand comparator",
+      "(ASReml, BLUPF90/AIREMLF90, JWAS/equivalent, or accepted alternative).",
+      "The Julia engine currently inverts Ainv internally, so deep-inbreeding or",
+      "high-condition-number pedigrees remain a twin-side hardening item."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",

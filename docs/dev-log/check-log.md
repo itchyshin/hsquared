@@ -3,6 +3,37 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Multivariate validation/comparator gate clarification
+
+- Scope: R-lane validation-status and coordination clarification after merging
+  the two banking PRs (`hsquared` #35 and `HSquared.jl` #125). No capability
+  promotion and no Julia files edited.
+- Refreshed local `main`:
+  - `git switch main && git pull --ff-only`
+  - Result: fast-forwarded to merged A3/#93 commit `6098839`; two unrelated
+    Codex handover files remained untracked and were not touched.
+- Created branch:
+  - `git switch -c codex/mv-validation-comparator-gate`
+- Changed files:
+  - `R/validation-status.R`
+  - `tests/testthat/test-phase0-api.R`
+  - `docs/design/04-validation-canon.md`
+  - `docs/dev-log/issue-map.md`
+- Local checks:
+  - `air format .` - passed.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api")'` - 87
+    passed, 0 failed, 0 warnings, 0 skipped.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean.
+  - `git diff --check` - clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` -
+    Status OK, 0 errors, 0 warnings, 0 notes. Missing optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` were reported as INFO only.
+- Rose boundary: the multivariate row stays `partial`. The R lane records
+  cold-start recovery and one reproduced full-unstructured `sommer` comparator
+  leg; promotion remains twin-gated and still needs a broader/redeclared
+  recovery gate, a published or Mrode-style multivariate target, and another
+  independent same-estimand comparator.
+
 ## 2026-06-21 A3 fit-time plot-data payloads (#93)
 
 - Scope: R bridge slice only. The Julia bridge now attaches available engine
