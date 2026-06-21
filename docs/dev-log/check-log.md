@@ -5886,3 +5886,26 @@ release".
   'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
   **0 errors / 0 warnings / 0 notes**. Expected INFO only: optional suggested
   packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.
+
+## 2026-06-21 (BLUPF90 multivariate result-ingester scaffold)
+
+- Added an internal, non-exported BLUPF90-family multivariate summary ingester:
+  `hs_read_blupf90_multivariate_summary()` reads a sanitized CSV companion table
+  with `quantity`, `target`, `estimate`, `difference`, `tolerance`, and
+  `verdict`; `hs_validate_blupf90_multivariate_summary()` checks required core
+  G/R covariance and per-trait h2 quantities plus non-pass verdicts.
+- Updated the BLUPF90 executable handoff packet and comparator-runs README so a
+  future executable-backed report can attach that CSV without requiring the R
+  lane to parse raw BLUPF90 logs.
+- Claim boundary: synthetic scaffold and review aid only. No `renumf90` or
+  `airemlf90` run, no BLUPF90 comparator evidence, no `validation_status()`
+  change, and no V4-MV-REML promotion.
+- Checks: `air format .` clean; focused
+  `Rscript --vanilla -e 'devtools::test(filter = "comparator-scripts")'`
+  **46 pass / 0 fail / 0 warn / 0 skip**; full
+  `Rscript --vanilla -e 'devtools::test()'`
+  **1301 pass / 0 fail / 0 warn / 58 skip**;
+  `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
+  `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false
+  Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual",
+  error_on = "never")'` **0 errors / 0 warnings / 0 notes**.

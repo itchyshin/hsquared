@@ -32,3 +32,17 @@ Run handoff packets:
   BLUPF90-family host requirements, file-generation command, run commands,
   result fields, proposed review bands, and reporting boundary for the next
   executable-backed multivariate comparator run. It is a protocol, not evidence.
+
+For BLUPF90-family multivariate runs, attach a sanitized companion CSV when
+possible with these columns:
+
+- `quantity`
+- `target`
+- `estimate`
+- `difference`
+- `tolerance`
+- `verdict`
+
+The internal R ingester validates that table shape and the required core
+quantities (`G`, `R`, and per-trait h2), but it is a review aid only. It does not
+parse raw BLUPF90 logs and does not turn a protocol into comparator evidence.

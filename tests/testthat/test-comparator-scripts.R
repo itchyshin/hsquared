@@ -142,3 +142,98 @@ test_that("manual BLUPF90 comparator script has dry-run and write modes", {
   expect_true(any(grepl("multivariate-animal.dat", renf90, fixed = TRUE)))
   expect_true(any(grepl("multivariate-animal.ped", par, fixed = TRUE)))
 })
+
+test_that("BLUPF90 multivariate summary ingester validates synthetic reports", {
+  skip_if_not_installed("withr")
+  path <- withr::local_tempfile(fileext = ".csv")
+  summary <- data.frame(
+    quantity = c(
+      "G[1,1]",
+      "G[1,2]",
+      "G[2,2]",
+      "R[1,1]",
+      "R[1,2]",
+      "R[2,2]",
+      "h2 trait 1",
+      "h2 trait 2",
+      "EBV correlation trait 1",
+      "EBV correlation trait 2"
+    ),
+    target = c(1, 0.2, 1.5, 0.7, 0.1, 0.8, 0.58, 0.65, NA, NA),
+    estimate = c(
+      1.0001,
+      0.2001,
+      1.4999,
+      0.7001,
+      0.1001,
+      0.8001,
+      0.5801,
+      0.6499,
+      0.9995,
+      0.9994
+    ),
+    difference = c(rep(0.0001, 8), NA, NA),
+    tolerance = c(rep(0.001, 8), NA, NA),
+    verdict = rep("pass", 10),
+    stringsAsFactors = FALSE
+  )
+  utils::write.csv(summary, path, row.names = FALSE)
+
+  parsed <- hs_read_blupf90_multivariate_summary(path)
+  expect_s3_class(parsed, "hs_blupf90_multivariate_summary")
+  expect_equal(parsed$quantity[[1]], "G[1,1]")
+  expect_true(is.numeric(parsed$estimate))
+
+  verdict <- hs_validate_blupf90_multivariate_summary(parsed)
+  expect_s3_class(verdict, "hs_blupf90_multivariate_summary_validation")
+  expect_true(verdict$ok)
+  expect_equal(verdict$n_failed, 0L)
+  expect_equal(verdict$n_review, 0L)
+})
+
+test_that("BLUPF90 multivariate summary ingester rejects incomplete reports", {
+  skip_if_not_installed("withr")
+  path <- withr::local_tempfile(fileext = ".csv")
+  missing_verdict <- data.frame(
+    quantity = "G[1,1]",
+    target = 1,
+    estimate = 1,
+    difference = 0,
+    tolerance = 0.001
+  )
+  utils::write.csv(missing_verdict, path, row.names = FALSE)
+
+  expect_error(
+    hs_read_blupf90_multivariate_summary(path),
+    "missing required columns"
+  )
+})
+
+test_that("BLUPF90 multivariate summary validation keeps blockers explicit", {
+  skip_if_not_installed("withr")
+  path <- withr::local_tempfile(fileext = ".csv")
+  summary <- data.frame(
+    quantity = c(
+      "G[1,2]",
+      "G[2,2]",
+      "R[1,1]",
+      "R[1,2]",
+      "R[2,2]",
+      "h2 trait 1",
+      "h2 trait 2"
+    ),
+    target = 1,
+    estimate = 1,
+    difference = 0,
+    tolerance = 0.001,
+    verdict = c(rep("pass", 6), "review")
+  )
+  utils::write.csv(summary, path, row.names = FALSE)
+
+  parsed <- hs_read_blupf90_multivariate_summary(path)
+  verdict <- hs_validate_blupf90_multivariate_summary(parsed)
+
+  expect_false(verdict$ok)
+  expect_true("G[1,1]" %in% verdict$missing_quantities)
+  expect_true("h2 trait 2" %in% verdict$review_quantities)
+})
