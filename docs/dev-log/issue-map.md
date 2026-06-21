@@ -37,7 +37,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 23 | Bridge: post-fit `gwas()`/scan wrapper | 5 | bridge | partial · **blocked** | twin #45; Phase 5 engine landed (PR #36) — now gated on post-fit scan payload + thresholds |
 | 24 | Innovation: augmented AI-REML single-solve (Strandén 2024) | 8 | innovation/perf | planned | engine-led; twin #58; scout note |
 | 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
-| — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | planned | Candidate A Big 3 slice; R syntax reserves `metafounder(..., group =, Gamma =)` and `docs/design/27-metafounder-single-step-contract.md` pins the future payload; no R bridge/extractor/comparator evidence yet |
+| — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | partial | Candidate A Big 3 slice; R syntax reserves `metafounder(..., group =, Gamma =)`, and `single_step(..., group =, Gamma =)` now validates/builds the contract-only supplied-`Gamma` `H^Gamma` payload; no live R fit, extractor, or comparator evidence yet |
 
 ## HSquared.jl (twin engine) — open
 

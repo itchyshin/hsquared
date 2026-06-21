@@ -55,6 +55,7 @@ Current bridge-payload notes:
 genomic(1 | id, Ginv = Ginv)
 single_step(1 | id, Hinv = Hinv)
 single_step(1 | id, pedigree = ped, markers = M)
+single_step(1 | id, pedigree = ped, markers = M, group = group, Gamma = Gamma)
 metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)
 permanent(1 | id)
 common_env(1 | litter)
@@ -72,10 +73,13 @@ precision(1 | id, Q = custom_Q)
 
 Some later markers are now opt-in experimental (`genomic()`, the supplied-`Hinv`
 and constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and
-`maternal_genetic()` in their gated targets). `metafounder()` is reserved as a
-contract-only syntax for a supplied `Gamma` matrix and animal-to-metafounder
-`group` labels; it still errors explicitly as planned, not implemented. None of
-the later markers changes the default v0.1 animal-model fit path.
+`maternal_genetic()` in their gated targets). `single_step(..., group =, Gamma =)`
+is parsed only as a contract-only supplied-`Gamma` `H^Gamma` payload gate; the
+future `target = "metafounder_single_step"` fit is recognized but not wired.
+`metafounder()` is reserved as a contract-only syntax for a supplied `Gamma`
+matrix and animal-to-metafounder `group` labels; it still errors explicitly as
+planned, not implemented. None of the later markers changes the default v0.1
+animal-model fit path.
 
 ## Later Covariance Grammar
 

@@ -17,6 +17,8 @@ single_step(
   Hinv = NULL,
   pedigree = NULL,
   markers = NULL,
+  group = NULL,
+  Gamma = NULL,
   tau = 1,
   omega = 1,
   blend_weight = 0,
@@ -47,6 +49,13 @@ precomputed \code{Hinv}.}
 for the single-step construction path; the engine builds the genomic
 relationship from it.}
 
+\item{group}{Animal-to-metafounder group labels for the future \code{H^Gamma}
+single-step path; must be supplied together with \code{Gamma}.}
+
+\item{Gamma}{A supplied metafounder relationship matrix for the future
+\code{H^Gamma} single-step path; supplied, not estimated, and must be supplied
+together with \code{group}.}
+
 \item{tau, omega, blend_weight, ridge}{Single-step construction tuning knobs
 (Aguilar et al. 2010); defaults \code{tau = omega = 1}, \code{blend_weight = ridge = 0}.}
 
@@ -76,10 +85,13 @@ or \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
 \code{target = "snp_blup"}), and \code{single_step(1 | id, Hinv = Hinv)} (a precomputed
 inverse) or \code{single_step(1 | id, pedigree = ped, markers = M)} (the engine
 constructs \code{H^-1} from the pedigree + genotyped-subset markers via
-\code{target = "single_step_construct"}). When \code{data} is an \code{\link[=hs_data]{hs_data()}} container
-that bundles a pedigree and genotypes, \code{single_step(1 | id)} resolves both from
-the bundle (the \code{animal(1 | id)} precedent), so neither \verb{pedigree =} nor
-\verb{markers =} is required; explicit arguments override the bundle. The remaining
-markers (\code{markers()}, \code{marker_scan()}, \code{qtl_scan()}) are still inert syntax
-reservations that the parser rejects with a planned-not-implemented message.
+\code{target = "single_step_construct"}). Adding \code{group} plus supplied \code{Gamma}
+validates a contract-only \code{H^Gamma} payload gate for the future
+\code{target = "metafounder_single_step"} path; the live Julia fit is not wired yet.
+When \code{data} is an \code{\link[=hs_data]{hs_data()}} container that bundles a pedigree and genotypes,
+\code{single_step(1 | id)} resolves both from the bundle (the \code{animal(1 | id)}
+precedent), so neither \verb{pedigree =} nor \verb{markers =} is required; explicit
+arguments override the bundle. The remaining markers (\code{markers()},
+\code{marker_scan()}, \code{qtl_scan()}) are still inert syntax reservations that the
+parser rejects with a planned-not-implemented message.
 }

@@ -110,6 +110,188 @@ test_that("single_step construction accepts ungenotyped phenotyped animals", {
   expect_false(any(c(1L, 2L) %in% ss$genotyped_rows))
 })
 
+test_that("single_step H^Gamma payload aligns group, Gamma, and genotyped_rows", {
+  ped <- data.frame(
+    id = c("c1", "s", "d", "c2", "c3"),
+    sire = c("s", NA, NA, "s", "s"),
+    dam = c("d", NA, NA, "d", "d"),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(
+    y = c(1.1, 2.2, 3.0, 2.5, 1.8),
+    id = c("c1", "s", "d", "c2", "c3"),
+    stringsAsFactors = FALSE
+  )
+  m <- matrix(
+    c(0, 1, 2, 2, 1, 0, 1, 1, 1, 0, 2, 1),
+    nrow = 3,
+    byrow = TRUE,
+    dimnames = list(c("c3", "c1", "c2"), paste0("m", 1:4))
+  )
+  mf_group <- c(c1 = "", s = "base_s", d = "base_d", c2 = "", c3 = "")
+  Gamma <- matrix(
+    c(0.30, 0.05, 0.05, 0.25),
+    nrow = 2,
+    dimnames = list(c("base_d", "base_s"), c("base_d", "base_s"))
+  )
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ single_step(
+      1 | id,
+      pedigree = ped,
+      markers = m,
+      group = mf_group,
+      Gamma = Gamma,
+      ridge = 0.01
+    ),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  ss <- spec$random$single_step
+  expect_equal(ss$source, "metafounder_construct")
+  expect_equal(ss$relationship, "metafounder_single_step")
+  expect_equal(ss$ids, c("s", "d", "c1", "c2", "c3"))
+  expect_equal(unname(ss$group_of), c("base_s", "base_d", "", "", ""))
+  expect_equal(ss$gamma_labels, c("base_s", "base_d"))
+  expect_equal(ss$Gamma, matrix(c(0.25, 0.05, 0.05, 0.30), nrow = 2))
+  expect_equal(ss$genotyped_rows, c(3L, 4L, 5L))
+  expect_equal(ss$ids[ss$genotyped_rows], rownames(ss$markers))
+  expect_match(
+    spec$bridge$target,
+    "fit_metafounder_single_step_reml",
+    fixed = TRUE
+  )
+
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  expect_equal(payload$relationship_source, "metafounder_single_step")
+  expect_equal(payload$relationship, "metafounder_single_step")
+  expect_equal(payload$group_of, ss$group_of)
+  expect_equal(payload$Gamma, ss$Gamma)
+  expect_equal(payload$gamma_labels, c("base_s", "base_d"))
+  expect_equal(payload$metadata$gamma_source, "supplied")
+  expect_equal(payload$metadata$n_genotyped, 3L)
+  expect_match(
+    payload$metadata$julia_fit_target,
+    "fit_metafounder_single_step_reml",
+    fixed = TRUE
+  )
+})
+
+test_that("single_step H^Gamma payload rejects malformed group and Gamma", {
+  ped <- data.frame(
+    id = c("c1", "s", "d"),
+    sire = c("s", NA, NA),
+    dam = c("d", NA, NA),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
+  m <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  mf_group <- c(c1 = "", s = "base_s", d = "base_d")
+  Gamma <- diag(2)
+  dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "requires both `group` and `Gamma`",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = c(c1 = "", s = "base_s"),
+        Gamma = Gamma
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "missing pedigree id",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = c(c1 = "", s = "base_s", d = ""),
+        Gamma = Gamma
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "non-missing labels",
+    fixed = TRUE
+  )
+  bad_gamma <- matrix(c(1, 0, 0, 1, 0, 0), nrow = 2)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group,
+        Gamma = bad_gamma
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "Gamma` must be square",
+    fixed = TRUE
+  )
+  bad_names <- Gamma
+  dimnames(bad_names) <- list(c("base_s", "ghost"), c("base_s", "ghost"))
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group,
+        Gamma = bad_names
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "dimnames must match",
+    fixed = TRUE
+  )
+  bad_psd <- matrix(c(1, 2, 2, 1), nrow = 2)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group,
+        Gamma = bad_psd
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "positive semidefinite",
+    fixed = TRUE
+  )
+})
+
 test_that("single_step construction rejects malformed inputs", {
   ped <- data.frame(
     id = c("c1", "s", "d"),
@@ -347,6 +529,76 @@ test_that("single_step construction errors direct to the on-ramps", {
       REML = TRUE
     ),
     "construct one"
+  )
+})
+
+test_that("metafounder_single_step target is recognized but not fit-wired", {
+  expect_equal(
+    hsquared:::hs_validate_julia_target("metafounder_single_step"),
+    "metafounder_single_step"
+  )
+
+  ped <- data.frame(
+    id = c("c1", "s", "d"),
+    sire = c("s", NA, NA),
+    dam = c("d", NA, NA),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
+  m <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  mf_group <- c(c1 = "", s = "base_s", d = "base_d")
+  Gamma <- diag(2)
+  dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))
+
+  expect_error(
+    hsquared(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group,
+        Gamma = Gamma
+      ),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "metafounder_single_step")
+      )
+    ),
+    "contract-only payload gate",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared(
+      y ~ single_step(1 | id, pedigree = ped, markers = m),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "metafounder_single_step")
+      )
+    ),
+    "requires `single_step",
+    fixed = TRUE
+  )
+
+  expect_error(
+    hsquared(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group,
+        Gamma = Gamma
+      ),
+      data = dat,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "single_step_construct")
+      )
+    ),
+    "not the ordinary",
+    fixed = TRUE
   )
 })
 

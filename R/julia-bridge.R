@@ -2186,6 +2186,7 @@ hs_validate_julia_target <- function(target) {
         "genomic",
         "single_step",
         "single_step_construct",
+        "metafounder_single_step",
         "snp_blup",
         "multivariate",
         "random_regression",
@@ -2196,8 +2197,8 @@ hs_validate_julia_target <- function(target) {
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
       "\"two_effect\", \"genomic\", \"single_step\", \"single_step_construct\", ",
-      "\"snp_blup\", \"multivariate\", \"random_regression\", or ",
-      "\"nongaussian\".",
+      "\"metafounder_single_step\", \"snp_blup\", \"multivariate\", ",
+      "\"random_regression\", or \"nongaussian\".",
       call. = FALSE
     )
   }
@@ -2283,7 +2284,11 @@ hs_effect_targets <- function(type) {
     common_env = "two_effect",
     maternal_genetic = "two_effect",
     genomic = c("genomic", "snp_blup"),
-    single_step = c("single_step", "single_step_construct"),
+    single_step = c(
+      "single_step",
+      "single_step_construct",
+      "metafounder_single_step"
+    ),
     stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }

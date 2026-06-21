@@ -10,12 +10,15 @@
 #' `target = "snp_blup"`), and `single_step(1 | id, Hinv = Hinv)` (a precomputed
 #' inverse) or `single_step(1 | id, pedigree = ped, markers = M)` (the engine
 #' constructs `H^-1` from the pedigree + genotyped-subset markers via
-#' `target = "single_step_construct"`). When `data` is an [hs_data()] container
-#' that bundles a pedigree and genotypes, `single_step(1 | id)` resolves both from
-#' the bundle (the `animal(1 | id)` precedent), so neither `pedigree =` nor
-#' `markers =` is required; explicit arguments override the bundle. The remaining
-#' markers (`markers()`, `marker_scan()`, `qtl_scan()`) are still inert syntax
-#' reservations that the parser rejects with a planned-not-implemented message.
+#' `target = "single_step_construct"`). Adding `group` plus supplied `Gamma`
+#' validates a contract-only `H^Gamma` payload gate for the future
+#' `target = "metafounder_single_step"` path; the live Julia fit is not wired yet.
+#' When `data` is an [hs_data()] container that bundles a pedigree and genotypes,
+#' `single_step(1 | id)` resolves both from the bundle (the `animal(1 | id)`
+#' precedent), so neither `pedigree =` nor `markers =` is required; explicit
+#' arguments override the bundle. The remaining markers (`markers()`,
+#' `marker_scan()`, `qtl_scan()`) are still inert syntax reservations that the
+#' parser rejects with a planned-not-implemented message.
 #'
 #' @param formula A random-effect expression such as `1 | id`.
 #' @param G,Ginv,H,Hinv Relationship or precision matrices for future genomic
@@ -47,6 +50,11 @@ genomic <- function(formula, G = NULL, Ginv = NULL, ...) {
 #' @param markers A genotyped-subset marker matrix (rows named by genotyped id)
 #'   for the single-step construction path; the engine builds the genomic
 #'   relationship from it.
+#' @param group Animal-to-metafounder group labels for the future `H^Gamma`
+#'   single-step path; must be supplied together with `Gamma`.
+#' @param Gamma A supplied metafounder relationship matrix for the future
+#'   `H^Gamma` single-step path; supplied, not estimated, and must be supplied
+#'   together with `group`.
 #' @param tau,omega,blend_weight,ridge Single-step construction tuning knobs
 #'   (Aguilar et al. 2010); defaults `tau = omega = 1`, `blend_weight = ridge = 0`.
 #' @export
@@ -56,6 +64,8 @@ single_step <- function(
   Hinv = NULL,
   pedigree = NULL,
   markers = NULL,
+  group = NULL,
+  Gamma = NULL,
   tau = 1,
   omega = 1,
   blend_weight = 0,

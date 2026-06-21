@@ -76,6 +76,10 @@ hs_formula_status_terms <- function() {
     "genomic(1 | id, markers = M)",
     "single_step(1 | id, Hinv = Hinv)",
     "single_step(1 | id, pedigree = ped, markers = M)",
+    paste0(
+      "single_step(1 | id, pedigree = ped, markers = M, group = group, ",
+      "Gamma = Gamma)"
+    ),
     "markers(M, model = \"random\")",
     "marker_scan(M, map = marker_map)",
     "qtl_scan(position, genotype_probs = probs)",
@@ -92,7 +96,7 @@ hs_formula_status_categories <- function() {
     rep("v0.1 animal model", 2L),
     rep("standard quantitative genetics", 11L),
     rep("inheritance and relationship kernels", 6L),
-    rep("genomic and marker models", 7L),
+    rep("genomic and marker models", 8L),
     rep("multivariate and factor analytic", 5L)
   )
 }
@@ -102,7 +106,7 @@ hs_formula_status_phases <- function() {
     rep("Phase 1", 2L),
     rep("Phase 2", 11L),
     rep("Phase 3+", 6L),
-    rep("Phase 5", 7L),
+    rep("Phase 5", 8L),
     rep("Phase 3-4", 5L)
   )
 }
@@ -111,7 +115,7 @@ hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 6L),
     rep("reserved", 13L),
-    rep("parsed", 4L),
+    rep("parsed", 5L),
     rep("reserved", 3L),
     "parsed",
     rep("planned", 4L)
@@ -130,6 +134,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
+    "not available (contract-only payload)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
     rep("not available", 4L)
@@ -204,6 +209,13 @@ hs_formula_status_behavior <- function() {
       "requires `pedigree` + `markers` or an hs_data() bundle carrying both, and",
       "engine = \"julia\", target = \"single_step_construct\". The engine builds",
       "H^-1 from pedigree and genotyped-subset markers at validation scale."
+    ),
+    paste(
+      "Parsed as a contract-only payload gate for supplied-Gamma single-step",
+      "H^Gamma; validates ID-keyed metafounder `group`, supplied symmetric",
+      "positive-semidefinite `Gamma`, marker ordering, and `genotyped_rows`.",
+      "The live `target = \"metafounder_single_step\"` fit is planned, not",
+      "wired."
     ),
     rep(inert_marker_text, 3L),
     paste(

@@ -169,9 +169,11 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
 
   # single_step CONSTRUCTION payload: carry the pedigree (id/sire/dam -> Ainv, A),
   # the genotyped-subset markers (-> G), the genotyped_rows alignment, and the
-  # construction knobs. The engine assembles H^-1 and fits via fit_single_step_reml.
-  if (identical(source, "construct")) {
+  # construction knobs. The metafounder variant additionally carries group_of +
+  # Gamma, but remains a payload gate until the live bridge is wired.
+  if (source %in% c("construct", "metafounder_construct")) {
     ped <- primary$pedigree$data
+    is_metafounder <- identical(source, "metafounder_construct")
     return(structure(
       list(
         y = as.numeric(spec$response$values),
@@ -185,13 +187,20 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
         markers = unname(as.matrix(primary$markers)),
         marker_names = colnames(primary$markers),
         genotyped_rows = primary$genotyped_rows,
+        group_of = primary$group_of,
+        Gamma = primary$Gamma,
+        gamma_labels = primary$gamma_labels,
         single_step = list(
           tau = primary$tau,
           omega = primary$omega,
           blend_weight = primary$blend_weight,
           ridge = primary$ridge
         ),
-        relationship_source = "construct",
+        relationship_source = if (is_metafounder) {
+          "metafounder_single_step"
+        } else {
+          "construct"
+        },
         relationship = primary$relationship,
         method = spec$method,
         family = spec$family$family,
@@ -209,6 +218,7 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
           contrasts = spec$fixed$contrasts,
           relationship = primary$relationship,
           n_genotyped = length(primary$genotyped_rows),
+          gamma_source = if (is_metafounder) "supplied" else NULL,
           julia_fit_target = paste0("HSquared.", spec$bridge$target)
         )
       ),

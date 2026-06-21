@@ -185,7 +185,12 @@ hs_build_model_spec <- function(
   random <- list()
   random[[primary_type]] <- primary_spec
   bridge_target <- if (primary_type %in% c("genomic", "single_step")) {
-    if (identical(primary_spec$source, "construct")) {
+    if (identical(primary_spec$source, "metafounder_construct")) {
+      paste0(
+        "fit_metafounder_single_step_reml(y, X, Z, pedigree, ",
+        "group_of, Gamma, G, genotyped_rows; method = :REML)"
+      )
+    } else if (identical(primary_spec$source, "construct")) {
       paste0(
         "fit_single_step_reml(y, X, Z, Ainv, A, G, genotyped_rows; ",
         "method = :REML)"
@@ -1376,6 +1381,8 @@ hs_parse_single_step_construct <- function(
   accepted <- c(
     "pedigree",
     "markers",
+    "group",
+    "Gamma",
     "tau",
     "omega",
     "blend_weight",
@@ -1459,6 +1466,17 @@ hs_parse_single_step_construct <- function(
   genotyped_rows <- ped_pos[ord]
   markers <- markers[ord, , drop = FALSE]
 
+  has_metafounder_group <- "group" %in% names(named_args)
+  has_gamma <- "Gamma" %in% names(named_args)
+  if (xor(has_metafounder_group, has_gamma)) {
+    stop(
+      "`single_step()` H^Gamma construction requires both `group` and ",
+      "`Gamma` together: `single_step(1 | id, pedigree = ped, markers = M, ",
+      "group = mf_group, Gamma = Gamma)`.",
+      call. = FALSE
+    )
+  }
+
   knob <- function(name, default) {
     if (is.null(named_args[[name]])) {
       return(default)
@@ -1475,9 +1493,25 @@ hs_parse_single_step_construct <- function(
     value
   }
 
+  group_of <- NULL
+  Gamma <- NULL
+  gamma_labels <- NULL
+  relationship <- "single_step"
+  source <- "construct"
+  if (has_metafounder_group) {
+    group_of <- hs_eval_metafounder_group(named_args$group, data, env)
+    group_of <- hs_validate_metafounder_group(group_of, pedigree)
+    gamma <- hs_eval_metafounder_gamma(named_args$Gamma, data, env)
+    gamma <- hs_validate_metafounder_gamma(gamma, group_of, pedigree)
+    Gamma <- gamma$Gamma
+    gamma_labels <- gamma$labels
+    relationship <- "metafounder_single_step"
+    source <- "metafounder_construct"
+  }
+
   list(
     type = "single_step",
-    source = "construct",
+    source = source,
     term = hs_deparse(call),
     design = "intercept",
     group = group,
@@ -1486,13 +1520,198 @@ hs_parse_single_step_construct <- function(
     pedigree = pedigree,
     markers = markers,
     genotyped_rows = genotyped_rows,
+    group_of = group_of,
+    Gamma = Gamma,
+    gamma_labels = gamma_labels,
     tau = knob("tau", 1),
     omega = knob("omega", 1),
     blend_weight = knob("blend_weight", 0),
     ridge = knob("ridge", 0),
-    relationship = "single_step",
+    relationship = relationship,
     covariance = "scalar"
   )
+}
+
+hs_eval_metafounder_group <- function(expr, data, env) {
+  tryCatch(
+    eval(expr, envir = data, enclos = env),
+    error = function(err) {
+      stop(
+        "Could not evaluate `single_step()` metafounder `group = ",
+        hs_deparse(expr),
+        "`. Provide an ID-named vector of metafounder group labels.",
+        call. = FALSE
+      )
+    }
+  )
+}
+
+hs_eval_metafounder_gamma <- function(expr, data, env) {
+  tryCatch(
+    eval(expr, envir = data, enclos = env),
+    error = function(err) {
+      stop(
+        "Could not evaluate `single_step()` `Gamma = ",
+        hs_deparse(expr),
+        "`. Provide a supplied metafounder relationship matrix.",
+        call. = FALSE
+      )
+    }
+  )
+}
+
+hs_validate_metafounder_group <- function(group_of, pedigree) {
+  ped_ids <- pedigree$ids
+  if (is.data.frame(group_of)) {
+    nms <- names(group_of)
+    id_col <- intersect(c("id", "animal"), nms)
+    group_col <- intersect(c("group", "metafounder", "mf_group"), nms)
+    if (length(id_col) == 0L || length(group_col) == 0L) {
+      stop(
+        "`single_step()` metafounder `group` data frames must contain an ",
+        "`id` (or `animal`) column and a `group` column.",
+        call. = FALSE
+      )
+    }
+    ids <- as.character(group_of[[id_col[[1L]]]])
+    values <- group_of[[group_col[[1L]]]]
+    names(values) <- ids
+    group_of <- values
+  }
+  if (is.matrix(group_of) || length(dim(group_of)) > 1L) {
+    stop(
+      "`single_step()` metafounder `group` must be a vector or data frame, ",
+      "not a matrix.",
+      call. = FALSE
+    )
+  }
+  values <- as.character(group_of)
+  names_in <- names(group_of)
+  if (is.null(names_in) || anyNA(names_in) || any(!nzchar(names_in))) {
+    stop(
+      "`single_step()` metafounder `group` must be named by pedigree IDs so ",
+      "it can be reordered to normalized pedigree order.",
+      call. = FALSE
+    )
+  }
+  if (anyDuplicated(names_in)) {
+    dup <- unique(names_in[duplicated(names_in)])[1L]
+    stop(
+      "`single_step()` metafounder `group` has duplicated id `",
+      dup,
+      "`.",
+      call. = FALSE
+    )
+  }
+  missing_ids <- setdiff(ped_ids, names_in)
+  if (length(missing_ids) > 0L) {
+    shown <- missing_ids[seq_len(min(5L, length(missing_ids)))]
+    stop(
+      "`single_step()` metafounder `group` is missing pedigree id(s): ",
+      paste(sprintf("`%s`", shown), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+  extra_ids <- setdiff(names_in, ped_ids)
+  if (length(extra_ids) > 0L) {
+    shown <- extra_ids[seq_len(min(5L, length(extra_ids)))]
+    stop(
+      "`single_step()` metafounder `group` includes id(s) not in the ",
+      "normalized pedigree: ",
+      paste(sprintf("`%s`", shown), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+  aligned <- values[match(ped_ids, names_in)]
+  needs <- is.na(pedigree$data$sire) | is.na(pedigree$data$dam)
+  bad_needed <- needs & (is.na(aligned) | !nzchar(aligned))
+  if (any(bad_needed)) {
+    shown <- ped_ids[bad_needed][seq_len(min(5L, sum(bad_needed)))]
+    stop(
+      "`single_step()` metafounder `group` must provide non-missing labels ",
+      "for animals with unknown parents. Missing label(s): ",
+      paste(sprintf("`%s`", shown), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+  aligned[is.na(aligned)] <- ""
+  names(aligned) <- ped_ids
+  aligned
+}
+
+hs_validate_metafounder_gamma <- function(Gamma, group_of, pedigree) {
+  Gamma <- as.matrix(Gamma)
+  if (!is.numeric(Gamma)) {
+    stop("`single_step()` `Gamma` must be a numeric matrix.", call. = FALSE)
+  }
+  if (nrow(Gamma) != ncol(Gamma)) {
+    stop("`single_step()` `Gamma` must be square.", call. = FALSE)
+  }
+  if (!all(is.finite(Gamma))) {
+    stop(
+      "`single_step()` `Gamma` must contain only finite values.",
+      call. = FALSE
+    )
+  }
+  if (!isTRUE(all.equal(Gamma, t(Gamma), tolerance = 1e-10))) {
+    stop("`single_step()` `Gamma` must be symmetric.", call. = FALSE)
+  }
+  needs <- is.na(pedigree$data$sire) | is.na(pedigree$data$dam)
+  labels <- unique(unname(group_of[needs]))
+  labels <- labels[nzchar(labels)]
+  if (length(labels) == 0L) {
+    stop(
+      "`single_step()` metafounder `group` resolved no unknown-parent ",
+      "metafounder labels.",
+      call. = FALSE
+    )
+  }
+  if (nrow(Gamma) != length(labels)) {
+    stop(
+      "`single_step()` `Gamma` must have one row/column per resolved ",
+      "metafounder group (",
+      length(labels),
+      "); got ",
+      nrow(Gamma),
+      ".",
+      call. = FALSE
+    )
+  }
+  rn <- rownames(Gamma)
+  cn <- colnames(Gamma)
+  if (!is.null(rn) || !is.null(cn)) {
+    if (is.null(rn) || is.null(cn) || !identical(rn, cn)) {
+      stop(
+        "`single_step()` `Gamma` row names and column names must match.",
+        call. = FALSE
+      )
+    }
+    if (anyDuplicated(rn)) {
+      stop("`single_step()` `Gamma` group names must be unique.", call. = FALSE)
+    }
+    missing_labels <- setdiff(labels, rn)
+    extra_labels <- setdiff(rn, labels)
+    if (length(missing_labels) > 0L || length(extra_labels) > 0L) {
+      stop(
+        "`single_step()` `Gamma` dimnames must match the resolved ",
+        "metafounder group labels.",
+        call. = FALSE
+      )
+    }
+    Gamma <- Gamma[labels, labels, drop = FALSE]
+  }
+  ev <- eigen(Gamma, symmetric = TRUE, only.values = TRUE)$values
+  scale <- max(1, max(abs(Gamma)))
+  if (min(ev) < -1e-10 * scale) {
+    stop(
+      "`single_step()` `Gamma` must be positive semidefinite.",
+      call. = FALSE
+    )
+  }
+  list(Gamma = unname(Gamma), labels = labels)
 }
 
 hs_eval_genomic_ginv <- function(expr, data, env, what = "Ginv") {
