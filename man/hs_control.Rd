@@ -86,14 +86,14 @@ paths that fit a single effect whose relationship is a user-supplied inverse:
 genomic relationship), and \code{single_step(1 | id, Hinv = Hinv)} (a single-step
 relationship inverse). All surface \code{HSquared.fit_ai_reml()}. They are REML
 only and not the default.
-\code{target = "snp_blup"} is an experimental, opt-in, supplied-variance path for
-the SNP-BLUP / RR-BLUP marker-effect model. It requires
-\code{genomic(1 | id, markers = M)} (a raw marker matrix) and
-\code{variance_components} with named \code{sigma_g2} (genomic) and \code{sigma_e2}
-(residual) values, and surfaces the Julia-owned \code{HSquared.fit_snp_blup()}.
-It estimates per-marker effects (\code{marker_effects()}) and per-individual
-genomic breeding values at the supplied variances; it does not estimate the
-variance components and is not the default.
+\code{target = "snp_blup"} is an experimental, opt-in path for the SNP-BLUP /
+RR-BLUP marker-effect model. It requires \code{genomic(1 | id, markers = M)} (a
+raw marker matrix) and estimates per-marker effects (\code{marker_effects()}) and
+per-individual genomic breeding values. \code{variance_components} is \strong{optional}:
+supply named \code{sigma_g2} (genomic) and \code{sigma_e2} (residual) for a
+supplied-variance solve (\code{HSquared.fit_snp_blup()}), or omit them to have
+\code{hsquared()} \strong{estimate} \code{sigma_g2}/\code{sigma_e2} by REML from the markers
+(\code{HSquared.fit_snp_blup_reml()}). Not the default.
 \code{target = "multivariate"} is an experimental, opt-in path for the
 multivariate Gaussian animal model. It requires a
 \code{cbind(trait1, trait2, ...)} response with \code{animal(1 | id, pedigree = ped)},

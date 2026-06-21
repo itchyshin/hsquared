@@ -47,7 +47,7 @@ hs_validation_status_capabilities <- function() {
     "experimental repeatability estimator (opt-in)",
     "experimental two-effect estimator (opt-in: common-env, maternal)",
     "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
-    "experimental SNP-BLUP marker-effect solve (opt-in, supplied-variance)",
+    "experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)",
     "experimental multivariate REML estimator (opt-in)",
     "univariate Gaussian animal-model fit (default path, AI-REML)",
     "external published-REML recovery (gryphon, R reference)",
@@ -160,14 +160,17 @@ hs_validation_status_evidence <- function() {
       "yet surface that construction (R surfacing pending)."
     ),
     paste(
-      "Pure-R control/validator tests plus a skip-guarded live test running Julia",
-      "fit_snp_blup() through the opt-in target = \"snp_blup\" bridge on",
-      "`genomic(1 | id, markers = M)` at supplied variances (sigma_g2, sigma_e2);",
-      "the engine centers the markers, solves the RR-BLUP/SNP-BLUP marker model,",
-      "and returns per-marker effects (marker_effects()), per-individual genomic",
-      "breeding values, and fixed effects; fit provenance tagged",
-      "variance_components_source = \"supplied\". Mirrors the twin V2-SNPBLUP gate",
-      "(partial), whose pinned property is the GBLUP<->SNP-BLUP GEBV equivalence."
+      "Pure-R control/validator tests plus skip-guarded live tests running Julia",
+      "through the opt-in target = \"snp_blup\" bridge on",
+      "`genomic(1 | id, markers = M)`: with supplied variances (sigma_g2,",
+      "sigma_e2) it runs fit_snp_blup() (provenance variance_components_source =",
+      "\"supplied\"); with variances omitted it runs fit_snp_blup_reml(), which",
+      "ESTIMATES sigma_g2/sigma_e2 by REML (provenance \"estimated_snp_blup_reml\",",
+      "live-verified to match a direct fit_snp_blup_reml call). The engine centers",
+      "the markers, solves the RR-BLUP/SNP-BLUP marker model, and returns",
+      "per-marker effects (marker_effects()), per-individual genomic breeding",
+      "values, and fixed effects. Mirrors the twin V2-SNPBLUP gate (partial),",
+      "whose pinned property is the GBLUP<->SNP-BLUP GEBV equivalence."
     ),
     paste(
       "Pure-R parser/validator tests plus skip-guarded live bridge tests for the",
@@ -279,13 +282,12 @@ hs_validation_status_boundaries <- function() {
       "planned. Not the default, not ML, not production or comparator-validated."
     ),
     paste(
-      "Experimental opt-in path only; Julia-owned supplied-variance marker model",
-      "(fit_snp_blup) that R surfaces; mirrors the twin V2-SNPBLUP gate (partial).",
-      "Supplied-variance VanRaden method-1 marker solve only: the user supplies",
-      "sigma_g2 and sigma_e2 (e.g. from a prior GREML fit); REML estimation of the",
-      "marker variance, weighted/Bayesian marker priors, low-rank m>>n Woodbury",
-      "solves, and JWAS/sommer/BLUPF90 comparator parity are planned. Not the",
-      "default, not a variance-component estimation claim, not comparator-validated."
+      "Experimental opt-in path only; Julia-owned VanRaden method-1 marker model",
+      "that R surfaces; mirrors the twin V2-SNPBLUP gate (partial). The user may",
+      "supply sigma_g2 and sigma_e2 (fit_snp_blup), or omit them to ESTIMATE them",
+      "by REML from the markers (fit_snp_blup_reml). Weighted/Bayesian marker",
+      "priors, low-rank m>>n Woodbury solves, and JWAS/sommer/BLUPF90 comparator",
+      "parity are planned. Not the default, not comparator-validated."
     ),
     paste(
       "Experimental opt-in path only; Julia-owned dense/validation-scale",

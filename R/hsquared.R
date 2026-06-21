@@ -203,11 +203,16 @@ hsquared <- function(
     # ML estimation is not implemented in v0.1. The estimation targets either
     # run the ML optimizer (`fit_animal_model`) or are REML-only
     # (`sparse_reml`/`ai_reml`, which would otherwise silently ignore the ML
-    # request). Reject `REML = FALSE` for all of them. `henderson_mme` and
-    # `snp_blup` solve at supplied variances, so their method label is cosmetic
-    # and they are exempt.
-    supplied_variance_targets <- c("henderson_mme", "snp_blup")
-    if (!isTRUE(REML) && !target %in% supplied_variance_targets) {
+    # request). Reject `REML = FALSE` for all of them. `henderson_mme` solves at
+    # supplied variances, so its method label is cosmetic and it is exempt;
+    # `snp_blup` is exempt ONLY when variances are supplied — without them it
+    # genuinely REML-estimates `sigma_g2`/`sigma_e2` (`fit_snp_blup_reml`), so
+    # `REML = FALSE` must not be silently accepted there.
+    snp_blup_supplied <- identical(target, "snp_blup") &&
+      !is.null(hs_engine_control_value(control, "variance_components", NULL))
+    supplied_variance_exempt <- identical(target, "henderson_mme") ||
+      snp_blup_supplied
+    if (!isTRUE(REML) && !supplied_variance_exempt) {
       stop(
         "ML estimation (`REML = FALSE`) is not implemented; the v0.1 fit path ",
         "estimates variance components by REML. Use `REML = TRUE`.",
@@ -422,16 +427,21 @@ hsquared <- function(
           call. = FALSE
         )
       }
-      vc <- hs_validate_snp_blup_variances(
-        hs_engine_control_value(control, "variance_components", NULL)
+      vc_raw <- hs_engine_control_value(control, "variance_components", NULL)
+      project <- hs_engine_control_value(
+        control,
+        "julia_project",
+        hs_default_julia_project()
       )
+      # No supplied variances -> estimate them by REML from the markers; supplied
+      # variances -> the supplied-variance solve (byte-identical to before).
+      if (is.null(vc_raw)) {
+        return(hs_fit_julia_snp_blup_reml_payload(payload, project = project))
+      }
+      vc <- hs_validate_snp_blup_variances(vc_raw)
       return(hs_fit_julia_snp_blup_payload(
         payload,
-        project = hs_engine_control_value(
-          control,
-          "julia_project",
-          hs_default_julia_project()
-        ),
+        project = project,
         variance_components = vc
       ))
     }

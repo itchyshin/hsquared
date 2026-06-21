@@ -5204,3 +5204,33 @@ release".
   `rcmdcheck(args="--no-manual")` **0/0/0**. capability-status + NEWS + doc 21 +
   validation-debt-register + `formula_status()` updated. No engine edit.
 - CI (commit `2322ba4`, binomial counts): pkgdown run `27891149133` **success**; pages green.
+
+## 2026-06-20 (session 6 — REML-estimated SNP-BLUP, closes hsquared#13 build half)
+
+- `genomic(1 | id, markers = M)` with `target = "snp_blup"` and **no supplied
+  variances** now estimates σ²g/σ²e by REML (Julia-owned
+  `HSquared.fit_snp_blup_reml`, exported on twin main `5de0e6a`); supplied
+  variances still use the supplied-variance `fit_snp_blup` path (byte-identical).
+  New `hs_fit_julia_snp_blup_reml_payload`; the shared normalizer gained
+  `provenance`/`converged`/`loglik` params (provenance `estimated_snp_blup_reml`);
+  dispatch routes on whether `variance_components` is NULL.
+- Cross-lane opportunity scout ranked this A2 (#13's genuinely-new half;
+  `fit_gblup_reml` is redundant with the existing GREML `fit_ai_reml`-on-Ginv path).
+- Adversarial verify (Workflow, 5 lenses): Hopper **CLEAN** (bridge marshalling +
+  VC scaling correct). FIX-FIRST on a **real behavioural bug** (B1) + stale
+  honesty surfaces: (B1) the `REML = FALSE` exemption was unconditional for
+  `snp_blup`, so an unsupplied (REML-estimating) snp_blup silently accepted
+  `REML = FALSE` — now exempt only when variances are supplied; (B2) hs_control
+  roxygen + (B3) `validation_status()` label/evidence still said
+  "supplied-variance only / REML planned"; Fisher: the REML path left `df` unset
+  so `AIC`/`BIC` returned NA → set `df = ncol(X) + 2`; Curie: added converged +
+  AIC-finite + estimate≠(1,1)-default assertions. Rose-principle sweep reconciled
+  the model-status, genomic-prediction, fitting-models, qtl-gwas vignettes +
+  `validation-status.R` + the bridge comment.
+- `air`; `devtools::document()` (hs_control.Rd regenerated); pure-R `test-snp-blup`
+  **14/0** (routing test runs off-bridge); **LIVE** `test-snp-blup.R` **37/0/0/1**
+  on the bridge (REML estimates interior σ²g/σ²e; converged; AIC finite; estimate
+  ≠ default; parity vs a direct `fit_snp_blup_reml` to 1e-6; supplied path
+  unchanged); `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")`
+  **0/0/0**. capability-status + NEWS + validation-status + 4 vignettes updated.
+  No engine edit.

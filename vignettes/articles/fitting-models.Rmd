@@ -141,13 +141,13 @@ breeding_values(fit_g)         # GEBVs
 
 ## SNP-BLUP / RR-BLUP marker effects
 
-A supplied-variance marker-effect model on a raw marker matrix
-`genomic(1 | id, markers = M)`. You supply the genomic and residual variances
-(for example from a prior GREML fit); the engine centres the markers and returns
-per-marker effects (`marker_effects()`) together with per-individual genomic
-breeding values. It does not estimate the variance components. REML estimation
-of the marker variance, weighted/Bayesian priors, and comparator parity are
-planned.
+A marker-effect model on a raw marker matrix `genomic(1 | id, markers = M)`. You
+may supply the genomic and residual variances (for example from a prior GREML
+fit); the engine centres the markers and returns per-marker effects
+(`marker_effects()`) together with per-individual genomic breeding values. If you
+omit `variance_components`, `hsquared()` instead **estimates** the genomic and
+residual variances by REML from the markers (`fit_snp_blup_reml`). Weighted /
+Bayesian marker priors and comparator parity are planned.
 
 ```{r}
 fit_snp <- hsquared(

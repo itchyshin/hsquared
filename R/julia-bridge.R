@@ -1726,10 +1726,102 @@ hs_fit_julia_snp_blup_payload <- function(
   )
 }
 
+# Opt-in, experimental REML-estimated SNP-BLUP. Unlike the supplied-variance
+# `hs_fit_julia_snp_blup_payload`, this estimates the genomic and residual
+# variance components from the markers by REML (Julia-owned
+# `HSquared.fit_snp_blup_reml`), so `genomic(1 | id, markers = M)` no longer needs
+# the user to supply `sigma_g2`/`sigma_e2`. Experimental, dense/validation-scale
+# (mirrors the engine row V2-SNPBLUP, partial).
+hs_fit_julia_snp_blup_reml_payload <- function(
+  payload,
+  project = hs_default_julia_project()
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  if (
+    !identical(payload$relationship_source, "markers") ||
+      is.null(payload$markers)
+  ) {
+    stop(
+      "Internal bridge error: SNP-BLUP requires a marker-matrix genomic payload.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  markers_ind <- payload$markers
+  markers_rec <- as.matrix(payload$Z %*% markers_ind)
+
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  JuliaCall::julia_assign("hsq_markers_rec", markers_rec)
+  JuliaCall::julia_assign("hsq_markers_ind", unname(markers_ind))
+  JuliaCall::julia_command(paste(
+    "hsq_snp = HSquared.fit_snp_blup_reml(hsq_y, hsq_X, hsq_markers_rec);",
+    # Per-individual GEBV at the same allele-frequency centering as the fit.
+    "hsq_Wind = HSquared.centered_markers(",
+    "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
+    "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
+    "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
+    "hsq_snp_raw = Dict(",
+    "\"marker_effects\" => hsq_snp.marker_effects,",
+    "\"gebv\" => hsq_gebv_ind,",
+    "\"beta\" => hsq_snp.beta,",
+    "\"p\" => hsq_snp.p,",
+    "\"fitted\" => hsq_fitted,",
+    "\"k\" => hsq_snp.k,",
+    "\"sigma_g2\" => hsq_snp.sigma_g2,",
+    "\"sigma_e2\" => hsq_snp.sigma_e2,",
+    "\"loglik\" => hsq_snp.loglik,",
+    "\"converged\" => hsq_snp.converged,",
+    "\"nobs\" => length(hsq_y)",
+    ");"
+  ))
+
+  raw <- JuliaCall::julia_eval("hsq_snp_raw")
+  estimated_vc <- c(
+    sigma_g2 = as.numeric(raw$sigma_g2),
+    sigma_e2 = as.numeric(raw$sigma_e2)
+  )
+  result <- hs_normalize_julia_snp_blup_result(
+    raw,
+    payload,
+    estimated_vc,
+    provenance = "estimated_snp_blup_reml",
+    converged = isTRUE(raw$converged),
+    loglik = as.numeric(raw$loglik)
+  )
+  # df for AIC/BIC: the fixed effects + the two REML-estimated variance
+  # components (sigma_g2, sigma_e2). The marker effects are random (BLUP), not
+  # free parameters. (The supplied-variance path estimates no VCs, so no df.)
+  result$df <- as.integer(ncol(payload$X) + 2L)
+  hs_new_fit(
+    spec = list(
+      method = "SNP-BLUP-REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "snp_blup"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_normalize_julia_snp_blup_result <- function(
   raw,
   payload,
-  variance_components
+  variance_components,
+  provenance = "supplied",
+  converged = TRUE,
+  loglik = NULL
 ) {
   sigma_g2 <- unname(variance_components[["sigma_g2"]])
   sigma_e2 <- unname(variance_components[["sigma_e2"]])
@@ -1780,13 +1872,20 @@ hs_normalize_julia_snp_blup_result <- function(
     random_effects = list(genomic = genomic_bv),
     predictions = data.frame(.fitted = as.numeric(raw$fitted)),
     nobs = as.integer(raw$nobs),
+    loglik = loglik,
     diagnostics = list(
       target = "snp_blup",
-      variance_components = "supplied",
-      optimizer_status = "not_run",
+      variance_components = provenance,
+      optimizer_status = if (identical(provenance, "supplied")) {
+        "not_run"
+      } else if (isTRUE(converged)) {
+        "converged"
+      } else {
+        "not_converged"
+      },
       n_markers = length(effects)
     ),
-    converged = TRUE
+    converged = isTRUE(converged)
   )
 }
 
@@ -2083,7 +2182,8 @@ hs_validate_genetic_structure_control <- function(control, target) {
 
 # All opt-in engine targets that can fit a given non-default random effect. A
 # genomic marker primary fits either by GREML on the built relationship
-# (`genomic`) or as a supplied-variance marker-effect model (`snp_blup`).
+# (`genomic`) or as a marker-effect model (`snp_blup`; supplied-variance, or
+# REML-estimated when variances are omitted).
 hs_effect_targets <- function(type) {
   switch(
     type,

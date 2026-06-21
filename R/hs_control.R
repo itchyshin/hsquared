@@ -74,14 +74,14 @@
 #'   genomic relationship), and `single_step(1 | id, Hinv = Hinv)` (a single-step
 #'   relationship inverse). All surface `HSquared.fit_ai_reml()`. They are REML
 #'   only and not the default.
-#'   `target = "snp_blup"` is an experimental, opt-in, supplied-variance path for
-#'   the SNP-BLUP / RR-BLUP marker-effect model. It requires
-#'   `genomic(1 | id, markers = M)` (a raw marker matrix) and
-#'   `variance_components` with named `sigma_g2` (genomic) and `sigma_e2`
-#'   (residual) values, and surfaces the Julia-owned `HSquared.fit_snp_blup()`.
-#'   It estimates per-marker effects (`marker_effects()`) and per-individual
-#'   genomic breeding values at the supplied variances; it does not estimate the
-#'   variance components and is not the default.
+#'   `target = "snp_blup"` is an experimental, opt-in path for the SNP-BLUP /
+#'   RR-BLUP marker-effect model. It requires `genomic(1 | id, markers = M)` (a
+#'   raw marker matrix) and estimates per-marker effects (`marker_effects()`) and
+#'   per-individual genomic breeding values. `variance_components` is **optional**:
+#'   supply named `sigma_g2` (genomic) and `sigma_e2` (residual) for a
+#'   supplied-variance solve (`HSquared.fit_snp_blup()`), or omit them to have
+#'   `hsquared()` **estimate** `sigma_g2`/`sigma_e2` by REML from the markers
+#'   (`HSquared.fit_snp_blup_reml()`). Not the default.
 #'   `target = "multivariate"` is an experimental, opt-in path for the
 #'   multivariate Gaussian animal model. It requires a
 #'   `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ped)`,

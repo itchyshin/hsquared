@@ -50,13 +50,21 @@ test_that("snp_blup rejects a supplied-Ginv genomic term (needs raw markers)", {
   )
 })
 
-test_that("snp_blup requires supplied variance components", {
+test_that("snp_blup without supplied variances no longer requires them (routes to REML)", {
+  # This checks the routing OFF-bridge (the old supplied-variance gate is gone, so
+  # the unsupplied path reaches the bridge-availability check, not a "variance
+  # required" error). The successful on-bridge REML fit is covered by the dedicated
+  # live test below.
+  testthat::skip_if(
+    hsquared:::hs_julia_bridge_available(),
+    "on-bridge REML routing is covered by the live REML SNP-BLUP test"
+  )
   ids <- paste0("g", 1:5)
   set.seed(4)
   M <- matrix(stats::rbinom(5 * 20, 2, 0.3), 5, 20)
   rownames(M) <- ids
   dat <- data.frame(y = c(1, 2, 3, 4, 5), id = ids)
-  expect_error(
+  err <- tryCatch(
     hsquared(
       y ~ genomic(1 | id, markers = M),
       data = dat,
@@ -66,9 +74,11 @@ test_that("snp_blup requires supplied variance components", {
         engine_control = list(target = "snp_blup")
       )
     ),
-    "variance_components",
-    fixed = TRUE
+    error = function(e) conditionMessage(e)
   )
+  # not the old supplied-variance gate; the install-guidance error instead
+  expect_false(grepl("variance_components", err, fixed = TRUE))
+  expect_match(err, "Julia bridge|JuliaCall|HSquared.jl")
 })
 
 test_that("snp_blup variance components must be named sigma_g2 / sigma_e2", {
@@ -195,5 +205,82 @@ test_that("hsquared fits opt-in SNP-BLUP marker effects from a marker matrix", {
       fit_diagnostics(fit)$metric == "variance_components_source"
     ],
     "supplied"
+  )
+})
+
+test_that("hsquared fits REML-estimated SNP-BLUP when variances are unsupplied", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live SNP-BLUP."
+  )
+
+  set.seed(13)
+  na <- 25
+  ids <- paste0("g", seq_len(na))
+  m <- 50
+  M <- matrix(stats::rbinom(na * m, 2, 0.3), na, m)
+  rownames(M) <- ids
+  colnames(M) <- paste0("snp", seq_len(m))
+  # a genuine marker-driven genetic signal so REML estimates an interior sigma_g2
+  Wc <- scale(M, center = TRUE, scale = FALSE)
+  beta_true <- stats::rnorm(m, 0, 0.3)
+  gv <- stats::setNames(as.numeric(Wc %*% beta_true), ids)
+  n <- 75
+  rec <- rep(ids, length.out = n)
+  dat <- data.frame(y = 4 + gv[rec] + stats::rnorm(n, 0, 1), id = rec)
+
+  # no supplied variance_components -> REML estimation
+  fit <- hsquared(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "snp_blup")
+    )
+  )
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$spec$method, "SNP-BLUP-REML")
+
+  vc <- variance_components(fit)
+  expect_setequal(vc$component, c("genomic", "residual"))
+  expect_true(all(is.finite(vc$estimate) & vc$estimate > 0))
+  # variances are ESTIMATED, not the supplied default
+  expect_equal(
+    fit_diagnostics(fit)$value[
+      fit_diagnostics(fit)$metric == "variance_components_source"
+    ],
+    "estimated_snp_blup_reml"
+  )
+  expect_equal(nrow(marker_effects(fit)), m)
+  expect_equal(nrow(breeding_values(fit)), na)
+  expect_true(is.finite(as.numeric(stats::logLik(fit))))
+  # the fit genuinely converged (not just a finite loglik) ...
+  expect_true(isTRUE(fit$result$converged))
+  expect_equal(
+    fit_diagnostics(fit)$value[
+      fit_diagnostics(fit)$metric == "optimizer_status"
+    ],
+    "converged"
+  )
+  # ... and AIC/BIC are defined (df was set on the REML path)
+  expect_true(is.finite(stats::AIC(fit)))
+  # the variances are ESTIMATED, not the (1, 1) optimizer start
+  expect_false(isTRUE(all.equal(
+    sort(vc$estimate),
+    c(1, 1),
+    tolerance = 1e-3
+  )))
+
+  # parity: the estimated genomic variance matches a direct engine
+  # fit_snp_blup_reml on the same record-level markers (the bridge left hsq_*).
+  direct_sg2 <- JuliaCall::julia_eval(
+    "HSquared.fit_snp_blup_reml(hsq_y, hsq_X, hsq_markers_rec).sigma_g2"
+  )
+  expect_equal(
+    vc$estimate[vc$component == "genomic"],
+    direct_sg2,
+    tolerance = 1e-6
   )
 })
