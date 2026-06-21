@@ -181,6 +181,12 @@
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   shorthand fitting identically to the explicit call. Not the default;
   promotion past `partial` is twin-gated (`docs/design/25`).
+- [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
+  now reports the `single_step(1 | id)`
+  [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+  bundle shorthand as its own parsed opt-in row, separate from explicit
+  `single_step(1 | id, pedigree = ped, markers = M)` and supplied-`Hinv`
+  single-step forms.
 - **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008)
   for opt-in multivariate fits:
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)

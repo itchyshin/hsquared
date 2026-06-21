@@ -102,6 +102,7 @@ It is a status table, not a model-fitting helper.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                    genomic(1 | id, markers = M)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                single_step(1 | id, Hinv = Hinv)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                single_step(1 | id, pedigree = ped, markers = M)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     single_step(1 | id) with data = hs_data(..., pedigree = ped, genotypes = M)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  single_step(1 | id, pedigree = ped, markers = M, group = group, Gamma = Gamma)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                    markers(M, model = "random")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                marker_scan(M, map = marker_map)</span>
@@ -111,39 +112,40 @@ It is a status table, not a model-fitting helper.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                animal(trait | id, pedigree = ped, cov = diag())</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                        animal(trait | id, pedigree = ped, cov = lowrank(K = 2))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             animal(trait | id, pedigree = ped, cov = fa(K = 2))</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      phase syntax_status                             fitting_status</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 1        parsed                      fitted (v0.1 default)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 1        parsed                      fitted (v0.1 default)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed              fitted (opt-in repeatability)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed         fitted (opt-in common-environment)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                   fitted (opt-in maternal)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed          fitted (opt-in random-regression)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed fitted (opt-in supplied-Gamma metafounder)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed                    fitted (opt-in genomic)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed         fitted (opt-in genomic / SNP-BLUP)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed                fitted (opt-in single-step)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed   fitted (opt-in single-step construction)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed     fitted (opt-in supplied-Gamma H^Gamma)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4        parsed               fitted (opt-in multivariate)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                              not available</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                              not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      phase syntax_status                                  fitting_status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 1        parsed                           fitted (v0.1 default)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 1        parsed                           fitted (v0.1 default)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                   fitted (opt-in repeatability)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed              fitted (opt-in common-environment)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                        fitted (opt-in maternal)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed               fitted (opt-in random-regression)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed      fitted (opt-in supplied-Gamma metafounder)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3+      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed                         fitted (opt-in genomic)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed              fitted (opt-in genomic / SNP-BLUP)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed                     fitted (opt-in single-step)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed        fitted (opt-in single-step construction)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed fitted (opt-in single-step bundle construction)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5        parsed          fitted (opt-in supplied-Gamma H^Gamma)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 5      reserved                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4        parsed                    fitted (opt-in multivariate)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                                   not available</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Phase 3-4       planned                                   not available</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
