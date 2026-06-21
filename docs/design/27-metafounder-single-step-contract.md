@@ -1,8 +1,9 @@
 # Metafounder and H^Gamma R bridge contract
 
-Status: **CONTRACT ONLY**, 2026-06-21 (R lane / Ada, Shannon, Boole, Noether,
-Hopper, Henderson, Curie, Fisher, Jason, Rose, Grace). No R fitting branch lands
-in this slice.
+Status: **PARTIAL R PAYLOAD GATE**, 2026-06-21 (R lane / Ada, Shannon, Boole,
+Noether, Hopper, Henderson, Curie, Fisher, Jason, Rose, Grace). The R parser and
+bridge payload now accept supplied-`Gamma` single-step `H^Gamma`; no live R
+fitting branch lands in this slice.
 
 ## 0. Why
 
@@ -36,9 +37,10 @@ hsquared(
 )
 ```
 
-Neither syntax fits today in R. `metafounder()` is an inert reserved marker, and
-the existing `single_step()` construction path does not yet accept `group` or
-`Gamma`.
+Neither syntax fits today in R. `metafounder()` is still an inert reserved
+marker. The `single_step()` construction path now accepts `group` and `Gamma` as
+a contract-only payload gate for the future `target = "metafounder_single_step"`
+bridge.
 
 ## 1. Current Julia target
 
@@ -88,8 +90,8 @@ Contract:
   non-square `Gamma`, duplicated or unmapped group labels, and `Gamma` estimation
   controls.
 
-For single-step `H^Gamma`, extend the existing construction grammar only after a
-live bridge probe:
+For single-step `H^Gamma`, the existing construction grammar now has a pure-R
+parser/payload gate:
 
 ```r
 single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)
@@ -117,7 +119,7 @@ metadata$relationship_source = "metafounder"
 metadata$gamma_source = "supplied"
 ```
 
-Future `target = "metafounder_single_step"` payload:
+Current contract-only `target = "metafounder_single_step"` payload:
 
 ```text
 y, X, Z
@@ -153,16 +155,17 @@ Candidate extractors:
 Minimum R-side gates before claiming even partial R bridge support:
 
 1. Pure-R parser and payload tests for `group_of` alignment under normalized
-   pedigree order.
+   pedigree order. **Done for `single_step(..., group =, Gamma =)` only.**
 2. Live Julia parity probe for `Gamma = 0` reduction:
    metafounder animal model -> ordinary supplied-variance animal model, and
    `H^Gamma` -> ordinary single-step construction.
 3. Live nonzero-`Gamma` sensitivity: predictions change relative to the ordinary
    path while labels and dimensions remain stable.
 4. Explicit guard tests for invalid `Gamma`, unmapped groups, duplicate marker
-   rows, and missing `group`/`Gamma`.
+   rows, and missing `group`/`Gamma`. **Pure-R group/Gamma guards done; live
+   bridge guards still pending.**
 5. Status rows, docs, and NEWS all state supplied-`Gamma`, dense/validation-scale,
-   opt-in, partial, and not comparator-validated.
+   opt-in, partial, and not comparator-validated. **Done for this payload gate.**
 
 Promotion beyond partial needs external validation. BLUPF90-family execution is
 currently locally blocked because `renumf90`, `airemlf90`, `blupf90`, `remlf90`,
@@ -175,6 +178,8 @@ Allowed wording after this contract slice:
 - "The R package reserves the metafounder `group` + supplied-`Gamma` syntax."
 - "The R/J bridge contract for metafounder `A^Gamma` and single-step `H^Gamma`
   is documented."
+- "The R package validates and serializes a contract-only supplied-`Gamma`
+  single-step `H^Gamma` payload; the live fit is not wired yet."
 - "The Julia twin has dense validation-scale primitives for supplied-`Gamma`
   metafounder relationships and `H^Gamma` single-step."
 

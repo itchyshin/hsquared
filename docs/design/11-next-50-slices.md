@@ -81,7 +81,7 @@ check-log evidence, an after-task report, and an updated claim boundary.
 - Genomic prediction article: a pkgdown article now separates supplied-`Ginv`
   GREML, marker-built GREML, supplied-variance SNP-BLUP, supplied-`Hinv`
   single-step, and constructed-`Hinv` single-step from APY, QTL/GWAS/eQTL,
-  metafounder `H^Gamma`, and production comparator work.
+  metafounder `H^Gamma` live fitting, and production comparator work.
 - QTL/GWAS/eQTL status article: a pkgdown article now separates the reserved
   scan vocabulary and live SNP-BLUP `marker_effects()` /
   `marker_variance_explained()` output from planned marker scans, QTL interval
@@ -230,7 +230,7 @@ coordinate without guessing.
 | 37 | Add two-effect recovery/comparator evidence | pending |
 | 38 | Promote two-effect after Rose audit | pending |
 | 39 | Add genomic inverse / GBLUP bridge slice | done in R for supplied `Ginv` and marker-built G; broader bridge pending |
-| 40 | Add single-step H inverse validation | partial: ordinary construction is surfaced and live-tested; APY/metafounder `H^Gamma` and production comparator parity remain pending |
+| 40 | Add single-step H inverse validation | partial: ordinary construction is surfaced and live-tested; `single_step(..., group =, Gamma =)` has a contract-only `H^Gamma` payload gate; APY/live metafounder fitting and production comparator parity remain pending |
 | 41 | Add APY design/evidence gate | pending |
 | 42 | Add standard QG comparator fixtures | pending |
 | 43 | Tighten validation-status public table | ongoing |

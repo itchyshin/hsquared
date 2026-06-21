@@ -448,6 +448,14 @@ hsquared <- function(
 
     if (identical(target, "single_step_construct")) {
       ss <- spec$random$single_step
+      if (!is.null(ss) && identical(ss$source, "metafounder_construct")) {
+        stop(
+          "`single_step()` with `group` and `Gamma` is the planned ",
+          "`target = \"metafounder_single_step\"` contract, not the ordinary ",
+          "`target = \"single_step_construct\"` path.",
+          call. = FALSE
+        )
+      }
       if (is.null(ss) || !identical(ss$source, "construct")) {
         stop(
           "`target = \"single_step_construct\"` requires a ",
@@ -474,6 +482,25 @@ hsquared <- function(
           100L
         )
       ))
+    }
+
+    if (identical(target, "metafounder_single_step")) {
+      ss <- spec$random$single_step
+      if (is.null(ss) || !identical(ss$source, "metafounder_construct")) {
+        stop(
+          "`target = \"metafounder_single_step\"` requires ",
+          "`single_step(1 | id, pedigree = ped, markers = M, group = ",
+          "mf_group, Gamma = Gamma)` in the formula.",
+          call. = FALSE
+        )
+      }
+      stop(
+        "`target = \"metafounder_single_step\"` is a contract-only payload ",
+        "gate in this version: the parser and bridge payload validate ",
+        "`group`, supplied `Gamma`, marker ordering, and `genotyped_rows`, ",
+        "but the live Julia fit is not wired yet.",
+        call. = FALSE
+      )
     }
 
     if (target %in% c("genomic", "single_step")) {

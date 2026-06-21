@@ -5465,3 +5465,35 @@ release".
   **1220 pass / 0 fail / 0 warn / 55 skip**; `pkgdown::check_pkgdown()` clean;
   `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false
   rcmdcheck::rcmdcheck(args = "--no-manual")` **0/0/0**.
+
+## 2026-06-21 (metafounder H^Gamma parser/payload gate)
+
+- Follow-up to the contract/status PR: `single_step(1 | id, pedigree = ped,
+  markers = M, group = mf_group, Gamma = Gamma)` now has a pure-R
+  parser/model-spec/bridge-payload gate for supplied-`Gamma` single-step
+  `H^Gamma`.
+- Implementation boundary: the branch validates an ID-keyed `group` assignment
+  against normalized pedigree IDs, requires non-missing labels for animals with
+  unknown parents, validates finite symmetric positive-semidefinite supplied
+  `Gamma`, reorders dimnamed `Gamma` to resolved first-appearance group labels,
+  keeps marker rows aligned to `genotyped_rows`, and serializes
+  `group_of`/`Gamma`/`gamma_labels` in the future `metafounder_single_step`
+  payload.
+- Fitting boundary: `engine_control$target = "metafounder_single_step"` is
+  recognized but deliberately errors before Julia execution. The ordinary
+  `target = "single_step_construct"` rejects the `group`/`Gamma` branch so the
+  two single-step paths stay unambiguous.
+- Docs/status boundary: NEWS, formula grammar, capability status, validation
+  debt, public claims, issue map, bridge-gap doc, contract doc, and the genomic
+  prediction article now say "payload gate done; live fit/extractor/comparator
+  pending." No covered promotion, no `Gamma` estimation claim, and no BLUPF90
+  evidence.
+- Checks: `air format .` clean; `Rscript --vanilla -e 'devtools::document()'`
+  regenerated `man/genomic_markers.Rd`; focused
+  `Rscript --vanilla -e 'devtools::test(filter = "single-step|phase0-api")'`
+  **170 pass / 0 fail / 0 warn / 6 skip**; full
+  `Rscript --vanilla -e 'devtools::test()'` **1248 pass / 0 fail / 0 warn /
+  55 skip**; `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
+  `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla
+  -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+  **0 errors / 0 warnings / 0 notes**.
