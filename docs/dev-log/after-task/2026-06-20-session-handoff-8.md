@@ -79,11 +79,12 @@ mechanical: parser (§2) → `genotyped_rows` alignment (§3, the crux) → payl
 
 ## Next backlog (ranked)
 
-1. **Execute `docs/design/25`** — the single-step construction bridge (the spec
-   makes it a fresh-context mechanical build). Promotes capability-status
-   "genomic/single-step construction beyond supplied inverses" `planned (R)` →
-   `partial (R)` once the reduction test is green.
-2. **LOCO / single-marker `gwas()`** (#4): `single_marker_scan(fit, markers)` is a
+1. **DONE — `docs/design/25` single-step construction** landed (commit `80d27cf`);
+   capability-status is now `partial (R)`. Remaining single-step follow-ups: the
+   `hs_data()` pedigree shorthand (deferred), large-pedigree sparse `A`, and the
+   twin-gated BLUPF90/AGHmatrix comparator to promote past `partial`.
+2. **LOCO / single-marker `gwas()`** (#4, now the top R-ownable item):
+   `single_marker_scan(fit, markers)` is a
    landed post-fit entry (relatedness-UNcorrected screen; `src/postfit.jl:51`) — a
    small `gwas(method=)` option. LOCO proper needs per-group precisions
    (`loco_relationship_precisions`) — check before wiring.
