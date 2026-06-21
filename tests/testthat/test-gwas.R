@@ -70,6 +70,13 @@ test_that("the gwas normalizer assembles the marker-scan table with the caveat",
   expect_equal(g$lod, g$chisq / (2 * log(10)))
   expect_output(print(g), "NOT genome-wide calibrated")
   expect_equal(attr(g, "scan_method"), "mixed")
+  expect_equal(gwas_table(g), as.data.frame(g))
+  scan_lod <- lod_scores(g)
+  expect_equal(names(scan_lod), c("marker", "lod"))
+  expect_equal(scan_lod$marker, g$marker)
+  expect_equal(scan_lod$lod, g$lod)
+  expect_equal(attr(gwas_table(g), "scan_method"), "mixed")
+  expect_equal(attr(lod_scores(g), "scan_method"), "mixed")
 
   # the single-marker variant carries its method + a relatedness-uncorrected print
   g1 <- hsquared:::hs_normalize_gwas_result(raw, method = "single")
@@ -245,6 +252,8 @@ test_that("the gwas normalizer preserves validated future calibration metadata",
   expect_equal(calibration$threshold_scale, "lod")
   expect_equal(calibration$marker_panel_mode, "fixed")
   expect_equal(calibration$scan_method, attr(g, "scan_method"))
+  expect_equal(attr(gwas_table(g), "calibration"), calibration)
+  expect_equal(attr(lod_scores(g), "calibration"), calibration)
 })
 
 test_that("hs_gwas_marker_groups guards the LOCO group map (no engine needed)", {

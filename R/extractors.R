@@ -1254,8 +1254,10 @@ hs_diagnostic_value <- function(x) {
 #' fitted-marker share, computed as effect squared times centered marker
 #' variance and normalized across markers; it is not a marker-scan p-value,
 #' QTL statistic, or causal decomposition under linkage disequilibrium. The
-#' remaining names are reserved for future results. The current package does
-#' not fit marker-scan, QTL, GWAS, or eQTL models.
+#' `gwas_table()` and `lod_scores()` methods for an already-computed `hs_gwas`
+#' object expose the current uncalibrated marker-scan table and marker-level
+#' LOD scores. Fit-level QTL/GWAS/eQTL result tables and map-annotated /
+#' calibrated scan outputs remain reserved for future results.
 #'
 #' @inheritParams variance_components
 #'
@@ -1356,6 +1358,17 @@ gwas_table.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "gwas_table", "GWAS table")
 }
 
+#' @export
+gwas_table.hs_gwas <- function(object, ...) {
+  out <- as.data.frame(object)
+  attr(out, "scan_method") <- attr(object, "scan_method")
+  calibration <- attr(object, "calibration")
+  if (!is.null(calibration)) {
+    attr(out, "calibration") <- calibration
+  }
+  out
+}
+
 #' @rdname marker_extractors
 #' @export
 eqtl_table <- function(object, ...) {
@@ -1388,6 +1401,28 @@ lod_scores.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "lod_scores", "LOD scores")
 }
 
+#' @export
+lod_scores.hs_gwas <- function(object, ...) {
+  if (!all(c("marker", "lod") %in% names(object))) {
+    stop(
+      "`lod_scores()` requires an `hs_gwas` object with `marker` and `lod` ",
+      "columns.",
+      call. = FALSE
+    )
+  }
+  out <- data.frame(
+    marker = object$marker,
+    lod = object$lod,
+    stringsAsFactors = FALSE
+  )
+  attr(out, "scan_method") <- attr(object, "scan_method")
+  calibration <- attr(object, "calibration")
+  if (!is.null(calibration)) {
+    attr(out, "calibration") <- calibration
+  }
+  out
+}
+
 hs_marker_extractor_default <- function(name) {
   stop(
     "`",
@@ -1396,9 +1431,10 @@ hs_marker_extractor_default <- function(name) {
     "`marker_effects()` and `marker_variance_explained()` are populated only ",
     "by opt-in SNP-BLUP fits. For a relatedness-corrected post-fit marker scan, ",
     "use `gwas(fit, markers)` (experimental; nominal / Bonferroni / BH ",
-    "p-values, NOT genome-wide calibrated). These tabular `gwas_table()` / ",
-    "`qtl_table()` / `eqtl_table()` / `lod_scores()` extractors remain reserved ",
-    "for the planned map-annotated scan API and any future calibrated-threshold ",
+    "p-values, NOT genome-wide calibrated), then call `gwas_table(scan)` or ",
+    "`lod_scores(scan)` on the returned `hs_gwas` object. Fit-level ",
+    "`gwas_table()` plus `qtl_table()` / `eqtl_table()` remain reserved for ",
+    "the planned map-annotated scan API and any future calibrated-threshold ",
     "activation.",
     call. = FALSE
   )

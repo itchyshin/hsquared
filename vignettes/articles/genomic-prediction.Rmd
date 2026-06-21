@@ -241,6 +241,8 @@ per animal (in the fit's pedigree order), one column per marker.
 fit <- hsquared(y ~ x + animal(1 | id, pedigree = ped), data = dat)
 scan <- gwas(fit, markers) # markers: animals x markers
 scan # effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod
+gwas_table(scan)
+lod_scores(scan)
 ```
 
 The p-values are **not genome-wide calibrated**: they are nominal Wald p-values
@@ -252,8 +254,9 @@ an R significance threshold. A leave-one-group-out mode is available with
 `method = "loco"` and `marker_groups =`, but it is still validation-scale and
 uncalibrated. Do not report genome-wide significance from these p-values.
 
-The tabular `gwas_table()` / `qtl_table()` / `eqtl_table()` output names stay
-reserved for a planned map-annotated scan API:
+`gwas_table(scan)` and `lod_scores(scan)` are thin views of the already-computed
+`hs_gwas` result. Fit-level tabular `gwas_table()` / `qtl_table()` /
+`eqtl_table()` output names stay reserved for a planned map-annotated scan API:
 
 ```{r}
 qtl_table(fit_g)    # reserved (planned map-annotated API)

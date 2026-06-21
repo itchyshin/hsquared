@@ -95,7 +95,8 @@ Until these gates are met, R behavior remains:
 - `gwas()` returns nominal/Bonferroni/BH summaries only;
 - `print.hs_gwas()` and `autoplot.hs_gwas()` must keep the uncalibrated
   significance wording;
-- `gwas_table()` remains reserved for the planned map-annotated scan result;
+- `gwas_table(scan)` may expose the current uncalibrated `hs_gwas` rows, but
+  calibrated/map-annotated fit-level `gwas_table()` output remains reserved;
 - QTL and eQTL thresholds remain planned separately;
 - `validation_status()` and capability rows stay partial.
 

@@ -252,7 +252,7 @@ test_that("extractor defaults do not imply fitted model support", {
   # uncalibrated-significance honesty gate, instead of staying silent.
   expect_error(
     gwas_table(list()),
-    "use `gwas(fit, markers)`",
+    "call `gwas_table(scan)`",
     fixed = TRUE
   )
   expect_error(

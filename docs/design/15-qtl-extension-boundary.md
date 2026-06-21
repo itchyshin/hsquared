@@ -33,10 +33,12 @@ The core R package should keep:
 - compact fitted-object extractor names:
   - `marker_effects()`;
   - `marker_variance_explained()`;
-  - `qtl_table()`;
-  - `gwas_table()`;
+  - `gwas_table(scan)` for an already-computed `hs_gwas`;
+  - `lod_scores(scan)` for an already-computed `hs_gwas`;
+  - future fit-level `qtl_table()`;
+  - future fit-level `gwas_table()`;
   - `eqtl_table()`;
-  - `lod_scores()`;
+  - map-annotated `lod_scores()`;
 - status helpers and claim boundaries:
   - `formula_status()`;
   - `validation_status()`;
@@ -146,7 +148,10 @@ Public docs may say:
 
 - "QTL/GWAS/eQTL vocabulary is reserved";
 - "`marker_effects()` is live for opt-in SNP-BLUP";
-- "scan support is planned";
+- "post-fit `gwas()` and `gwas_table(scan)` / `lod_scores(scan)` are
+  experimental and uncalibrated";
+- "formula-level scan support, calibrated thresholds, and map-annotated tables
+  are planned";
 - "large-scan execution is extension-bound."
 
 Public docs must not say:

@@ -28,9 +28,10 @@ The short version:
 - `marker_effects()` is live only for the opt-in SNP-BLUP path.
 - `gwas(fit, markers)` runs an experimental post-fit, relatedness-corrected
   marker scan with **uncalibrated** significance (see *Post-fit GWAS* below).
-- `marker_scan()`, `qtl_scan()`, `qtl_table()`, `gwas_table()`, `eqtl_table()`,
-  and `lod_scores()` are reserved vocabulary (the planned map-annotated /
-  formula-grammar API).
+- `gwas_table(scan)` and `lod_scores(scan)` work on an already-computed
+  `hs_gwas` object; `marker_scan()`, `qtl_scan()`, fit-level `qtl_table()`,
+  `gwas_table()`, `eqtl_table()`, and map-annotated `lod_scores()` remain
+  reserved vocabulary for the planned map-annotated / formula-grammar API.
 - No QTL or eQTL model, and no *calibrated* genome-wide GWAS, is fitted today.
 
 The goal is to make the future syntax visible without making users wonder
@@ -74,7 +75,9 @@ fitted Gaussian animal model, reusing the fit's variance components and pedigree
 
 ```{r}
 fit <- hsquared(y ~ batch + animal(1 | id, pedigree = ped), data = pheno)
-gwas(fit, M) # M: animals x markers; returns effect/se/z/chisq/p_value/...
+scan <- gwas(fit, M) # M: animals x markers
+gwas_table(scan)     # effect/se/z/chisq/p_value/bonferroni_p/bh_qvalue/lod
+lod_scores(scan)     # marker + LOD only
 ```
 
 The p-values are **not genome-wide calibrated**: nominal Wald p-values plus
@@ -109,22 +112,25 @@ scan errors later.
 
 ## Reserved output vocabulary
 
-These names are already part of the fitted-object contract:
+These names are already part of the fitted-object and scan-result contract:
 
 ```{r}
 marker_effects(fit)
 marker_variance_explained(fit)
+gwas_table(scan)
+lod_scores(scan)
 qtl_table(fit)
 gwas_table(fit)
 eqtl_table(fit)
-lod_scores(fit)
 ```
 
-Only `marker_effects()` and `marker_variance_explained()` have live producers
-today, and only for the opt-in SNP-BLUP path. The variance-explained table is a
-descriptive fitted-marker share, not a scan statistic or QTL claim. The other
-extractors return values only if a future engine target has produced the
-matching result field.
+`marker_effects()` and `marker_variance_explained()` have live producers for the
+opt-in SNP-BLUP path. `gwas_table(scan)` and `lod_scores(scan)` are thin views of
+an already-computed `hs_gwas` object. The variance-explained table is a
+descriptive fitted-marker share, not a scan statistic or QTL claim; the scan
+table is still uncalibrated and not map-annotated. Fit-level QTL/GWAS/eQTL
+tables return values only if a future engine target has produced the matching
+result field.
 
 ## Planned formula-grammar GWAS path
 
