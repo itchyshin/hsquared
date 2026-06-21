@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 32L)
+  expect_equal(nrow(status), 33L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -145,6 +145,28 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     status$term == "single_step(1 | id, pedigree = ped, markers = M)" &
       status$fitting_status == "fitted (opt-in single-step construction)"
   ))
+  single_step_bundle_row <- status[
+    status$term ==
+      paste0(
+        "single_step(1 | id) with data = hs_data(..., pedigree = ped, ",
+        "genotypes = M)"
+      ),
+  ]
+  expect_equal(single_step_bundle_row$syntax_status, "parsed")
+  expect_equal(
+    single_step_bundle_row$fitting_status,
+    "fitted (opt-in single-step bundle construction)"
+  )
+  expect_match(
+    single_step_bundle_row$current_behavior,
+    "genotypes",
+    fixed = TRUE
+  )
+  expect_match(
+    single_step_bundle_row$current_behavior,
+    "target = \"single_step_construct\"",
+    fixed = TRUE
+  )
   expect_true(any(
     grepl("Gamma = Gamma", status$term, fixed = TRUE) &
       status$syntax_status == "parsed" &

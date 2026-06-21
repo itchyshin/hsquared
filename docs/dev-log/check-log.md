@@ -3,6 +3,28 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 formula_status single-step bundle shorthand row
+
+- Scope: formula/status diagnostics only. Added a distinct parsed
+  `formula_status()` row for
+  `single_step(1 | id) with data = hs_data(..., pedigree = ped, genotypes = M)`
+  so users can distinguish the `hs_data()` bundle shorthand from explicit
+  `single_step(..., pedigree = ped, markers = M)` construction and supplied
+  `Hinv` single-step forms.
+- Claim boundary: no parser behavior or fitting behavior changed; this records
+  existing opt-in single-step construction shorthand support. The path remains
+  experimental, dense/validation-scale, and twin-gated for promotion.
+- Checks:
+  - `air format .` clean.
+  - `Rscript --vanilla -e 'devtools::document()'` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api")'`
+    **103 pass / 0 fail / 0 warn / 0 skip**.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+    **0 errors / 0 warnings / 0 notes**. Expected INFO only: optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.
+
 ## 2026-06-21 multivariate MCMCglmm Bayesian agreement probe
 
 - Scope: recorded a reproducible, opt-in `MCMCglmm` Bayesian agreement probe for
