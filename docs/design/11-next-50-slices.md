@@ -83,9 +83,11 @@ check-log evidence, an after-task report, and an updated claim boundary.
   single-step, and constructed-`Hinv` single-step from APY, QTL/GWAS/eQTL,
   metafounder `H^Gamma` live fitting, and production comparator work.
 - QTL/GWAS/eQTL status article: a pkgdown article now separates the reserved
-  scan vocabulary and live SNP-BLUP `marker_effects()` /
-  `marker_variance_explained()` output from planned marker scans, QTL interval
-  scans, GWAS/eQTL tables, scan plots, LOCO, and production scale.
+  scan vocabulary, live SNP-BLUP `marker_effects()` /
+  `marker_variance_explained()` output, and experimental post-fit `gwas()` /
+  `gwas_table(scan)` / `lod_scores(scan)` views from planned formula-level QTL
+  interval scans, fit-level GWAS/eQTL tables, calibrated thresholds, and
+  production scale.
 - QTL extension boundary: `hsquared` keeps simple formula/status/result
   vocabulary; high-throughput QTL/GWAS/eQTL execution, file-backed scan
   infrastructure, plots, fine-mapping, and GPU/HPC scan kernels belong in
@@ -192,9 +194,9 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 31 | Julia | Add marker-effect REML or AI-REML variance estimation for SNP-BLUP. | Supplied-variance status can move only after recovery. |
 | 32 | R | Add `marker_variance_explained()` for real marker-effect fits. | done: opt-in SNP-BLUP fits now return descriptive fitted-marker shares; no scan/QTL/p-value claim |
 | 33 | Julia | Add single-marker scan kernel with kinship correction. | done for engine scan kernels used by R `gwas()`; still no production threshold claim. |
-| 34 | R | Expose post-fit marker scan as opt-in once engine scan results are stable. | done: `gwas(fit, markers)` exposes mixed, single-marker, and LOCO methods with uncalibrated-significance wording; no `marker_scan()` formula grammar or map-annotated QTL/eQTL table activation. |
+| 34 | R | Expose post-fit marker scan as opt-in once engine scan results are stable. | done: `gwas(fit, markers)` exposes mixed, single-marker, and LOCO methods with uncalibrated-significance wording; `gwas_table(scan)` / `lod_scores(scan)` are thin views of existing `hs_gwas` results; no `marker_scan()` formula grammar, calibrated threshold, or map-annotated QTL/eQTL table activation. |
 | 35 | Julia/R | Add LOCO support for mixed-model scans. | done at validation scale: R live-verifies LOCO against the engine; genomic-LOCO uses pedigree-estimated VCs and remains uncalibrated. |
-| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; marker scans are now live through `gwas()` but remain experimental/uncalibrated; `docs/design/28-gwas-threshold-activation-contract.md` records what must be true before threshold activation; QTL/eQTL tables, production calibration, and extension-scale scans remain planned. |
+| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; marker scans are now live through `gwas()` and thin `gwas_table(scan)` / `lod_scores(scan)` views, but remain experimental/uncalibrated; `docs/design/28-gwas-threshold-activation-contract.md` records what must be true before threshold activation; fit-level QTL/eQTL tables, production calibration, and extension-scale scans remain planned. |
 | 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
 | 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | done: core keeps simple vocabulary/result contract; heavy scans, file-backed data, plots, fine-mapping, and accelerator scan kernels are extension-bound |
 | 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |

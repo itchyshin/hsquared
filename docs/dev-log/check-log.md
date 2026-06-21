@@ -3,6 +3,48 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Add scan-result `gwas_table()` / `lod_scores()` views
+
+- Active lenses: Ada, Shannon, Hopper, Boole, Jason, Fisher, Pat, Rose, Grace.
+- Branch: `codex/gwas-table-scan-wrapper`.
+- Scope:
+  - added `gwas_table.hs_gwas()` and `lod_scores.hs_gwas()` methods for
+    already-computed `hs_gwas` objects;
+  - kept fit-level `qtl_table()` / `gwas_table()` / `eqtl_table()` and
+    map-annotated `lod_scores()` reserved for future formula-level /
+    map-annotated scan outputs;
+  - updated marker extractor docs, `NEWS`, QTL/GWAS/model-status/genomic
+    articles, capability/public-claim/validation ledgers, and the issue map;
+  - verified HSquared.jl sibling main at `b0d14ba` and recorded Julia PR #145's
+    `comparator_targets.toml` manifest as a fixture-index/status aid only;
+  - updated live R issue #23 so it names `gwas_table(scan)` /
+    `lod_scores(scan)` as banked and keeps thresholds/map-annotated tables open.
+- Live GitHub action:
+  - `gh issue edit 23 --repo itchyshin/hsquared --body-file -` updated the
+    marker-scan issue body.
+- Claim boundary: scan-result table views only. No R threshold was activated, no
+  formula-level `marker_scan()` grammar was added, no fit-level/map-annotated
+  QTL/GWAS/eQTL table workflow was added, no external comparator evidence was
+  claimed, and no validation/public-claim promotion was made. Julia PR #145 is
+  a manifest/index only, not comparator evidence.
+- Checks:
+  - `git -C ../HSquared.jl status --short --branch && git -C ../HSquared.jl log -1 --oneline`
+    verified sibling Julia main clean at `b0d14ba`.
+  - `sed -n '1,220p' ../HSquared.jl/test/fixtures/comparator_targets.toml`
+    inspected the Julia manifest boundary.
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::document()'`
+    updated `NAMESPACE` and `man/marker_extractors.Rd`.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::test(filter = "gwas|fit-object")'`
+    passed 168/0/0/2.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::test()'`
+    passed 1347/0/0/59.
+  - `_R_CHECK_FORCE_SUGGESTS_=false /Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'chk <- rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never"); print(chk); if (length(chk$errors) || length(chk$warnings)) quit(status = 1)'`
+    passed 0 errors, 0 warnings, 0 notes.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync Julia #144 structured status and #143 threshold context
 
 - Active lenses: Ada, Shannon, Hopper, Boole, Kirkpatrick, Fisher, Rose, Grace.
