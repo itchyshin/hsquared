@@ -3,6 +3,38 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync innovation issues #24/#25 gates
+
+- Active lenses: Ada, Shannon, Jason, Gauss, Karpinski, Rose, Grace.
+- Branch: `codex/innovation-issues-24-25-sync`.
+- Quantgen scout:
+  - question scouted: should the R innovation issues for augmented AI-REML and
+    SQUAREM remain short idea notes, or should they carry explicit validation
+    gates and claim boundaries?
+  - sources checked: `docs/dev-log/scout/2026-06-19-literature-innovation-scout.md`,
+    `docs/dev-log/prototypes/engine-scaling-plan.md`,
+    `docs/dev-log/prototypes/README.md`, and the quantgen package scout map.
+  - lesson: both ideas stay engine-led and planned. Strandén et al. speedups and
+    local SQUAREM patterns are provenance, not hsquared/HSquared.jl claims.
+  - action: live R #24/#25 bodies now require parity/fixed-point gates before
+    any implementation or benchmark wording.
+  - claim risk: avoid borrowed speedups, avoid "cannot regress" wording without
+    guarded objective tests, and keep REML/AI-REML Gaussian unless separately
+    derived.
+- Live GitHub actions:
+  - `gh issue edit 24 --repo itchyshin/hsquared --body-file -` updated #24.
+  - `gh issue edit 25 --repo itchyshin/hsquared --body-file -` updated #25.
+- Claim boundary: issue/docs sync only. No R or Julia behavior changed; no
+  engine implementation, public speedup claim, comparator evidence,
+  validation/public-claim promotion, or covered status change.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-innovation-issues-24-25-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync Julia #148 extractor mirror
 
 - Active lenses: Ada, Shannon, Emmy, Hopper, Boole, Pat, Rose, Grace.
