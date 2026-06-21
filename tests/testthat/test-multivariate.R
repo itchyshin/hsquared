@@ -461,6 +461,23 @@ test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
   expect_equal(heritability(fit)$trait, c("y1", "y2"))
   expect_equal(nrow(breeding_values(fit)), 16L)
   expect_equal(stats::nobs(fit), 15L)
+  expect_false(is.null(fit$result$genetic_correlation_plot_data))
+  expect_false(is.null(fit$result$genetic_pca_plot_data))
+  expect_equal(
+    fit$result$genetic_correlation_plot_data$traits,
+    c("y1", "y2")
+  )
+  expect_equal(
+    fit$result$genetic_correlation_plot_data$genetic_correlations,
+    genetic_correlation(fit),
+    tolerance = 1e-8
+  )
+  expect_true(isTRUE(
+    fit$result$genetic_pca_plot_data$rotation_invariant
+  ))
+  expect_true(isTRUE(
+    fit$result$genetic_pca_plot_data$is_eigenstructure_not_loadings
+  ))
   expect_equal(
     fit_diagnostics(fit)$value[
       fit_diagnostics(fit)$metric == "variance_components_source"

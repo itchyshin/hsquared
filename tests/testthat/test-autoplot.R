@@ -54,11 +54,10 @@ mock_mv_fit_h2 <- function(h2 = c(t1 = 0.05, t2 = 0.4)) {
   f
 }
 
-# A fit carrying the engine `genetic_correlation_plot_data` payload. NOTE: the
-# bridge does NOT attach this field at fit time yet (the recompute fallback is the
-# live path); this mock exercises the forward-looking auto-detect branch so it
-# cannot silently break when the bridge wires the payload. The payload correlation
-# (0.55) differs from the `genetic_correlation` field (0.3) to prove consumption.
+# A fit carrying the engine `genetic_correlation_plot_data` payload. This mock
+# exercises the auto-detect branch without requiring a live Julia bridge. The
+# payload correlation (0.55) differs from the `genetic_correlation` field (0.3)
+# to prove consumption.
 mock_mv_fit_plotdata <- function() {
   structure(
     list(
@@ -82,8 +81,7 @@ mock_mv_fit_plotdata <- function() {
 }
 
 # A fit carrying the engine Set-B `variance_components_plot_data` payload (twin
-# PR #95). NOTE: the bridge does not attach this at fit time yet -- recompute is
-# the live path; this exercises the forward-looking auto-detect branch.
+# PR #95). This exercises the auto-detect branch without a live Julia bridge.
 mock_uni_fit_vcpd <- function(h2_hi = 0.54) {
   structure(
     list(
@@ -226,8 +224,7 @@ test_that("autoplot.hsquared_fit breeding_values returns a ggplot", {
 
 test_that("breeding_values autoplot consumes the engine breeding_values_plot_data", {
   # a fit carrying ONLY the engine payload (no extractable breeding_values), so
-  # autoplot must use the payload (the forward-looking auto-detect branch; the
-  # bridge does not attach it at fit time yet -- recompute is the live path)
+  # autoplot must use the payload.
   fit <- structure(
     list(
       result = list(

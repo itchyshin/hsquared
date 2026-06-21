@@ -19,6 +19,27 @@ hs_julia_bridge_available <- function(project = hs_default_julia_project()) {
     file.exists(file.path(project, "Project.toml"))
 }
 
+hs_julia_attach_standard_plot_data <- function() {
+  JuliaCall::julia_command(paste(
+    "if isdefined(HSquared, :variance_components_plot_data);",
+    "hsq_vcpd = try; HSquared.variance_components_plot_data(hsq_fit);",
+    "catch; nothing; end;",
+    "if hsq_vcpd !== nothing;",
+    "hsq_result = merge(hsq_result, (",
+    "variance_components_plot_data = hsq_vcpd,));",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :breeding_values_plot_data);",
+    "hsq_bvpd = try; HSquared.breeding_values_plot_data(hsq_fit);",
+    "catch; nothing; end;",
+    "if hsq_bvpd !== nothing;",
+    "hsq_result = merge(hsq_result, (breeding_values_plot_data = hsq_bvpd,));",
+    "end;",
+    "end;"
+  ))
+  invisible(TRUE)
+}
+
 hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -61,6 +82,7 @@ hs_fit_julia_payload <- function(
     "reliability = HSquared.reliability(hsq_fit)));",
     "end;"
   ))
+  hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
@@ -194,6 +216,7 @@ hs_fit_julia_sparse_reml_payload <- function(
     "reliability = HSquared.reliability(hsq_fit)));",
     "end;"
   ))
+  hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
@@ -290,6 +313,7 @@ hs_fit_julia_ai_reml_payload <- function(
     "end;",
     "end;"
   ))
+  hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
@@ -969,6 +993,7 @@ hs_fit_julia_multivariate_payload <- function(
     "end;",
     "end;"
   ))
+  hs_julia_attach_multivariate_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_mv_raw")
   result <- hs_normalize_multivariate_result(raw, payload)
@@ -1114,6 +1139,7 @@ hs_normalize_multivariate_result <- function(raw, payload) {
       heritability = stats::setNames(as.numeric(raw$se_heritability), traits)
     )
   }
+  result <- hs_attach_multivariate_plot_data(result, raw, traits)
   result
 }
 
@@ -1196,6 +1222,66 @@ hs_long_matrix <- function(x, ids, traits) {
     value = as.vector(x),
     stringsAsFactors = FALSE
   )
+}
+
+hs_julia_attach_multivariate_plot_data <- function() {
+  JuliaCall::julia_command(paste(
+    "if isdefined(HSquared, :genetic_correlation_plot_data);",
+    "hsq_gcpd = try;",
+    "HSquared.genetic_correlation_plot_data(",
+    "hsq_fit.genetic_covariance;",
+    "traits = string.(collect(hsq_fit.traits)),",
+    "heritabilities = collect(Float64, hsq_fit.heritability));",
+    "catch; nothing; end;",
+    "if hsq_gcpd !== nothing;",
+    "hsq_mv_raw[\"genetic_correlation_plot_data\"] = hsq_gcpd;",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :genetic_pca_plot_data);",
+    "hsq_gppd = try;",
+    "HSquared.genetic_pca_plot_data(hsq_fit.genetic_covariance);",
+    "catch; nothing; end;",
+    "if hsq_gppd !== nothing;",
+    "hsq_mv_raw[\"genetic_pca_plot_data\"] = hsq_gppd;",
+    "end;",
+    "end;"
+  ))
+  invisible(TRUE)
+}
+
+hs_julia_attach_random_regression_plot_data <- function() {
+  JuliaCall::julia_command(paste(
+    "hsq_rr_plot_ts = collect(range(-1.0, 1.0; length = 25));",
+    "if isdefined(HSquared, :rr_genetic_variance_plot_data);",
+    "hsq_rr_gvpd = try;",
+    "HSquared.rr_genetic_variance_plot_data(",
+    "hsq_fit.variance_components.K_g, hsq_rr_plot_ts;",
+    "residual = hsq_fit.variance_components.sigma_e2);",
+    "catch; nothing; end;",
+    "if hsq_rr_gvpd !== nothing;",
+    "hsq_rr_raw[\"rr_genetic_variance_plot_data\"] = hsq_rr_gvpd;",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :rr_eigenfunctions_plot_data);",
+    "hsq_rr_efpd = try;",
+    "HSquared.rr_eigenfunctions_plot_data(",
+    "hsq_fit.variance_components.K_g, hsq_rr_plot_ts);",
+    "catch; nothing; end;",
+    "if hsq_rr_efpd !== nothing;",
+    "hsq_rr_raw[\"rr_eigenfunctions_plot_data\"] = hsq_rr_efpd;",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :rr_covariance_surface_plot_data);",
+    "hsq_rr_sfpd = try;",
+    "HSquared.rr_covariance_surface_plot_data(",
+    "hsq_fit.variance_components.K_g, hsq_rr_plot_ts);",
+    "catch; nothing; end;",
+    "if hsq_rr_sfpd !== nothing;",
+    "hsq_rr_raw[\"rr_covariance_surface_plot_data\"] = hsq_rr_sfpd;",
+    "end;",
+    "end;"
+  ))
+  invisible(TRUE)
 }
 
 # Opt-in, experimental random-regression (reaction-norm) bridge. Mirrors the
@@ -1282,6 +1368,7 @@ hs_fit_julia_random_regression_payload <- function(
     "\"ncoef\" => hsq_fit.basis.ncoef",
     ");"
   ))
+  hs_julia_attach_random_regression_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_rr_raw")
   result <- hs_normalize_random_regression_result(raw, payload)
@@ -1381,6 +1468,7 @@ hs_normalize_random_regression_result <- function(raw, payload) {
     result$loglik <- as.numeric(raw$loglik)
     result$df <- as.integer(p + n_covariance_parameters)
   }
+  result <- hs_attach_random_regression_plot_data(result, raw)
   result
 }
 
@@ -1420,6 +1508,10 @@ hs_legendre_design <- function(ts, order) {
 # (t = 2(a - lower)/(upper - lower) - 1).
 hs_standardize_covariate <- function(a, lower, upper) {
   2 * (as.numeric(a) - lower) / (upper - lower) - 1
+}
+
+hs_unstandardize_covariate <- function(t, lower, upper) {
+  lower + (as.numeric(t) + 1) * (upper - lower) / 2
 }
 
 hs_validate_two_effect_initial <- function(initial) {
@@ -1512,6 +1604,7 @@ hs_fit_julia_genomic_payload <- function(
     "iterations = hsq_iterations);",
     "hsq_result = HSquared.result_payload(hsq_fit);"
   ))
+  hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
@@ -1618,6 +1711,7 @@ hs_fit_julia_single_step_construct_payload <- function(
     "sigma_e2 = hsq_initial_sigma_e2));",
     "hsq_result = HSquared.result_payload(hsq_fit);"
   ))
+  hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
@@ -2269,6 +2363,351 @@ hs_validate_snp_blup_variances <- function(variance_components) {
   out
 }
 
+hs_plot_data_try <- function(expr) {
+  tryCatch(expr, error = function(e) NULL)
+}
+
+hs_plot_data_list <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  x <- hs_drop_julia_classes(x)
+  if (is.data.frame(x)) {
+    x <- as.list(x)
+  }
+  if (!is.list(x)) {
+    return(NULL)
+  }
+  x
+}
+
+hs_plot_data_character <- function(x, n = NULL) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  out <- as.character(x)
+  if (!is.null(n) && length(out) != n) {
+    return(NULL)
+  }
+  out
+}
+
+hs_plot_data_numeric <- function(x, n = NULL) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  out <- as.numeric(x)
+  if (!is.null(n) && length(out) != n) {
+    return(NULL)
+  }
+  out
+}
+
+hs_plot_data_scalar <- function(x) {
+  if (is.null(x) || length(x) < 1L) {
+    return(NULL)
+  }
+  x[[1L]]
+}
+
+hs_plot_data_matrix <- function(x, nr = NULL, nc = NULL) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  out <- as.matrix(x)
+  storage.mode(out) <- "double"
+  if (!is.null(nr) && !is.null(nc)) {
+    if (!identical(dim(out), c(nr, nc))) {
+      if (length(out) != nr * nc) {
+        return(NULL)
+      }
+      out <- matrix(as.numeric(out), nrow = nr, ncol = nc)
+    }
+  } else if (!is.null(nr) && nrow(out) != nr) {
+    if (length(out) %% nr != 0L) {
+      return(NULL)
+    }
+    out <- matrix(as.numeric(out), nrow = nr)
+  }
+  out
+}
+
+hs_normalize_variance_components_plot_data <- function(pd) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd)) {
+    return(NULL)
+  }
+  term <- hs_plot_data_character(pd$term)
+  estimate <- hs_plot_data_numeric(pd$estimate)
+  if (is.null(term) || is.null(estimate) || length(term) != length(estimate)) {
+    return(NULL)
+  }
+  n <- length(term)
+  out <- list(term = term, estimate = estimate)
+  lo <- hs_plot_data_numeric(pd$lo, n)
+  hi <- hs_plot_data_numeric(pd$hi, n)
+  panel <- hs_plot_data_character(pd$panel, n)
+  if (!is.null(lo)) {
+    out$lo <- lo
+  }
+  if (!is.null(hi)) {
+    out$hi <- hi
+  }
+  if (!is.null(panel)) {
+    out$panel <- panel
+  }
+  interval_status <- hs_plot_data_scalar(pd$interval_status)
+  interval_method <- hs_plot_data_scalar(pd$interval_method)
+  if (!is.null(interval_status)) {
+    out$interval_status <- as.character(interval_status)
+  }
+  if (!is.null(interval_method)) {
+    out$interval_method <- as.character(interval_method)
+  }
+  out
+}
+
+hs_normalize_breeding_values_plot_data <- function(pd) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd)) {
+    return(NULL)
+  }
+  id <- hs_plot_data_character(pd$id %||% pd$ids)
+  value <- hs_plot_data_numeric(
+    pd$value %||% pd$values %||% pd$breeding_value %||% pd$breeding_values
+  )
+  if (is.null(id) || is.null(value) || length(id) != length(value)) {
+    return(NULL)
+  }
+  n <- length(id)
+  out <- list(id = id, value = value)
+  trait <- hs_plot_data_character(pd$trait, n)
+  pev <- hs_plot_data_numeric(pd$pev %||% pd$prediction_error_variance, n)
+  if (
+    !is.null(trait) &&
+      !(length(unique(trait)) == 1L && unique(trait) %in% c("1", "trait_1"))
+  ) {
+    out$trait <- trait
+  }
+  if (!is.null(pev)) {
+    out$pev <- pev
+  }
+  pev_scale <- hs_plot_data_scalar(pd$pev_scale)
+  if (!is.null(pev_scale)) {
+    out$pev_scale <- as.character(pev_scale)
+  }
+  out
+}
+
+hs_attach_standard_plot_data <- function(result, raw) {
+  vcpd <- hs_plot_data_try(
+    hs_normalize_variance_components_plot_data(
+      raw$variance_components_plot_data
+    )
+  )
+  if (!is.null(vcpd)) {
+    result$variance_components_plot_data <- vcpd
+  }
+  bvpd <- hs_plot_data_try(
+    hs_normalize_breeding_values_plot_data(raw$breeding_values_plot_data)
+  )
+  if (!is.null(bvpd)) {
+    result$breeding_values_plot_data <- bvpd
+  }
+  result
+}
+
+hs_normalize_genetic_correlation_plot_data <- function(pd, traits = NULL) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd) || is.null(pd$genetic_correlations)) {
+    return(NULL)
+  }
+  rg <- hs_plot_data_matrix(pd$genetic_correlations)
+  if (is.null(rg) || nrow(rg) != ncol(rg)) {
+    return(NULL)
+  }
+  pd_traits <- hs_plot_data_character(pd$traits)
+  traits <- pd_traits %||% traits
+  if (is.null(traits) || length(traits) != nrow(rg)) {
+    traits <- paste0("trait_", seq_len(nrow(rg)))
+  }
+  dimnames(rg) <- list(traits, traits)
+  out <- list(
+    traits = as.character(traits),
+    genetic_correlations = rg,
+    rotation_invariant = isTRUE(hs_plot_data_scalar(pd$rotation_invariant))
+  )
+  h2 <- hs_plot_data_numeric(pd$heritabilities, length(traits))
+  if (!is.null(h2)) {
+    out$heritabilities <- h2
+  }
+  out
+}
+
+hs_normalize_genetic_pca_plot_data <- function(pd) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd)) {
+    return(NULL)
+  }
+  eigenvalues <- hs_plot_data_numeric(pd$eigenvalues)
+  if (is.null(eigenvalues)) {
+    return(NULL)
+  }
+  n <- length(eigenvalues)
+  out <- list(
+    eigenvalues = eigenvalues,
+    rotation_invariant = isTRUE(hs_plot_data_scalar(pd$rotation_invariant)),
+    is_eigenstructure_not_loadings = isTRUE(hs_plot_data_scalar(
+      pd$is_eigenstructure_not_loadings
+    ))
+  )
+  variance_explained <- hs_plot_data_numeric(pd$variance_explained, n)
+  axis_labels <- hs_plot_data_character(pd$axis_labels, n)
+  if (!is.null(variance_explained)) {
+    out$variance_explained <- variance_explained
+  }
+  if (!is.null(axis_labels)) {
+    out$axis_labels <- axis_labels
+  }
+  out
+}
+
+hs_attach_multivariate_plot_data <- function(result, raw, traits = NULL) {
+  gcpd <- hs_plot_data_try(
+    hs_normalize_genetic_correlation_plot_data(
+      raw$genetic_correlation_plot_data,
+      traits
+    )
+  )
+  if (!is.null(gcpd)) {
+    result$genetic_correlation_plot_data <- gcpd
+  }
+  gppd <- hs_plot_data_try(
+    hs_normalize_genetic_pca_plot_data(raw$genetic_pca_plot_data)
+  )
+  if (!is.null(gppd)) {
+    result$genetic_pca_plot_data <- gppd
+  }
+  result
+}
+
+hs_rr_payload_covariate <- function(pd, rr) {
+  cov <- hs_plot_data_numeric(pd$covariate)
+  if (is.null(cov)) {
+    return(NULL)
+  }
+  hs_unstandardize_covariate(cov, rr$lower, rr$upper)
+}
+
+hs_normalize_rr_genetic_variance_plot_data <- function(pd, rr) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd)) {
+    return(NULL)
+  }
+  cov <- hs_rr_payload_covariate(pd, rr)
+  value <- hs_plot_data_numeric(pd$value %||% pd$genetic_variance)
+  if (is.null(cov) || is.null(value) || length(cov) != length(value)) {
+    return(NULL)
+  }
+  n <- length(cov)
+  out <- list(covariate = cov, value = value, genetic_variance = value)
+  h2 <- hs_plot_data_numeric(pd$heritability, n)
+  if (!is.null(h2)) {
+    out$heritability <- h2
+  }
+  basis_order <- hs_plot_data_scalar(pd$basis_order)
+  supplied <- hs_plot_data_scalar(pd$supplied)
+  if (!is.null(basis_order)) {
+    out$basis_order <- as.integer(basis_order)
+  }
+  if (!is.null(supplied)) {
+    out$supplied <- isTRUE(supplied)
+  }
+  out
+}
+
+hs_normalize_rr_eigenfunctions_plot_data <- function(pd, rr) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd)) {
+    return(NULL)
+  }
+  cov <- hs_rr_payload_covariate(pd, rr)
+  if (is.null(cov)) {
+    return(NULL)
+  }
+  eigenfunctions <- hs_plot_data_matrix(pd$eigenfunctions, nr = length(cov))
+  if (is.null(eigenfunctions)) {
+    return(NULL)
+  }
+  k <- ncol(eigenfunctions)
+  out <- list(
+    covariate = cov,
+    eigenfunctions = eigenfunctions,
+    rotation_invariant = isTRUE(hs_plot_data_scalar(pd$rotation_invariant))
+  )
+  variance_explained <- hs_plot_data_numeric(pd$variance_explained, k)
+  axis <- hs_plot_data_numeric(pd$axis, k)
+  if (!is.null(variance_explained)) {
+    out$variance_explained <- variance_explained
+  }
+  if (!is.null(axis)) {
+    out$axis <- as.integer(axis)
+  }
+  out
+}
+
+hs_normalize_rr_covariance_surface_plot_data <- function(pd, rr) {
+  pd <- hs_plot_data_list(pd)
+  if (is.null(pd)) {
+    return(NULL)
+  }
+  cov <- hs_rr_payload_covariate(pd, rr)
+  if (is.null(cov)) {
+    return(NULL)
+  }
+  surface <- hs_plot_data_matrix(pd$surface, nr = length(cov), nc = length(cov))
+  if (is.null(surface)) {
+    return(NULL)
+  }
+  list(
+    covariate = cov,
+    surface = surface,
+    is_correlation = isTRUE(hs_plot_data_scalar(pd$is_correlation))
+  )
+}
+
+hs_attach_random_regression_plot_data <- function(result, raw) {
+  rr <- result$random_regression
+  gvpd <- hs_plot_data_try(
+    hs_normalize_rr_genetic_variance_plot_data(
+      raw$rr_genetic_variance_plot_data,
+      rr
+    )
+  )
+  if (!is.null(gvpd)) {
+    result$rr_genetic_variance_plot_data <- gvpd
+  }
+  efpd <- hs_plot_data_try(
+    hs_normalize_rr_eigenfunctions_plot_data(
+      raw$rr_eigenfunctions_plot_data,
+      rr
+    )
+  )
+  if (!is.null(efpd)) {
+    result$rr_eigenfunctions_plot_data <- efpd
+  }
+  sfpd <- hs_plot_data_try(
+    hs_normalize_rr_covariance_surface_plot_data(
+      raw$rr_covariance_surface_plot_data,
+      rr
+    )
+  )
+  if (!is.null(sfpd)) {
+    result$rr_covariance_surface_plot_data <- sfpd
+  }
+  result
+}
+
 hs_normalize_julia_result <- function(raw, payload) {
   breeding_values <- raw$breeding_values
   animal <- raw$random_effects$animal
@@ -2332,6 +2771,7 @@ hs_normalize_julia_result <- function(raw, payload) {
     result$heritability_se <- as.numeric(raw$heritability_se)
   }
 
+  result <- hs_attach_standard_plot_data(result, raw)
   result
 }
 

@@ -489,6 +489,27 @@ test_that("hsquared can use the opt-in experimental random-regression bridge", {
   h2 <- rr_heritability(fit)
   expect_true(all(h2$value >= 0 & h2$value <= 1))
 
+  expect_false(is.null(fit$result$rr_genetic_variance_plot_data))
+  expect_false(is.null(fit$result$rr_eigenfunctions_plot_data))
+  expect_false(is.null(fit$result$rr_covariance_surface_plot_data))
+  gv_payload <- fit$result$rr_genetic_variance_plot_data
+  gv_fallback <- rr_genetic_variance(fit)
+  expect_equal(range(gv_payload$covariate), c(1, 5))
+  expect_equal(gv_payload$value, gv_fallback$value, tolerance = 1e-8)
+  expect_equal(gv_payload$heritability, h2$value, tolerance = 1e-8)
+  expect_equal(
+    dim(fit$result$rr_eigenfunctions_plot_data$eigenfunctions),
+    c(25L, 2L)
+  )
+  expect_equal(
+    dim(fit$result$rr_covariance_surface_plot_data$surface),
+    c(25L, 25L)
+  )
+  expect_equal(
+    length(unique(autoplot(fit, "reaction_norm", n = 7L)$data$covariate)),
+    7L
+  )
+
   # rr_eigenfunctions matches the engine `rr_eigenfunctions` element-wise.
   ef <- rr_eigenfunctions(fit, at = NULL, n = 9L)
   pts <- hsquared:::hs_rr_eval_points(fit, NULL, 9L)
