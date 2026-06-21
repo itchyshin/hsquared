@@ -5468,10 +5468,10 @@ release".
 
 ## 2026-06-21 (metafounder H^Gamma parser/payload gate)
 
-- Follow-up to the contract/status PR: `single_step(1 | id, pedigree = ped,
-  markers = M, group = mf_group, Gamma = Gamma)` now has a pure-R
-  parser/model-spec/bridge-payload gate for supplied-`Gamma` single-step
-  `H^Gamma`.
+- Continued Candidate A from the Big 3 plan after R PR #38 merged:
+  `single_step(1 | id, pedigree = ped, markers = M, group = mf_group,
+  Gamma = Gamma)` now has a pure-R parser/model-spec/bridge-payload gate for
+  supplied-`Gamma` single-step `H^Gamma`.
 - Implementation boundary: the branch validates an ID-keyed `group` assignment
   against normalized pedigree IDs, requires non-missing labels for animals with
   unknown parents, validates finite symmetric positive-semidefinite supplied
@@ -5488,12 +5488,15 @@ release".
   prediction article now say "payload gate done; live fit/extractor/comparator
   pending." No covered promotion, no `Gamma` estimation claim, and no BLUPF90
   evidence.
+- BLUPF90-family executable probe: `renumf90`, `airemlf90`, `blupf90`,
+  `remlf90`, and `gibbsf90` are all absent from PATH locally, so the real
+  second-comparator run remains blocked here.
 - Checks: `air format .` clean; `Rscript --vanilla -e 'devtools::document()'`
   regenerated `man/genomic_markers.Rd`; focused
-  `Rscript --vanilla -e 'devtools::test(filter = "single-step|phase0-api")'`
-  **170 pass / 0 fail / 0 warn / 6 skip**; full
+  `Rscript --vanilla -e 'devtools::test(filter = "phase0-api|single-step-construct|formula-animal")'`
+  **218 pass / 0 fail / 0 warn / 5 skip**; full
   `Rscript --vanilla -e 'devtools::test()'` **1248 pass / 0 fail / 0 warn /
   55 skip**; `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
   `git diff --check` clean; `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla
-  -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
+  -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")'`
   **0 errors / 0 warnings / 0 notes**.
