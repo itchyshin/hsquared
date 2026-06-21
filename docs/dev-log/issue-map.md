@@ -128,7 +128,10 @@ Recent Julia-side coordination checkpoints that keep current gates honest:
   target fixture under `test/fixtures/genomic_gblup_snpblup_target/`. The
   fixture serializes phenotypes, marker dosages, supplied allele frequencies,
   VanRaden method-1 `G`, `Ginv`, beta, GEBVs, marker effects, metadata, and a
-  no-RNG generator. It is target availability only: no AGHmatrix, rrBLUP,
+  no-RNG generator. The R test suite mirrors that fixture and recomputes the
+  VanRaden `G`, `Ginv`, supplied-variance GBLUP MME solution, and SNP-BLUP
+  marker-effect route agreement without requiring Julia. It is target
+  availability only: no AGHmatrix, rrBLUP,
   sommer, JWAS, BGLR, BLUPF90, or other external comparator evidence; no R
   genomic model-spec activation; and no covered promotion.
 - HSquared.jl PR #145 (`b0d14ba`) added `test/fixtures/comparator_targets.toml`
