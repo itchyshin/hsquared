@@ -3,6 +3,33 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Retarget R issue #7 validation-canon body
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Curie, Mrode, Rose, Grace.
+- Branch: `codex/issue-7-body-sync`.
+- Scope:
+  - inspected live R issue #7 and current validation/capability/debt/public
+    claim surfaces after the focused #10 refresh;
+  - edited the GitHub issue #7 body from a generic phase ledger into the current
+    parent validation-canon index;
+  - named focused child/twin gates while preserving the parent `status:partial`
+    boundary.
+- Live GitHub action:
+  - `gh issue edit 7 --repo itchyshin/hsquared --body ...` updated the issue
+    body.
+- Claim boundary: GitHub issue-body/status synchronization only. No R behavior
+  changed, no issue was closed, no validation row was promoted, and no
+  ASReml/BLUPF90/DMU/WOMBAT/PLINK/GenABEL parity was claimed.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-7-body-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Live issue audit confirms #7 remains open with `status:partial`.
+  - Boundary grep confirms the parent-ledger wording adds no issue close,
+    validation promotion, or ASReml/BLUPF90/DMU/WOMBAT/PLINK/GenABEL parity
+    claim.
+
 ## 2026-06-21 Retarget R issue #10 multivariate validation body
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Curie, Mrode, Rose, Grace.
