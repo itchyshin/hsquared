@@ -3,6 +3,42 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #140 genomic comparator target fixture
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
+- Branch: `codex/julia-140-genomic-target-sync`.
+- Scope:
+  - recorded HSquared.jl PR #140 / commit `008ea4d` as a genomic GBLUP /
+    SNP-BLUP target fixture available for future R/external comparator work;
+  - added `docs/dev-log/comparator-runs/2026-06-21-genomic-gblup-snpblup-target-handoff.md`;
+  - updated comparator-run README, issue map, capability/public-claims ledgers,
+    genomic article, NEWS, coordination board, check log, and after-task report.
+- Fixture inspected:
+  - `phenotypes.csv`, `markers.csv`, `allele_frequencies.csv`,
+    `expected_genomic_relationship.csv`, `expected_genomic_precision.csv`,
+    `expected_beta.csv`, `expected_gebv.csv`, `expected_marker_effects.csv`,
+    `expected_metadata.csv`, and `generate.jl`;
+  - metadata records `sigma_g2 = 2`, `sigma_e2 = 1`, 4 records, 6 markers,
+    VanRaden method 1 with supplied allele frequencies, and GBLUP/SNP-BLUP GEBV
+    route agreement at `1.1102230246251565e-15`.
+- Local R comparator-package probe:
+  - `AGHmatrix`: missing;
+  - `rrBLUP`: missing;
+  - `sommer`: 4.4.3;
+  - `BGLR`: missing.
+- Claim boundary: target availability only. No external genomic comparator was
+  run; no AGHmatrix/rrBLUP/sommer/JWAS/BGLR/BLUPF90 evidence is claimed; no new
+  R genomic model-spec activation, sparse/APY scaling, weighted/standardized or
+  Bayesian marker-prior support, or covered-status promotion.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-140-genomic-target-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep over `NEWS.md`, capability/public-claims ledgers, issue map,
+    comparator-run handoff, genomic article, coordination board, check log, and
+    after-task report confirms target-only/no-comparator/no-promotion wording.
+
 ## 2026-06-21 Close R issue #19 after missing-data grammar contract
 
 - Active lenses: Ada, Shannon, Boole, Jason, Rose, Grace.

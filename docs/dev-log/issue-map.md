@@ -42,7 +42,7 @@ the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 | 61 | Joint critical path / cross-lane coordination | — | open · cross-lane | Holds ratified bridge conventions that feed R #22/#23/metafounder/RR follow-ups |
 | 58 | Engine perf ideas (augmented AI-REML / SQUAREM / Woodbury) | 8 | planned · cross-lane | hsquared#24/#25/#17 |
 | 53 | Innovation: metafounders / unknown-parent groups for ssGBLUP | 2/5 | planned / partial primitives | R contract row; supplied-`Gamma` bridge exists, no estimation or comparator claim |
-| 49 | Validation: external comparator target fixtures | — | partial · cross-lane | hsquared#10/#7 promotion gate; Julia PR #132 hardened the BLUPF90 packet preflight and skip-safe runner, but no BLUPF90 executable comparator evidence exists yet |
+| 49 | Validation: external comparator target fixtures | — | partial · cross-lane | hsquared#10/#7 promotion gate; Julia PR #132 hardened the BLUPF90 packet preflight and skip-safe runner; Julia PR #140 (`008ea4d`) added a genomic GBLUP/SNP-BLUP target fixture. No BLUPF90 executable or genomic external-comparator evidence exists yet |
 | 46 | Validation: fitted Mrode/textbook target evidence | 1/3 | partial · open | Julia PR #138 (`945bd2a`) synced the R Mrode Example 5.1 supplied-covariance BLUP/MME anchor and `MCMCglmm` Bayesian agreement probe into the Julia V4 ledger; Julia PR #139 (`934a91e`) added a native Mrode (2014) Example 3.1 supplied-variance anchor at `sigma_a2 = 20`, `sigma_e2 = 40`, pinning published EBVs for animals 1-8 and the invariant male-minus-female sex contrast. #46 remains open for fitted estimated-VC/textbook target work; neither sync promotes V4-MV-REML or adds comparator parity |
 | 5 | Gaussian animal model REML/ML engine | 1 | partial | — (epic) |
 | 6 | Engine result object and diagnostics | 1 | partial | hsquared#6 |
@@ -64,7 +64,7 @@ the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 + #48 (+ PR #134 smoke, PR #135 reopen) | Phase 5 stack on main; fixed-panel threshold smoke banked and #48 reopened as the active evidence gate, but no R significance threshold activation or production calibration claim |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, provenance extractors, reserved/error-only `metafounder_effects()`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
-| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity; Julia PR #132 banked BLUPF90 preflight/runner hardening only |
+| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity; Julia PR #132 banked BLUPF90 preflight/runner hardening only; Julia PR #140 banked a genomic target fixture for future external comparator consumption |
 | HSData marshalling | #8 | #8 | skip-guarded live bridge marshalling now checks phenotype/pedigree/genotype data-frame components into `HSquared.HSData`; no file-backed storage, relationship construction, or fitting claim |
 
 Recently banked / no longer open in the selected Julia anchor list: #38
@@ -109,6 +109,13 @@ Recent Julia-side coordination checkpoints that keep current gates honest:
   It is still supplied-variance textbook evidence only: no estimated variance
   components, no same-estimand REML comparator parity, no sire-model
   implementation, and no covered promotion.
+- HSquared.jl PR #140 (`008ea4d`) added a Julia-native genomic GBLUP/SNP-BLUP
+  target fixture under `test/fixtures/genomic_gblup_snpblup_target/`. The
+  fixture serializes phenotypes, marker dosages, supplied allele frequencies,
+  VanRaden method-1 `G`, `Ginv`, beta, GEBVs, marker effects, metadata, and a
+  no-RNG generator. It is target availability only: no AGHmatrix, rrBLUP,
+  sommer, JWAS, BGLR, BLUPF90, or other external comparator evidence; no R
+  genomic model-spec activation; and no covered promotion.
 
 ## Historical WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
 
