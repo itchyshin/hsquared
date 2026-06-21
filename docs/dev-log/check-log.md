@@ -3,6 +3,26 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Julia #132/#133 issue-map sync
+
+- Scope: coordination docs only. Refreshed `docs/dev-log/issue-map.md` after
+  Julia-lane sync reported:
+  - HSquared.jl PR #132 merged at `b657464`, hardening the BLUPF90
+    multivariate preflight packet and skip-safe opt-in runner for #49/#41;
+  - HSquared.jl PR #133 merged at `4526481`, closing #38 and replacing stale
+    AI-matrix validation wording.
+- Live issue-list check:
+  `gh issue list --repo itchyshin/HSquared.jl --state open --limit 80` still
+  lists #49 and #41 as open validation/comparator gates, while #38 is absent.
+- Claim boundary: no R code or capability status changed. PR #132 is preflight
+  hardening only; no BLUPF90-family executable comparator evidence was run and
+  V4-MV-REML remains partial.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#132|#133|b657464|4526481|BLUPF90|V4-MV-REML remains partial|#49|#41|#38" docs/dev-log/issue-map.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-julia-132-133-issue-map-sync.md`
+    confirms #132/#133 are recorded and #49/#41 remain open/partial.
+
 ## 2026-06-21 Julia #38 issue-map sync
 
 - Scope: coordination docs only. Refreshed `docs/dev-log/issue-map.md` after
