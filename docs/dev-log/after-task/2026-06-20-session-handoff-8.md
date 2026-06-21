@@ -27,11 +27,11 @@ file. Supersedes handoff-7.
 
 ## Current state (repo = truth)
 
-- R `main` clean @ **`2322ba4`** (CI-record tip, binomial counts), synced; CI green
-  throughout (pkgdown `27891149133`). `rcmdcheck(--no-manual)` 0/0/0;
+- R `main` clean @ **`e279b26`** (CI-record tip, SNP-BLUP REML), synced; CI green
+  throughout (pkgdown `27891709713`). `rcmdcheck(--no-manual)` 0/0/0;
   `check_pkgdown` clean; live `test-single-step-construct` **54/54**, `test-gwas`
-  **59/59**, `test-nongaussian` **39/39**, `test-binomial-counts` **20/20** on the
-  bridge.
+  **59/59**, `test-nongaussian` **39/39**, `test-binomial-counts` **20/20**,
+  `test-snp-blup` **37/37** on the bridge.
 - **Cross-lane opportunity scout** (4-agent Workflow) ranked the actionable work;
   its plan drives the rest of this session: A1 binomial counts (DONE), A2 SNP-BLUP
   REML (#13, next), A3 attach plot_data at fit time (#93), A4 Henderson PEV

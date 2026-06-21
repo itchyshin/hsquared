@@ -5234,3 +5234,4 @@ release".
   unchanged); `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")`
   **0/0/0**. capability-status + NEWS + validation-status + 4 vignettes updated.
   No engine edit.
+- CI (commit `e279b26`, SNP-BLUP REML): pkgdown run `27891709713` **success**; pages green.
