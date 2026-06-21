@@ -254,6 +254,9 @@ Local lessons:
 - `HSquared.jl` already has partial structured covariance support on main. R
   only surfaces the rotation-free diagonal subset; loading-bearing
   low-rank/factor-analytic support remains gated.
+- HSquared.jl PR #144 (`023c675`) is a status/issue-body sync, not a new bridge:
+  it separates the banked `:diagonal`/`:unstructured` payload evidence from the
+  still-blocked lowrank/fa loading exposure, R activation, and comparator gates.
 
 External lessons:
 

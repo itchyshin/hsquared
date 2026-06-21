@@ -3,6 +3,48 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #144 structured status and #143 threshold context
+
+- Active lenses: Ada, Shannon, Hopper, Boole, Kirkpatrick, Fisher, Rose, Grace.
+- Branch: `codex/status-ledger-sync-144-143`.
+- Scope:
+  - synced HSquared.jl PR #144 (`023c675`) into the R issue map,
+    structured-covariance contract note, capability/public-claims/validation
+    ledgers, and multivariate article;
+  - kept HSquared.jl PR #143 (`07a3c63`) as threshold-status context only in
+    the threshold activation contract;
+  - corrected the R `engine_control$rank` diagnostic so it no longer says the
+    current multivariate bridge is unstructured-only after diagonal-G support
+    landed;
+  - updated the live R #22 body to mention the Julia #144 split and retargeted
+    the live R #23 title from closed #45 to active #48/#61.
+- Live GitHub actions:
+  - `gh issue edit 22 --repo itchyshin/hsquared --body ...` updated the
+    structured-covariance bridge issue body.
+  - `gh issue edit 23 --repo itchyshin/hsquared --title 'Bridge: post-fit gwas()/marker-scan wrapper (twin HSquared.jl#48/#61)'`
+    updated the marker-scan issue title.
+- Claim boundary: status/diagnostic hygiene only. No R threshold was activated,
+  no lowrank/factor-analytic bridge or loading extractor was added, no
+  formula-level `cov = ...` grammar was surfaced, no comparator/calibration
+  evidence was claimed, and no validation/public-claim promotion was made.
+- Checks:
+  - `air format .` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "multivariate|formula-animal|phase0-api")'`
+    was killed with exit 137 before output; even a bare wrapper `Rscript`
+    startup probe was sluggish, so checks were rerun with the explicit
+    framework Rscript path below.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::test(filter = "multivariate")'`
+    passed 82/0/0/4.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'devtools::test()'`
+    passed 1339/0/0/59.
+  - `git diff --check` clean.
+  - `gh issue view 22 --repo itchyshin/hsquared --json title,body,state,url |
+    jq ...` verified #22 is open and its body starts with the #144 boundary.
+  - `gh issue view 23 --repo itchyshin/hsquared --json title,body,state,url |
+    jq ...` verified #23 is open and titled against #48/#61.
+
 ## 2026-06-21 Mirror Julia marker-scan payload fixture
 
 - Active lenses: Ada, Shannon, Hopper, Jason, Fisher, Curie, Rose, Grace.

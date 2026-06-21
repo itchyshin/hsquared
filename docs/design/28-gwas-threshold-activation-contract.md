@@ -11,6 +11,9 @@ Current status:
   computed over the supplied marker panel.
 - HSquared.jl PR #134 banked a fixed-marker-panel type-I smoke harness. That
   is validation infrastructure, not an R threshold.
+- HSquared.jl PR #143 (`07a3c63`) added the missing Julia
+  `V5-MARKER-THRESHOLD` validation-status/source-doc row while keeping the
+  threshold evidence gate open; this is status hygiene, not an R threshold.
 - R must not call any line, cutoff, q-value, or table column genome-wide
   calibrated until the gates below are met.
 
