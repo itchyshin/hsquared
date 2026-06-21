@@ -99,13 +99,22 @@
   (`HSquared.single_marker_scan()`) as a naive contrast — it carries a
   `scan_method` attribute and
   [`print()`](https://rdrr.io/r/base/print.html)/[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
-  flag the absence of any relatedness correction. A leave-one-group-out
-  (LOCO) scan exists engine-side
-  (`HSquared.loco_mixed_model_marker_scan()`) but is not yet surfaced (R
-  LOCO surfacing in progress);
+  flag the absence of any relatedness correction.
+  `gwas(fit, markers, method = "loco", marker_groups = chrom)` surfaces
+  the leave-one-group-out scan
+  (`HSquared.loco_mixed_model_marker_scan()`): a marker is corrected by
+  a genomic (VanRaden) relationship built from all **other** marker
+  groups, so its own signal does not leak into the background
+  relationship. The LOCO relationship is genomic while the reused
+  variance components are pedigree-estimated (a scale mismatch surfaced
+  in [`print()`](https://rdrr.io/r/base/print.html)/docs);
+  [`print()`](https://rdrr.io/r/base/print.html)/[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+  flag the LOCO correction and
   [`print()`](https://rdrr.io/r/base/print.html) restates the
-  calibration caveat. Verified live to match the engine element-wise.
-  Experimental, dense/validation-scale; the reserved tabular
+  calibration caveat for every method. Verified live to match the engine
+  element-wise (each method, including a per-group LOCO
+  precision-selection check). Experimental, dense/validation-scale; the
+  reserved tabular
   [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   extractors stay reserved for the planned map-annotated API
   ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
