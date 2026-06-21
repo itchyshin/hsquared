@@ -27,9 +27,14 @@ file. Supersedes handoff-7.
 
 ## Current state (repo = truth)
 
-- R `main` clean @ **`4603db4`** (CI-record tip), synced; CI green throughout.
-  ~14 commits this session (`24a4f05..4603db4`). `rcmdcheck(--no-manual)` 0/0/0;
-  `check_pkgdown` clean; live `test-plot-data-parity` **24/24** on the bridge.
+- R `main` clean @ **`a448f79`** (CI-record tip, LOCO gwas), synced; CI green
+  throughout (pkgdown `27888780206`). `rcmdcheck(--no-manual)` 0/0/0;
+  `check_pkgdown` clean; live `test-gwas` **59/59** on the bridge.
+- **s6 (this session):** LOCO gwas landed — `gwas(method = "loco", marker_groups
+  = chrom)` completes #4. Live dimension probe resolved the design Q (animal-level
+  precisions, record-level scan markers, reused pedigree VCs); 5-lens adversarial
+  verify (no blocker) added a non-square-Z regression that errors on the wrong
+  wiring. Doc `26-loco-gwas-bridge.md` IMPLEMENTED.
 - Twin `HSquared.jl` `main` @ **`4559f16`** — landed `variance_components_plot_data`
   (set B, #95), plus the earlier RR/G-geometry/g-correlation preparers (#88/#91/#92)
   and the #93/#94 plotting coordination.
@@ -83,22 +88,16 @@ mechanical: parser (§2) → `genotyped_rows` alignment (§3, the crux) → payl
    capability-status is now `partial (R)`. Remaining single-step follow-ups: the
    `hs_data()` pedigree shorthand (deferred), large-pedigree sparse `A`, and the
    twin-gated BLUPF90/AGHmatrix comparator to promote past `partial`.
-2. **LOCO `gwas()`** (#4, remaining half): the single-marker option is DONE
-   (`gwas(method = "single")`, commit `0b9756a`). LOCO proper is a genuine
-   **design** problem, not just wiring — write a build-spec first (like
-   `docs/design/25` for single-step). The engine has
-   `loco_relationship_precisions(markers, marker_groups; ridge)` →
-   `Dict{group ⇒ precision}` and `loco_mixed_model_marker_scan(y, X, Z, precisions,
-   marker_groups, markers, σ²a, σ²e)` (both exported, validation-scale). **The open
-   design question:** `loco_relationship_precisions` builds **genomic** per-group
-   precisions (VanRaden G among the *marker rows*, leaving out each group), but
-   `gwas()` reuses a **pedigree** fit whose `Z` maps records→animals and whose
-   `σ²a/σ²e` were estimated under the *pedigree* `Ainv`. Reconciling a genomic-LOCO
-   relationship with a pedigree/repeated-records animal-model fit (dimension of the
-   precisions vs `Z`'s columns; whether `σ²a` should be re-estimated under the
-   genomic relationship) is the design work — plus the new marker→chromosome-group
-   map API (a `marker_groups =` arg). Needs a live dimension probe before the spec
-   is "mechanical".
+2. **DONE — LOCO `gwas()`** (#4 complete, commit `a448f79`). The design question
+   is resolved (`docs/design/26`): a live dimension probe proved the LOCO precision
+   enters the `Ainv` slot, so it is built from **animal-level** markers
+   (`n_animals²`) while the scan tests **record-level** markers (`Z·M`); the
+   pedigree fit's `σ²a/σ²e` are reused (a single supplied σ — per-group VC
+   re-estimation is out of the engine contract, so the genomic-vs-pedigree scale
+   mismatch is caveated, not re-estimated). `gwas(method = "loco", marker_groups =
+   chrom)` is live-verified (incl. a non-square-`Z` regression). The only remaining
+   marker-scan work is twin-gated: calibration (#48) and a genomic-VC LOCO variant
+   (would need a genomic fit + per-group σ, changing the `gwas(fit, …)` contract).
 2b. **Plotting figures: DONE** — the full §1 catalog is built (s5). The only
    remaining plot-data parity gap is `breeding_values_plot_data`, which awaits its
    engine preparer (a #93 ask); wire it when the twin lands it.

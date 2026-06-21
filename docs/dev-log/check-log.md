@@ -5108,3 +5108,4 @@ release".
   `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
   capability-status marker-scan row + NEWS gwas bullet updated (LOCO surfaced,
   live-verified element-wise); doc 26 → IMPLEMENTED.
+- CI (commit `a448f79`, LOCO gwas): pkgdown run `27888780206` **success**; pages green.
