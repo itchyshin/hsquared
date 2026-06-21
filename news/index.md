@@ -61,13 +61,16 @@
   by calling the Julia-owned `metafounder_animal_model()` path.
   `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)`
   continues to fit through `target = "metafounder_single_step"` by
-  calling `fit_metafounder_single_step_reml()`. Skip-guarded live tests
-  pin the animal-only `Gamma = 0` reduction to the ordinary Henderson
-  MME supplied-variance path, the single-step `Gamma = 0` reduction to
-  ordinary single-step construction, and nonzero-`Gamma` sensitivity
-  probes with stable labels/dimensions. No `Gamma` estimation,
-  metafounder-specific extractor, BLUPF90 comparator evidence,
-  production-scale claim, or covered support is claimed.
+  calling `fit_metafounder_single_step_reml()`. `gamma_matrix(fit)` and
+  `metafounder_groups(fit)` return the supplied `Gamma` matrix and group
+  assignments as fitted-object provenance for these paths; they are not
+  estimates. Skip-guarded live tests pin the animal-only `Gamma = 0`
+  reduction to the ordinary Henderson MME supplied-variance path, the
+  single-step `Gamma = 0` reduction to ordinary single-step
+  construction, and nonzero-`Gamma` sensitivity probes with stable
+  labels/dimensions. No `Gamma` estimation, metafounder-specific effect
+  extractor, BLUPF90 comparator evidence, production-scale claim, or
+  covered support is claimed.
 - Reconciled the PEV/reliability standard-field bridge status. Default,
   sparse, and explicit AI-REML Julia result-payload paths consume engine
   `prediction_error_variance` and `reliability` fields when present
