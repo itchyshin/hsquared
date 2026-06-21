@@ -3,6 +3,26 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Julia #139 Mrode 3.1 published-anchor sync
+
+- Scope: R coordination/status docs only. Mirrored Julia-lane confirmation that
+  HSquared.jl PR #139 merged at `934a91e`, adding a Julia-native Mrode (2014)
+  Example 3.1 published animal-model anchor at supplied variance components
+  (`sigma_a2 = 20`, `sigma_e2 = 40`).
+- Evidence recorded: Julia pins published EBVs for animals 1-8 and the
+  invariant male-minus-female sex contrast, with a perturbation test-of-test.
+  PR checks were green before merge: Julia 1.10, Julia 1, Documenter, and
+  documenter/deploy.
+- Claim boundary: supplied-variance textbook anchor only. No R code changed, no
+  `validation_status()` row changed, no estimated variance components, no
+  same-estimand REML comparator parity, no sire-model implementation, and no
+  covered-status promotion.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#139|934a91e|Mrode \\(2014\\) Example 3\\.1|sigma_a2 = 20|same-estimand REML comparator|covered-status promotion|sire-model" docs/dev-log/issue-map.md docs/design/04-validation-canon.md docs/design/capability-status.md docs/design/validation-debt-register.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-julia-139-mrode31-sync.md`
+    confirms the supplied-variance/no-promotion boundary.
+
 ## 2026-06-21 hs_data live HSData marshalling parity
 
 - Scope: R bridge/data test plus status ledgers. Added a skip-guarded live

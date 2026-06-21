@@ -50,6 +50,12 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   reliability, h2, ML log-likelihood, and dense/sparse REML log-likelihood at
   supplied variance components. This is not variance-component estimation or
   full Mrode fitted-output validation.
+- Julia Mrode Example 3.1 published anchor sync: HSquared.jl PR #139
+  (`934a91e`) added a native supplied-variance test at `sigma_a2 = 20`,
+  `sigma_e2 = 40`, pinning published EBVs for animals 1-8 and the invariant
+  male-minus-female sex contrast. This is the Julia-side counterpart to the
+  R published-anchor evidence, not estimated variance components, not a
+  same-estimand REML comparator, and not a covered-status promotion.
 - Sparse REML estimate-recovery check: an optional live test runs the opt-in
   Julia-owned `fit_sparse_reml()` optimizer from two different starting variance
   components and verifies it reaches the same REML optimum (start-independence)
