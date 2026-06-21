@@ -796,6 +796,11 @@ test_that("metafounder single-step nonzero Gamma changes predictions [live]", {
 
   bv0 <- breeding_values(hgamma0)
   bvg <- breeding_values(hgamma)
+  diag <- fit_diagnostics(hgamma)
+  pev <- prediction_error_variance(hgamma)
+  rel <- reliability(hgamma)
+  acc <- accuracy(hgamma)
+
   expect_equal(gamma_matrix(hgamma0), Gamma0)
   expect_equal(gamma_matrix(hgamma), Gamma)
   expect_equal(
@@ -810,6 +815,21 @@ test_that("metafounder single-step nonzero Gamma changes predictions [live]", {
   expect_setequal(bvg$id, as.character(ped$id))
   expect_equal(nrow(bvg), nrow(ped))
   expect_true(all(is.finite(bvg$value)))
+  expect_equal(
+    diag$value[diag$metric == "target"],
+    "metafounder_single_step"
+  )
+  expect_equal(
+    diag$value[diag$metric == "variance_components_source"],
+    "estimated_metafounder_single_step_ai_reml"
+  )
+  expect_equal(diag$value[diag$metric == "gamma_source"], "supplied")
+  expect_equal(pev$id, as.character(ped$id))
+  expect_equal(rel$id, as.character(ped$id))
+  expect_equal(acc$id, as.character(ped$id))
+  expect_true(all(is.finite(pev$value)))
+  expect_true(all(rel$value >= 0 & rel$value <= 1))
+  expect_equal(acc$value, sqrt(rel$value), tolerance = 1e-12)
   merged <- merge(bv0, bvg, by = "id", suffixes = c("_zero", "_gamma"))
   expect_equal(nrow(merged), nrow(ped))
   expect_gt(mean(abs(merged$value_zero - merged$value_gamma)), 1e-6)
