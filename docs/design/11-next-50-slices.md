@@ -128,6 +128,15 @@ check-log evidence, an after-task report, and an updated claim boundary.
   gap for supplied-covariance validation only; V4 remains `partial` and still
   needs recovery-gate acceptance or broadening plus another independent
   same-estimand comparator beyond `sommer`.
+- BLUPF90/AIREMLF90 multivariate run preparation: the R lane now has a precise
+  executable handoff packet and an internal sanitized-summary CSV ingester for a
+  future host with `renumf90` and `airemlf90`. These are protocols/review aids,
+  not comparator evidence. V4 remains `partial`.
+- GWAS threshold calibration status: HSquared.jl PR #134 banked a fixed-marker-
+  panel type-I calibration smoke harness and closed the live Julia #48 issue,
+  but R `gwas()` significance thresholds remain inactive. The R surface still
+  reports nominal/Bonferroni/BH p-values only, with no realistic-LD production
+  calibration, no permutation-backed cutoff, and no external comparator claim.
 
 ## Programme Board
 
@@ -154,8 +163,8 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 19 | Julia | Stabilize factor-analytic `G = Lambda Lambda' + Psi` engine output names. | Loadings/uniqueness extraction tests green. |
 | 20 | R | Add reserved extractor names for loadings, uniqueness, latent breeding values, and eigen-G. | done: names exist with planned/rotation-aware errors; no fitting or interpretation claim |
 | 21 | R/docs | Add a G-matrix interpretation vignette for breeders/ecologists. | done: `articles/g-matrix-interpretation` teaches invariant G/R summaries and fences `P_matrix()`, FA loadings, evolvability, and selection-response claims |
-| 22 | Julia | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml if available). | Comparator policy accepted. |
-| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: `sommer` diagonal-residual evidence added to the existing multivariate row; dedicated issue #10 tracks full same-estimand, ASReml/BLUPF90, and recovery gates before any covered row. |
+| 22 | Julia/R | Add multivariate external-comparator fixtures where feasible (`sommer`, ASReml/BLUPF90 if available). | partial: `sommer` same-estimand evidence is recorded; BLUPF90 packet/handoff and summary ingester are banked, but no BLUPF90 executable evidence exists. |
+| 23 | R | Add comparator-status rows for multivariate only after evidence exists. | partial: R records cold-start recovery, full-unstructured `sommer`, Mrode 5.1 supplied-covariance target, and `MCMCglmm` Bayesian agreement; issue #10 still requires recovery-gate acceptance/broadening plus a second independent same-estimand comparator before covered wording. |
 | 24 | R | Add `G_matrix()` as an alias or wrapper only if it improves user clarity. | done: `G_matrix()` and `R_matrix()` are aliases over the existing covariance extractors; no new `P_matrix()` estimand or capability claim |
 | 25 | Julia | Implement genomic relationship scaling/blending options. | G/GINV tests against known formulas. |
 | 26 | R | Expose marker-to-G controls with simple names and safe defaults. | Jason/Hopper review. |
@@ -165,10 +174,10 @@ check-log evidence, an after-task report, and an updated claim boundary.
 | 30 | R/docs | Add genomic prediction vignette: GBLUP, SNP-BLUP, supplied variances, and boundaries. | done: article added; no JWAS/ASReml replacement, APY, marker-scan, H-construction, or production-comparator claim |
 | 31 | Julia | Add marker-effect REML or AI-REML variance estimation for SNP-BLUP. | Supplied-variance status can move only after recovery. |
 | 32 | R | Add `marker_variance_explained()` for real marker-effect fits. | done: opt-in SNP-BLUP fits now return descriptive fitted-marker shares; no scan/QTL/p-value claim |
-| 33 | Julia | Add single-marker scan kernel with kinship correction. | Tiny GWAS fixtures. |
-| 34 | R | Expose `marker_scan()` as opt-in once engine scan results are stable. | Multiple-testing and LOCO wording clear. |
-| 35 | Julia | Add LOCO support for mixed-model scans. | Chromosome holdout tests. |
-| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; no marker-scan, QTL, GWAS, eQTL, scan-plot, LOCO, or production-scale claim |
+| 33 | Julia | Add single-marker scan kernel with kinship correction. | done for engine scan kernels used by R `gwas()`; still no production threshold claim. |
+| 34 | R | Expose post-fit marker scan as opt-in once engine scan results are stable. | done: `gwas(fit, markers)` exposes mixed, single-marker, and LOCO methods with uncalibrated-significance wording; no `marker_scan()` formula grammar or map-annotated QTL/eQTL table activation. |
+| 35 | Julia/R | Add LOCO support for mixed-model scans. | done at validation scale: R live-verifies LOCO against the engine; genomic-LOCO uses pedigree-estimated VCs and remains uncalibrated. |
+| 36 | R/docs | Add QTL/GWAS status vignette with scale caveats. | done: status article added; marker scans are now live through `gwas()` but remain experimental/uncalibrated; QTL/eQTL tables, production calibration, and extension-scale scans remain planned. |
 | 37 | Julia | Add basic eQTL scan primitives for response matrices. | Tiny cis/trans fixture. |
 | 38 | R | Consider `hsquaredQTL` extension boundary before expanding core. | done: core keeps simple vocabulary/result contract; heavy scans, file-backed data, plots, fine-mapping, and accelerator scan kernels are extension-bound |
 | 39 | Julia | Add GLLVM-style Gaussian response-matrix factor prototype. | Compare to GLLVM.jl on tiny examples. |

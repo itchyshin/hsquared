@@ -5933,3 +5933,17 @@ release".
   `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e
   'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
   **0 errors / 0 warnings / 0 notes**.
+
+## 2026-06-21 (Next-50 bank sync)
+
+- Refreshed `docs/design/11-next-50-slices.md` after R PRs #55/#56 and Julia
+  PR #134. The board now distinguishes banked BLUPF90 handoff/summary-ingester
+  scaffolds from actual BLUPF90 comparator evidence, and distinguishes Julia's
+  fixed-panel calibration smoke from any R `gwas()` threshold activation.
+- Claim boundary: docs-only status sync. No `validation_status()` change, no
+  capability-status promotion, no BLUPF90 evidence, no calibrated GWAS threshold,
+  and no QTL/eQTL table activation.
+- Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
+  `git diff --check` clean; boundary grep over `docs/design/11-next-50-slices.md`
+  and the after-task report confirms the BLUPF90 and GWAS updates are framed as
+  no-evidence/no-threshold/no-promotion boundaries.
