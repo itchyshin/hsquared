@@ -83,6 +83,63 @@ test_that("the gwas normalizer assembles the marker-scan table with the caveat",
   expect_output(print(gl), "scale mismatch")
 })
 
+test_that("the gwas normalizer consumes the serialized Julia marker-scan payload", {
+  expected <- utils::read.csv(
+    testthat::test_path(
+      "fixtures",
+      "marker_scan_parity",
+      "expected_marker_scan_payload.csv"
+    ),
+    stringsAsFactors = FALSE
+  )
+  metadata <- utils::read.csv(
+    testthat::test_path(
+      "fixtures",
+      "marker_scan_parity",
+      "expected_metadata.csv"
+    ),
+    stringsAsFactors = FALSE
+  )
+  meta <- stats::setNames(metadata$value, metadata$field)
+  raw <- list(
+    marker_ids = expected$marker_id,
+    effects = expected$effect,
+    standard_errors = expected$standard_error,
+    z_scores = expected$z_score,
+    chisq = expected$chisq,
+    p_values = expected$p_value,
+    bonferroni = expected$bonferroni_p_value,
+    bh = expected$bh_q_value,
+    lod = expected$lod_score
+  )
+
+  g <- hsquared:::hs_normalize_gwas_result(raw)
+
+  expect_s3_class(g, "hs_gwas")
+  expect_equal(g$marker, expected$marker_id)
+  expect_equal(g$effect, expected$effect, tolerance = 1e-12)
+  expect_equal(g$se, expected$standard_error, tolerance = 1e-12)
+  expect_equal(g$z, expected$z_score, tolerance = 1e-12)
+  expect_equal(g$chisq, expected$chisq, tolerance = 1e-12)
+  expect_equal(g$p_value, expected$p_value, tolerance = 1e-12)
+  expect_equal(g$bonferroni_p, expected$bonferroni_p_value, tolerance = 1e-12)
+  expect_equal(g$bh_qvalue, expected$bh_q_value, tolerance = 1e-12)
+  expect_equal(g$lod, expected$lod_score, tolerance = 1e-12)
+  expect_equal(g$lod, g$chisq / (2 * log(10)), tolerance = 1e-12)
+  expect_equal(attr(g, "scan_method"), "mixed")
+  expect_null(attr(g, "calibration"))
+  expect_false("denominator" %in% names(g))
+  expect_false("allele_frequency" %in% names(g))
+  expect_output(print(g), "NOT genome-wide calibrated")
+
+  expect_equal(meta[["engine"]], "HSquared.jl")
+  expect_equal(meta[["target"]], "mixed_model_marker_scan")
+  expect_equal(as.integer(meta[["n_markers"]]), nrow(expected))
+  expect_equal(as.numeric(meta[["sigma_a2"]]), 1.2)
+  expect_equal(as.numeric(meta[["sigma_e2"]]), 0.8)
+  expect_equal(as.numeric(meta[["vanraden_scale"]]), 1.4861111111111112)
+})
+
 test_that("GWAS calibration metadata is absent unless a complete payload exists", {
   raw <- list(
     marker_ids = c("m1", "m2"),
