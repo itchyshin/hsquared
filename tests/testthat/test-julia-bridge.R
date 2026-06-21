@@ -378,18 +378,17 @@ test_that("experimental Julia Henderson MME bridge matches validation fixture", 
     tolerance = 1e-10
   )
   expect_equal(heritability(fit)$estimate, fixture$expected$heritability)
-  if (
-    !is.null(fit$result$prediction_error_variance) &&
-      !is.null(fit$result$reliability)
-  ) {
-    expect_equal(
-      prediction_error_variance(fit)$id,
-      fixture$expected$breeding_values$id
-    )
-    expect_equal(reliability(fit)$id, fixture$expected$breeding_values$id)
-    expect_true(all(is.finite(prediction_error_variance(fit)$value)))
-    expect_true(all(is.finite(reliability(fit)$value)))
-  }
+  # PEV/reliability are now attached unconditionally on the Henderson MME path
+  # (dense, validation-scale): assert they are present, not merely "if present".
+  expect_false(is.null(fit$result$prediction_error_variance))
+  expect_false(is.null(fit$result$reliability))
+  expect_equal(
+    prediction_error_variance(fit)$id,
+    fixture$expected$breeding_values$id
+  )
+  expect_equal(reliability(fit)$id, fixture$expected$breeding_values$id)
+  expect_true(all(is.finite(prediction_error_variance(fit)$value)))
+  expect_true(all(is.finite(reliability(fit)$value)))
   expect_error(
     stats::logLik(fit),
     "does not contain log-likelihood",

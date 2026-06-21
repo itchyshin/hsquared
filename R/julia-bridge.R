@@ -118,16 +118,14 @@ hs_fit_julia_henderson_mme_payload <- function(
     "\"animal_ids\" => hsq_mme_bv.ids,",
     "\"animal_effects\" => hsq_mme_bv.values,",
     "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+    # PEV/reliability are now standard on the Henderson MME result (dense,
+    # validation-scale): prediction_error_variance/reliability default to
+    # method = :dense, so they are attached unconditionally rather than probed.
+    "\"prediction_error_variance\" =>",
+    "HSquared.prediction_error_variance(hsq_mme),",
+    "\"reliability\" => HSquared.reliability(hsq_mme),",
     "\"nobs\" => length(hsq_y)",
-    ");",
-    "if isdefined(HSquared, :prediction_error_variance) &&",
-    "isdefined(HSquared, :reliability) &&",
-    "applicable(HSquared.prediction_error_variance, hsq_mme) &&",
-    "applicable(HSquared.reliability, hsq_mme);",
-    "hsq_mme_raw[\"prediction_error_variance\"] =",
-    "HSquared.prediction_error_variance(hsq_mme);",
-    "hsq_mme_raw[\"reliability\"] = HSquared.reliability(hsq_mme);",
-    "end;"
+    ");"
   ))
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")

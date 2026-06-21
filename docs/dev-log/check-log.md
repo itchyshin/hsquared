@@ -5235,3 +5235,20 @@ release".
   **0/0/0**. capability-status + NEWS + validation-status + 4 vignettes updated.
   No engine edit.
 - CI (commit `e279b26`, SNP-BLUP REML): pkgdown run `27891709713` **success**; pages green.
+
+## 2026-06-20 (session 6 — Henderson MME PEV/reliability unconditional, #21/A4)
+
+- The Henderson MME bridge (`target = "henderson_mme"`) now attaches PEV +
+  reliability **unconditionally** (the engine's
+  `prediction_error_variance/reliability(::HendersonMMEResult; method = :dense)`
+  default to `:dense`, so the legacy `isdefined/applicable` probe is dropped). The
+  default-fit path already emitted them unconditionally; this closes the Henderson
+  half (small slice from the scout's A4 / issue #21).
+- Test hardened: the live Henderson-MME-fixture test now asserts PEV + reliability
+  are **present** + finite (not merely "if present"). Observation (flagged to the
+  twin): the dense validation-scale `reliability` is not bounded to [0,1] on this
+  small supplied-variance fixture — left as a twin/Fisher validation concern, not
+  asserted R-side.
+- `air`; `devtools::document()`; **LIVE** `test-julia-bridge.R` **96/0/0/0** on the
+  bridge; `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")`
+  **0/0/0**. Dense/validation-scale label unchanged (no capability promotion).
