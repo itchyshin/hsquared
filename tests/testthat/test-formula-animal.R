@@ -289,7 +289,6 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
   for (term in c(
     "group(1 | id)",
     "unknown_parent_group(1 | id)",
-    "metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)",
     "inbreeding(1 | id)"
   )) {
     marker <- sub("\\(.*$", "", term)
@@ -306,6 +305,45 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
       fixed = TRUE
     )
   }
+})
+
+test_that("metafounder parses as an opt-in supplied-Gamma primary effect", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  dat <- data.frame(y = c(1, 2.5, 4), id = c("sire", "dam", "calf"))
+  mf_group <- c(sire = "base", dam = "base", calf = "")
+  Gamma <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  expect_null(spec$random$animal)
+  expect_equal(spec$random$metafounder$type, "metafounder")
+  expect_equal(spec$random$metafounder$relationship, "metafounder")
+  expect_equal(
+    unname(spec$random$metafounder$group_of),
+    c("base", "base", "")
+  )
+  expect_equal(spec$random$metafounder$Gamma, matrix(0.25, nrow = 1))
+  expect_match(spec$bridge$target, "metafounder_animal_model", fixed = TRUE)
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ metafounder(1 | id, pedigree = ped, group = mf_group),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "requires both `group` and `Gamma`",
+    fixed = TRUE
+  )
 })
 
 test_that("a bare fixed-effect column named `group` still parses", {

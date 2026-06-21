@@ -47,6 +47,24 @@ validation-path PEV/reliability for tiny validation examples. It does not
 optimize variance components, does not return a log-likelihood, and is not a
 production sparse fitting or production reliability claim.
 
+The same supplied-variance validation shape also supports the experimental
+animal-only metafounder target:
+
+```r
+hs_control(
+  engine = "julia",
+  engine_control = list(
+    target = "metafounder",
+    variance_components = c(sigma_a2 = 1.2, sigma_e2 = 0.8)
+  )
+)
+```
+
+R sends `group_of` labels aligned to normalized pedigree IDs and a dense,
+supplied, finite symmetric positive-semidefinite `Gamma` matrix, then calls
+Julia `metafounder_animal_model()`. `Gamma` and variance components are supplied,
+not estimated; this path is dense validation-scale only.
+
 ## Initial Julia Result
 
 ```text
@@ -102,6 +120,10 @@ converged
 It deliberately omits `loglik` and `df`. PEV and reliability are attached
 unconditionally on the current Henderson MME bridge as dense validation-path
 fields; they are not production sparse reliability.
+
+The supplied-variance animal-only metafounder bridge returns the same smaller
+shape, with component labels normalized to `metafounder` and diagnostics marking
+`variance_components = "supplied_metafounder"` plus `gamma_source = "supplied"`.
 
 ## Sparse REML Estimator Path (experimental)
 

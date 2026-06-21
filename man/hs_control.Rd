@@ -40,7 +40,7 @@ experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"genomic"},
-\code{"single_step"}, \code{"single_step_construct"},
+\code{"single_step"}, \code{"single_step_construct"}, \code{"metafounder"},
 \code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"multivariate"}, and
 \code{"nongaussian"}, described below. \code{marginal} applies only to
 \code{target = "nongaussian"}.
@@ -56,6 +56,9 @@ Reach the validated estimator with \code{engine = "fit"} (the ordinary path) or
 with \code{engine = "julia"} and \code{target = "ai_reml"}.
 \code{target = "henderson_mme"} is a supplied-variance validation path and
 requires \code{variance_components} with named \code{sigma_a2} and \code{sigma_e2} values.
+\code{target = "metafounder"} is an experimental supplied-variance validation
+path for \code{metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)}. It builds the Julia-owned animal-only \code{A^Gamma} relationship;
+\code{Gamma} and the variance components are supplied, not estimated.
 \code{target = "sparse_reml"} is an experimental, opt-in validation path that
 surfaces the Julia-owned \code{HSquared.fit_sparse_reml()} REML-only sparse
 optimizer; it accepts \code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and

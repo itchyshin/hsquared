@@ -3,6 +3,48 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 animal-only supplied-Gamma metafounder bridge
+
+- Scope: R bridge activation for animal-only supplied-`Gamma` metafounder
+  `A^Gamma` only. `metafounder(1 | id, pedigree = ped, group = group,
+  Gamma = Gamma)` now parses as a primary effect and fits through
+  `engine_control = list(target = "metafounder", variance_components = ...)`
+  by calling the Julia-owned supplied-variance `metafounder_animal_model()`
+  path. No `Gamma` estimation, metafounder-specific extractor,
+  BLUPF90-family comparator evidence, production-scale claim, or covered-status
+  promotion is claimed.
+- Bridge details:
+  - added the animal-only metafounder parser/model-spec branch;
+  - extended the bridge payload with `relationship_source = "metafounder"`,
+    `group_of`, supplied dense `Gamma`, and `gamma_source = "supplied"`;
+  - added `hs_fit_julia_metafounder_payload()` for supplied-variance JuliaCall
+    execution and result normalization;
+  - kept the existing `target = "metafounder_single_step"` H^Gamma REML bridge
+    separate.
+- Local checks:
+  - `air format .` - passed.
+  - `Rscript --vanilla -e 'devtools::document()'` - regenerated
+    `man/hs_control.Rd` and `man/qg_effect_markers.Rd`.
+  - `Rscript --vanilla -e 'devtools::test(filter = "formula-animal|phase0-api|bridge-payload|julia-bridge")'`
+    - 229 passed, 0 failed, 0 warnings, 9 skipped.
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" NOT_CRAN=true Rscript --vanilla -e 'devtools::test(filter = "julia-bridge")'`
+    - 109 passed, 0 failed, 0 warnings, 0 skipped.
+    - Evidence includes `Gamma = 0` reduction to ordinary Henderson MME
+      supplied-variance output and nonzero-`Gamma` prediction sensitivity for
+      the animal-only metafounder bridge.
+  - `Rscript --vanilla -e 'devtools::test()'` - 1265 passed, 0 failed, 0
+    warnings, 58 skipped. Skips were optional packages and live Julia bridge
+    legs under the plain Rscript environment.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean.
+  - `git diff --check` - clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` -
+    Status OK, 0 errors, 0 warnings, 0 notes. Missing optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` were INFO only.
+- Rose boundary: this is an experimental, opt-in, dense validation-scale bridge.
+  Animal-only `metafounder()` is supplied-variance only; it does not estimate
+  variance components or `Gamma`. The multivariate validation/comparator gate
+  and BLUPF90-family second-comparator evidence remain separate.
+
 ## 2026-06-21 metafounder H^Gamma live bridge probe
 
 - Scope: R bridge activation for supplied-`Gamma` single-step `H^Gamma` only.

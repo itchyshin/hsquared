@@ -76,10 +76,10 @@ and constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and
 `maternal_genetic()` in their gated targets). `single_step(..., group =, Gamma =)`
 is an opt-in experimental supplied-`Gamma` `H^Gamma` single-step path through
 `target = "metafounder_single_step"`; `Gamma` is supplied, not estimated.
-`metafounder()` is reserved as a contract-only syntax for a supplied `Gamma`
-matrix and animal-to-metafounder `group` labels; it still errors explicitly as
-planned, not implemented. None of the later markers changes the default v0.1
-animal-model fit path.
+`metafounder(..., group =, Gamma =)` is an opt-in experimental animal-only
+supplied-variance `A^Gamma` path through `target = "metafounder"`; `Gamma` and
+the variance components are supplied, not estimated. None of the later markers
+changes the default v0.1 animal-model fit path.
 
 ## Later Covariance Grammar
 

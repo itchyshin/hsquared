@@ -151,9 +151,14 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
       status$fitting_status == "fitted (opt-in supplied-Gamma H^Gamma)"
   ))
   metafounder_row <- status[
-    grepl("metafounder", status$term, fixed = TRUE),
+    status$term ==
+      "metafounder(1 | id, pedigree = ped, group = group, Gamma = Gamma)",
   ]
-  expect_equal(metafounder_row$syntax_status, "reserved")
+  expect_equal(metafounder_row$syntax_status, "parsed")
+  expect_equal(
+    metafounder_row$fitting_status,
+    "fitted (opt-in supplied-Gamma metafounder)"
+  )
   expect_match(metafounder_row$current_behavior, "Gamma", fixed = TRUE)
   expect_match(
     metafounder_row$current_behavior,

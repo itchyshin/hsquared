@@ -68,13 +68,13 @@ effects.}
 
 \item{K, Kinv, Q}{User-supplied relationship or precision matrices.}
 
-\item{group}{Planned animal-to-metafounder group assignment, aligned to the
-normalized pedigree IDs; reserved for the planned \code{metafounder()} bridge.}
+\item{group}{Animal-to-metafounder group assignment, aligned to the normalized
+pedigree IDs for the opt-in supplied-variance \code{metafounder()} bridge.}
 
 \item{Gamma}{A supplied metafounder relationship matrix (an \code{m}-by-\code{m}
 covariance over the \code{m} metafounder pseudo-populations; Legarra et al.
-2015). Supplied, not estimated; reserved for the planned \code{metafounder()}
-bridge.}
+2015). Supplied, not estimated; used by the opt-in supplied-variance
+\code{metafounder()} bridge.}
 }
 \value{
 \code{NULL}, invisibly. Calls are interpreted by \code{\link[=hsquared]{hsquared()}} when they
@@ -87,10 +87,12 @@ directly they are inert (they return \code{NULL}); they take meaning only inside
 \code{\link[=hsquared]{hsquared()}} formula. \code{permanent()}, \code{common_env()}, and \code{maternal_genetic()}
 now fit through an opt-in, experimental engine path (\code{engine = "julia"},
 REML-only, not the default, mirroring a \code{partial} validation gate) as the
-second random effect alongside \code{animal()}. The remaining markers
-(paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-imprinting, custom relationship/precision, genetic groups /
-unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
+second random effect alongside \code{animal()}. \code{metafounder()} now fits through an
+opt-in, supplied-variance, experimental engine path (\code{engine = "julia"},
+\code{target = "metafounder"}); \code{Gamma} and the variance components are supplied,
+not estimated. The remaining markers (paternal/maternal-environment,
+dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.
 }
 \details{

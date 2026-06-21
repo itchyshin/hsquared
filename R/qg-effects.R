@@ -6,10 +6,12 @@
 #' [hsquared()] formula. `permanent()`, `common_env()`, and `maternal_genetic()`
 #' now fit through an opt-in, experimental engine path (`engine = "julia"`,
 #' REML-only, not the default, mirroring a `partial` validation gate) as the
-#' second random effect alongside `animal()`. The remaining markers
-#' (paternal/maternal-environment, dominance, epistasis, cytoplasmic,
-#' imprinting, custom relationship/precision, genetic groups /
-#' unknown-parent-groups, metafounders, and inbreeding) are still inert syntax
+#' second random effect alongside `animal()`. `metafounder()` now fits through an
+#' opt-in, supplied-variance, experimental engine path (`engine = "julia"`,
+#' `target = "metafounder"`); `Gamma` and the variance components are supplied,
+#' not estimated. The remaining markers (paternal/maternal-environment,
+#' dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+#' genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 #' reservations that the parser rejects with a planned-not-implemented message.
 #'
 #' Some markers use generic names (e.g. `group()`, `inbreeding()`). They are
@@ -24,12 +26,12 @@
 #' @param D,Dinv Dominance relationship or precision matrices.
 #' @param E,Einv Epistatic relationship or precision matrices.
 #' @param K,Kinv,Q User-supplied relationship or precision matrices.
-#' @param group Planned animal-to-metafounder group assignment, aligned to the
-#'   normalized pedigree IDs; reserved for the planned `metafounder()` bridge.
+#' @param group Animal-to-metafounder group assignment, aligned to the normalized
+#'   pedigree IDs for the opt-in supplied-variance `metafounder()` bridge.
 #' @param Gamma A supplied metafounder relationship matrix (an `m`-by-`m`
 #'   covariance over the `m` metafounder pseudo-populations; Legarra et al.
-#'   2015). Supplied, not estimated; reserved for the planned `metafounder()`
-#'   bridge.
+#'   2015). Supplied, not estimated; used by the opt-in supplied-variance
+#'   `metafounder()` bridge.
 #' @param parent Planned parent-of-origin side for imprinting effects.
 #' @param ... Reserved for future syntax.
 #'

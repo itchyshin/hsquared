@@ -114,7 +114,9 @@ hs_formula_status_phases <- function() {
 hs_formula_status_syntax <- function() {
   c(
     rep("parsed", 6L),
-    rep("reserved", 13L),
+    rep("reserved", 5L),
+    "parsed",
+    rep("reserved", 7L),
     rep("parsed", 5L),
     rep("reserved", 3L),
     "parsed",
@@ -129,7 +131,9 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in common-environment)",
     "fitted (opt-in maternal)",
     "fitted (opt-in random-regression)",
-    rep("not available", 13L),
+    rep("not available", 5L),
+    "fitted (opt-in supplied-Gamma metafounder)",
+    rep("not available", 7L),
     "fitted (opt-in genomic)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
@@ -179,10 +183,10 @@ hs_formula_status_behavior <- function() {
     ),
     rep(inert_marker_text, 5L),
     paste(
-      "Exported as an inert marker; hsquared() errors as planned, not",
-      "implemented. Reserved contract: supplied `Gamma` and animal-to-",
-      "metafounder `group` labels will define an A^Gamma relationship; Gamma",
-      "is supplied, not estimated."
+      "Primary metafounder effect of the opt-in, experimental supplied-variance",
+      "model; requires `group`, supplied `Gamma`, engine = \"julia\",",
+      "target = \"metafounder\", and supplied variance components.",
+      "`Gamma` and the variance components are supplied, not estimated."
     ),
     paste(
       "Exported as an inert marker; hsquared() errors as planned, not",
