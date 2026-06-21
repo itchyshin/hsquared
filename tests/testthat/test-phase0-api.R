@@ -231,6 +231,35 @@ test_that("validation_status separates evidence from planned validation", {
     status$status[status$capability == "ASReml comparison policy"],
     "planned"
   )
+  multivariate_row <- status[
+    status$capability == "experimental multivariate REML estimator (opt-in)",
+  ]
+  expect_equal(multivariate_row$status, "partial")
+  expect_match(
+    multivariate_row$evidence,
+    "100-replicate cold-start t=2 known-truth recovery study",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$evidence,
+    "full-unstructured residual sommer comparator",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "covered promotion remains twin-gated",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "published or Mrode-style multivariate target",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "another independent same-estimand comparator",
+    fixed = TRUE
+  )
   expect_match(
     status$claim_boundary[
       status$capability == "CPU/GPU backend comparison"
