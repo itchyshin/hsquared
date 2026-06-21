@@ -3,6 +3,38 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 PEV/reliability standard-field status reconciliation
+
+- Scope: R-lane docs/status reconciliation only. No R behavior changed. Updated
+  the v0.1 and engine contracts, active capability/validation/public ledgers,
+  bridge-gap table, validation canon, issue map, coordination board, and NEWS so
+  they match the current bridge behavior:
+  - default/sparse/explicit AI-REML result-payload routes consume standard
+    `prediction_error_variance` and `reliability` fields when present (current
+    engines emit them via `:selinv`);
+  - direct dense extractor calls remain only as a backward-compatible fallback
+    for older local engines;
+  - supplied-variance Henderson MME attaches dense validation-path PEV and
+    reliability unconditionally;
+  - #21/#43 remain `partial` for multivariate per-trait PEV/reliability,
+    production sparse reliability, and comparator validation.
+- Local checks:
+  - `air format .` - passed.
+  - `Rscript --vanilla -e 'devtools::test(filter = "julia-bridge|pev-reliability-anchor|phase0-api")'` -
+    135 passed, 0 failed, 0 warnings, 8 skipped. The skipped tests were
+    live-engine bridge legs under the plain Rscript environment.
+  - `Rscript --vanilla -e 'devtools::test()'` - 1248 passed, 0 failed, 0
+    warnings, 55 skipped. Skips were optional packages and live Julia bridge
+    legs under the plain Rscript environment.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean.
+  - `git diff --check` - clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` -
+    Status OK, 0 errors, 0 warnings, 0 notes. Missing optional suggested
+    packages `enhancer`, `nadiv`, and `pedigreemm` were INFO only.
+- Rose boundary: this records status, not capability promotion. No production
+  sparse PEV/reliability, multivariate per-trait reliability, or independent
+  comparator evidence is claimed.
+
 ## 2026-06-21 Multivariate validation/comparator gate clarification
 
 - Scope: R-lane validation-status and coordination clarification after merging

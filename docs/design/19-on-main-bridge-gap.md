@@ -48,7 +48,7 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 | --- | --- | --- | --- | --- |
 | `heritability_interval` | V1-HERIT-CI · partial | `heritability()` point only | **Yes (Class A)** | bridge calls the exported fn on the fit; normalize a CI field — #11 |
 | `repeatability_interval` | V3-REPEAT-REML · partial | repeatability target, no CI | **Yes (Class A)** | same, on the repeatability target — #12 |
-| `prediction_error_variance(...; method=:selinv)`, `reliability` | V1-SELINV-PEV · partial (engine: selinv==dense PEV-diagonal + reliability parity to rtol 1e-8 on a **110-animal 4-generation pedigree**, nfixed=2, off-diag Ainv nnz=550 — `HSquared.jl` test/runtests.jl, gate #81) | enrichment path R-side; the standard `:selinv` field is unpacked when present | **Yes (Class A)** | call selinv methods on the fit; normalize fields — #21. Engine has 110-animal correctness evidence; R surfacing is enrichment-only, no production-sparse or comparator claim. |
+| `prediction_error_variance(...; method=:selinv)`, `reliability` | V1-SELINV-PEV · partial (engine: selinv==dense PEV-diagonal + reliability parity to rtol 1e-8 on a **110-animal 4-generation pedigree**, nfixed=2, off-diag Ainv nnz=550 — `HSquared.jl` test/runtests.jl, gate #81) | standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson MME attaches dense validation fields unconditionally | **Done for univariate/Henderson; MV/prod sparse still gated** | #21 remains open for multivariate per-trait PEV/reliability, production sparse strategy, and comparator validation. Engine has 110-animal correctness evidence; no production-sparse or comparator claim. |
 | `fit_gblup_reml` / `fit_snp_blup_reml` | V2-GREML · partial | supplied-variance fitters only | **Yes (Class A)** | route genomic/snp_blup to the `_reml` variant when variances absent — #13 |
 | `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · partial | **verified correct (#14)**: supplied `Hinv` -> `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP; construction path now surfaced with `target = "single_step_construct"` | **Done for ordinary single-step construction**; `H^Gamma` parser/payload gate done, live fit still pending | R surfaces `single_step(1 \| id, pedigree = ped, markers = M)` experimentally; live tests cover marker-row reorder invariance, ungenotyped animal GEBVs, ridge handling, and `hs_data()` shorthand. `single_step(..., group =, Gamma =)` validates/builds the future `metafounder_single_step` payload but deliberately errors before fitting. |
 | `factor_analytic_covariance` + `genetic_structure`/`genetic_loadings`/`genetic_uniqueness` | V4-FA · partial (calibration failed 8/10, 9/10); V4-BRIDGE · partial (diagonal payload `ad6006d`) | bridge accepts `unstructured` + `diagonal` (rotation-free); rejects `lowrank`/`fa`; reserved loading extractors error | **Diagonal done (Class A); lowrank/fa No yet (Class B)** | `diagonal` shipped + LRT fixture-verified (#61); loadings/uniqueness still need the result payload to expose them (twin #42) + failing calibration — #22 |
@@ -63,7 +63,7 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 3. ✅ **#12** `repeatability_interval` — **shipped** `e66e648` (experimental).
 4. ✅ **(critic's find)** `variance_component_standard_errors()` + `heritability_standard_error()` — **shipped** `4266169` (V1-HERIT-CI names them; experimental).
 5. ⏸ **#13** REML genomic variants — **deferred** (ultracode honesty_ok=false + regression; needs the V2-SNPBLUP row updated + the existing supplied-variance test reconciled first).
-6. ☐ **#21** PEV/reliability via `:selinv` — ready; modest value (already enriched with the default method), needs a live probe for the method symbol.
+6. ✅ **#21 univariate/Henderson step** PEV/reliability via `:selinv` — standard fields are consumed on default/sparse/AI result-payload routes, and Henderson MME attaches dense validation-path fields unconditionally. The issue stays `partial`: multivariate per-trait PEV/reliability, production sparse reliability, and comparator validation remain open.
 7. ☐ **#26** multivariate covariance SEs (`:unstructured`) — ready; must disclaim that the strict per-seed recovery gate is still a non-pass (7/12 seeds, twin #78), while citing the 12-seed bias/MCSE study showing no detectable bias (`|bias| ≤ 2·MCSE`, all six params; #78/#79) + unstructured-only + not coverage-calibrated.
 
 Each: bridge probe (live Julia smoke to confirm signature + return shape against the pinned SHA)
@@ -79,8 +79,9 @@ Each: bridge probe (live Julia smoke to confirm signature + return shape against
 
 ## Caveat on Class A
 
-The engine functions are exported, but R should call them **on the returned fit object** (as the
-bridge already does for opportunistic PEV/reliability enrichment), not assume `result_payload()`
-includes the new fields — the twin's "promote into the standard payload" steps (#42/#43) are
-still open. A live bridge probe per slice confirms the exact call + return shape before R commits
-to a normalization.
+The engine functions are exported, but R should still probe each new slice
+against a returned fit object before committing to a normalization. PEV and
+reliability are now standard fields for the current univariate result-payload
+routes; this warning remains relevant for future multivariate per-trait,
+structured-covariance, and marker/non-Gaussian payloads whose result shapes are
+still twin-gated.
