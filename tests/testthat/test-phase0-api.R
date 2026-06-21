@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 33L)
+  expect_equal(nrow(status), 35L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -130,6 +130,25 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   expect_true(all(
     status$syntax_status[grepl("cov =", status$term, fixed = TRUE)] == "planned"
   ))
+  expect_true(all(
+    c(
+      "missing = miss_control(response = \"include\")",
+      "mi(x) with missing = miss_control(predictor = \"model\")"
+    ) %in%
+      status$term
+  ))
+  expect_equal(
+    status$syntax_status[
+      status$term == "mi(x) with missing = miss_control(predictor = \"model\")"
+    ],
+    "planned"
+  )
+  expect_match(
+    status$current_behavior[
+      status$term == "mi(x) with missing = miss_control(predictor = \"model\")"
+    ],
+    "no mi\\(\\) marker is exported"
+  )
   expect_true(any(status$syntax_status == "planned"))
   expect_match(capture.output(print(status))[[1L]], "<hs_formula_status>")
   expect_match(

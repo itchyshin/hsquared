@@ -1,11 +1,12 @@
 # Missing-Data Handling Plan (PLANNED)
 
-Status: **planned, not implemented. No capability is claimed.** There is no
-missing-data code in the R lane (no `mi()`, `miss_control()`, or `na.action`
-handling in `R/`) and no engine support in `HSquared.jl`. This note records a
-design and a sister-repo reuse map so the eventual implementation reuses proven
-patterns rather than reinventing them. Every concrete grammar/control choice
-below is a **proposal for maintainer sign-off**, flagged `PROPOSAL`.
+Status: **planned, not implemented. No capability is claimed.** The M0 grammar
+contract below is ratified as the planned R surface, but there is still no
+missing-data fitting code in the R lane (no exported `mi()`, `miss_control()`,
+`impute_model()`, `imputed()`, or `na.action` override) and no missing-data
+engine support in `HSquared.jl`. This note records the contract and sister-repo
+reuse map so the eventual implementation reuses proven patterns rather than
+reinventing them.
 
 ## Why this note
 
@@ -77,7 +78,7 @@ the spine of the implementation:
    "prediction SE" / "imputed (conditional mode)" — **never** "posterior mean"
    or "credible interval" (enforces the no-Bayesian directive).
 
-## Proposed R syntax surface (PROPOSAL — maintainer sign-off required)
+## Ratified M0 R syntax surface (planned, not implemented)
 
 Missing responses:
 
@@ -96,7 +97,7 @@ hsquared(y ~ sex + mi(body_mass) + animal(1 | id, pedigree = ped),
          impute  = list(body_mass = body_mass ~ sex + animal(1 | id, pedigree = ped)))
 ```
 
-Proposed control object (mirrors `gllvmTMB::miss_control()`):
+Planned control object (mirrors `gllvmTMB::miss_control()`):
 
 ```r
 miss_control(response  = c("drop", "include"),   # default "drop": complete-case, backward compatible
@@ -104,7 +105,7 @@ miss_control(response  = c("drop", "include"),   # default "drop": complete-case
              engine    = "laplace")               # only accepted value in v1; "em"/"profile" reserved
 ```
 
-- `mi(x)` marks `x` as missing-and-modeled; **bare variable only** in v1 (no
+- `mi(x)` marks `x` as missing-and-modelled; **bare variable only** in v1 (no
   transforms/interactions), with a clear error otherwise (matches both R
   sisters).
 - `impute = list(<var> = <var> ~ <rhs>)`; the RHS may carry hsquared structured
@@ -115,10 +116,41 @@ miss_control(response  = c("drop", "include"),   # default "drop": complete-case
   fitted values); `imputed(fit, variable=, rows=, se=)` (covariate conditional
   modes + SE, or discrete state probabilities); `fit$missing_data` metadata.
 
-Token name `mi()` is proposed deliberately for cross-package transfer
+Token name `mi()` is accepted deliberately for cross-package transfer
 (`drmTMB`, `gllvmTMB`, and the planned `GLLVM.jl` R bridge all use `mi()`),
-supporting the "R and Julia syntax stay transferable" mantra. Alternatives and
-open questions are listed below.
+supporting the "R and Julia syntax stay transferable" mantra.
+
+### Accepted, deferred, and error wording
+
+Accepted planned syntax:
+
+- `missing = miss_control(response = "include")` for future masked-response
+  rows.
+- `missing = miss_control(predictor = "model")` plus one `mi(x)` term for a
+  future modelled missing predictor.
+- `impute = list(x = x ~ ...)` as the predictor-model surface; bare formulas are
+  Gaussian shorthand, and `impute_model()` remains the future family-explicit
+  factory.
+- Explicit structured terms in the impute RHS, e.g.
+  `animal(1 | id, pedigree = ped)`, rather than inferred level mapping.
+
+Deferred or rejected syntax for the first implementation:
+
+- transformed or interacting `mi()` terms such as `mi(log(x))` or `mi(x):z`;
+- more than one `mi()` predictor;
+- missing values inside impute-model predictors;
+- missing-predictor models under `REML = TRUE`;
+- multiple imputation, MCMC, posterior summaries, MNAR sensitivity, and
+  predictor-model families beyond the first Gaussian slice.
+
+Planned user-facing errors should be specific:
+
+- `mi()` terms require `missing = miss_control(predictor = "model")`.
+- The first `mi()` layer supports only a bare predictor such as `mi(body_mass)`.
+- `impute = list(body_mass = body_mass ~ ...)` must name the same variable used
+  inside `mi(body_mass)`.
+- Missing-data handling is planned in hsquared; no `mi()` or `miss_control()`
+  function is exported yet.
 
 ## Julia-lane integration (PLANNED — twin work, do not implement from this repo)
 
@@ -186,12 +218,14 @@ FORWARD / UNVERIFIED (do not cite as present):
   adapting. The closed-form idea is conceptually the best fit for an all-Gaussian
   level covariate, but its provenance is unverified.
 
-## Phasing (PLANNED ordering — for maintainer sign-off)
+## Phasing (planned ordering)
 
-- **M0 (this note):** record the design as PLANNED. No code. Boole signs off the
-  syntax surface; Noether/Henderson sign off the level-aware estimand; Hopper
-  records the planned payload additions in the engine contract; Rose audit
-  confirms no capability claim leaks into README/DESCRIPTION/vignettes.
+- **M0 (this note):** record the design as PLANNED. No fitting code. Boole signs
+  off the syntax surface; Noether/Henderson sign off the level-aware estimand;
+  Hopper records the planned payload additions in the engine contract; Rose
+  audit confirms no capability claim leaks into README/DESCRIPTION/vignettes.
+  The formula-status table now lists the planned missing-data surface so users
+  can see the reserved direction without any parser activation.
 - **M1 (after the v0.1 fit gate opens):** missing responses for the univariate
   Gaussian animal model (regime A) — smallest honest slice; reuses the
   REML/Henderson path with a mask gate. Gate: sentinel-invariance + EBV-retention
@@ -211,25 +245,30 @@ syntax+validation surface ahead of the engine, exactly as the fenced opt-in
 bridge targets (`sparse_reml`/`ai_reml`) were surfaced ahead of production
 fitting.
 
-## Open questions for the maintainer
+## Resolved contract decisions and open questions
 
-1. `miss_control()` separate from `hs_control()` (proposed; statistical vs
-   executional) or fold `response=`/`predictor=` into `hs_control()`?
-2. Token name `mi()` (proposed, cross-package transfer) vs a more
-   self-documenting `latent()` / `model_missing()`?
-3. `impute=` shape: list of formulas (proposed) vs list of `impute_model()`
-   objects vs folding the predictor model into the main formula.
-4. Level mapping: explicit (user writes `animal()`/group in the impute RHS,
-   proposed) vs inferred from the `hs_data()` keys — explicit avoids silent
-   wrong-level imputation.
-5. Default `response=`: `"drop"` (backward compatible, proposed) vs `"include"`.
-6. Confirm M1/M2 are ML-first with REML deferred, isolated from the v0.1 REML
+Resolved for M0:
+
+1. Keep `miss_control()` separate from `hs_control()` because it describes the
+   statistical missing-data treatment, not engine execution.
+2. Use `mi()` as the token name for cross-package transfer from `drmTMB` and
+   `gllvmTMB`.
+3. Use `impute = list(x = x ~ ...)`; a future `impute_model()` factory supplies
+   explicit predictor families.
+4. Require explicit level mapping in the impute RHS rather than inferring it
+   from `hs_data()` keys.
+5. Keep the default response behavior as `"drop"` for backward compatibility.
+6. Treat M1/M2 as ML-first with REML deferred, isolated from the v0.1 REML
    predicate.
-7. Confirm the `GLLVM.jl` mi-FIML provenance (commit `9dc5a42` / branch) before
+7. Use frequentist output vocabulary only: EBLUP, conditional mode, prediction
+   SE, fitted missing response. Do not use posterior or credible-interval
+   wording for this route.
+
+Still open:
+
+1. Confirm the `GLLVM.jl` mi-FIML provenance (commit `9dc5a42` / branch) before
    treating it as a reuse asset.
-8. Identifiability (Noether/Henderson/Fisher): is a pedigree-structured latent
+2. Identifiability (Noether/Henderson/Fisher): is a pedigree-structured latent
    covariate identifiable when the response model also carries `animal(1|id)` on
-   the same level? `gllvmTMB` design-59 warns of confounding and defaults to
-   independent structure; hsquared needs its own ruling for the animal model.
-9. Confirm the frequentist output-vocabulary contract (EBLUP / conditional mode
-   / prediction SE; explicit ban on posterior/credible language).
+   the same level? `gllvmTMB` warns of confounding and defaults to independent
+   structure; hsquared needs its own ruling for the animal model before M2.

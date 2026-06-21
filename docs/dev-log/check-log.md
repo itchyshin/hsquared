@@ -3,6 +3,38 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 `mi()` / `miss_control()` grammar contract
+
+- Active lenses: Ada, Shannon, Boole, Noether, Jason, Pat, Rose, Grace.
+- Branch: `codex/mi-miss-control-contract`.
+- Scope:
+  - ratified the M0 planned missing-data grammar in
+    `docs/design/08-missing-data-plan.md`;
+  - added planned missing-response and missing-predictor rows to
+    `formula_status()`;
+  - synchronized `docs/design/02-formula-grammar.md`, `NEWS.md`,
+    `docs/dev-log/issue-map.md`, and the coordination board;
+  - added the sister-repo scout note
+    `docs/dev-log/scout/2026-06-21-mi-miss-control-contract.md`.
+- Claim boundary:
+  - no exported `mi()`, `miss_control()`, `impute_model()`, or `imputed()`;
+  - no missing-data fitting, FIML, imputation, response masking, latent
+    covariate integration, REML-with-missing-data, or engine payload support;
+  - #19 is a grammar-contract closeout only, not implementation.
+- Checks:
+  - `air format R/formula-status.R tests/testthat/test-phase0-api.R` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "phase0-api")'`: 106 pass /
+    0 fail / 0 warn / 0 skip.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-mi-miss-control-contract.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep over `NEWS.md`, `R/formula-status.R`,
+    `tests/testthat/test-phase0-api.R`, `docs/design/02-formula-grammar.md`,
+    `docs/design/08-missing-data-plan.md`, the scout note, and the after-task
+    report confirms planned/not-implemented wording and no missing-data fitting
+    claim.
+
 ## 2026-06-21 Close R issue #20 with weekly innovation scout automation
 
 - Scope: infra/coordination docs only after creating a Codex app automation and

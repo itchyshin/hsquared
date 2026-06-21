@@ -91,7 +91,9 @@ hs_formula_status_terms <- function() {
     "animal(trait | id, pedigree = ped, cov = us())",
     "animal(trait | id, pedigree = ped, cov = diag())",
     "animal(trait | id, pedigree = ped, cov = lowrank(K = 2))",
-    "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
+    "animal(trait | id, pedigree = ped, cov = fa(K = 2))",
+    "missing = miss_control(response = \"include\")",
+    "mi(x) with missing = miss_control(predictor = \"model\")"
   )
 }
 
@@ -101,7 +103,8 @@ hs_formula_status_categories <- function() {
     rep("standard quantitative genetics", 11L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 9L),
-    rep("multivariate and factor analytic", 5L)
+    rep("multivariate and factor analytic", 5L),
+    rep("missing-data grammar", 2L)
   )
 }
 
@@ -111,7 +114,8 @@ hs_formula_status_phases <- function() {
     rep("Phase 2", 11L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 9L),
-    rep("Phase 3-4", 5L)
+    rep("Phase 3-4", 5L),
+    rep("Phase 8", 2L)
   )
 }
 
@@ -124,7 +128,7 @@ hs_formula_status_syntax <- function() {
     rep("parsed", 6L),
     rep("reserved", 3L),
     "parsed",
-    rep("planned", 4L)
+    rep("planned", 6L)
   )
 }
 
@@ -146,7 +150,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
-    rep("not available", 4L)
+    rep("not available", 6L)
   )
 }
 
@@ -249,6 +253,18 @@ hs_formula_status_behavior <- function() {
         "opt-in `cbind()` multivariate path."
       ),
       4L
+    ),
+    paste(
+      "Ratified planned missing-response control. Future behavior will keep",
+      "rows with missing responses in the model frame and mask their direct",
+      "likelihood contribution. Current behavior remains complete-case or",
+      "target-specific handling only; no miss_control() function is exported."
+    ),
+    paste(
+      "Ratified planned missing-predictor grammar. Future behavior will allow",
+      "one bare missing covariate declared as mi(x), paired with impute =",
+      "list(x = x ~ ...), and integrated by a model-based Laplace path. Current",
+      "parser behavior remains unsupported; no mi() marker is exported."
     )
   )
 }
