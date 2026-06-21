@@ -66,11 +66,15 @@ Generalize `single_step()` (`R/genomic-markers.R`) and the model-spec parser
   document but do not require.
 - Error contract (as built): supplying BOTH `Hinv` and (`pedigree`+`markers`) →
   a clear "choose one" error; `markers` without `pedigree` → a directing error
-  pointing at the `pedigree =` requirement. **v1 scope cut:** an explicit
-  `pedigree =` is required — the `hs_data()` bundled-pedigree shorthand (the
-  `animal(1|id)` precedent) is **deferred**, not wired, to keep this slice
-  surgical; a follow-up can call `hs_resolve_animal_pedigree()` when `markers` is
-  present but `pedigree` is not.
+  pointing at the `pedigree =` requirement.
+- **`hs_data()` bundle shorthand (LANDED, s6):** when `data` is an `hs_data()`
+  container carrying both a pedigree and genotypes, `single_step(1 | id)` resolves
+  both from the bundle (the `animal(1 | id)` precedent), so neither argument is
+  required. Explicit `pedigree =`/`markers =` still win when supplied (they
+  override the bundle, and may be mixed with bundle resolution of the other).
+  The genotypes component is coerced to the numeric dosage matrix the construction
+  path expects by `hs_single_step_bundle_markers()` (matrix → as-is; data frame →
+  the bundle's `id` column or explicit row names provide the genotyped ids).
 
 ## 3. genotyped_rows alignment (THE CRUX — Henderson/Hopper)
 
@@ -161,10 +165,10 @@ dense/validation-scale; mirrors the twin `V2-SSHINV` (partial). The construction
 `τ/ω/blend/ridge` knobs are **not** comparator-validated. Promotion past `partial`
 is twin-gated (BLUPF90/AGHmatrix single-step comparator). `capability-status.md`
 row "genomic/single-step construction beyond supplied inverses" is now `partial
-(R)` (the reorder + differs-from-pedigree guards are green live). **v1 scope cut:**
-an explicit `pedigree =` is required (the `hs_data()` bundled-pedigree shorthand,
-unlike `animal()`, is deferred); `markers` without a `pedigree` emits a directing
-error pointing at the requirement.
+(R)` (the reorder + differs-from-pedigree guards are green live). The `hs_data()`
+bundle shorthand (`single_step(1 | id)` resolving pedigree + genotypes from the
+container) **landed s6** (§2), live-verified to fit identically to the explicit
+call; `markers` without a `pedigree` (and no bundle) emits a directing error.
 
 ## 8. Risk register
 

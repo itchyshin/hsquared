@@ -5,6 +5,7 @@
 .Ruserdata
 *.Rcheck/
 *.tar.gz
+tests/testthat/testthat-problems.rds
 cran-comments.md
 revdep/
 Meta/

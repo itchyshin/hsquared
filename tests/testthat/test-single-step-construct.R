@@ -172,6 +172,184 @@ test_that("single_step construction rejects malformed inputs", {
   )
 })
 
+# --- hs_data() bundle shorthand: single_step(1 | id) resolves ped + markers ---
+
+test_that("single_step(1 | id) resolves pedigree + markers from an hs_data bundle", {
+  ped <- data.frame(
+    id = c("c1", "s", "d", "c2", "c3"),
+    sire = c("s", NA, NA, "s", "s"),
+    dam = c("d", NA, NA, "d", "d"),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(y = c(1.1, 2.2, 3.0, 2.5, 1.8), id = ped$id)
+  m <- matrix(
+    c(0, 1, 2, 2, 1, 0, 1, 1, 1, 0, 2, 1),
+    nrow = 3,
+    byrow = TRUE,
+    dimnames = list(c("c3", "c1", "c2"), paste0("m", 1:4))
+  )
+  bundle <- hs_data(phenotypes = dat, pedigree = ped, genotypes = m)
+
+  spec_bundle <- hsquared:::hs_build_model_spec(
+    y ~ single_step(1 | id),
+    data = bundle,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  spec_explicit <- hsquared:::hs_build_model_spec(
+    y ~ single_step(1 | id, pedigree = ped, markers = m),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  ssb <- spec_bundle$random$single_step
+  sse <- spec_explicit$random$single_step
+  # the shorthand parses to the identical construction spec as the explicit call
+  expect_equal(ssb$source, "construct")
+  expect_equal(ssb$ids, sse$ids)
+  expect_equal(ssb$genotyped_rows, sse$genotyped_rows)
+  expect_equal(ssb$markers, sse$markers)
+})
+
+test_that("explicit single_step args override the hs_data bundle", {
+  ped <- data.frame(
+    id = c("c1", "s", "d", "c2", "c3"),
+    sire = c("s", NA, NA, "s", "s"),
+    dam = c("d", NA, NA, "d", "d"),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(y = c(1.1, 2.2, 3.0, 2.5, 1.8), id = ped$id)
+  m_bundle <- matrix(
+    c(0, 1, 2, 2, 1, 0, 1, 1, 1, 0, 2, 1),
+    nrow = 3,
+    byrow = TRUE,
+    dimnames = list(c("c3", "c1", "c2"), paste0("m", 1:4))
+  )
+  # a different, smaller genotyped set passed explicitly
+  m_explicit <- matrix(
+    c(0, 1, 2, 2),
+    nrow = 1,
+    dimnames = list("c1", paste0("m", 1:4))
+  )
+  bundle <- hs_data(phenotypes = dat, pedigree = ped, genotypes = m_bundle)
+
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ single_step(1 | id, markers = m_explicit),
+    data = bundle,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  ss <- spec$random$single_step
+  # the explicit markers win: only c1 is genotyped (one row), not the bundle's 3
+  expect_equal(rownames(ss$markers), "c1")
+  expect_equal(length(ss$genotyped_rows), 1L)
+})
+
+test_that("hs_single_step_bundle_markers coerces genotype representations", {
+  m <- matrix(
+    c(0, 1, 2, 1),
+    nrow = 2,
+    dimnames = list(c("a", "b"), c("m1", "m2"))
+  )
+  expect_identical(hsquared:::hs_single_step_bundle_markers(m, "id"), m)
+
+  df_id <- data.frame(
+    id = c("a", "b"),
+    m1 = c(0, 2),
+    m2 = c(1, 1),
+    stringsAsFactors = FALSE
+  )
+  out <- hsquared:::hs_single_step_bundle_markers(df_id, "id")
+  expect_equal(rownames(out), c("a", "b"))
+  expect_equal(colnames(out), c("m1", "m2"))
+  expect_true(is.numeric(out))
+
+  df_rn <- data.frame(m1 = c(0, 2), m2 = c(1, 1))
+  rownames(df_rn) <- c("a", "b")
+  expect_equal(
+    rownames(hsquared:::hs_single_step_bundle_markers(df_rn, "id")),
+    c("a", "b")
+  )
+
+  # a data frame with neither an id column nor explicit row names is rejected
+  df_bad <- data.frame(m1 = c(0, 2), m2 = c(1, 1))
+  expect_error(
+    hsquared:::hs_single_step_bundle_markers(df_bad, "id"),
+    "row names"
+  )
+})
+
+test_that("the bundle shorthand threads a non-default id + data-frame genotypes", {
+  # end-to-end exercise of the new mechanism: id = data$id is threaded into the
+  # model-data context and used to coerce a DATA-FRAME genotype bundle (not just
+  # the matrix fast path) under a non-default id column ("animal").
+  ped <- data.frame(
+    id = c("c1", "s", "d", "c2", "c3"),
+    sire = c("s", NA, NA, "s", "s"),
+    dam = c("d", NA, NA, "d", "d"),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(y = c(1.1, 2.2, 3.0, 2.5, 1.8), animal = ped$id)
+  geno_df <- data.frame(
+    animal = c("c3", "c1", "c2"),
+    m1 = c(0, 1, 1),
+    m2 = c(1, 1, 0),
+    m3 = c(2, 0, 2),
+    m4 = c(2, 1, 1),
+    stringsAsFactors = FALSE
+  )
+  bundle <- hs_data(
+    phenotypes = dat,
+    pedigree = ped,
+    genotypes = geno_df,
+    id = "animal"
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ single_step(1 | animal),
+    data = bundle,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  ss <- spec$random$single_step
+  expect_equal(ss$source, "construct")
+  expect_true(is.numeric(ss$markers))
+  expect_equal(sort(rownames(ss$markers)), c("c1", "c2", "c3"))
+  # genotyped_rows index exactly the genotyped animals' pedigree rows
+  expect_equal(ss$ids[ss$genotyped_rows], rownames(ss$markers))
+})
+
+test_that("single_step construction errors direct to the on-ramps", {
+  dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
+  # bare single_step(1 | id) on a plain data frame: the Hinv error now also points
+  # at the construction on-ramps (explicit args or an hs_data() bundle).
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "construct one"
+  )
+  # a partial bundle (pedigree only, no genotypes) also directs to construction
+  ped <- data.frame(
+    id = c("c1", "s", "d"),
+    sire = c("s", NA, NA),
+    dam = c("d", NA, NA),
+    stringsAsFactors = FALSE
+  )
+  bundle <- hs_data(phenotypes = dat, pedigree = ped)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(1 | id),
+      data = bundle,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "construct one"
+  )
+})
+
 # --- live tests (skip-guarded on the local HSquared.jl bridge) ---------------
 
 hs_ss_construct_fit <- function(ped, dat, markers, ridge = 0.01) {
@@ -335,5 +513,57 @@ test_that("single_step construction ridge fits a rank-deficient G [live]", {
   expect_true(all(variance_components(fit_c)$estimate > 0))
   expect_true(
     heritability(fit_c)$estimate > 0 && heritability(fit_c)$estimate < 1
+  )
+})
+
+test_that("the single_step(1 | id) bundle shorthand fits like the explicit call [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live single-step test."
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+
+  # mirror the proven rank-deficient setup (8 markers < genotyped, ridge = 0.05)
+  # so the genotyped genomic block is positive definite for both fits.
+  ped <- hs_sim_pedigree(n_founder = 10, n_per_gen = 20, n_gen = 2, seed = 24)
+  dat <- hs_sim_genedrop_phenotypes(
+    ped,
+    sigma_a2 = 0.4,
+    sigma_e2 = 0.6,
+    seed = 24
+  )
+  geno <- utils::tail(ped$id, 30L)
+  set.seed(24)
+  markers <- matrix(
+    stats::rbinom(length(geno) * 8L, 2L, 0.3),
+    nrow = length(geno),
+    dimnames = list(geno, paste0("snp", seq_len(8L)))
+  )
+
+  # explicit call vs the hs_data() bundle shorthand: identical fit
+  fit_explicit <- hs_ss_construct_fit(ped, dat, markers, ridge = 0.05)
+  bundle <- hs_data(phenotypes = dat, pedigree = ped, genotypes = markers)
+  fit_bundle <- hsquared(
+    y ~ single_step(1 | id, ridge = 0.05),
+    data = bundle,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "single_step_construct")
+    )
+  )
+
+  expect_equal(
+    variance_components(fit_bundle)$estimate,
+    variance_components(fit_explicit)$estimate,
+    tolerance = 1e-8
+  )
+  be <- breeding_values(fit_explicit)
+  bb <- breeding_values(fit_bundle)
+  expect_equal(bb$id[order(bb$id)], be$id[order(be$id)])
+  expect_equal(
+    bb$value[order(bb$id)],
+    be$value[order(be$id)],
+    tolerance = 1e-8
   )
 })

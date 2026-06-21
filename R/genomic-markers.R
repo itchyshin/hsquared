@@ -10,8 +10,10 @@
 #' `target = "snp_blup"`), and `single_step(1 | id, Hinv = Hinv)` (a precomputed
 #' inverse) or `single_step(1 | id, pedigree = ped, markers = M)` (the engine
 #' constructs `H^-1` from the pedigree + genotyped-subset markers via
-#' `target = "single_step_construct"`; an explicit `pedigree =` is required). The
-#' remaining
+#' `target = "single_step_construct"`). When `data` is an [hs_data()] container
+#' that bundles a pedigree and genotypes, `single_step(1 | id)` resolves both from
+#' the bundle (the `animal(1 | id)` precedent), so neither `pedigree =` nor
+#' `markers =` is required; explicit arguments override the bundle. The remaining
 #' markers (`markers()`, `marker_scan()`, `qtl_scan()`) are still inert syntax
 #' reservations that the parser rejects with a planned-not-implemented message.
 #'

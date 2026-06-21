@@ -5109,3 +5109,32 @@ release".
   capability-status marker-scan row + NEWS gwas bullet updated (LOCO surfaced,
   live-verified element-wise); doc 26 → IMPLEMENTED.
 - CI (commit `a448f79`, LOCO gwas): pkgdown run `27888780206` **success**; pages green.
+
+## 2026-06-20 (session 6 — single_step(1 | id) hs_data bundle shorthand)
+
+- Wired the deferred `hs_data()` bundle shorthand for single-step construction:
+  when `data` is an `hs_data()` container with a pedigree and genotypes,
+  `single_step(1 | id)` resolves both from the bundle (the `animal(1 | id)`
+  precedent); explicit `pedigree =`/`markers =` override. `R/model-spec.R`:
+  threaded `model_data` (incl. `id = data$id`) into `hs_parse_relinv_primary_call`
+  + `hs_parse_single_step_construct`; routing gained a bundle branch (no Hinv AND
+  bundle has both pedigree+genotypes); new `hs_single_step_bundle_markers()`
+  coerces the genotypes component (matrix / data-frame with id col or rownames)
+  into the numeric dosage matrix. Doc 25 §2/§6, NEWS, capability-status,
+  `genomic-markers.R` roxygen updated (shorthand LANDED).
+- Adversarial verify (Workflow, 6 lenses: Boole/Emmy/Hopper/Curie/Pat/Rose):
+  all flagged ONE shared **blocker** — a shipped failing pure-R test (the reworded
+  "needs a pedigree" error gained a backtick that broke a `fixed = TRUE` match;
+  rcmdcheck reproduced it where my `as.data.frame(test_file)` summary had masked
+  it). Fixed the message to keep the literal "needs a pedigree" AND the bundle
+  pointer. Folded the majors: (B2) stale `?single_step` roxygen ("explicit
+  `pedigree =` is required") → corrected; (M1/M2) bare `single_step(1 | id)` on
+  plain data / a partial bundle now points at the construction on-ramps, not a
+  Hinv-only message; (M3) added an end-to-end test of the new id-threading
+  (data-frame genotypes under a non-default id) + directing-error tests.
+- `air`; `devtools::document()`; pure-R `test-single-step-construct` **38/0/0/5**;
+  **LIVE** `test-single-step-construct.R` **54/0/0/0** on the bridge (the bundle
+  shorthand fits identically to the explicit call — VCs + GEBVs to 1e-8);
+  full suite earlier 1167/0/0; `pkgdown::check_pkgdown()` clean;
+  `rcmdcheck(args="--no-manual")` **0/0/0**. No new engine contract consumed (pure
+  R sugar over the existing construct path), so no twin coordination needed.

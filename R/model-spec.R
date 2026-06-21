@@ -77,7 +77,8 @@ hs_build_model_spec <- function(
     primary_spec <- hs_parse_relinv_primary_call(
       rhs_terms[[relinv_pos]],
       data,
-      env
+      env,
+      model_data = model_data
     )
     primary_type <- primary_spec$type
   }
@@ -531,7 +532,8 @@ hs_model_data_context <- function(data, env) {
     data = data$phenotypes,
     env = list2env(components, parent = env),
     is_hs_data = TRUE,
-    components = components
+    components = components,
+    id = data$id
   )
 }
 
@@ -1011,7 +1013,7 @@ hs_is_relinv_primary_call <- function(expr) {
   hs_is_genomic_primary_call(expr) || hs_is_single_step_primary_call(expr)
 }
 
-hs_parse_relinv_primary_call <- function(call, data, env) {
+hs_parse_relinv_primary_call <- function(call, data, env, model_data = NULL) {
   call <- hs_unwrap_parentheses(call)
   if (hs_is_genomic_primary_call(call)) {
     term <- "genomic"
@@ -1085,25 +1087,26 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
 
   # single_step() construction path: `pedigree = ped` + `markers = M` builds the
   # single-step H^-1 engine-side (Aguilar et al. 2010), distinct from the
-  # supplied-`Hinv` path below.
+  # supplied-`Hinv` path below. With an `hs_data()` container that bundles a
+  # pedigree and genotypes, `single_step(1 | id)` resolves both from the bundle
+  # (the `animal(1 | id)` precedent), so neither argument is required.
   if (identical(term, "single_step")) {
-    if ("pedigree" %in% arg_names) {
+    has_explicit_construct <- any(c("pedigree", "markers") %in% arg_names)
+    has_hinv <- any(c("Hinv", "H") %in% arg_names)
+    bundle_construct <- !has_hinv &&
+      isTRUE(model_data$is_hs_data) &&
+      !is.null(model_data$components$pedigree) &&
+      !is.null(model_data$components$genotypes)
+    if (has_explicit_construct || bundle_construct) {
       return(hs_parse_single_step_construct(
         call,
         args,
         arg_names,
         group,
         data,
-        env
+        env,
+        model_data = model_data
       ))
-    }
-    if ("markers" %in% arg_names) {
-      stop(
-        "`single_step()` marker-based construction needs a pedigree: ",
-        "`single_step(1 | id, pedigree = ped, markers = M)`. To use a ",
-        "precomputed inverse instead, write `single_step(1 | id, Hinv = Hinv)`.",
-        call. = FALSE
-      )
     }
   }
 
@@ -1129,7 +1132,13 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
     extra <- if (identical(term, "genomic")) {
       " (or `markers` to build one)"
     } else {
-      ""
+      # single_step: also point at the construction on-ramps (explicit args or an
+      # hs_data() bundle that carries BOTH a pedigree and genotypes), so a bare
+      # single_step(1 | id) or a partial bundle is not left at a Hinv-only message.
+      paste0(
+        ", or `pedigree = ped` + `markers = M` (or an `hs_data()` bundle with ",
+        "both a pedigree and genotypes) to construct one"
+      )
     }
     stop(
       "`",
@@ -1225,6 +1234,41 @@ hs_parse_relinv_primary_call <- function(call, data, env) {
   )
 }
 
+# Coerce an `hs_data()` genotypes component into the numeric dosage matrix (rows =
+# genotyped ids) that single-step construction expects, for the
+# `single_step(1 | id)` bundle shorthand. Mirrors the id resolution `hs_data()`
+# itself enforces at construction: a matrix carries ids as row names; a data frame
+# uses the bundle's `id` column or explicit row names. The error branches are
+# defensive (a valid `hs_data()` already satisfies one of these forms).
+hs_single_step_bundle_markers <- function(genotypes, id) {
+  if (is.matrix(genotypes)) {
+    return(genotypes)
+  }
+  if (is.data.frame(genotypes)) {
+    if (!is.null(id) && id %in% names(genotypes)) {
+      ids <- as.character(genotypes[[id]])
+      mat <- as.matrix(genotypes[setdiff(names(genotypes), id)])
+      rownames(mat) <- ids
+      return(mat)
+    }
+    if (hs_has_explicit_rownames(genotypes)) {
+      return(as.matrix(genotypes))
+    }
+    stop(
+      "`hs_data()` `genotypes` must carry genotyped ids as a `",
+      id %||% "id",
+      "` column or row names to use the `single_step(1 | id)` shorthand; ",
+      "otherwise pass `markers =` explicitly.",
+      call. = FALSE
+    )
+  }
+  stop(
+    "`hs_data()` `genotypes` must be a numeric matrix or data frame to use the ",
+    "`single_step(1 | id)` shorthand.",
+    call. = FALSE
+  )
+}
+
 # Parse the single-step CONSTRUCTION call `single_step(1 | id, pedigree = ped,
 # markers = M, ...)`. Combines the pedigree path (id/sire/dam -> Ainv, A) with a
 # genotyped-subset marker matrix (-> G among the genotyped animals). The crux is
@@ -1239,7 +1283,8 @@ hs_parse_single_step_construct <- function(
   arg_names,
   group,
   data,
-  env
+  env,
+  model_data = NULL
 ) {
   named_args <- args[arg_names != ""]
   # The construction path and the supplied-inverse path are mutually exclusive.
@@ -1270,28 +1315,53 @@ hs_parse_single_step_construct <- function(
       call. = FALSE
     )
   }
-  if (is.null(named_args$markers)) {
+  components <- model_data$components
+  is_bundle <- isTRUE(model_data$is_hs_data)
+  has_bundle_ped <- is_bundle && !is.null(components$pedigree)
+  has_bundle_geno <- is_bundle && !is.null(components$genotypes)
+
+  # Pedigree: an explicit `pedigree =` wins; otherwise the `hs_data()` bundle.
+  if (!is.null(named_args$pedigree)) {
+    ped_df <- hs_eval_pedigree(named_args$pedigree, data, env)
+  } else if (has_bundle_ped) {
+    ped_df <- components$pedigree
+  } else {
     stop(
-      "`single_step(1 | id, pedigree = ped, markers = M)` construction requires ",
-      "a `markers` matrix alongside `pedigree`. Supply a precomputed `Hinv` ",
-      "instead via `single_step(1 | id, Hinv = Hinv)`.",
+      "`single_step()` construction needs a pedigree (an explicit ",
+      "`pedigree = ped` or an `hs_data()` bundle with one): ",
+      "`single_step(1 | id, pedigree = ped, markers = M)`. For a precomputed ",
+      "inverse, write `single_step(1 | id, Hinv = Hinv)`.",
       call. = FALSE
     )
   }
 
-  observed_ids <- as.character(data[[group]])
+  # Markers: an explicit `markers =` wins; otherwise the `hs_data()` genotypes.
+  if (!is.null(named_args$markers)) {
+    markers <- hs_eval_genomic_ginv(
+      named_args$markers,
+      data,
+      env,
+      what = "markers"
+    )
+  } else if (has_bundle_geno) {
+    markers <- hs_single_step_bundle_markers(
+      components$genotypes,
+      model_data$id
+    )
+  } else {
+    stop(
+      "`single_step(1 | id, pedigree = ped, markers = M)` construction requires ",
+      "a `markers` matrix alongside `pedigree` (or an `hs_data()` bundle with ",
+      "genotypes). Supply a precomputed `Hinv` instead via ",
+      "`single_step(1 | id, Hinv = Hinv)`.",
+      call. = FALSE
+    )
+  }
+  markers <- hs_validate_genomic_markers(markers)
 
-  ped_df <- hs_eval_pedigree(named_args$pedigree, data, env)
+  observed_ids <- as.character(data[[group]])
   pedigree <- hs_validate_pedigree(ped_df, observed_ids, group)
   ped_ids <- pedigree$ids
-
-  markers <- hs_eval_genomic_ginv(
-    named_args$markers,
-    data,
-    env,
-    what = "markers"
-  )
-  markers <- hs_validate_genomic_markers(markers)
   geno_ids <- rownames(markers)
   not_in_ped <- setdiff(geno_ids, ped_ids)
   if (length(not_in_ped) > 0L) {

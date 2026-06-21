@@ -76,8 +76,10 @@ or \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
 \code{target = "snp_blup"}), and \code{single_step(1 | id, Hinv = Hinv)} (a precomputed
 inverse) or \code{single_step(1 | id, pedigree = ped, markers = M)} (the engine
 constructs \code{H^-1} from the pedigree + genotyped-subset markers via
-\code{target = "single_step_construct"}; an explicit \verb{pedigree =} is required). The
-remaining
+\code{target = "single_step_construct"}). When \code{data} is an \code{\link[=hs_data]{hs_data()}} container
+that bundles a pedigree and genotypes, \code{single_step(1 | id)} resolves both from
+the bundle (the \code{animal(1 | id)} precedent), so neither \verb{pedigree =} nor
+\verb{markers =} is required; explicit arguments override the bundle. The remaining
 markers (\code{markers()}, \code{marker_scan()}, \code{qtl_scan()}) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.
 }
