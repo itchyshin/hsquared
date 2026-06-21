@@ -83,6 +83,113 @@ test_that("the gwas normalizer assembles the marker-scan table with the caveat",
   expect_output(print(gl), "scale mismatch")
 })
 
+test_that("GWAS calibration metadata is absent unless a complete payload exists", {
+  raw <- list(
+    marker_ids = c("m1", "m2"),
+    effects = c(0.3, -0.1),
+    standard_errors = c(0.1, 0.2),
+    z_scores = c(3, -0.5),
+    chisq = c(9, 0.25),
+    p_values = c(0.0027, 0.617),
+    bonferroni = c(0.0054, 1),
+    bh = c(0.0054, 0.617),
+    lod = c(9, 0.25) / (2 * log(10))
+  )
+
+  g <- hsquared:::hs_normalize_gwas_result(raw)
+  expect_null(attr(g, "calibration"))
+})
+
+test_that("GWAS calibration metadata validator rejects incomplete or inconsistent payloads", {
+  calibration <- list(
+    calibration_method = "permutation",
+    threshold_scale = "p_value",
+    threshold = 0.01,
+    alpha = 0.05,
+    empirical_type1 = 0.048,
+    marker_panel_mode = "realistic_ld",
+    scan_method = "mixed",
+    n_replicates = 1000,
+    seed = c(1L, 2L, 3L),
+    engine = "HSquared.mixed_model_marker_scan",
+    package_version = "0.1.0"
+  )
+
+  validated <- hsquared:::hs_validate_gwas_calibration_metadata(calibration)
+  expect_equal(validated$calibration_method, "permutation")
+  expect_equal(validated$threshold, 0.01)
+  expect_equal(validated$n_replicates, 1000L)
+
+  missing_field <- calibration
+  missing_field$threshold <- NULL
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(missing_field),
+    "missing field.*threshold"
+  )
+
+  none_method <- calibration
+  none_method$calibration_method <- "none"
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(none_method),
+    "other than `none`"
+  )
+
+  bad_p <- calibration
+  bad_p$threshold <- 2
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(bad_p),
+    "between 0 and 1"
+  )
+
+  bad_method <- calibration
+  bad_method$scan_method <- "loco"
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(bad_method),
+    "must match"
+  )
+
+  bad_reps <- calibration
+  bad_reps$n_replicates <- 10.5
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(bad_reps),
+    "positive whole number"
+  )
+})
+
+test_that("the gwas normalizer preserves validated future calibration metadata", {
+  raw <- list(
+    marker_ids = "m1",
+    effects = 0.3,
+    standard_errors = 0.1,
+    z_scores = 3,
+    chisq = 9,
+    p_values = 0.0027,
+    bonferroni = 0.0027,
+    bh = 0.0027,
+    lod = 9 / (2 * log(10)),
+    calibration = list(
+      calibration_method = "fixed_panel_simulation",
+      threshold_scale = "lod",
+      threshold = 3.2,
+      alpha = 0.05,
+      empirical_type1 = 0.048,
+      marker_panel_mode = "fixed",
+      scan_method = "mixed",
+      n_replicates = 200,
+      seed = 20260621L,
+      engine = "HSquared.mixed_model_marker_scan",
+      package_version = "0.1.0"
+    )
+  )
+
+  g <- hsquared:::hs_normalize_gwas_result(raw)
+  calibration <- attr(g, "calibration")
+  expect_type(calibration, "list")
+  expect_equal(calibration$threshold_scale, "lod")
+  expect_equal(calibration$marker_panel_mode, "fixed")
+  expect_equal(calibration$scan_method, attr(g, "scan_method"))
+})
+
 test_that("hs_gwas_marker_groups guards the LOCO group map (no engine needed)", {
   M <- matrix(0, 4, 4)
 

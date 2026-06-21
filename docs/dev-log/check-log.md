@@ -22,6 +22,30 @@ with private memory.
   - `rg -n "no threshold is activated|gwas\\(\\) remains experimental and uncalibrated|required calibrated-result fields|Validation Gates|external scan comparator|covered-status promotion" docs/design/28-gwas-threshold-activation-contract.md docs/design/11-next-50-slices.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-gwas-threshold-activation-contract.md`
     confirms the contract/non-activation boundary.
 
+## 2026-06-21 GWAS calibration metadata validator
+
+- Scope: internal R validation scaffold only. Added strict validation for
+  optional future `hs_gwas` calibration metadata and tests for missing fields,
+  bad p-value thresholds, `method = "none"`, scan-method mismatch, and
+  non-integer replicate counts.
+- Claim boundary: current `gwas()` output remains unchanged because the live
+  engine result carries no calibration payload. This does not activate R
+  significance thresholds, does not add a permutation cutoff, does not add
+  realistic-LD production calibration, does not add an external scan comparator,
+  and does not promote marker scans beyond partial.
+- Checks:
+  - `air format R/gwas.R tests/testthat/test-gwas.R` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "gwas")'`: 43 pass /
+    0 fail / 0 warn / 2 skip.
+  - `Rscript --vanilla -e 'devtools::test()'`: 1314 pass / 0 fail /
+    0 warn / 58 skip.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = tempfile("hsq-check-"))'`:
+    0 errors / 0 warnings / 0 notes.
+  - `rg -n "does not activate R significance thresholds|current `gwas\\(\\)` output remains unchanged|optional future `hs_gwas` calibration metadata|no calibration payload|marker scans beyond partial" R/gwas.R tests/testthat/test-gwas.R docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-gwas-calibration-metadata-validator.md`
+    confirms the validator/non-activation boundary.
+
 ## 2026-06-21 BLUPF90 multivariate executable handoff
 
 - Scope: R validation/comparator handoff documentation only. Added
