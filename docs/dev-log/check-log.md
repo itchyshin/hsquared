@@ -3,6 +3,34 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Retarget R issue #22 body after diagonal bridge banking
+
+- Active lenses: Ada, Shannon, Boole, Hopper, Kirkpatrick, Rose, Grace.
+- Branch: `codex/issue-22-body-sync`.
+- Scope:
+  - inspected live R issue #22 and current structured-covariance docs/status
+    surfaces;
+  - edited the GitHub issue body to say the R diagonal subset is already banked
+    as experimental/partial, while `lowrank` / `factor_analytic`, `rank`, raw
+    loading extractors, and formula-level `cov = ...` grammar remain gated;
+  - left the issue open with `status:partial` / `blocked` for the loading-bearing
+    structured-covariance work.
+- Live GitHub action:
+  - `gh issue edit 22 --repo itchyshin/hsquared --body ...` updated the issue
+    body.
+- Claim boundary: GitHub issue-body/status synchronization only. No R behavior
+  changed, no lowrank/factor-analytic bridge, loading interpretation, formula
+  covariance grammar, recovery/comparator evidence, production claim, or
+  covered-status promotion was added.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-22-body-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep confirms #22 remains `status:partial` / blocked for the
+    loading-bearing structured-covariance work and that no behavior,
+    lowrank/factor-analytic, formula-grammar, or promotion claim was added.
+
 ## 2026-06-21 Close R issue #21 after PEV/reliability standard-field banking
 
 - Active lenses: Ada, Shannon, Hopper, Fisher, Rose, Grace.
