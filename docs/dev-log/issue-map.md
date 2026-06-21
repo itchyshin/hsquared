@@ -45,7 +45,7 @@ the full innovation backlog (#50-#58, #61, #93, and bridge/validation anchors).
 | 61 | Joint critical path / cross-lane coordination | — | open · cross-lane | Holds ratified bridge conventions that feed R #22/#23/metafounder/RR follow-ups |
 | 58 | Engine perf ideas (augmented AI-REML / SQUAREM / Woodbury) | 8 | planned · cross-lane | hsquared#24/#25/#17 |
 | 53 | Innovation: metafounders / unknown-parent groups for ssGBLUP | 2/5 | planned / partial primitives | R contract row; supplied-`Gamma` bridge exists, no estimation or comparator claim |
-| 49 | Validation: external comparator target fixtures | — | partial · cross-lane | hsquared#10/#7 promotion gate |
+| 49 | Validation: external comparator target fixtures | — | partial · cross-lane | hsquared#10/#7 promotion gate; Julia PR #132 hardened the BLUPF90 packet preflight and skip-safe runner, but no BLUPF90 executable comparator evidence exists yet |
 | 5 | Gaussian animal model REML/ML engine | 1 | partial | — (epic) |
 | 6 | Engine result object and diagnostics | 1 | partial | hsquared#6 |
 | 7 | Julia-side validation canon | 1 | partial | hsquared#7/#10 |
@@ -66,7 +66,7 @@ the full innovation backlog (#50-#58, #61, #93, and bridge/validation anchors).
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 (+ #39) | Phase 5 stack on main + thresholds |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, provenance extractors, reserved/error-only `metafounder_effects()`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
-| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity |
+| Validation gates | #10, #7 | #41, #49, #7 | broader/redeclared recovery gate + second independent same-estimand comparator; Mrode-style target and `MCMCglmm` Bayesian agreement evidence are recorded but do not clear REML comparator parity; Julia PR #132 banked BLUPF90 preflight/runner hardening only |
 | HSData marshalling | #8 | #8 | live bridge marshalling |
 
 Recently banked / no longer open in the selected Julia anchor list: #38
@@ -74,6 +74,15 @@ Recently banked / no longer open in the selected Julia anchor list: #38
 HSquared.jl PR #133 at `4526481`). Historical R-lane notes may still mention the
 old `250-animal` wording as the problem statement; the live Julia issue is now
 closed.
+
+Recent Julia-side coordination checkpoints that keep current gates honest:
+
+- HSquared.jl PR #132 (`b657464`) hardened the BLUPF90 multivariate preflight
+  packet and skip-safe opt-in runner for #49/#41. It did not run
+  `renumf90`/`airemlf90`/BLUPF90-family executables and does not count as
+  second-comparator evidence.
+- HSquared.jl PR #133 (`4526481`) cleaned the stale AI-matrix validation claim
+  and closed #38. R current public capability rows already avoid the old claim.
 
 ## Historical WS2 work order — Step 0 DONE (see `docs/design/19-on-main-bridge-gap.md`)
 
