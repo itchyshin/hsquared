@@ -13,7 +13,6 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 
 | # | Title | Phase | Type | Status | Capability / validation anchor |
 | --- | --- | --- | --- | --- | --- |
-| 2 | Define v0.1 R-Julia contract | 1 | bridge/coordinator | covered | v0.1 contract shipped (univariate Gaussian only); Phase 2+ contracts open separate issues, not under this covered label |
 | 5 | R fitted object & extractor contract | 1 | r-package | partial | extractor contract; children #11/#12/#21/#22/#23 |
 | 6 | R-to-Julia bridge payload design | 1 | bridge | partial | **bridge epic**; children #11–#15, #21–#23 |
 | 7 | Validation canon | 1 | validation | partial | mirrors HSquared.jl#7/#41 |
@@ -28,8 +27,8 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
 | — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | partial | Candidate A Big 3 slice; `metafounder(..., group =, Gamma =)` now validates the supplied-`Gamma` animal-only payload and fits the experimental supplied-variance `target = "metafounder"` path; `single_step(..., group =, Gamma =)` validates the supplied-`Gamma` `H^Gamma` payload and fits the experimental live `target = "metafounder_single_step"` path. `gamma_matrix()` and `metafounder_groups()` expose supplied provenance; `metafounder_effects()` is reserved/error-only. No returned metafounder-specific effects, `Gamma` estimation, BLUPF90-family comparator evidence, or covered promotion yet |
 
-Recently banked / no longer open in the R issue list: #8, #11, #12, #13, #14,
-#15, #16, #17, #18, and #26. Shipped features remain partial/experimental where the
+Recently banked / no longer open in the R issue list: #2, #8, #11, #12, #13,
+#14, #15, #16, #17, #18, and #26. Shipped features remain partial/experimental where the
 capability ledgers say so; a closed issue does not imply covered validation.
 
 ## HSquared.jl (twin engine) — selected open anchors

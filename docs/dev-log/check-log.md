@@ -3,6 +3,21 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Close R issue #2 after v0.1 contract coverage
+
+- Scope: issue-map/coordination docs only after live GitHub close.
+- Live GitHub action: `gh issue close 2 --repo itchyshin/hsquared --comment ...`
+  closed R issue #2 because the v0.1 R-Julia contract is already shipped and
+  recorded as covered. Phase 2+ bridge contracts remain tracked in their own
+  partial/planned issues.
+- Claim boundary: issue close only. No code changed, no capability or
+  `validation_status()` row changed, and no Phase 2+ bridge target is promoted.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "#2|v0\\.1 R-Julia contract|Phase 2\\+|covered|no capability|validation_status|promoted" docs/dev-log/issue-map.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-issue-map-close-2.md`
+    confirms the close/no-promotion boundary.
+
 ## 2026-06-21 Close R issue #8 after live HSData marshalling parity
 
 - Scope: issue-map/coordination docs only after live GitHub close.
