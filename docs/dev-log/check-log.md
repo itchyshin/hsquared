@@ -3,6 +3,18 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 issue-map #15 correction
+
+- Scope: docs/dev-log coordination only. Corrected
+  `docs/dev-log/issue-map.md` and the matching after-task report to move R
+  issue #15 out of the active-open table and into the recently banked/closed
+  note, matching live `gh issue list --repo itchyshin/hsquared --state open`.
+- Claim boundary: no capability status changed, no `validation_status()` rows
+  changed, and closed #15 does not imply a covered-status promotion.
+- Checks:
+  - `git diff --check` clean.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+
 ## 2026-06-21 issue-map live refresh
 
 - Scope: docs/dev-log coordination only. Refreshed
