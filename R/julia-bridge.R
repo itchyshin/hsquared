@@ -2470,8 +2470,9 @@ hs_validate_genetic_structure_control <- function(control, target) {
     stop(
       "`engine_control$rank` is reserved for future `lowrank` and ",
       "`factor_analytic` structured covariance controls. The current ",
-      "multivariate bridge estimates unstructured G0/R0 only; remove `rank` ",
-      "until structured covariance support is available.",
+      "multivariate bridge estimates unstructured or diagonal G0 with ",
+      "unstructured R0 only; remove `rank` until low-rank or ",
+      "factor-analytic support is available.",
       call. = FALSE
     )
   }
