@@ -51,6 +51,16 @@
   [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
   still recomputes when a payload is absent or when a random-regression
   user supplies a custom grid.
+- Reserved
+  [`metafounder_effects()`](https://itchyshin.github.io/hsquared/reference/metafounder_effects.md)
+  as an exported, error-only extractor so the future metafounder result
+  surface has a stable name without implying that explicit metafounder
+  solutions are currently returned. Existing
+  [`gamma_matrix()`](https://itchyshin.github.io/hsquared/reference/gamma_matrix.md)
+  and
+  [`metafounder_groups()`](https://itchyshin.github.io/hsquared/reference/metafounder_groups.md)
+  remain provenance-only extractors for supplied `Gamma` and group
+  assignments.
 - Added experimental live R bridges for supplied-`Gamma` metafounder
   relationships.
   `metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`
@@ -68,9 +78,9 @@
   reduction to the ordinary Henderson MME supplied-variance path, the
   single-step `Gamma = 0` reduction to ordinary single-step
   construction, and nonzero-`Gamma` sensitivity probes with stable
-  labels/dimensions. No `Gamma` estimation, metafounder-specific effect
-  extractor, BLUPF90 comparator evidence, production-scale claim, or
-  covered support is claimed.
+  labels/dimensions. No `Gamma` estimation, returned
+  metafounder-specific effects, BLUPF90 comparator evidence,
+  production-scale claim, or covered support is claimed.
 - Reconciled the PEV/reliability standard-field bridge status. Default,
   sparse, and explicit AI-REML Julia result-payload paths consume engine
   `prediction_error_variance` and `reliability` fields when present

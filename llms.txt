@@ -407,6 +407,8 @@ opt-in experimental targets.
   : Extract a supplied metafounder Gamma matrix
 - [`metafounder_groups()`](https://itchyshin.github.io/hsquared/reference/metafounder_groups.md)
   : Extract supplied metafounder group assignments
+- [`metafounder_effects()`](https://itchyshin.github.io/hsquared/reference/metafounder_effects.md)
+  : Reserved metafounder effect extractor
 - [`genetic_loadings()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`specific_variance()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
   [`latent_breeding_values()`](https://itchyshin.github.io/hsquared/reference/factor_g_extractors.md)
