@@ -257,7 +257,7 @@ test_that("extractor defaults do not imply fitted model support", {
   )
   expect_error(
     eqtl_table(list()),
-    "HSquared.jl#48",
+    "future calibrated-threshold activation",
     fixed = TRUE
   )
   expect_error(

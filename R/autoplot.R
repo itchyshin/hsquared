@@ -41,7 +41,9 @@
 #' `autoplot()` on a `gwas()` scan (`hs_gwas`) draws `type = "manhattan"`
 #' (default) or `type = "qq"` (observed vs expected `-log10(p)` with a `y = x`
 #' null and the genomic-inflation `lambda_GC` as a diagnostic). Both carry the
-#' EXPERIMENTAL, NOT-genome-wide-calibrated caveat (gate `HSquared.jl#48`).
+#' EXPERIMENTAL, NOT-genome-wide-calibrated caveat. The Julia lane has a
+#' fixed-panel calibration smoke harness, but R significance thresholds are not
+#' activated.
 #'
 #' The figure helpers are deliberately modular (each takes a tidy data frame and
 #' returns a `ggplot`) so they can be factored into a shared visualization
@@ -980,7 +982,7 @@ hs_autoplot_manhattan <- function(df, method = "mixed") {
         title = "Marker scan (Manhattan)",
         subtitle = paste0(
           "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide ",
-          "calibrated (gate HSquared.jl#48)",
+          "calibrated (no R threshold activation)",
           hs_gwas_method_note(method)
         )
       ) +
@@ -990,7 +992,7 @@ hs_autoplot_manhattan <- function(df, method = "mixed") {
     interval_status = "uncalibrated",
     notes = paste0(
       "nominal Wald p-values; Bonferroni line is visual only; not genome-wide ",
-      "calibrated (gate #48)",
+      "calibrated; Julia fixed-panel smoke is not an R threshold activation",
       hs_gwas_method_note(method)
     )
   )
@@ -1026,7 +1028,7 @@ hs_autoplot_qq <- function(df, method = "mixed") {
         title = "Marker scan (QQ)",
         subtitle = paste0(
           "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide calibrated ",
-          "(gate #48); genomic inflation lambda_GC = ",
+          "(no R threshold activation); genomic inflation lambda_GC = ",
           lab,
           " (diagnostic only; >1 may reflect structure/polygenicity, ",
           "not corrected)",
@@ -1040,7 +1042,7 @@ hs_autoplot_qq <- function(df, method = "mixed") {
     notes = paste0(
       "QQ of nominal Wald p-values; y=x is the null; lambda_GC = ",
       lab,
-      " is diagnostic only; not genome-wide calibrated (gate #48)"
+      " is diagnostic only; not genome-wide calibrated"
     )
   )
 }

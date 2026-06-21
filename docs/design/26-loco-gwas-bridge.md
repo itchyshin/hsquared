@@ -79,9 +79,10 @@ contract — out of scope for this slice.
 Decision: surface LOCO at validation scale, reusing the pedigree-estimated
 variance components, with an **explicit print/`@return` caveat** that the variance
 components are pedigree-estimated while the LOCO relationship is genomic (a scale
-mismatch), the p-values remain **uncalibrated** (engine gate `HSquared.jl#48`),
-and proper genomic-VC LOCO is future work. This keeps the slice honest and small;
-it does not over-claim a production GWAS.
+mismatch), the p-values remain **uncalibrated**, and proper genomic-VC LOCO is
+future work. HSquared.jl PR #134 later banked a fixed-panel calibration smoke
+harness, but that does not activate R significance thresholds or turn this into
+a production GWAS.
 
 ## 4. R wiring (R lane only — `R/gwas.R`, `R/autoplot.R`)
 
