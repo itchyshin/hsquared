@@ -66,6 +66,14 @@
   future external comparator runs, but no
   AGHmatrix/rrBLUP/sommer/JWAS/BGLR/BLUPF90 comparator evidence is
   claimed and the genomic/SNP-BLUP rows remain partial.
+- Mirrored the Julia-owned marker-scan result payload fixture from
+  HSquared.jl PR
+  [\#142](https://github.com/itchyshin/hsquared/issues/142) (`f9fbbb1`)
+  into R tests. The fixture pins
+  [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
+  payload-normalization parity without live Julia, but it does not
+  activate calibrated thresholds, map-annotated QTL/eQTL tables,
+  external comparator evidence, or a covered claim.
 - Reserved
   [`metafounder_effects()`](https://itchyshin.github.io/hsquared/reference/metafounder_effects.md)
   as an exported, error-only extractor so the future metafounder result
