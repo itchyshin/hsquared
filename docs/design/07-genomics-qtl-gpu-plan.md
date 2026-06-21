@@ -827,8 +827,13 @@ The immediate implementation path remains:
 7. pkgdown and Documenter pages that show implemented, partial, and planned
    status separately.
 
-Only after this path is validated should genomic, QTL/eQTL, GLLVM, unusual
-inheritance, and GPU lanes move from roadmap to implementation.
+That minimal path is now validated for the v0.1 Gaussian animal model. Several
+adjacent lanes have moved from roadmap to opt-in partial surfaces (genomic
+GREML/SNP-BLUP, constructed single-step, simple non-Gaussian animal models, and
+post-fit marker scans), but the broad roadmap here remains gated: QTL/eQTL
+workflows, GLLVM/omics models, unusual inheritance kernels, production APY /
+low-rank genomic scaling, and GPU acceleration still require their own code,
+tests, comparator evidence, and status rows before public claims widen.
 
 ## Positioning Against Related Tools
 

@@ -3,6 +3,37 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync roadmap issue #9 status
+
+- Active lenses: Ada, Shannon, Boole, Jason, Fisher, Pat, Rose, Grace.
+- Branch: `codex/issue-9-roadmap-sync`.
+- Scope:
+  - updated the R roadmap, genomics/QTL/GPU design plan, and user-facing
+    roadmap article so Phase 5+ wording distinguishes banked opt-in partial
+    surfaces from still-planned production/QTL/GLLVM/GPU work;
+  - updated the issue map row for R #9;
+  - updated live GitHub issue #9 body and changed its label from
+    `status:planned` to `status:partial`.
+- Live GitHub action:
+  - `gh issue edit 9 --repo itchyshin/hsquared --remove-label status:planned --add-label status:partial --body-file -`
+    updated the roadmap parent.
+  - `gh issue view 9 --repo itchyshin/hsquared --json title,state,labels,updatedAt,url`
+    confirmed the issue is open with `status:partial`.
+- Claim boundary: status/docs/issue-body sync only. No production genomic
+  support, QTL/eQTL workflow, GLLVM/omics animal model, GPU acceleration,
+  APY/low-rank production scaling, calibrated marker-scan threshold,
+  map-annotated QTL/GWAS/eQTL table, external comparator evidence, or covered
+  promotion is claimed. The default v0.1 Gaussian animal-model fit remains the
+  covered exception; Phase 5+ surfaces remain opt-in partial unless their rows
+  say otherwise.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-9-roadmap-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Mirror genomic GBLUP / SNP-BLUP target fixture
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Kirkpatrick, Curie, Rose, Grace.

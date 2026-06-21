@@ -132,31 +132,39 @@ against the twin `structured_covariance_parity` target (live fit skip-guarded).
 
 ## Phase 5: Genomic And Single-Step Models
 
-Status: started (opt-in). Genomic GREML (variance-component estimation on a
-user-supplied `Ginv`, or a marker matrix the engine turns into a genomic
-relationship) is surfaced opt-in and experimental
-(`genomic(1 | id, Ginv = Ginv)` or `genomic(1 | id, markers = M)`,
-`target = "genomic"`, mirroring the twin `V2-GREML` partial gate). The rest is
-planned.
+Status: partial (opt-in). Genomic GREML, SNP-BLUP / RR-BLUP marker effects,
+constructed single-step `H^-1`, supplied-`Gamma` metafounder `A^Gamma`, and
+supplied-`Gamma` single-step `H^Gamma` are surfaced experimentally through the
+Julia bridge. The R lane now also carries Julia-free target/payload fixtures for
+genomic GBLUP/SNP-BLUP and marker-scan result payloads. Production-scale genomic
+workflows and external same-estimand comparator validation remain planned.
 
 - Genomic GREML on a supplied `Ginv` or a marker matrix (engine-built G), and
-  single-step on a supplied `Hinv` — opt-in, experimental (REML), mirroring the
-  twin `V2-GREML` / `V2-GRM` / `V2-GINV` / `V2-SSHINV` gates.
+  single-step on a supplied `Hinv` or constructed `H^-1` — opt-in,
+  experimental (REML), mirroring the twin `V2-GREML` / `V2-GRM` / `V2-GINV` /
+  `V2-SSHINV` gates.
 - SNP-BLUP / RR-BLUP marker effects on `genomic(1 | id, markers = M)` at supplied
-  variances (`target = "snp_blup"`, `marker_effects()`) — opt-in, experimental,
-  supplied-variance, mirroring the twin `V2-SNPBLUP` gate.
-- Weighted/standardized-marker G variants, building `Hinv` from a pedigree + G,
-  REML estimation of the SNP-BLUP marker variance, single-step HBLUP
-  construction, APY, low-rank m≫n solves, genomic feature/QTL-style effects,
-  comparator parity (AGHmatrix/sommer/BLUPF90/JWAS), and simulation validation —
-  planned.
+  variances or REML-estimated marker variance (`target = "snp_blup"`,
+  `marker_effects()`) — opt-in, experimental, mirroring the twin
+  `V2-SNPBLUP` gate.
+- Post-fit `gwas(fit, markers)` marker scans are surfaced experimentally with
+  mixed, single-marker, and LOCO methods; `gwas_table(scan)` and
+  `lod_scores(scan)` are thin views of already-computed `hs_gwas` objects. They
+  are not genome-wide calibrated and are not map-annotated QTL/eQTL workflows.
+- Weighted/standardized-marker G variants, APY and low-rank m≫n production
+  solves, PLINK/VCF readers, production-scale single-step, genomic feature/QTL
+  effects, comparator parity (AGHmatrix/sommer/BLUPF90/JWAS), and simulation
+  validation remain planned.
 
 ## Phase 6: Non-Gaussian And GLLVM Animal Models
 
-Status: planned.
+Status: partial for simple non-Gaussian animal models, planned for GLLVM/omics.
 
-- Poisson, negative binomial, binomial, beta-binomial, ordinal, zero-inflated
-  and hurdle extensions.
+- Poisson and binomial animal-model fits are surfaced experimentally through the
+  Julia-owned Laplace/variational marginal path (`target = "nongaussian"`),
+  including Bernoulli and equal-total binomial-count responses. No heritability
+  is reported on the non-Gaussian scale. Negative binomial, beta-binomial,
+  ordinal, zero-inflated, hurdle, and broader family extensions remain planned.
 - Wide response matrices, latent genetic axes, ordination, and community
   ecology examples.
 - Estimation by **both Laplace approximation (LA) and variational
@@ -179,10 +187,13 @@ Status: planned.
 
 ## Phase 8: Huge-Scale And Accelerator Strategy
 
-Status: planned.
+Status: planned / prototype-only.
 
-- Disk-backed workflows, PCG/preconditioners, GPU-aware dense/factor models,
-  and million-record benchmarks.
+- Disk-backed workflows, PCG/preconditioners, APY/low-rank production genomic
+  inverses, GPU-aware dense/factor models, and million-record benchmarks.
+- Existing APY/selected-inverse/sparse-prototype notes are design or prototype
+  evidence only. No GPU backend, production APY path, or large-scale benchmark
+  claim is active.
 
 ### Standing performance directive (user, 2026-06-13)
 
