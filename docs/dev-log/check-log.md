@@ -5745,16 +5745,3 @@ release".
   'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'`
   **0 errors / 0 warnings / 0 notes**. Expected INFO only: optional suggested
   packages `enhancer`, `nadiv`, and `pedigreemm` unavailable.
-
-## 2026-06-21 (live issue-map refresh)
-
-- Refreshed `docs/dev-log/issue-map.md` from live GitHub issue/PR state:
-  `gh issue list --repo itchyshin/hsquared --state open --limit 100`,
-  `gh issue list --repo itchyshin/HSquared.jl --state open --limit 100`, and
-  `gh pr list --repo itchyshin/HSquared.jl --state open --limit 20`.
-- Removed stale closed R rows (#11, #12, #13, #14, #16, #17, #18, #26) from
-  the open-issue table and recorded them as recently banked. Refreshed the R
-  #10/#21/#23 anchors, added the live Julia #93 row, removed closed Julia
-  #39/#40 rows, and restored the current metafounder mirror row.
-- Scope is coordination/docs only: no package code, examples, user-facing
-  vignettes, or capability claims changed.
