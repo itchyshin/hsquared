@@ -35,12 +35,13 @@ the advanced opt-in bridge with explicit \code{target} control.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
-\code{iterations}, \code{target}, and \code{variance_components}.
+\code{iterations}, \code{target}, \code{variance_components}, and \code{marginal}.
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"genomic"},
-\code{"single_step"}, \code{"snp_blup"}, and \code{"multivariate"}, described below.
+\code{"single_step"}, \code{"snp_blup"}, \code{"multivariate"}, and \code{"nongaussian"},
+described below. \code{marginal} applies only to \code{target = "nongaussian"}.
 With \code{engine = "julia"} and no \code{target}, the bridge defaults to
 \code{target = "fit_animal_model"}: it surfaces the Julia-owned
 \code{HSquared.fit_animal_model()} dense NelderMead optimizer, honouring the
@@ -105,7 +106,18 @@ reserved \code{genetic_structure} control accepts only \code{"unstructured"} on 
 current R bridge; \code{"diagonal"}, \code{"lowrank"}, and \code{"factor_analytic"} remain
 planned until the structured-covariance Julia engine surface lands on main
 and R bridge tests are committed. The future \code{rank} control is also
-reserved and currently errors instead of being ignored.}
+reserved and currently errors instead of being ignored.
+
+\code{target = "nongaussian"} is an experimental, opt-in latent-scale GLMM for
+\code{family = poisson()}/\code{binomial()} (binary 0/1) on \code{animal(1 | id, pedigree = ped)}, surfacing the Julia-owned \code{HSquared.fit_laplace_reml()} REML
+optimizer. The \code{marginal} control selects the approximation: \code{"laplace"}
+(the Laplace approximation, default) or \code{"variational"} (the variational/ELBO
+marginal; aliases \code{"la"}/\code{"va"}). Because a non-Gaussian family has no
+residual-variance scale, \strong{no heritability} is reported. The variational
+objective is the ELBO (a lower bound on the marginal log-likelihood), so a
+variational fit's \code{logLik}/\code{AIC} are \strong{not} comparable with a Laplace fit's.
+Experimental, REML-only, not coverage-calibrated (twin gate \code{V6-LAPLACE}/\code{VA},
+partial).}
 }
 \value{
 An object of class \code{"hs_control"}.

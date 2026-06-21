@@ -5139,3 +5139,34 @@ release".
   `rcmdcheck(args="--no-manual")` **0/0/0**. No new engine contract consumed (pure
   R sugar over the existing construct path), so no twin coordination needed.
 - CI (commit `6adc24f`, bundle shorthand): pkgdown run `27889443212` **success**; pages green.
+
+## 2026-06-20 (session 6 — variational (VA) non-Gaussian marginal R bridge)
+
+- Surfaced the engine's **variational (VA) marginal** for the opt-in non-Gaussian
+  (GLMM) animal model — answers the twin's "pending R-lane coordination" item
+  (the `"laplace"`/`"va"` method-string). The engine's `fit_laplace_reml` already
+  supports `marginal = :variational` (+ DRM-style `:LA`/`:VA`), validated
+  engine-side (V6-LAPLACE/VA: VA ELBO a verified lower bound via Gauss–Hermite).
+- `R/julia-bridge.R`: `hs_validate_marginal_method()` accepts
+  `"laplace"`/`"variational"` (+ `"la"`/`"va"` aliases, case-insensitive),
+  canonicalizes; the user-facing spec method is `"Variational-REML"` vs
+  `"Laplace-REML"` from the engine-echoed result method; diagnostics carry
+  `loglik_kind` (the VA value is the **ELBO**, a lower bound — so VA/Laplace
+  `logLik`/`AIC` are not comparable). `R/hsquared.R` + `R/hs_control.R` roxygen
+  (the `marginal` key + a `target = "nongaussian"` paragraph).
+- Adversarial verify (Workflow, 5 lenses: Boole/Hopper/Fisher/Curie/Rose):
+  Hopper + Curie **clean**; SHIP-after-FIX. Folded: 1 **blocker** (a stale
+  `validation-debt-register` row claiming "variational planned" — the opposite of
+  reality) + majors — the `marginal` key was undiscoverable in `?hs_control`
+  (added key + nongaussian paragraph); the VA loglik/ELBO scale was un-flagged
+  (added `loglik_kind`); and the Rose-principle sweep caught the same stale
+  "Laplace-only/Laplace-REML" claim across `model-spec.R` error, `README.md`,
+  `model-status.Rmd`, the package roxygen, `validation-status.R`, and a second
+  validation-debt row — all reconciled.
+- `air`; `devtools::document()`; pure-R `test-nongaussian` **18/0/0/2**; **LIVE**
+  `test-nongaussian.R` **39/0/0/0** on the bridge (VA matches the engine VA fit to
+  1e-6, VA ≠ Laplace so the knob is not a no-op, the `"va"` alias routes
+  identically, print shows `Variational-REML`, `loglik_kind` is the ELBO);
+  `pkgdown::check_pkgdown()` clean; `rcmdcheck(args="--no-manual")` **0/0/0**.
+  capability-status + NEWS updated. No engine edit (the engine pre-built the
+  `MarginalMethod` R-name mapping).

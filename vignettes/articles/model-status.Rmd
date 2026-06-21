@@ -207,8 +207,8 @@ unsupported form rather than guessing.
 - General default model fitting beyond the v0.1 univariate Gaussian animal
   model (the reserved inheritance kernels). The multivariate, standard
   two-effect, repeatability, genomic, SNP-BLUP, single-step, and non-Gaussian
-  (`poisson`/`binomial`, Laplace-REML, no heritability) models fit only opt-in
-  and experimentally (see above).
+  (`poisson`/`binomial`, Laplace or variational REML, no heritability) models fit
+  only opt-in and experimentally (see above).
 - ML estimation on the fit path (`REML = FALSE` is rejected; only REML is
   implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).

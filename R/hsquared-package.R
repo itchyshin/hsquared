@@ -9,9 +9,9 @@
 #' through the HSquared.jl engine: the default `hsquared()` call fits when a
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
 #' install guidance. Genomic, single-step, repeatability, two-effect,
-#' multivariate Gaussian, and non-Gaussian (`poisson`/`binomial`, Laplace-REML)
-#' models also fit through opt-in, experimental engine paths; factor-analytic
-#' models remain planned.
+#' multivariate Gaussian, and non-Gaussian (`poisson`/`binomial`, Laplace or
+#' variational REML) models also fit through opt-in, experimental engine paths;
+#' factor-analytic models remain planned.
 #'
 #' @keywords internal
 "_PACKAGE"

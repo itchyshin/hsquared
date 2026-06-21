@@ -53,6 +53,8 @@ test_that("the non-Gaussian normalizer shapes a Laplace-REML result without heri
   expect_equal(as.numeric(stats::logLik(fit)), -3.21)
   expect_equal(fit$result$family, "bernoulli")
   expect_equal(fit$result$marginal_method, "laplace")
+  # the Laplace marginal's loglik is the Laplace marginal log-likelihood
+  expect_equal(fit$result$loglik_kind, "laplace marginal loglik")
   # No heritability is defined on the latent scale for a non-Gaussian family.
   expect_error(heritability(fit), "heritability")
   expect_equal(
@@ -113,6 +115,77 @@ test_that("the live Julia bridge fits a non-Gaussian (Poisson + Bernoulli) anima
   expect_equal(nrow(breeding_values(fb)), n)
 })
 
+test_that("the live bridge fits the variational (VA) non-Gaussian marginal", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live non-Gaussian bridge."
+  )
+
+  set.seed(7)
+  ped <- data.frame(
+    id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
+    sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),
+    dam = c(NA, NA, NA, NA, rep(c("d1", "d2"), 8))
+  )
+  n <- nrow(ped)
+  dat <- data.frame(y = rpois(n, lambda = 2), id = ped$id, x = rnorm(n))
+
+  fit_va <- hsquared(
+    y ~ x + animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::poisson(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "nongaussian", marginal = "variational")
+    )
+  )
+  # the variational marginal is honestly surfaced everywhere it appears
+  expect_equal(fit_va$spec$method, "Variational-REML")
+  expect_equal(fit_va$result$marginal_method, "variational")
+  expect_equal(
+    fit_va$result$diagnostics$variance_components,
+    "estimated_variational_reml"
+  )
+  expect_true(is.finite(variance_components(fit_va)$estimate))
+  expect_output(print(fit_va), "Variational-REML")
+  # the VA objective is the ELBO (a lower bound), surfaced honestly so it is not
+  # mistaken for a marginal log-likelihood comparable to a Laplace fit
+  expect_equal(fit_va$result$loglik_kind, "elbo (variational lower bound)")
+
+  # parity: the R VA fit matches a direct engine variational fit_laplace_reml
+  va_sa2 <- JuliaCall::julia_eval(
+    "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = Symbol(hsq_family), marginal = :variational, ids = hsq_ped.ids).variance_components.sigma_a2"
+  )
+  expect_equal(variance_components(fit_va)$estimate, va_sa2, tolerance = 1e-6)
+
+  # the knob is not a no-op: VA matches the engine's VARIATIONAL fit, not its
+  # LAPLACE fit (the two marginals are genuinely different objectives).
+  la_sa2 <- JuliaCall::julia_eval(
+    "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = Symbol(hsq_family), marginal = :laplace, ids = hsq_ped.ids).variance_components.sigma_a2"
+  )
+  expect_false(isTRUE(all.equal(va_sa2, la_sa2)))
+
+  # the "va" alias routes to the same variational fit
+  fit_alias <- hsquared(
+    y ~ x + animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::poisson(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "nongaussian", marginal = "va")
+    )
+  )
+  expect_equal(fit_alias$result$marginal_method, "variational")
+  expect_equal(
+    variance_components(fit_alias)$estimate,
+    variance_components(fit_va)$estimate,
+    tolerance = 1e-8
+  )
+})
+
 test_that("the non-Gaussian target rejects gaussian and unimplemented families", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
   dat <- data.frame(y = c(1, 2), id = c("a", "b"))
@@ -139,10 +212,23 @@ test_that("the non-Gaussian target rejects gaussian and unimplemented families",
     "not implemented",
     fixed = TRUE
   )
-  # Only laplace is wired today.
-  expect_error(
+})
+
+test_that("the marginal-method resolver accepts laplace + variational (with aliases)", {
+  # canonical engine spellings + the DRM-style short aliases, case-insensitive
+  expect_equal(hsquared:::hs_validate_marginal_method(NULL), "laplace")
+  expect_equal(hsquared:::hs_validate_marginal_method("laplace"), "laplace")
+  expect_equal(hsquared:::hs_validate_marginal_method("la"), "laplace")
+  expect_equal(
     hsquared:::hs_validate_marginal_method("variational"),
-    "laplace",
+    "variational"
+  )
+  expect_equal(hsquared:::hs_validate_marginal_method("va"), "variational")
+  expect_equal(hsquared:::hs_validate_marginal_method("VA"), "variational")
+  # anything else is rejected with a directing message
+  expect_error(
+    hsquared:::hs_validate_marginal_method("mcmc"),
+    "variational",
     fixed = TRUE
   )
 })

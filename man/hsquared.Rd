@@ -53,6 +53,9 @@ Julia and \code{HSquared.jl} are available and otherwise errors with install
 guidance; \code{hs_control(engine = "validate")} validates the contract without
 fitting, then returns the validated model spec invisibly. Genomic,
 repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
-(\code{poisson}/\code{binomial}, Laplace-REML, no heritability) models are opt-in
-experimental paths; factor-analytic models remain planned.
+(\code{poisson}/\code{binomial}, Laplace or variational REML, no heritability) models
+are opt-in experimental paths; factor-analytic models remain planned. The
+non-Gaussian marginal is selected with
+\code{engine_control = list(target = "nongaussian", marginal = "laplace")} (default)
+or \code{"variational"} (the variational/ELBO marginal; aliases \code{"la"}/\code{"va"}).
 }

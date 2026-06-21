@@ -313,7 +313,7 @@ hs_fit_julia_ai_reml_payload <- function(
 }
 
 # Map an R `family` object to the engine's non-Gaussian family symbol. Only the
-# experimental Laplace-REML families are surfaced: `poisson(log)` -> "poisson"
+# experimental non-Gaussian families are surfaced: `poisson(log)` -> "poisson"
 # and `binomial(logit)` -> "bernoulli" (binary 0/1). `binomial` with a trial
 # count (`cbind()`/weights) and other families remain planned.
 hs_nongaussian_family_symbol <- function(family) {
@@ -333,28 +333,45 @@ hs_nongaussian_family_symbol <- function(family) {
   )
 }
 
+# Resolve the non-Gaussian marginal-method name to the engine's canonical symbol.
+# "laplace" (the Laplace approximation; default) and "variational" (the
+# variational/ELBO marginal) are accepted, with the DRM-style short spellings
+# "la"/"va" as aliases (the engine itself accepts :laplace/:LA and
+# :variational/:VA). Both objectives are engine-validated (row V6-LAPLACE/VA).
 hs_validate_marginal_method <- function(marginal) {
   if (is.null(marginal)) {
     return("laplace")
   }
-  if (!identical(marginal, "laplace")) {
+  canon <- switch(
+    tolower(as.character(marginal)),
+    laplace = "laplace",
+    la = "laplace",
+    variational = "variational",
+    va = "variational",
+    NULL
+  )
+  if (is.null(canon)) {
     stop(
-      "Only `engine_control$marginal = \"laplace\"` is implemented for the ",
-      "opt-in non-Gaussian target; the engine's variational approximation is a ",
-      "planned R follow-up.",
+      "`engine_control$marginal` must be \"laplace\" (Laplace approximation) or ",
+      "\"variational\" (variational/ELBO; aliases \"la\"/\"va\"); got `",
+      as.character(marginal),
+      "`.",
       call. = FALSE
     )
   }
-  "laplace"
+  canon
 }
 
 # Opt-in, experimental non-Gaussian (GLMM) animal model. Surfaces the
-# Julia-owned `HSquared.fit_laplace_reml()` marginal (Laplace) REML optimizer for
-# a `poisson`/`bernoulli` response on the latent scale. There is no
-# residual-variance scale for these families, so the result deliberately carries
-# NO heritability. Experimental, REML/Laplace-only, not coverage-calibrated
-# (mirrors the engine row V6-LAPLACE, partial); Bernoulli `sigma_a2` is prone to
-# a search-bound boundary at small scale.
+# Julia-owned `HSquared.fit_laplace_reml()` REML optimizer for a
+# `poisson`/`bernoulli` response on the latent scale, over either the Laplace
+# (`marginal = "laplace"`, default) or variational (`marginal = "variational"`)
+# marginal. There is no residual-variance scale for these families, so the result
+# deliberately carries NO heritability. Experimental, REML-only, not
+# coverage-calibrated (mirrors the engine row V6-LAPLACE/VA, partial); the VA
+# objective is the ELBO (a lower bound on the marginal log-likelihood, so VA and
+# Laplace `logLik`/`AIC` are NOT comparable); Bernoulli `sigma_a2` is prone to a
+# search-bound boundary at small scale.
 hs_fit_julia_nongaussian_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -418,9 +435,16 @@ hs_fit_julia_nongaussian_payload <- function(
 
   raw <- JuliaCall::julia_eval("hsq_ng_raw")
   result <- hs_normalize_nongaussian_result(raw, payload)
+  # The engine echoes the canonical method it actually ran (laplace/variational);
+  # surface it in the user-facing spec method rather than assuming Laplace.
+  method_label <- if (identical(result$marginal_method, "variational")) {
+    "Variational-REML"
+  } else {
+    "Laplace-REML"
+  }
   hs_new_fit(
     spec = list(
-      method = "Laplace-REML",
+      method = method_label,
       family = list(family = family$family, link = family$link),
       target = "nongaussian"
     ),
@@ -460,10 +484,24 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
     marginal_method = as.character(raw$method),
     diagnostics = list(
       target = "nongaussian",
-      variance_components = "estimated_laplace_reml",
+      variance_components = if (
+        identical(as.character(raw$method), "variational")
+      ) {
+        "estimated_variational_reml"
+      } else {
+        "estimated_laplace_reml"
+      },
       engine_family = as.character(raw$family),
       marginal_method = as.character(raw$method),
       latent_scale = TRUE,
+      # The Laplace marginal reports the Laplace-approximate marginal loglik; the
+      # variational marginal reports the ELBO (a LOWER BOUND on log p(y)), so
+      # logLik/AIC are NOT comparable across the two marginals.
+      loglik_kind = if (identical(as.character(raw$method), "variational")) {
+        "elbo (variational lower bound)"
+      } else {
+        "laplace marginal loglik"
+      },
       heritability_note = paste(
         "No heritability is reported: a non-Gaussian family has no",
         "residual-variance scale, so a latent/liability-scale h2 would be an",
@@ -473,8 +511,11 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
   )
   if (converged) {
     result$loglik <- as.numeric(raw$loglik)
-    # Laplace marginal log-likelihood; df = fixed effects + the single
-    # additive-genetic variance component.
+    # The objective value: the Laplace-approximate marginal log-likelihood for
+    # `marginal = "laplace"`, or the ELBO (a lower bound) for `"variational"` --
+    # see diagnostics$loglik_kind; the two are not comparable across marginals.
+    result$loglik_kind <- result$diagnostics$loglik_kind
+    # df = fixed effects + the single additive-genetic variance component.
     result$df <- as.integer(ncol(payload$X) + 1L)
   }
   result

@@ -573,10 +573,10 @@ hs_validate_model_inputs <- function(
       "`family = gaussian()` (identity link). Non-Gaussian `poisson(log)` and ",
       "`binomial(logit)` (binary 0/1) fit through the experimental, opt-in ",
       "`hs_control(engine = \"julia\", engine_control = list(target = ",
-      "\"nongaussian\"))` path: a Laplace-REML latent-scale GLMM (engine ",
-      "row V6-LAPLACE, partial): REML/Laplace-only, no heritability, not ",
-      "coverage-calibrated. Use `model_spec()` with `family = gaussian()` to ",
-      "inspect the contract without fitting.",
+      "\"nongaussian\"))` path: a latent-scale GLMM (engine row V6-LAPLACE/VA, ",
+      "partial) with `marginal = \"laplace\"` (default) or `\"variational\"`; ",
+      "REML-only, no heritability, not coverage-calibrated. Use `model_spec()` ",
+      "with `family = gaussian()` to inspect the contract without fitting.",
       call. = FALSE
     )
   }
