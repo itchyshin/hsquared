@@ -32,7 +32,3 @@ Useful links:
 ## Author
 
 **Maintainer**: Shinichi Nakagawa <itchyshin@gmail.com>
-
-Authors:
-
-- Shinichi Nakagawa <itchyshin@gmail.com>

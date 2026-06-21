@@ -45,6 +45,12 @@
   `HSquared.jl` (`13-plotting-layer.md`). `ggplot2` is now a dependency;
   the base-R [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
   method is unchanged.
+- The Julia bridge now attaches the available engine `*_plot_data`
+  payloads at fit time for standard animal-model, multivariate, and
+  random-regression fits.
+  [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+  still recomputes when a payload is absent or when a random-regression
+  user supplies a custom grid.
 - **Experimental random-regression (reaction-norm) model.** A new opt-in
   target surfaces the Julia-owned
   `HSquared.fit_random_regression_reml()`:
