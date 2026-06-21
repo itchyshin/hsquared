@@ -4,7 +4,7 @@
 \alias{gwas}
 \title{Post-fit relatedness-corrected marker scan (GWAS)}
 \usage{
-gwas(object, markers, marker_ids = NULL, ...)
+gwas(object, markers, marker_ids = NULL, method = c("mixed", "single"), ...)
 }
 \arguments{
 \item{object}{A fitted Gaussian animal model (\code{hsquared_fit} from the default
@@ -17,12 +17,20 @@ the fit's pedigree (in pedigree order) and one column per marker.}
 \item{marker_ids}{Optional marker names; defaults to the \code{markers} column
 names, then to sequential ids.}
 
+\item{method}{\code{"mixed"} (default) for the relatedness-corrected mixed-model
+(GLS) scan, or \code{"single"} for the relatedness-\strong{un}corrected single-marker
+(OLS) scan. The single-marker scan ignores the pedigree relationship — it is
+a naive screen useful mainly as a contrast (it is more inflated by relatedness
+than the mixed scan).}
+
 \item{...}{Unused.}
 }
 \value{
 An \code{hs_gwas} data frame with one row per marker: \code{marker}, \code{effect},
-\code{se}, \code{z}, \code{chisq}, \code{p_value}, \code{bonferroni_p}, \code{bh_qvalue}, \code{lod}. Its
-\code{print()} method restates the uncalibrated-significance caveat.
+\code{se}, \code{z}, \code{chisq}, \code{p_value}, \code{bonferroni_p}, \code{bh_qvalue}, \code{lod}, carrying a
+\code{scan_method} attribute. Its \code{print()} method restates the
+uncalibrated-significance caveat (and, for \code{method = "single"}, the absence of
+any relatedness correction).
 }
 \description{
 \code{gwas()} runs a dense, supplied-variance, relatedness-corrected mixed-model

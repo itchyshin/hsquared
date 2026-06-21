@@ -68,6 +68,12 @@ test_that("the gwas normalizer assembles the marker-scan table with the caveat",
   expect_equal(g$marker, c("m1", "m2"))
   expect_equal(g$lod, g$chisq / (2 * log(10)))
   expect_output(print(g), "NOT genome-wide calibrated")
+  expect_equal(attr(g, "scan_method"), "mixed")
+
+  # the single-marker variant carries its method + a relatedness-uncorrected print
+  g1 <- hsquared:::hs_normalize_gwas_result(raw, method = "single")
+  expect_equal(attr(g1, "scan_method"), "single")
+  expect_output(print(g1), "relatedness-UNcorrected")
 })
 
 test_that("gwas() guards the fit type and the markers shape (no engine needed)", {
@@ -154,4 +160,12 @@ test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
     "HSquared.single_marker_scan(hsq_y, hsq_X, hsq_markers; sigma_e2 = hsq_sigma_e2).p_values"
   )
   expect_false(isTRUE(all.equal(g$p_value, fixed_p)))
+
+  # method = "single" surfaces exactly that relatedness-UNcorrected scan.
+  g_single <- gwas(fit, M, marker_ids = paste0("m", 1:4), method = "single")
+  expect_s3_class(g_single, "hs_gwas")
+  expect_equal(attr(g_single, "scan_method"), "single")
+  expect_equal(g_single$p_value, fixed_p, tolerance = 1e-10)
+  # ... and it differs from the relatedness-corrected mixed scan.
+  expect_false(isTRUE(all.equal(g_single$p_value, g$p_value)))
 })

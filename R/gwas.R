@@ -24,18 +24,37 @@
 #'   the fit's pedigree (in pedigree order) and one column per marker.
 #' @param marker_ids Optional marker names; defaults to the `markers` column
 #'   names, then to sequential ids.
+#' @param method `"mixed"` (default) for the relatedness-corrected mixed-model
+#'   (GLS) scan, or `"single"` for the relatedness-**un**corrected single-marker
+#'   (OLS) scan. The single-marker scan ignores the pedigree relationship — it is
+#'   a naive screen useful mainly as a contrast (it is more inflated by relatedness
+#'   than the mixed scan).
 #' @param ... Unused.
 #'
 #' @return An `hs_gwas` data frame with one row per marker: `marker`, `effect`,
-#'   `se`, `z`, `chisq`, `p_value`, `bonferroni_p`, `bh_qvalue`, `lod`. Its
-#'   `print()` method restates the uncalibrated-significance caveat.
+#'   `se`, `z`, `chisq`, `p_value`, `bonferroni_p`, `bh_qvalue`, `lod`, carrying a
+#'   `scan_method` attribute. Its `print()` method restates the
+#'   uncalibrated-significance caveat (and, for `method = "single"`, the absence of
+#'   any relatedness correction).
 #' @export
-gwas <- function(object, markers, marker_ids = NULL, ...) {
+gwas <- function(
+  object,
+  markers,
+  marker_ids = NULL,
+  method = c("mixed", "single"),
+  ...
+) {
   UseMethod("gwas")
 }
 
 #' @export
-gwas.default <- function(object, markers, marker_ids = NULL, ...) {
+gwas.default <- function(
+  object,
+  markers,
+  marker_ids = NULL,
+  method = c("mixed", "single"),
+  ...
+) {
   stop(
     "`gwas()` requires a fitted Gaussian animal model (`hsquared_fit`).",
     call. = FALSE
@@ -43,7 +62,14 @@ gwas.default <- function(object, markers, marker_ids = NULL, ...) {
 }
 
 #' @export
-gwas.hsquared_fit <- function(object, markers, marker_ids = NULL, ...) {
+gwas.hsquared_fit <- function(
+  object,
+  markers,
+  marker_ids = NULL,
+  method = c("mixed", "single"),
+  ...
+) {
+  method <- match.arg(method)
   hs_validate_gwas_fit(object)
   payload <- object$payload
   vc <- object$result$variance_components
@@ -66,23 +92,38 @@ gwas.hsquared_fit <- function(object, markers, marker_ids = NULL, ...) {
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
-  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
-  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
-  JuliaCall::julia_assign(
-    "hsq_sire",
-    hs_parent_for_julia(payload$pedigree$sire)
-  )
-  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
   JuliaCall::julia_assign("hsq_markers", markers_rec)
-  JuliaCall::julia_assign("hsq_sigma_a2", as.numeric(sigma_a2))
   JuliaCall::julia_assign("hsq_sigma_e2", as.numeric(sigma_e2))
   JuliaCall::julia_assign("hsq_marker_ids", as.character(marker_ids))
+  if (identical(method, "mixed")) {
+    hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+    JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+    JuliaCall::julia_assign(
+      "hsq_sire",
+      hs_parent_for_julia(payload$pedigree$sire)
+    )
+    JuliaCall::julia_assign(
+      "hsq_dam",
+      hs_parent_for_julia(payload$pedigree$dam)
+    )
+    JuliaCall::julia_assign("hsq_sigma_a2", as.numeric(sigma_a2))
+    scan_cmd <- paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_scan = HSquared.mixed_model_marker_scan(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_markers, hsq_sigma_a2, hsq_sigma_e2;",
+      "marker_ids = hsq_marker_ids);"
+    )
+  } else {
+    # relatedness-UNcorrected single-marker (OLS) scan: no Z / Ainv / sigma_a2
+    scan_cmd <- paste(
+      "hsq_scan = HSquared.single_marker_scan(",
+      "hsq_y, hsq_X, hsq_markers;",
+      "sigma_e2 = hsq_sigma_e2, marker_ids = hsq_marker_ids);"
+    )
+  }
   JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_scan = HSquared.mixed_model_marker_scan(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_markers, hsq_sigma_a2, hsq_sigma_e2;",
-    "marker_ids = hsq_marker_ids);",
+    scan_cmd,
     "hsq_gwas_raw = Dict(",
     "\"marker_ids\" => string.(collect(hsq_scan.marker_ids)),",
     "\"effects\" => collect(Float64, hsq_scan.effects),",
@@ -96,7 +137,7 @@ gwas.hsquared_fit <- function(object, markers, marker_ids = NULL, ...) {
     ");"
   ))
   raw <- JuliaCall::julia_eval("hsq_gwas_raw")
-  hs_normalize_gwas_result(raw)
+  hs_normalize_gwas_result(raw, method = method)
 }
 
 # A gwas() fit must be the default univariate Gaussian pedigree animal model:
@@ -190,7 +231,7 @@ hs_gwas_marker_ids <- function(marker_ids, markers) {
   labels
 }
 
-hs_normalize_gwas_result <- function(raw) {
+hs_normalize_gwas_result <- function(raw, method = "mixed") {
   out <- data.frame(
     marker = as.character(raw$marker_ids),
     effect = as.numeric(raw$effects),
@@ -204,11 +245,33 @@ hs_normalize_gwas_result <- function(raw) {
     stringsAsFactors = FALSE
   )
   class(out) <- c("hs_gwas", "data.frame")
+  attr(out, "scan_method") <- method
   out
 }
 
 #' @export
 print.hs_gwas <- function(x, ...) {
+  method <- attr(x, "scan_method") %||% "mixed"
+  if (identical(method, "single")) {
+    cat(
+      "<hs_gwas> dense single-marker (OLS) scan -- relatedness-UNcorrected\n"
+    )
+    cat(
+      "  EXPERIMENTAL: no pedigree/relatedness correction (a naive contrast to\n"
+    )
+    cat(
+      "  the relatedness-corrected `method = \"mixed\"` scan); p-values are NOT\n"
+    )
+    cat(
+      "  genome-wide calibrated (nominal Wald + Bonferroni/BH only). Do not\n"
+    )
+    cat("  report genome-wide significance from these.\n")
+    out <- x
+    class(out) <- "data.frame"
+    attr(out, "scan_method") <- NULL
+    print(utils::head(out, ...), row.names = FALSE)
+    return(invisible(x))
+  }
   cat("<hs_gwas> dense supplied-variance relatedness-corrected marker scan\n")
   cat(
     "  EXPERIMENTAL: p-values are NOT genome-wide calibrated. They are nominal\n"

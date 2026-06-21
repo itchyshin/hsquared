@@ -868,6 +868,7 @@ hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
 autoplot.hs_gwas <- function(object, type = c("manhattan", "qq"), ...) {
   hs_require_ggplot2()
   type <- match.arg(type)
+  method <- attr(object, "scan_method") %||% "mixed"
   df <- as.data.frame(object)
   if (!all(c("p_value") %in% names(df))) {
     stop(
@@ -877,12 +878,21 @@ autoplot.hs_gwas <- function(object, type = c("manhattan", "qq"), ...) {
   }
   switch(
     type,
-    manhattan = hs_autoplot_manhattan(df),
-    qq = hs_autoplot_qq(df)
+    manhattan = hs_autoplot_manhattan(df, method),
+    qq = hs_autoplot_qq(df, method)
   )
 }
 
-hs_autoplot_manhattan <- function(df) {
+# Honest-status suffix when the scan ignored the pedigree relationship.
+hs_gwas_method_note <- function(method) {
+  if (identical(method, "single")) {
+    "; relatedness-UNcorrected (single-marker, OLS)"
+  } else {
+    ""
+  }
+}
+
+hs_autoplot_manhattan <- function(df, method = "mixed") {
   df$index <- seq_len(nrow(df))
   df$neglog10p <- -log10(pmax(df$p_value, .Machine$double.xmin))
   m <- nrow(df)
@@ -909,22 +919,27 @@ hs_autoplot_manhattan <- function(df) {
         x = "marker",
         y = expression(-log[10](p)),
         title = "Marker scan (Manhattan)",
-        subtitle = paste(
-          "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide",
-          "calibrated (gate HSquared.jl#48)"
+        subtitle = paste0(
+          "EXPERIMENTAL: nominal Wald p-values, NOT genome-wide ",
+          "calibrated (gate HSquared.jl#48)",
+          hs_gwas_method_note(method)
         )
       ) +
       theme_hsquared(),
     type = "manhattan",
     source = "gwas",
     interval_status = "uncalibrated",
-    notes = "nominal Wald p-values; Bonferroni line is visual only; not genome-wide calibrated (gate #48)"
+    notes = paste0(
+      "nominal Wald p-values; Bonferroni line is visual only; not genome-wide ",
+      "calibrated (gate #48)",
+      hs_gwas_method_note(method)
+    )
   )
 }
 
 # QQ of the scan p-values against the uniform null, with the genomic-inflation
 # lambda_GC as a diagnostic annotation. Pure-R from the p-values (no engine).
-hs_autoplot_qq <- function(df) {
+hs_autoplot_qq <- function(df, method = "mixed") {
   p <- pmax(as.numeric(df$p_value), .Machine$double.xmin)
   m <- length(p)
   qq <- data.frame(
@@ -955,7 +970,8 @@ hs_autoplot_qq <- function(df) {
           "(gate #48); genomic inflation lambda_GC = ",
           lab,
           " (diagnostic only; >1 may reflect structure/polygenicity, ",
-          "not corrected)"
+          "not corrected)",
+          hs_gwas_method_note(method)
         )
       ) +
       theme_hsquared(),

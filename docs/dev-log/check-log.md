@@ -5048,3 +5048,22 @@ release".
   doc 25 marked IMPLEMENTED (as-built, §6 corrected — the markers-G path can't reduce
   to A₂₂, so reorder + differs-from-pedigree are the anchors); NEWS bullet added.
 - CI (commit `80d27cf`, single-step construction): pkgdown run `27887761040` **success**; pages green. Posted to twin #61 (`issuecomment-4760353752`).
+
+## 2026-06-20 (session 5 — gwas single-marker method option, part of #4)
+
+- Added `gwas(fit, markers, method = c("mixed", "single"))`: `"single"` surfaces the
+  Julia-owned `single_marker_scan()` (relatedness-UNcorrected OLS scan) as a naive
+  contrast to the default relatedness-corrected `mixed_model_marker_scan()`.
+  Isolated to `R/gwas.R` (method dispatch; same result shape so the normalizer is
+  reused) + `R/autoplot.R` (the Manhattan/QQ note "relatedness-UNcorrected" when the
+  `scan_method` attr is "single"). The hs_gwas result carries a `scan_method`
+  attribute; `print()` is method-aware.
+- LOCO (`loco_mixed_model_marker_scan`) is the remaining part of #4 — it needs a
+  marker-group map + per-group relationship precisions (a bigger build); deferred.
+- Tests: normalizer/print method attr (pure R); autoplot single-method note (pure R);
+  **LIVE** `test-gwas.R` — `method="single"` matches the engine `single_marker_scan`
+  p-values element-wise and differs from the mixed scan.
+- `air`; `devtools::document()` (gwas.Rd: `method` arg); `test-gwas` + `test-autoplot`
+  pass; live gwas all pass; `pkgdown::check_pkgdown()` clean;
+  `rcmdcheck(args="--no-manual")` **0/0/0**. capability-status marker-scan row + NEWS
+  gwas bullet updated.

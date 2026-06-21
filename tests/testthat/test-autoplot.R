@@ -655,6 +655,15 @@ test_that("autoplot.hs_gwas qq returns a ggplot with a y=x null and lambda_GC", 
   expect_true(grepl("lambda_GC", p$labels$subtitle))
 })
 
+test_that("autoplot.hs_gwas notes a relatedness-uncorrected single-marker scan", {
+  g <- mock_gwas()
+  attr(g, "scan_method") <- "single"
+  expect_true(grepl("UNcorrected", autoplot(g, "manhattan")$labels$subtitle))
+  expect_true(grepl("UNcorrected", autoplot(g, "qq")$labels$subtitle))
+  # the default (mixed) scan carries no such note
+  expect_false(grepl("UNcorrected", autoplot(mock_gwas())$labels$subtitle))
+})
+
 test_that("autoplot.hs_gwas defaults to the Manhattan", {
   expect_equal(attr(autoplot(mock_gwas()), "hsquared_meta")$type, "manhattan")
   expect_equal(
