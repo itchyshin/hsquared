@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync extractor issue #5 after scan-table banking
+
+- Active lenses: Ada, Shannon, Emmy, Hopper, Boole, Pat, Rose, Grace.
+- Branch: `codex/issue-5-extractor-sync`.
+- Scope:
+  - updated live R #5 to distinguish banked scan-object
+    `gwas_table(scan)` / `lod_scores(scan)` methods from planned fit-level /
+    map-annotated QTL/GWAS/eQTL tables;
+  - updated the issue map parent row.
+- Live GitHub action:
+  - `gh issue edit 5 --repo itchyshin/hsquared --body-file -` updated the
+    fitted-object/extractor parent issue body.
+- Claim boundary: issue/docs sync only. No code behavior change, no calibrated
+  uncertainty, no calibrated marker significance, no map-annotated QTL/GWAS/eQTL
+  workflow, no production validation, and no covered-status promotion.
+- Checks:
+  - `air format .` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-5-extractor-sync.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync marker-scan issue #23 after Julia #146
 
 - Active lenses: Ada, Shannon, Hopper, Jason, Fisher, Pat, Rose, Grace.
