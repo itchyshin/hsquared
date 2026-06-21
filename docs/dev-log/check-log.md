@@ -3,6 +3,35 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Record marker-scan comparator tool availability
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
+- Branch: `codex/marker-scan-tool-availability`.
+- Scope:
+  - probed local executable and R package availability for marker-scan
+    comparator / calibrated-threshold work;
+  - recorded a blocker report in
+    `docs/dev-log/comparator-runs/2026-06-21-marker-scan-tool-availability.md`;
+  - updated the comparator-runs README and issue map.
+- Claim boundary: blocker report only. No PLINK, GenABEL, GEMMA, GCTA, BOLT-LMM,
+  SAIGE, sommer-derived, qvalue, or other external scan evidence is claimed. No
+  calibrated threshold, formula-level `marker_scan()`, fit-level/map-annotated
+  QTL/GWAS/eQTL table workflow, or validation/public-claim promotion is made.
+- Checks:
+  - `for x in plink plink2 gemma gcta64 gcta bolt-lmm saige step1_fitNULLGLMM.R step2_SPAtests.R; do ...; done`
+    found all probed executables missing.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgs <- c("GenABEL", "qvalue", "sommer", "rrBLUP", "GAPIT", "SNPRelate", "GWASTools", "SKAT", "BGLR", "AGHmatrix"); ...'`
+    found `sommer` 4.4.3 installed and all other probed packages missing.
+  - `gh issue view 23 --repo itchyshin/hsquared --json title,body,state,url`
+    confirmed R #23 remains open.
+  - `gh issue view 48 --repo itchyshin/HSquared.jl --json title,body,state,url`
+    confirmed Julia #48 remains open.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla -e 'pkgdown::check_pkgdown()'`
+    clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-marker-scan-tool-availability.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Add scan-result `gwas_table()` / `lod_scores()` views
 
 - Active lenses: Ada, Shannon, Hopper, Boole, Jason, Fisher, Pat, Rose, Grace.

@@ -25,6 +25,10 @@ Current blocker reports:
   lacks ASReml/BLUPF90-family/DMU/WOMBAT executables and R packages needed for a
   second independent same-estimand multivariate REML comparator beyond the
   existing `sommer` leg.
+- `2026-06-21-marker-scan-tool-availability.md` records that this local host
+  lacks PLINK/GEMMA/GCTA/SAIGE-style scan executables and GenABEL/qvalue/
+  rrBLUP/BGLR/AGHmatrix-style R packages needed for marker-scan comparator or
+  calibrated-threshold evidence. It is a blocker report, not evidence.
 
 Run handoff packets:
 
