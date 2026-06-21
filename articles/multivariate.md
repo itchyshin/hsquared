@@ -176,9 +176,11 @@ y ~ trait + sex + age +
 ```
 
 Use the [`cbind()`](https://rdrr.io/r/base/cbind.html) path above for
-the current opt-in multivariate model. The structured grammar is
-reserved for later unstructured, diagonal, low-rank, and factor-analytic
-covariance models.
+the current opt-in multivariate model. Expert users can select the
+current rotation-free diagonal-G bridge through
+`engine_control = list(genetic_structure = "diagonal")`, but the formula
+grammar shown here remains reserved for later unstructured, diagonal,
+low-rank, and factor-analytic covariance models.
 
 ## Claim boundary
 

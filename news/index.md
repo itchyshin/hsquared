@@ -591,8 +591,10 @@
   now fences the reserved multivariate
   `engine_control$genetic_structure` and `engine_control$rank` fields:
   `"unstructured"` is accepted for the current opt-in multivariate
-  bridge, while `"diagonal"`, `"lowrank"`, `"factor_analytic"`, and
-  `rank` error as planned rather than being silently ignored.
+  bridge, while `"diagonal"` was initially guarded and later promoted to
+  the experimental diagonal-G control described above; `"lowrank"`,
+  `"factor_analytic"`, and `rank` still error as planned rather than
+  being silently ignored.
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   and structured-covariance error messages now list the full planned
   covariance vocabulary (`cov = us()`, `cov = diag()`,

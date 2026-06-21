@@ -240,9 +240,11 @@ implemented:</p>
 <span><span class="va">y</span> <span class="op">~</span> <span class="va">trait</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="va">trait</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span>, cov <span class="op">=</span> <span class="fu">fa</span><span class="op">(</span>K <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Use the <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> path above for the current opt-in
-multivariate model. The structured grammar is reserved for later
-unstructured, diagonal, low-rank, and factor-analytic covariance
-models.</p>
+multivariate model. Expert users can select the current rotation-free
+diagonal-G bridge through
+<code>engine_control = list(genetic_structure = "diagonal")</code>, but
+the formula grammar shown here remains reserved for later unstructured,
+diagonal, low-rank, and factor-analytic covariance models.</p>
 </div>
 <div class="section level2">
 <h2 id="claim-boundary">Claim boundary<a class="anchor" aria-label="anchor" href="#claim-boundary"></a>
