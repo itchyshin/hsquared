@@ -50,7 +50,6 @@ the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 | 37 | [from R] PR #17 calibration: em_fa.jl warm-start; merge? | 4 | partial · cross-lane | hsquared#17/#22 |
 | 41 | [from R] Validation gates R needs (partial→covered) | — | partial · cross-lane | hsquared#10/#7 |
 | 42 | Bridge activation: structured mv covariance (FA/low-rank) | 4 | partial · cross-lane | hsquared#22 |
-| 43 | Bridge activation: PEV/reliability standard fields | 1 | partial · cross-lane | hsquared#21 closed for R standard-field surface; remaining twin gates are multivariate per-trait and production sparse/comparator reliability |
 | 44 | Bridge activation: non-Gaussian LA/VA + MarginalMethod | 6 | partial · cross-lane | hsquared#18 |
 | 45 | Bridge activation: post-fit marker scans (GWAS/QTL/eQTL) | 5 | partial · cross-lane | hsquared#23 |
 
@@ -59,7 +58,7 @@ the full innovation backlog (#48, #50-#58, #61, and bridge/validation anchors).
 | Topic | R (hsquared) | Twin (HSquared.jl) | Gate |
 | --- | --- | --- | --- |
 | Structured/FA G | #22 (+ #17 method) | #42 (+ #37 calibration) | twin bridge payload+fixture (#42) + V4-FA calibration; PR #17 closed, FA core already on main |
-| PEV/reliability | #21 closed | #43 | R standard-field surface is banked: univariate/default payload consumed and Henderson dense unconditional. Remaining gates are multivariate per-trait fields, production sparse reliability strategy, and comparator validation; no covered-status promotion |
+| PEV/reliability | #21 closed | #43 closed | Paired standard-field ledger is banked: R #21 closed by hsquared PR #73 (`adc2e63`), and Julia #43 closed by HSquared.jl PR #141 (`7466b2d`). Current fitted `AnimalModelFit` result payloads carry standard `prediction_error_variance` and `reliability` `(ids, values)` fields via `:selinv`, while supplied-variance Henderson MME may still use extractor enrichment. Remaining broader gates are multivariate per-trait fields, production sparse reliability strategy, and comparator validation; no covered-status promotion |
 | Non-Gaussian LA/VA | #18 | #44 (+ #40) | twin `MarginalMethod` refactor + PR |
 | Marker scans | #23 | #45 + #48 (+ PR #134 smoke, PR #135 reopen) | Phase 5 stack on main; fixed-panel threshold smoke banked and #48 reopened as the active evidence gate, but no R significance threshold activation or production calibration claim |
 | Metafounder / `H^Gamma` | — (contract row) | #53/#61 family | R model-spec + payload + live bridge branch for animal-only supplied-variance `A^Gamma` and single-step `H^Gamma`; supplied `Gamma`, provenance extractors, reserved/error-only `metafounder_effects()`, no estimation; BLUPF90-family comparator executable currently unavailable locally |
@@ -70,10 +69,12 @@ Recently banked / no longer open in the selected Julia anchor list: #38
 (`docs/design/03-engine-contract.md` AI-matrix claim hygiene, merged in
 HSquared.jl PR #133 at `4526481`), #93 (plotting plot-data contract, closed by
 HSquared.jl PR #136 at `ff1fbab` after R PR #35/A3 attached available fit-time
-plot-data payloads), and #47 (multivariate covariance SE/LRT ledger, closed by
-HSquared.jl PR #137 at `ad7848c` for already-landed work). Historical R-lane
-notes may still mention the old `250-animal` wording, #93 as an open cleanup
-item, or #47 as an active ledger row; the live selected issue map now treats
+plot-data payloads), #47 (multivariate covariance SE/LRT ledger, closed by
+HSquared.jl PR #137 at `ad7848c` for already-landed work), and #43
+(PEV/reliability standard-field ledger, closed by HSquared.jl PR #141 at
+`7466b2d` after paired R #21/PR #73 closeout). Historical R-lane notes may
+still mention the old `250-animal` wording, #93 as an open cleanup item, #47 as
+an active ledger row, or #43 as open; the live selected issue map now treats
 those as banked.
 
 Recent Julia-side coordination checkpoints that keep current gates honest:
@@ -128,7 +129,8 @@ current backlog snapshot.
   (univariate/default PEV/reliability payload consumption and Henderson dense
   reliability). Multivariate per-trait, production sparse reliability, and
   comparator validation remain cross-lane/twin-gated and do not imply a covered
-  promotion.
+  promotion. Julia issue #43 is also closed after HSquared.jl PR #141
+  (`7466b2d`) recorded the standard `AnimalModelFit` payload contract.
 - #22: the diagonal structured-covariance subset is banked; low-rank and FA
   remain twin/rotation-convention gated.
 - #23: mixed, single-marker, and LOCO marker scans are banked; Julia has a
