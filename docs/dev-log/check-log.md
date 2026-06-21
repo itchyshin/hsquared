@@ -3,6 +3,37 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Retarget R issue #10 multivariate validation body
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Curie, Mrode, Rose, Grace.
+- Branch: `codex/issue-10-body-sync`.
+- Scope:
+  - inspected live R issue #10/#7 and current validation/capability/debt
+    surfaces;
+  - edited the GitHub issue #10 body to reflect the banked multivariate evidence
+    ladder: 100-replicate cold-start recovery, full-unstructured `sommer`
+    same-estimand REML comparator, Mrode Example 5.1 supplied-G0/R0 BLUP/MME
+    anchor, and `MCMCglmm` Bayesian agreement context;
+  - left #10 open with `status:partial` because the second independent
+    same-estimand comparator beyond `sommer` is still missing.
+- Live GitHub action:
+  - `gh issue edit 10 --repo itchyshin/hsquared --body ...` updated the issue
+    body.
+- Claim boundary: GitHub issue-body/status synchronization only. No R behavior
+  changed, no validation row was promoted, no BLUPF90/ASReml/DMU/WOMBAT run
+  evidence was claimed, and `MCMCglmm` remains Bayesian/MCMC agreement evidence
+  rather than same-estimand REML parity.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-10-body-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Live issue audit confirms #10 remains open with `status:partial`.
+  - Boundary grep confirms the current repo/status wording keeps the second
+    independent same-estimand comparator blocker explicit, keeps `MCMCglmm` as
+    Bayesian agreement rather than REML parity, and adds no BLUPF90/ASReml/DMU/
+    WOMBAT run-evidence or validation-promotion claim.
+
 ## 2026-06-21 Retarget R issue #23 body after marker-scan bridge banking
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Pat, Rose, Grace.
