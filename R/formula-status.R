@@ -77,6 +77,10 @@ hs_formula_status_terms <- function() {
     "single_step(1 | id, Hinv = Hinv)",
     "single_step(1 | id, pedigree = ped, markers = M)",
     paste0(
+      "single_step(1 | id) with data = hs_data(..., pedigree = ped, ",
+      "genotypes = M)"
+    ),
+    paste0(
       "single_step(1 | id, pedigree = ped, markers = M, group = group, ",
       "Gamma = Gamma)"
     ),
@@ -96,7 +100,7 @@ hs_formula_status_categories <- function() {
     rep("v0.1 animal model", 2L),
     rep("standard quantitative genetics", 11L),
     rep("inheritance and relationship kernels", 6L),
-    rep("genomic and marker models", 8L),
+    rep("genomic and marker models", 9L),
     rep("multivariate and factor analytic", 5L)
   )
 }
@@ -106,7 +110,7 @@ hs_formula_status_phases <- function() {
     rep("Phase 1", 2L),
     rep("Phase 2", 11L),
     rep("Phase 3+", 6L),
-    rep("Phase 5", 8L),
+    rep("Phase 5", 9L),
     rep("Phase 3-4", 5L)
   )
 }
@@ -117,7 +121,7 @@ hs_formula_status_syntax <- function() {
     rep("reserved", 5L),
     "parsed",
     rep("reserved", 7L),
-    rep("parsed", 5L),
+    rep("parsed", 6L),
     rep("reserved", 3L),
     "parsed",
     rep("planned", 4L)
@@ -138,6 +142,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
+    "fitted (opt-in single-step bundle construction)",
     "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
     "fitted (opt-in multivariate)",
@@ -213,6 +218,13 @@ hs_formula_status_behavior <- function() {
       "requires `pedigree` + `markers` or an hs_data() bundle carrying both, and",
       "engine = \"julia\", target = \"single_step_construct\". The engine builds",
       "H^-1 from pedigree and genotyped-subset markers at validation scale."
+    ),
+    paste(
+      "Bundle shorthand for the opt-in, experimental single-step construction",
+      "path; when data is an hs_data() object with pedigree and genotypes,",
+      "`single_step(1 | id)` resolves both from the bundle. Explicit `pedigree`",
+      "or `markers` arguments override the bundle. Requires engine = \"julia\",",
+      "target = \"single_step_construct\"."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-Gamma",

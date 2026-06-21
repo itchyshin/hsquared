@@ -75,6 +75,9 @@ Generalize `single_step()` (`R/genomic-markers.R`) and the model-spec parser
   The genotypes component is coerced to the numeric dosage matrix the construction
   path expects by `hs_single_step_bundle_markers()` (matrix → as-is; data frame →
   the bundle's `id` column or explicit row names provide the genotyped ids).
+  `formula_status()` lists this bundle shorthand as a distinct parsed row so
+  users can distinguish it from the explicit `pedigree = ped, markers = M` and
+  supplied-`Hinv` forms.
 
 ## 3. genotyped_rows alignment (THE CRUX — Henderson/Hopper)
 
