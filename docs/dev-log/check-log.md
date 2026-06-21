@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Sync Julia #141 PEV/reliability issue-map closeout
+
+- Active lenses: Ada, Shannon, Hopper, Fisher, Rose, Grace.
+- Branch: `codex/julia-141-pev-map-sync`.
+- Scope:
+  - inspected live HSquared.jl issue #43, now closed after Julia PR #141
+    (`7466b2d`);
+  - updated the selected Julia anchor map and cross-lane PEV/reliability row so
+    #43 is no longer listed as an open selected anchor;
+  - recorded the paired closeout with R #21 / hsquared PR #73 (`adc2e63`).
+- Claim boundary: coordination/status only. No R behavior changed, no
+  PEV/reliability capability was promoted to covered, no production
+  large-pedigree reliability claim was added, and no multivariate per-trait or
+  comparator evidence was claimed.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-141-pev-map-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Boundary grep confirms #43 is treated as closed/banked in the selected map
+    while PEV/reliability remains partial for multivariate per-trait fields,
+    production sparse reliability, and comparator validation.
+
 ## 2026-06-21 Retarget R issue #7 validation-canon body
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Curie, Mrode, Rose, Grace.
