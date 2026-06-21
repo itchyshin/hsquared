@@ -26,7 +26,7 @@ The two pre-existing untracked Codex handover files were left untouched.
 ## Evidence
 
 - `gh issue list --repo itchyshin/hsquared --state open --limit 80 --json number,title,labels,url`
-  confirmed the R open list now centers on #2, #5-#10, #15, #19-#25.
+  confirmed the R open list now centers on #2, #5-#10, and #19-#25.
 - `gh issue list --repo itchyshin/HSquared.jl --state open --limit 80 --json number,title,labels,url`
   confirmed the Julia open anchors include #93, #61, #58, #53, #49, and the
   active bridge/validation issues #37/#38/#41-#45.

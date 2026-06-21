@@ -20,7 +20,6 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 8 | R data container: live HSData marshalling parity | 1 | r-package | partial | base `hs_data()` done; mirrors HSquared.jl#8 |
 | 9 | Roadmap: genomics/QTL/GLLVM/GPU | 5–8 | roadmap | planned | innovation children #17/#18/#19/#20 |
 | 10 | Multivariate validation: comparator & recovery gates | 3 | validation | partial | V4-MULTIVARIATE/V4-MV-REML (partial); R evidence legs now include cold-start recovery, full-unstructured `sommer`, Mrode Example 5.1 supplied-G0/R0 BLUP/MME, and a Bayesian `MCMCglmm` agreement probe; twin #41/#49 still own promotion gates |
-| 15 | Audit: on-main engine fns vs R surfaces (gap table) | 1 | bridge | partial | **WS2 Step 0** |
 | 19 | Innovation: `mi()`/`miss_control()` grammar | 8 | innovation | planned | `08-missing-data-plan.md`; drmTMB/gllvmTMB |
 | 20 | Infra: recurring innovation scout (weekly) | — | innovation/infra | planned | WS3 cadence |
 | 21 | Bridge: PEV/reliability as standard fields | 1 | bridge | partial · **univariate/Henderson done** | Standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson dense validation fields attach unconditionally; twin #43 still gates multivariate per-trait and production sparse/comparator work |
@@ -30,7 +29,7 @@ Only `V1-AI-REML`, `V1-AINV-MRODE9`, `V1-MRODE-FIT`, `V1-COMPARATORS` are `cover
 | 25 | Innovation: SQUAREM EM accelerator (engine utility) | — | innovation/perf | planned | engine-led; twin #58; from `GLLVM.jl/em_squarem.jl` |
 | — | Bridge contract: metafounder `A^Gamma` + single-step `H^Gamma` | 2/5 | bridge/contract | partial | Candidate A Big 3 slice; `metafounder(..., group =, Gamma =)` now validates the supplied-`Gamma` animal-only payload and fits the experimental supplied-variance `target = "metafounder"` path; `single_step(..., group =, Gamma =)` validates the supplied-`Gamma` `H^Gamma` payload and fits the experimental live `target = "metafounder_single_step"` path. `gamma_matrix()` and `metafounder_groups()` expose supplied provenance; `metafounder_effects()` is reserved/error-only. No returned metafounder-specific effects, `Gamma` estimation, BLUPF90-family comparator evidence, or covered promotion yet |
 
-Recently banked / no longer open in the R issue list: #11, #12, #13, #14,
+Recently banked / no longer open in the R issue list: #11, #12, #13, #14, #15,
 #16, #17, #18, and #26. Shipped features remain partial/experimental where the
 capability ledgers say so; a closed issue does not imply covered validation.
 
