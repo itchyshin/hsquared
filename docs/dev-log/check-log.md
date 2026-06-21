@@ -3,6 +3,37 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Retarget R issue #23 body after marker-scan bridge banking
+
+- Active lenses: Ada, Shannon, Jason, Fisher, Pat, Rose, Grace.
+- Branch: `codex/issue-23-body-sync`.
+- Scope:
+  - inspected live R issue #23, its newer comments, and the current marker-scan
+    docs/status surfaces;
+  - edited the GitHub issue body to say the R post-fit `gwas(fit, markers)`
+    wrapper is already banked for mixed, single-marker, and LOCO scans;
+  - left the issue open with `status:partial` for calibrated genome-wide
+    thresholds and the planned map-annotated `gwas_table()` / `qtl_table()` /
+    `eqtl_table()` / `lod_scores()` extractor layer.
+- Live GitHub action:
+  - `gh issue edit 23 --repo itchyshin/hsquared --body ...` updated the issue
+    body.
+- Claim boundary: GitHub issue-body/status synchronization only. No R behavior
+  changed, no significance threshold was activated, no permutation or
+  realistic-LD calibration evidence was added, no PLINK/GenABEL-style
+  comparator evidence was claimed, no QTL/eQTL table workflow was added, and no
+  covered-status promotion was made.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-23-body-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Live issue audit confirms #23 remains open with `status:partial`.
+  - Boundary grep confirms the current repo/status wording says `gwas()` is
+    experimental/uncalibrated, map-annotated table extractors remain reserved,
+    and no R threshold, comparator, QTL/eQTL table workflow, or promotion claim
+    was added.
+
 ## 2026-06-21 Retarget R issue #22 body after diagonal bridge banking
 
 - Active lenses: Ada, Shannon, Boole, Hopper, Kirkpatrick, Rose, Grace.
