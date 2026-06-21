@@ -32,10 +32,5 @@ Useful links:
 \author{
 \strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com}
 
-Authors:
-\itemize{
-  \item Shinichi Nakagawa \email{itchyshin@gmail.com}
-}
-
 }
 \keyword{internal}

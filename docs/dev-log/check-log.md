@@ -3,6 +3,93 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 A3 fit-time plot-data payloads (#93)
+
+- Scope: R bridge slice only. The Julia bridge now attaches available engine
+  `*_plot_data` payloads at fit time for standard animal-model,
+  multivariate, and random-regression fits. No `HSquared.jl` files were
+  edited.
+- Implementation surfaces:
+  - `R/julia-bridge.R`
+  - `R/autoplot.R`
+  - `tests/testthat/test-plot-data-parity.R`
+  - `tests/testthat/test-multivariate.R`
+  - `tests/testthat/test-random-regression.R`
+  - `tests/testthat/test-autoplot.R`
+  - `NEWS.md`
+  - `docs/design/24-plotting-standard.md`
+  - `docs/design/capability-status.md`
+- Live engine payload shape probe:
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" Rscript --vanilla -e '...'`
+  - Result: passed. Observed standard variance-component and breeding-value
+    plot-data payloads, multivariate genetic-correlation and PCA payloads, and
+    random-regression genetic-variance, eigenfunction, and covariance-surface
+    payload shapes from the sibling Julia project.
+- Focused live bridge probes:
+  - Standard fit probe confirmed attached `variance_components_plot_data` and
+    `breeding_values_plot_data`; the R normalizer drops the dummy univariate
+    `trait` column from the breeding-value payload.
+  - Multivariate probe with the sibling Julia project printed
+    `multivariate_plot_payload_probe_ok` after confirming attached
+    `genetic_correlation_plot_data` and `genetic_pca_plot_data`.
+  - Random-regression probe confirmed attached
+    `rr_genetic_variance_plot_data`, `rr_eigenfunctions_plot_data`, and
+    `rr_covariance_surface_plot_data`, with the bridge grid unstandardized
+    back to the original covariate range `1` to `5`. `autoplot(..., n = 7)`
+    recomputed on the requested custom grid rather than reusing the default
+    25-point payload.
+- Local checks:
+  - `air format .` - passed.
+  - `Rscript --vanilla -e 'devtools::test(filter = "autoplot")'` - 126
+    passed, 0 failed, 0 warnings, 0 skipped.
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" NOT_CRAN=true Rscript --vanilla -e 'devtools::test_file("tests/testthat/test-plot-data-parity.R")'` - 35 passed, 0 failed, 0 warnings, 0 skipped.
+  - `HSQUARED_JULIA_PROJECT="/Users/z3437171/Dropbox/Github Local/HSquared.jl" NOT_CRAN=true Rscript --vanilla -e 'devtools::test_file("tests/testthat/test-random-regression.R")'` - 93 passed, 0 failed, 0 warnings, 0 skipped.
+  - `env -u HSQUARED_JULIA_PROJECT Rscript --vanilla -e 'devtools::test_file("tests/testthat/test-multivariate.R")'` - 61 passed, 0 failed, 0 warnings, 3 skipped.
+  - Full live `test-multivariate.R` with `HSQUARED_JULIA_PROJECT` set
+    segfaulted during JuliaCall setup after 40 pure R passes. This is recorded
+    as a local JuliaCall verifier limitation; the targeted live multivariate
+    probe above covered the new fit-time payload attachment path.
+  - `Rscript --vanilla -e 'devtools::document()'` - passed; regenerated Rd
+    files.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` - clean.
+  - `Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` - 1 ERROR because optional suggested packages `enhancer`, `nadiv`, and `pedigreemm` were not installed locally.
+  - `_R_CHECK_FORCE_SUGGESTS_=false Rscript --vanilla -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "never")'` - Status OK, 0 errors, 0 warnings, 0 notes.
+- Comparator/tool availability check for the coordination closeout:
+  - `Rscript --vanilla -e 'pkgs <- c("sommer", "MCMCglmm", "nadiv", "asreml", "pedigreemm", "enhancer"); ...'`
+  - Result: `sommer` 4.4.3 and `MCMCglmm` 2.36 installed; `nadiv`,
+    `asreml`, `pedigreemm`, and `enhancer` not installed.
+  - `for x in blupf90 airemlf90 remlf90 renumf90 gibbsf90; do command -v "$x" || true; done`
+  - Result: no BLUPF90-family executables found on `PATH`.
+- Rose boundary: this slice attaches plotting payloads and preserves recompute
+  fallbacks. It does not promote multivariate validation, external comparator
+  status, PEV/reliability plotting, marker/non-Gaussian plotting, or structured
+  covariance claims.
+
+## 2026-06-21 Codex-team handover
+
+- Rehydrated the R repo for a Codex-team handover:
+  - `git status --short --branch`
+  - `git remote -v`
+  - `git log --oneline --decorate -8`
+  - `gh run list --limit 8`
+- Result: R repo on `main`, aligned with `origin/main`; live head `bbf0939`
+  (`Record #93-closeout CI evidence + session handoff-9`). Latest observed
+  `pkgdown` run `27892465085` and Pages run `27892511303` were successful.
+- Rehydrated the Julia sibling read-only:
+  - `git status --short --branch`
+  - `git log --oneline --decorate -8`
+  - `gh run list --limit 8`
+- Result: `HSquared.jl` on `main`, aligned with `origin/main`; live head
+  `bf9decd` (`Session handover v14: complete START-HERE note for a fresh
+  session (#123)`). Local sibling checkout has untracked
+  `docs/dev-log/after-task/2026-06-21-codex-handover-v1.md`; it was not edited.
+  Latest observed CI run `27902900856`, Documenter run `27902900840`, and Pages
+  run `27902950360` were successful.
+- Wrote the durable Codex-team handover:
+  - `docs/dev-log/handover/2026-06-21-codex-team.md`
+- No package tests were run because this was a coordinator documentation
+  handover only.
+
 ## 2026-06-12
 
 - Rehydrated R repo:

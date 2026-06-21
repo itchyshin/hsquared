@@ -4,7 +4,9 @@ Status: **proposed standard v1**, 2026-06-20 (R lane / Florence). Flexible — t
 is the shared figure contract both lanes follow, open to the twin's refinement on
 `HSquared.jl#61` / `#93`. *Updated 2026-06-20: §3/§4/§6 encode the `#93` plot-data
 field decisions (flat engine status fields; pinned coordinate/EBV field names;
-`interval_status`/`interval_method`).* It formalizes what is shipped in `R/autoplot.R` and aligns with
+`interval_status`/`interval_method`). Updated 2026-06-21: the R bridge attaches
+the available engine `*_plot_data` payloads at fit time while preserving
+recompute fallbacks.* It formalizes what is shipped in `R/autoplot.R` and aligns with
 the twin's plotting **architecture** (`HSquared.jl docs/design/13-plotting-layer.md`)
 and the sister precedents (`gllvmTMB` Confidence Eye / rotated loadings; `drmTMB`
 corpairs / parameter surfaces). Reviewed by Florence / Pat / Rose / Hopper.
@@ -27,9 +29,10 @@ conventions**:
   `genetic_pca`, `variance_components`, `rr_genetic_variance`,
   `rr_eigenfunctions`, `rr_covariance_surface`, and `breeding_values`;
   skip-guarded live in `tests/testthat/test-plot-data-parity.R`) — the **#93
-  plot-data contract is fully consumed R-side**. The recompute fallback is still
-  the live source today (the bridge does not yet attach the payloads at fit time);
-  the engine preparers are the cross-check.
+  plot-data contract is fully consumed R-side**. The R bridge now attaches the
+  available payloads at fit time for standard, multivariate, and
+  random-regression fits; the recompute fallback stays live for older/missing
+  payloads and for user-specified random-regression grids.
 
 Goal: an R user and a Julia user looking at the same figure see the same encoding,
 caveats, and honest-status — only the rendering engine differs.
@@ -127,8 +130,8 @@ them:
 
 | Figure | Engine `*_plot_data` fields (HSquared.jl) | R tidy shape |
 | --- | --- | --- |
-| forest (variance/recovery) | `variance_components_plot_data` (planned): components, estimates, lo (raw, unclamped), hi (raw, unclamped), interval_status, interval_method | `data.frame(term, estimate, lo, hi, panel)` |
-| caterpillar (EBV) | `breeding_values_plot_data` (planned): id, trait, value (EBV), pev, pev_scale | `data.frame(rank, value, lo, hi, trait)` (rank is R-side presentation) |
+| forest (variance/recovery) | `variance_components_plot_data`: components, estimates, lo (raw, unclamped), hi (raw, unclamped), interval_status, interval_method | `data.frame(term, estimate, lo, hi, panel)` |
+| caterpillar (EBV) | `breeding_values_plot_data`: id, trait, value (EBV), pev, pev_scale | `data.frame(rank, value, lo, hi, trait)` (rank is R-side presentation) |
 | g_matrix | `genetic_correlation_plot_data`: `traits`, `genetic_correlations`, `heritabilities`, `rotation_invariant` | long `data.frame(row, col, value, label)` + low-h² flag |
 | g_geometry | `genetic_pca_plot_data`: `eigenvalues`, `variance_explained`, `eigenvectors`, `loadings_scaled`, `axis_labels`, `rotation_invariant`, `is_eigenstructure_not_loadings` | `data.frame(axis, eigenvalue, variance_explained)` |
 | reaction_norm | `rr_genetic_variance_plot_data`: covariate, value; `rr_eigenfunctions_plot_data`: covariate, eigenfunctions (m×k wide), axis (k), variance_explained (k) | `data.frame(covariate, value, panel)`; eigenfns melt + facet by `axis` |
@@ -158,8 +161,8 @@ the map is explicit per figure:
 
 | R `autoplot` type | Julia `plot(...; kind=)` | Engine preparer |
 | --- | --- | --- |
-| `variance` | `:variance` | `variance_components_plot_data` (planned) |
-| `breeding_values` | `:breeding_values` | `breeding_values_plot_data` (planned) |
+| `variance` | `:variance` | `variance_components_plot_data` |
+| `breeding_values` | `:breeding_values` | `breeding_values_plot_data` |
 | `g_matrix` | `:g_matrix` | `genetic_correlation_plot_data` |
 | `g_geometry` | `:g_geometry` | `genetic_pca_plot_data` |
 | `reaction_norm` | `:reaction_norm` | `rr_genetic_variance_plot_data` |
@@ -173,15 +176,15 @@ the map is explicit per figure:
 
 This is a **proposed v1** — deliberately flexible. The twin refines + mirrors; both
 lanes converge on the same catalog. New figures: R proposes (adds to §1), both
-implement. **Live R↔engine parity test — landed for four preparers:** a
+implement. **Live R↔engine parity test — landed for all seven preparers:** a
 skip-guarded `testthat` file (`tests/testthat/test-plot-data-parity.R`) that, when
 Julia is available, checks each engine preparer against the R recompute —
 `genetic_correlation` (== `stats::cov2cor(G)` + live-marshalled through
 `autoplot()`), `genetic_pca` (== `eigen(G)`), `rr_genetic_variance` (== R
-`hs_rr_variance_values`, the #93 Q6 guard), and `variance_components` (preparer on a
-real fit + NaN→NA round-trip) — the mitigation for the twin's §5 parity-drift risk.
-`rr_surface` is also covered (surface == `phi K_g phi'`). The remaining
-`breeding_values` (EBV) case is added when its engine preparer lands. Changes
-are coordinated on `HSquared.jl#61` / `#93`. R leads the
+`hs_rr_variance_values`, the #93 Q6 guard), `rr_eigenfunctions`,
+`rr_covariance_surface` (surface == `phi K_g phi'`), `variance_components`
+(bridge-attached on a real fit + NaN→NA round-trip), and `breeding_values`
+(bridge-attached EBV/PEV parity) — the mitigation for the twin's §5 parity-drift
+risk. Changes are coordinated on `HSquared.jl#61` / `#93`. R leads the
 standard (mature `ggplot2` layer + brms/bayesplot reference); Julia mirrors via the
 Makie extension + plot-data preparers.

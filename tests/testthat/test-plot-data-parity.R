@@ -256,16 +256,11 @@ test_that("variance_components_plot_data engine preparer feeds the variance fore
     family = stats::gaussian(),
     REML = TRUE
   )
-  # The default engine = "fit" path leaves the Julia AnimalModelFit as `hsq_fit`
-  # in the session; call the Set-B preparer on it and marshal as the bridge would.
-  vcpd <- JuliaCall::julia_eval(paste(
-    "let p = HSquared.variance_components_plot_data(hsq_fit);",
-    "(term = collect(String, p.term), estimate = collect(Float64, p.estimate),",
-    "lo = collect(Float64, p.lo), hi = collect(Float64, p.hi),",
-    "panel = collect(String, p.panel), interval_status = p.interval_status); end"
-  ))
+  vcpd <- fit$result$variance_components_plot_data
+  expect_false(is.null(vcpd))
   # Engine field names match the consumer's contract, and the estimates equal the
-  # fit's variance components / heritability.
+  # fit's variance components / heritability. This is the actual bridge-attached
+  # payload, not a manual post-fit preparer call.
   expect_equal(vcpd$term, c("sigma_a2", "sigma_e2", "h2"))
   expect_equal(
     vcpd$estimate[1:2],
@@ -273,11 +268,7 @@ test_that("variance_components_plot_data engine preparer feeds the variance fore
     tolerance = 1e-8
   )
 
-  fit2 <- structure(
-    list(result = list(variance_components_plot_data = vcpd)),
-    class = "hsquared_fit"
-  )
-  p <- autoplot(fit2, "variance")
+  p <- autoplot(fit, "variance")
   expect_s3_class(p, "ggplot")
   expect_true(all(
     c("sigma_a2", "sigma_e2", "h2") %in% as.character(p$data$term)
@@ -340,18 +331,12 @@ test_that("breeding_values_plot_data engine preparer matches the R recompute [li
     REML = TRUE
   )
 
-  # the default fit leaves the engine AnimalModelFit as `hsq_fit`; call the
-  # preparer on it and marshal id/value/pev back.
-  bvpd <- JuliaCall::julia_eval(paste(
-    "let pd = HSquared.breeding_values_plot_data(hsq_fit);",
-    "Dict(\"id\" => string.(collect(pd.id)),",
-    "\"value\" => collect(Float64, pd.value),",
-    "\"pev\" => collect(Float64, pd.pev),",
-    "\"pev_scale\" => String(pd.pev_scale)) end"
-  ))
+  bvpd <- fit$result$breeding_values_plot_data
+  expect_false(is.null(bvpd))
   expect_equal(bvpd$pev_scale, "validation")
+  expect_false("trait" %in% names(bvpd))
 
-  # R recompute path (what autoplot uses): breeding_values + PEV extractors
+  # The recompute fallback agrees with the attached engine payload.
   bv <- breeding_values(fit)
   pev <- prediction_error_variance(fit)
   o <- match(bvpd$id, bv$id)
@@ -360,12 +345,8 @@ test_that("breeding_values_plot_data engine preparer matches the R recompute [li
   po <- match(bvpd$id, pev$id)
   expect_equal(pev$value[po], bvpd$pev, tolerance = 1e-8)
 
-  # consume: a fit carrying the marshalled payload draws the same EBVs
-  fit2 <- structure(
-    list(result = list(breeding_values_plot_data = bvpd)),
-    class = "hsquared_fit"
-  )
-  p <- autoplot(fit2, "breeding_values")
+  # consume: the bridge-attached payload draws the same EBVs
+  p <- autoplot(fit, "breeding_values")
   expect_s3_class(p, "ggplot")
   expect_setequal(round(p$data$value, 8), round(bvpd$value, 8))
 })

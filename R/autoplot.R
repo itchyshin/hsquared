@@ -106,9 +106,10 @@ hs_gg_forest <- function(
   }
   if (has_ci) {
     p <- p +
-      ggplot2::geom_errorbarh(
+      ggplot2::geom_errorbar(
         ggplot2::aes(xmin = .data$lo, xmax = .data$hi),
-        height = 0.18,
+        orientation = "y",
+        width = 0.18,
         na.rm = TRUE,
         colour = "grey45"
       )
@@ -160,8 +161,7 @@ autoplot.hsquared_fit <- function(
 
 hs_autoplot_variance <- function(object, ...) {
   # Auto-detect the engine Set-B `variance_components_plot_data` payload; else
-  # assemble from the stored extractors (recompute fallback). NOTE: the bridge
-  # does not attach this payload at fit time yet -- recompute is the live path.
+  # assemble from the stored extractors (recompute fallback).
   pd <- object$result$variance_components_plot_data
   if (!is.null(pd) && all(c("term", "estimate") %in% names(pd))) {
     # The payload is already shaped to the hs_gg_forest contract
@@ -323,9 +323,8 @@ hs_autoplot_breeding_values <- function(object, ...) {
   # Auto-detect the engine `breeding_values_plot_data` payload when the bridge
   # attaches it to the fit (id/value/pev, rename-robust); otherwise assemble from
   # the `breeding_values()` + `prediction_error_variance()` extractors (recompute
-  # fallback). NOTE: the bridge does NOT attach this payload at fit time yet -- the
-  # recompute is the live path; the live R<->engine parity test
-  # (`test-plot-data-parity.R`) pins that the recompute matches the engine.
+  # fallback). The live R<->engine parity test (`test-plot-data-parity.R`) pins
+  # that the recompute matches the engine.
   bv <- hs_breeding_values_from_payload(
     object$result$breeding_values_plot_data
   )
@@ -421,8 +420,6 @@ hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
   # Consume the engine payload only when it is present AND honestly claims
   # rotation invariance (this figure stamps rotation_status="rotation_invariant",
   # so a payload that says otherwise must not pass silently); else recompute.
-  # NOTE: the bridge does NOT attach this payload at fit time yet -- the recompute
-  # fallback is the live path today; this branch is the forward-looking contract.
   pd <- object$result$genetic_correlation_plot_data
   h2 <- NULL
   rg <- NULL
@@ -557,8 +554,7 @@ hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
 # scree, not a loadings biplot).
 hs_autoplot_g_geometry <- function(object, ...) {
   # Auto-detect the engine `genetic_pca_plot_data` payload; else recompute from
-  # the fit's G via eigen_G(). NOTE: the bridge does not attach the payload at fit
-  # time yet -- recompute is the live path.
+  # the fit's G via eigen_G().
   pd <- object$result$genetic_pca_plot_data
   ev <- NULL
   ve <- NULL
@@ -669,11 +665,16 @@ hs_autoplot_g_geometry <- function(object, ...) {
 # of K_g drawn as covariate functions, faceted by axis with each curve's genetic
 # variance share. Eigenfunction SIGNS are arbitrary and the curves are span-ambiguous
 # under repeated eigenvalues (plotting standard 24 §2) — caveated, never over-read.
+hs_rr_use_default_payload_grid <- function(at, n) {
+  nn <- suppressWarnings(as.integer(n))
+  is.null(at) && length(nn) == 1L && !is.na(nn) && identical(nn, 25L)
+}
+
 hs_autoplot_rr_eigenfunctions <- function(object, at = NULL, n = 25L, ...) {
   pd <- object$result$rr_eigenfunctions_plot_data
   ve <- NULL
   if (
-    is.null(at) &&
+    hs_rr_use_default_payload_grid(at, n) &&
       !is.null(pd) &&
       !is.null(pd$eigenfunctions) &&
       !is.null(pd$covariate) &&
@@ -754,7 +755,7 @@ hs_autoplot_rr_surface <- function(
 ) {
   pd <- object$result$rr_covariance_surface_plot_data
   if (
-    is.null(at) &&
+    hs_rr_use_default_payload_grid(at, n) &&
       !is.null(pd) &&
       !is.null(pd$surface) &&
       !is.null(pd$covariate)
@@ -844,16 +845,15 @@ hs_autoplot_reaction_norm <- function(object, at = NULL, n = 25L, ...) {
   # genetic-variance + heritability trajectories) when the user has not asked for a
   # custom grid; else recompute from K_g via rr_genetic_variance()/rr_heritability()
   # (which also reject non-RR fits with a clear message). Rename-robust: accept
-  # either `value` (the #93-agreed field) or the current `genetic_variance`. NOTE:
-  # the bridge does not attach the payload at fit time yet -- recompute is the live
-  # path.
+  # either `value` (the #93-agreed field) or the engine's legacy
+  # `genetic_variance`.
   pd <- object$result$rr_genetic_variance_plot_data
   gv_payload <- NULL
   if (!is.null(pd)) {
     gv_payload <- if (!is.null(pd$value)) pd$value else pd$genetic_variance
   }
   if (
-    is.null(at) &&
+    hs_rr_use_default_payload_grid(at, n) &&
       !is.null(pd) &&
       !is.null(pd$covariate) &&
       !is.null(gv_payload) &&
