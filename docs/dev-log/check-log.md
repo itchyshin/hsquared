@@ -3,6 +3,25 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 GWAS threshold activation contract
+
+- Scope: R design/claim contract only. Added
+  `docs/design/28-gwas-threshold-activation-contract.md` and refreshed the
+  next-50 slice board.
+- The contract records the future activation surface, required calibrated-scan
+  result fields, validation gates, comparator discipline, and R boundary before
+  `gwas()` can expose genome-wide significance thresholds.
+- Claim boundary: no code behavior changed. `gwas()` remains experimental and
+  uncalibrated; Bonferroni/BH summaries remain deterministic summaries over
+  the supplied marker panel; no permutation cutoff, realistic-LD calibration,
+  external scan comparator, QTL/eQTL threshold, or covered-status promotion is
+  claimed.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "no threshold is activated|gwas\\(\\) remains experimental and uncalibrated|required calibrated-result fields|Validation Gates|external scan comparator|covered-status promotion" docs/design/28-gwas-threshold-activation-contract.md docs/design/11-next-50-slices.md docs/dev-log/check-log.md docs/dev-log/coordination-board.md docs/dev-log/after-task/2026-06-21-gwas-threshold-activation-contract.md`
+    confirms the contract/non-activation boundary.
+
 ## 2026-06-21 BLUPF90 multivariate executable handoff
 
 - Scope: R validation/comparator handoff documentation only. Added
