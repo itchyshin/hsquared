@@ -3,6 +3,36 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Retarget R issues #5/#6 parent-ledger bodies
+
+- Active lenses: Ada, Shannon, Emmy, Hopper, Boole, Pat, Rose, Grace.
+- Branch: `codex/issue-5-6-body-sync`.
+- Scope:
+  - inspected live R issues #5/#6 and current extractor/bridge status surfaces;
+  - edited GitHub issue #5 from a generic placeholder into the current
+    fitted-object/extractor parent ledger;
+  - edited GitHub issue #6 from a generic placeholder into the current
+    R-to-Julia bridge payload/execution parent ledger;
+  - kept both issues open with `status:partial`.
+- Live GitHub actions:
+  - `gh issue edit 5 --repo itchyshin/hsquared --body ...` updated #5.
+  - `gh issue edit 6 --repo itchyshin/hsquared --body ...` updated #6.
+- Claim boundary: GitHub issue-body/status synchronization only. No R behavior
+  changed, no issue was closed, no bridge or extractor family was promoted, no
+  production-scale fitting claim was added, and no ASReml/BLUPF90/DMU/WOMBAT
+  parity, GPU/backend execution, calibrated marker threshold, or covered-status
+  claim was added.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-issue-5-6-body-sync.md`
+    clean.
+  - `git diff --check` clean.
+  - Live issue audit confirms #5 and #6 remain open with `status:partial`.
+  - Boundary grep confirms the parent-ledger wording adds no issue close,
+    bridge/extractor promotion, production-scale claim, comparator parity,
+    GPU/backend execution, calibrated marker threshold, or covered-status
+    claim.
+
 ## 2026-06-21 Sync Julia #141 PEV/reliability issue-map closeout
 
 - Active lenses: Ada, Shannon, Hopper, Fisher, Rose, Grace.
