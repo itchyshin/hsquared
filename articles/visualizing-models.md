@@ -93,7 +93,9 @@ autoplot(fit_mv, "g_geometry")
 the result of `gwas(fit, markers)` draws a Manhattan plot. The p-values
 are **nominal Wald p-values and are not genome-wide calibrated** — the
 figure carries that banner, and the dashed line is a plain Bonferroni
-reference, not a validated genome-wide threshold.
+reference, not a validated genome-wide threshold. HSquared.jl PR \#134
+adds a fixed-panel calibration smoke harness on the engine side, but
+this plot still does not carry an activated R significance threshold.
 
 ``` r
 

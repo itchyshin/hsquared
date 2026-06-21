@@ -140,11 +140,15 @@ the fit’s variance components and pedigree.</p>
 <span><span class="fu"><a href="../reference/gwas.html">gwas</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">M</span><span class="op">)</span> <span class="co"># M: animals x markers; returns effect/se/z/chisq/p_value/...</span></span></code></pre></div>
 <p>The p-values are <strong>not genome-wide calibrated</strong>: nominal
 Wald p-values plus Bonferroni/Benjamini-Hochberg over the supplied
-markers only, with no realistic-LD/design calibration or permutation. A
-leave-one-group-out mode is available with <code>method = "loco"</code>
-and <code>marker_groups =</code>, but it is still validation-scale and
+markers only, with no R-side threshold activation, no permutation-backed
+cutoff, no realistic-LD production calibration, and no external scan
+comparator. The Julia lane has a fixed-marker-panel type-I smoke harness
+(HSquared.jl PR #134); that is useful validation infrastructure, but it
+is not an R significance threshold. A leave-one-group-out mode is
+available with <code>method = "loco"</code> and
+<code>marker_groups =</code>, but it is still validation-scale and
 uncalibrated. Do not report genome-wide significance from these
-p-values. The calibrated thresholds and the formula-grammar /
+p-values. The calibrated-threshold activation and the formula-grammar /
 map-annotated path below remain planned.</p>
 <p>Data diagnostics are also live:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -231,9 +235,10 @@ is:</p>
 <span><span class="fu"><a href="../reference/marker_extractors.html">lod_scores</a></span><span class="op">(</span><span class="va">fit_qtl</span><span class="op">)</span></span></code></pre></div>
 <p>This does not fit yet. The first credible QTL slice should carry
 explicit cross or family metadata, genotype probabilities, a map, the
-scan grid, and permutation or otherwise declared thresholds. Until then,
-users should use specialist QTL packages for real QTL scans and use
-<code>hsquared</code> for the current animal, genomic, and
+scan grid, and permutation or otherwise declared thresholds. The Julia
+fixed-panel smoke does not satisfy that QTL threshold requirement. Until
+then, users should use specialist QTL packages for real QTL scans and
+use <code>hsquared</code> for the current animal, genomic, and
 data-integration pieces.</p>
 </div>
 <div class="section level2">

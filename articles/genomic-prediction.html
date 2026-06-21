@@ -366,8 +366,11 @@ animal (in the fit’s pedigree order), one column per marker.</p>
 <span><span class="va">scan</span> <span class="co"># effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod</span></span></code></pre></div>
 <p>The p-values are <strong>not genome-wide calibrated</strong>: they
 are nominal Wald p-values plus Bonferroni/Benjamini-Hochberg over the
-supplied markers only, with no realistic-LD/design calibration or
-permutation. A leave-one-group-out mode is available with
+supplied markers only, with no R-side threshold activation, no
+permutation-backed cutoff, no realistic-LD production calibration, and
+no external scan comparator. The Julia lane has a fixed-marker-panel
+type-I smoke harness (HSquared.jl PR #134), but that is not an R
+significance threshold. A leave-one-group-out mode is available with
 <code>method = "loco"</code> and <code>marker_groups =</code>, but it is
 still validation-scale and uncalibrated. Do not report genome-wide
 significance from these p-values.</p>

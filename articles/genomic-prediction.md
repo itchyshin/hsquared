@@ -246,7 +246,10 @@ scan # effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod
 
 The p-values are **not genome-wide calibrated**: they are nominal Wald
 p-values plus Bonferroni/Benjamini-Hochberg over the supplied markers
-only, with no realistic-LD/design calibration or permutation. A
+only, with no R-side threshold activation, no permutation-backed cutoff,
+no realistic-LD production calibration, and no external scan comparator.
+The Julia lane has a fixed-marker-panel type-I smoke harness
+(HSquared.jl PR \#134), but that is not an R significance threshold. A
 leave-one-group-out mode is available with `method = "loco"` and
 `marker_groups =`, but it is still validation-scale and uncalibrated. Do
 not report genome-wide significance from these p-values.

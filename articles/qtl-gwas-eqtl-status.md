@@ -72,11 +72,15 @@ gwas(fit, M) # M: animals x markers; returns effect/se/z/chisq/p_value/...
 
 The p-values are **not genome-wide calibrated**: nominal Wald p-values
 plus Bonferroni/Benjamini-Hochberg over the supplied markers only, with
-no realistic-LD/design calibration or permutation. A leave-one-group-out
-mode is available with `method = "loco"` and `marker_groups =`, but it
-is still validation-scale and uncalibrated. Do not report genome-wide
-significance from these p-values. The calibrated thresholds and the
-formula-grammar / map-annotated path below remain planned.
+no R-side threshold activation, no permutation-backed cutoff, no
+realistic-LD production calibration, and no external scan comparator.
+The Julia lane has a fixed-marker-panel type-I smoke harness
+(HSquared.jl PR \#134); that is useful validation infrastructure, but it
+is not an R significance threshold. A leave-one-group-out mode is
+available with `method = "loco"` and `marker_groups =`, but it is still
+validation-scale and uncalibrated. Do not report genome-wide
+significance from these p-values. The calibrated-threshold activation
+and the formula-grammar / map-annotated path below remain planned.
 
 Data diagnostics are also live:
 
@@ -177,9 +181,11 @@ lod_scores(fit_qtl)
 
 This does not fit yet. The first credible QTL slice should carry
 explicit cross or family metadata, genotype probabilities, a map, the
-scan grid, and permutation or otherwise declared thresholds. Until then,
-users should use specialist QTL packages for real QTL scans and use
-`hsquared` for the current animal, genomic, and data-integration pieces.
+scan grid, and permutation or otherwise declared thresholds. The Julia
+fixed-panel smoke does not satisfy that QTL threshold requirement. Until
+then, users should use specialist QTL packages for real QTL scans and
+use `hsquared` for the current animal, genomic, and data-integration
+pieces.
 
 ## Planned eQTL path
 
