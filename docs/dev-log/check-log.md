@@ -5947,3 +5947,16 @@ release".
   `git diff --check` clean; boundary grep over `docs/design/11-next-50-slices.md`
   and the after-task report confirms the BLUPF90 and GWAS updates are framed as
   no-evidence/no-threshold/no-promotion boundaries.
+
+## 2026-06-21 (GWAS article calibration sync)
+
+- Updated user-facing GWAS/QTL/genomic/visualization article prose after
+  HSquared.jl PR #134 so users see the current split: Julia has a fixed-panel
+  calibration smoke harness, but R `gwas()` still has no activated significance
+  threshold.
+- Claim boundary: no calibrated threshold, no permutation-backed cutoff, no
+  realistic-LD production calibration, no external scan comparator, no QTL/eQTL
+  table activation, and no covered-status language.
+- Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
+  `git diff --check` clean; boundary grep over the edited articles and
+  after-task report confirms the fixed-panel-smoke/no-R-threshold wording.
