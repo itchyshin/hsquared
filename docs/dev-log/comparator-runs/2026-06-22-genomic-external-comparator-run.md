@@ -31,7 +31,8 @@ not host-gated; it just needed running.
 | --- | --- | --- | --- |
 | VanRaden-1 `G` (supplied p) | base-R re-derivation | max\|Δ\| `4.4e-16` | exact — independent re-derivation (not an external pkg) |
 | `G⁻¹` (supplied p) | base-R re-derivation | max\|Δ\| `3.1e-15` | exact |
-| VanRaden `G` | **AGHmatrix 2.1.4** | max\|Δ\| `0.277` | **different estimand** — AGHmatrix re-estimates p from the 4-sample; not a clean supplied-p comparator here |
+| VanRaden `G` (values) | **AGHmatrix 2.1.4** | max\|Δ\| `0.277` | **different estimand** — AGHmatrix re-estimates p from the 4-sample |
+| VanRaden `G` **formula** (matched p) | engine formula vs **AGHmatrix** | max\|Δ\| `0` | **exact** — construction algorithm matches AGHmatrix formula-for-formula |
 | supplied-variance GBLUP intercept | base-R Henderson MME | `10.4334891878` vs `10.4334891878` | exact |
 | supplied-variance GBLUP GEBVs | base-R Henderson MME | max\|Δ\| `4.4e-16` | exact |
 | **GBLUP↔SNP-BLUP GEBV equivalence** | **rrBLUP 4.6.3** | max\|Δ\| `7.5e-6` | **equivalence confirmed externally** |
@@ -55,11 +56,15 @@ not host-gated; it just needed running.
   route is reproduced by an independent base-R Henderson MME (`4.4e-16`).
 - **AGHmatrix finding (corrects the runbook):** `AGHmatrix::Gmatrix` re-estimates
   allele frequencies from the sample, so on this deliberately supplied-p, n=4
-  fixture its `G` differs (`0.277`). It is therefore **not** a clean supplied-p
-  `G` comparator here; the runbook's "AGHmatrix is the cleanest G comparator"
-  expectation does not hold for a supplied-frequency fixture. A clean external
-  `G` comparison would require forcing the supplied `p` (no direct argument in
-  `Gmatrix` 2.1.4) or a fixture that uses sample frequencies.
+  fixture its `G` *values* differ (`0.277`) and `Gmatrix` 2.1.4 has **no
+  supplied-frequency argument** to force the fixture's `p`. **But the construction
+  *algorithm* is exactly validated:** feeding the engine's VanRaden formula
+  AGHmatrix's *own* sample p (`0.375, 0.5, 0.5, 0.5, 0.625, 0.5`) reproduces
+  `AGHmatrix::Gmatrix` to `max|Δ| = 0` (machine-exact). So the engine's VanRaden
+  `G` construction matches AGHmatrix **formula-for-formula**; the fixture-level
+  difference is *solely* AGHmatrix's p-estimation choice, not an algorithm
+  discrepancy. (The runbook's "AGHmatrix is the cleanest G comparator" holds for
+  the *formula*, not for supplied-p *values* — corrected.)
 
 ## Claim boundary
 
@@ -69,10 +74,14 @@ not host-gated; it just needed running.
 - It does **not** promote the genomic GREML / single-step / SNP-BLUP rows past
   `partial`: promotion is twin-gated, and production-sparse, APY, low-rank
   `m≫n`, and weighted/Bayesian-marker-prior support remain planned.
-- The exact supplied-p `G`/`G⁻¹` and supplied-variance GBLUP are confirmed by
-  independent base-R re-derivation, not by an external package; a clean external
-  supplied-p `G` comparator (forced-`p` AGHmatrix, or ASReml/BLUPF90) remains
-  open.
+- The VanRaden `G` construction **algorithm** is exactly validated against
+  AGHmatrix (formula-for-formula, `max|Δ| = 0` at matched p). The supplied-p `G`
+  *values* and the supplied-variance GBLUP are confirmed by independent base-R
+  re-derivation; an external CRAN package cannot reproduce the supplied-p *values*
+  directly because AGHmatrix/rrBLUP re-estimate `p` (no supplied-frequency
+  argument). Only that last sliver — a supplied-frequency external `G` value match
+  — would need a tool that accepts supplied `p` (e.g. a licensed/registration
+  tool); the algorithm itself is no longer open.
 - `BGLR` is Bayesian/MCMC agreement, not same-estimand REML parity.
 - No new R model-spec activation, no calibrated thresholds, no covered promotion.
 

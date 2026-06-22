@@ -46,6 +46,17 @@ res("max|AGHmatrix G - fixture G| (sample p != supplied p):", format(max(abs(G_a
 cat("  (AGHmatrix re-estimates p from the sample; a direct match is NOT expected.\n")
 cat("   The construction check uses the supplied-p base-R route above.)\n")
 
+cat("\n== external exact-parity: VanRaden FORMULA vs AGHmatrix (matched p) ==\n")
+cat("  (Gmatrix has no supplied-frequency argument, so instead verify the\n")
+cat("   construction FORMULA by feeding the engine's VanRaden formula AGHmatrix's\n")
+cat("   OWN sample p -- an exact, p-independent algorithm check.)\n")
+p_agh <- colMeans(M) / 2
+W_agh <- sweep(M, 2, 2 * p_agh, FUN = "-")
+k_agh <- 2 * sum(p_agh * (1 - p_agh))
+G_base_aghp <- (W_agh %*% t(W_agh)) / k_agh
+res("AGHmatrix sample p:", paste(format(p_agh, digits = 3), collapse = " "))
+res("max|base-R VanRaden(p_AGH) - AGHmatrix G|:", format(max(abs(G_base_aghp - G_agh)), digits = 3))
+
 cat("\n== reference: supplied-variance GBLUP via Henderson MME (base R) ==\n")
 Z <- diag(length(y))
 Gi <- solve(G_ref)
