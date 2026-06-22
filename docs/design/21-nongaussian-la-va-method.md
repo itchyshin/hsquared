@@ -1,12 +1,13 @@
 # Non-Gaussian Animal Models: `method = "LA" | "VA"` Surface (Phase 6)
 
-Status: **design note only.** `hsquared` does **not** fit non-Gaussian animal
-models today. The default `hsquared()` path stops at the single-effect Gaussian
-animal model and the R response parser rejects non-numeric / non-Gaussian
-responses (`R/model-spec.R`: "The v0.1 parser supports numeric Gaussian
-responses only."; `R/hsquared.R` family docstring: "The v0.1 parser accepts
-only ..."). This note records how R will eventually surface a `method` control
-once the twin engine, bridge, and validation evidence exist.
+Status: **implementation note plus remaining gates.** `hsquared` now fits
+simple non-Gaussian animal models through the experimental, opt-in
+`target = "nongaussian"` bridge: `poisson(log)` and `binomial(logit)`, with
+`engine_control$marginal = "laplace"` or `"variational"` (aliases `"la"` /
+`"va"`). The default `hsquared()` path is still the covered univariate Gaussian
+animal model. This note is retained to document the R/Julia method vocabulary,
+payload contract, and validation gates that still block promotion beyond
+`partial`.
 
 Lane discipline: the marginal-method machinery is **engine work (twin-led,
 `HSquared.jl`)**. `hsquared` (R lane) reserves only the user-facing `method`
@@ -18,16 +19,17 @@ Cross-references: `docs/design/07-genomics-qtl-gpu-plan.md` §10 (GLLVM strategy
 approximation as an optional high-dimensional path"); `docs/design/16-wide-
 response-syntax-plan.md` (wide/long response boundary, `gllvm`'s `method =
 "LA"/"VA"/"EVA"` anchor); `docs/design/03-engine-contract.md` (result-shape
-vocabulary). Open coordination item: `HSquared.jl#44` (bridge activation; a
-`MarginalMethod` refactor is wanted before fixtures land).
+vocabulary). Open coordination item: `HSquared.jl#44` now tracks the R-twin
+handoff for the Julia `non_gaussian_parity` fixture and any final bridge-status
+reconciliation; it is not a coverage-promotion gate by itself.
 
 ## 0. What the twin already has (provenance, not a claim of integration)
 
 On `HSquared.jl origin/main`, `src/nongaussian.jl` carries an **experimental,
 dense, validation-scale** non-Gaussian path. It is the factual basis for this
-note, but it has **no committed validation row** and is **not wired into the R
-formula path** (its own docstring: "not the public default, not wired into the R
-formula path, no R model-spec, no external comparator").
+note and now has a committed partial validation/status surface plus the PR #152
+`test/fixtures/non_gaussian_parity/` payload fixture. That fixture is a bridge
+payload target, not external comparator evidence and not a public-default claim.
 
 - Family markers: `ResponseFamily` abstract type with `GaussianResponse`,
   `PoissonResponse` (log link), `BernoulliResponse` (logit), `BinomialResponse`
@@ -222,10 +224,9 @@ Numerical risks I (Gauss) flag for the eventual integration:
 - **ELBO/loglik confusion** (see §3/§4): a single mislabelled field silently
   invalidates downstream model comparison.
 
-Validation gates (must all pass, with a committed validation row, before the
-public claims register / `capability-status.md` may move non-Gaussian off
-`planned`; aligns with `04-validation-canon.md` and the gates in
-`16-wide-response-syntax-plan.md`):
+Validation gates (must all pass before the public claims register /
+`capability-status.md` may promote non-Gaussian beyond `partial`; aligns with
+`04-validation-canon.md` and the gates in `16-wide-response-syntax-plan.md`):
 
 1. **Gaussian self-consistency.** For `family = gaussian`, both `method = "LA"`
    and `method = "VA"` must reproduce `fit_sparse_reml` to tolerance (the twin
@@ -260,6 +261,15 @@ prior session): the marginal control as `engine_control$marginal = "laplace" |
 `cbind(successes, failures)` counts response (single common trial count). What
 remains `planned`: per-record varying `n_trials` (the engine `BinomialResponse`
 holds one common count), and promotion past `partial` (the validation gates below).
+
+**Update (HSquared.jl PR #152 / R mirror).** The twin now serializes
+`nongaussian_result_payload(::NonGaussianFit)` fixture cases for Poisson
+Laplace and Binomial variational fits, including a vector `n_trials` payload for
+the binomial case. The R mirror consumes that fixture in a Julia-free normalizer
+test and preserves `n_trials` when the engine payload supplies it. This still
+does not activate per-record varying-trial R formula syntax: the current R
+`cbind(successes, failures)` route remains restricted to equal row totals until
+the live bridge contract is widened deliberately.
 
 ---
 

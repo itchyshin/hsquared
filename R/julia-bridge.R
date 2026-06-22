@@ -559,6 +559,7 @@ hs_fit_julia_nongaussian_payload <- function(
     "\"beta\" => collect(Float64, hsq_result.fixed_effects),",
     "\"breeding_ids\" => string.(collect(hsq_result.breeding_values.ids)),",
     "\"breeding_values\" => collect(Float64, hsq_result.breeding_values.values),",
+    "\"n_trials\" => (hasproperty(hsq_result, :n_trials) ? hsq_result.n_trials : nothing),",
     "\"loglik\" => hsq_result.loglik,",
     "\"converged\" => hsq_result.converged",
     ");"
@@ -586,6 +587,12 @@ hs_fit_julia_nongaussian_payload <- function(
 }
 
 hs_normalize_nongaussian_result <- function(raw, payload) {
+  family <- as.character(raw$family)
+  method <- hs_validate_marginal_method(raw$method)
+  n_trials <- raw$n_trials
+  if (!is.null(n_trials)) {
+    n_trials <- as.integer(n_trials)
+  }
   fixed_effects <- as.numeric(raw$beta)
   fixed_names <- payload$metadata$fixed_colnames
   if (length(fixed_effects) == length(fixed_names)) {
@@ -611,24 +618,22 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
     fixed_effects = fixed_effects,
     nobs = length(payload$y),
     converged = converged,
-    family = as.character(raw$family),
-    marginal_method = as.character(raw$method),
+    family = family,
+    marginal_method = method,
     diagnostics = list(
       target = "nongaussian",
-      variance_components = if (
-        identical(as.character(raw$method), "variational")
-      ) {
+      variance_components = if (identical(method, "variational")) {
         "estimated_variational_reml"
       } else {
         "estimated_laplace_reml"
       },
-      engine_family = as.character(raw$family),
-      marginal_method = as.character(raw$method),
+      engine_family = family,
+      marginal_method = method,
       latent_scale = TRUE,
       # The Laplace marginal reports the Laplace-approximate marginal loglik; the
       # variational marginal reports the ELBO (a LOWER BOUND on log p(y)), so
       # logLik/AIC are NOT comparable across the two marginals.
-      loglik_kind = if (identical(as.character(raw$method), "variational")) {
+      loglik_kind = if (identical(method, "variational")) {
         "elbo (variational lower bound)"
       } else {
         "laplace marginal loglik"
@@ -640,6 +645,9 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
       )
     )
   )
+  if (!is.null(n_trials)) {
+    result$n_trials <- n_trials
+  }
   if (converged) {
     result$loglik <- as.numeric(raw$loglik)
     # The objective value: the Laplace-approximate marginal log-likelihood for
