@@ -3,6 +3,31 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Non-Gaussian per-record varying-trial R activation (R side)
+
+- Active lenses: Boole, Hopper, Fisher, Curie, Darwin, Rose.
+- Spawned subagents: Rose (rose-systems-auditor).
+- Branch: `codex/nongaussian-per-record-trials-r` (stacked on PR D).
+- Scope (slice 18, R only): parse + carry per-record varying
+  `cbind(successes, failures)` totals as a vector (`R/model-spec.R`); vector-safe
+  family symbol (`R/julia-bridge.R`, `any(n_trials > 1L)`); scalar marshalling
+  preserved for equal totals (live-verified path), `Vector{Int}` only for
+  varying; pure-R tests; honest status (R-side parsed/carried + pure-R tested;
+  the live varying-trial round-trip is the gate; stays partial).
+- Claim boundary: R-side parsing/payload/classification only. NO end-to-end
+  activation claim (live round-trip not run — `julia` not on PATH here), no
+  heritability, no promotion. Engine slices 13/15/16/17 + binary slice 14 remain
+  out of scope (Codex hand-off).
+- Checks:
+  - `air format` applied.
+  - `devtools::test(filter = "binomial-counts")` → 17 pass / 0 fail / 3 skip.
+  - `devtools::test()` full → 1419 pass / 0 fail / 0 warn / 60 skip.
+  - `devtools::document()` → no man/NAMESPACE drift.
+  - `pkgdown::check_pkgdown()` → "No problems found".
+  - `_R_CHECK_FORCE_SUGGESTS_=false rcmdcheck(--no-manual --no-build-vignettes,
+    error_on = "warning")` → status 0.
+  - after-task validator → exit 0; `git diff --check` clean.
+
 ## 2026-06-22 Board hygiene & coordination (PR D)
 
 - Active lenses: Ada, Shannon, Jason, Grace, Rose.

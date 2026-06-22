@@ -399,9 +399,9 @@ hs_build_response_spec <- function(lhs, response, family = NULL) {
 
 # `cbind(successes, failures) ~ ...` under `family = binomial()`: a binomial-counts
 # response. The success counts are the modelled response; the per-record number of
-# trials is successes + failures. The engine's `BinomialResponse` carries ONE
-# common `n_trials`, so all row totals must be equal (per-record varying trials
-# are an engine follow-up); varying totals error rather than silently mis-fit.
+# trials is successes + failures, kept as a per-record integer vector that may
+# vary across records. A constant vector is the common-trial special case; an
+# all-ones vector is the Bernoulli reduction.
 hs_build_binomial_counts_response <- function(lhs, response) {
   hs_validate_cbind_bare_columns(hs_unwrap_parentheses(lhs))
   values <- unname(as.matrix(response))
@@ -434,16 +434,11 @@ hs_build_binomial_counts_response <- function(lhs, response) {
       call. = FALSE
     )
   }
-  n_trials <- unique(totals)
-  if (length(n_trials) != 1L) {
-    stop(
-      "`cbind(successes, failures)` row totals (successes + failures) must all ",
-      "be equal: the engine's binomial family uses a single common trial count. ",
-      "Per-record varying trial counts are a planned engine follow-up ",
-      "(HSquared.jl binomial per-record n_trials).",
-      call. = FALSE
-    )
-  }
+  # Per-record trial counts (may vary across records). A constant vector is the
+  # common-trial special case; an all-ones vector reduces to Bernoulli. The R
+  # bridge parses and carries the full vector here; live varying-trial fitting is
+  # verified separately through the engine round-trip.
+  n_trials <- as.integer(totals)
   trait_names <- all.vars(hs_unwrap_parentheses(lhs))
   list(
     name = hs_deparse(lhs),

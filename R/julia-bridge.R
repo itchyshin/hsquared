@@ -432,15 +432,17 @@ hs_fit_julia_ai_reml_payload <- function(
 
 # Map an R `family` object to the engine's non-Gaussian family symbol:
 # `poisson(log)` -> "poisson"; `binomial(logit)` -> "bernoulli" for a binary 0/1
-# response, or "binomial" when a per-record trial count `n_trials` (> 1) is
-# supplied (a `cbind(successes, failures)` counts response). Other families are
-# planned.
+# response (or an all-ones `cbind` total), or "binomial" when any per-record trial
+# count in `n_trials` exceeds 1 (a `cbind(successes, failures)` counts response;
+# `n_trials` may be a per-record vector). Other families are planned. The rule is
+# vector-safe: `any(n_trials > 1L)`, so a vector whose first element is 1 (e.g.
+# c(1, 4, 5)) is still classified Binomial, not silently reduced to Bernoulli.
 hs_nongaussian_family_symbol <- function(family, n_trials = NULL) {
   if (identical(family$family, "poisson") && identical(family$link, "log")) {
     return("poisson")
   }
   if (identical(family$family, "binomial") && identical(family$link, "logit")) {
-    if (!is.null(n_trials) && n_trials > 1L) {
+    if (!is.null(n_trials) && any(n_trials > 1L)) {
       return("binomial")
     }
     return("bernoulli")
@@ -535,13 +537,22 @@ hs_fit_julia_nongaussian_payload <- function(
   JuliaCall::julia_assign("hsq_family", family_symbol)
   JuliaCall::julia_assign("hsq_marginal", marginal)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  # A binomial-counts response carries a single common trial count; the engine's
-  # BinomialResponse takes it via the n_trials keyword (Bernoulli == n_trials 1,
-  # so the keyword is omitted for every non-binomial family).
+  # A binomial-counts response carries per-record trial counts; the engine's
+  # BinomialResponse takes them via the n_trials keyword (Bernoulli == all-ones,
+  # so the keyword is omitted for every non-binomial family). When every record
+  # shares one trial count we pass the scalar (the live-verified common-trial
+  # path); a genuinely varying vector is passed as a Vector{Int} (the per-record
+  # path, R-side parsed/tested but verified live separately).
   n_trials_kw <- ""
   if (identical(family_symbol, "binomial")) {
-    JuliaCall::julia_assign("hsq_n_trials", as.integer(n_trials))
-    n_trials_kw <- "n_trials = Int(hsq_n_trials), "
+    n_trials_int <- as.integer(n_trials)
+    if (length(unique(n_trials_int)) == 1L) {
+      JuliaCall::julia_assign("hsq_n_trials", n_trials_int[[1L]])
+      n_trials_kw <- "n_trials = Int(hsq_n_trials), "
+    } else {
+      JuliaCall::julia_assign("hsq_n_trials", n_trials_int)
+      n_trials_kw <- "n_trials = Vector{Int}(hsq_n_trials), "
+    }
   }
   JuliaCall::julia_command(paste0(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
