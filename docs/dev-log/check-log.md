@@ -3,6 +3,32 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Forced-p G exact-parity check + V4 honesty fixes
+
+- Active lenses: Jason, Kirkpatrick, Fisher, Mrode, Rose.
+- Spawned subagents: Rose (rose-systems-auditor).
+- Branch: `codex/gparity-and-v4-honesty` (stacked on PR F).
+- Scope (the two follow-ups before handover):
+  - exact-parity G: `AGHmatrix::Gmatrix` has no supplied-frequency argument, so
+    verified the VanRaden construction FORMULA — feeding the engine's formula
+    AGHmatrix's own sample p reproduces `AGHmatrix::Gmatrix` to `max|Δ| = 0`
+    (machine-exact); confirms engine VanRaden `G` == AGHmatrix
+    formula-for-formula. Updated the study script, run report, and validation-debt
+    genomic row.
+  - V4 honesty fixes: capability-status + validation-debt multivariate rows now
+    state the full-unstructured `sommer` comparator is a reproducible `data-raw`
+    run (not a CI gate; CI-gated `sommer` is diagonal-residual only), and "no
+    detectable bias" is qualified as a low-power non-rejection, not a proof of
+    unbiasedness.
+- Claim boundary: evidence/wording sharpening only. No R/code change (`data-raw`
+  `.Rbuildignore`d), no capability/validation/public-claim promotion; genomic +
+  V4 stay partial.
+- Checks:
+  - `Rscript --vanilla data-raw/genomic-external-comparator-study.R` →
+    `max|base-R VanRaden(p_AGH) - AGHmatrix G| = 0`.
+  - `pkgdown::check_pkgdown()` → "No problems found".
+  - after-task validator → exit 0; `git diff --check` clean.
+
 ## 2026-06-22 Genomic external comparator run + V4 gate review
 
 - Active lenses: Jason, Fisher, Kirkpatrick, Mrode, Curie, Rose.
