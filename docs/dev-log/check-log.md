@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Comparator & validation runbooks (PR B)
+
+- Active lenses: Jason, Fisher, Henderson, Kirkpatrick, Mrode, Curie, Rose.
+- Spawned subagents: jason-landscape-scout ×2, fisher-inference-reviewer,
+  henderson-animal-model-specialist (drafting); Rose (rose-systems-auditor) (audit).
+- Branch: `codex/comparator-validation-runbooks` (stacked on PR A).
+- Scope (20-slice goal, batch 2 = slices 4, 6, 7, 19): four new protocol/plan
+  docs — MV second-comparator runbook (ASReml-R/DMU/WOMBAT), genomic
+  external-comparator runbook (AGHmatrix/rrBLUP/BGLR/sommer/JWAS), marker-scan
+  threshold calibration plan, metafounder Γ-estimation + external-validation
+  plan; indexed in the comparator-runs README; corrected stale sommer
+  4.4.3 → 4.4.5 in the marker-scan plan.
+- Claim boundary: protocols/plans only. No comparator/calibration evidence, no
+  R code, no capability/validation/public-claim promotion; all binary-dependent
+  legs blocked locally → Codex/capable host. Caught + corrected a would-be false
+  AGHmatrix-metafounder-Γ comparator claim (twin V1-METAFOUNDER says AGHmatrix
+  does not implement metafounder Γ).
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` → "No problems found".
+  - after-task validator on
+    `docs/dev-log/after-task/2026-06-22-comparator-validation-runbooks.md` → exit 0.
+  - `git diff --check` clean.
+
 ## 2026-06-22 Structured-covariance eigenbasis bridge ratification (PR A)
 
 - Active lenses: Boole, Noether, Kirkpatrick, Fisher, Hopper, Rose.
