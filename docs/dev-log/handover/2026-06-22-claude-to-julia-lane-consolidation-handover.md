@@ -127,6 +127,47 @@ telling the same story. This is now a standing maintenance item, not a one-off.
    highest-leverage unblock — it activates structured covariance → FA → GLLVM).
 4. Put `julia` on `PATH` and confirm the live bridge tests run.
 
+## Bring across the R/Claude operating system (what's working)
+
+These practices and assets carried the R lane; adopt them across **both** repos
+(most already exist on the Julia side — run one unified set, don't fork two):
+
+- **The review-lens roster + spawnable subagents.** ~21 named lenses (Ada lead ·
+  Shannon coordination · Boole formula · Noether math · Gauss numerics · Fisher
+  inference · Curie simulation/tests · Jason scout · Emmy R-architecture · Grace
+  CI/release · Hopper R↔Julia bridge · Pat applied-user · Darwin biology ·
+  Florence figures · Henderson animal-model · Mendel inheritance · Falconer
+  quant-gen · Kirkpatrick G-matrix · Mrode validation-canon · Karpinski
+  Julia-perf · Rose systems-auditor). The R repo carries them as spawnable
+  subagents in `.claude/agents/`; the Julia repo mirrors the roster. Use the
+  lane-routing table (which lens reviews which change class) and run **one**
+  roster across both repos.
+- **Rose claim-vs-evidence audit — keep it mandatory** before any covered move,
+  public claim, or repo-visibility change. It earned its keep this session:
+  it caught the AGHmatrix-≠-metafounder-Γ trap, the rogue PR #101
+  unverified-activation overclaim, and every agreement-vs-parity distinction.
+  Single most valuable practice.
+- **The after-task protocol** — 11 fixed sections, validated by
+  `~/shinichi-brain/tools/check-after-task.R` — closes every meaningful slice,
+  paired with the check-log (exact commands + outcomes) and the coordination
+  board.
+- **Honest ledgers as the single source of truth:** `capability-status.md` +
+  `validation-debt-register.md` (R) and `validation_status()` (Julia); strict
+  covered / partial / planned separation.
+- **Comparator-evidence discipline:** same-estimand parity vs agreement;
+  "missing on host ≠ blocked" (install CRAN comparators and run; reserve
+  host-gated for genuinely licensed/registration binaries); never fake a blocked
+  run.
+- **Repo-visible memory over chat** (board, check-log, recovery checkpoints,
+  `decisions/`, `after-task/`); rehydrate from repo state before trusting chat.
+- **Workflow:** narrow, reviewable slices; stacked PRs when slices share files;
+  local checks over CI (run `document` / `test` / `check` / `pkgdown` and
+  `Documenter` locally first, record exact commands in the check-log).
+- **Skills (`.claude/skills/`):** `hsquared-rehydrate`, `hsquared-team-dispatch`,
+  `after-task-audit`, `rose-pre-public-audit`, and the contract-review skills
+  (formula / engine / bridge / pedigree-Ainv / validation-canon / quantgen-scout
+  / prose-style). Share one skill set across both repos.
+
 ## Discipline to keep
 
 The honest covered/partial/planned separation; no promotion without
