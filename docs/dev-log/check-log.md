@@ -3,6 +3,32 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Board hygiene & coordination (PR D)
+
+- Active lenses: Ada, Shannon, Jason, Grace, Rose.
+- Spawned subagents: Rose (rose-systems-auditor).
+- Branch: `codex/board-hygiene-coordination` (stacked on PR C).
+- Scope (20-slice goal, batch 4 = slices 9, 10, 11, 12):
+  - slice 9: CI-evidence follow-up on the two PR #98 board rows (→ banked in
+    PR #98, R-CMD-check green, awaiting merge);
+  - slice 10: board header note + normalized 27 boilerplate `bank … PR`
+    next-actions to `done; banked to main`, preserving 10 forward-coordination
+    rows; no 2026-06-22 batch row marked banked-to-main;
+  - slice 11: drafted the HSquared.jl #61 cross-lane ledger refresh (stale heads
+    `6d14df5`/`9fa9193` → `38286b1`/`d4ec85d`) — not posted; R issue-map had no
+    stale refs;
+  - slice 12: scout-cadence + innovation-backlog triage note (twin #56).
+- Claim boundary: docs/status/coordination only. No R code, no issue-state
+  change, no capability/validation/public-claim promotion. #61 refresh is a draft
+  for the maintainer; scout note is cadence/triage, not new literature.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` → "No problems found".
+  - after-task validator on
+    `docs/dev-log/after-task/2026-06-22-board-hygiene-coordination.md` → exit 0.
+  - `git diff --check` clean.
+  - board greps: 27 conversions, 0 false "banked to main" on 2026-06-22 rows,
+    10 substantive rows preserved; issue-map stale-ref grep → none.
+
 ## 2026-06-22 Activation plans (PR C)
 
 - Active lenses: Boole, Hopper, Kirkpatrick, Falconer, Fisher, Curie, Rose.
