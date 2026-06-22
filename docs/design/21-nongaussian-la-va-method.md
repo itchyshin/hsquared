@@ -258,18 +258,21 @@ mirroring the twin `V6-LAPLACE`/`VA` `partial` gate. **Now SURFACED** (this and 
 prior session): the marginal control as `engine_control$marginal = "laplace" |
 "variational"` (with R mapping the DRM-style `"la"`/`"va"` aliases onto the engine's
 `"laplace"`/`"variational"`, `5f0e25f`), and `binomial` with `n_trials` via a
-`cbind(successes, failures)` counts response (single common trial count). What
-remains `planned`: per-record varying `n_trials` (the engine `BinomialResponse`
-holds one common count), and promotion past `partial` (the validation gates below).
+`cbind(successes, failures)` counts response. The R bridge now parses and carries
+**per-record varying** `n_trials` as a vector (pure-R tested; equal totals stay
+the live-verified common-trial special case). What remains `planned`: the **live
+varying-trial engine round-trip** verification, and promotion past `partial` (the
+validation gates below).
 
 **Update (HSquared.jl PR #152 / R mirror).** The twin now serializes
 `nongaussian_result_payload(::NonGaussianFit)` fixture cases for Poisson
 Laplace and Binomial variational fits, including a vector `n_trials` payload for
 the binomial case. The R mirror consumes that fixture in a Julia-free normalizer
-test and preserves `n_trials` when the engine payload supplies it. This still
-does not activate per-record varying-trial R formula syntax: the current R
-`cbind(successes, failures)` route remains restricted to equal row totals until
-the live bridge contract is widened deliberately.
+test and preserves `n_trials` when the engine payload supplies it. The R
+`cbind(successes, failures)` route now **parses and carries** per-record varying
+row totals as a vector (pure-R tested); the equal-totals case stays the
+live-verified common-trial path, and the live varying-trial engine round-trip is
+the remaining verification gate before any varying-trial fit is claimed.
 
 ---
 
@@ -285,8 +288,9 @@ hard `m = 20` Gauss–Hermite gate, VA `:full`-covariance densification, and
 Poisson-only intervals — none of which `hsquared` may paper over.
 The Laplace path fits **experimentally** (`31f200c`), and so now do VA
 (`5f0e25f`), the `marginal =` control (`"laplace"`/`"variational"` + `"la"`/`"va"`),
-and `binomial` with `n_trials` (`cbind(successes, failures)` counts); per-record
-varying `n_trials` and promotion past `partial` stay gated behind the validation
+and `binomial` with `n_trials` (`cbind(successes, failures)` counts, per-record
+varying totals R-parsed/carried and pure-R tested); the live varying-trial
+round-trip and promotion past `partial` stay gated behind the validation
 gates (Gaussian
 self-consistency, Poisson/binomial recovery, LA-vs-VA envelope, external
 comparator, bridge parity, Rose audit) and the `HSquared.jl#44` `MarginalMethod`
