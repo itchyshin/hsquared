@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Non-Gaussian bridge-gap sync
+
+- Active lenses: Ada, Shannon, Hopper, Boole, Fisher, Rose, Grace.
+- Branch: `codex/nongaussian-bridge-gap-sync`.
+- Scope:
+  - inspected HSquared.jl PR #153 (`c26ab48`) and live Julia #44 after the
+    Julia lane mirrored R PR #95 (`05fbdd3`);
+  - corrected the stale `docs/design/19-on-main-bridge-gap.md` non-Gaussian row
+    so it no longer says R rejects non-Gaussian families wholesale or still
+    lacks the `NonGaussianFit` payload shape;
+  - recorded HSquared.jl PR #153 as a Julia status mirror in the selected issue
+    map and coordination board.
+- Claim boundary: docs/status only. No R behavior changed; no new R formula
+  activation, external comparator evidence, interval calibration,
+  validation/public-claim promotion, or covered status change.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "R parser rejects non-Gaussian|no exported result-payload|non-Gaussian LA/VA — twin|No yet \\(Class B\\).*NonGaussian" docs/design/19-on-main-bridge-gap.md docs/dev-log/issue-map.md docs/dev-log/coordination-board.md`
+    found no stale active-status hits.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-nongaussian-bridge-gap-sync.md`
+    clean.
+
 ## 2026-06-21 Non-Gaussian parity fixture mirror
 
 - Active lenses: Ada, Shannon, Hopper, Boole, Fisher, Curie, Rose, Grace.
