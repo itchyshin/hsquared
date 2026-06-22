@@ -3,6 +3,30 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Claude cross-lane handover
+
+- Active lenses: Ada, Shannon, Hopper, Rose, Grace, Pat.
+- Branch: `codex/claude-cross-lane-handover`.
+- Scope:
+  - replaced stale untracked Codex-team draft handover files with a
+    Claude-specific cross-lane recovery checkpoint;
+  - recorded current R main `d4ec85d` and Julia main `38286b1` as the
+    pre-handoff evidence boundary;
+  - mirrored the handoff into the Julia repo on a separate Julia handoff branch;
+  - preserved all capability boundaries after R PR #97 and Julia PR #154.
+- Claim boundary: coordination/docs only. No R behavior, Julia behavior,
+  GitHub issue state, validation status, public claim, comparator evidence, or
+  covered-status promotion changed.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-22-claude-cross-lane-handover.md`
+    clean.
+  - `git diff --check` clean.
+  - Julia mirror checks in sibling repo:
+    `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-22-claude-cross-lane-handover.md`
+    clean, `julia --project=docs docs/make.jl` passed with existing
+    docstring/Vitepress local-build warnings, and `git diff --check` clean.
+
 ## 2026-06-21 Julia #154 non-Gaussian status sync
 
 - Active lenses: Ada, Shannon, Hopper, Rose, Grace.
