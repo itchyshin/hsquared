@@ -72,6 +72,13 @@ BGLR) — the binary-dependent slices need a capable host.
   (file:line-precise, with the silent-Bernoulli landmine flagged). **Twin:**
   `HSquared.jl#44`. **Gate:** live round-trip green + pure-R tests; non-Gaussian
   stays partial (no heritability).
+- **Draft starting point (UNVERIFIED):** a drafting subagent produced a candidate
+  implementation (R code + tests + status edits) on branch
+  `claude/nongaussian-per-record-trials` and opened PR #101, which was **closed**
+  (it claimed activation without the required live round-trip). The branch is
+  preserved — Codex may verify it against the live engine and re-land through
+  review, or implement fresh from the plan. Do not trust its status-doc edits
+  until the round-trip passes.
 
 ## Also flagged for Codex (out-of-scope items surfaced during PRs A–C)
 - Julia `validation_status()` V4-MV-REML / V4-FA rows still list SEs/LRT as
