@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Activation plans (PR C)
+
+- Active lenses: Boole, Hopper, Kirkpatrick, Falconer, Fisher, Curie, Rose.
+- Spawned subagents: boole-formula-reviewer, kirkpatrick-gmatrix-specialist
+  (drafting). Rose used as a documented review-lens (not spawned).
+- Branch: `codex/activation-plans` (stacked on PR B).
+- Scope (20-slice goal, batch 3 = slices 3, 8, 20): two new R-activation plan
+  docs — non-Gaussian per-record varying-trial Binomial activation plan
+  (design 31) and the random-regression R next-increments roadmap (design 32;
+  slices 8+20 merged, since `rr()` already ships as an opt-in experimental
+  target).
+- Claim boundary: plans only. No activation, no R code, no capability/validation/
+  public-claim promotion. Non-Gaussian equal-totals guard stands; `rr()` stays
+  partial with the h²(t) overstatement caveat. Activation gated on live
+  round-trips (Codex).
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` → "No problems found".
+  - after-task validator on
+    `docs/dev-log/after-task/2026-06-22-activation-plans.md` → exit 0.
+  - `git diff --check` clean.
+  - grep-verified doc 31 file:line refs (`model-spec.R:437`, `julia-bridge.R:443`,
+    `bridge-payload.R:98`).
+
 ## 2026-06-22 Comparator & validation runbooks (PR B)
 
 - Active lenses: Jason, Fisher, Henderson, Kirkpatrick, Mrode, Curie, Rose.
