@@ -3,6 +3,27 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Julia #154 non-Gaussian status sync
+
+- Active lenses: Ada, Shannon, Hopper, Rose, Grace.
+- Branch: `codex/julia-154-nongaussian-status-sync`.
+- Scope:
+  - recorded HSquared.jl PR #154 (`38286b1`) as the final corrected Julia
+    status mirror after R PR #96 (`e7c7a4a`);
+  - updated `docs/design/19-on-main-bridge-gap.md`, the selected issue map, and
+    the coordination board so R no longer points at the intermediate Julia
+    #153 status wording.
+- Claim boundary: docs/status only. No R behavior changed; no new formula
+  activation, external comparator evidence, interval calibration,
+  validation/public-claim promotion, or covered status change.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `git diff --check` clean.
+  - `rg -n "c26ab48|#153|local edits in progress.*nongaussian|R parser rejects non-Gaussian|R parser remains Gaussian-only" docs/design/19-on-main-bridge-gap.md docs/dev-log/issue-map.md docs/dev-log/coordination-board.md`
+    found no stale active-status hits.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-julia-154-nongaussian-status-sync.md`
+    clean.
+
 ## 2026-06-21 Non-Gaussian bridge-gap sync
 
 - Active lenses: Ada, Shannon, Hopper, Boole, Fisher, Rose, Grace.
