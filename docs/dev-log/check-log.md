@@ -3,6 +3,39 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Genomic external comparator run + V4 gate review
+
+- Active lenses: Jason, Fisher, Kirkpatrick, Mrode, Curie, Rose.
+- Spawned subagents: Fisher (fisher-inference-reviewer) for the V4 gate review;
+  Rose (rose-systems-auditor) for the audit.
+- Branch: `codex/genomic-external-comparator-run` (stacked on PR E).
+- Scope:
+  - installed AGHmatrix 2.1.4 / rrBLUP 4.6.3 / BGLR 1.1.4 from CRAN (not blocked,
+    just not installed) and EXECUTED `data-raw/genomic-external-comparator-study.R`
+    against the `genomic_gblup_snpblup_target` fixture; recorded it in
+    `docs/dev-log/comparator-runs/2026-06-22-genomic-external-comparator-run.md`;
+    updated the genomic capability-status (SNP-BLUP) + validation-debt rows + the
+    comparator README with the executed evidence (agreement-level, rows partial);
+  - drafted `docs/design/33-v4-multivariate-promotion-gate-review.md` (Fisher/
+    Mrode/Curie): do not promote V4 yet; make the 2nd-REML-comparator and the
+    recovery-gate acceptance substitutable (no free CRAN MV-REML pkg besides
+    `sommer`); compute-only recovery broadening is the highest-leverage no-binary
+    action; two honesty fixes flagged.
+- Results: base-R reproduces fixture G/Ginv (4.4e-16 / 3.1e-15) + supplied-variance
+  GBLUP (4.4e-16); rrBLUP confirms GBLUP↔SNP-BLUP equivalence (7.5e-6), GEBV cor
+  0.99979, marker cor 0.99817; BGLR GEBV cor 0.99943; rrBLUP REML ratio 0.687 vs
+  supplied 0.5 explains the gap; AGHmatrix re-estimates p (0.277, not a clean
+  supplied-p comparator).
+- Claim boundary: external comparator EVIDENCE (agreement-level, not exact parity)
+  + a twin-owned gate recommendation. No R/code change (data-raw is
+  `.Rbuildignore`d), no capability/validation/public-claim promotion; genomic +
+  V4 stay partial.
+- Checks:
+  - `Rscript --vanilla data-raw/genomic-external-comparator-study.R` → results above.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` → "No problems found".
+  - after-task validator → exit 0; `git diff --check` clean; `.Rbuildignore`
+    covers `data-raw`.
+
 ## 2026-06-22 Non-Gaussian per-record varying-trial R activation (R side)
 
 - Active lenses: Boole, Hopper, Fisher, Curie, Darwin, Rose.

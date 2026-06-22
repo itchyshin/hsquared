@@ -49,8 +49,14 @@ Run handoff packets:
 - `2026-06-22-genomic-external-comparator-runbook.md` is the per-tool run recipe
   (AGHmatrix / rrBLUP / BGLR / sommer / JWAS) for external same-estimand genomic
   GBLUP / SNP-BLUP comparison against the `genomic_gblup_snpblup_target` fixture.
-  Only `sommer` is installed locally (AGHmatrix/rrBLUP/BGLR/JWAS absent);
-  BGLR/JWAS are Bayesian agreement, not REML parity. Protocol, not evidence.
+  BGLR/JWAS are Bayesian agreement, not REML parity. Now **executed** — see below.
+- `2026-06-22-genomic-external-comparator-run.md` is the **executed** run
+  (generator `data-raw/genomic-external-comparator-study.R`): `AGHmatrix`/`rrBLUP`/
+  `BGLR` were installed from CRAN and run. rrBLUP independently confirms the
+  GBLUP↔SNP-BLUP GEBV equivalence (7.5e-6) and rrBLUP/BGLR GEBVs agree with the
+  fixture at > 0.999 (agreement-level — REML/Bayes vs supplied variances; AGHmatrix
+  re-estimates p so it is not a clean supplied-p `G` comparator on n=4). Real
+  evidence, not a protocol; genomic rows stay partial.
 - `2026-06-22-marker-scan-threshold-calibration-plan.md` operationalizes the
   doc 28 GWAS threshold-activation gates (permutation, realistic-LD simulation,
   PLINK/GEMMA/GCTA alignment). Thresholds remain INACTIVE; plan, not evidence.
