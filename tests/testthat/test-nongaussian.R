@@ -65,6 +65,143 @@ test_that("the non-Gaussian normalizer shapes a Laplace-REML result without heri
   )
 })
 
+test_that("the non-Gaussian normalizer consumes the Julia parity fixture", {
+  fixture_dir <- testthat::test_path("fixtures", "non_gaussian_parity")
+  metadata <- utils::read.csv(
+    file.path(fixture_dir, "expected_payload_metadata.csv"),
+    stringsAsFactors = FALSE
+  )
+  variance_components <- utils::read.csv(
+    file.path(fixture_dir, "expected_variance_components.csv"),
+    stringsAsFactors = FALSE
+  )
+  fixed_effects <- utils::read.csv(
+    file.path(fixture_dir, "expected_fixed_effects.csv"),
+    stringsAsFactors = FALSE
+  )
+  breeding_values <- utils::read.csv(
+    file.path(fixture_dir, "expected_breeding_values.csv"),
+    stringsAsFactors = FALSE
+  )
+
+  meta_value <- function(case, field) {
+    value <- metadata$value[
+      metadata$case == case & metadata$field == field
+    ]
+    expect_length(value, 1L)
+    value[[1L]]
+  }
+  case_rows <- function(data, case) {
+    data[data$case == case, , drop = FALSE]
+  }
+  parse_trials <- function(value) {
+    if (identical(value, "nothing")) {
+      return(NULL)
+    }
+    as.integer(strsplit(value, ";", fixed = TRUE)[[1L]])
+  }
+  fixture_payload <- function(case) {
+    phenotypes <- if (identical(case, "poisson_laplace")) {
+      utils::read.csv(
+        file.path(fixture_dir, "poisson_phenotypes.csv"),
+        stringsAsFactors = FALSE
+      )
+    } else {
+      utils::read.csv(
+        file.path(fixture_dir, "binomial_phenotypes.csv"),
+        stringsAsFactors = FALSE
+      )
+    }
+    y <- if (identical(case, "poisson_laplace")) {
+      phenotypes$y
+    } else {
+      phenotypes$successes
+    }
+    fixed_case <- case_rows(fixed_effects, case)
+    X <- stats::model.matrix(~x, data = phenotypes)
+    colnames(X) <- fixed_case$effect
+    structure(
+      list(
+        y = y,
+        X = X,
+        metadata = list(fixed_colnames = fixed_case$effect)
+      ),
+      class = "hs_bridge_payload"
+    )
+  }
+  fixture_raw <- function(case) {
+    fixed_case <- case_rows(fixed_effects, case)
+    breeding_case <- case_rows(breeding_values, case)
+    vc_case <- case_rows(variance_components, case)
+    list(
+      family = meta_value(case, "family"),
+      method = meta_value(case, "method"),
+      sigma_a2 = vc_case$value[vc_case$component == "sigma_a2"],
+      beta = fixed_case$value,
+      breeding_ids = breeding_case$id,
+      breeding_values = breeding_case$value,
+      n_trials = parse_trials(meta_value(case, "n_trials")),
+      loglik = as.numeric(meta_value(case, "loglik")),
+      converged = identical(meta_value(case, "converged"), "true")
+    )
+  }
+
+  cases <- c("poisson_laplace", "binomial_vector_variational")
+  for (case in cases) {
+    payload <- fixture_payload(case)
+    raw <- fixture_raw(case)
+    result <- hsquared:::hs_normalize_nongaussian_result(raw, payload)
+    fixed_case <- case_rows(fixed_effects, case)
+    breeding_case <- case_rows(breeding_values, case)
+    method <- meta_value(case, "method")
+
+    expect_equal(result$variance_components$component, "animal")
+    expect_equal(result$variance_components$estimate, raw$sigma_a2)
+    expect_equal(
+      result$fixed_effects,
+      stats::setNames(fixed_case$value, fixed_case$effect)
+    )
+    expect_equal(result$breeding_values$id, breeding_case$id)
+    expect_equal(result$breeding_values$value, breeding_case$value)
+    expect_equal(result$family, meta_value(case, "family"))
+    expect_equal(result$marginal_method, method)
+    expect_equal(result$loglik, raw$loglik)
+    expect_equal(result$df, as.integer(ncol(payload$X) + 1L))
+    expect_false("heritability" %in% names(result))
+    if (is.null(raw$n_trials)) {
+      expect_null(result$n_trials)
+    } else {
+      expect_equal(result$n_trials, raw$n_trials)
+    }
+    expect_equal(
+      result$loglik_kind,
+      if (identical(method, "variational")) {
+        "elbo (variational lower bound)"
+      } else {
+        "laplace marginal loglik"
+      }
+    )
+    expect_equal(result$diagnostics$engine_family, raw$family)
+    expect_true(result$diagnostics$latent_scale)
+
+    alias_raw <- raw
+    alias_raw$method <- if (identical(method, "variational")) "VA" else "LA"
+    alias_result <- hsquared:::hs_normalize_nongaussian_result(
+      alias_raw,
+      payload
+    )
+    expect_equal(alias_result$marginal_method, method)
+
+    perturbed <- raw
+    perturbed$breeding_values[1L] <- perturbed$breeding_values[1L] + 0.01
+    expect_false(isTRUE(all.equal(
+      perturbed$breeding_values,
+      result$breeding_values$value,
+      tolerance = 1e-12
+    )))
+  }
+})
+
 test_that("the live Julia bridge fits a non-Gaussian (Poisson + Bernoulli) animal model", {
   testthat::skip_on_cran()
   testthat::skip_if_not(

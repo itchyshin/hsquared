@@ -3,6 +3,42 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-21 Non-Gaussian parity fixture mirror
+
+- Active lenses: Ada, Shannon, Hopper, Boole, Fisher, Curie, Rose, Grace.
+- Branch: `codex/non-gaussian-parity-fixture`.
+- Scope:
+  - mirrored HSquared.jl PR #152 (`3843ddb`) by copying
+    `test/fixtures/non_gaussian_parity/` into the R test fixtures;
+  - added a Julia-free normalizer test over the serialized Poisson-Laplace and
+    Binomial-variational payload targets;
+  - updated `hs_normalize_nongaussian_result()` to canonicalize LA/VA method
+    aliases at the normalizer boundary and preserve `n_trials` when the engine
+    payload supplies it;
+  - reconciled the non-Gaussian design/status ledgers, selected issue map,
+    coordination board, and after-task report.
+- Live GitHub verification:
+  - `gh pr view 152 --repo itchyshin/HSquared.jl --json number,state,mergeCommit,statusCheckRollup,url,title,mergedAt,body,files`
+    showed PR #152 merged at `3843ddb` with Julia 1, Julia 1.10, docs, and
+    documenter/deploy successful.
+  - `gh issue edit 6 --repo itchyshin/hsquared --body-file -` updated the live
+    R bridge parent issue with the non-Gaussian payload-fixture handoff and the
+    per-record varying-trial formula boundary.
+- Claim boundary: fixture/normalizer/status only. No R formula activation for
+  per-record varying binomial trials; no external comparator evidence, interval
+  calibration, public default, validation/public-claim promotion, or covered
+  status change.
+- Checks:
+  - `air format .` clean.
+  - `Rscript --vanilla -e 'devtools::test(filter = "nongaussian")'`
+    **64 pass / 0 fail / 0 warn / 2 skip**.
+  - `Rscript --vanilla -e 'devtools::test()'`
+    **1414 pass / 0 fail / 0 warn / 59 skip**.
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-21-nongaussian-parity-fixture.md`
+    clean.
+  - `git diff --check` clean.
+
 ## 2026-06-21 Sync Julia #151 BLUPF90 packet hardening
 
 - Active lenses: Ada, Shannon, Jason, Fisher, Curie, Rose, Grace.
