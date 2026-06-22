@@ -10,8 +10,12 @@ multivariate grammar remains the opt-in
 `cbind(...) ~ ... + animal(1 | id, pedigree = ped)` path with `unstructured` (or
 now `diagonal`) `G0` and unstructured `R0`. The `lowrank`/`fa` structured fits
 and the `cov = us()/diag()/lowrank()/fa()` formula grammar described below
-remain design-note only, gated on a validated rotation/interpretation
-convention for the loadings.
+remain design-note only. The rotation/interpretation convention they were gated
+on is now **ratified** (bridge rotation-invariant functionals of `G` only, never
+raw loadings) — see
+`29-structured-covariance-eigenbasis-bridge-contract.md`; the remaining gates are
+the engine payload-widening on `HSquared.jl` `main` plus known-truth recovery and
+an external structured-`G` comparator.
 
 ## Purpose
 
@@ -177,20 +181,25 @@ heritability
 breeding_values
 ```
 
-Structured metadata should be additive:
+Structured metadata should be additive and **rotation-invariant** (per the
+ratified eigenbasis contract,
+`29-structured-covariance-eigenbasis-bridge-contract.md`):
 
 ```text
 genetic_structure
 genetic_rank
-genetic_loadings
-genetic_uniqueness
-loading_sign_convention
-rotation_method
+genetic_eigenvalues        # additive genetic variance per principal axis
+genetic_principal_axes     # sign-canonicalized eigenvectors of G
+genetic_uniqueness         # Psi, factor_analytic only
+n_genetic_params           # for nested-structure LRTs
 ```
 
-The R object should remain useful even when users ignore loadings: `G_matrix()`,
-`R_matrix()`, `genetic_correlation()`, and `heritability()` must still be the
-first teaching surface.
+Raw loadings (`genetic_loadings`) are **not bridged as identified estimates** and
+carry no standard error; they may appear only as an explicitly-flagged,
+display-only, rotation-arbitrary reconstruction. The R object should remain
+useful even when users ignore loadings: `G_matrix()`, `R_matrix()`,
+`genetic_correlation()`, and `heritability()` must still be the first teaching
+surface.
 
 ## Error Rules
 

@@ -3,6 +3,34 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Structured-covariance eigenbasis bridge ratification (PR A)
+
+- Active lenses: Boole, Noether, Kirkpatrick, Fisher, Hopper, Rose.
+- Spawned subagents: Rose (rose-systems-auditor).
+- Branch: `codex/structured-cov-ratification` (stacked on PR #98).
+- Scope (20-slice goal, batch 1 = slices 1, 2, 5):
+  - new `docs/design/29-structured-covariance-eigenbasis-bridge-contract.md`
+    ratifying the eigenbasis-only bridge payload (unblocks twin #42 engine
+    payload-widening, held pending R ack);
+  - reconciled `docs/design/18-structured-covariance-r-control.md` (status note
+    + payload section) and `capability-status.md` row 44 to the ratified
+    convention, fencing raw loadings;
+  - verified the R SE/LRT extractors already exist/exported/consumed
+    (`covariance_standard_errors`, `covariance_structure_lrt`) — slice 2 needs no
+    R change; the stale "missing" wording is the Julia validation_status row
+    (Codex, twin #41/#47).
+- Claim boundary: docs/contract only. No R code, no capability/validation/public
+  -claim promotion; structured lowrank/fa fits remain partial + formula grammar
+  planned.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` → "No problems found".
+  - after-task validator on
+    `docs/dev-log/after-task/2026-06-22-structured-cov-ratification.md` → exit 0.
+  - `git diff --check` clean.
+  - `grep` confirmed `covariance_standard_errors`/`covariance_structure_lrt` in
+    `R/extractors.R` + `NAMESPACE` and `multivariate_covariance_standard_errors`
+    consumed in `R/julia-bridge.R`.
+
 ## 2026-06-22 Coordination-board stale-row cleanup
 
 - Active lenses: Ada, Shannon, Rose, Grace.
