@@ -3,6 +3,65 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Coordination-board stale-row cleanup
+
+- Active lenses: Ada, Shannon, Rose, Grace.
+- Spawned subagents: Rose (rose-systems-auditor) for an independent audit.
+- Branch: `codex/claude-cross-lane-handover`.
+- Scope:
+  - corrected 11 stale `local edits in progress` rows in
+    `docs/dev-log/coordination-board.md` to `banked in PR #N at <hash>` after
+    confirming each PR is merged and each squash commit is an ancestor of
+    `origin/main`;
+  - normalized the stale `run docs checks and bank … PR` next-actions on those
+    rows to `done; continue from refreshed main` (the existing banked-row
+    convention);
+  - added a coordination-board self-row and this check-log entry.
+- Claim boundary: docs/status hygiene only. No R/Julia behavior, no GitHub issue
+  state, no capability/validation/public-claim change, no comparator evidence,
+  no promotion. The 38 milder `local complete; bank as … PR` historical rows
+  were left untouched by design.
+- Checks:
+  - `grep -c "local edits in progress" docs/dev-log/coordination-board.md` → `0`
+    (was 11); `grep -c "run docs checks and bank" …` → `0` (was 10).
+  - PR→merge-commit mapping via `gh pr view <n> --json mergeCommit` for
+    #94/#87/#86/#85/#74/#73/#72/#71/#70/#69/#68; each hash confirmed on
+    `origin/main` with `git merge-base --is-ancestor` and a matching `git log`
+    subject (`1d8565f`/`6206b7b`/`5bbc453`/`80734b3`/`b4b4da5`/`adc2e63`/
+    `a80dfa4`/`43f99ae`/`ff2158a`/`0472cd9`/`611baca`).
+  - `git diff --stat` → 11 insertions / 11 deletions for the row corrections;
+    `git diff --check` clean.
+  - class sweep `grep -rn "local edits in progress" docs/` → no remaining live
+    status rows (only a past command string + two immutable historical notes).
+  - `Rscript --vanilla ~/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-22-coordination-board-cleanup.md`
+    → exit 0 (clean).
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` → "No problems found"
+    (exit 0).
+
+## 2026-06-22 Claude cross-lane handover
+
+- Active lenses: Ada, Shannon, Hopper, Rose, Grace, Pat.
+- Branch: `codex/claude-cross-lane-handover`.
+- Scope:
+  - replaced stale untracked Codex-team draft handover files with a
+    Claude-specific cross-lane recovery checkpoint;
+  - recorded current R main `d4ec85d` and Julia main `38286b1` as the
+    pre-handoff evidence boundary;
+  - mirrored the handoff into the Julia repo on a separate Julia handoff branch;
+  - preserved all capability boundaries after R PR #97 and Julia PR #154.
+- Claim boundary: coordination/docs only. No R behavior, Julia behavior,
+  GitHub issue state, validation status, public claim, comparator evidence, or
+  covered-status promotion changed.
+- Checks:
+  - `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean.
+  - `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-22-claude-cross-lane-handover.md`
+    clean.
+  - `git diff --check` clean.
+  - Julia mirror checks in sibling repo:
+    `/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla /Users/z3437171/shinichi-brain/tools/check-after-task.R docs/dev-log/after-task/2026-06-22-claude-cross-lane-handover.md`
+    clean, `julia --project=docs docs/make.jl` passed with existing
+    docstring/Vitepress local-build warnings, and `git diff --check` clean.
+
 ## 2026-06-21 Julia #154 non-Gaussian status sync
 
 - Active lenses: Ada, Shannon, Hopper, Rose, Grace.
