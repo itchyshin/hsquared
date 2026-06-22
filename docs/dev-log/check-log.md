@@ -18,6 +18,8 @@ with private memory.
     `6d14df5`/`9fa9193` → `38286b1`/`d4ec85d`) — not posted; R issue-map had no
     stale refs;
   - slice 12: scout-cadence + innovation-backlog triage note (twin #56).
+  - plus a Codex hand-off packet routing the 6 engine/comparator slices (13-18)
+    at `docs/dev-log/handover/2026-06-22-codex-engine-comparator-handoff.md`.
 - Claim boundary: docs/status/coordination only. No R code, no issue-state
   change, no capability/validation/public-claim promotion. #61 refresh is a draft
   for the maintainer; scout note is cadence/triage, not new literature.
