@@ -42,6 +42,20 @@ Run handoff packets:
   boundary. The R test suite now mirrors the fixture and checks its internal
   VanRaden/GBLUP/SNP-BLUP algebra; it is still a target/protocol, not external
   comparator evidence.
+- `2026-06-22-multivariate-second-comparator-runbook.md` is the run protocol for
+  the **second** independent same-estimand REML comparator for `V4-MV-REML`
+  using ASReml-R / DMU / WOMBAT (the BLUPF90 path is the separate packet above).
+  All three tools are absent locally; protocol, not evidence.
+- `2026-06-22-genomic-external-comparator-runbook.md` is the per-tool run recipe
+  (AGHmatrix / rrBLUP / BGLR / sommer / JWAS) for external same-estimand genomic
+  GBLUP / SNP-BLUP comparison against the `genomic_gblup_snpblup_target` fixture.
+  Only `sommer` is installed locally (AGHmatrix/rrBLUP/BGLR/JWAS absent);
+  BGLR/JWAS are Bayesian agreement, not REML parity. Protocol, not evidence.
+- `2026-06-22-marker-scan-threshold-calibration-plan.md` operationalizes the
+  doc 28 GWAS threshold-activation gates (permutation, realistic-LD simulation,
+  PLINK/GEMMA/GCTA alignment). Thresholds remain INACTIVE; plan, not evidence.
+  (The metafounder Γ-estimation / external-validation plan is a design note,
+  `docs/design/30-metafounder-gamma-estimation-plan.md`.)
 
 For BLUPF90-family multivariate runs, attach a sanitized companion CSV when
 possible with these columns:
