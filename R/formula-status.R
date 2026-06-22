@@ -243,8 +243,8 @@ hs_formula_status_behavior <- function() {
       "response, an `animal()` term, and engine = \"julia\", target =",
       "\"multivariate\". Missing trait cells are allowed as `NA`. Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
-      "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
-      "required), not a multivariate Gaussian."
+      "binomial-counts GLMM via target = \"nongaussian\" (per-record trial",
+      "totals may vary), not a multivariate Gaussian."
     ),
     rep(
       paste(

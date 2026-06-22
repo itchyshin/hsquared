@@ -432,15 +432,17 @@ hs_fit_julia_ai_reml_payload <- function(
 
 # Map an R `family` object to the engine's non-Gaussian family symbol:
 # `poisson(log)` -> "poisson"; `binomial(logit)` -> "bernoulli" for a binary 0/1
-# response, or "binomial" when a per-record trial count `n_trials` (> 1) is
-# supplied (a `cbind(successes, failures)` counts response). Other families are
-# planned.
+# response, or "binomial" when `cbind(successes, failures)` counts supply a
+# per-record trial vector `n_trials` with any total > 1 (an all-ones vector
+# reduces to Bernoulli). Other families are planned.
 hs_nongaussian_family_symbol <- function(family, n_trials = NULL) {
   if (identical(family$family, "poisson") && identical(family$link, "log")) {
     return("poisson")
   }
   if (identical(family$family, "binomial") && identical(family$link, "logit")) {
-    if (!is.null(n_trials) && n_trials > 1L) {
+    # n_trials may be a per-record vector; any total > 1 is a Binomial-counts fit,
+    # an all-ones vector (or a single trial) reduces to Bernoulli.
+    if (!is.null(n_trials) && max(n_trials) > 1L) {
       return("binomial")
     }
     return("bernoulli")
@@ -535,13 +537,21 @@ hs_fit_julia_nongaussian_payload <- function(
   JuliaCall::julia_assign("hsq_family", family_symbol)
   JuliaCall::julia_assign("hsq_marginal", marginal)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  # A binomial-counts response carries a single common trial count; the engine's
-  # BinomialResponse takes it via the n_trials keyword (Bernoulli == n_trials 1,
-  # so the keyword is omitted for every non-binomial family).
+  # A binomial-counts response carries a PER-RECORD trial-count vector; the engine
+  # resolves a vector to BinomialVectorResponse (and a scalar to BinomialResponse)
+  # via the n_trials keyword. Bernoulli omits the keyword (== n_trials 1).
   n_trials_kw <- ""
   if (identical(family_symbol, "binomial")) {
-    JuliaCall::julia_assign("hsq_n_trials", as.integer(n_trials))
-    n_trials_kw <- "n_trials = Int(hsq_n_trials), "
+    n_trials_int <- as.integer(n_trials)
+    if (length(n_trials_int) != length(payload$y)) {
+      stop(
+        "Internal bridge error: binomial `n_trials` must have one entry per ",
+        "record (length(n_trials) == length(y)).",
+        call. = FALSE
+      )
+    }
+    JuliaCall::julia_assign("hsq_n_trials", n_trials_int)
+    n_trials_kw <- "n_trials = hsq_n_trials, "
   }
   JuliaCall::julia_command(paste0(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",

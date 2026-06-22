@@ -1,9 +1,10 @@
 # Binomial count responses: cbind(successes, failures) ~ ... with family =
 # binomial() must be a non-Gaussian binomial-trials model, NOT silently coerced
 # into a 2-trait multivariate Gaussian (the family-blind cbind bug) or down to a
-# binary Bernoulli (dropping the trial counts). The engine's BinomialResponse
-# holds ONE common n_trials, so the cbind row totals (successes + failures) must
-# be equal; varying totals error (per-record trials are an engine follow-up).
+# binary Bernoulli (dropping the trial counts). Row totals (successes + failures)
+# MAY vary per record: n_trials is carried as a per-record integer vector and the
+# engine fits it via BinomialVectorResponse (a common total is the repeated-value
+# special case; all-ones reduces to Bernoulli).
 
 ped4 <- function() {
   data.frame(
@@ -16,7 +17,7 @@ ped4 <- function() {
 
 test_that("cbind(successes, failures) + binomial() builds a binomial-counts spec, not multivariate", {
   ped <- ped4()
-  # equal row totals (3 trials each) -> a single common n_trials = 3
+  # equal row totals (3 trials each) -> per-record vector n_trials = c(3, 3, 3, 3)
   dat <- data.frame(
     succ = c(1, 2, 3, 0),
     fail = c(2, 1, 0, 3),
@@ -32,27 +33,38 @@ test_that("cbind(successes, failures) + binomial() builds a binomial-counts spec
   # NOT multivariate; it is a single-response binomial-counts model
   expect_false(isTRUE(spec$response$multivariate))
   expect_true(isTRUE(spec$response$binomial_counts))
-  expect_equal(spec$response$n_trials, 3)
+  expect_equal(spec$response$n_trials, c(3L, 3L, 3L, 3L))
   # the response values are the success counts
   expect_equal(as.numeric(spec$response$values), c(1, 2, 3, 0))
 })
 
-test_that("cbind(successes, failures) + binomial() with varying row totals errors clearly", {
+test_that("cbind(successes, failures) + binomial() with varying row totals builds a per-record binomial-counts spec", {
   ped <- ped4()
   dat <- data.frame(
     succ = c(1, 2, 3, 0),
-    fail = c(2, 1, 1, 3), # totals 3,3,4,3 -> not all equal
+    fail = c(2, 1, 1, 3), # totals 3, 3, 4, 3 -> per-record n_trials vector
     id = c("s", "d", "a", "b")
   )
-  expect_error(
-    hsquared:::hs_build_model_spec(
-      cbind(succ, fail) ~ animal(1 | id, pedigree = ped),
-      data = dat,
-      family = stats::binomial(),
-      REML = TRUE,
-      allow_families = c("gaussian", "poisson", "binomial")
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(succ, fail) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::binomial(),
+    REML = TRUE,
+    allow_families = c("gaussian", "poisson", "binomial")
+  )
+  expect_true(isTRUE(spec$response$binomial_counts))
+  expect_equal(spec$response$n_trials, c(3L, 3L, 4L, 3L))
+  expect_equal(as.numeric(spec$response$values), c(1, 2, 3, 0))
+
+  # the per-record vector survives into the bridge payload and resolves to binomial
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  expect_equal(payload$n_trials, c(3L, 3L, 4L, 3L))
+  expect_equal(
+    hsquared:::hs_nongaussian_family_symbol(
+      stats::binomial(),
+      payload$n_trials
     ),
-    "equal"
+    "binomial"
   )
 })
 
@@ -99,6 +111,21 @@ test_that("the family-symbol mapper distinguishes Bernoulli from Binomial(n_tria
     hsquared:::hs_nongaussian_family_symbol(stats::binomial(), n_trials = 5L),
     "binomial"
   )
+  # a per-record vector with any total > 1 is binomial; all-ones reduces to Bernoulli
+  expect_equal(
+    hsquared:::hs_nongaussian_family_symbol(
+      stats::binomial(),
+      n_trials = c(2L, 4L, 5L)
+    ),
+    "binomial"
+  )
+  expect_equal(
+    hsquared:::hs_nongaussian_family_symbol(
+      stats::binomial(),
+      n_trials = c(1L, 1L, 1L)
+    ),
+    "bernoulli"
+  )
   expect_equal(
     hsquared:::hs_nongaussian_family_symbol(stats::poisson()),
     "poisson"
@@ -140,9 +167,53 @@ test_that("the live bridge fits a balanced binomial-counts model [live]", {
   expect_error(heritability(fit), "heritability") # latent scale, no h2
 
   # parity: the R binomial-counts fit matches a direct engine fit_laplace_reml
-  # with family = :binomial and the common n_trials (the bridge left hsq_*).
+  # with family = :binomial and the per-record n_trials vector (the bridge left
+  # hsq_*); a common-total panel is the repeated-value special case.
   direct_sa2 <- JuliaCall::julia_eval(
-    "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = Int(hsq_n_trials), ids = hsq_ped.ids).variance_components.sigma_a2"
+    "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = hsq_n_trials, ids = hsq_ped.ids).variance_components.sigma_a2"
+  )
+  expect_equal(variance_components(fit)$estimate, direct_sa2, tolerance = 1e-6)
+})
+
+test_that("the live bridge fits a binomial-counts model with VARYING trial totals [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."
+  )
+
+  set.seed(11)
+  ped <- data.frame(
+    id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
+    sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),
+    dam = c(NA, NA, NA, NA, rep(c("d1", "d2"), 8))
+  )
+  n <- nrow(ped)
+  trials <- sample(5:15, n, replace = TRUE) # per-record VARYING denominators
+  stopifnot(length(unique(trials)) > 1L)
+  succ <- rbinom(n, trials, 0.4)
+  dat <- data.frame(succ = succ, fail = trials - succ, id = ped$id)
+
+  fit <- hsquared(
+    cbind(succ, fail) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::binomial(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "nongaussian")
+    )
+  )
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$result$family, "binomial")
+  expect_equal(fit$result$n_trials, as.integer(trials))
+  expect_true(is.finite(variance_components(fit)$estimate))
+  expect_equal(nrow(breeding_values(fit)), n)
+
+  # parity: the R varying-trial fit matches a direct engine fit_laplace_reml with
+  # the per-record n_trials vector (BinomialVectorResponse).
+  direct_sa2 <- JuliaCall::julia_eval(
+    "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = hsq_n_trials, ids = hsq_ped.ids).variance_components.sigma_a2"
   )
   expect_equal(variance_components(fit)$estimate, direct_sa2, tolerance = 1e-6)
 })

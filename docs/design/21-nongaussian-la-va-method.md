@@ -258,18 +258,25 @@ mirroring the twin `V6-LAPLACE`/`VA` `partial` gate. **Now SURFACED** (this and 
 prior session): the marginal control as `engine_control$marginal = "laplace" |
 "variational"` (with R mapping the DRM-style `"la"`/`"va"` aliases onto the engine's
 `"laplace"`/`"variational"`, `5f0e25f`), and `binomial` with `n_trials` via a
-`cbind(successes, failures)` counts response (single common trial count). What
-remains `planned`: per-record varying `n_trials` (the engine `BinomialResponse`
-holds one common count), and promotion past `partial` (the validation gates below).
+`cbind(successes, failures)` counts response (per-record trial totals may vary;
+carried as a per-record vector and fit via the engine `BinomialVectorResponse`).
+What remains `planned`: promotion past `partial` (the validation gates below).
 
 **Update (HSquared.jl PR #152 / R mirror).** The twin now serializes
 `nongaussian_result_payload(::NonGaussianFit)` fixture cases for Poisson
 Laplace and Binomial variational fits, including a vector `n_trials` payload for
 the binomial case. The R mirror consumes that fixture in a Julia-free normalizer
-test and preserves `n_trials` when the engine payload supplies it. This still
-does not activate per-record varying-trial R formula syntax: the current R
-`cbind(successes, failures)` route remains restricted to equal row totals until
-the live bridge contract is widened deliberately.
+test and preserves `n_trials` when the engine payload supplies it.
+
+**Update (per-record varying trials — #44 gate 1, activated experimentally).** The
+R `cbind(successes, failures)` route now accepts per-record varying row totals:
+`n_trials` is parsed to a per-record integer vector, carried through the bridge
+payload, and marshalled to the engine's `BinomialVectorResponse` (equal totals are
+the repeated-value special case; an all-ones vector reduces to Bernoulli). The
+engine was already capable (`BinomialVectorResponse` + `_fam_record`); this is the
+R-side activation only. Still `partial`: gate 2 (binomial information-gradient
+recovery, an external MCMCglmm agreement comparator, and interval calibration)
+remains, and nothing is promoted.
 
 ---
 

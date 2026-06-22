@@ -399,9 +399,9 @@ hs_build_response_spec <- function(lhs, response, family = NULL) {
 
 # `cbind(successes, failures) ~ ...` under `family = binomial()`: a binomial-counts
 # response. The success counts are the modelled response; the per-record number of
-# trials is successes + failures. The engine's `BinomialResponse` carries ONE
-# common `n_trials`, so all row totals must be equal (per-record varying trials
-# are an engine follow-up); varying totals error rather than silently mis-fit.
+# trials is successes + failures and MAY vary by record. `n_trials` is stored as a
+# per-record integer vector (length n); the engine fits it via
+# `BinomialVectorResponse` (a common total is the repeated-value special case).
 hs_build_binomial_counts_response <- function(lhs, response) {
   hs_validate_cbind_bare_columns(hs_unwrap_parentheses(lhs))
   values <- unname(as.matrix(response))
@@ -434,16 +434,9 @@ hs_build_binomial_counts_response <- function(lhs, response) {
       call. = FALSE
     )
   }
-  n_trials <- unique(totals)
-  if (length(n_trials) != 1L) {
-    stop(
-      "`cbind(successes, failures)` row totals (successes + failures) must all ",
-      "be equal: the engine's binomial family uses a single common trial count. ",
-      "Per-record varying trial counts are a planned engine follow-up ",
-      "(HSquared.jl binomial per-record n_trials).",
-      call. = FALSE
-    )
-  }
+  # Per-record trial counts: a length-n integer vector (a common total is just the
+  # repeated-value special case). The checks above already guarantee
+  # 0 <= successes <= total per record, so the engine `_check_counts` is a backstop.
   trait_names <- all.vars(hs_unwrap_parentheses(lhs))
   list(
     name = hs_deparse(lhs),
@@ -451,7 +444,7 @@ hs_build_binomial_counts_response <- function(lhs, response) {
     trait_names = if (length(trait_names) >= 1L) trait_names[[1L]] else NULL,
     multivariate = FALSE,
     binomial_counts = TRUE,
-    n_trials = as.integer(n_trials)
+    n_trials = as.integer(totals)
   )
 }
 

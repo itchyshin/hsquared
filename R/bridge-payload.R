@@ -93,8 +93,9 @@ hs_build_bridge_payload <- function(spec) {
       relationship_source = if (is_metafounder) "metafounder" else "pedigree",
       method = spec$method,
       family = spec$family$family,
-      # Common per-record trial count for a cbind(successes, failures) binomial
-      # response; NULL for every other response (Bernoulli/Poisson/Gaussian).
+      # Per-record trial counts (length-n integer vector) for a
+      # cbind(successes, failures) binomial response; NULL for every other
+      # response (Bernoulli/Poisson/Gaussian).
       n_trials = spec$response$n_trials,
       ids = ids,
       pedigree = list(
