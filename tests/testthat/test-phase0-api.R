@@ -333,7 +333,7 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "covered promotion remains twin-gated",
+    "this R public opt-in surface stays partial",
     fixed = TRUE
   )
   expect_match(
