@@ -3,6 +3,22 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-22 Claude → Julia lane consolidation handover
+
+- Active lenses: Ada, Shannon, Rose (review-lens).
+- Spawned subagents: none.
+- Branch: `codex/claude-to-julia-handover` (stacked on PR G).
+- Scope: closing handover note consolidating both packages under one owner (the
+  Julia lane):
+  `docs/dev-log/handover/2026-06-22-claude-to-julia-lane-consolidation-handover.md`
+  (decision + sync-tax rationale, toolchain precondition `julia` on PATH,
+  stacked-PR merge order #98→G + closed-#101 note, engine work list, open
+  follow-ups, rehydration start order, discipline to keep).
+- Claim boundary: coordination/closing note only. No code, no capability/
+  validation/public-claim change; references both repos, edits only the R repo.
+- Checks: `pkgdown::check_pkgdown()` → "No problems found"; after-task validator →
+  exit 0; `git diff --check` clean.
+
 ## 2026-06-22 Forced-p G exact-parity check + V4 honesty fixes
 
 - Active lenses: Jason, Kirkpatrick, Fisher, Mrode, Rose.
