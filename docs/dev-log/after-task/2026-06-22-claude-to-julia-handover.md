@@ -27,7 +27,10 @@ repos / one owner / single cross-repo DoD / keep review lenses), the toolchain
 precondition (`julia` on `PATH`), the precise current state (capability counts +
 bridge state + source-of-truth pointers), the stacked-PR map with merge order
 (#98 → G) and the closed-#101 note, the engine work list (Codex hand-off, slices
-13–18), the open follow-ups now owned by one lane, a rehydration start order, and
+13–18), the open follow-ups now owned by one lane, a rehydration start order, a
+unified mission-control & web-surfaces maintenance section (one merged dashboard
+spanning both lanes — replacing the R-only one — with the pkgdown and Documenter
+sites kept green and consistent; a current merged-widget snapshot produced), and
 the discipline to keep.
 
 ## 3a. Decisions and Rejected Alternatives

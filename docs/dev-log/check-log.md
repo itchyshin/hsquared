@@ -13,7 +13,10 @@ with private memory.
   `docs/dev-log/handover/2026-06-22-claude-to-julia-lane-consolidation-handover.md`
   (decision + sync-tax rationale, toolchain precondition `julia` on PATH,
   stacked-PR merge order #98→G + closed-#101 note, engine work list, open
-  follow-ups, rehydration start order, discipline to keep).
+  follow-ups, rehydration start order, discipline to keep; a unified
+  mission-control & web-surfaces maintenance section — one merged dashboard
+  spanning both lanes, pkgdown + Documenter kept green/consistent — plus a merged
+  widget snapshot).
 - Claim boundary: coordination/closing note only. No code, no capability/
   validation/public-claim change; references both repos, edits only the R repo.
 - Checks: `pkgdown::check_pkgdown()` → "No problems found"; after-task validator →

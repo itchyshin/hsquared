@@ -93,6 +93,30 @@ substitutable gate) · 15 **eigenbasis payload widening (unblocked by #99)** ·
   Optional: promote the full-unstructured `sommer` comparator from `data-raw` to a
   skip-guarded in-suite test.
 
+## Unified mission control & web surfaces
+
+With one owner over both packages, the status picture must be **merged**, not
+R-only. Two things to keep in lockstep:
+
+- **Two doc sites, both kept green and consistent.** `hsquared` publishes a
+  **pkgdown** site and `HSquared.jl` publishes a **Documenter** site (both deploy
+  to gh-pages; both CI green as of 2026-06-22). Treat them as one documentation
+  surface for one project — neither should claim ahead of the other (the same
+  covered / partial / planned story on both sites).
+- **One merged mission-control dashboard** spanning both lanes, replacing the
+  earlier R-only dashboard: the R capability-status counts (8 covered / 34
+  partial / 4 planned), the Julia `validation_status` counts (4 covered + 3
+  covered-external / 33 partial / 1 planned), the R↔Julia bridge state, the
+  capability areas (R surface ↔ Julia engine), and the unified critical path,
+  with links to both doc sites. A current snapshot was produced on 2026-06-22.
+
+Action for the consolidated lane: **maintain the single merged mission control**
+as the at-a-glance surface and **regenerate it each session** from the
+authoritative sources — `docs/design/capability-status.md` (R) and
+`HSquared.jl` `validation_status()` (Julia) — so it never drifts from the
+ledgers; and keep **both** the pkgdown and Documenter sites building green and
+telling the same story. This is now a standing maintenance item, not a one-off.
+
 ## How to start (rehydration)
 
 1. `git status --short --branch` in both repos; `gh pr list` / `gh run list`.
