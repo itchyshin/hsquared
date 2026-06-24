@@ -330,7 +330,7 @@ hs_validation_status_boundaries <- function() {
       "anchor plus a Bayesian MCMCglmm agreement probe. The MCMCglmm leg is",
       "not same-estimand REML parity. The engine `V4-MV-REML` is now covered at",
       "validation scale (one-owner consolidation, HSquared.jl#161) on a",
-      "substitutable gate, but this R public opt-in surface stays partial — it is",
+      "substitutable gate, but this R public opt-in surface stays partial \u2014 it is",
       "not the public default and still needs a broader/redeclared recovery gate",
       "and another",
       "independent same-estimand comparator (ASReml, BLUPF90/AIREMLF90,",
