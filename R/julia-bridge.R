@@ -337,7 +337,8 @@ hs_fit_julia_ai_reml_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
-  iterations = 100L
+  iterations = 100L,
+  em_warmup = 0L
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -352,9 +353,11 @@ hs_fit_julia_ai_reml_payload <- function(
 
   initial <- hs_validate_initial_variances(initial)
   iterations <- hs_validate_iterations(iterations)
+  em_warmup <- hs_validate_em_warmup(em_warmup)
   hs_julia_setup(project)
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_assign("hsq_em_warmup", em_warmup)
   JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
@@ -365,7 +368,9 @@ hs_fit_julia_ai_reml_payload <- function(
     "hsq_spec;",
     "initial = (sigma_a2 = hsq_initial_sigma_a2,",
     "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations);",
+    # em_warmup (engine V1-AI-REML): opt-in EM-REML warm-start before the AI step;
+    # default 0 = byte-identical to the pre-warm-start engine call.
+    "iterations = hsq_iterations, em_warmup = hsq_em_warmup);",
     "hsq_result = HSquared.result_payload(hsq_fit);",
     # Enrich with PEV/reliability only for older engines whose result_payload
     # does not already carry them; current engines emit them via :selinv, and
@@ -2388,6 +2393,16 @@ hs_validate_iterations <- function(iterations) {
     stop("`iterations` must be a single positive integer.", call. = FALSE)
   }
   iterations
+}
+
+# em_warmup: opt-in EM-REML warm-start iterations before the AI/Newton step (engine
+# `fit_ai_reml`, V1-AI-REML). 0 (default) = off / byte-identical to the pre-warm-start path.
+hs_validate_em_warmup <- function(em_warmup) {
+  em_warmup <- suppressWarnings(as.integer(em_warmup))
+  if (length(em_warmup) != 1L || is.na(em_warmup) || em_warmup < 0L) {
+    stop("`em_warmup` must be a single non-negative integer.", call. = FALSE)
+  }
+  em_warmup
 }
 
 hs_validate_julia_target <- function(target) {

@@ -35,7 +35,7 @@ the advanced opt-in bridge with explicit \code{target} control.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
-\code{iterations}, \code{target}, \code{variance_components}, and \code{marginal}.
+\code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, and \code{marginal}.
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
@@ -68,7 +68,13 @@ variance-component estimation claim for the public R interface.
 (\code{HSquared.fit_ai_reml()}) that the default \code{engine = "fit"} path uses,
 with explicit \code{initial} and \code{iterations} control. This is the validated
 v0.1 estimator for the univariate Gaussian animal model; the \code{engine = "fit"}
-default is the ordinary way to reach it.
+default is the ordinary way to reach it. \code{em_warmup} (a non-negative integer,
+default \code{0}) optionally runs that many EM-REML warm-start steps before the
+average-information iterations; it applies to this estimator on both the
+default \code{engine = "fit"} path and \code{target = "ai_reml"}. \code{em_warmup = 0} (the
+default) is byte-identical to the previous behaviour. A small positive value
+(e.g. \code{3}) can rescue convergence from poor starting variances; on an
+identified fit it converges to the same optimum.
 \code{target = "repeatability"} is an experimental, opt-in path for the
 repeatability (permanent-environment) model. It requires
 \code{animal(1 | id, pedigree = ped) + permanent(1 | id)} in the formula and

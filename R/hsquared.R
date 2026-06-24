@@ -151,7 +151,8 @@ hsquared <- function(
         "initial",
         c(sigma_a2 = 1, sigma_e2 = 1)
       ),
-      iterations = hs_engine_control_value(control, "iterations", 100L)
+      iterations = hs_engine_control_value(control, "iterations", 100L),
+      em_warmup = hs_engine_control_value(control, "em_warmup", 0L)
     ))
   }
 
@@ -375,7 +376,8 @@ hsquared <- function(
           control,
           "iterations",
           100L
-        )
+        ),
+        em_warmup = hs_engine_control_value(control, "em_warmup", 0L)
       ))
     }
 

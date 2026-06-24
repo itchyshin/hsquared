@@ -3,6 +3,31 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-06-24 R-twin parity: expose `em_warmup` through the bridge
+
+- Twin-parity for HSquared.jl engine slice A (#186): exposed the opt-in EM-REML
+  warm-start via `hs_control(engine_control = list(em_warmup = k))` → bridge →
+  `fit_ai_reml(...; em_warmup = k)`. New `hs_validate_em_warmup()` (allows 0 =
+  off/default); `em_warmup` threaded into `hs_fit_julia_ai_reml_payload()` and both
+  call sites (`engine = "fit"` and `target = "ai_reml"`); documented in `hs_control`.
+- Live (JuliaCall + local HSquared.jl `main` `95c82b1a`, `NOT_CRAN=true`):
+  bridge emits a well-formed `fit_ai_reml(...; em_warmup = 3)`; on the Mrode
+  supplied-variance fixture `em_warmup` 0 vs 3 reach the SAME REML optimum, VC
+  `(1.653473, 0.082870)`, max abs diff `5.3e-9`.
+- `devtools::check(document = FALSE, args = "--no-manual")`: **0 errors | 1 warning
+  | 1 note**. The warning is the PRE-EXISTING `R/validation-status.R` non-ASCII one
+  (not touched here); this slice adds no new non-ASCII to any `.R` — the only code
+  non-ASCII that trips the warning remains that untouched file (the three changed
+  `.R` sources have non-ASCII only in pre-existing comments, which `R CMD check`
+  exempts). The note is the spurious "unable to verify current time". No new
+  error/warning/note vs baseline.
+- `devtools::document()` regenerated `man/hs_control.Rd` only; four unrelated `.Rd`
+  files touched by roxygen2 version drift were reverted (surgical change).
+- Claim boundary: experimental opt-in bridge control; `em_warmup = 0` (default) is
+  byte-identical to the prior call; optimum-invariant on identified fits (the
+  bad-start *rescue* is an engine property validated in #186, not re-claimed here);
+  NO new estimand, NO `validation_status()` row, NO `covered` promotion.
+
 ## 2026-06-22 Claude → Julia lane consolidation handover
 
 - Active lenses: Ada, Shannon, Rose (review-lens).
