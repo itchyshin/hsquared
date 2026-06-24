@@ -23,7 +23,7 @@
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
-#'   `iterations`, `target`, `variance_components`, and `marginal`.
+#'   `iterations`, `em_warmup`, `target`, `variance_components`, and `marginal`.
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
@@ -57,7 +57,13 @@
 #'   (`HSquared.fit_ai_reml()`) that the default `engine = "fit"` path uses,
 #'   with explicit `initial` and `iterations` control. This is the validated
 #'   v0.1 estimator for the univariate Gaussian animal model; the `engine = "fit"`
-#'   default is the ordinary way to reach it.
+#'   default is the ordinary way to reach it. `em_warmup` (a non-negative integer,
+#'   default `0`) optionally runs that many EM-REML warm-start steps before the
+#'   average-information iterations; it applies to this estimator on both the
+#'   default `engine = "fit"` path and `target = "ai_reml"`. `em_warmup = 0` (the
+#'   default) is byte-identical to the previous behaviour. A small positive value
+#'   (e.g. `3`) can rescue convergence from poor starting variances; on an
+#'   identified fit it converges to the same optimum.
 #'   `target = "repeatability"` is an experimental, opt-in path for the
 #'   repeatability (permanent-environment) model. It requires
 #'   `animal(1 | id, pedigree = ped) + permanent(1 | id)` in the formula and

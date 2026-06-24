@@ -460,6 +460,23 @@ test_that("Julia bridge validates iterations control", {
   )
 })
 
+test_that("Julia bridge validates em_warmup control", {
+  # 0 (off / default) is valid, unlike iterations which must be positive.
+  expect_equal(hsquared:::hs_validate_em_warmup(0), 0L)
+  expect_equal(hsquared:::hs_validate_em_warmup(3), 3L)
+  expect_equal(hsquared:::hs_validate_em_warmup(5L), 5L)
+  expect_error(
+    hsquared:::hs_validate_em_warmup(-1),
+    "must be a single non-negative integer",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_em_warmup(c(1, 2)),
+    "must be a single non-negative integer",
+    fixed = TRUE
+  )
+})
+
 test_that("sparse REML payload requires an internal bridge payload", {
   expect_error(
     hsquared:::hs_fit_julia_sparse_reml_payload(list()),
@@ -725,6 +742,48 @@ test_that("hsquared can use the opt-in experimental AI-REML estimator bridge", {
     diag$value[diag$metric == "variance_components_source"],
     "estimated_ai_reml"
   )
+})
+
+test_that("em_warmup forwards through the bridge and is optimum-invariant", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live em_warmup bridge validation."
+  )
+
+  fixture <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
+  fit_one <- function(em) {
+    hsquared(
+      fixture$formula,
+      data = fixture$data,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "ai_reml",
+          initial = c(sigma_a2 = 1, sigma_e2 = 1),
+          iterations = 200L,
+          em_warmup = em
+        )
+      )
+    )
+  }
+
+  # Forwarding: a non-zero `em_warmup` must reach the engine as a well-formed
+  # `fit_ai_reml(...; em_warmup = k)` call. A malformed/mis-named kwarg would make
+  # the Julia call error, so a successful fit here is the forwarding check.
+  warm_fit <- fit_one(3L)
+  expect_s3_class(warm_fit, "hsquared_fit")
+  expect_equal(warm_fit$spec$target, "ai_reml")
+
+  # Optimum-invariance (matches the engine A finding, V1-AI-REML): the EM warm-start
+  # only changes the AI iterations' starting point, so on this identified fixture
+  # it reaches the SAME REML optimum as em_warmup = 0. NOTE: the bad-start
+  # convergence *rescue* is an engine property validated in HSquared.jl, not here.
+  base <- variance_components(fit_one(0L))$estimate
+  warm <- variance_components(warm_fit)$estimate
+  expect_equal(warm, base, tolerance = 1e-6)
 })
 
 test_that("the default engine fits the v0.1 contract via ai_reml", {
