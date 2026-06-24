@@ -117,7 +117,7 @@ the advanced opt-in bridge with explicit <code>target</code> control.</p></dd>
 <dt id="arg-engine-control">engine_control<a class="anchor" aria-label="anchor" href="#arg-engine-control"></a></dt>
 <dd><p>A named list for engine-specific controls. The current
 experimental Julia bridge recognizes <code>julia_project</code>, <code>initial</code>,
-<code>iterations</code>, <code>target</code>, <code>variance_components</code>, and <code>marginal</code>.
+<code>iterations</code>, <code>em_warmup</code>, <code>target</code>, <code>variance_components</code>, and <code>marginal</code>.
 <code>target</code> selects which Julia estimator the <code>engine = "julia"</code> bridge runs;
 it has no effect under the default <code>engine = "fit"</code> path. The supported
 targets are <code>"fit_animal_model"</code>, <code>"ai_reml"</code>, <code>"sparse_reml"</code>,
@@ -150,7 +150,13 @@ variance-component estimation claim for the public R interface.
 (<code>HSquared.fit_ai_reml()</code>) that the default <code>engine = "fit"</code> path uses,
 with explicit <code>initial</code> and <code>iterations</code> control. This is the validated
 v0.1 estimator for the univariate Gaussian animal model; the <code>engine = "fit"</code>
-default is the ordinary way to reach it.
+default is the ordinary way to reach it. <code>em_warmup</code> (a non-negative integer,
+default <code>0</code>) optionally runs that many EM-REML warm-start steps before the
+average-information iterations; it applies to this estimator on both the
+default <code>engine = "fit"</code> path and <code>target = "ai_reml"</code>. <code>em_warmup = 0</code> (the
+default) is byte-identical to the previous behaviour. A small positive value
+(e.g. <code>3</code>) can rescue convergence from poor starting variances; on an
+identified fit it converges to the same optimum.
 <code>target = "repeatability"</code> is an experimental, opt-in path for the
 repeatability (permanent-environment) model. It requires
 <code>animal(1 | id, pedigree = ped) + permanent(1 | id)</code> in the formula and
