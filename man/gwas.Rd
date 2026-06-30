@@ -88,11 +88,9 @@ control is validated at validation and production scale (the per-dataset add-one
 REBUILD gate; the anti-conservative \code{(1-alpha)} quantile rule is NOT used). The
 result carries a \code{calibration} attribute (method \code{permutation_addone},
 \code{empirical_type1 = NA} because the per-dataset rule's validity is by construction
-\itemize{
-\item externally validated, named in \code{validation_reference}). SCOPE: fixed-effect /
+and externally validated, named in \code{validation_reference}). SCOPE: fixed-effect /
 intercept-only; the relatedness-corrected mixed-model genome-wide null is NOT yet
 calibrated, so \code{genome_wide = TRUE} is rejected for \code{method = "mixed"}/\code{"loco"}.
-}
 
 A leave-one-group-out (LOCO) scan is available with \code{method = "loco"} and a
 \code{marker_groups} argument: when a marker is tested, the genomic relationship

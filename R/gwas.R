@@ -23,7 +23,7 @@
 #' REBUILD gate; the anti-conservative `(1-alpha)` quantile rule is NOT used). The
 #' result carries a `calibration` attribute (method `permutation_addone`,
 #' `empirical_type1 = NA` because the per-dataset rule's validity is by construction
-#' + externally validated, named in `validation_reference`). SCOPE: fixed-effect /
+#' and externally validated, named in `validation_reference`). SCOPE: fixed-effect /
 #' intercept-only; the relatedness-corrected mixed-model genome-wide null is NOT yet
 #' calibrated, so `genome_wide = TRUE` is rejected for `method = "mixed"`/`"loco"`.
 #'
