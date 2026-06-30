@@ -4,6 +4,36 @@
 
 ### New features
 
+- **Genome-wide significance calibration for
+  [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
+  (`genome_wide = TRUE`).**
+  `gwas(fit, markers, method = "single", genome_wide = TRUE, n_permutations =, seed =)`
+  adds a genome-wide-calibrated `genome_wide_p` column, surfacing the
+  Julia-owned `HSquared.genome_wide_marker_scan()`. For each analysis
+  the permutation null is **rebuilt from the analysed phenotype** (`y`
+  permuted conditional on `X`, re-scanned `n_permutations` times) and
+  the genome-wide p is the exact add-one permutation p
+  `(1 + #{null max >= observed})/(n_permutations + 1)` (significant when
+  `genome_wide_p <= 0.05`). This is the **exact per-dataset rule** whose
+  family-wise type-I control is validated at validation and production
+  scale on HSquared.jl (the per-dataset add-one REBUILD gate, type-I
+  0.0504/0.0542 at alpha = 0.05); the anti-conservative `(1-alpha)`
+  quantile threshold (HSquared.jl
+  [\#202](https://github.com/itchyshin/hsquared/issues/202)) is **not**
+  used, and the mildly anti-conservative fixed-null-reuse simulation
+  shortcut is **not** used. The result carries a `calibration` attribute
+  (method `permutation_addone`; `empirical_type1 = NA` because the
+  per-dataset rule’s validity is by construction + externally validated,
+  named in `validation_reference`; the chi-square genome-wide threshold
+  is carried on the LOD scale). **SCOPE: fixed-effect / intercept-only
+  only** – `genome_wide = TRUE` requires `method = "single"`; the
+  relatedness-corrected mixed-model / LOCO genome-wide null is a
+  different, not-yet-validated calibration and is rejected. The nominal
+  `p_value`/`bonferroni_p`/`bh_qvalue` columns remain NOT genome-wide
+  calibrated ([`print()`](https://rdrr.io/r/base/print.html) now scopes
+  the caveat to those columns). Verified live element-wise against the
+  engine. Experimental; the covered-claim promotion is twin-gated.
+
 - **ggplot2 visualization layer
   ([`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)).**
   New
@@ -45,12 +75,14 @@
   `HSquared.jl` (`13-plotting-layer.md`). `ggplot2` is now a dependency;
   the base-R [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
   method is unchanged.
+
 - The Julia bridge now attaches the available engine `*_plot_data`
   payloads at fit time for standard animal-model, multivariate, and
   random-regression fits.
   [`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
   still recomputes when a payload is absent or when a random-regression
   user supplies a custom grid.
+
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   now lists the ratified planned missing-data grammar:
   `missing = miss_control(response = "include")` for future
@@ -59,6 +91,7 @@
   missing predictor. This is a grammar contract only; `mi()`,
   `miss_control()`, `impute_model()`, and `imputed()` are not exported
   and no missing-data fitting path is active.
+
 - [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   and
   [`lod_scores()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
@@ -67,6 +100,7 @@
   table and marker-level LOD scores. Fit-level GWAS/QTL/eQTL tables, map
   joins, and calibrated thresholds remain planned
   ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
+
 - Mirrored the Julia-owned genomic GBLUP/SNP-BLUP target fixture from
   HSquared.jl PR
   [\#140](https://github.com/itchyshin/hsquared/issues/140) (`008ea4d`)
@@ -77,6 +111,7 @@
   future external comparator runs, but no
   AGHmatrix/rrBLUP/sommer/JWAS/BGLR/BLUPF90 comparator evidence is
   claimed and the genomic/SNP-BLUP rows remain partial.
+
 - Mirrored the Julia-owned marker-scan result payload fixture from
   HSquared.jl PR
   [\#142](https://github.com/itchyshin/hsquared/issues/142) (`f9fbbb1`)
@@ -85,6 +120,7 @@
   payload-normalization parity without live Julia, but it does not
   activate calibrated thresholds, map-annotated QTL/eQTL tables,
   external comparator evidence, or a covered claim.
+
 - Reserved
   [`metafounder_effects()`](https://itchyshin.github.io/hsquared/reference/metafounder_effects.md)
   as an exported, error-only extractor so the future metafounder result
@@ -95,6 +131,7 @@
   [`metafounder_groups()`](https://itchyshin.github.io/hsquared/reference/metafounder_groups.md)
   remain provenance-only extractors for supplied `Gamma` and group
   assignments.
+
 - Added experimental live R bridges for supplied-`Gamma` metafounder
   relationships.
   `metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`
@@ -115,6 +152,7 @@
   labels/dimensions. No `Gamma` estimation, returned
   metafounder-specific effects, BLUPF90 comparator evidence,
   production-scale claim, or covered support is claimed.
+
 - Reconciled the PEV/reliability standard-field bridge status. Default,
   sparse, and explicit AI-REML Julia result-payload paths consume engine
   `prediction_error_variance` and `reliability` fields when present
@@ -125,6 +163,7 @@
   multivariate per-trait PEV/reliability, production sparse strategy,
   and comparator validation
   ([\#21](https://github.com/itchyshin/hsquared/issues/21)/#43).
+
 - **Experimental random-regression (reaction-norm) model.** A new opt-in
   target surfaces the Julia-owned
   `HSquared.fit_random_regression_reml()`:
@@ -162,6 +201,7 @@
   curves). Multivariate random regression and combining `rr()` with a
   second random effect are planned, not implemented
   ([\#54](https://github.com/itchyshin/hsquared/issues/54)).
+
 - **Experimental `gwas(fit, markers)` post-fit marker scan.** Runs a
   dense, supplied-variance, **relatedness-corrected** mixed-model (GLS)
   Wald marker scan on a fitted Gaussian animal model, reusing the fit’s
@@ -201,6 +241,7 @@
   [`gwas_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`qtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)/[`eqtl_table()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)
   extractors stay reserved for the planned map-annotated API
   ([\#23](https://github.com/itchyshin/hsquared/issues/23)).
+
 - **Experimental, opt-in single-step H⁻¹ *construction*.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now accepts `single_step(1 | id, pedigree = ped, markers = M)` and
@@ -228,12 +269,14 @@
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   shorthand fitting identically to the explicit call. Not the default;
   promotion past `partial` is twin-gated (`docs/design/25`).
+
 - [`formula_status()`](https://itchyshin.github.io/hsquared/reference/formula_status.md)
   now reports the `single_step(1 | id)`
   [`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
   bundle shorthand as its own parsed opt-in row, separate from explicit
   `single_step(1 | id, pedigree = ped, markers = M)` and supplied-`Hinv`
   single-step forms.
+
 - **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008)
   for opt-in multivariate fits:
   [`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
@@ -258,6 +301,7 @@
   live parity test; experimental, REML-only, no standard errors,
   carrying the multivariate fit’s `partial` status
   ([\#55](https://github.com/itchyshin/hsquared/issues/55)).
+
 - **Experimental, opt-in non-Gaussian (GLMM) animal model.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now accepts `family = poisson()` and `family = binomial()` (binary
@@ -289,6 +333,7 @@
   comparator, and Bernoulli `σ²a` is prone to a search-bound boundary at
   small scale. Not the default
   ([\#44](https://github.com/itchyshin/hsquared/issues/44)).
+
 - **Experimental:**
   [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
   extracts a large-sample confidence interval for `h²` from the default
@@ -298,6 +343,7 @@
   coverage-calibrated and is unreliable at small `n`. It is reported as
   a point estimate plus bounds, not a validated capability
   ([\#11](https://github.com/itchyshin/hsquared/issues/11)).
+
 - **Experimental:**
   [`variance_component_standard_errors()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)
   and
@@ -307,6 +353,7 @@
   provides them. Same `V1-HERIT-CI` (`partial`) caveats: asymptotic,
   REML-only, omitted near a variance-component boundary (ill-conditioned
   AI matrix), not coverage-calibrated, not a validated capability.
+
 - **Experimental:**
   [`repeatability_interval()`](https://itchyshin.github.io/hsquared/reference/repeatability_interval.md)
   returns a logit delta-method confidence interval for the repeatability
@@ -317,23 +364,27 @@
   external comparator, no `h²` interval, and no deep-pedigree
   validation; reported as a point estimate plus bounds only
   ([\#12](https://github.com/itchyshin/hsquared/issues/12)).
+
 - [`summary()`](https://rdrr.io/r/base/summary.html)/[`print()`](https://rdrr.io/r/base/print.html)
   for `hsquared_fit` now display the experimental heritability
   confidence interval, variance-component and heritability standard
   errors, and repeatability interval when a fit carries them, clearly
   labelled experimental and asymptotic
   ([\#28](https://github.com/itchyshin/hsquared/issues/28)).
+
 - New “Benchmark: hsquared vs sommer and pedigreemm” article documents
   the v0.1 Gaussian animal-model fit agreeing with `sommer` and the
   published gryphon anchor within the signed-off band, with reproducing
   code and the `pedigreemm` one-sided log-likelihood floor
   ([\#31](https://github.com/itchyshin/hsquared/issues/31)).
+
 - Added a base-graphics
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method for
   `hsquared_fit`: `type = "variance"` plots the variance components
   (with experimental `+/- 1.96 SE` whiskers when present) and
   `type = "residuals"` plots residuals against fitted values
   ([\#30](https://github.com/itchyshin/hsquared/issues/30)).
+
 - **Experimental:**
   [`covariance_standard_errors()`](https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.md)
   returns delta-method standard errors for the multivariate
@@ -346,17 +397,20 @@
   detectable bias** (`|bias| ≤ 2·MCSE` for all six covariance
   parameters) — reported, not yet a validated capability
   ([\#26](https://github.com/itchyshin/hsquared/issues/26)).
+
 - New “A worked animal-model analysis (gryphon)” article walks one
   univariate animal model end to end — fit, heritability with
   experimental CI/SE, breeding values and accuracy, and the diagnostic
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) — on the
   gryphon teaching dataset
   ([\#29](https://github.com/itchyshin/hsquared/issues/29)).
+
 - Added a second published external-canon anchor: a CI-runnable,
   Julia-free test pinning the reference Henderson solver to the
   published Mrode (2014) Example 3.2 **sire-model** solutions (p.48),
   extending the canon to a second model class
   ([\#32](https://github.com/itchyshin/hsquared/issues/32)).
+
 - **Experimental:** the opt-in multivariate target now accepts
   `engine_control = list(genetic_structure = "diagonal")` (a diagonal
   genetic covariance — per-trait genetic variances with zero genetic
@@ -371,6 +425,7 @@
   χ². It mirrors `V4-MV-REML` (`partial`): asymptotic, REML-only, not a
   validated test
   ([\#47](https://github.com/itchyshin/hsquared/issues/47)).
+
 - **Validation evidence (multivariate, t = 2).** Two reproducible
   studies plus one Bayesian agreement probe now back the experimental
   multivariate target (all `.Rbuildignore`d, not part of the build).

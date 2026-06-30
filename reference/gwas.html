@@ -74,6 +74,9 @@ experimental, validation-scale screen that surfaces the Julia-owned
 <span>  marker_ids <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mixed"</span>, <span class="st">"single"</span>, <span class="st">"loco"</span><span class="op">)</span>,</span>
 <span>  marker_groups <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  genome_wide <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  n_permutations <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -117,6 +120,22 @@ Markers in a group are tested with a genomic relationship built from all
 <strong>other</strong> groups. Needs at least two distinct, non-missing labels.</p></dd>
 
 
+<dt id="arg-genome-wide">genome_wide<a class="anchor" aria-label="anchor" href="#arg-genome-wide"></a></dt>
+<dd><p>Logical; if <code>TRUE</code> (requires <code>method = "single"</code>), add a
+genome-wide-calibrated <code>genome_wide_p</code> column via the exact per-dataset add-one
+permutation rule (see Details). Defaults to <code>FALSE</code> (nominal p-values only).</p></dd>
+
+
+<dt id="arg-n-permutations">n_permutations<a class="anchor" aria-label="anchor" href="#arg-n-permutations"></a></dt>
+<dd><p>Number of permutations for the genome-wide null when
+<code>genome_wide = TRUE</code> (default 1000). The add-one floor is <code>1/(n_permutations+1)</code>.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Integer RNG seed for the genome-wide permutation null (default 1), so
+the <code>genome_wide_p</code> column is reproducible for a given Julia version.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Unused.</p></dd>
 
@@ -124,21 +143,34 @@ Markers in a group are tested with a genomic relationship built from all
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An <code>hs_gwas</code> data frame with one row per marker: <code>marker</code>, <code>effect</code>,
-<code>se</code>, <code>z</code>, <code>chisq</code>, <code>p_value</code>, <code>bonferroni_p</code>, <code>bh_qvalue</code>, <code>lod</code>, carrying a
-<code>scan_method</code> attribute. Its <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method restates the
-uncalibrated-significance caveat (and, for <code>method = "single"</code>, the absence of
-any relatedness correction; for <code>method = "loco"</code>, the genomic-vs-pedigree
-scale mismatch).</p>
+<code>se</code>, <code>z</code>, <code>chisq</code>, <code>p_value</code>, <code>bonferroni_p</code>, <code>bh_qvalue</code>, <code>lod</code> (and, when
+<code>genome_wide = TRUE</code>, <code>genome_wide_p</code>), carrying a <code>scan_method</code> attribute (and,
+when <code>genome_wide = TRUE</code>, a <code>calibration</code> attribute). Its <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method
+restates the uncalibrated-significance caveat for the nominal columns (and, for
+<code>method = "single"</code>, the absence of any relatedness correction; for
+<code>method = "loco"</code>, the genomic-vs-pedigree scale mismatch).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><strong>The p-values are NOT genome-wide calibrated.</strong> They are marker-by-marker
-Wald (nominal) p-values plus deterministic Bonferroni and Benjamini-Hochberg
-adjustments over the <em>supplied</em> marker set only. There is no realistic-LD /
-study-design calibration activated in R, no permutation-backed threshold, and
-no external comparator. The Julia lane has a fixed-panel calibration smoke
-harness (HSquared.jl PR #134), but these R results remain uncalibrated. Do not
-report genome-wide significance from these values.</p>
+    <p><strong>The default <code>p_value</code>/<code>bonferroni_p</code>/<code>bh_qvalue</code> columns are NOT genome-wide
+calibrated.</strong> They are marker-by-marker Wald (nominal) p-values plus
+deterministic Bonferroni and Benjamini-Hochberg adjustments over the <em>supplied</em>
+marker set only. Do not report genome-wide significance from those columns.</p>
+<p><strong>Genome-wide calibration</strong> is available via <code>genome_wide = TRUE</code> (which requires
+<code>method = "single"</code>, the validated fixed-effect scope). It adds a <code>genome_wide_p</code>
+column: the exact per-dataset add-one permutation p-value (the marker is declared
+genome-wide significant when <code>genome_wide_p &lt;= alpha</code>, <code>alpha = 0.05</code>). For each
+analysis the permutation null is rebuilt from the analysed phenotype (<code>y</code>
+permuted conditional on <code>X</code>, re-scanned <code>n_permutations</code> times), and the
+genome-wide p is <code>(1 + #{null max &gt;= observed})/(n_permutations + 1)</code>. This is the
+HSquared.jl <code>genome_wide_marker_scan</code> engine call, whose family-wise type-I
+control is validated at validation and production scale (the per-dataset add-one
+REBUILD gate; the anti-conservative <code>(1-alpha)</code> quantile rule is NOT used). The
+result carries a <code>calibration</code> attribute (method <code>permutation_addone</code>,
+<code>empirical_type1 = NA</code> because the per-dataset rule's validity is by construction
+and externally validated, named in <code>validation_reference</code>). SCOPE: fixed-effect /
+intercept-only; the relatedness-corrected mixed-model genome-wide null is NOT yet
+calibrated, so <code>genome_wide = TRUE</code> is rejected for <code>method = "mixed"</code>/<code>"loco"</code>.</p>
 <p>A leave-one-group-out (LOCO) scan is available with <code>method = "loco"</code> and a
 <code>marker_groups</code> argument: when a marker is tested, the genomic relationship
 correction is built from the markers <strong>not</strong> in that marker's group (e.g. its
