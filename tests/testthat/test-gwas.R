@@ -526,3 +526,128 @@ test_that("loco gwas() uses ANIMAL-level precisions under a non-square Z", {
     )
   )
 })
+
+test_that("genome-wide calibration metadata: permutation_addone allows NA empirical_type1 with a validation_reference", {
+  base <- list(
+    calibration_method = "permutation_addone",
+    threshold_scale = "lod",
+    threshold = 4.5,
+    alpha = 0.05,
+    empirical_type1 = NA_real_,
+    marker_panel_mode = "real_panel",
+    scan_method = "single",
+    n_replicates = 1000L,
+    seed = 42L,
+    engine = "HSquared.genome_wide_marker_scan",
+    package_version = "0.0.0.9000",
+    validation_reference = "HSquared.jl REBUILD gate: type-I 0.0504/0.0542 at alpha=0.05"
+  )
+  cal <- hsquared:::hs_validate_gwas_calibration_metadata(base, scan_method = "single")
+  expect_true(is.na(cal$empirical_type1))
+  expect_identical(cal$calibration_method, "permutation_addone")
+  expect_true(nzchar(cal$validation_reference))
+
+  # missing validation_reference -> rejected (the per-dataset rule MUST cite its evidence)
+  bad <- base
+  bad$validation_reference <- NULL
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(bad, scan_method = "single"),
+    "validation_reference"
+  )
+
+  # a non-permutation method still requires a numeric empirical_type1 in [0, 1]
+  fixed <- base
+  fixed$calibration_method <- "fixed_panel_simulation"
+  fixed$empirical_type1 <- NA_real_
+  expect_error(
+    hsquared:::hs_validate_gwas_calibration_metadata(fixed, scan_method = "single"),
+    "empirical_type1"
+  )
+})
+
+test_that("gwas(genome_wide = TRUE) is rejected for mixed/loco (validated for single only)", {
+  fit <- structure(list(), class = "hsquared_fit")
+  # the method guard fires before any fit validation / bridge call
+  expect_error(
+    gwas(fit, matrix(0, 2, 2), method = "mixed", genome_wide = TRUE),
+    "genome_wide.*single"
+  )
+  expect_error(
+    gwas(fit, matrix(0, 2, 2), method = "loco", genome_wide = TRUE),
+    "genome_wide.*single"
+  )
+})
+
+test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
+  )
+
+  set.seed(11)
+  ped <- data.frame(
+    id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
+    sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),
+    dam = c(NA, NA, NA, NA, rep(c("d1", "d2"), 8))
+  )
+  n <- nrow(ped)
+  bv <- stats::setNames(numeric(n), ped$id)
+  for (i in seq_len(n)) {
+    s <- ped$sire[i]
+    d <- ped$dam[i]
+    bv[i] <- if (is.na(s)) {
+      stats::rnorm(1)
+    } else {
+      0.5 * (bv[[s]] + bv[[d]]) + stats::rnorm(1, sd = sqrt(0.5))
+    }
+  }
+  x <- stats::rnorm(n)
+  M <- matrix(sample(0:2, n * 4L, replace = TRUE), n, 4L)
+  # plant a causal effect at marker 2 so a genome-wide hit exists
+  dat <- data.frame(
+    y = 1 + 0.5 * x + bv + 0.9 * scale(M[, 2], scale = FALSE)[, 1] + stats::rnorm(n),
+    id = ped$id,
+    x = x
+  )
+  fit <- hsquared(
+    y ~ x + animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  g <- gwas(
+    fit, M,
+    marker_ids = paste0("m", 1:4),
+    method = "single",
+    genome_wide = TRUE,
+    n_permutations = 300L,
+    seed = 42L
+  )
+
+  expect_s3_class(g, "hs_gwas")
+  expect_true("genome_wide_p" %in% names(g))
+  expect_true(all(g$genome_wide_p > 0 & g$genome_wide_p <= 1))
+  # genome-wide p is the add-one p of each chisq against the same null:
+  # monotone non-increasing in chisq, and never below the floor 1/(nperm+1)
+  expect_true(min(g$genome_wide_p) >= 1 / (300 + 1) - 1e-9)
+  ord <- order(g$chisq)
+  expect_false(is.unsorted(rev(g$genome_wide_p[ord])))
+  # the planted causal (top chisq) is the most significant marker
+  expect_equal(which.max(g$chisq), which.min(g$genome_wide_p))
+
+  cal <- attr(g, "calibration")
+  expect_identical(cal$calibration_method, "permutation_addone")
+  expect_true(is.na(cal$empirical_type1))
+  expect_identical(cal$threshold_scale, "lod")
+  expect_true(nzchar(cal$validation_reference))
+  expect_identical(cal$scan_method, "single")
+  expect_identical(as.integer(cal$n_replicates), 300L)
+
+  # element-wise parity with a direct engine call (same seed) left in Julia state
+  direct_gw <- JuliaCall::julia_eval(
+    "collect(Float64, HSquared.genome_wide_marker_scan(hsq_y, hsq_X, hsq_markers; n_permutations = hsq_nperm, alpha = hsq_alpha, sigma_e2 = hsq_sigma_e2, marker_ids = hsq_marker_ids, rng = Random.MersenneTwister(hsq_seed)).genome_wide_p_values)"
+  )
+  expect_equal(g$genome_wide_p, direct_gw, tolerance = 1e-10)
+})
