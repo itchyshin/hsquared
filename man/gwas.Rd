@@ -10,6 +10,9 @@ gwas(
   marker_ids = NULL,
   method = c("mixed", "single", "loco"),
   marker_groups = NULL,
+  genome_wide = FALSE,
+  n_permutations = 1000L,
+  seed = 1L,
   ...
 )
 }
@@ -39,15 +42,26 @@ with one group label per marker column (for example a chromosome label).
 Markers in a group are tested with a genomic relationship built from all
 \strong{other} groups. Needs at least two distinct, non-missing labels.}
 
+\item{genome_wide}{Logical; if \code{TRUE} (requires \code{method = "single"}), add a
+genome-wide-calibrated \code{genome_wide_p} column via the exact per-dataset add-one
+permutation rule (see Details). Defaults to \code{FALSE} (nominal p-values only).}
+
+\item{n_permutations}{Number of permutations for the genome-wide null when
+\code{genome_wide = TRUE} (default 1000). The add-one floor is \code{1/(n_permutations+1)}.}
+
+\item{seed}{Integer RNG seed for the genome-wide permutation null (default 1), so
+the \code{genome_wide_p} column is reproducible for a given Julia version.}
+
 \item{...}{Unused.}
 }
 \value{
 An \code{hs_gwas} data frame with one row per marker: \code{marker}, \code{effect},
-\code{se}, \code{z}, \code{chisq}, \code{p_value}, \code{bonferroni_p}, \code{bh_qvalue}, \code{lod}, carrying a
-\code{scan_method} attribute. Its \code{print()} method restates the
-uncalibrated-significance caveat (and, for \code{method = "single"}, the absence of
-any relatedness correction; for \code{method = "loco"}, the genomic-vs-pedigree
-scale mismatch).
+\code{se}, \code{z}, \code{chisq}, \code{p_value}, \code{bonferroni_p}, \code{bh_qvalue}, \code{lod} (and, when
+\code{genome_wide = TRUE}, \code{genome_wide_p}), carrying a \code{scan_method} attribute (and,
+when \code{genome_wide = TRUE}, a \code{calibration} attribute). Its \code{print()} method
+restates the uncalibrated-significance caveat for the nominal columns (and, for
+\code{method = "single"}, the absence of any relatedness correction; for
+\code{method = "loco"}, the genomic-vs-pedigree scale mismatch).
 }
 \description{
 \code{gwas()} runs a dense, supplied-variance, relatedness-corrected mixed-model
@@ -57,13 +71,26 @@ experimental, validation-scale screen that surfaces the Julia-owned
 \code{HSquared.mixed_model_marker_scan()}.
 }
 \details{
-\strong{The p-values are NOT genome-wide calibrated.} They are marker-by-marker
-Wald (nominal) p-values plus deterministic Bonferroni and Benjamini-Hochberg
-adjustments over the \emph{supplied} marker set only. There is no realistic-LD /
-study-design calibration activated in R, no permutation-backed threshold, and
-no external comparator. The Julia lane has a fixed-panel calibration smoke
-harness (HSquared.jl PR #134), but these R results remain uncalibrated. Do not
-report genome-wide significance from these values.
+\strong{The default \code{p_value}/\code{bonferroni_p}/\code{bh_qvalue} columns are NOT genome-wide
+calibrated.} They are marker-by-marker Wald (nominal) p-values plus
+deterministic Bonferroni and Benjamini-Hochberg adjustments over the \emph{supplied}
+marker set only. Do not report genome-wide significance from those columns.
+
+\strong{Genome-wide calibration} is available via \code{genome_wide = TRUE} (which requires
+\code{method = "single"}, the validated fixed-effect scope). It adds a \code{genome_wide_p}
+column: the exact per-dataset add-one permutation p-value (the marker is declared
+genome-wide significant when \code{genome_wide_p <= alpha}, \code{alpha = 0.05}). For each
+analysis the permutation null is rebuilt from the analysed phenotype (\code{y}
+permuted conditional on \code{X}, re-scanned \code{n_permutations} times), and the
+genome-wide p is \verb{(1 + #\{null max >= observed\})/(n_permutations + 1)}. This is the
+HSquared.jl \code{genome_wide_marker_scan} engine call, whose family-wise type-I
+control is validated at validation and production scale (the per-dataset add-one
+REBUILD gate; the anti-conservative \code{(1-alpha)} quantile rule is NOT used). The
+result carries a \code{calibration} attribute (method \code{permutation_addone},
+\code{empirical_type1 = NA} because the per-dataset rule's validity is by construction
+and externally validated, named in \code{validation_reference}). SCOPE: fixed-effect /
+intercept-only; the relatedness-corrected mixed-model genome-wide null is NOT yet
+calibrated, so \code{genome_wide = TRUE} is rejected for \code{method = "mixed"}/\code{"loco"}.
 
 A leave-one-group-out (LOCO) scan is available with \code{method = "loco"} and a
 \code{marker_groups} argument: when a marker is tested, the genomic relationship
