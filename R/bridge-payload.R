@@ -69,8 +69,76 @@ hs_build_bridge_payload <- function(spec) {
   # user-supplied `at =` covariate value on the original scale.
   rr <- animal$random_regression
 
+  # Payload-v2: an ordered list of random-effect blocks. The existing top-level
+  # Z / Z2 / effect2 fields are preserved byte-for-byte (back-compat alias §4 of
+  # the frozen schema 21-payload-v2-multiblock-schema.md). The `random_effects`
+  # list is ADDITIVE; the v0.1 dispatch in julia-bridge.R is unchanged.
+  pedigree_rows <- list(
+    id             = pedigree$data$id,
+    sire           = pedigree$data$sire,
+    dam            = pedigree$data$dam,
+    sire_index     = pedigree$parent_index$sire,
+    dam_index      = pedigree$parent_index$dam,
+    original_order = pedigree$original_order
+  )
+  block1 <- list(
+    name          = "animal",
+    type          = "pedigree",
+    Z             = Z,
+    relmat_inverse = NULL,
+    relmat_status = "build_in_julia",
+    pedigree      = pedigree_rows,
+    ids           = ids
+  )
+  random_effects <- if (is.null(effect2)) {
+    # v0.1: single pedigree block only
+    list(block1)
+  } else {
+    second_type <- effect2$relationship
+    # `second$type` encodes "common_env", "maternal_genetic" (from model-spec.R)
+    block2_name <- switch(
+      effect2$type,
+      common_env      = "common_env",
+      maternal_genetic = "maternal",
+      effect2$type   # fallback: preserve the raw type
+    )
+    block2_type <- if (identical(second_type, "identity")) "iid" else "pedigree"
+    block2 <- list(
+      name           = block2_name,
+      type           = block2_type,
+      Z              = Z2,
+      relmat_inverse = NULL,
+      relmat_status  = if (identical(second_type, "identity")) {
+        "identity"
+      } else {
+        "build_in_julia"
+      },
+      pedigree       = if (identical(block2_type, "pedigree")) pedigree_rows else NULL,
+      ids            = effect2$levels
+    )
+    list(block1, block2)
+  }
+  # `permanent` shares the animal Z and has identity relationship; it is handled
+  # by a separate bridge dispatch (fit_repeatability_reml uses Z directly, not Z2).
+  # Detect it via spec$random$permanent and append a third block if present.
+  permanent <- spec$random$permanent
+  if (!is.null(permanent)) {
+    perm_ids <- unique(as.character(permanent$values))
+    block_perm <- list(
+      name           = "permanent",
+      type           = "iid",
+      Z              = Z,
+      relmat_inverse = NULL,
+      relmat_status  = "identity",
+      pedigree       = NULL,
+      ids            = perm_ids
+    )
+    random_effects <- c(random_effects, list(block_perm))
+  }
+
   structure(
     list(
+      payload_version = 2L,
       y = if (isTRUE(spec$response$multivariate)) {
         NULL
       } else {
@@ -85,6 +153,7 @@ hs_build_bridge_payload <- function(spec) {
       Z = Z,
       Z2 = Z2,
       effect2 = effect2,
+      random_effects = random_effects,
       random_regression = rr,
       Ainv = NULL,
       group_of = if (is_metafounder) animal$group_of else NULL,
