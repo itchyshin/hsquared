@@ -42,6 +42,8 @@ navbar:
           href: articles/validation-evidence.html
         - text: "Benchmark: sommer & pedigreemm"
           href: articles/benchmark-comparators.html
+        - text: "Two-effect model: sommer comparator"
+          href: articles/two-effect-comparator.html
         - text: Formula grammar roadmap
           href: articles/formula-grammar.html
         - text: Genomics and GPU roadmap
