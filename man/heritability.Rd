@@ -18,3 +18,13 @@ Heritability results for \code{hsquared_fit} objects.
 \code{heritability()} is part of the planned v0.1 fitted-object contract. It
 works for \code{hsquared_fit} objects that contain a Julia result.
 }
+\details{
+Falconer fence for the opt-in two-effect model (\code{target = "two_effect"}):
+the reported number is the \strong{narrow-sense direct heritability}
+\code{h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)} \emph{within that model} (the
+additive-genetic variance is divided by the total phenotypic variance,
+which now includes the second component \code{sigma_2}). The second component's
+variance ratio (common-environment \code{c2} or maternal \code{m2}) is \strong{not} a
+heritability and is returned separately by \code{\link[=common_env_proportion]{common_env_proportion()}} /
+\code{\link[=maternal_proportion]{maternal_proportion()}}.
+}

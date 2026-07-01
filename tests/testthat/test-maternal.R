@@ -77,6 +77,66 @@ test_that("a maternal_genetic() formula needs the two_effect target", {
   )
 })
 
+test_that("maternal_proportion / interval extractors require a fitted object", {
+  expect_error(
+    maternal_proportion(1),
+    "requires an `hsquared_fit`",
+    fixed = TRUE
+  )
+  expect_error(
+    maternal_proportion_interval(1),
+    "requires an `hsquared_fit`",
+    fixed = TRUE
+  )
+})
+
+test_that("maternal_proportion() returns m2 with a Falconer interpretation", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = seq_len(10)),
+    result = list(
+      maternal_proportion = data.frame(term = "maternal_genetic", estimate = 0.18)
+    )
+  )
+  m <- maternal_proportion(fit)
+  expect_equal(m$estimate, 0.18)
+  expect_match(attr(m, "interpretation"), "maternal", fixed = TRUE)
+  expect_match(attr(m, "interpretation"), "NOT a heritability", fixed = TRUE)
+})
+
+test_that("hs_attach_two_effect_intervals routes ratio2 to the maternal field", {
+  raw_ci <- list(
+    level = 0.95,
+    r1_estimate = 0.42, r1_lower = 0.21, r1_upper = 0.66, r1_se = 0.11,
+    r1_lower_clamped = FALSE, r1_upper_clamped = FALSE, r1_boundary = FALSE,
+    r2_estimate = 0.18, r2_lower = 0.05, r2_upper = 0.48, r2_se = 0.09,
+    r2_lower_clamped = FALSE, r2_upper_clamped = FALSE, r2_boundary = FALSE
+  )
+  payload <- list(effect2 = list(type = "maternal_genetic"))
+  result <- hsquared:::hs_attach_two_effect_intervals(list(), raw_ci, payload)
+  expect_true(!is.null(result$maternal_proportion_interval))
+  expect_equal(result$maternal_proportion_interval$estimate, 0.18)
+  expect_null(result$common_env_proportion_interval)
+  # ratio1 still feeds heritability_interval regardless of the second-effect type
+  expect_equal(result$heritability_interval$estimate, 0.42)
+})
+
+test_that("maternal_proportion_interval() returns the ratio2 CI with the fence", {
+  ci <- data.frame(
+    estimate = 0.18, lower = 0.05, upper = 0.48, level = 0.95, se = 0.09,
+    lower_clamped = FALSE, upper_clamped = FALSE, boundary = FALSE,
+    stringsAsFactors = FALSE
+  )
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = seq_len(10)),
+    result = list(maternal_proportion_interval = ci)
+  )
+  out <- maternal_proportion_interval(fit)
+  expect_equal(out$estimate, 0.18)
+  expect_match(attr(out, "interpretation"), "maternal", fixed = TRUE)
+})
+
 test_that("hsquared fits the opt-in maternal-genetic model", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
@@ -125,4 +185,19 @@ test_that("hsquared fits the opt-in maternal-genetic model", {
     ],
     "estimated_two_effect_reml"
   )
+
+  # R1a: reachable m2 accessor with the Falconer fence.
+  m <- maternal_proportion(fit)
+  expect_equal(nrow(m), 1L)
+  m2 <- m$estimate
+  expect_true(is.finite(m2) && m2 >= 0 && m2 < 1)
+  expect_match(attr(m, "interpretation"), "maternal", fixed = TRUE)
+
+  # R1b: opportunistic ratio interval (guard on presence; a boundary/flat
+  # optimum legitimately omits the CI on this small design).
+  if (!is.null(fit$result$maternal_proportion_interval)) {
+    mi <- maternal_proportion_interval(fit)
+    expect_equal(mi$estimate, m2, tolerance = 1e-6)
+    expect_true(mi$boundary || (mi$lower <= mi$estimate && mi$estimate <= mi$upper))
+  }
 })

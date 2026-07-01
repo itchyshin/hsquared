@@ -31,6 +31,15 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' `heritability()` is part of the planned v0.1 fitted-object contract. It
 #' works for `hsquared_fit` objects that contain a Julia result.
 #'
+#' Falconer fence for the opt-in two-effect model (`target = "two_effect"`):
+#' the reported number is the **narrow-sense direct heritability**
+#' `h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)` *within that model* (the
+#' additive-genetic variance is divided by the total phenotypic variance,
+#' which now includes the second component `sigma_2`). The second component's
+#' variance ratio (common-environment `c2` or maternal `m2`) is **not** a
+#' heritability and is returned separately by [common_env_proportion()] /
+#' [maternal_proportion()].
+#'
 #' @inheritParams variance_components
 #'
 #' @return Heritability results for `hsquared_fit` objects.
@@ -602,6 +611,119 @@ maternal_effects.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "maternal_effects", "maternal genetic effects")
 }
 
+# Falconer interpretation fence attached to the two-effect variance-ratio
+# accessors. c2/m2 is a variance ratio (the proportion of phenotypic variance
+# from the common-environment / maternal effect), NOT a heritability. In the
+# same fit `heritability()` reports narrow-sense h2 = sigma_a2 / (sigma_a2 +
+# sigma_2 + sigma_e2) WITHIN this model. Carried as an attribute so the number
+# never travels without its interpretation.
+hs_two_effect_ratio_fence <- function(kind = c("common_env", "maternal")) {
+  kind <- match.arg(kind)
+  label <- if (kind == "common_env") {
+    "common-environment"
+  } else {
+    "maternal (dam) genetic"
+  }
+  paste0(
+    "This is a variance ratio: the proportion of phenotypic variance ",
+    "attributable to the ", label, " effect (c2/m2), NOT a heritability. ",
+    "In the same fit heritability() reports narrow-sense ",
+    "h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2) WITHIN this two-effect ",
+    "model. At a variance-component boundary (sigma -> 0) the ratio is flagged ",
+    "and its interval is NA, not a spuriously tight CI."
+  )
+}
+
+#' Extract the common-environment variance ratio (c2)
+#'
+#' `common_env_proportion()` returns the estimated common-environment variance
+#' ratio `c2 = sigma_c2 / (sigma_a2 + sigma_c2 + sigma_e2)` from the opt-in,
+#' experimental two-effect model
+#' (`target = "two_effect"` with a `common_env()` term).
+#'
+#' Falconer fence: `c2` is a **variance ratio** (the proportion of phenotypic
+#' variance from the shared common-environment effect), **not a heritability**.
+#' In the same fit, [heritability()] reports narrow-sense
+#' `h2 = sigma_a2 / (sigma_a2 + sigma_c2 + sigma_e2)` *within this two-effect
+#' model*. The returned data frame carries this note as an `"interpretation"`
+#' attribute. For an interval on `c2`, see [common_env_proportion_interval()].
+#'
+#' @inheritParams variance_components
+#'
+#' @return A one-row data frame with `term` and `estimate`, plus an
+#'   `"interpretation"` attribute, for two-effect `hsquared_fit` objects.
+#' @export
+common_env_proportion <- function(object, ...) {
+  UseMethod("common_env_proportion")
+}
+
+#' @export
+common_env_proportion.default <- function(object, ...) {
+  stop(
+    "`common_env_proportion()` requires an `hsquared_fit` object from the ",
+    "opt-in two-effect (common-environment) model (`target = \"two_effect\"`).",
+    call. = FALSE
+  )
+}
+
+#' @export
+common_env_proportion.hsquared_fit <- function(object, ...) {
+  out <- hs_fit_result(
+    object,
+    "common_env_proportion",
+    "a common-environment variance ratio (c2)"
+  )
+  attr(out, "interpretation") <- hs_two_effect_ratio_fence("common_env")
+  out
+}
+
+#' Extract the maternal variance ratio (m2)
+#'
+#' `maternal_proportion()` returns the estimated maternal variance ratio
+#' `m2 = sigma_m2 / (sigma_a2 + sigma_m2 + sigma_e2)` from the opt-in,
+#' experimental maternal two-effect model
+#' (`target = "two_effect"` with a `maternal_genetic()` term).
+#'
+#' Falconer fence: `m2` is a **variance ratio** (the proportion of phenotypic
+#' variance from the maternal (dam) genetic effect), **not a heritability**. In
+#' the same fit, [heritability()] reports the narrow-sense *direct*
+#' `h2 = sigma_a2 / (sigma_a2 + sigma_m2 + sigma_e2)` *within this two-effect
+#' model*; the direct and maternal genetic effects are modelled as
+#' uncorrelated here (no direct-maternal genetic covariance). The returned data
+#' frame carries this note as an `"interpretation"` attribute. For an interval
+#' on `m2`, see [maternal_proportion_interval()].
+#'
+#' @inheritParams variance_components
+#'
+#' @return A one-row data frame with `term` and `estimate`, plus an
+#'   `"interpretation"` attribute, for maternal two-effect `hsquared_fit`
+#'   objects.
+#' @export
+maternal_proportion <- function(object, ...) {
+  UseMethod("maternal_proportion")
+}
+
+#' @export
+maternal_proportion.default <- function(object, ...) {
+  stop(
+    "`maternal_proportion()` requires an `hsquared_fit` object from the opt-in ",
+    "maternal two-effect model (`target = \"two_effect\"` with a ",
+    "`maternal_genetic()` term).",
+    call. = FALSE
+  )
+}
+
+#' @export
+maternal_proportion.hsquared_fit <- function(object, ...) {
+  out <- hs_fit_result(
+    object,
+    "maternal_proportion",
+    "a maternal variance ratio (m2)"
+  )
+  attr(out, "interpretation") <- hs_two_effect_ratio_fence("maternal")
+  out
+}
+
 #' Extract breeding values
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It
@@ -915,6 +1037,88 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
     "repeatability_interval",
     "an experimental repeatability confidence interval"
   )
+}
+
+#' Extract an experimental common-environment / maternal variance-ratio interval
+#'
+#' `common_env_proportion_interval()` and `maternal_proportion_interval()`
+#' return an **experimental** large-sample (logit delta-method) confidence
+#' interval for the second variance ratio (`c2` / `m2`, `ratio2`) of the opt-in
+#' two-effect model, available only when the fit contains it. On the same
+#' two-effect fit, [heritability_interval()] returns the matching interval for
+#' the direct heritability (`h2`, `ratio1`).
+#'
+#' This mirrors the engine row `V3-TWO-EFFECT`: the interval is the asymptotic
+#' delta-method CI built from the two-effect REML observed information (the
+#' finite-difference Hessian of the two-effect REML log-likelihood at the
+#' optimum). It is **asymptotic, delta-method, REML only, and NOT
+#' coverage-calibrated** — on small samples the REML surface is flat and the
+#' interval is unreliable (the parametric bootstrap is the only finite-sample-
+#' aware path). No calibrated coverage is claimed.
+#'
+#' Boundary honesty: when the ratio's variance component sits on the boundary
+#' (`sigma -> 0`) it is flagged (`boundary = TRUE`) and `lower`/`upper` are
+#' `NA`, never a spuriously tight CI. `lower_clamped`/`upper_clamped` flag when
+#' a bound reaches the numerical `(0, 1)` rails.
+#'
+#' Falconer fence: `c2` / `m2` is a **variance ratio**, not a heritability (see
+#' [common_env_proportion()] / [maternal_proportion()]).
+#'
+#' @inheritParams variance_components
+#'
+#' @return A one-row data frame with `estimate` (the ratio), `lower`, `upper`,
+#'   `level`, `se`, `lower_clamped`, `upper_clamped`, and `boundary`, plus an
+#'   `"interpretation"` attribute, for two-effect `hsquared_fit` objects that
+#'   contain it.
+#' @export
+common_env_proportion_interval <- function(object, ...) {
+  UseMethod("common_env_proportion_interval")
+}
+
+#' @export
+common_env_proportion_interval.default <- function(object, ...) {
+  stop(
+    "`common_env_proportion_interval()` requires an `hsquared_fit` object from ",
+    "the opt-in two-effect (common-environment) model.",
+    call. = FALSE
+  )
+}
+
+#' @export
+common_env_proportion_interval.hsquared_fit <- function(object, ...) {
+  out <- hs_fit_result(
+    object,
+    "common_env_proportion_interval",
+    "an experimental common-environment variance-ratio interval"
+  )
+  attr(out, "interpretation") <- hs_two_effect_ratio_fence("common_env")
+  out
+}
+
+#' @rdname common_env_proportion_interval
+#' @export
+maternal_proportion_interval <- function(object, ...) {
+  UseMethod("maternal_proportion_interval")
+}
+
+#' @export
+maternal_proportion_interval.default <- function(object, ...) {
+  stop(
+    "`maternal_proportion_interval()` requires an `hsquared_fit` object from ",
+    "the opt-in maternal two-effect model.",
+    call. = FALSE
+  )
+}
+
+#' @export
+maternal_proportion_interval.hsquared_fit <- function(object, ...) {
+  out <- hs_fit_result(
+    object,
+    "maternal_proportion_interval",
+    "an experimental maternal variance-ratio interval"
+  )
+  attr(out, "interpretation") <- hs_two_effect_ratio_fence("maternal")
+  out
 }
 
 #' Extract experimental multivariate covariance standard errors
