@@ -29,7 +29,7 @@ two-effect fit, \code{\link[=heritability_interval]{heritability_interval()}} re
 the direct heritability (\code{h2}, \code{ratio1}).
 }
 \details{
-This mirrors the engine row \code{V3-TWO-EFFECT}: the interval is the asymptotic
+This mirrors the engine row \code{V3-TWOEFFECT-REML}: the interval is the asymptotic
 delta-method CI built from the two-effect REML observed information (the
 finite-difference Hessian of the two-effect REML log-likelihood at the
 optimum). It is \strong{asymptotic, delta-method, REML only, and NOT

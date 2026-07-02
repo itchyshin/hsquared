@@ -1048,7 +1048,7 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 #' two-effect fit, [heritability_interval()] returns the matching interval for
 #' the direct heritability (`h2`, `ratio1`).
 #'
-#' This mirrors the engine row `V3-TWO-EFFECT`: the interval is the asymptotic
+#' This mirrors the engine row `V3-TWOEFFECT-REML`: the interval is the asymptotic
 #' delta-method CI built from the two-effect REML observed information (the
 #' finite-difference Hessian of the two-effect REML log-likelihood at the
 #' optimum). It is **asymptotic, delta-method, REML only, and NOT

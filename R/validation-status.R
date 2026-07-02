@@ -45,7 +45,7 @@ hs_validation_status_capabilities <- function() {
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
     "experimental repeatability estimator (opt-in)",
-    "experimental two-effect estimator (opt-in: common-env, maternal)",
+    "two-effect estimator (opt-in; covered: common-env / A2=I; experimental: maternal / A2=pedigree)",
     "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
     "experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)",
     "experimental multivariate REML estimator (opt-in)",
@@ -77,7 +77,9 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 11L),
+    rep("partial", 7L),      # positions 1-7
+    "covered",               # position 8 = two-effect estimator (COMMON-ENV / A2=I scope covered; maternal experimental)
+    rep("partial", 3L),      # positions 9-11
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -287,12 +289,16 @@ hs_validation_status_boundaries <- function() {
       "records per individual."
     ),
     paste(
-      "Experimental opt-in path only; Julia-owned REML-only two-effect optimizer",
-      "that R surfaces; mirrors the twin V3-TWOEFFECT-REML gate (partial). Not",
-      "the default, not ML, not production fitting, and not a comparator-validated",
-      "or known-truth-recovery claim. Two INDEPENDENT random effects (additive +",
-      "either an IID common-environment effect via common_env() or a pedigree",
-      "maternal genetic effect via maternal_genetic()); the correlated",
+      "Julia-owned REML-only two-effect optimizer that R surfaces (opt-in, NOT the",
+      "default engine='fit' path). The COMMON-ENVIRONMENT leg (additive animal-A +",
+      "IID common-environment via common_env(), A2 = I) is COVERED (experimental,",
+      "validation-scale, opt-in) — mirrors the twin V3-TWOEFFECT-REML covered gate:",
+      "a pre-declared 48-seed bias/MCSE recovery gate PASSED + a blupf90+ same-estimand",
+      "REML comparator agrees ~1e-5 (sommer cross-check ~2e-5). The MATERNAL genetic",
+      "leg (maternal_genetic(), A2 = pedigree A) uses the SAME estimator with exact",
+      "live parity but STAYS EXPERIMENTAL — its own recovery gate + comparator on the",
+      "maternal-A2 design are owed. Not ML, not production sparse fitting; the h2/c2",
+      "interval is asymptotic/delta-method and NOT coverage-calibrated; the correlated",
       "direct-maternal (2x2 G) model is planned."
     ),
     paste(
