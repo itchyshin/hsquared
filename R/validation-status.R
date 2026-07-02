@@ -292,11 +292,11 @@ hs_validation_status_boundaries <- function() {
       "Julia-owned REML-only two-effect optimizer that R surfaces (opt-in, NOT the",
       "default engine='fit' path). The COMMON-ENVIRONMENT leg (additive animal-A +",
       "IID common-environment via common_env(), A2 = I) is COVERED (experimental,",
-      "validation-scale, opt-in) — mirrors the twin V3-TWOEFFECT-REML covered gate:",
+      "validation-scale, opt-in) - mirrors the twin V3-TWOEFFECT-REML covered gate:",
       "a pre-declared 48-seed bias/MCSE recovery gate PASSED + a blupf90+ same-estimand",
       "REML comparator agrees ~1e-5 (sommer cross-check ~2e-5). The MATERNAL genetic",
       "leg (maternal_genetic(), A2 = pedigree A) uses the SAME estimator with exact",
-      "live parity but STAYS EXPERIMENTAL — its own recovery gate + comparator on the",
+      "live parity but STAYS EXPERIMENTAL - its own recovery gate + comparator on the",
       "maternal-A2 design are owed. Not ML, not production sparse fitting; the h2/c2",
       "interval is asymptotic/delta-method and NOT coverage-calibrated; the correlated",
       "direct-maternal (2x2 G) model is planned."
