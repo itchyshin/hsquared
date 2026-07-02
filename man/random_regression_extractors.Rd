@@ -75,7 +75,7 @@ scale (defaulting to a grid over the fitted range) and re-standardized to
 \verb{[-1, 1]} internally, matching the Julia engine's basis convention.
 }
 \examples{
-\dontshow{if (FALSE) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 fit_rr <- hsquared(
   weight ~ sex + animal(rr(age, order = 2) | id, pedigree = ped),
   data = long_records,

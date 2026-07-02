@@ -90,6 +90,12 @@ reference:
       - common_env_proportion
       - maternal_proportion
       - common_env_proportion_interval
+      - direct_maternal_extractors
+      - direct_heritability
+      - total_heritability
+      - direct_variance
+      - partner_variance
+      - direct_maternal_covariance
       - random_regression_extractors
       - prediction_error_variance
       - reliability
