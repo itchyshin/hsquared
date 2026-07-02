@@ -185,28 +185,37 @@ test_that("family errors point to the opt-in non-Gaussian path", {
   )
 })
 
-test_that("formula parser rejects bare (... | group) random effects", {
+test_that("formula parser accepts bare (1 | group) intercepts, rejects slopes", {
   ped <- data.frame(
     id = c("a", "b", "c"),
     sire = c(NA, NA, "a"),
     dam = c(NA, NA, "b")
   )
-  dat <- data.frame(y = c(1, 2, 3), x = c(0.1, 0.2, 0.3), id = c("a", "b", "c"))
-
-  # A bare lme4-style random effect must be named, not silently absorbed into
-  # the fixed-effect design.
-  expect_error(
-    hsquared:::hs_build_model_spec(
-      y ~ animal(1 | id, pedigree = ped) + (1 | x),
-      data = dat,
-      family = stats::gaussian(),
-      REML = TRUE
-    ),
-    "Unsupported random-effect term",
-    fixed = TRUE
+  dat <- data.frame(
+    y = c(1, 2, 3),
+    x = c(0.1, 0.2, 0.3),
+    nest = c("N1", "N1", "N2"),
+    id = c("a", "b", "c"),
+    stringsAsFactors = FALSE
   )
 
-  # The same applies when the bar term is the only random-effect-like term.
+  # A bare random INTERCEPT `(1 | group)` is now accepted as an opt-in i.i.d.
+  # random effect (the arbitrary-N independent-effect model). It must parse into
+  # the `iid_effects` list, not error.
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ animal(1 | id, pedigree = ped) + (1 | nest),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  expect_length(spec$random$iid_effects, 1L)
+  expect_equal(spec$random$iid_effects[[1L]]$type, "iid")
+  expect_equal(spec$random$iid_effects[[1L]]$group, "nest")
+  expect_equal(spec$random$iid_effects[[1L]]$relationship, "identity")
+
+  # A random SLOPE `(x | id)` is still REJECTED: hsquared has no random-slope
+  # estimator, so accepting it would over-claim a capability that is not
+  # implemented.
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ animal(1 | id, pedigree = ped) + (x | id),
@@ -217,6 +226,191 @@ test_that("formula parser rejects bare (... | group) random effects", {
     "Unsupported random-effect term",
     fixed = TRUE
   )
+
+  # A correlated / uncorrelated slope term `(x || id)` is also REJECTED (the `||`
+  # operator, lme4's uncorrelated-slope syntax).
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + (x || id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "Unsupported random-effect term",
+    fixed = TRUE
+  )
+})
+
+test_that("formula parser accepts animal() + two bare (1 | group) i.i.d. effects", {
+  ped <- data.frame(
+    id = c("a", "b", "c", "d"),
+    sire = c(NA, NA, "a", "a"),
+    dam = c(NA, NA, "b", "c"),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(
+    y = c(1, 2, 3, 4),
+    id = c("a", "c", "d", "b"),
+    nest = c("N1", "N1", "N2", "N2"),
+    year = c("2019", "2020", "2019", "2020"),
+    stringsAsFactors = FALSE
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  # Two i.i.d. blocks on DISTINCT grouping columns must both be retained (the
+  # list slot avoids the old string-keyed collision).
+  expect_length(spec$random$iid_effects, 2L)
+  expect_equal(
+    vapply(spec$random$iid_effects, function(e) e$group, character(1L)),
+    c("nest", "year")
+  )
+  expect_true(all(
+    vapply(spec$random$iid_effects, function(e) e$type, character(1L)) == "iid"
+  ))
+  expect_match(spec$bridge$target, "fit_multi_effect_reml", fixed = TRUE)
+})
+
+test_that("multi-effect emitter builds a pedigree block plus one iid block per group", {
+  ped <- data.frame(
+    id = c("a", "b", "c", "d"),
+    sire = c(NA, NA, "a", "a"),
+    dam = c(NA, NA, "b", "c"),
+    stringsAsFactors = FALSE
+  )
+  dat <- data.frame(
+    y = c(1, 2, 3, 4),
+    id = c("a", "c", "d", "b"),
+    nest = c("N1", "N1", "N2", "N2"),
+    year = c("2019", "2020", "2019", "2020"),
+    stringsAsFactors = FALSE
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  re <- payload$random_effects
+
+  expect_equal(payload$payload_version, 2L)
+  expect_length(re, 3L)
+
+  # block 1 — animal pedigree
+  expect_equal(re[[1L]]$name, "animal")
+  expect_equal(re[[1L]]$type, "pedigree")
+  expect_equal(re[[1L]]$relmat_status, "build_in_julia")
+
+  # blocks 2, 3 — i.i.d. identity blocks, one per grouping column
+  expect_equal(re[[2L]]$name, "nest")
+  expect_equal(re[[2L]]$type, "iid")
+  expect_equal(re[[2L]]$relmat_status, "identity")
+  expect_null(re[[2L]]$pedigree)
+  expect_s4_class(re[[2L]]$Z, "dgCMatrix")
+  expect_equal(dim(re[[2L]]$Z), c(4L, 2L))
+  expect_equal(sort(re[[2L]]$ids), sort(c("N1", "N2")))
+
+  expect_equal(re[[3L]]$name, "year")
+  expect_equal(re[[3L]]$type, "iid")
+  expect_equal(re[[3L]]$relmat_status, "identity")
+  expect_equal(dim(re[[3L]]$Z), c(4L, 2L))
+  expect_equal(sort(re[[3L]]$ids), sort(c("2019", "2020")))
+})
+
+test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for a live fit."
+  )
+
+  # Founders a-d plus offspring e-h; two independent environmental factors (nest
+  # and year) assigned INDEPENDENTLY of the pedigree, plus the additive-genetic
+  # animal effect -> three independent blocks -> fit_multi_effect_reml.
+  ped <- data.frame(
+    id = c("a", "b", "c", "d", "e", "f", "g", "h"),
+    sire = c(NA, NA, NA, NA, "a", "a", "c", "c"),
+    dam = c(NA, NA, NA, NA, "b", "b", "d", "d"),
+    stringsAsFactors = FALSE
+  )
+  set.seed(11)
+  ids <- ped$id
+  nest <- c("nst1", "nst1", "nst2", "nst2", "nst3", "nst3", "nst4", "nst4")
+  year <- c("y1", "y2", "y1", "y2", "y1", "y2", "y1", "y2")
+  nest_e <- stats::setNames(stats::rnorm(4, 0, 0.6), c("nst1", "nst2", "nst3", "nst4"))
+  year_e <- stats::setNames(stats::rnorm(2, 0, 0.5), c("y1", "y2"))
+  dat <- data.frame(
+    y = 3 + nest_e[nest] + year_e[year] + stats::rnorm(8, 0, 0.7),
+    id = ids,
+    nest = nest,
+    year = year,
+    stringsAsFactors = FALSE
+  )
+
+  fit <- hsquared(
+    y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "multi_effect")
+    )
+  )
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_equal(fit$spec$target, "multi_effect")
+
+  vc <- variance_components(fit)
+  # component/estimate over ALL blocks + residual, in block order.
+  expect_equal(vc$component, c("animal", "nest", "year", "residual"))
+  expect_true(all(is.finite(vc$estimate)) && all(vc$estimate >= 0))
+
+  # heritability is the ANIMAL block ratio with the FULL phenotypic denominator.
+  h2 <- heritability(fit)
+  expect_equal(h2$term, "animal")
+  total <- sum(vc$estimate)
+  expect_equal(
+    h2$estimate,
+    vc$estimate[vc$component == "animal"] / total,
+    tolerance = 1e-8
+  )
+  expect_true(is.finite(h2$estimate) && h2$estimate >= 0 && h2$estimate < 1)
+
+  # named per-block random effects (BLUPs)
+  re <- random_effects(fit)
+  expect_true(all(c("animal", "nest", "year") %in% names(re)))
+  expect_equal(nrow(re$nest), 4L)
+  expect_equal(nrow(re$year), 2L)
+
+  # Experimental per-component ratio intervals attach on the live bridge
+  # (engine multi_effect_ratio_interval). heritability_interval() resolves to the
+  # ANIMAL block's ratio; every block has a variance_ratio_intervals entry. These
+  # are asymptotic delta-method, NOT coverage-calibrated (V3-NEFFECT-REML).
+  hi <- heritability_interval(fit)
+  expect_s3_class(hi, "data.frame")
+  expect_equal(nrow(hi), 1L)
+  expect_true(all(c("estimate", "lower", "upper", "level", "se", "method") %in% names(hi)))
+  expect_equal(hi$method, "delta")
+  # h2 interval estimate equals the animal point ratio.
+  expect_equal(hi$estimate, h2$estimate, tolerance = 1e-6)
+
+  vri <- fit$result$variance_ratio_intervals
+  expect_true(is.list(vri))
+  expect_true(all(c("animal", "nest", "year") %in% names(vri)))
+  # each entry is a one-row ratio interval; animal entry matches heritability_interval.
+  expect_equal(vri$animal$estimate, hi$estimate, tolerance = 1e-8)
+  # bounds are either finite in (0,1)-ish range or NA when a component is on the
+  # boundary (sigma -> 0); never a spurious tight CI with a boundary flag unset.
+  for (nm in c("animal", "nest", "year")) {
+    ci <- vri[[nm]]
+    expect_equal(nrow(ci), 1L)
+    expect_true(is.na(ci$lower) || is.finite(ci$lower))
+    expect_true(is.na(ci$upper) || is.finite(ci$upper))
+  }
 })
 
 test_that("formula parser rejects planned genomic and QTL syntax honestly", {

@@ -128,16 +128,39 @@ hs_build_model_spec <- function(
   }
 
   # Any leftover bar term (a bare `(... | group)` random effect that is not a
-  # recognized named effect) would otherwise be silently swallowed into the
-  # fixed-effect design; reject it with a pointer to the named effects.
+  # recognized named effect). A bare random INTERCEPT `(1 | g)` is accepted as an
+  # opt-in i.i.d. random effect (the SAME model as `common_env(1 | g)`); it is
+  # routed to the engine's arbitrary-N independent-effect estimator. A random
+  # SLOPE `(x | g)` or a correlated/uncorrelated slope term `(x || g)` is still
+  # REJECTED: the engine has no slope/correlated estimator, so accepting one
+  # would over-claim a capability that is not implemented.
   leftover_pos <- setdiff(seq_along(rhs_terms), c(primary_pos, second_pos))
+  # A `(... || group)` correlated/uncorrelated slope term (top-level `||`) is not
+  # a `|` bar term, so it must be rejected explicitly before it reaches
+  # model.frame() with a cryptic base-R error.
+  double_bar_pos <- leftover_pos[vapply(
+    rhs_terms[leftover_pos],
+    hs_is_double_bar_expr,
+    logical(1L)
+  )]
+  if (length(double_bar_pos) > 0L) {
+    hs_stop_unsupported_random_effect(rhs_terms[[double_bar_pos[[1L]]]])
+  }
   bar_pos <- leftover_pos[vapply(
     rhs_terms[leftover_pos],
     hs_is_bar_expr,
     logical(1L)
   )]
-  if (length(bar_pos) > 0L) {
-    hs_stop_unsupported_random_effect(rhs_terms[[bar_pos[[1L]]]])
+  iid_effects <- list()
+  for (pos in bar_pos) {
+    if (hs_is_bare_iid_intercept(rhs_terms[[pos]])) {
+      iid_effects[[length(iid_effects) + 1L]] <- hs_parse_bare_iid_call(
+        rhs_terms[[pos]],
+        data
+      )
+    } else {
+      hs_stop_unsupported_random_effect(rhs_terms[[pos]])
+    }
   }
 
   # A recognized effect/marker call nested inside an interaction or function
@@ -148,7 +171,10 @@ hs_build_model_spec <- function(
     hs_check_nested_effect(rhs_terms[[pos]])
   }
 
-  fixed_terms <- rhs_terms[-c(primary_pos, second_pos)]
+  # Accepted bare-i.i.d. `(1 | g)` terms are random effects, not fixed terms;
+  # drop them (alongside the primary and second effects) so they never leak into
+  # the fixed-effect model.matrix().
+  fixed_terms <- rhs_terms[-c(primary_pos, second_pos, bar_pos)]
 
   # An `offset()` term is silently dropped from the fixed design (and the bridge
   # payload) by `model.matrix()`. Reject it by name, mirroring the bare-bar and
@@ -243,6 +269,38 @@ hs_build_model_spec <- function(
       "fit_two_effect_reml(y, X, Z, Ainv, Z2, Ainv2; method = :REML)"
     }
   }
+  # Bare `(1 | g)` i.i.d. random effects (opt-in arbitrary-N independent-effect
+  # model). Held as a LIST (not keyed by a string type) so that two `(1 | g)`
+  # terms on different grouping columns are BOTH retained rather than colliding
+  # on a shared `random[[type]]` slot. Scope: an `animal()` pedigree primary plus
+  # independent i.i.d. blocks (the covered `fit_multi_effect_reml` estimand); a
+  # genomic/single-step/metafounder primary or a random-regression design does
+  # not (yet) combine with additional i.i.d. effects in the R bridge.
+  if (length(iid_effects) > 0L) {
+    if (!identical(primary_type, "animal")) {
+      stop(
+        "A bare `(1 | group)` i.i.d. random effect currently combines only with ",
+        "an `animal(1 | id, pedigree = ped)` primary term, not `",
+        primary_type,
+        "()`. Genomic, single-step, and metafounder multi-effect models are ",
+        "planned, not implemented.",
+        call. = FALSE
+      )
+    }
+    if (identical(primary_spec$design, "random_regression")) {
+      stop(
+        "A bare `(1 | group)` i.i.d. random effect does not (yet) combine with ",
+        "an `animal(rr(...) | id)` random-regression design; both are opt-in, ",
+        "and the combination is planned, not implemented.",
+        call. = FALSE
+      )
+    }
+    random$iid_effects <- iid_effects
+    bridge_target <- paste0(
+      "fit_multi_effect_reml(y, X, [(Z_i, Ainv_i) ...]; ",
+      "ids = [block.ids ...])"
+    )
+  }
   # The opt-in random-regression design is a single-effect, univariate model. It
   # does not (yet) combine with a second random effect or a multivariate cbind()
   # response; both are planned.
@@ -258,12 +316,16 @@ hs_build_model_spec <- function(
     )
   }
   if (isTRUE(response$multivariate)) {
-    if (!identical(primary_type, "animal") || !is.null(second_spec)) {
+    if (
+      !identical(primary_type, "animal") ||
+        !is.null(second_spec) ||
+        length(iid_effects) > 0L
+    ) {
       stop(
         "The opt-in multivariate path currently supports only ",
         "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
-        "Multivariate genomic, single-step, and second-effect models are ",
-        "planned, not implemented.",
+        "Multivariate genomic, single-step, second-effect, and multi-effect ",
+        "models are planned, not implemented.",
         call. = FALSE
       )
     }
@@ -2510,12 +2572,79 @@ hs_is_bar_expr <- function(expr) {
   hs_is_call(hs_unwrap_parentheses(expr), "|")
 }
 
+# A correlated/uncorrelated slope term `(... || group)` (lme4's `||` syntax). The
+# top-level operator is `||`, not `|`, so `hs_is_bar_expr()` does not catch it; it
+# is detected separately and rejected, because hsquared has no random-slope /
+# correlated-effect estimator (accepting one would over-claim).
+hs_is_double_bar_expr <- function(expr) {
+  hs_is_call(hs_unwrap_parentheses(expr), "||")
+}
+
+# A bare random INTERCEPT `(1 | group)`: a top-level `|` call whose LHS is the
+# literal `1` and whose RHS is a bare grouping column name. This is the only bar
+# form accepted as an opt-in i.i.d. random effect. A random slope `(x | group)`
+# (LHS not `1`) is NOT accepted here.
+hs_is_bare_iid_intercept <- function(expr) {
+  bar <- hs_unwrap_parentheses(expr)
+  if (!hs_is_call(bar, "|") || length(bar) != 3L) {
+    return(FALSE)
+  }
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  hs_is_one(lhs)
+}
+
+# Parse a bare `(1 | group)` term into an i.i.d. random-intercept effect spec,
+# mirroring `hs_parse_common_env_call()` (the SAME identity-relationship i.i.d.
+# model). The grouping variable must be a bare column present in `data`.
+hs_parse_bare_iid_call <- function(term, data) {
+  bar <- hs_unwrap_parentheses(term)
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  if (!hs_is_one(lhs)) {
+    stop(
+      "Only random-intercept syntax `(1 | group)` is accepted as an i.i.d. ",
+      "random effect. Random slopes are planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.symbol(group_expr)) {
+    stop(
+      "The grouping variable in a bare `(1 | group)` random effect must be a ",
+      "bare column name.",
+      call. = FALSE
+    )
+  }
+  group <- as.character(group_expr)
+  if (!group %in% names(data)) {
+    stop(
+      "The `(1 | ",
+      group,
+      ")` grouping variable `",
+      group,
+      "` was not found in `data`.",
+      call. = FALSE
+    )
+  }
+  list(
+    type = "iid",
+    term = hs_deparse(term),
+    design = "intercept",
+    group = group,
+    values = as.character(data[[group]]),
+    levels = unique(as.character(data[[group]])),
+    relationship = "identity",
+    covariance = "scalar"
+  )
+}
+
 hs_stop_unsupported_random_effect <- function(term) {
   stop(
     "Unsupported random-effect term `",
     hs_deparse(term),
-    "`. hsquared does not parse bare `(... | group)` random effects. Name the ",
-    "effect instead: `animal(1 | id, pedigree = ped)` for the additive ",
+    "`. Only a bare random INTERCEPT `(1 | group)` is accepted as an i.i.d. ",
+    "random effect; hsquared has no random-slope `(x | group)` or correlated ",
+    "`(x || group)` estimator. Use a bare `(1 | group)` intercept, or name the ",
+    "effect: `animal(1 | id, pedigree = ped)` for the additive ",
     "genetic effect, or an opt-in second effect such as `permanent(1 | id)`, ",
     "`common_env(1 | group)`, or `maternal_genetic(1 | dam)`.",
     call. = FALSE

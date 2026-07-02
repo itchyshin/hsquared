@@ -111,10 +111,17 @@ hsquared <- function(
     }
     opt_in_effect <- setdiff(names(spec$random), "animal")
     if (length(opt_in_effect) > 0L) {
+      # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
+      # name them honestly rather than printing the internal slot name.
+      model_label <- if (identical(opt_in_effect[[1L]], "iid_effects")) {
+        "bare `(1 | group)` i.i.d. random-effect (multi-effect)"
+      } else {
+        paste0("`", opt_in_effect[[1L]], "`")
+      }
       stop(
-        "The `",
-        opt_in_effect[[1L]],
-        "` model is experimental and opt-in; the default `engine = \"fit\"` ",
+        "The ",
+        model_label,
+        " model is experimental and opt-in; the default `engine = \"fit\"` ",
         "path fits the single-effect Gaussian animal model only. Use ",
         "`control = hs_control(engine = \"julia\", engine_control = list(",
         "target = \"",
@@ -227,10 +234,17 @@ hsquared <- function(
     if (length(second_effect) > 0L) {
       allowed <- hs_effect_targets(second_effect[[1L]])
       if (!target %in% allowed) {
+        # Bare `(1 | group)` i.i.d. effects are held under the `iid_effects` list
+        # slot rather than a named `<type>()` call; name them honestly.
+        effect_label <- if (identical(second_effect[[1L]], "iid_effects")) {
+          "bare `(1 | group)` i.i.d. random"
+        } else {
+          paste0("`", second_effect[[1L]], "(...)`")
+        }
         stop(
-          "The formula has a `",
-          second_effect[[1L]],
-          "(...)` term, so it needs `target = \"",
+          "The formula has a ",
+          effect_label,
+          " term, so it needs `target = \"",
           allowed[[1L]],
           "\"`",
           if (length(allowed) > 1L) {
@@ -437,6 +451,28 @@ hsquared <- function(
           control,
           "iterations",
           200L
+        )
+      ))
+    }
+
+    if (identical(target, "multi_effect")) {
+      if (
+        is.null(spec$random$iid_effects) ||
+          length(spec$random$iid_effects) == 0L
+      ) {
+        stop(
+          "`target = \"multi_effect\"` requires an `animal(1 | id, ...)` term ",
+          "plus one or more bare `(1 | group)` i.i.d. random effects in the ",
+          "formula.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_n_effect_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
         )
       ))
     }
