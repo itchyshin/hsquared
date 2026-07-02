@@ -56,8 +56,10 @@ container, extractors, and advanced opt-in engine controls.
   [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   and
   [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-  parse and fit only opt-in and experimentally (see “Opt-in and
-  experimental” below); the default `engine = "fit"` path rejects them.
+  parse and fit only through the opt-in `engine = "julia"` targets —
+  some covered at validation scale, some experimental (see the two
+  opt-in sections below); the default `engine = "fit"` path rejects
+  them.
 - [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   and
@@ -189,31 +191,54 @@ container, extractors, and advanced opt-in engine controls.
 - Local tests for accepted syntax, rejected future syntax, and
   pedigree/data ID checks.
 
-## Opt-in and experimental (not the default)
+## Opt-in and covered at validation scale (not the default)
 
 These models are reachable only through
 `control = hs_control(engine = "julia", engine_control = list(target = ...))`,
 are REML only, are Julia-owned (R only surfaces them), and are **not**
-the default and not production. Most mirror a `partial` gate in the
-`HSquared.jl` twin; exceptions are noted — the common-environment and
-direct–maternal correlated models are **covered at validation scale**
-(passed a pre-declared 48-seed bias/MCSE gate and a same-estimand REML
-comparator), while the remaining entries are not yet
-comparator/known-truth-validated at that bar.
+the default `engine = "fit"` path and not production. Each has cleared a
+pre-declared bias/MCSE recovery gate **and** a same-estimand REML
+comparator (mirroring a `covered` gate in the `HSquared.jl` twin), so
+each is comparator/known-truth- validated at **validation scale**
+(dense, `n ≤ ~1000`) — but each remains opt-in, not the default, and not
+production.
 
-- Repeatability / permanent environment —
-  `animal(1 | id) + permanent(1 | id)`, `target = "repeatability"`
-  (needs repeated records per individual).
 - Common environment — `animal(1 | id) + common_env(1 | group)`,
-  `target = "two_effect"` (additive + IID common environment).
-- Maternal genetic (INDEPENDENT two-effect leg) —
-  `animal(1 | id) + maternal_genetic(1 | dam)`, `target = "two_effect"`
-  (additive + pedigree maternal effect, treated as independent).
+  `target = "two_effect"` (additive animal genetic + IID common
+  environment, A2 = I). The **common-environment leg** is covered
+  (mirrors the twin `V3-TWOEFFECT-REML`: a 48-seed bias/MCSE gate PASS +
+  a `blupf90+` same-estimand comparator ~1e-5, sommer cross-check
+  ~2e-5); its `h²`/`c²` interval is asymptotic and not
+  coverage-calibrated. The **maternal genetic leg** of the same
+  `two_effect` target stays experimental (listed below).
+- Arbitrary-N independent `(1 | g)` —
+  `animal(1 | id, pedigree = ped) + (1 | g1) + (1 | g2) + ...`,
+  `target = "multi_effect"`: one pedigree animal component plus any
+  number of INDEPENDENT i.i.d. effects. Covered (mirrors the twin
+  `V3-NEFFECT-REML`: a 48-seed bias/MCSE gate PASS + a `sommer` same-
+  estimand comparator, with exact live R–Julia parity). The animal-block
+  ratio is narrow-sense `h²`; the other blocks are variance-explained
+  proportions, not heritabilities. INDEPENDENT effects only — random
+  slopes `(x | g)` and correlated `(x || g)` terms are rejected.
+- Random regression (reaction norm), k = 2 —
+  `animal(rr(t, k = 2) | id, pedigree = ped)`,
+  `target = "random_regression"`: a linear reaction norm returning the
+  2×2 genetic covariance `K_g` (intercept × slope), residual variance,
+  EBVs, and an `h²(t)` trajectory. Covered at k = 2 (mirrors the twin
+  `V3-RR-REML`: a 48-seed bias/MCSE gate PASS
+  - a `sommer` `leg()` same-estimand comparator AGREE, exact live
+    parity).
+    [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+    returns `h²(t)` as a **curve**, never a bare scalar (a scalar call
+    errors). Point estimate only (no interval on the curve); the
+    residual is homogeneous and there is no permanent-environment term,
+    so `h²(t)` can overstate for repeated-records designs. k ≥ 3 is
+    experimental.
 - Direct–maternal correlated model (2×2 G) —
   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`,
   `target = "direct_maternal"` — the first correlated random-effect
-  model (estimates the direct–maternal covariance `σ_dm`). **Covered at
-  validation scale** (mirrors the twin `V4-DIRECT-MATERNAL`: a
+  model (estimates the direct–maternal covariance `σ_dm`). Covered at
+  validation scale (mirrors the twin `V4-DIRECT-MATERNAL`: a
   pre-declared 48-seed bias/MCSE gate PASSED + a `sommer` `covm()`
   same-estimand REML comparator AGREE), still opt-in and
   dense/validation-scale (`n ≤ ~1000`).
@@ -221,6 +246,25 @@ comparator/known-truth-validated at that bar.
   returns the Willham labelled triple (direct `h²_d`, maternal `m²`,
   total `h²_T`, `r_am`), never a bare scalar; a negative `r_am` is real
   and expected.
+
+## Opt-in and experimental (not the default)
+
+These models fit through the same opt-in
+`control = hs_control(engine = "julia", ...)` path but are **not** yet
+comparator/known-truth-validated at the bar above; each mirrors a
+`partial` gate in the `HSquared.jl` twin.
+
+- Repeatability / permanent environment —
+  `animal(1 | id) + permanent(1 | id)`, `target = "repeatability"`
+  (needs repeated records per individual).
+- Maternal genetic (INDEPENDENT two-effect leg) —
+  `animal(1 | id) + maternal_genetic(1 | dam)`, `target = "two_effect"`
+  (additive + pedigree maternal effect, treated as independent). Uses
+  the same estimator as the covered common-environment leg with exact
+  live parity, but its own recovery gate and comparator on the
+  maternal-A2 design are still owed, so it stays experimental. (The
+  *correlated* direct–maternal model above is a different, covered
+  target.)
 - Genomic GREML — `genomic(1 | id, Ginv = Ginv)` or
   `genomic(1 | id, markers = M)` (the engine builds the genomic
   relationship from the marker matrix), `target = "genomic"`.
@@ -257,17 +301,21 @@ deliberately narrow; these are the structural limits (not yet
   `animal(1 | id, pedigree = ped)` (a pedigree additive effect) or a
   supplied-relationship primary (`genomic(1 | id, ...)` /
   `single_step(1 | id, Hinv = ...)`). Two primary effects is an error.
-- **At most one additional random effect,** and only alongside an
+- **At most one additional random effect on the default grammar,** and
+  only alongside an
   [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
   primary: one of `permanent(1 | id)`, `common_env(1 | group)`, or
-  `maternal_genetic(1 | dam)` (each opt-in/experimental). There is no
-  support yet for a third random effect or for several independent
-  grouping factors.
+  `maternal_genetic(1 | dam)`. The opt-in `target = "multi_effect"` path
+  lifts this to an arbitrary number of INDEPENDENT `(1 | g)` intercepts
+  (covered at validation scale; see the opt-in sections above).
+  Correlated multi-term structures other than the covered
+  direct–maternal (2×2 G) target remain on the roadmap.
 - **Random intercepts only.** Only `1 | group` is parsed. Random slopes
-  (`x | id`) are rejected as planned-not-implemented, and a bare
-  lme4-style `(... | group)` term is rejected with a pointer to the
-  named effects above (it is never silently absorbed into the fixed
-  effects).
+  (`x | id`) are rejected as planned-not-implemented. On the default
+  path a bare lme4-style `(... | group)` term is rejected with a pointer
+  to the named effects above (it is never silently absorbed into the
+  fixed effects); the opt-in `target = "multi_effect"` path is where
+  bare `(1 | g)` intercepts are accepted.
 - **One default response, plus opt-in
   [`cbind()`](https://rdrr.io/r/base/cbind.html).** The default path is
   a single numeric response. Multi-trait `cbind(...)` responses fit only
@@ -293,14 +341,16 @@ names each unsupported form rather than guessing.
   animal model (the reserved inheritance kernels). The multivariate,
   standard two-effect, repeatability, genomic, SNP-BLUP, single-step,
   and non-Gaussian (`poisson`/`binomial`, Laplace or variational REML,
-  no heritability) models fit only opt-in and experimentally (see
-  above).
+  no heritability) models fit only through opt-in `engine = "julia"`
+  targets, never as the default — some covered at validation scale, some
+  experimental (see the two opt-in sections above).
 - ML estimation on the fit path (`REML = FALSE` is rejected; only REML
   is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a
   default for any model other than the v0.1 univariate Gaussian animal
-  model (the opt-in experimental models above return them but are not
+  model (the opt-in models above return them; the covered ones are
+  validated at validation scale only, the experimental ones are not
   validated).
 - Log-likelihood or information criteria for supplied-variance Henderson
   MME bridge results.
@@ -331,8 +381,9 @@ names each unsupported form rather than guessing.
 - Paternal, dominance, epistasis, custom relationship/precision,
   QTL-style, selfing, clonal, haplodiploid, polyploid, cytoplasmic,
   imprinting, and GLLVM-style models. (Permanent environment, common
-  environment, and maternal genetic effects fit opt-in and
-  experimentally; see above.)
+  environment, and maternal genetic effects fit through the opt-in
+  targets above — common environment is covered at validation scale, the
+  others experimental.)
 - GPU execution.
 
 ## Comparator targets

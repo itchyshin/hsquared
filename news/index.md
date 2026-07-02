@@ -43,6 +43,30 @@
   larger-scale recovery, and a Mrode Ch.7 anchor remain owed (covered
   does not retire them).
 
+- **Common-environment two-effect leg and arbitrary-N independent
+  `(1 | g)` multi-effect model — covered at validation scale (opt-in).**
+  The opt-in common-environment leg
+  (`animal(1 | id) + common_env(1 | group)`, `target = "two_effect"`;
+  additive genetic + IID common environment, A2 = I) and its arbitrary-N
+  generalization
+  (`animal(1 | id, pedigree = ped) + (1 | g1) + (1 | g2) + ...`,
+  `target = "multi_effect"`; one pedigree animal component plus any
+  number of INDEPENDENT i.i.d. effects) are now **covered at validation
+  scale**, mirroring the twin `V3-TWOEFFECT-REML` / `V3-NEFFECT-REML`
+  covered gates: a pre-declared 48-seed bias/MCSE recovery gate PASSED +
+  a same-estimand REML comparator AGREE (`blupf90+` ~1e-5, `sommer`
+  cross-check ~2e-5 for the two-effect leg; `sommer` for the
+  multi-effect generalization, with exact live R–Julia parity). The
+  animal-block ratio is narrow-sense `h²`; the other blocks are
+  variance-explained proportions, not heritabilities; the per-component
+  ratio intervals are asymptotic and not coverage-calibrated. The
+  **maternal-genetic leg** of `target = "two_effect"` (A2 = pedigree)
+  uses the same estimator with exact live parity but **stays
+  experimental** (its own recovery gate + comparator on the maternal-A2
+  design are owed). INDEPENDENT effects only (not correlated /
+  random-regression / non-Gaussian); opt-in, not the default, not ML,
+  not production.
+
 - **Genome-wide significance calibration for
   [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
   (`genome_wide = TRUE`).**
@@ -203,8 +227,8 @@
   and comparator validation
   ([\#21](https://github.com/itchyshin/hsquared/issues/21)/#43).
 
-- **Experimental random-regression (reaction-norm) model.** A new opt-in
-  target surfaces the Julia-owned
+- **Random-regression (reaction-norm) k=2 model — covered at validation
+  scale (opt-in).** A new opt-in target surfaces the Julia-owned
   `HSquared.fit_random_regression_reml()`:
   `hsquared(weight ~ sex + animal(rr(age, order = 2) | id, pedigree = ped), data = long_records, family = gaussian(), REML = TRUE, control = hs_control(engine = "julia", engine_control = list(target = "random_regression")))`.
   `rr(covariate, order = k)` on the left of the
@@ -230,11 +254,14 @@
   [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md))
   was **ratified by the Julia twin** on `HSquared.jl#61` (normalized
   Legendre on standardized `t ∈ [-1, 1]`; Kirkpatrick/Meyer/Schaeffer).
-  Experimental, opt-in, REML-only, single-effect, univariate,
-  dense/validation-scale; mirrors the twin `#54` engine. **Heterogeneous
-  residual variance and a permanent-environment term are still planned**
-  — with the current homogeneous residual and no permanent-environment
-  effect,
+  Covered at validation scale at k=2 (mirrors the twin `V3-RR-REML`
+  covered gate: a pre-declared 48-seed bias/MCSE recovery gate PASSED +
+  a `sommer` 4.4.5 [`leg()`](https://rdrr.io/pkg/enhancer/man/leg.html)
+  same-estimand REML comparator AGREE; exact live R–Julia parity),
+  opt-in, REML-only, single-effect, univariate, dense (k=2 only; k≥3
+  experimental); mirrors the twin `#54` engine. **Heterogeneous residual
+  variance and a permanent-environment term are still planned** — with
+  the current homogeneous residual and no permanent-environment effect,
   [`rr_heritability()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   can OVERSTATE `h^2(t)` for repeated-records designs (test-day, growth
   curves). Multivariate random regression and combining `rr()` with a
