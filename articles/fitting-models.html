@@ -113,13 +113,18 @@ heritability, and breeding values.</p>
 <span><span class="fu"><a href="../reference/heritability.html">heritability</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>   <span class="co"># EBVs (aliases: EBV(), BLUP())</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>The remaining models below are <strong>experimental and
-opt-in</strong>: they are reached through <code>engine = "julia"</code>
-with an explicit <code>target</code>, and their
-<code><a href="../reference/validation_status.html">validation_status()</a></code> rows are <code>partial</code> (they
-mirror the corresponding <code>HSquared.jl</code> gates, which are still
-being validated). They are REML-only and are not yet production- or
-comparator-validated.</p>
+<p>The remaining models below are <strong>opt-in</strong>: they are
+reached through <code>engine = "julia"</code> with an explicit
+<code>target</code>. They are all REML-only, experimental, and not the
+public default. Four of them are <strong>covered at validation
+scale</strong> — each passed a pre-declared 48-seed recovery gate plus a
+same-estimand REML comparator: the common-environment two-effect model,
+arbitrary-N multi-effect, random regression k = 2, and the
+direct–maternal 2×2 G model. Covered at validation scale means
+experimental and not production; none is a default fit. The remaining
+opt-in models (<code><a href="../reference/validation_status.html">validation_status()</a></code> rows
+<code>partial</code>) have not yet passed a comparator- or
+known-truth-validated gate.</p>
 </div>
 <div class="section level2">
 <h2 id="repeatability-permanent-environment">Repeatability (permanent environment)<a class="anchor" aria-label="anchor" href="#repeatability-permanent-environment"></a>
@@ -411,11 +416,17 @@ validated.</p>
 <span><span class="co">##   Phase 6 planned</span></span>
 <span><span class="co">##  Phase 7+ planned</span></span></code></pre>
 <p>Only rows marked <code>covered</code> in
-<code><a href="../reference/validation_status.html">validation_status()</a></code> may be relied on as working; the opt-in
-models above are deliberately <code>partial</code> until their
-<code>HSquared.jl</code> gates and external comparators are signed off.
-Structured/factor-analytic multivariate covariance, non-Gaussian/GLLVM,
-unusual-inheritance, and GPU models remain on the roadmap.</p>
+<code><a href="../reference/validation_status.html">validation_status()</a></code> may be relied on as working. The four
+opt-in models listed as covered above (<code>two_effect</code>
+common-env leg, <code>multi_effect</code>,
+<code>random_regression</code>, <code>direct_maternal</code>) are
+covered at validation scale. The remaining opt-in models
+(<code>repeatability</code>, the maternal two-effect leg, genomic,
+SNP-BLUP, single-step, multivariate) remain <code>partial</code> until
+their <code>HSquared.jl</code> gates and external comparators are signed
+off. Structured/factor-analytic multivariate covariance,
+non-Gaussian/GLLVM, unusual-inheritance, and GPU models remain on the
+roadmap.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

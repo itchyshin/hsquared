@@ -444,13 +444,34 @@ model-internal quantity on the dense validation path — not the realised
 reliability are reported on the dense validation path only and are
 labelled as such.</li>
 <li>
-<strong>Opt-in models are partial/experimental.</strong>
-Repeatability, two-effect (common-environment / maternal-genetic),
-genomic GREML, single-step, SNP-BLUP, and multivariate models fit only
-through
-<code>hs_control(engine = "julia", engine_control = list(target = ...))</code>.
-They are REML-only, Julia-owned, gated on the twin engine’s status, and
-are not comparator- or known-truth-validated.</li>
+<strong>Opt-in models: covered set and experimental set.</strong>
+All opt-in models fit only through
+<code>hs_control(engine = "julia", engine_control = list(target = ...))</code>;
+they are REML-only, Julia-owned, and not the default. Four opt-in models
+are <strong>covered at validation scale</strong> — each passed a
+pre-declared 48-seed bias/MCSE recovery gate plus a same-estimand REML
+comparator, mirroring the twin engine’s covered gate: (1) the
+<strong>common-environment two-effect</strong> leg
+(<code>target = "two_effect"</code> with <code><a href="../reference/qg_effect_markers.html">common_env()</a></code>); (2)
+the <strong>arbitrary-N independent <code>(1|g)</code>
+multi-effect</strong> model (<code>target = "multi_effect"</code>);
+<ol start="3" style="list-style-type: decimal">
+<li>
+<strong>random regression k = 2</strong>
+(<code>target = "random_regression"</code>); and</li>
+<li>the <strong>direct–maternal correlated 2×2 G</strong> model
+(<code>target = "direct_maternal"</code>). Covered at validation scale
+means experimental, opt-in, dense, and not production — the warranty is
+validation-scale only, intervals are asymptotic/uncalibrated, and none
+of these is the public default. The remaining opt-in models —
+repeatability (<code>target = "repeatability"</code>), the
+<strong>maternal-genetic two-effect leg</strong>
+(<code>target = "two_effect"</code> with
+<code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>), genomic GREML, single-step, SNP-BLUP,
+and multivariate — stay <strong>experimental/partial</strong>: they are
+not comparator- or known-truth-validated to a passed gate.</li>
+</ol>
+</li>
 <li>
 <strong>Multivariate is not a t ≥ 2 recovery claim.</strong> The
 multivariate target pins R/Julia payload and extractor parity and has an
@@ -471,10 +492,13 @@ which rows are <code>planned</code>, <code>partial</code>, and
 <code>covered</code>, and the exact claim boundary attached to each —
 call <code><a href="../reference/validation_status.html">validation_status()</a></code>. It is a status table only: it
 does not run checks, fit models, or promote anything.</p>
-<p>For v0.1 the <code>covered</code> rows are exactly the univariate
-Gaussian animal-model fit and the two recovery anchors behind it (the
-known-truth DGP study and the published gryphon estimate). Everything
-else you see is <code>partial</code> or <code>planned</code>.</p>
+<p>For v0.1 the default-path <code>covered</code> rows are the
+univariate Gaussian animal-model fit and its two recovery anchors (the
+known-truth DGP study and the published gryphon estimate). Beyond v0.1,
+four opt-in models are also <code>covered</code> at validation scale
+(see the bullet above): common-environment two-effect, arbitrary-N
+multi-effect, random regression k = 2, and direct–maternal 2×2 G.
+Everything else is <code>partial</code> or <code>planned</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/validation_status.html">validation_status</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">status</span><span class="op">[</span><span class="va">status</span><span class="op">$</span><span class="va">status</span> <span class="op">==</span> <span class="st">"covered"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"capability"</span>, <span class="st">"phase"</span>, <span class="st">"status"</span><span class="op">)</span><span class="op">]</span></span>

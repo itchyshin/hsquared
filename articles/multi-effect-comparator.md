@@ -303,9 +303,10 @@ References (HSquared.jl repo, branch
 `docs/dev-log/recovery-checkpoints/2026-07-01-neffect-recovery-gate-predeclaration.md`.
 
 Scope of the covered claim: arbitrary-N **independent**-effect REML on
-the tested identified design (Gaussian, dense/validation-scale). It does
-NOT cover correlated effects (that is the direct–maternal row),
-production sparse scale, small-sample accuracy of any single component,
-or a public-default status — the R multi-effect surface stays
-**experimental** (opt-in `target = "multi_effect"`; engine-covered is
-not the same as R-public-covered).
+the tested identified design (Gaussian, dense/validation-scale). The R
+public `target = "multi_effect"` surface is **covered at validation
+scale** — covered at validation scale means experimental, opt-in,
+REML-only, dense, and not the public default. It does NOT cover
+correlated effects (that is the direct–maternal row), production sparse
+scale, small-sample accuracy of any single component, ML, or
+non-Gaussian families.

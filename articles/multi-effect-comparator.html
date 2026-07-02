@@ -416,12 +416,13 @@ comparator</strong> on the reconstructed seed-20260800 dataset
 <code>docs/dev-log/recovery-checkpoints/2026-07-01-neffect-recovery-gate-predeclaration.md</code>.</p>
 <p>Scope of the covered claim: arbitrary-N
 <strong>independent</strong>-effect REML on the tested identified design
-(Gaussian, dense/validation-scale). It does NOT cover correlated effects
-(that is the direct–maternal row), production sparse scale, small-sample
-accuracy of any single component, or a public-default status — the R
-multi-effect surface stays <strong>experimental</strong> (opt-in
-<code>target = "multi_effect"</code>; engine-covered is not the same as
-R-public-covered).</p>
+(Gaussian, dense/validation-scale). The R public
+<code>target = "multi_effect"</code> surface is <strong>covered at
+validation scale</strong> — covered at validation scale means
+experimental, opt-in, REML-only, dense, and not the public default. It
+does NOT cover correlated effects (that is the direct–maternal row),
+production sparse scale, small-sample accuracy of any single component,
+ML, or non-Gaussian families.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -52,12 +52,15 @@ Five points frame everything below.
     loadings are interpreted.
 
 5.  **Validation status.** The random-regression REML row `V3-RR-REML`
-    in `HSquared.validation_status()` is **experimental / opt-in**; the
-    k = 2 covered flip is staged for a maintainer decision, and the R
-    public `rr()` surface is not covered (engine-covered ≠
-    R-public-covered). This article’s `sommer` cross-check is
-    corroborating evidence, not the primary gate. The engine gate is
-    summarized in [Validation evidence (do not
+    is **covered at validation scale** — the maintainer G10 flip has
+    been applied and the R public `rr()` surface now matches the twin
+    engine’s covered status. This is experimental and opt-in (not the
+    default; not production or ML; intervals on `K_g` are not
+    implemented). The fences in notes 2–4 above (h²(t) is a curve, not a
+    scalar; overstatement risk without PE; eigenfunctions are
+    rotation-invariant) hold regardless of covered status. This
+    article’s `sommer` cross-check is corroborating evidence; the
+    primary gate evidence is summarized in [Validation evidence (do not
     re-run)](#validation-evidence-do-not-re-run) below.
 
 ## Setup
