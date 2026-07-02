@@ -35,9 +35,11 @@ cross-check and cites the primary engine validation gate. It is companion readin
    variance-explained proportion, NOT a heritability.
 
 4. **Validation status.** `V3-NEFFECT-REML` is `covered` (experimental, validation-scale,
-   opt-in; NOT the public default; `public_covered_count` stays 1) via the doc-16 substitutable
-   gate — a pre-declared 48-seed bias/MCSE recovery gate PASSED and a `sommer` same-estimand
-   REML comparator agrees to ~1e-4 relative. The gate is summarised (not re-run) at the end of
+   opt-in; NOT the default `engine="fit"` path) via the doc-16 substitutable gate — a
+   pre-declared 48-seed bias/MCSE recovery gate PASSED and a `sommer` same-estimand
+   REML comparator agrees to ~1e-4 relative. The R `(1|g)` multi-effect surface is itself a
+   public-covered model (the 3rd `public_covered_count`), still opt-in, with asymptotic /
+   uncalibrated intervals. The gate is summarised (not re-run) at the end of
    this article. This article's own `sommer` cross-check is additional evidence, not the primary
    gate.
 

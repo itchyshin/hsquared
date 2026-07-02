@@ -30,9 +30,9 @@ phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
 }
 \details{
-This mirrors the engine rows \code{V1-HERIT-CI} / \code{V3-TWOEFFECT-REML} /
-\code{V3-NEFFECT-REML}, which are \code{partial}: the interval is a REML-only,
-asymptotic (logit delta-method) approximation, not a coverage-calibrated
-interval, and is unreliable at small \code{n}. It is reported as a point estimate
-plus bounds, not a validated capability.
+The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
+not a coverage-calibrated interval, and is unreliable at small \code{n} (as with the
+\code{partial} \code{V1-HERIT-CI}). The underlying estimators \code{V3-TWOEFFECT-REML} /
+\code{V3-NEFFECT-REML} are \code{covered}, but this interval is reported as a point estimate
+plus bounds, not a validated (coverage-calibrated) capability.
 }

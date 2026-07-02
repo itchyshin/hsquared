@@ -189,9 +189,10 @@ hs_formula_status_behavior <- function() {
       "multi-effect model; combines with an animal() term (and, for K independent",
       "effects, additional (1 | group) terms) and requires engine = \"julia\",",
       "target = \"multi_effect\". Random slopes (x | group) and correlated",
-      "(x || group) terms remain rejected. Point estimates only (variance",
-      "components, heritability, EBVs); intervals are not yet available on this",
-      "path."
+      "(x || group) terms remain rejected. Point estimates plus experimental",
+      "per-component ratio intervals (heritability_interval() resolves to the animal",
+      "ratio; other blocks in variance_ratio_intervals); intervals are asymptotic",
+      "delta-method and NOT coverage-calibrated."
     ),
     paste(
       "Opt-in, experimental random-regression (reaction-norm) model: rr(covariate,",

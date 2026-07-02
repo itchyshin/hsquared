@@ -901,11 +901,11 @@ accuracy.hsquared_fit <- function(object, ...) {
 #' phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 #' separately in `fit$result$variance_ratio_intervals`.
 #'
-#' This mirrors the engine rows `V1-HERIT-CI` / `V3-TWOEFFECT-REML` /
-#' `V3-NEFFECT-REML`, which are `partial`: the interval is a REML-only,
-#' asymptotic (logit delta-method) approximation, not a coverage-calibrated
-#' interval, and is unreliable at small `n`. It is reported as a point estimate
-#' plus bounds, not a validated capability.
+#' The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
+#' not a coverage-calibrated interval, and is unreliable at small `n` (as with the
+#' `partial` `V1-HERIT-CI`). The underlying estimators `V3-TWOEFFECT-REML` /
+#' `V3-NEFFECT-REML` are `covered`, but this interval is reported as a point estimate
+#' plus bounds, not a validated (coverage-calibrated) capability.
 #'
 #' @inheritParams variance_components
 #'

@@ -86,7 +86,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   status <- formula_status()
 
   expect_s3_class(status, "hs_formula_status")
-  expect_equal(nrow(status), 35L)
+  expect_equal(nrow(status), 36L)
   expect_true("term" %in% names(status))
   expect_true("syntax_status" %in% names(status))
   expect_true("fitting_status" %in% names(status))
@@ -244,14 +244,14 @@ test_that("validation_status separates evidence from planned validation", {
     ],
     "partial"
   )
-  # Phase 1 public flip (2026-07-01): the two-effect estimator's common-environment
-  # leg is now COVERED (opt-in; engine V3-TWOEFFECT-REML gate + blupf90 comparator +
-  # exact live R↔engine parity). The maternal leg stays experimental (label reflects
-  # the split). public_covered_count 1→2.
+  # Phase 1 (2026-07-01): common-environment two-effect leg COVERED (public_covered_count 1->2).
+  # Phase 2-R (2026-07-01): generalized to arbitrary-N independent (1|g) effects, same row,
+  # COVERED (public_covered_count 2->3; engine V3-NEFFECT-REML gate + sommer comparator + exact
+  # live R-Julia parity). Maternal leg (A2=pedigree) stays experimental (label reflects the split).
   expect_equal(
     status$status[
       status$capability ==
-        "two-effect estimator (opt-in; covered: common-env / A2=I; experimental: maternal / A2=pedigree)"
+        "two-effect / arbitrary-N independent-effect estimator (opt-in; covered: common-env + (1|g) iid / A2=I; experimental: maternal / A2=pedigree)"
     ],
     "covered"
   )

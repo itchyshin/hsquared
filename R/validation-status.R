@@ -45,7 +45,7 @@ hs_validation_status_capabilities <- function() {
     "Mrode-style supplied-variance outputs",
     "experimental sparse REML estimator (opt-in)",
     "experimental repeatability estimator (opt-in)",
-    "two-effect estimator (opt-in; covered: common-env / A2=I; experimental: maternal / A2=pedigree)",
+    "two-effect / arbitrary-N independent-effect estimator (opt-in; covered: common-env + (1|g) iid / A2=I; experimental: maternal / A2=pedigree)",
     "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
     "experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)",
     "experimental multivariate REML estimator (opt-in)",
@@ -78,7 +78,7 @@ hs_validation_status_phases <- function() {
 hs_validation_status_status <- function() {
   c(
     rep("partial", 7L),      # positions 1-7
-    "covered",               # position 8 = two-effect estimator (COMMON-ENV / A2=I scope covered; maternal experimental)
+    "covered",               # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
     rep("partial", 3L),      # positions 9-11
     rep("covered", 3L),
     rep("planned", 7L)
@@ -299,7 +299,12 @@ hs_validation_status_boundaries <- function() {
       "live parity but STAYS EXPERIMENTAL - its own recovery gate + comparator on the",
       "maternal-A2 design are owed. Not ML, not production sparse fitting; the h2/c2",
       "interval is asymptotic/delta-method and NOT coverage-calibrated; the correlated",
-      "direct-maternal (2x2 G) model is planned."
+      "direct-maternal (2x2 G) model is planned. The arbitrary-N generalization to",
+      "independent (1|g) i.i.d. effects (target='multi_effect') is COVERED on the same",
+      "V3-NEFFECT-REML engine gate with exact live R-Julia parity; the animal-block ratio",
+      "is narrow-sense h2, other blocks are variance-explained proportions (not",
+      "heritabilities), intervals asymptotic/uncalibrated; INDEPENDENT effects only (NOT",
+      "correlated / random-regression / non-Gaussian)."
     ),
     paste(
       "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
