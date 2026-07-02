@@ -36,3 +36,16 @@ separately by
 [`common_env_proportion()`](https://itchyshin.github.io/hsquared/reference/common_env_proportion.md)
 /
 [`maternal_proportion()`](https://itchyshin.github.io/hsquared/reference/maternal_proportion.md).
+
+Willham fence for the opt-in direct-maternal correlated model
+(`target = "direct_maternal"`): `heritability()` returns the **labelled
+triple** — direct h2_d, maternal m2, Willham total h2_T, and r_am — as a
+data frame (Willham 1963, 1972).
+`sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)`
+(coefficient 1 on sigma_dm). A warning is issued because h2 is
+denominator-dependent under maternal effects and h2_T \< h2_d is
+expected when r_am \< 0. Use
+[`direct_heritability()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+or
+[`total_heritability()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+for targeted accessors without the warning.

@@ -273,9 +273,13 @@ pedigree/data ID checks.</li>
 <p>These models are reachable only through
 <code>control = hs_control(engine = "julia", engine_control = list(target = ...))</code>,
 are REML only, are Julia-owned (R only surfaces them), and are
-<strong>not</strong> the default, not production, and not
-comparator/known-truth-validated. Each mirrors a <code>partial</code>
-gate in the <code>HSquared.jl</code> twin.</p>
+<strong>not</strong> the default and not production. Most mirror a
+<code>partial</code> gate in the <code>HSquared.jl</code> twin;
+exceptions are noted — the common-environment and direct–maternal
+correlated models are <strong>covered at validation scale</strong>
+(passed a pre-declared 48-seed bias/MCSE gate and a same-estimand REML
+comparator), while the remaining entries are not yet
+comparator/known-truth-validated at that bar.</p>
 <ul>
 <li>Repeatability / permanent environment —
 <code>animal(1 | id) + permanent(1 | id)</code>,
@@ -285,11 +289,23 @@ individual).</li>
 <code>animal(1 | id) + common_env(1 | group)</code>,
 <code>target = "two_effect"</code> (additive + IID common
 environment).</li>
-<li>Maternal genetic —
+<li>Maternal genetic (INDEPENDENT two-effect leg) —
 <code>animal(1 | id) + maternal_genetic(1 | dam)</code>,
-<code>target = "two_effect"</code> (additive + pedigree maternal
-effect). The correlated direct–maternal (2×2 G) model is still
-planned.</li>
+<code>target = "two_effect"</code> (additive + pedigree maternal effect,
+treated as independent).</li>
+<li>Direct–maternal correlated model (2×2 G) —
+<code>animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)</code>,
+<code>target = "direct_maternal"</code> — the first correlated
+random-effect model (estimates the direct–maternal covariance
+<code>σ_dm</code>). <strong>Covered at validation scale</strong>
+(mirrors the twin <code>V4-DIRECT-MATERNAL</code>: a pre-declared
+48-seed bias/MCSE gate PASSED + a <code>sommer</code>
+<code>covm()</code> same-estimand REML comparator AGREE), still opt-in
+and dense/validation-scale (<code>n ≤ ~1000</code>).
+<code><a href="../reference/heritability.html">heritability()</a></code> returns the Willham labelled triple (direct
+<code>h²_d</code>, maternal <code>m²</code>, total <code>h²_T</code>,
+<code>r_am</code>), never a bare scalar; a negative <code>r_am</code> is
+real and expected.</li>
 <li>Genomic GREML — <code>genomic(1 | id, Ginv = Ginv)</code> or
 <code>genomic(1 | id, markers = M)</code> (the engine builds the genomic
 relationship from the marker matrix),

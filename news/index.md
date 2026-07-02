@@ -4,6 +4,45 @@
 
 ### New features
 
+- **Direct–maternal correlated (2×2 G) animal model — covered at
+  validation scale (opt-in).**
+  [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+  now fits the correlated direct–maternal model through
+  `hs_control(engine = "julia", engine_control = list(target = "direct_maternal"))`
+  on `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`,
+  surfacing the Julia-owned `HSquared.fit_direct_maternal_reml()`. This
+  is the **first correlated random-effect model** (a 2×2 genetic
+  covariance `G_dm` over the direct and maternal breeding values),
+  distinct from the INDEPENDENT two-effect maternal leg
+  (`target = "two_effect"`). It estimates four variance components
+  (`σ²_ad` direct, `σ²_am` maternal, `σ_dm` the direct–maternal
+  covariance, `σ²e` residual) and adds
+  [`genetic_correlation()`](https://itchyshin.github.io/hsquared/reference/multivariate_extractors.md)
+  (the direct–maternal `r_am`),
+  [`direct_heritability()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md),
+  and
+  [`total_heritability()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+  (Willham total `h²_T`). **Willham fence:**
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+  on a `direct_maternal` fit returns the **labelled triple** — direct
+  `h²_d = σ²_ad/σ_P`, maternal variance ratio `m² = σ²_am/σ_P`, Willham
+  total `h²_T = (σ²_ad + 1.5·σ_dm + 0.5·σ²_am)/σ_P`, and `r_am` —
+  **never a bare scalar** (`σ_P = σ²_ad + σ²_am + σ_dm + σ²e`); direct
+  `h²` is NOT the total heritability, and a negative `r_am` is real and
+  expected (`h²_T < h²_d` when `r_am < 0`). **Covered at VALIDATION
+  scale** (mirrors the twin `V4-DIRECT-MATERNAL`, now covered): a
+  PRE-DECLARED 48-seed bias/MCSE recovery gate PASSED (48/48 converged,
+  all four `|bias| ≤ 2·MCSE`) and a `sommer` 4.4.5
+  [`covm()`](https://rdrr.io/pkg/sommer/man/covm.html) same-estimand
+  REML comparator AGREE (`σ_dm` 1.1e-2, other entries ≤ 4.2e-3
+  relative). Experimental, opt-in, REML-only, dense/validation-scale
+  (single relationship `A`, n ≤ ~1000; `|r_am| → 1` rides on
+  `converged`); not the default, not ML, not production. A 2nd
+  independent same-estimand comparator on a different lineage
+  (`blupf90+` AIREMLF90 2×2-G; WOMBAT not installed), broader-DGP /
+  larger-scale recovery, and a Mrode Ch.7 anchor remain owed (covered
+  does not retire them).
+
 - **Genome-wide significance calibration for
   [`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md)
   (`genome_wide = TRUE`).**
@@ -560,8 +599,9 @@
   [`common_env_effects()`](https://itchyshin.github.io/hsquared/reference/common_env_effects.md).
   The default `engine = "fit"` path stays single-effect. This is
   experimental and REML-only; not the default, not production or
-  comparator-validated; correlated direct–maternal (2×2 G) effects
-  remain planned.
+  comparator-validated. The correlated direct–maternal (2×2 G) model is
+  a separate opt-in target (`target = "direct_maternal"`; now covered at
+  validation scale — see the development-version entry).
 - **Experimental, opt-in maternal-genetic two-effect model.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now parses
@@ -576,8 +616,11 @@
   [`maternal_effects()`](https://itchyshin.github.io/hsquared/reference/maternal_effects.md);
   the dams must be animals in the
   [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
-  pedigree. Experimental and REML-only; the correlated direct–maternal
-  (2×2 G) model remains planned.
+  pedigree. Experimental and REML-only; this two-effect maternal leg
+  treats the direct and maternal effects as INDEPENDENT. The correlated
+  direct–maternal (2×2 G) model is a separate opt-in target
+  (`target = "direct_maternal"`; now covered at validation scale — see
+  the development-version entry).
 - **Experimental, opt-in genomic GREML model.**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
   now parses `genomic(1 | id, Ginv = Ginv)` — a primary genomic effect

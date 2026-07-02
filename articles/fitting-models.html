@@ -171,7 +171,9 @@ maternal genetic effect expressed through the dam. Both carry the
 pedigree relationship (the maternal effect uses
 <code>A₂ = pedigree A</code>), and the dams must be animals in the
 <code><a href="../reference/animal.html">animal()</a></code> pedigree. This is the independent (uncorrelated)
-direct–maternal model; the correlated 2×2 G version is planned.</p>
+direct–maternal model; the correlated 2×2 G version is covered at
+validation scale (opt-in, <code>target = "direct_maternal"</code> — see
+below).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hsquared.html">hsquared</a></span><span class="op">(</span></span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/qg_effect_markers.html">maternal_genetic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">dam</span><span class="op">)</span>,</span>

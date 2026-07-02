@@ -98,7 +98,8 @@ pedigree relationship (the maternal effect uses `A₂ = pedigree A`), and
 the dams must be animals in the
 [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)
 pedigree. This is the independent (uncorrelated) direct–maternal model;
-the correlated 2×2 G version is planned.
+the correlated 2×2 G version is covered at validation scale (opt-in,
+`target = "direct_maternal"` — see below).
 
 ``` r
 

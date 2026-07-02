@@ -90,6 +90,13 @@ which now includes the second component <code>sigma_2</code>). The second compon
 variance ratio (common-environment <code>c2</code> or maternal <code>m2</code>) is <strong>not</strong> a
 heritability and is returned separately by <code><a href="common_env_proportion.html">common_env_proportion()</a></code> /
 <code><a href="maternal_proportion.html">maternal_proportion()</a></code>.</p>
+<p>Willham fence for the opt-in direct-maternal correlated model
+(<code>target = "direct_maternal"</code>): <code>heritability()</code> returns the <strong>labelled
+triple</strong> — direct h2_d, maternal m2, Willham total h2_T, and r_am — as a
+data frame (Willham 1963, 1972). <code>sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)</code> (coefficient 1 on sigma_dm). A warning is issued
+because h2 is denominator-dependent under maternal effects and
+h2_T &lt; h2_d is expected when r_am &lt; 0. Use <code><a href="direct_maternal_extractors.html">direct_heritability()</a></code> or
+<code><a href="direct_maternal_extractors.html">total_heritability()</a></code> for targeted accessors without the warning.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

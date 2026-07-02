@@ -116,6 +116,12 @@ opt-in experimental targets.
   [`maternal_proportion_interval()`](https://itchyshin.github.io/hsquared/reference/common_env_proportion_interval.md)
   : Extract an experimental common-environment / maternal variance-ratio
   interval
+- [`direct_heritability()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+  [`direct_variance()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+  [`partner_variance()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+  [`direct_maternal_covariance()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+  [`total_heritability()`](https://itchyshin.github.io/hsquared/reference/direct_maternal_extractors.md)
+  : Direct-maternal correlated model extractors
 - [`rr_covariance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   [`random_coefficients()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   [`rr_genetic_variance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)

@@ -93,7 +93,7 @@
 <h2 id="phase-2-standard-quantitative-genetic-models">Phase 2: Standard Quantitative-Genetic Models<a class="anchor" aria-label="anchor" href="#phase-2-standard-quantitative-genetic-models"></a></h2>
 <p>Status: started (opt-in). The repeatability / permanent-environment model is surfaced opt-in and experimental (<code>engine = "julia", target = "repeatability"</code>, mirroring the twin <code>V3-REPEAT-REML</code> partial gate); the remaining standard models are planned.</p>
 <ul><li>Repeatability / permanent environment — opt-in, experimental (REML, needs repeated records).</li>
-<li>Common environment and maternal-genetic — opt-in, experimental (<code>target = "two_effect"</code>, mirroring the twin <code>V3-TWOEFFECT-REML</code> partial gate); two independent effects. The correlated direct–maternal (2×2 G) model remains planned.</li>
+<li>Common environment and maternal-genetic — opt-in, experimental (<code>target = "two_effect"</code>, mirroring the twin <code>V3-TWOEFFECT-REML</code> partial gate); two independent effects. The correlated direct–maternal (2×2 G) model is a separate opt-in target (<code>target = "direct_maternal"</code>), now <strong>covered at validation scale</strong> (mirrors the twin <code>V4-DIRECT-MATERNAL</code>; pre-declared 48-seed gate PASSED + <code>sommer</code> <code>covm()</code> comparator AGREE; Willham labelled-triple <code>h²</code>, dense n≤~1000, not the default).</li>
 <li>Sire models.</li>
 <li>Groups and unknown parent groups.</li>
 <li>Inbreeding coefficients.</li>
