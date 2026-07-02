@@ -15,3 +15,4 @@
 ^README\.Rmd$
 ^pkgdown-site$
 ^pkgdown$
+^sim$

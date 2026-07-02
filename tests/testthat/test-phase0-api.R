@@ -244,12 +244,16 @@ test_that("validation_status separates evidence from planned validation", {
     ],
     "partial"
   )
+  # Phase 1 public flip (2026-07-01): the two-effect estimator's common-environment
+  # leg is now COVERED (opt-in; engine V3-TWOEFFECT-REML gate + blupf90 comparator +
+  # exact live R↔engine parity). The maternal leg stays experimental (label reflects
+  # the split). public_covered_count 1→2.
   expect_equal(
     status$status[
       status$capability ==
-        "experimental two-effect estimator (opt-in: common-env, maternal)"
+        "two-effect estimator (opt-in; covered: common-env / A2=I; experimental: maternal / A2=pedigree)"
     ],
-    "partial"
+    "covered"
   )
   expect_true(all(
     c("capability", "phase", "status", "evidence", "claim_boundary") %in%

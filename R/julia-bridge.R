@@ -939,7 +939,50 @@ hs_fit_julia_two_effect_payload <- function(
     "\"converged\" => hsq_fit.converged)"
   ))
 
+  # Experimental, opt-in ratio interval (engine `two_effect_ratio_interval`):
+  # ratio1 = h2, ratio2 = c2/m2, on the SAME inputs used for the fit. It refits
+  # internally and forms the observed information as the finite-difference
+  # Hessian of the two-effect REML loglik; on a flat/boundary optimum the sub-
+  # information can be non-positive-definite, so the try guard keeps an interval
+  # failure from aborting the fit. hsq_has_ci gates the eval so a Julia `nothing`
+  # never crosses the bridge. Asymptotic delta-method, NOT coverage-calibrated.
+  JuliaCall::julia_command(paste(
+    "hsq_ci = if isdefined(HSquared, :two_effect_ratio_interval) &&",
+    "applicable(HSquared.two_effect_ratio_interval,",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2);",
+    "try; HSquared.two_effect_ratio_interval(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
+    "initial = (sigma1 = hsq_initial_sigma_a2,",
+    "sigma2 = hsq_initial_sigma_c2,",
+    "sigma_e2 = hsq_initial_sigma_e2),",
+    "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
+    ids2_cmd, ");",
+    "catch; nothing; end; else; nothing; end;",
+    "hsq_has_ci = hsq_ci !== nothing;"
+  ))
+
   result <- hs_normalize_two_effect_result(raw, payload)
+  if (isTRUE(JuliaCall::julia_eval("hsq_has_ci"))) {
+    raw_ci <- JuliaCall::julia_eval(paste(
+      "Dict(",
+      "\"level\" => hsq_ci.level,",
+      "\"r1_estimate\" => hsq_ci.ratio1.estimate,",
+      "\"r1_lower\" => hsq_ci.ratio1.lower,",
+      "\"r1_upper\" => hsq_ci.ratio1.upper,",
+      "\"r1_se\" => hsq_ci.ratio1.se,",
+      "\"r1_lower_clamped\" => hsq_ci.ratio1.lower_clamped,",
+      "\"r1_upper_clamped\" => hsq_ci.ratio1.upper_clamped,",
+      "\"r1_boundary\" => hsq_ci.ratio1.boundary,",
+      "\"r2_estimate\" => hsq_ci.ratio2.estimate,",
+      "\"r2_lower\" => hsq_ci.ratio2.lower,",
+      "\"r2_upper\" => hsq_ci.ratio2.upper,",
+      "\"r2_se\" => hsq_ci.ratio2.se,",
+      "\"r2_lower_clamped\" => hsq_ci.ratio2.lower_clamped,",
+      "\"r2_upper_clamped\" => hsq_ci.ratio2.upper_clamped,",
+      "\"r2_boundary\" => hsq_ci.ratio2.boundary)"
+    ))
+    result <- hs_attach_two_effect_intervals(result, raw_ci, payload)
+  }
   hs_new_fit(
     spec = list(
       method = "REML",
@@ -1006,6 +1049,82 @@ hs_normalize_two_effect_result <- function(raw, payload) {
     )
   }
   result
+}
+
+# Attach the two-effect ratio intervals to the result. ratio1 (h2) populates
+# `heritability_interval` (same one-row shape as the univariate delta CI, so
+# heritability_interval() resolves identically on a two-effect fit); ratio2
+# (c2/m2) populates the second-effect interval field, keyed by the second-effect
+# type (common_env -> common_env_proportion_interval, otherwise ->
+# maternal_proportion_interval). Boundary-flagged (sigma -> 0) components arrive
+# with NaN bounds from the engine and are normalized to NA (not a spurious CI).
+hs_attach_two_effect_intervals <- function(result, raw_ci, payload) {
+  level <- as.numeric(raw_ci$level)
+  result$heritability_interval <- hs_normalize_two_effect_ratio_interval(
+    estimate = raw_ci$r1_estimate,
+    lower = raw_ci$r1_lower,
+    upper = raw_ci$r1_upper,
+    se = raw_ci$r1_se,
+    lower_clamped = raw_ci$r1_lower_clamped,
+    upper_clamped = raw_ci$r1_upper_clamped,
+    boundary = raw_ci$r1_boundary,
+    level = level,
+    with_method = TRUE
+  )
+  ratio2 <- hs_normalize_two_effect_ratio_interval(
+    estimate = raw_ci$r2_estimate,
+    lower = raw_ci$r2_lower,
+    upper = raw_ci$r2_upper,
+    se = raw_ci$r2_se,
+    lower_clamped = raw_ci$r2_lower_clamped,
+    upper_clamped = raw_ci$r2_upper_clamped,
+    boundary = raw_ci$r2_boundary,
+    level = level,
+    with_method = FALSE
+  )
+  if (identical(payload$effect2$type, "common_env")) {
+    result$common_env_proportion_interval <- ratio2
+  } else {
+    result$maternal_proportion_interval <- ratio2
+  }
+  result
+}
+
+# Normalize one ratio's interval from `two_effect_ratio_interval` into a one-row
+# data frame. The engine reports NaN bounds when a component is on the boundary
+# (sigma -> 0); those become NA here. `with_method = TRUE` appends
+# `method = "delta"` so ratio1 (h2) matches the univariate heritability_interval
+# shape; ratio2 (c2/m2) omits it (delta is the only method for the ratio).
+hs_normalize_two_effect_ratio_interval <- function(
+  estimate,
+  lower,
+  upper,
+  se,
+  lower_clamped,
+  upper_clamped,
+  boundary,
+  level,
+  with_method
+) {
+  na_if_nan <- function(x) {
+    x <- as.numeric(x)
+    if (length(x) != 1L || is.nan(x)) NA_real_ else x
+  }
+  out <- data.frame(
+    estimate = na_if_nan(estimate),
+    lower = na_if_nan(lower),
+    upper = na_if_nan(upper),
+    level = as.numeric(level),
+    se = na_if_nan(se),
+    lower_clamped = isTRUE(as.logical(lower_clamped)),
+    upper_clamped = isTRUE(as.logical(upper_clamped)),
+    boundary = isTRUE(as.logical(boundary)),
+    stringsAsFactors = FALSE
+  )
+  if (isTRUE(with_method)) {
+    out$method <- "delta"
+  }
+  out
 }
 
 hs_fit_julia_multivariate_payload <- function(
