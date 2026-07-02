@@ -184,7 +184,7 @@ hs_formula_status_behavior <- function() {
       "model (A2 = pedigree A via the dam, INDEPENDENT of the direct effect);",
       "requires an animal() term and engine = \"julia\", target = \"two_effect\".",
       "(2) The CORRELATED direct-maternal 2x2 G model (target = \"direct_maternal\"),",
-      "which estimates the direct-maternal genetic covariance sigma_dm — COVERED at",
+      "which estimates the direct-maternal genetic covariance sigma_dm - COVERED at",
       "validation scale (opt-in; NOT the default fit path): engine V4-DIRECT-MATERNAL",
       "covered via a pre-declared 48-seed bias/MCSE gate PASSED (48/48, all four",
       "|bias|<=2*MCSE) + a sommer 4.4.5 covm() same-estimand REML comparator AGREE.",

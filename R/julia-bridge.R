@@ -1235,7 +1235,7 @@ hs_normalize_direct_maternal_result <- function(
         "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
         "h2 is denominator-dependent under maternal effects. ASReml/BLUPF90/",
         "WOMBAT report raw components and leave sigma_P to the user; sommer/",
-        "MCMCglmm h2 depends on the user's chosen denominator — compare",
+        "MCMCglmm h2 depends on the user's chosen denominator - compare",
         "(co)variance components, not h2 values, across software.",
         "Use validate = TRUE to inspect the contract before fitting."
       )
