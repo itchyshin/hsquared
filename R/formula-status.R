@@ -176,8 +176,16 @@ hs_formula_status_behavior <- function() {
       "engine = \"julia\", target = \"repeatability\"."
     ),
     paste(
-      "Common-environment effect of the opt-in, experimental two-effect model;",
-      "requires an animal() term and engine = \"julia\", target = \"two_effect\"."
+      "Common-environment effect of the opt-in two-effect model (additive",
+      "animal genetic + IID common environment, A2 = I); requires an animal()",
+      "term and engine = \"julia\", target = \"two_effect\". COVERED at validation",
+      "scale (opt-in; NOT the default fit path): mirrors the twin",
+      "V3-TWOEFFECT-REML covered gate - a pre-declared 48-seed bias/MCSE recovery",
+      "gate PASSED + a blupf90+ same-estimand REML comparator agrees ~1e-5",
+      "(sommer cross-check ~2e-5); the h2/c2 interval is asymptotic delta-method",
+      "and NOT coverage-calibrated. The MATERNAL genetic leg (maternal_genetic(),",
+      "A2 = pedigree, same target) uses the same estimator with exact live parity",
+      "but STAYS experimental."
     ),
     paste(
       "Maternal genetic effect. TWO opt-in paths. (1) The EXPERIMENTAL two-effect",
@@ -195,14 +203,20 @@ hs_formula_status_behavior <- function() {
       "The two-effect maternal leg (path 1) STAYS experimental."
     ),
     paste(
-      "Bare (1 | group) i.i.d. random intercept of the opt-in, experimental",
-      "multi-effect model; combines with an animal() term (and, for K independent",
-      "effects, additional (1 | group) terms) and requires engine = \"julia\",",
-      "target = \"multi_effect\". Random slopes (x | group) and correlated",
-      "(x || group) terms remain rejected. Point estimates plus experimental",
-      "per-component ratio intervals (heritability_interval() resolves to the animal",
-      "ratio; other blocks in variance_ratio_intervals); intervals are asymptotic",
-      "delta-method and NOT coverage-calibrated."
+      "Bare (1 | group) i.i.d. random intercept of the opt-in multi-effect model;",
+      "combines with an animal() term (and, for K independent effects, additional",
+      "(1 | group) terms) and requires engine = \"julia\", target = \"multi_effect\".",
+      "COVERED at validation scale (opt-in; the arbitrary-N INDEPENDENT",
+      "generalization of the two-effect model): mirrors the twin V3-NEFFECT-REML",
+      "covered gate (48-seed bias/MCSE gate PASSED + a sommer same-estimand REML",
+      "comparator) with exact live R-Julia parity. Random slopes (x | group) and",
+      "correlated (x || group) terms remain rejected. The animal-block ratio is",
+      "narrow-sense h2; other blocks are variance-explained proportions (not",
+      "heritabilities). Point estimates plus per-component ratio intervals",
+      "(heritability_interval() resolves to the animal ratio; other blocks in",
+      "variance_ratio_intervals); intervals are asymptotic delta-method and NOT",
+      "coverage-calibrated. INDEPENDENT effects only (NOT correlated /",
+      "random-regression / non-Gaussian)."
     ),
     paste(
       "Opt-in random-regression (reaction-norm) model: rr(covariate, order = k) on",

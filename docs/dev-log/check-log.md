@@ -3,6 +3,28 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-02 (covered-status surface reconciliation)
+
+- Propagated four prior maintainer-signed **G10** covered flips — common-env
+  two-effect leg (`7538663`), arbitrary-N `(1|g)` multi-effect (`9fe1458`),
+  RR k=2 (`9cb3481`), direct–maternal (`e3462d3`) — to the lagging status
+  surfaces so `R/formula-status.R` behavior, `docs/design/06-public-claims-register.md`,
+  `docs/design/capability-status.md`, `ROADMAP.md`, `NEWS.md`, and the
+  `model-status` article agree with the runtime `validation_status()` ledger
+  (capability 8, already covered). The article now splits "Opt-in and covered at
+  validation scale" from "Opt-in and experimental".
+- Claim boundary: **docs/status consistency only**; NO new coverage decision;
+  `validation_status()` unchanged (**21 rows**, covered-count 4); maternal
+  two-effect leg + repeatability + genomic/single-step/SNP-BLUP/multivariate/
+  non-Gaussian/metafounder STAY experimental; Willham labelled-triple, `h²(t)`
+  curve, asymptotic/uncalibrated-interval, opt-in/not-default fences preserved.
+- Checks: `test_dir(filter = "phase0-api|formula-animal|engine-setup-and-honesty")`
+  pass (1 live-Julia skip on CRAN); `rmarkdown::render` of the article OK;
+  `Rscript -e 'pkgdown::check_pkgdown()'` → "No problems found";
+  `rg '[^\x00-\x7F]' R/formula-status.R` empty (ASCII-clean).
+- Rose (`rose-systems-auditor`): **PROMOTE-WITH-CHANGES** — exclude the unrelated
+  pre-existing `AGENTS.md`/`CLAUDE.md` local edits from the commit (applied).
+
 ## 2026-06-24 R-twin parity: expose `em_warmup` through the bridge
 
 - Twin-parity for HSquared.jl engine slice A (#186): exposed the opt-in EM-REML

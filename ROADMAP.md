@@ -78,16 +78,23 @@ marks `fit_sparse_reml` green; until then it ships fenced and skip-guarded.
 
 ## Phase 2: Standard Quantitative-Genetic Models
 
-Status: started (opt-in). The repeatability / permanent-environment model is
-surfaced opt-in and experimental (`engine = "julia", target = "repeatability"`,
-mirroring the twin `V3-REPEAT-REML` partial gate); the remaining standard models
-are planned.
+Status: started (opt-in). Several standard models are now surfaced opt-in and
+**covered at validation scale**: common-environment (`target = "two_effect"`) and
+its arbitrary-N independent `(1 | g)` generalization (`target = "multi_effect"`),
+plus the k=2 random-regression reaction-norm model
+(`target = "random_regression"`). The repeatability / permanent-environment model
+(`target = "repeatability"`, mirroring the twin `V3-REPEAT-REML` partial gate) and
+the maternal-genetic two-effect leg are opt-in and experimental; the remaining
+standard models are planned.
 
 - Repeatability / permanent environment — opt-in, experimental (REML, needs
   repeated records).
-- Common environment and maternal-genetic — opt-in, experimental
-  (`target = "two_effect"`, mirroring the twin `V3-TWOEFFECT-REML` partial gate);
-  two independent effects. The correlated direct–maternal (2×2 G) model is a
+- Common environment — opt-in, **covered at validation scale**
+  (`target = "two_effect"`, common-environment leg; mirrors the twin
+  `V3-TWOEFFECT-REML` covered gate), with an arbitrary-N independent `(1 | g)`
+  generalization (`target = "multi_effect"`, also covered; mirrors the twin
+  `V3-NEFFECT-REML`). The maternal-genetic two-effect leg (A2 = pedigree) uses the
+  same estimator but stays experimental. The correlated direct–maternal (2×2 G) model is a
   separate opt-in target (`target = "direct_maternal"`), now **covered at
   validation scale** (mirrors the twin `V4-DIRECT-MATERNAL`; pre-declared 48-seed
   gate PASSED + `sommer` `covm()` comparator AGREE; Willham labelled-triple `h²`,
@@ -95,7 +102,8 @@ are planned.
 - Sire models.
 - Groups and unknown parent groups.
 - Inbreeding coefficients.
-- First random-regression slice.
+- Random-regression k=2 reaction-norm slice — opt-in, **covered at validation
+  scale** (`target = "random_regression"`; mirrors the twin `V3-RR-REML`).
 
 ## Phase 3: Multivariate Gaussian Animal Models
 
