@@ -30,6 +30,8 @@
   evidence](https://itchyshin.github.io/hsquared/articles/two-effect-comparator.md):
 - [Multi-effect model (K \>= 3): sommer comparator and validation
   evidence](https://itchyshin.github.io/hsquared/articles/multi-effect-comparator.md):
+- [Random regression (k = 2): sommer comparator and validation
+  evidence](https://itchyshin.github.io/hsquared/articles/rr-comparator.md):
 - [Formula grammar
   roadmap](https://itchyshin.github.io/hsquared/articles/formula-grammar.md):
 - [Genomics, QTL, and CPU/GPU
