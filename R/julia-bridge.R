@@ -995,6 +995,150 @@ hs_fit_julia_two_effect_payload <- function(
   )
 }
 
+# Fit an arbitrary-N independent-random-effect model (animal + >= 2 i.i.d.
+# blocks) through the engine's payload-v2 entry points. Rather than re-deriving
+# the `(Z_i, Ainv_i)` effects vector in R, this assembles the block-structured
+# `random_effects` payload on the Julia side and calls the exported
+# `HSquared.fit_payload_v2(payload)` (which parses the block list and routes
+# K >= 3 independent blocks to `fit_multi_effect_reml`) and
+# `HSquared.result_payload_v2(fit, parsed)` (the block-structured result).
+# POINT ESTIMATES ONLY (variance components / heritability / EBVs); no interval
+# is attached here (the multi-effect ratio interval is a separate later slice).
+hs_fit_julia_n_effect_payload <- function(
+  payload,
+  project = hs_default_julia_project()
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  blocks <- payload$random_effects
+  if (is.null(blocks) || length(blocks) < 3L) {
+    stop(
+      "Internal bridge error: the multi-effect payload needs at least three ",
+      "random-effect blocks (animal + two or more i.i.d. effects).",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  JuliaCall::julia_assign("hsq_method", payload$method)
+
+  # Assign each block's engine inputs and build a Julia Dict per block, matching
+  # the payload-v2 §2 field table read by `parse_payload_v2`:
+  #   pedigree block: type="pedigree", relmat_status="build_in_julia",
+  #                   pedigree=(id,sire,dam), ids
+  #   iid block:      type="iid",      relmat_status="identity", ids
+  block_syms <- character(length(blocks))
+  for (i in seq_along(blocks)) {
+    b <- blocks[[i]]
+    z_name <- paste0("hsq_blkZ_", i)
+    hs_julia_assign_sparse_csc(z_name, b$Z)
+    ids_name <- paste0("hsq_blkids_", i)
+    JuliaCall::julia_assign(ids_name, as.character(b$ids))
+    blk_sym <- paste0("hsq_blk_", i)
+    block_syms[[i]] <- blk_sym
+    if (identical(b$type, "pedigree")) {
+      JuliaCall::julia_assign(
+        paste0("hsq_blkped_id_", i),
+        as.character(b$pedigree$id)
+      )
+      JuliaCall::julia_assign(
+        paste0("hsq_blkped_sire_", i),
+        hs_parent_for_julia(b$pedigree$sire)
+      )
+      JuliaCall::julia_assign(
+        paste0("hsq_blkped_dam_", i),
+        hs_parent_for_julia(b$pedigree$dam)
+      )
+      JuliaCall::julia_command(sprintf(
+        paste0(
+          "%s = Dict{String,Any}(\"name\" => \"%s\", \"type\" => \"pedigree\", ",
+          "\"Z\" => %s, \"relmat_status\" => \"build_in_julia\", ",
+          "\"pedigree\" => Dict{String,Any}(\"id\" => hsq_blkped_id_%d, ",
+          "\"sire\" => hsq_blkped_sire_%d, \"dam\" => hsq_blkped_dam_%d), ",
+          "\"ids\" => %s);"
+        ),
+        blk_sym, b$name, z_name, i, i, i, ids_name
+      ))
+    } else {
+      # iid block: identity relationship, no pedigree.
+      JuliaCall::julia_command(sprintf(
+        paste0(
+          "%s = Dict{String,Any}(\"name\" => \"%s\", \"type\" => \"iid\", ",
+          "\"Z\" => %s, \"relmat_status\" => \"identity\", \"ids\" => %s);"
+        ),
+        blk_sym, b$name, z_name, ids_name
+      ))
+    }
+  }
+
+  JuliaCall::julia_command(sprintf(
+    "hsq_blocks = Any[%s];",
+    paste(block_syms, collapse = ", ")
+  ))
+  JuliaCall::julia_command(paste(
+    "hsq_payload = Dict{String,Any}(\"payload_version\" => 2, ",
+    "\"y\" => hsq_y, \"X\" => hsq_X, \"method\" => hsq_method, ",
+    "\"random_effects\" => hsq_blocks);"
+  ))
+
+  # fit_payload_v2 parses the block list and dispatches K >= 3 independent
+  # blocks to fit_multi_effect_reml; result_payload_v2 builds the block-
+  # structured result from the same parse.
+  JuliaCall::julia_command("hsq_parsed = HSquared.parse_payload_v2(hsq_payload);")
+  JuliaCall::julia_command("hsq_fit = HSquared.fit_payload_v2(hsq_payload);")
+  JuliaCall::julia_command(
+    "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
+  )
+
+  raw <- JuliaCall::julia_eval(paste(
+    "Dict(",
+    "\"residual\" => hsq_result.variance_components.residual,",
+    "\"block_names\" => [b.name for b in hsq_result.variance_components.blocks],",
+    "\"block_types\" => [b.type for b in hsq_result.variance_components.blocks],",
+    "\"block_variances\" => [Float64(b.variance) for b in ",
+    "hsq_result.variance_components.blocks],",
+    "\"re_names\" => [r.name for r in hsq_result.random_effects],",
+    "\"beta\" => collect(Float64, hsq_fit.beta),",
+    "\"loglik\" => hsq_result.loglik,",
+    "\"converged\" => hsq_result.converged)"
+  ))
+  # Per-block BLUP ids/values (ragged), pulled one block at a time so JuliaCall
+  # returns clean per-block vectors rather than a jagged nested structure.
+  n_blocks <- length(raw$block_names)
+  re_values <- vector("list", n_blocks)
+  re_ids <- vector("list", n_blocks)
+  for (i in seq_len(n_blocks)) {
+    re_ids[[i]] <- JuliaCall::julia_eval(sprintf(
+      "string.(collect(hsq_result.random_effects[%d].ids))", i
+    ))
+    re_values[[i]] <- JuliaCall::julia_eval(sprintf(
+      "collect(Float64, hsq_result.random_effects[%d].values)", i
+    ))
+  }
+
+  result <- hs_normalize_n_effect_result(raw, re_ids, re_values, payload)
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "multi_effect"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
 hs_normalize_two_effect_result <- function(raw, payload) {
   fixed_effects <- as.numeric(raw$beta)
   fixed_names <- payload$metadata$fixed_colnames
@@ -1049,6 +1193,83 @@ hs_normalize_two_effect_result <- function(raw, payload) {
     )
   }
   result
+}
+
+# Normalize the block-structured `result_payload_v2` multi-effect result into the
+# flat `hsquared_fit` result shape read by the S3 extractors. `raw` carries the
+# per-block variances (aligned vectors `block_names`/`block_types`/
+# `block_variances`), the residual, `beta`, `loglik`, and `converged`; `re_ids` /
+# `re_values` are the ragged per-block BLUP ids/values.
+#
+# Falconer fence: `heritability` is the narrow-sense h2 of the ANIMAL (pedigree)
+# block only — its additive-genetic variance over the TOTAL phenotypic variance
+# (the sum of ALL block variances plus the residual). Every other block's
+# variance ratio (`block_variance / total`) is a variance-explained proportion,
+# NOT a heritability. POINT ESTIMATE only; no interval is attached here.
+hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
+  fixed_effects <- as.numeric(raw$beta)
+  fixed_names <- payload$metadata$fixed_colnames
+  if (length(fixed_effects) == length(fixed_names)) {
+    names(fixed_effects) <- fixed_names
+  }
+
+  block_names <- as.character(raw$block_names)
+  block_variances <- as.numeric(raw$block_variances)
+  residual <- as.numeric(raw$residual)
+  total <- sum(block_variances) + residual
+
+  variance_components <- data.frame(
+    component = c(block_names, "residual"),
+    estimate = c(block_variances, residual),
+    stringsAsFactors = FALSE
+  )
+
+  # Per-block random effects (BLUPs), keyed by block name.
+  random_effects <- list()
+  for (i in seq_along(block_names)) {
+    random_effects[[block_names[[i]]]] <- data.frame(
+      id = as.character(re_ids[[i]]),
+      value = as.numeric(re_values[[i]]),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  animal_idx <- match("animal", block_names)
+  if (is.na(animal_idx)) {
+    stop(
+      "Internal bridge error: the multi-effect result has no `animal` block to ",
+      "form a heritability from.",
+      call. = FALSE
+    )
+  }
+  heritability <- data.frame(
+    term = "animal",
+    estimate = block_variances[[animal_idx]] / total,
+    stringsAsFactors = FALSE
+  )
+
+  # Per-block variance-explained proportions (NOT heritabilities except for the
+  # animal block). Surfaced under a distinct field so extractors never confuse a
+  # proportion with h2.
+  variance_ratios <- data.frame(
+    component = block_names,
+    estimate = block_variances / total,
+    stringsAsFactors = FALSE
+  )
+
+  animal_bv <- random_effects[["animal"]]
+  list(
+    variance_components = variance_components,
+    variance_ratios = variance_ratios,
+    heritability = heritability,
+    breeding_values = animal_bv,
+    random_effects = random_effects,
+    fixed_effects = fixed_effects,
+    loglik = as.numeric(raw$loglik),
+    nobs = length(payload$y),
+    converged = isTRUE(raw$converged),
+    diagnostics = list(variance_components = "estimated_multi_effect_reml")
+  )
 }
 
 # Attach the two-effect ratio intervals to the result. ratio1 (h2) populates
@@ -2541,6 +2762,7 @@ hs_validate_julia_target <- function(target) {
         "ai_reml",
         "repeatability",
         "two_effect",
+        "multi_effect",
         "genomic",
         "single_step",
         "single_step_construct",
@@ -2554,7 +2776,8 @@ hs_validate_julia_target <- function(target) {
     stop(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
-      "\"metafounder\", \"two_effect\", \"genomic\", \"single_step\", ",
+      "\"metafounder\", \"two_effect\", \"multi_effect\", \"genomic\", ",
+      "\"single_step\", ",
       "\"single_step_construct\", \"metafounder_single_step\", \"snp_blup\", \"multivariate\", ",
       "\"random_regression\", or \"nongaussian\".",
       call. = FALSE
@@ -2642,6 +2865,7 @@ hs_effect_targets <- function(type) {
     permanent = "repeatability",
     common_env = "two_effect",
     maternal_genetic = "two_effect",
+    iid_effects = "multi_effect",
     metafounder = "metafounder",
     genomic = c("genomic", "snp_blup"),
     single_step = c(
@@ -2662,6 +2886,7 @@ hs_second_effect_target <- function(type) {
     permanent = "repeatability",
     common_env = "two_effect",
     maternal_genetic = "two_effect",
+    iid_effects = "multi_effect",
     metafounder = "metafounder",
     genomic = "genomic",
     single_step = "single_step",

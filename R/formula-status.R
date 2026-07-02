@@ -58,6 +58,7 @@ hs_formula_status_terms <- function() {
     "permanent(1 | id)",
     "common_env(1 | group)",
     "maternal_genetic(1 | dam)",
+    "(1 | group)",
     "animal(rr(covariate, order = 2) | id, pedigree = ped)",
     "maternal_env(1 | dam)",
     "paternal_genetic(1 | sire, pedigree = ped)",
@@ -100,7 +101,7 @@ hs_formula_status_terms <- function() {
 hs_formula_status_categories <- function() {
   c(
     rep("v0.1 animal model", 2L),
-    rep("standard quantitative genetics", 11L),
+    rep("standard quantitative genetics", 12L),
     rep("inheritance and relationship kernels", 6L),
     rep("genomic and marker models", 9L),
     rep("multivariate and factor analytic", 5L),
@@ -111,7 +112,7 @@ hs_formula_status_categories <- function() {
 hs_formula_status_phases <- function() {
   c(
     rep("Phase 1", 2L),
-    rep("Phase 2", 11L),
+    rep("Phase 2", 12L),
     rep("Phase 3+", 6L),
     rep("Phase 5", 9L),
     rep("Phase 3-4", 5L),
@@ -121,7 +122,7 @@ hs_formula_status_phases <- function() {
 
 hs_formula_status_syntax <- function() {
   c(
-    rep("parsed", 6L),
+    rep("parsed", 7L),
     rep("reserved", 5L),
     "parsed",
     rep("reserved", 7L),
@@ -138,6 +139,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in repeatability)",
     "fitted (opt-in common-environment)",
     "fitted (opt-in maternal)",
+    "fitted (opt-in multi-effect)",
     "fitted (opt-in random-regression)",
     rep("not available", 5L),
     "fitted (opt-in supplied-Gamma metafounder)",
@@ -181,6 +183,15 @@ hs_formula_status_behavior <- function() {
       "Maternal genetic effect of the opt-in, experimental two-effect model (A2 =",
       "pedigree A via the dam); requires an animal() term and engine = \"julia\",",
       "target = \"two_effect\"."
+    ),
+    paste(
+      "Bare (1 | group) i.i.d. random intercept of the opt-in, experimental",
+      "multi-effect model; combines with an animal() term (and, for K independent",
+      "effects, additional (1 | group) terms) and requires engine = \"julia\",",
+      "target = \"multi_effect\". Random slopes (x | group) and correlated",
+      "(x || group) terms remain rejected. Point estimates only (variance",
+      "components, heritability, EBVs); intervals are not yet available on this",
+      "path."
     ),
     paste(
       "Opt-in, experimental random-regression (reaction-norm) model: rr(covariate,",

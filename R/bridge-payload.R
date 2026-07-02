@@ -136,6 +136,37 @@ hs_build_bridge_payload <- function(spec) {
     random_effects <- c(random_effects, list(block_perm))
   }
 
+  # Arbitrary-N bare `(1 | group)` i.i.d. random effects (opt-in multi-effect
+  # model). Each becomes an independent identity-relationship block: a record
+  # incidence `Z_i` on the group's levels, `relmat_status = "identity"` (the
+  # engine builds `sparse(I, q_i, q_i)`), and no pedigree. The Julia parser routes
+  # a list of K >= 3 independent blocks (animal + >= 2 i.i.d.) to
+  # `fit_multi_effect_reml`.
+  iid_effects <- spec$random$iid_effects
+  if (!is.null(iid_effects) && length(iid_effects) > 0L) {
+    for (eff in iid_effects) {
+      levels_i <- eff$levels
+      index_i <- match(eff$values, levels_i)
+      Zi <- Matrix::sparseMatrix(
+        i = seq_along(index_i),
+        j = index_i,
+        x = 1,
+        dims = c(length(index_i), length(levels_i)),
+        dimnames = list(NULL, levels_i)
+      )
+      block_iid <- list(
+        name           = eff$group,
+        type           = "iid",
+        Z              = Zi,
+        relmat_inverse = NULL,
+        relmat_status  = "identity",
+        pedigree       = NULL,
+        ids            = levels_i
+      )
+      random_effects <- c(random_effects, list(block_iid))
+    }
+  }
+
   structure(
     list(
       payload_version = 2L,
