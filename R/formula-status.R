@@ -180,9 +180,19 @@ hs_formula_status_behavior <- function() {
       "requires an animal() term and engine = \"julia\", target = \"two_effect\"."
     ),
     paste(
-      "Maternal genetic effect of the opt-in, experimental two-effect model (A2 =",
-      "pedigree A via the dam); requires an animal() term and engine = \"julia\",",
-      "target = \"two_effect\"."
+      "Maternal genetic effect. TWO opt-in paths. (1) The EXPERIMENTAL two-effect",
+      "model (A2 = pedigree A via the dam, INDEPENDENT of the direct effect);",
+      "requires an animal() term and engine = \"julia\", target = \"two_effect\".",
+      "(2) The CORRELATED direct-maternal 2x2 G model (target = \"direct_maternal\"),",
+      "which estimates the direct-maternal genetic covariance sigma_dm — COVERED at",
+      "validation scale (opt-in; NOT the default fit path): engine V4-DIRECT-MATERNAL",
+      "covered via a pre-declared 48-seed bias/MCSE gate PASSED (48/48, all four",
+      "|bias|<=2*MCSE) + a sommer 4.4.5 covm() same-estimand REML comparator AGREE.",
+      "Willham fence: heritability() returns the LABELLED TRIPLE (direct h2_d,",
+      "maternal m2, Willham total h2_T, r_am), never a bare scalar; direct h2 is NOT",
+      "the total heritability; a negative r_am is real and expected. SCOPE: single",
+      "relationship A, dense/validation-scale n<=1000, |r_am|->1 rides on converged.",
+      "The two-effect maternal leg (path 1) STAYS experimental."
     ),
     paste(
       "Bare (1 | group) i.i.d. random intercept of the opt-in, experimental",

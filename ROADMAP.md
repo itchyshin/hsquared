@@ -87,8 +87,11 @@ are planned.
   repeated records).
 - Common environment and maternal-genetic — opt-in, experimental
   (`target = "two_effect"`, mirroring the twin `V3-TWOEFFECT-REML` partial gate);
-  two independent effects. The correlated direct–maternal (2×2 G) model remains
-  planned.
+  two independent effects. The correlated direct–maternal (2×2 G) model is a
+  separate opt-in target (`target = "direct_maternal"`), now **covered at
+  validation scale** (mirrors the twin `V4-DIRECT-MATERNAL`; pre-declared 48-seed
+  gate PASSED + `sommer` `covm()` comparator AGREE; Willham labelled-triple `h²`,
+  dense n≤~1000, not the default).
 - Sire models.
 - Groups and unknown parent groups.
 - Inbreeding coefficients.
