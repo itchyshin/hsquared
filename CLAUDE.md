@@ -35,3 +35,6 @@ Agent instructions for this project are shared with Codex. Read them here:
 - **Definition of Done**, lane discipline, standard commands, and the full team
   roster are in `AGENTS.md` (imported above) — the single source of truth shared
   with Codex.
+
+<!-- shinichi-hub -->
+@/Users/z3437171/Dropbox/Github Local/Shinichi/AGENTS.md

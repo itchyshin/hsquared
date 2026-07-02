@@ -128,3 +128,6 @@ git diff
 
 Then read the coordination board, latest check-log entry, latest after-task
 report, and `docs/design/01-v0.1-contract.md`.
+
+<!-- shinichi-hub -->
+> Read first — personal operating contract & second brain (house rules, memory, agents): /Users/z3437171/Dropbox/Github Local/Shinichi/AGENTS.md  (repo rules override the hub where they differ)
