@@ -44,6 +44,8 @@ navbar:
           href: articles/benchmark-comparators.html
         - text: "Two-effect model: sommer comparator"
           href: articles/two-effect-comparator.html
+        - text: "Random regression (k = 2): sommer comparator"
+          href: articles/rr-comparator.html
         - text: Formula grammar roadmap
           href: articles/formula-grammar.html
         - text: Genomics and GPU roadmap
@@ -125,5 +127,6 @@ articles:
       - articles/benchmark-comparators
       - articles/two-effect-comparator
       - articles/multi-effect-comparator
+      - articles/rr-comparator
       - articles/formula-grammar
       - articles/genomics-gpu-roadmap

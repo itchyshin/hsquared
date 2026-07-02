@@ -195,12 +195,18 @@ hs_formula_status_behavior <- function() {
       "delta-method and NOT coverage-calibrated."
     ),
     paste(
-      "Opt-in, experimental random-regression (reaction-norm) model: rr(covariate,",
-      "order = k) on the animal() left-hand side fits a k-coefficient normalized-",
-      "Legendre polynomial of a within-individual covariate; requires repeated",
-      "records and engine = \"julia\", target = \"random_regression\". PROVISIONAL",
-      "grammar (HSquared.jl#61); homogeneous residual, no permanent-environment",
-      "term yet."
+      "Opt-in random-regression (reaction-norm) model: rr(covariate, order = k) on",
+      "the animal() left-hand side fits a k-coefficient normalized-Legendre polynomial",
+      "of a within-individual covariate; requires repeated records and engine =",
+      "\"julia\", target = \"random_regression\". COVERED at k=2 (linear reaction norm,",
+      "intercept + ONE slope, K_g 2x2, Gaussian, homogeneous residual, D=I2",
+      "normalized Legendre): engine V3-RR-REML covered via pre-declared 48-seed",
+      "bias/MCSE gate PASSED + sommer 4.4.5 leg() same-estimand REML comparator",
+      "AGREE (<=1.9e-5); live R<->engine parity EXACT (<=1.03e-5); h2(t) <=4.24e-6.",
+      "h2(t) is a CURVE, never scalar (scalar heritability() on this result errors);",
+      "PE-overstatement caveat when no permanent-environment term. POINT-ESTIMATE",
+      "only (no interval/CI on the K_g curve). k>=3 experimental; (x|g) raw slopes",
+      "rejected; PE term and heterogeneous residual deferred."
     ),
     rep(inert_marker_text, 5L),
     paste(
