@@ -477,6 +477,27 @@ hsquared <- function(
       ))
     }
 
+    if (identical(target, "direct_maternal")) {
+      if (is.null(spec$random$maternal_genetic)) {
+        stop(
+          "`target = \"direct_maternal\"` requires a `maternal_genetic(1 | dam)` ",
+          "term alongside `animal(1 | id, pedigree = ped)` in the formula. ",
+          "This is the opt-in correlated direct-maternal model (Phase 4). ",
+          "The INDEPENDENT two-effect maternal model uses ",
+          "`target = \"two_effect\"` instead.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_direct_maternal_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        )
+      ))
+    }
+
     if (identical(target, "snp_blup")) {
       genomic_effect <- spec$random$genomic
       if (

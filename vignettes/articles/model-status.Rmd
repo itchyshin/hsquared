@@ -143,16 +143,28 @@ advanced opt-in engine controls.
 These models are reachable only through
 `control = hs_control(engine = "julia", engine_control = list(target = ...))`,
 are REML only, are Julia-owned (R only surfaces them), and are **not** the
-default, not production, and not comparator/known-truth-validated. Each mirrors
-a `partial` gate in the `HSquared.jl` twin.
+default and not production. Most mirror a `partial` gate in the `HSquared.jl`
+twin; exceptions are noted — the common-environment and direct–maternal correlated
+models are **covered at validation scale** (passed a pre-declared 48-seed
+bias/MCSE gate and a same-estimand REML comparator), while the remaining entries
+are not yet comparator/known-truth-validated at that bar.
 
 - Repeatability / permanent environment — `animal(1 | id) + permanent(1 | id)`,
   `target = "repeatability"` (needs repeated records per individual).
 - Common environment — `animal(1 | id) + common_env(1 | group)`,
   `target = "two_effect"` (additive + IID common environment).
-- Maternal genetic — `animal(1 | id) + maternal_genetic(1 | dam)`,
-  `target = "two_effect"` (additive + pedigree maternal effect). The correlated
-  direct–maternal (2×2 G) model is still planned.
+- Maternal genetic (INDEPENDENT two-effect leg) —
+  `animal(1 | id) + maternal_genetic(1 | dam)`, `target = "two_effect"`
+  (additive + pedigree maternal effect, treated as independent).
+- Direct–maternal correlated model (2×2 G) —
+  `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`,
+  `target = "direct_maternal"` — the first correlated random-effect model
+  (estimates the direct–maternal covariance `σ_dm`). **Covered at validation
+  scale** (mirrors the twin `V4-DIRECT-MATERNAL`: a pre-declared 48-seed
+  bias/MCSE gate PASSED + a `sommer` `covm()` same-estimand REML comparator
+  AGREE), still opt-in and dense/validation-scale (`n ≤ ~1000`). `heritability()`
+  returns the Willham labelled triple (direct `h²_d`, maternal `m²`, total
+  `h²_T`, `r_am`), never a bare scalar; a negative `r_am` is real and expected.
 - Genomic GREML — `genomic(1 | id, Ginv = Ginv)` or
   `genomic(1 | id, markers = M)` (the engine builds the genomic relationship
   from the marker matrix), `target = "genomic"`.

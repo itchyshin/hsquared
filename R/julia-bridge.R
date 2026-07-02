@@ -995,6 +995,254 @@ hs_fit_julia_two_effect_payload <- function(
   )
 }
 
+# ---------------------------------------------------------------------------
+# Opt-in correlated direct--maternal model (Phase 4)
+# ---------------------------------------------------------------------------
+# Fits the 2x2 G_dm (direct-maternal) model through the engine's payload-v2
+# correlated-block path. The payload carries a SINGLE block of type="correlated"
+# with Z = Zd (record->animal direct incidence) and partner_incidence = Zm
+# (record->dam maternal incidence); the engine builds Ainv from the pedigree and
+# calls fit_direct_maternal_reml(y, X, Zd, Zm, Ainv). Returns four variance
+# components: sigma_ad (direct), sigma_am (maternal/partner), sigma_dm
+# (covariance), sigma_e2 (residual), plus the genetic correlation r_am.
+# EXPERIMENTAL: asymptotic estimator, NOT coverage-calibrated; a negative r_am
+# is real and biologically expected in many livestock traits (antagonistic
+# direct-maternal covariance, Willham 1963, 1972). STRICTLY opt-in via
+# target = "direct_maternal".
+hs_fit_julia_direct_maternal_payload <- function(
+  payload,
+  project = hs_default_julia_project()
+) {
+  if (!inherits(payload, "hs_bridge_payload")) {
+    stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
+  }
+  # The generic payload from hs_build_bridge_payload will have TWO blocks for a
+  # maternal_genetic formula: block1 = animal (pedigree), block2 = maternal
+  # (pedigree). We reassemble them as a SINGLE correlated block here, mirroring
+  # the engine's payload-v2 §2 correlated-block schema:
+  #   type="correlated", Z=Zd (block1), partner_incidence=Zm (block2), pedigree.
+  blocks <- payload$random_effects
+  if (is.null(blocks) || length(blocks) < 2L ||
+      !identical(blocks[[1L]]$type, "pedigree") ||
+      !identical(blocks[[2L]]$type, "pedigree")) {
+    stop(
+      "Internal bridge error: the direct-maternal payload expects two pedigree ",
+      "blocks (animal + maternal). Ensure the formula includes ",
+      "`animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` and ",
+      "`target = \"direct_maternal\"`.",
+      call. = FALSE
+    )
+  }
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
+      "package, and a local `HSquared.jl` project.",
+      call. = FALSE
+    )
+  }
+
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_y", payload$y)
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  JuliaCall::julia_assign("hsq_method", payload$method)
+
+  # block1: animal pedigree block — Z = Zd (record->animal)
+  b_animal <- blocks[[1L]]
+  # block2: maternal pedigree block — Z = Zm (record->dam)
+  b_maternal <- blocks[[2L]]
+
+  # Zd: record->animal (direct effect incidence)
+  hs_julia_assign_sparse_csc("hsq_Zd", b_animal$Z)
+  # Zm: record->dam (maternal effect incidence)
+  hs_julia_assign_sparse_csc("hsq_Zm", b_maternal$Z)
+  JuliaCall::julia_assign("hsq_blkids", as.character(b_animal$ids))
+
+  # Pedigree columns (from the animal block; maternal block shares the same
+  # pedigree since dams are pedigree animals)
+  JuliaCall::julia_assign("hsq_blkped_id",   as.character(b_animal$pedigree$id))
+  JuliaCall::julia_assign("hsq_blkped_sire", hs_parent_for_julia(b_animal$pedigree$sire))
+  JuliaCall::julia_assign("hsq_blkped_dam",  hs_parent_for_julia(b_animal$pedigree$dam))
+
+  # Build the correlated block Dict and the full payload Dict on the Julia side,
+  # matching the frozen payload-v2 correlated-block schema:
+  #   type="correlated", Z=Zd, partner_incidence=Zm, partner_name="maternal",
+  #   relmat_status="build_in_julia", pedigree=(id,sire,dam), ids
+  JuliaCall::julia_command(paste(
+    "hsq_blk = Dict{String,Any}(",
+    "\"name\" => \"animal\",",
+    "\"type\" => \"correlated\",",
+    "\"Z\" => hsq_Zd,",
+    "\"partner_incidence\" => hsq_Zm,",
+    "\"partner_name\" => \"maternal\",",
+    "\"relmat_status\" => \"build_in_julia\",",
+    "\"pedigree\" => Dict{String,Any}(",
+    "\"id\" => hsq_blkped_id,",
+    "\"sire\" => hsq_blkped_sire,",
+    "\"dam\" => hsq_blkped_dam),",
+    "\"ids\" => hsq_blkids);"
+  ))
+  JuliaCall::julia_command(paste(
+    "hsq_payload_dm = Dict{String,Any}(",
+    "\"payload_version\" => 2,",
+    "\"y\" => hsq_y, \"X\" => hsq_X,",
+    "\"method\" => hsq_method,",
+    "\"random_effects\" => Any[hsq_blk]);"
+  ))
+  JuliaCall::julia_command(
+    "hsq_parsed_dm = HSquared.parse_payload_v2(hsq_payload_dm);"
+  )
+  JuliaCall::julia_command(
+    "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm);"
+  )
+  JuliaCall::julia_command(
+    "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
+  )
+
+  # Pull the correlated block variance fields and genetic correlation.
+  raw <- JuliaCall::julia_eval(paste(
+    "let vb = hsq_res_dm.variance_components.blocks[1];",
+    "Dict(",
+    "\"direct_variance\"  => Float64(vb.direct_variance),",
+    "\"partner_variance\" => Float64(vb.partner_variance),",
+    "\"covariance\"       => Float64(vb.covariance),",
+    "\"correlation\"      => Float64(hsq_fit_dm.genetic_correlation),",
+    "\"residual\"         => Float64(hsq_res_dm.variance_components.residual),",
+    "\"loglik\"           => Float64(hsq_res_dm.loglik),",
+    "\"converged\"        => hsq_res_dm.converged)",
+    "end"
+  ))
+  # BLUPs: direct (animal) and maternal (dam) effects, pulled per-block.
+  direct_ids <- JuliaCall::julia_eval(
+    "string.(collect(hsq_res_dm.random_effects[1].ids))"
+  )
+  direct_vals <- JuliaCall::julia_eval(
+    "collect(Float64, hsq_res_dm.random_effects[1].values)"
+  )
+  maternal_ids <- JuliaCall::julia_eval(
+    "string.(collect(hsq_res_dm.random_effects[2].ids))"
+  )
+  maternal_vals <- JuliaCall::julia_eval(
+    "collect(Float64, hsq_res_dm.random_effects[2].values)"
+  )
+  beta <- JuliaCall::julia_eval("collect(Float64, hsq_fit_dm.beta)")
+
+  result <- hs_normalize_direct_maternal_result(
+    raw, direct_ids, direct_vals, maternal_ids, maternal_vals, beta, payload
+  )
+
+  hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = payload$family, link = "identity"),
+      target = "direct_maternal"
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_direct_maternal_result <- function(
+  raw,
+  direct_ids,
+  direct_vals,
+  maternal_ids,
+  maternal_vals,
+  beta,
+  payload
+) {
+  fixed_names <- payload$metadata$fixed_colnames
+  fe <- as.numeric(beta)
+  if (length(fe) == length(fixed_names)) names(fe) <- fixed_names
+
+  sigma_ad  <- as.numeric(raw$direct_variance)
+  sigma_am  <- as.numeric(raw$partner_variance)
+  sigma_dm  <- as.numeric(raw$covariance)
+  sigma_e2  <- as.numeric(raw$residual)
+  r_am      <- as.numeric(raw$correlation)
+  converged <- isTRUE(raw$converged)
+
+  sigma_P <- sigma_ad + sigma_am + sigma_dm + sigma_e2
+  # Direct narrow-sense heritability: h2_d = sigma_ad / sigma_P
+  # sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i) for a
+  # non-inbred base (2*A[i,dam] = 2*(1/2) = 1, so the covariance contributes
+  # coefficient 1 to phenotypic variance; Willham 1963, 1972).  sigma_dm is
+  # included because it is a legitimate part of Var(y) — dropping it would
+  # misstate the denominator.  h2 is denominator-dependent under maternal
+  # effects; see the conditioning_caveat and total_heritability().
+  h2_direct <- if (sigma_P > 0) sigma_ad / sigma_P else NA_real_
+
+  direct_bv <- data.frame(
+    id    = as.character(direct_ids),
+    value = as.numeric(direct_vals),
+    stringsAsFactors = FALSE
+  )
+  maternal_bv <- data.frame(
+    id    = as.character(maternal_ids),
+    value = as.numeric(maternal_vals),
+    stringsAsFactors = FALSE
+  )
+
+  list(
+    variance_components = data.frame(
+      component = c("direct", "maternal", "covariance", "residual"),
+      estimate  = c(sigma_ad, sigma_am, sigma_dm, sigma_e2),
+      stringsAsFactors = FALSE
+    ),
+    # A labelled heritability: direct h2 only. heritability() on a
+    # direct_maternal fit returns this with an interpretation fence
+    # (NOT a bare scalar).
+    heritability = data.frame(
+      term      = "direct",
+      estimate  = h2_direct,
+      stringsAsFactors = FALSE
+    ),
+    # The genetic correlation r_am between direct and maternal effects.
+    # A NEGATIVE value is real and expected in many livestock traits
+    # (antagonistic direct-maternal covariance; Willham 1963, 1972).
+    # Never conflate with a multivariate trait-to-trait genetic correlation.
+    genetic_correlation = data.frame(
+      term_1  = "direct",
+      term_2  = "maternal",
+      estimate = r_am,
+      stringsAsFactors = FALSE
+    ),
+    # Explicitly labelled direct and partner variance fields for accessors.
+    direct_variance   = sigma_ad,
+    partner_variance  = sigma_am,
+    covariance        = sigma_dm,
+    breeding_values   = direct_bv,
+    random_effects    = list(
+      animal   = direct_bv,
+      maternal = maternal_bv
+    ),
+    maternal_effects  = maternal_bv,
+    fixed_effects     = fe,
+    loglik            = if (converged) as.numeric(raw$loglik) else NA_real_,
+    nobs              = length(payload$y),
+    converged         = converged,
+    diagnostics = list(
+      target = "direct_maternal",
+      variance_components = "estimated_direct_maternal_reml",
+      optimizer_status = if (converged) "converged" else "not_converged",
+      conditioning_caveat = paste(
+        "Experimental direct-maternal 2x2 G_dm REML estimator (Phase 4).",
+        "Asymptotic delta-method intervals are NOT coverage-calibrated.",
+        "A negative genetic correlation (r_am) is real and expected in many",
+        "livestock traits (antagonistic direct-maternal covariance;",
+        "Willham 1963, 1972). Identifiability requires multiple offspring per dam",
+        "with sires recorded; shallow pedigrees produce boundary G_dm.",
+        "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
+        "h2 is denominator-dependent under maternal effects. ASReml/BLUPF90/",
+        "WOMBAT report raw components and leave sigma_P to the user; sommer/",
+        "MCMCglmm h2 depends on the user's chosen denominator - compare",
+        "(co)variance components, not h2 values, across software.",
+        "Use validate = TRUE to inspect the contract before fitting."
+      )
+    )
+  )
+}
+
 # Fit an arbitrary-N independent-random-effect model (animal + >= 2 i.i.d.
 # blocks) through the engine's payload-v2 entry points. Rather than re-deriving
 # the `(Z_i, Ainv_i)` effects vector in R, this assembles the block-structured
@@ -2859,7 +3107,8 @@ hs_validate_julia_target <- function(target) {
         "snp_blup",
         "multivariate",
         "random_regression",
-        "nongaussian"
+        "nongaussian",
+        "direct_maternal"
       )
   ) {
     stop(
@@ -2868,7 +3117,7 @@ hs_validate_julia_target <- function(target) {
       "\"metafounder\", \"two_effect\", \"multi_effect\", \"genomic\", ",
       "\"single_step\", ",
       "\"single_step_construct\", \"metafounder_single_step\", \"snp_blup\", \"multivariate\", ",
-      "\"random_regression\", or \"nongaussian\".",
+      "\"random_regression\", \"nongaussian\", or \"direct_maternal\".",
       call. = FALSE
     )
   }
@@ -2953,7 +3202,9 @@ hs_effect_targets <- function(type) {
     type,
     permanent = "repeatability",
     common_env = "two_effect",
-    maternal_genetic = "two_effect",
+    # maternal_genetic supports both the INDEPENDENT two-effect target (default
+    # suggestion) and the CORRELATED direct-maternal target (opt-in Phase 4).
+    maternal_genetic = c("two_effect", "direct_maternal"),
     iid_effects = "multi_effect",
     metafounder = "metafounder",
     genomic = c("genomic", "snp_blup"),
@@ -2974,6 +3225,9 @@ hs_second_effect_target <- function(type) {
     type,
     permanent = "repeatability",
     common_env = "two_effect",
+    # maternal_genetic default suggestion is two_effect (INDEPENDENT model);
+    # the correlated model (direct_maternal) is the second allowed target,
+    # reached only by explicit opt-in.
     maternal_genetic = "two_effect",
     iid_effects = "multi_effect",
     metafounder = "metafounder",
