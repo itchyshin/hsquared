@@ -108,6 +108,14 @@ opt-in experimental targets.
   : Extract common-environment effects
 - [`maternal_effects()`](https://itchyshin.github.io/hsquared/reference/maternal_effects.md)
   : Extract maternal genetic effects
+- [`common_env_proportion()`](https://itchyshin.github.io/hsquared/reference/common_env_proportion.md)
+  : Extract the common-environment variance ratio (c2)
+- [`maternal_proportion()`](https://itchyshin.github.io/hsquared/reference/maternal_proportion.md)
+  : Extract the maternal variance ratio (m2)
+- [`common_env_proportion_interval()`](https://itchyshin.github.io/hsquared/reference/common_env_proportion_interval.md)
+  [`maternal_proportion_interval()`](https://itchyshin.github.io/hsquared/reference/common_env_proportion_interval.md)
+  : Extract an experimental common-environment / maternal variance-ratio
+  interval
 - [`rr_covariance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   [`random_coefficients()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)
   [`rr_genetic_variance()`](https://itchyshin.github.io/hsquared/reference/random_regression_extractors.md)

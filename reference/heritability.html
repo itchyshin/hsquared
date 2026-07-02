@@ -31,6 +31,7 @@ works for hsquared_fit objects that contain a Julia result."></head><body>
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
+    <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul></li>
@@ -77,6 +78,17 @@ works for <code>hsquared_fit</code> objects that contain a Julia result.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Heritability results for <code>hsquared_fit</code> objects.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Falconer fence for the opt-in two-effect model (<code>target = "two_effect"</code>):
+the reported number is the <strong>narrow-sense direct heritability</strong>
+<code>h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)</code> <em>within that model</em> (the
+additive-genetic variance is divided by the total phenotypic variance,
+which now includes the second component <code>sigma_2</code>). The second component's
+variance ratio (common-environment <code>c2</code> or maternal <code>m2</code>) is <strong>not</strong> a
+heritability and is returned separately by <code><a href="common_env_proportion.html">common_env_proportion()</a></code> /
+<code><a href="maternal_proportion.html">maternal_proportion()</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

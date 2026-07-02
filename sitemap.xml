@@ -15,8 +15,10 @@
 <url><loc>https://itchyshin.github.io/hsquared/articles/index.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/articles/inheritance-systems.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/articles/model-status.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/articles/multi-effect-comparator.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/articles/multivariate.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/articles/qtl-gwas-eqtl-status.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/articles/two-effect-comparator.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/articles/validation-evidence.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/articles/visualizing-models.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/authors.html</loc></url>
@@ -26,6 +28,8 @@
 <url><loc>https://itchyshin.github.io/hsquared/reference/backend_info.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/breeding_values.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/common_env_effects.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/common_env_proportion.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/common_env_proportion_interval.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/covariance_standard_errors.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/covariance_structure_lrt.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/data_status.html</loc></url>
@@ -49,6 +53,7 @@
 <url><loc>https://itchyshin.github.io/hsquared/reference/inference_blocks.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/marker_extractors.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/maternal_effects.html</loc></url>
+<url><loc>https://itchyshin.github.io/hsquared/reference/maternal_proportion.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/metafounder_effects.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/metafounder_groups.html</loc></url>
 <url><loc>https://itchyshin.github.io/hsquared/reference/model_spec.html</loc></url>

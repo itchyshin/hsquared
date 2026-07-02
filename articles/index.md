@@ -26,6 +26,10 @@
   evidence](https://itchyshin.github.io/hsquared/articles/validation-evidence.md):
 - [Benchmark: hsquared vs sommer and
   pedigreemm](https://itchyshin.github.io/hsquared/articles/benchmark-comparators.md):
+- [Two-effect model: sommer comparator and validation
+  evidence](https://itchyshin.github.io/hsquared/articles/two-effect-comparator.md):
+- [Multi-effect model (K \>= 3): sommer comparator and validation
+  evidence](https://itchyshin.github.io/hsquared/articles/multi-effect-comparator.md):
 - [Formula grammar
   roadmap](https://itchyshin.github.io/hsquared/articles/formula-grammar.md):
 - [Genomics, QTL, and CPU/GPU

@@ -4,12 +4,22 @@ interval for h^2. It is available only when an hsquared_fit object
 contains the interval field, which the default Gaussian animal-model fit
 (engine = &quot;fit&quot;) populates from the engine's
 HSquared.heritability_interval() when a local Julia engine is present and
-the estimate is interior to (0, 1)."><meta property="og:description" content="heritability_interval() returns an experimental large-sample confidence
+the estimate is interior to (0, 1). On the opt-in two-effect fit it returns
+the direct-heritability ratio interval (ratio1), and on the opt-in
+multi-effect fit (target = &quot;multi_effect&quot;, K &amp;gt;= 3 blocks) it returns the
+ANIMAL block's ratio interval (the animal additive variance over the total
+phenotypic variance); the other blocks' variance-ratio intervals are surfaced
+separately in fit$result$variance_ratio_intervals."><meta property="og:description" content="heritability_interval() returns an experimental large-sample confidence
 interval for h^2. It is available only when an hsquared_fit object
 contains the interval field, which the default Gaussian animal-model fit
 (engine = &quot;fit&quot;) populates from the engine's
 HSquared.heritability_interval() when a local Julia engine is present and
-the estimate is interior to (0, 1)."></head><body>
+the estimate is interior to (0, 1). On the opt-in two-effect fit it returns
+the direct-heritability ratio interval (ratio1), and on the opt-in
+multi-effect fit (target = &quot;multi_effect&quot;, K &amp;gt;= 3 blocks) it returns the
+ANIMAL block's ratio interval (the animal additive variance over the total
+phenotypic variance); the other blocks' variance-ratio intervals are surfaced
+separately in fit$result$variance_ratio_intervals."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -39,6 +49,7 @@ the estimate is interior to (0, 1)."></head><body>
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
+    <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul></li>
@@ -66,7 +77,12 @@ interval for <code>h^2</code>. It is available only when an <code>hsquared_fit</
 contains the interval field, which the default Gaussian animal-model fit
 (<code>engine = "fit"</code>) populates from the engine's
 <code>HSquared.heritability_interval()</code> when a local Julia engine is present and
-the estimate is interior to <code>(0, 1)</code>.</p>
+the estimate is interior to <code>(0, 1)</code>. On the opt-in two-effect fit it returns
+the direct-heritability ratio interval (<code>ratio1</code>), and on the opt-in
+multi-effect fit (<code>target = "multi_effect"</code>, K &gt;= 3 blocks) it returns the
+ANIMAL block's ratio interval (the animal additive variance over the total
+phenotypic variance); the other blocks' variance-ratio intervals are surfaced
+separately in <code>fit$result$variance_ratio_intervals</code>.</p>
     </div>
 
     <div class="section level2">
@@ -94,10 +110,11 @@ contain it.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This mirrors the engine row <code>V1-HERIT-CI</code>, which is <code>partial</code>: the interval is
-a REML-only, asymptotic (logit delta-method) approximation, not a
-coverage-calibrated interval, and is unreliable at small <code>n</code>. It is reported
-as a point estimate plus bounds, not a validated capability.</p>
+    <p>The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
+not a coverage-calibrated interval, and is unreliable at small <code>n</code> (as with the
+<code>partial</code> <code>V1-HERIT-CI</code>). The underlying estimators <code>V3-TWOEFFECT-REML</code> /
+<code>V3-NEFFECT-REML</code> are <code>covered</code>, but this interval is reported as a point estimate
+plus bounds, not a validated (coverage-calibrated) capability.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

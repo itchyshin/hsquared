@@ -45,6 +45,7 @@
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
+    <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul>
@@ -99,28 +100,28 @@ just below), and the claim boundary attached to each.</p>
 <span><span class="co">#&gt; &lt;hs_validation_status&gt;</span></span>
 <span><span class="co">#&gt;   validation: status table only; checks are run by tests and CI</span></span>
 <span><span class="co">#&gt;   public claims: only `covered` rows may be advertised as working</span></span>
-<span><span class="co">#&gt;                                                                               capability</span></span>
-<span><span class="co">#&gt;                                                          tiny deterministic Ainv fixture</span></span>
-<span><span class="co">#&gt;                                                          Mrode9 pedigree Ainv comparator</span></span>
-<span><span class="co">#&gt;                                                  supplied-variance Henderson MME fixture</span></span>
-<span><span class="co">#&gt;                                                          sparse REML likelihood identity</span></span>
-<span><span class="co">#&gt;                                                    Mrode-style supplied-variance outputs</span></span>
-<span><span class="co">#&gt;                                              experimental sparse REML estimator (opt-in)</span></span>
-<span><span class="co">#&gt;                                            experimental repeatability estimator (opt-in)</span></span>
-<span><span class="co">#&gt;                         experimental two-effect estimator (opt-in: common-env, maternal)</span></span>
-<span><span class="co">#&gt;              experimental supplied-relationship estimator (opt-in: genomic, single-step)</span></span>
-<span><span class="co">#&gt;  experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)</span></span>
-<span><span class="co">#&gt;                                        experimental multivariate REML estimator (opt-in)</span></span>
-<span><span class="co">#&gt;                             univariate Gaussian animal-model fit (default path, AI-REML)</span></span>
-<span><span class="co">#&gt;                                  external published-REML recovery (gryphon, R reference)</span></span>
-<span><span class="co">#&gt;                                known-truth DGP variance-component recovery (R reference)</span></span>
-<span><span class="co">#&gt;                                                        Mrode fitted animal-model outputs</span></span>
-<span><span class="co">#&gt;                                                                 ASReml comparison policy</span></span>
-<span><span class="co">#&gt;                                                     BLUPF90/DMU/WOMBAT comparison policy</span></span>
-<span><span class="co">#&gt;                                                                    XSim simulation truth</span></span>
-<span><span class="co">#&gt;                                                          genomic and QTL/eQTL validation</span></span>
-<span><span class="co">#&gt;                                                      GLLVM-style multivariate validation</span></span>
-<span><span class="co">#&gt;                                                               CPU/GPU backend comparison</span></span>
+<span><span class="co">#&gt;                                                                                                                                    capability</span></span>
+<span><span class="co">#&gt;                                                                                                               tiny deterministic Ainv fixture</span></span>
+<span><span class="co">#&gt;                                                                                                               Mrode9 pedigree Ainv comparator</span></span>
+<span><span class="co">#&gt;                                                                                                       supplied-variance Henderson MME fixture</span></span>
+<span><span class="co">#&gt;                                                                                                               sparse REML likelihood identity</span></span>
+<span><span class="co">#&gt;                                                                                                         Mrode-style supplied-variance outputs</span></span>
+<span><span class="co">#&gt;                                                                                                   experimental sparse REML estimator (opt-in)</span></span>
+<span><span class="co">#&gt;                                                                                                 experimental repeatability estimator (opt-in)</span></span>
+<span><span class="co">#&gt;  two-effect / arbitrary-N independent-effect estimator (opt-in; covered: common-env + (1|g) iid / A2=I; experimental: maternal / A2=pedigree)</span></span>
+<span><span class="co">#&gt;                                                                   experimental supplied-relationship estimator (opt-in: genomic, single-step)</span></span>
+<span><span class="co">#&gt;                                                       experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)</span></span>
+<span><span class="co">#&gt;                                                                                             experimental multivariate REML estimator (opt-in)</span></span>
+<span><span class="co">#&gt;                                                                                  univariate Gaussian animal-model fit (default path, AI-REML)</span></span>
+<span><span class="co">#&gt;                                                                                       external published-REML recovery (gryphon, R reference)</span></span>
+<span><span class="co">#&gt;                                                                                     known-truth DGP variance-component recovery (R reference)</span></span>
+<span><span class="co">#&gt;                                                                                                             Mrode fitted animal-model outputs</span></span>
+<span><span class="co">#&gt;                                                                                                                      ASReml comparison policy</span></span>
+<span><span class="co">#&gt;                                                                                                          BLUPF90/DMU/WOMBAT comparison policy</span></span>
+<span><span class="co">#&gt;                                                                                                                         XSim simulation truth</span></span>
+<span><span class="co">#&gt;                                                                                                               genomic and QTL/eQTL validation</span></span>
+<span><span class="co">#&gt;                                                                                                           GLLVM-style multivariate validation</span></span>
+<span><span class="co">#&gt;                                                                                                                    CPU/GPU backend comparison</span></span>
 <span><span class="co">#&gt;     phase  status</span></span>
 <span><span class="co">#&gt;   Phase 1 partial</span></span>
 <span><span class="co">#&gt;   Phase 1 partial</span></span>
@@ -129,7 +130,7 @@ just below), and the claim boundary attached to each.</p>
 <span><span class="co">#&gt;   Phase 1 partial</span></span>
 <span><span class="co">#&gt;   Phase 1 partial</span></span>
 <span><span class="co">#&gt;   Phase 2 partial</span></span>
-<span><span class="co">#&gt;   Phase 2 partial</span></span>
+<span><span class="co">#&gt;   Phase 2 covered</span></span>
 <span><span class="co">#&gt;   Phase 5 partial</span></span>
 <span><span class="co">#&gt;   Phase 5 partial</span></span>
 <span><span class="co">#&gt;   Phase 3 partial</span></span>
@@ -479,10 +480,16 @@ else you see is <code>partial</code> or <code>planned</code>.</p>
 <span><span class="co">#&gt; &lt;hs_validation_status&gt;</span></span>
 <span><span class="co">#&gt;   validation: status table only; checks are run by tests and CI</span></span>
 <span><span class="co">#&gt;   public claims: only `covered` rows may be advertised as working</span></span>
-<span><span class="co">#&gt;                                                    capability   phase  status</span></span>
-<span><span class="co">#&gt;  univariate Gaussian animal-model fit (default path, AI-REML) Phase 1 covered</span></span>
-<span><span class="co">#&gt;       external published-REML recovery (gryphon, R reference) Phase 1 covered</span></span>
-<span><span class="co">#&gt;     known-truth DGP variance-component recovery (R reference) Phase 1 covered</span></span></code></pre></div>
+<span><span class="co">#&gt;                                                                                                                                    capability</span></span>
+<span><span class="co">#&gt;  two-effect / arbitrary-N independent-effect estimator (opt-in; covered: common-env + (1|g) iid / A2=I; experimental: maternal / A2=pedigree)</span></span>
+<span><span class="co">#&gt;                                                                                  univariate Gaussian animal-model fit (default path, AI-REML)</span></span>
+<span><span class="co">#&gt;                                                                                       external published-REML recovery (gryphon, R reference)</span></span>
+<span><span class="co">#&gt;                                                                                     known-truth DGP variance-component recovery (R reference)</span></span>
+<span><span class="co">#&gt;    phase  status</span></span>
+<span><span class="co">#&gt;  Phase 2 covered</span></span>
+<span><span class="co">#&gt;  Phase 1 covered</span></span>
+<span><span class="co">#&gt;  Phase 1 covered</span></span>
+<span><span class="co">#&gt;  Phase 1 covered</span></span></code></pre></div>
 <p>To actually fit the validated model end-to-end — including installing
 and registering the <code>HSquared.jl</code> engine — see the
 <em>Getting started</em> article and its engine-setup section. This

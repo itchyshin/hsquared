@@ -33,6 +33,7 @@ It is a status table, not a model-fitting helper."></head><body>
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
+    <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul></li>
@@ -84,6 +85,7 @@ It is a status table, not a model-fitting helper.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                               permanent(1 | id)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                           common_env(1 | group)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                       maternal_genetic(1 | dam)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                     (1 | group)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                           animal(rr(covariate, order = 2) | id, pedigree = ped)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                           maternal_env(1 | dam)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                      paternal_genetic(1 | sire, pedigree = ped)</span>
@@ -120,6 +122,7 @@ It is a status table, not a model-fitting helper.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                   fitted (opt-in repeatability)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed              fitted (opt-in common-environment)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                        fitted (opt-in maternal)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed                    fitted (opt-in multi-effect)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2        parsed               fitted (opt-in random-regression)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Phase 2      reserved                                   not available</span>

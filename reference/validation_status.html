@@ -33,6 +33,7 @@ validation checks, fit models, or promote any capability to working status."></h
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
+    <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul></li>
@@ -77,28 +78,28 @@ validation checks, fit models, or promote any capability to working status.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;hs_validation_status&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   validation: status table only; checks are run by tests and CI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   public claims: only `covered` rows may be advertised as working</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                               capability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                          tiny deterministic Ainv fixture</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                          Mrode9 pedigree Ainv comparator</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  supplied-variance Henderson MME fixture</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                          sparse REML likelihood identity</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                    Mrode-style supplied-variance outputs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                              experimental sparse REML estimator (opt-in)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                            experimental repeatability estimator (opt-in)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         experimental two-effect estimator (opt-in: common-env, maternal)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              experimental supplied-relationship estimator (opt-in: genomic, single-step)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                        experimental multivariate REML estimator (opt-in)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             univariate Gaussian animal-model fit (default path, AI-REML)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                  external published-REML recovery (gryphon, R reference)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                known-truth DGP variance-component recovery (R reference)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        Mrode fitted animal-model outputs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                 ASReml comparison policy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     BLUPF90/DMU/WOMBAT comparison policy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                    XSim simulation truth</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                          genomic and QTL/eQTL validation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                      GLLVM-style multivariate validation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                               CPU/GPU backend comparison</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                                    capability</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                               tiny deterministic Ainv fixture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                               Mrode9 pedigree Ainv comparator</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                       supplied-variance Henderson MME fixture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                               sparse REML likelihood identity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                         Mrode-style supplied-variance outputs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                   experimental sparse REML estimator (opt-in)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                 experimental repeatability estimator (opt-in)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  two-effect / arbitrary-N independent-effect estimator (opt-in; covered: common-env + (1|g) iid / A2=I; experimental: maternal / A2=pedigree)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                   experimental supplied-relationship estimator (opt-in: genomic, single-step)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                             experimental multivariate REML estimator (opt-in)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                  univariate Gaussian animal-model fit (default path, AI-REML)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                       external published-REML recovery (gryphon, R reference)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                     known-truth DGP variance-component recovery (R reference)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                             Mrode fitted animal-model outputs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                      ASReml comparison policy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                          BLUPF90/DMU/WOMBAT comparison policy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                         XSim simulation truth</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                               genomic and QTL/eQTL validation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                           GLLVM-style multivariate validation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                    CPU/GPU backend comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     phase  status</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 1 partial</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 1 partial</span>
@@ -107,7 +108,7 @@ validation checks, fit models, or promote any capability to working status.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 1 partial</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 1 partial</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 2 partial</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 2 partial</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 2 covered</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 5 partial</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 5 partial</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Phase 3 partial</span>

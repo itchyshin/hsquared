@@ -45,6 +45,7 @@
     <li><a class="dropdown-item" href="../articles/model-status.html">Model status</a></li>
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
+    <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
   </ul>
@@ -289,6 +290,7 @@ validated.</p>
 <span><span class="co">##                                                               permanent(1 | id)</span></span>
 <span><span class="co">##                                                           common_env(1 | group)</span></span>
 <span><span class="co">##                                                       maternal_genetic(1 | dam)</span></span>
+<span><span class="co">##                                                                     (1 | group)</span></span>
 <span><span class="co">##                           animal(rr(covariate, order = 2) | id, pedigree = ped)</span></span>
 <span><span class="co">##                                                           maternal_env(1 | dam)</span></span>
 <span><span class="co">##                                      paternal_genetic(1 | sire, pedigree = ped)</span></span>
@@ -325,6 +327,7 @@ validated.</p>
 <span><span class="co">##    Phase 2        parsed                   fitted (opt-in repeatability)</span></span>
 <span><span class="co">##    Phase 2        parsed              fitted (opt-in common-environment)</span></span>
 <span><span class="co">##    Phase 2        parsed                        fitted (opt-in maternal)</span></span>
+<span><span class="co">##    Phase 2        parsed                    fitted (opt-in multi-effect)</span></span>
 <span><span class="co">##    Phase 2        parsed               fitted (opt-in random-regression)</span></span>
 <span><span class="co">##    Phase 2      reserved                                   not available</span></span>
 <span><span class="co">##    Phase 2      reserved                                   not available</span></span>
@@ -360,28 +363,28 @@ validated.</p>
 <pre><code><span><span class="co">## &lt;hs_validation_status&gt;</span></span>
 <span><span class="co">##   validation: status table only; checks are run by tests and CI</span></span>
 <span><span class="co">##   public claims: only `covered` rows may be advertised as working</span></span>
-<span><span class="co">##                                                                               capability</span></span>
-<span><span class="co">##                                                          tiny deterministic Ainv fixture</span></span>
-<span><span class="co">##                                                          Mrode9 pedigree Ainv comparator</span></span>
-<span><span class="co">##                                                  supplied-variance Henderson MME fixture</span></span>
-<span><span class="co">##                                                          sparse REML likelihood identity</span></span>
-<span><span class="co">##                                                    Mrode-style supplied-variance outputs</span></span>
-<span><span class="co">##                                              experimental sparse REML estimator (opt-in)</span></span>
-<span><span class="co">##                                            experimental repeatability estimator (opt-in)</span></span>
-<span><span class="co">##                         experimental two-effect estimator (opt-in: common-env, maternal)</span></span>
-<span><span class="co">##              experimental supplied-relationship estimator (opt-in: genomic, single-step)</span></span>
-<span><span class="co">##  experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)</span></span>
-<span><span class="co">##                                        experimental multivariate REML estimator (opt-in)</span></span>
-<span><span class="co">##                             univariate Gaussian animal-model fit (default path, AI-REML)</span></span>
-<span><span class="co">##                                  external published-REML recovery (gryphon, R reference)</span></span>
-<span><span class="co">##                                known-truth DGP variance-component recovery (R reference)</span></span>
-<span><span class="co">##                                                        Mrode fitted animal-model outputs</span></span>
-<span><span class="co">##                                                                 ASReml comparison policy</span></span>
-<span><span class="co">##                                                     BLUPF90/DMU/WOMBAT comparison policy</span></span>
-<span><span class="co">##                                                                    XSim simulation truth</span></span>
-<span><span class="co">##                                                          genomic and QTL/eQTL validation</span></span>
-<span><span class="co">##                                                      GLLVM-style multivariate validation</span></span>
-<span><span class="co">##                                                               CPU/GPU backend comparison</span></span>
+<span><span class="co">##                                                                                                                                    capability</span></span>
+<span><span class="co">##                                                                                                               tiny deterministic Ainv fixture</span></span>
+<span><span class="co">##                                                                                                               Mrode9 pedigree Ainv comparator</span></span>
+<span><span class="co">##                                                                                                       supplied-variance Henderson MME fixture</span></span>
+<span><span class="co">##                                                                                                               sparse REML likelihood identity</span></span>
+<span><span class="co">##                                                                                                         Mrode-style supplied-variance outputs</span></span>
+<span><span class="co">##                                                                                                   experimental sparse REML estimator (opt-in)</span></span>
+<span><span class="co">##                                                                                                 experimental repeatability estimator (opt-in)</span></span>
+<span><span class="co">##  two-effect / arbitrary-N independent-effect estimator (opt-in; covered: common-env + (1|g) iid / A2=I; experimental: maternal / A2=pedigree)</span></span>
+<span><span class="co">##                                                                   experimental supplied-relationship estimator (opt-in: genomic, single-step)</span></span>
+<span><span class="co">##                                                       experimental SNP-BLUP marker-effect model (opt-in; supplied-variance or REML-estimated)</span></span>
+<span><span class="co">##                                                                                             experimental multivariate REML estimator (opt-in)</span></span>
+<span><span class="co">##                                                                                  univariate Gaussian animal-model fit (default path, AI-REML)</span></span>
+<span><span class="co">##                                                                                       external published-REML recovery (gryphon, R reference)</span></span>
+<span><span class="co">##                                                                                     known-truth DGP variance-component recovery (R reference)</span></span>
+<span><span class="co">##                                                                                                             Mrode fitted animal-model outputs</span></span>
+<span><span class="co">##                                                                                                                      ASReml comparison policy</span></span>
+<span><span class="co">##                                                                                                          BLUPF90/DMU/WOMBAT comparison policy</span></span>
+<span><span class="co">##                                                                                                                         XSim simulation truth</span></span>
+<span><span class="co">##                                                                                                               genomic and QTL/eQTL validation</span></span>
+<span><span class="co">##                                                                                                           GLLVM-style multivariate validation</span></span>
+<span><span class="co">##                                                                                                                    CPU/GPU backend comparison</span></span>
 <span><span class="co">##     phase  status</span></span>
 <span><span class="co">##   Phase 1 partial</span></span>
 <span><span class="co">##   Phase 1 partial</span></span>
@@ -390,7 +393,7 @@ validated.</p>
 <span><span class="co">##   Phase 1 partial</span></span>
 <span><span class="co">##   Phase 1 partial</span></span>
 <span><span class="co">##   Phase 2 partial</span></span>
-<span><span class="co">##   Phase 2 partial</span></span>
+<span><span class="co">##   Phase 2 covered</span></span>
 <span><span class="co">##   Phase 5 partial</span></span>
 <span><span class="co">##   Phase 5 partial</span></span>
 <span><span class="co">##   Phase 3 partial</span></span>
