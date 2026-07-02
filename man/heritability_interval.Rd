@@ -22,11 +22,17 @@ interval for \code{h^2}. It is available only when an \code{hsquared_fit} object
 contains the interval field, which the default Gaussian animal-model fit
 (\code{engine = "fit"}) populates from the engine's
 \code{HSquared.heritability_interval()} when a local Julia engine is present and
-the estimate is interior to \verb{(0, 1)}.
+the estimate is interior to \verb{(0, 1)}. On the opt-in two-effect fit it returns
+the direct-heritability ratio interval (\code{ratio1}), and on the opt-in
+multi-effect fit (\code{target = "multi_effect"}, K >= 3 blocks) it returns the
+ANIMAL block's ratio interval (the animal additive variance over the total
+phenotypic variance); the other blocks' variance-ratio intervals are surfaced
+separately in \code{fit$result$variance_ratio_intervals}.
 }
 \details{
-This mirrors the engine row \code{V1-HERIT-CI}, which is \code{partial}: the interval is
-a REML-only, asymptotic (logit delta-method) approximation, not a
-coverage-calibrated interval, and is unreliable at small \code{n}. It is reported
-as a point estimate plus bounds, not a validated capability.
+This mirrors the engine rows \code{V1-HERIT-CI} / \code{V3-TWOEFFECT-REML} /
+\code{V3-NEFFECT-REML}, which are \code{partial}: the interval is a REML-only,
+asymptotic (logit delta-method) approximation, not a coverage-calibrated
+interval, and is unreliable at small \code{n}. It is reported as a point estimate
+plus bounds, not a validated capability.
 }

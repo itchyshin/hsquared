@@ -386,8 +386,31 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
   expect_equal(nrow(re$nest), 4L)
   expect_equal(nrow(re$year), 2L)
 
-  # POINT ESTIMATES only: no interval field is attached on this path (deferred).
-  expect_null(fit$result$heritability_interval)
+  # Experimental per-component ratio intervals attach on the live bridge
+  # (engine multi_effect_ratio_interval). heritability_interval() resolves to the
+  # ANIMAL block's ratio; every block has a variance_ratio_intervals entry. These
+  # are asymptotic delta-method, NOT coverage-calibrated (V3-NEFFECT-REML).
+  hi <- heritability_interval(fit)
+  expect_s3_class(hi, "data.frame")
+  expect_equal(nrow(hi), 1L)
+  expect_true(all(c("estimate", "lower", "upper", "level", "se", "method") %in% names(hi)))
+  expect_equal(hi$method, "delta")
+  # h2 interval estimate equals the animal point ratio.
+  expect_equal(hi$estimate, h2$estimate, tolerance = 1e-6)
+
+  vri <- fit$result$variance_ratio_intervals
+  expect_true(is.list(vri))
+  expect_true(all(c("animal", "nest", "year") %in% names(vri)))
+  # each entry is a one-row ratio interval; animal entry matches heritability_interval.
+  expect_equal(vri$animal$estimate, hi$estimate, tolerance = 1e-8)
+  # bounds are either finite in (0,1)-ish range or NA when a component is on the
+  # boundary (sigma -> 0); never a spurious tight CI with a boundary flag unset.
+  for (nm in c("animal", "nest", "year")) {
+    ci <- vri[[nm]]
+    expect_equal(nrow(ci), 1L)
+    expect_true(is.na(ci$lower) || is.finite(ci$lower))
+    expect_true(is.na(ci$upper) || is.finite(ci$upper))
+  }
 })
 
 test_that("formula parser rejects planned genomic and QTL syntax honestly", {

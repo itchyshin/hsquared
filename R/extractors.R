@@ -894,12 +894,18 @@ accuracy.hsquared_fit <- function(object, ...) {
 #' contains the interval field, which the default Gaussian animal-model fit
 #' (`engine = "fit"`) populates from the engine's
 #' `HSquared.heritability_interval()` when a local Julia engine is present and
-#' the estimate is interior to `(0, 1)`.
+#' the estimate is interior to `(0, 1)`. On the opt-in two-effect fit it returns
+#' the direct-heritability ratio interval (`ratio1`), and on the opt-in
+#' multi-effect fit (`target = "multi_effect"`, K >= 3 blocks) it returns the
+#' ANIMAL block's ratio interval (the animal additive variance over the total
+#' phenotypic variance); the other blocks' variance-ratio intervals are surfaced
+#' separately in `fit$result$variance_ratio_intervals`.
 #'
-#' This mirrors the engine row `V1-HERIT-CI`, which is `partial`: the interval is
-#' a REML-only, asymptotic (logit delta-method) approximation, not a
-#' coverage-calibrated interval, and is unreliable at small `n`. It is reported
-#' as a point estimate plus bounds, not a validated capability.
+#' This mirrors the engine rows `V1-HERIT-CI` / `V3-TWOEFFECT-REML` /
+#' `V3-NEFFECT-REML`, which are `partial`: the interval is a REML-only,
+#' asymptotic (logit delta-method) approximation, not a coverage-calibrated
+#' interval, and is unreliable at small `n`. It is reported as a point estimate
+#' plus bounds, not a validated capability.
 #'
 #' @inheritParams variance_components
 #'

@@ -1002,8 +1002,12 @@ hs_fit_julia_two_effect_payload <- function(
 # `HSquared.fit_payload_v2(payload)` (which parses the block list and routes
 # K >= 3 independent blocks to `fit_multi_effect_reml`) and
 # `HSquared.result_payload_v2(fit, parsed)` (the block-structured result).
-# POINT ESTIMATES ONLY (variance components / heritability / EBVs); no interval
-# is attached here (the multi-effect ratio interval is a separate later slice).
+# After the fit, an EXPERIMENTAL per-component ratio interval is attached from
+# the engine's `multi_effect_ratio_interval` (guarded try, mirroring the two-
+# effect `hs_attach_two_effect_intervals` path): the ANIMAL block's ratio
+# populates `heritability_interval` (so `heritability_interval()` resolves for a
+# K >= 3 fit) and each block's ratio populates a per-component field. Asymptotic
+# logit delta-method, NOT coverage-calibrated (engine row `V3-NEFFECT-REML`).
 hs_fit_julia_n_effect_payload <- function(
   payload,
   project = hs_default_julia_project()
@@ -1127,6 +1131,45 @@ hs_fit_julia_n_effect_payload <- function(
   }
 
   result <- hs_normalize_n_effect_result(raw, re_ids, re_values, payload)
+
+  # Experimental, opt-in per-component ratio interval (engine
+  # `multi_effect_ratio_interval`) on the SAME inputs used for the fit. The
+  # already-parsed `hsq_parsed` carries the resolved (Z_i, Ainv_i) effects and
+  # per-block ids; we rebuild the identical `effects` vector the multi-effect
+  # dispatch uses (bridge_payload_v2.jl `_dispatch_fit` :multi_effect) so the
+  # interval refit sees exactly the fitted model. The interval refits internally
+  # and forms the observed information as the finite-difference Hessian of the
+  # K-effect REML loglik; on a flat/boundary optimum the sub-information can be
+  # non-positive-definite, so the try guard keeps an interval failure from
+  # aborting the fit. hsq_has_nci gates the eval so a Julia `nothing` never
+  # crosses the bridge. Asymptotic delta-method, NOT coverage-calibrated.
+  JuliaCall::julia_command(paste(
+    "hsq_nci = if isdefined(HSquared, :multi_effect_ratio_interval);",
+    "try;",
+    "hsq_neff = [(Matrix{Float64}(b.Z), Matrix{Float64}(b.relmat_inverse))",
+    "for b in hsq_parsed.blocks];",
+    "hsq_nids = [b.ids for b in hsq_parsed.blocks];",
+    "HSquared.multi_effect_ratio_interval(",
+    "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids);",
+    "catch; nothing; end; else; nothing; end;",
+    "hsq_has_nci = hsq_nci !== nothing;"
+  ))
+  if (isTRUE(JuliaCall::julia_eval("hsq_has_nci"))) {
+    raw_nci <- JuliaCall::julia_eval(paste(
+      "Dict(",
+      "\"level\" => hsq_nci.level,",
+      "\"converged\" => hsq_nci.converged,",
+      "\"estimate\" => [Float64(r.estimate) for r in hsq_nci.ratios],",
+      "\"lower\" => [Float64(r.lower) for r in hsq_nci.ratios],",
+      "\"upper\" => [Float64(r.upper) for r in hsq_nci.ratios],",
+      "\"se\" => [Float64(r.se) for r in hsq_nci.ratios],",
+      "\"lower_clamped\" => [r.lower_clamped for r in hsq_nci.ratios],",
+      "\"upper_clamped\" => [r.upper_clamped for r in hsq_nci.ratios],",
+      "\"boundary\" => [r.boundary for r in hsq_nci.ratios])"
+    ))
+    result <- hs_attach_n_effect_intervals(result, raw_nci, raw)
+  }
+
   hs_new_fit(
     spec = list(
       method = "REML",
@@ -1205,7 +1248,8 @@ hs_normalize_two_effect_result <- function(raw, payload) {
 # block only — its additive-genetic variance over the TOTAL phenotypic variance
 # (the sum of ALL block variances plus the residual). Every other block's
 # variance ratio (`block_variance / total`) is a variance-explained proportion,
-# NOT a heritability. POINT ESTIMATE only; no interval is attached here.
+# NOT a heritability. This normalizes the POINT ESTIMATES; the caller attaches
+# the experimental ratio interval separately via `hs_attach_n_effect_intervals`.
 hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
   fixed_effects <- as.numeric(raw$beta)
   fixed_names <- payload$metadata$fixed_colnames
@@ -1270,6 +1314,51 @@ hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
     converged = isTRUE(raw$converged),
     diagnostics = list(variance_components = "estimated_multi_effect_reml")
   )
+}
+
+# Attach the multi-effect (K >= 3) per-component ratio intervals to the result.
+# `raw_nci` carries the engine `multi_effect_ratio_interval` output as aligned
+# per-block vectors (`estimate`/`lower`/`upper`/`se`/`*_clamped`/`boundary`), in
+# the SAME block order as `raw$block_names` (both come from the one
+# `parse_payload_v2` parse). The ANIMAL block's ratio populates
+# `heritability_interval` (one-row shape identical to the univariate delta CI, so
+# `heritability_interval()` resolves identically on a K >= 3 fit); EVERY block's
+# ratio (animal included) is also surfaced under `variance_ratio_intervals`, a
+# named list keyed by block name, so each variance-explained proportion has its
+# matching interval. Falconer fence: only the animal entry is a heritability; the
+# others are variance-explained-proportion intervals, NOT heritabilities.
+# Boundary-flagged (sigma -> 0) components arrive with NaN bounds from the engine
+# and are normalized to NA (not a spurious CI).
+hs_attach_n_effect_intervals <- function(result, raw_nci, raw) {
+  level <- as.numeric(raw_nci$level)
+  block_names <- as.character(raw$block_names)
+  k <- length(block_names)
+
+  one_row <- function(i, with_method) {
+    hs_normalize_two_effect_ratio_interval(
+      estimate = raw_nci$estimate[[i]],
+      lower = raw_nci$lower[[i]],
+      upper = raw_nci$upper[[i]],
+      se = raw_nci$se[[i]],
+      lower_clamped = raw_nci$lower_clamped[[i]],
+      upper_clamped = raw_nci$upper_clamped[[i]],
+      boundary = raw_nci$boundary[[i]],
+      level = level,
+      with_method = with_method
+    )
+  }
+
+  ratio_intervals <- list()
+  for (i in seq_len(k)) {
+    ratio_intervals[[block_names[[i]]]] <- one_row(i, with_method = FALSE)
+  }
+  result$variance_ratio_intervals <- ratio_intervals
+
+  animal_idx <- match("animal", block_names)
+  if (!is.na(animal_idx)) {
+    result$heritability_interval <- one_row(animal_idx, with_method = TRUE)
+  }
+  result
 }
 
 # Attach the two-effect ratio intervals to the result. ratio1 (h2) populates
