@@ -85,6 +85,9 @@ reference:
       - permanent_effects
       - common_env_effects
       - maternal_effects
+      - common_env_proportion
+      - maternal_proportion
+      - common_env_proportion_interval
       - random_regression_extractors
       - prediction_error_variance
       - reliability
@@ -120,5 +123,7 @@ articles:
       - articles/model-status
       - articles/validation-evidence
       - articles/benchmark-comparators
+      - articles/two-effect-comparator
+      - articles/multi-effect-comparator
       - articles/formula-grammar
       - articles/genomics-gpu-roadmap
