@@ -2307,8 +2307,8 @@ hs_require_direct_maternal <- function(object, name) {
 
 #' Direct-maternal correlated model extractors
 #'
-#' These extractors summarize an opt-in, **experimental** direct-maternal
-#' correlated model (`target = "direct_maternal"`), fitted with
+#' These extractors summarize an opt-in, **covered at validation scale**
+#' direct-maternal correlated model (`target = "direct_maternal"`), fitted with
 #' `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`.
 #' The model estimates a 2x2 genetic covariance matrix G_dm between the direct
 #' additive and maternal additive effects, plus a residual variance.

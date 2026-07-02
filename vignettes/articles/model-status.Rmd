@@ -143,8 +143,11 @@ advanced opt-in engine controls.
 These models are reachable only through
 `control = hs_control(engine = "julia", engine_control = list(target = ...))`,
 are REML only, are Julia-owned (R only surfaces them), and are **not** the
-default, not production, and not comparator/known-truth-validated. Each mirrors
-a `partial` gate in the `HSquared.jl` twin.
+default and not production. Most mirror a `partial` gate in the `HSquared.jl`
+twin; exceptions are noted — the common-environment and direct–maternal correlated
+models are **covered at validation scale** (passed a pre-declared 48-seed
+bias/MCSE gate and a same-estimand REML comparator), while the remaining entries
+are not yet comparator/known-truth-validated at that bar.
 
 - Repeatability / permanent environment — `animal(1 | id) + permanent(1 | id)`,
   `target = "repeatability"` (needs repeated records per individual).

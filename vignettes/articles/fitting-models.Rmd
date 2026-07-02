@@ -98,7 +98,8 @@ The other two-effect model: a direct additive-genetic effect plus a maternal
 genetic effect expressed through the dam. Both carry the pedigree relationship
 (the maternal effect uses `A₂ = pedigree A`), and the dams must be animals in the
 `animal()` pedigree. This is the independent (uncorrelated) direct–maternal
-model; the correlated 2×2 G version is planned.
+model; the correlated 2×2 G version is covered at validation scale (opt-in,
+`target = "direct_maternal"` — see below).
 
 ```{r}
 fit_mat <- hsquared(
