@@ -43,11 +43,15 @@ breeding_values(fit)   # EBVs (aliases: EBV(), BLUP())
 summary(fit)
 ```
 
-The remaining models below are **experimental and opt-in**: they are reached
-through `engine = "julia"` with an explicit `target`, and their
-`validation_status()` rows are `partial` (they mirror the corresponding
-`HSquared.jl` gates, which are still being validated). They are REML-only and are
-not yet production- or comparator-validated.
+The remaining models below are **opt-in**: they are reached through
+`engine = "julia"` with an explicit `target`. They are all REML-only, experimental,
+and not the public default. Four of them are **covered at validation scale** —
+each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
+comparator: the common-environment two-effect model, arbitrary-N multi-effect,
+random regression k = 2, and the direct–maternal 2×2 G model. Covered at
+validation scale means experimental and not production; none is a default fit.
+The remaining opt-in models (`validation_status()` rows `partial`) have not yet
+passed a comparator- or known-truth-validated gate.
 
 ## Repeatability (permanent environment)
 
@@ -213,8 +217,11 @@ formula_status()
 validation_status()
 ```
 
-Only rows marked `covered` in `validation_status()` may be relied on as working;
-the opt-in models above are deliberately `partial` until their `HSquared.jl`
-gates and external comparators are signed off. Structured/factor-analytic
-multivariate covariance, non-Gaussian/GLLVM, unusual-inheritance, and GPU models
-remain on the roadmap.
+Only rows marked `covered` in `validation_status()` may be relied on as working.
+The four opt-in models listed as covered above (`two_effect` common-env leg,
+`multi_effect`, `random_regression`, `direct_maternal`) are covered at
+validation scale. The remaining opt-in models (`repeatability`, the maternal
+two-effect leg, genomic, SNP-BLUP, single-step, multivariate) remain `partial`
+until their `HSquared.jl` gates and external comparators are signed off.
+Structured/factor-analytic multivariate covariance, non-Gaussian/GLLVM,
+unusual-inheritance, and GPU models remain on the roadmap.

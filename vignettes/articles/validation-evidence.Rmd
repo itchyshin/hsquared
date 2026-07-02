@@ -262,12 +262,24 @@ What the v0.1 promotion does **not** claim:
   reliability — a model-internal quantity on the dense validation path — not the
   realised `cor(EBV, true)` used as recovery evidence. PEV and reliability are
   reported on the dense validation path only and are labelled as such.
-- **Opt-in models are partial/experimental.** Repeatability, two-effect
-  (common-environment / maternal-genetic), genomic GREML, single-step, SNP-BLUP,
-  and multivariate models fit only through
-  `hs_control(engine = "julia", engine_control = list(target = ...))`. They are
-  REML-only, Julia-owned, gated on the twin engine's status, and are not
-  comparator- or known-truth-validated.
+- **Opt-in models: covered set and experimental set.** All opt-in models fit
+  only through `hs_control(engine = "julia", engine_control = list(target = ...))`;
+  they are REML-only, Julia-owned, and not the default. Four opt-in models are
+  **covered at validation scale** — each passed a pre-declared 48-seed
+  bias/MCSE recovery gate plus a same-estimand REML comparator, mirroring the
+  twin engine's covered gate: (1) the **common-environment two-effect** leg
+  (`target = "two_effect"` with `common_env()`); (2) the **arbitrary-N
+  independent `(1|g)` multi-effect** model (`target = "multi_effect"`);
+  (3) **random regression k = 2** (`target = "random_regression"`); and
+  (4) the **direct–maternal correlated 2×2 G** model
+  (`target = "direct_maternal"`). Covered at validation scale means
+  experimental, opt-in, dense, and not production — the warranty is
+  validation-scale only, intervals are asymptotic/uncalibrated, and none of
+  these is the public default. The remaining opt-in models — repeatability
+  (`target = "repeatability"`), the **maternal-genetic two-effect leg**
+  (`target = "two_effect"` with `maternal_genetic()`), genomic GREML,
+  single-step, SNP-BLUP, and multivariate — stay **experimental/partial**:
+  they are not comparator- or known-truth-validated to a passed gate.
 - **Multivariate is not a t ≥ 2 recovery claim.** The multivariate target pins
   R/Julia payload and extractor parity and has an *optional* sommer comparator,
   but that comparator constrains residual covariance to diagonal — so it does not
@@ -284,9 +296,12 @@ are `planned`, `partial`, and `covered`, and the exact claim boundary attached t
 each — call `validation_status()`. It is a status table only: it does not run
 checks, fit models, or promote anything.
 
-For v0.1 the `covered` rows are exactly the univariate Gaussian animal-model fit
-and the two recovery anchors behind it (the known-truth DGP study and the
-published gryphon estimate). Everything else you see is `partial` or `planned`.
+For v0.1 the default-path `covered` rows are the univariate Gaussian animal-model
+fit and its two recovery anchors (the known-truth DGP study and the published
+gryphon estimate). Beyond v0.1, four opt-in models are also `covered` at
+validation scale (see the bullet above): common-environment two-effect, arbitrary-N
+multi-effect, random regression k = 2, and direct–maternal 2×2 G. Everything else
+is `partial` or `planned`.
 
 ```{r}
 status <- validation_status()
