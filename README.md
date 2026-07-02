@@ -40,10 +40,14 @@ including optional expression-feature annotation diagnostics through
 The package also provides readable formula vocabulary for genomic/QTL terms and
 standard quantitative-genetic extensions. Several now fit through an opt-in,
 experimental engine path (`engine = "julia"`, REML-only or supplied-variance,
-not the default, each mirroring a `partial` validation gate): permanent
-environment, common environment, maternal-genetic, genomic (GREML or SNP-BLUP),
-single-step effects, and the multivariate Gaussian animal model via a `cbind()`
-response. The rest — paternal effects, dominance, epistasis, cytoplasmic
+not the default). Four opt-in models are **covered at validation scale** — each
+passed a pre-declared 48-seed recovery gate plus a same-estimand REML comparator:
+common-environment two-effect, arbitrary-N multi-effect, random regression k = 2,
+and the direct–maternal correlated 2×2 G model. Further opt-in models mirror a
+`partial` validation gate: permanent environment, the maternal-genetic independent
+two-effect leg, genomic (GREML or SNP-BLUP), single-step effects, and the
+multivariate Gaussian animal model via a `cbind()` response. All opt-in models
+are experimental and not production. The rest — paternal effects, dominance, epistasis, cytoplasmic
 inheritance, imprinting, custom relationship or precision matrices, and
 marker/QTL scans — are syntax reservations only and currently abort as planned,
 not implemented.
