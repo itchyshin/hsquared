@@ -473,7 +473,13 @@ hsquared <- function(
           control,
           "julia_project",
           hs_default_julia_project()
-        )
+        ),
+        # `scale_method = "auto"` (opt-in) lets the engine route large multi-effect
+        # problems through the EXPERIMENTAL matrix-free Monte-Carlo fit when the dense
+        # factorization is infeasible; the default "dense" is the covered
+        # validation-scale path. See ?hsquared (engine_control) and the engine's
+        # `docs/design/25-completion-ultraplan.md` (V8.6).
+        scale_method = hs_engine_control_value(control, "scale_method", "dense")
       ))
     }
 
