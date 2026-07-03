@@ -4,6 +4,24 @@
 
 ### New features
 
+- **Large-scale multi-effect fitting: `engine_control`
+  `scale_method = "auto"` (opt-in, experimental).** For the arbitrary-N
+  independent `(1 | g)` multi-effect model (`target = "multi_effect"`),
+  `hs_control(engine = "julia", engine_control = list(target = "multi_effect", scale_method = "auto"))`
+  lets the engine route large problems the dense factorization cannot
+  reach through its **matrix-free Monte-Carlo REML** fit (never
+  forming/factorizing the mixed-model coefficient matrix). The default
+  `scale_method = "dense"` is unchanged and byte-identical. At
+  validation scale `"auto"` uses the sparse-exact estimator, which
+  reduces exactly to the covered dense result (verified live:
+  dense-vs-auto variance components agree to ~3e-5 on a 200-animal
+  fixture); only when the problem exceeds the direct-factorization
+  budget does it fall back to the experimental matrix-free fit, whose
+  estimates carry a Monte-Carlo standard error. **The covered claim is
+  unchanged** (validation-scale, exact path); the large-scale
+  matrix-free path is opt-in **experimental** (no calibrated intervals /
+  no external comparator through it yet).
+
 - **Direct–maternal correlated (2×2 G) animal model — covered at
   validation scale (opt-in).**
   [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
