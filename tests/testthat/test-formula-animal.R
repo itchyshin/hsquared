@@ -380,8 +380,10 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
   )
   expect_true(is.finite(h2$estimate) && h2$estimate >= 0 && h2$estimate < 1)
 
-  # named per-block random effects (BLUPs)
-  re <- random_effects(fit)
+  # named per-block random effects (BLUPs); the extractor is ranef() (there is no
+  # `random_effects()` function — this line was latent-broken but masked in CI, which
+  # skips the live-bridge test without Julia).
+  re <- ranef(fit)
   expect_true(all(c("animal", "nest", "year") %in% names(re)))
   expect_equal(nrow(re$nest), 4L)
   expect_equal(nrow(re$year), 2L)
@@ -411,6 +413,67 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
     expect_true(is.na(ci$lower) || is.finite(ci$lower))
     expect_true(is.na(ci$upper) || is.finite(ci$upper))
   }
+})
+
+test_that("multi_effect engine_control scale_method = 'auto' agrees with the dense default (V8.6)", {
+  # V8.6 connection: routing the multi_effect surface through the engine's
+  # fit_multi_effect(:auto) (scale_method = "auto") gives the SAME covered result at
+  # validation scale (:auto picks the sparse-exact AI-REML, which reduces exactly to the
+  # dense fit_multi_effect_reml), and enables the experimental matrix-free path for large
+  # problems the dense factorization cannot reach. Well-identified fixture (needs enough
+  # data; an 8-record K=3 fit is under-identified and the two estimators land on different
+  # boundary optima).
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "Julia bridge (Julia + JuliaCall + HSquared.jl project) not available"
+  )
+  set.seed(7)
+  nf <- 16L; noff <- 120L
+  fid <- paste0("f", seq_len(nf))
+  sires <- fid[1:8]; dams <- fid[9:16]
+  oid <- paste0("o", seq_len(noff))
+  ped <- data.frame(
+    id = c(fid, oid),
+    sire = c(rep(NA, nf), sires[((seq_len(noff) - 1L) %% 8L) + 1L]),
+    dam  = c(rep(NA, nf), dams[((seq_len(noff) - 1L) %% 8L) + 1L]),
+    stringsAsFactors = FALSE
+  )
+  n <- nf + noff
+  nestlev <- paste0("nst", 1:10); yearlev <- paste0("y", 1:5)
+  nest <- sample(nestlev, n, replace = TRUE); year <- sample(yearlev, n, replace = TRUE)
+  nest_e <- stats::setNames(stats::rnorm(10, 0, sqrt(0.5)), nestlev)
+  year_e <- stats::setNames(stats::rnorm(5, 0, sqrt(0.5)), yearlev)
+  a_e <- stats::setNames(stats::rnorm(n, 0, 1), c(fid, oid))
+  dat <- data.frame(
+    y = 3 + a_e[c(fid, oid)] + nest_e[nest] + year_e[year] + stats::rnorm(n, 0, 1),
+    id = c(fid, oid), nest = nest, year = year, stringsAsFactors = FALSE
+  )
+  f <- y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year)
+
+  fit_dense <- hsquared(f, data = dat, family = stats::gaussian(),
+    control = hs_control(engine = "julia", engine_control = list(target = "multi_effect")))
+  fit_auto <- hsquared(f, data = dat, family = stats::gaussian(),
+    control = hs_control(engine = "julia",
+      engine_control = list(target = "multi_effect", scale_method = "auto")))
+
+  expect_s3_class(fit_auto, "hsquared_fit")
+  vc_d <- variance_components(fit_dense)
+  vc_a <- variance_components(fit_auto)
+  expect_equal(vc_a$component, vc_d$component)
+  # dense vs auto agree at validation scale. The tolerance accommodates the dense
+  # NelderMead's convergence slack (~1e-2): :auto uses the sparse AI-REML, which finds the
+  # optimum more precisely than the dense NelderMead oracle (the ~2e-4-to-1e-2 VC gap the
+  # engine's V3-NEFFECT-SPARSE reduction documents), so it is at least as accurate as dense.
+  expect_equal(vc_a$estimate, vc_d$estimate, tolerance = 0.05)
+  expect_true(all(is.finite(vc_a$estimate)) && all(vc_a$estimate >= 0))
+
+  # an invalid scale_method is rejected before hitting the engine
+  expect_error(
+    hsquared(f, data = dat, family = stats::gaussian(),
+      control = hs_control(engine = "julia",
+        engine_control = list(target = "multi_effect", scale_method = "bogus"))),
+    "should be one of"
+  )
 })
 
 test_that("formula parser rejects planned genomic and QTL syntax honestly", {

@@ -307,7 +307,12 @@ hs_validation_status_boundaries <- function() {
       "V3-NEFFECT-REML engine gate with exact live R-Julia parity; the animal-block ratio",
       "is narrow-sense h2, other blocks are variance-explained proportions (not",
       "heritabilities), intervals asymptotic/uncalibrated; INDEPENDENT effects only (NOT",
-      "correlated / random-regression / non-Gaussian)."
+      "correlated / random-regression / non-Gaussian). V8.6 SCALE opt-in:",
+      "engine_control scale_method='auto' (default 'dense') routes large problems through",
+      "the engine's EXPERIMENTAL matrix-free Monte-Carlo fit; validation scale uses the",
+      "sparse-exact estimator (reduces to the covered dense result, live-bridge verified).",
+      "The COVERED claim is unchanged (validation-scale, exact); the large-scale matrix-free",
+      "path is opt-in experimental."
     ),
     paste(
       "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",

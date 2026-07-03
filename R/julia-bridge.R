@@ -1258,8 +1258,10 @@ hs_normalize_direct_maternal_result <- function(
 # logit delta-method, NOT coverage-calibrated (engine row `V3-NEFFECT-REML`).
 hs_fit_julia_n_effect_payload <- function(
   payload,
-  project = hs_default_julia_project()
+  project = hs_default_julia_project(),
+  scale_method = c("dense", "auto")
 ) {
+  scale_method <- match.arg(scale_method)
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
   }
@@ -1344,10 +1346,17 @@ hs_fit_julia_n_effect_payload <- function(
   ))
 
   # fit_payload_v2 parses the block list and dispatches K >= 3 independent
-  # blocks to fit_multi_effect_reml; result_payload_v2 builds the block-
-  # structured result from the same parse.
+  # blocks. scale_method = "dense" (DEFAULT) uses the dense fit_multi_effect_reml
+  # (the covered validation-scale path). scale_method = "auto" routes through the
+  # engine's fit_multi_effect(:auto): the SPARSE-EXACT AI-REML (reduces exactly to
+  # the dense optimum) at validation scale, and the EXPERIMENTAL matrix-free
+  # Monte-Carlo fit for large problems the dense factorization cannot reach.
+  # result_payload_v2 builds the block-structured result from the same parse.
   JuliaCall::julia_command("hsq_parsed = HSquared.parse_payload_v2(hsq_payload);")
-  JuliaCall::julia_command("hsq_fit = HSquared.fit_payload_v2(hsq_payload);")
+  JuliaCall::julia_command(sprintf(
+    "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
+    scale_method
+  ))
   JuliaCall::julia_command(
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
   )
