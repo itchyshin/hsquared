@@ -4,8 +4,13 @@
 > (PRs up to #97). On those rows the "Next action" column records the action at
 > the time; where it still reads as a forward instruction, that instruction is a
 > live coordination note (e.g. a comparator run awaiting a capable host). The
-> 2026-06-22 rows are the current stacked batch (PRs #98-#103), not yet merged to
-> `main`.
+> 2026-06-22 rows (PRs #98-#103) have since **merged to `main`** — `main` is at
+> #122 (`34dfb6d`) as of 2026-07-09, so every row below is historical.
+>
+> _(Corrected 2026-07-09: this note previously read "the current stacked batch …
+> not yet merged"; both batch SHAs `22659ae`/`1423412` are ancestors of `main`.
+> The recovery rule treats this board as the rehydration source of truth, so a
+> stale merge-state line here misroutes the next agent — Shannon's council flag.)_
 
 | Date | Lane | Owner | Branch | Files / surface | Status | Blocker | Next action |
 | --- | --- | --- | --- | --- | --- | --- | --- |
