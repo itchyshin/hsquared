@@ -26,7 +26,7 @@ available:
 points. When the fit carries the \strong{experimental} variance-component
 standard errors (see \code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}}), it adds
 approximate \verb{+/- 1.96 * SE} whiskers and labels the panel experimental;
-those intervals are asymptotic, REML-only, and not coverage-calibrated.
+those intervals are asymptotic, REML-only, conservative, and not coverage-calibrated.
 \item \code{type = "residuals"} plots residuals against fitted values (with a zero
 reference line), when the fit carries fitted values and a response.
 }

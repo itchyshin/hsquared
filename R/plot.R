@@ -7,7 +7,7 @@
 #'   points. When the fit carries the **experimental** variance-component
 #'   standard errors (see [variance_component_standard_errors()]), it adds
 #'   approximate `+/- 1.96 * SE` whiskers and labels the panel experimental;
-#'   those intervals are asymptotic, REML-only, and not coverage-calibrated.
+#'   those intervals are asymptotic, REML-only, conservative, and not coverage-calibrated.
 #' * `type = "residuals"` plots residuals against fitted values (with a zero
 #'   reference line), when the fit carries fitted values and a response.
 #'
@@ -53,7 +53,7 @@ hs_plot_variance <- function(x, ...) {
 
   ylim <- range(c(est, lo, hi, 0), na.rm = TRUE)
   main <- if (has_se) {
-    "Variance components (experimental +/- 1.96 SE; asymptotic REML)"
+    "Variance components (experimental +/- 1.96 SE; conservative / not coverage-calibrated; asymptotic REML)"
   } else {
     "Variance components"
   }

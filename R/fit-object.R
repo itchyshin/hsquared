@@ -119,12 +119,20 @@ print.summary_hsquared_fit <- function(x, ...) {
 }
 
 # Print the experimental uncertainty surfaces (CIs / SEs) when present. These
-# are asymptotic, REML-only, partial-row surfaces (V1-HERIT-CI / V3-REPEAT-REML)
-# and are labelled experimental so they are never read as validated.
+# are asymptotic, REML-only, partial-row surfaces (V1-HERIT-CI / V3-REPEAT-REML).
+# The univariate h^2/VC coverage study (HSquared.jl DRAC job 46853279, 500 reps:
+# sim/drac/results/cov_delta_profile_46853279.tsv;
+# docs/dev-log/recovery-checkpoints/2026-07-03-interval-coverage.md) licenses only
+# a DIRECTIONAL claim: the h^2 and variance-component intervals are conservative
+# (over-cover at small n) and NOT coverage-calibrated. Repeatability is NOT covered
+# by that study, so its label stays "experimental; asymptotic REML" (no direction).
+# Labelled experimental so they are never read as validated.
 hs_print_uncertainty <- function(x) {
   fmt <- function(v) format(signif(as.numeric(v), 4))
   if (!is.null(x$heritability_se) || !is.null(x$heritability_interval)) {
-    cat("  heritability uncertainty (experimental; asymptotic REML):\n")
+    cat(
+      "  heritability uncertainty (experimental; conservative / not coverage-calibrated; asymptotic REML):\n"
+    )
     if (!is.null(x$heritability_se)) {
       cat("    SE: ", fmt(x$heritability_se), "\n", sep = "")
     }
@@ -142,7 +150,9 @@ hs_print_uncertainty <- function(x) {
     }
   }
   if (!is.null(x$variance_component_se)) {
-    cat("  variance-component SEs (experimental; asymptotic REML):\n")
+    cat(
+      "  variance-component SEs (experimental; conservative / not coverage-calibrated; asymptotic REML):\n"
+    )
     se <- x$variance_component_se
     for (i in seq_len(nrow(se))) {
       cat("    ", se$component[i], ": ", fmt(se$se[i]), "\n", sep = "")

@@ -263,7 +263,7 @@ hs_autoplot_variance <- function(object, ...) {
 
   sub <- if (experimental) {
     paste0(
-      "experimental +/- 1.96 SE (asymptotic, REML, not coverage-calibrated)",
+      "experimental +/- 1.96 SE (asymptotic, REML, conservative / not coverage-calibrated)",
       if (isTRUE(boundary)) "; h^2 CI crosses the [0,1] boundary" else ""
     )
   } else {
@@ -279,7 +279,7 @@ hs_autoplot_variance <- function(object, ...) {
     ),
     type = "variance",
     interval_status = if (experimental) "experimental_asymptotic" else "none",
-    notes = "variance components + per-trait h^2; SEs asymptotic/REML, not coverage-calibrated"
+    notes = "variance components + per-trait h^2; SEs asymptotic/REML, conservative / not coverage-calibrated"
   )
 }
 
