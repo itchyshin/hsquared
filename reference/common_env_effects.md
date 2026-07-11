@@ -1,7 +1,6 @@
 # Extract common-environment effects
 
-`common_env_effects()` returns the predicted common-environment effects
-of the opt-in, experimental two-effect model (`target = "two_effect"`).
+**\[experimental\]**
 
 ## Usage
 
@@ -22,3 +21,8 @@ common_env_effects(object, ...)
 ## Value
 
 Common-environment effect results for two-effect `hsquared_fit` objects.
+
+## Details
+
+`common_env_effects()` returns the predicted common-environment effects
+of the opt-in, experimental two-effect model (`target = "two_effect"`).

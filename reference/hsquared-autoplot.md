@@ -1,13 +1,6 @@
 # ggplot2 visualizations for hsquared results
 
-[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
-methods render the quantitative-genetic results an `hsquared_fit` (or a
-[`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md) scan)
-carries as `ggplot2` objects, in the style of the `brms`/`bayesplot`
-ecosystem and consistent with the sister packages `drmTMB`/`gllvmTMB`.
-They are **uncertainty-first**: where the fit carries the experimental
-standard errors / reliabilities, the figures show them (clearly labelled
-experimental and asymptotic).
+**\[experimental\]**
 
 ## Usage
 
@@ -48,6 +41,15 @@ autoplot(object, type = c("manhattan", "qq"), ...)
 A `ggplot` object.
 
 ## Details
+
+[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+methods render the quantitative-genetic results an `hsquared_fit` (or a
+[`gwas()`](https://itchyshin.github.io/hsquared/reference/gwas.md) scan)
+carries as `ggplot2` objects, in the style of the `brms`/`bayesplot`
+ecosystem and consistent with the sister packages `drmTMB`/`gllvmTMB`.
+They are **uncertainty-first**: where the fit carries the experimental
+standard errors / reliabilities, the figures show them (clearly labelled
+experimental and asymptotic).
 
 Available `type`s for `autoplot.hsquared_fit()`:
 

@@ -1,10 +1,6 @@
 # Extract the maternal variance ratio (m2)
 
-`maternal_proportion()` returns the estimated maternal variance ratio
-`m2 = sigma_m2 / (sigma_a2 + sigma_m2 + sigma_e2)` from the opt-in,
-experimental maternal two-effect model (`target = "two_effect"` with a
-[`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-term).
+**\[experimental\]**
 
 ## Usage
 
@@ -29,6 +25,12 @@ A one-row data frame with `term` and `estimate`, plus an
 objects.
 
 ## Details
+
+`maternal_proportion()` returns the estimated maternal variance ratio
+`m2 = sigma_m2 / (sigma_a2 + sigma_m2 + sigma_e2)` from the opt-in,
+experimental maternal two-effect model (`target = "two_effect"` with a
+[`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+term).
 
 Falconer fence: `m2` is a **variance ratio** (the proportion of
 phenotypic variance from the maternal (dam) genetic effect), **not a

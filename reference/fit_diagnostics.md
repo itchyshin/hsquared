@@ -1,9 +1,6 @@
 # Inspect fitted-model diagnostics
 
-`fit_diagnostics()` returns a compact diagnostics table for an
-`hsquared_fit` object. It is an inspection helper over the current
-result payload: it does not refit the model, rerun validation checks, or
-promote an experimental bridge target to production support.
+**\[experimental\]**
 
 ## Usage
 
@@ -25,3 +22,10 @@ fit_diagnostics(object, ...)
 
 A data frame with `metric` and `value` columns and class
 `"hs_fit_diagnostics"`.
+
+## Details
+
+`fit_diagnostics()` returns a compact diagnostics table for an
+`hsquared_fit` object. It is an inspection helper over the current
+result payload: it does not refit the model, rerun validation checks, or
+promote an experimental bridge target to production support.

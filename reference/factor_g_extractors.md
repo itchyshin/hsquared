@@ -1,19 +1,6 @@
 # Reserved factor-analytic and G-matrix extractors
 
-These extractor names are reserved for future factor-analytic G-matrix
-results. The current package can report invariant covariance and
-correlation matrices from opt-in multivariate fits, but it does not yet
-expose interpreted loadings, uniqueness/specific variance, or latent
-breeding values. Loading columns are rotation-nonunique until a rotation
-or constraint policy is validated. Future `hsquared_fit` methods reserve
-`effect` and rotation controls, but these controls currently error
-rather than implying that loading axes are interpretable. The
-**rotation-invariant** genetic eigenstructure and evolvability geometry
-are available now via
-[`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
-and the
-[g_matrix_geometry](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
-family.
+**\[experimental\]**
 
 ## Usage
 
@@ -38,3 +25,20 @@ latent_breeding_values(object, ...)
 ## Value
 
 These reserved extractors currently error for `hsquared_fit` objects.
+
+## Details
+
+These extractor names are reserved for future factor-analytic G-matrix
+results. The current package can report invariant covariance and
+correlation matrices from opt-in multivariate fits, but it does not yet
+expose interpreted loadings, uniqueness/specific variance, or latent
+breeding values. Loading columns are rotation-nonunique until a rotation
+or constraint policy is validated. Future `hsquared_fit` methods reserve
+`effect` and rotation controls, but these controls currently error
+rather than implying that loading axes are interpretable. The
+**rotation-invariant** genetic eigenstructure and evolvability geometry
+are available now via
+[`eigen_G()`](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+and the
+[g_matrix_geometry](https://itchyshin.github.io/hsquared/reference/g_matrix_geometry.md)
+family.

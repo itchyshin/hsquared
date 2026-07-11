@@ -1,11 +1,6 @@
 # Extract the common-environment variance ratio (c2)
 
-`common_env_proportion()` returns the estimated common-environment
-variance ratio `c2 = sigma_c2 / (sigma_a2 + sigma_c2 + sigma_e2)` from
-the opt-in, experimental two-effect model (`target = "two_effect"` with
-a
-[`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-term).
+**\[experimental\]**
 
 ## Usage
 
@@ -29,6 +24,13 @@ A one-row data frame with `term` and `estimate`, plus an
 `"interpretation"` attribute, for two-effect `hsquared_fit` objects.
 
 ## Details
+
+`common_env_proportion()` returns the estimated common-environment
+variance ratio `c2 = sigma_c2 / (sigma_a2 + sigma_c2 + sigma_e2)` from
+the opt-in, experimental two-effect model (`target = "two_effect"` with
+a
+[`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+term).
 
 Falconer fence: `c2` is a **variance ratio** (the proportion of
 phenotypic variance from the shared common-environment effect), **not a

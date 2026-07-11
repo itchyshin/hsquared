@@ -1,7 +1,6 @@
 # Extract heritability estimates
 
-`heritability()` is part of the planned v0.1 fitted-object contract. It
-works for `hsquared_fit` objects that contain a Julia result.
+**\[experimental\]**
 
 ## Usage
 
@@ -24,6 +23,9 @@ heritability(object, ...)
 Heritability results for `hsquared_fit` objects.
 
 ## Details
+
+`heritability()` is part of the planned v0.1 fitted-object contract. It
+works for `hsquared_fit` objects that contain a Julia result.
 
 Falconer fence for the opt-in two-effect model
 (`target = "two_effect"`): the reported number is the **narrow-sense

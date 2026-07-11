@@ -1,9 +1,6 @@
 # Inspect formula grammar status
 
-`formula_status()` reports which pieces of the planned
-[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-formula language are parsed today, reserved as syntax markers, or still
-roadmap-only. It is a status table, not a model-fitting helper.
+**\[experimental\]**
 
 ## Usage
 
@@ -15,6 +12,13 @@ formula_status()
 
 A data frame of formula grammar records with class
 `"hs_formula_status"`.
+
+## Details
+
+`formula_status()` reports which pieces of the planned
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+formula language are parsed today, reserved as syntax markers, or still
+roadmap-only. It is a status table, not a model-fitting helper.
 
 ## Examples
 
@@ -61,41 +65,41 @@ formula_status()
 #>                             animal(trait | id, pedigree = ped, cov = fa(K = 2))
 #>                                    missing = miss_control(response = "include")
 #>                          mi(x) with missing = miss_control(predictor = "model")
-#>      phase syntax_status                                  fitting_status
-#>    Phase 1        parsed                           fitted (v0.1 default)
-#>    Phase 1        parsed                           fitted (v0.1 default)
-#>    Phase 2        parsed                   fitted (opt-in repeatability)
-#>    Phase 2        parsed              fitted (opt-in common-environment)
-#>    Phase 2        parsed                        fitted (opt-in maternal)
-#>    Phase 2        parsed                    fitted (opt-in multi-effect)
-#>    Phase 2        parsed               fitted (opt-in random-regression)
-#>    Phase 2      reserved                                   not available
-#>    Phase 2      reserved                                   not available
-#>    Phase 2      reserved                                   not available
-#>    Phase 2      reserved                                   not available
-#>    Phase 2      reserved                                   not available
-#>    Phase 2        parsed      fitted (opt-in supplied-Gamma metafounder)
-#>    Phase 2      reserved                                   not available
-#>   Phase 3+      reserved                                   not available
-#>   Phase 3+      reserved                                   not available
-#>   Phase 3+      reserved                                   not available
-#>   Phase 3+      reserved                                   not available
-#>   Phase 3+      reserved                                   not available
-#>   Phase 3+      reserved                                   not available
-#>    Phase 5        parsed                         fitted (opt-in genomic)
-#>    Phase 5        parsed              fitted (opt-in genomic / SNP-BLUP)
-#>    Phase 5        parsed                     fitted (opt-in single-step)
-#>    Phase 5        parsed        fitted (opt-in single-step construction)
-#>    Phase 5        parsed fitted (opt-in single-step bundle construction)
-#>    Phase 5        parsed          fitted (opt-in supplied-Gamma H^Gamma)
-#>    Phase 5      reserved                                   not available
-#>    Phase 5      reserved                                   not available
-#>    Phase 5      reserved                                   not available
-#>  Phase 3-4        parsed                    fitted (opt-in multivariate)
-#>  Phase 3-4       planned                                   not available
-#>  Phase 3-4       planned                                   not available
-#>  Phase 3-4       planned                                   not available
-#>  Phase 3-4       planned                                   not available
-#>    Phase 8       planned                                   not available
-#>    Phase 8       planned                                   not available
+#>      phase syntax_status                                      fitting_status
+#>    Phase 1        parsed                               fitted (v0.1 default)
+#>    Phase 1        parsed                               fitted (v0.1 default)
+#>    Phase 2        parsed                       fitted (opt-in repeatability)
+#>    Phase 2        parsed                  fitted (opt-in common-environment)
+#>    Phase 2        parsed                            fitted (opt-in maternal)
+#>    Phase 2        parsed                        fitted (opt-in multi-effect)
+#>    Phase 2        parsed                   fitted (opt-in random-regression)
+#>    Phase 2      reserved                                       not available
+#>    Phase 2      reserved                                       not available
+#>    Phase 2      reserved                                       not available
+#>    Phase 2      reserved                                       not available
+#>    Phase 2      reserved                                       not available
+#>    Phase 2        parsed          fitted (opt-in supplied-Gamma metafounder)
+#>    Phase 2      reserved                                       not available
+#>   Phase 3+      reserved                                       not available
+#>   Phase 3+      reserved                                       not available
+#>   Phase 3+      reserved                                       not available
+#>   Phase 3+      reserved                                       not available
+#>   Phase 3+        parsed fitted (opt-in supplied relationship, experimental)
+#>   Phase 3+        parsed    fitted (opt-in supplied precision, experimental)
+#>    Phase 5        parsed                             fitted (opt-in genomic)
+#>    Phase 5        parsed                  fitted (opt-in genomic / SNP-BLUP)
+#>    Phase 5        parsed                         fitted (opt-in single-step)
+#>    Phase 5        parsed            fitted (opt-in single-step construction)
+#>    Phase 5        parsed     fitted (opt-in single-step bundle construction)
+#>    Phase 5        parsed              fitted (opt-in supplied-Gamma H^Gamma)
+#>    Phase 5      reserved                                       not available
+#>    Phase 5      reserved                                       not available
+#>    Phase 5      reserved                                       not available
+#>  Phase 3-4        parsed                        fitted (opt-in multivariate)
+#>  Phase 3-4       planned                                       not available
+#>  Phase 3-4       planned                                       not available
+#>  Phase 3-4       planned                                       not available
+#>  Phase 3-4       planned                                       not available
+#>    Phase 8       planned                                       not available
+#>    Phase 8       planned                                       not available
 ```

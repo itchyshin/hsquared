@@ -1,12 +1,6 @@
 # Create an hsquared data container
 
-`hs_data()` collects phenotype, pedigree, genotype, marker, expression,
-annotation, and environment inputs into one checked container. It is a
-lightweight data-contract object for future genomic, QTL/eQTL, and
-multi-omics workflows. It does not fit models. The v0.1 parser can use
-an `hs_data` object directly as `data`, reading model variables from
-`phenotypes` and making named components such as `pedigree` available to
-formula terms.
+**\[experimental\]**
 
 ## Usage
 
@@ -80,6 +74,14 @@ hs_data(
 An `hs_data` object.
 
 ## Details
+
+`hs_data()` collects phenotype, pedigree, genotype, marker, expression,
+annotation, and environment inputs into one checked container. It is a
+lightweight data-contract object for future genomic, QTL/eQTL, and
+multi-omics workflows. It does not fit models. The v0.1 parser can use
+an `hs_data` object directly as `data`, reading model variables from
+`phenotypes` and making named components such as `pedigree` available to
+formula terms.
 
 `summary(hs_data(...))` reports ID overlap diagnostics, pedigree
 diagnostics, and, when expression, genotype, or marker components are

@@ -118,6 +118,19 @@ A meaningful slice is done only when:
 - the coordination board and issue/roadmap state are updated;
 - Rose records either a clean audit or explicit blockers.
 
+Additionally, for any slice that flips a `validation_status` row to
+`covered` (see the 2026-07-09 “Standard-Tier Covered-Flip Gate” entry in
+`docs/dev-log/decisions.md`):
+
+- component estimands are external-comparator-gated; derived estimands
+  (`h2_T`, `m2`, `r_am`, `R`) are identity-test + locked-citation gated;
+- the flip carries a pinned textbook number or an explicit no-anchor
+  disclosure (direct-maternal has no Mrode Ch.7 anchor);
+- Darwin has signed off the recovered quantity, and for correlated
+  models that quantity is the correlation/covariance;
+- Boole has frozen the auto-routing grammar and argument-naming
+  predicate before the flip.
+
 ## Recovery Rule
 
 After a crash, stream interruption, or long pause, rehydrate from

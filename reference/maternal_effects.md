@@ -1,10 +1,6 @@
 # Extract maternal genetic effects
 
-`maternal_effects()` returns the predicted maternal genetic effects of
-the opt-in, experimental maternal two-effect model
-(`target = "two_effect"` with a
-[`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-term).
+**\[experimental\]**
 
 ## Usage
 
@@ -25,3 +21,11 @@ maternal_effects(object, ...)
 ## Value
 
 Maternal genetic effect results for maternal `hsquared_fit` objects.
+
+## Details
+
+`maternal_effects()` returns the predicted maternal genetic effects of
+the opt-in, experimental maternal two-effect model
+(`target = "two_effect"` with a
+[`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+term).

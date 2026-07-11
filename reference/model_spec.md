@@ -1,9 +1,6 @@
 # Inspect a parsed hsquared model specification
 
-`model_spec()` validates the narrow v0.1 animal-model grammar and
-returns the R-side model specification that would be used to build the
-Julia bridge payload. It is a preview and diagnostics helper: it does
-not fit a model.
+**\[experimental\]**
 
 ## Usage
 
@@ -46,3 +43,10 @@ model_spec(formula, data, family = stats::gaussian(), REML = TRUE, ...)
 ## Value
 
 An `"hs_model_spec"` object.
+
+## Details
+
+`model_spec()` validates the narrow v0.1 animal-model grammar and
+returns the R-side model specification that would be used to build the
+Julia bridge payload. It is a preview and diagnostics helper: it does
+not fit a model.

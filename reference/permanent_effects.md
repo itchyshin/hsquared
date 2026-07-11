@@ -1,7 +1,6 @@
 # Extract permanent-environment effects
 
-`permanent_effects()` returns the predicted permanent-environment
-effects of the opt-in, experimental repeatability model.
+**\[experimental\]**
 
 ## Usage
 
@@ -23,3 +22,8 @@ permanent_effects(object, ...)
 
 Permanent-environment effect results for repeatability `hsquared_fit`
 objects.
+
+## Details
+
+`permanent_effects()` returns the predicted permanent-environment
+effects of the opt-in, experimental repeatability model.

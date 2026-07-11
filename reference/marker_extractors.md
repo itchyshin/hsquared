@@ -1,18 +1,6 @@
 # Extract planned marker, QTL, GWAS, and eQTL results
 
-These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
-They return values only when an `hsquared_fit` object contains the
-corresponding result field. `marker_effects()` and
-`marker_variance_explained()` are populated by the opt-in SNP-BLUP path
-(`target = "snp_blup"`). The variance-explained table is a descriptive
-fitted-marker share, computed as effect squared times centered marker
-variance and normalized across markers; it is not a marker-scan p-value,
-QTL statistic, or causal decomposition under linkage disequilibrium. The
-`gwas_table()` and `lod_scores()` methods for an already-computed
-`hs_gwas` object expose the current uncalibrated marker-scan table and
-marker-level LOD scores. Fit-level QTL/GWAS/eQTL result tables and
-map-annotated / calibrated scan outputs remain reserved for future
-results.
+**\[experimental\]**
 
 ## Usage
 
@@ -44,3 +32,19 @@ lod_scores(object, ...)
 
 The requested marker or scan result for `hsquared_fit` objects that
 contain the corresponding field.
+
+## Details
+
+These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
+They return values only when an `hsquared_fit` object contains the
+corresponding result field. `marker_effects()` and
+`marker_variance_explained()` are populated by the opt-in SNP-BLUP path
+(`target = "snp_blup"`). The variance-explained table is a descriptive
+fitted-marker share, computed as effect squared times centered marker
+variance and normalized across markers; it is not a marker-scan p-value,
+QTL statistic, or causal decomposition under linkage disequilibrium. The
+`gwas_table()` and `lod_scores()` methods for an already-computed
+`hs_gwas` object expose the current uncalibrated marker-scan table and
+marker-level LOD scores. Fit-level QTL/GWAS/eQTL result tables and
+map-annotated / calibrated scan outputs remain reserved for future
+results.

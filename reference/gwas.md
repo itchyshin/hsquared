@@ -1,10 +1,6 @@
 # Post-fit relatedness-corrected marker scan (GWAS)
 
-`gwas()` runs a dense, supplied-variance, relatedness-corrected
-mixed-model (GLS) Wald marker scan on a fitted Gaussian animal model,
-reusing the fit's estimated variance components `(σ²a, σ²e)` and
-pedigree relationship. It is an experimental, validation-scale screen
-that surfaces the Julia-owned `HSquared.mixed_model_marker_scan()`.
+**\[experimental\]**
 
 ## Usage
 
@@ -95,6 +91,12 @@ uncalibrated-significance caveat for the nominal columns (and, for
 `method = "loco"`, the genomic-vs-pedigree scale mismatch).
 
 ## Details
+
+`gwas()` runs a dense, supplied-variance, relatedness-corrected
+mixed-model (GLS) Wald marker scan on a fitted Gaussian animal model,
+reusing the fit's estimated variance components `(σ²a, σ²e)` and
+pedigree relationship. It is an experimental, validation-scale screen
+that surfaces the Julia-owned `HSquared.mixed_model_marker_scan()`.
 
 **The default `p_value`/`bonferroni_p`/`bh_qvalue` columns are NOT
 genome-wide calibrated.** They are marker-by-marker Wald (nominal)

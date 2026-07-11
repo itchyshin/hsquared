@@ -1,11 +1,6 @@
 # Random-regression (reaction-norm) extractors
 
-These extractors summarize an opt-in, **experimental** random-regression
-(reaction-norm) fit (`target = "random_regression"`), fitted with an
-`animal(rr(covariate, order = k) | id, pedigree = ped)` term. The model
-estimates a `k x k` genetic covariance matrix `K_g` among an animal's
-normalized-Legendre random-regression coefficients plus a single
-homogeneous residual variance.
+**\[experimental\]**
 
 ## Usage
 
@@ -50,6 +45,13 @@ returns a data frame; the trajectory extractors return a data frame with
 a `covariate` column and the evaluated `value`s.
 
 ## Details
+
+These extractors summarize an opt-in, **experimental** random-regression
+(reaction-norm) fit (`target = "random_regression"`), fitted with an
+`animal(rr(covariate, order = k) | id, pedigree = ped)` term. The model
+estimates a `k x k` genetic covariance matrix `K_g` among an animal's
+normalized-Legendre random-regression coefficients plus a single
+homogeneous residual variance.
 
 - `rr_covariance()` returns the estimated `k x k` coefficient genetic
   covariance matrix `K_g`.

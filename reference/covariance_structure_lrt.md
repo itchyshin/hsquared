@@ -1,11 +1,6 @@
 # Likelihood-ratio test for genetic covariance structure
 
-`covariance_structure_lrt(constrained, full)` is an **experimental**
-nested likelihood-ratio test comparing two opt-in multivariate fits **on
-the same data**: a `constrained` genetic structure (currently
-`genetic_structure = "diagonal"`) against the `full` `"unstructured"`
-fit. The statistic is `2 * (logLik(full) - logLik(constrained))` on
-`df = n_genetic_params(full) - n_genetic_params(constrained)`.
+**\[experimental\]**
 
 ## Usage
 
@@ -30,6 +25,13 @@ A one-row data frame with `statistic`, `df`, `pvalue`, `boundary`, and
 the `constrained` / `full` genetic-structure labels.
 
 ## Details
+
+`covariance_structure_lrt(constrained, full)` is an **experimental**
+nested likelihood-ratio test comparing two opt-in multivariate fits **on
+the same data**: a `constrained` genetic structure (currently
+`genetic_structure = "diagonal"`) against the `full` `"unstructured"`
+fit. The statistic is `2 * (logLik(full) - logLik(constrained))` on
+`df = n_genetic_params(full) - n_genetic_params(constrained)`.
 
 For diagonal-vs-unstructured the null (off-diagonal genetic covariances
 = 0) is interior, so the χ² reference is exact (`boundary = FALSE`).

@@ -1,7 +1,6 @@
 # Extract fixed effects
 
-`fixef()` is part of the planned v0.1 fitted-object contract for
-`hsquared_fit` objects.
+**\[experimental\]**
 
 ## Usage
 
@@ -22,3 +21,8 @@ fixef(object, ...)
 ## Value
 
 Fixed-effect estimates for `hsquared_fit` objects.
+
+## Details
+
+`fixef()` is part of the planned v0.1 fitted-object contract for
+`hsquared_fit` objects.

@@ -1,13 +1,6 @@
 # Animal-model formula marker
 
-`animal()` marks an additive-genetic random effect in an
-[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-formula. The first implemented parser contract accepts
-`animal(1 | id, pedigree = ped)`, or `animal(1 | id)` when `data` is an
-[`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
-object with a pedigree component. General fitting still waits for the
-production Julia engine bridge, so this function is a syntax marker
-rather than a standalone modelling helper.
+**\[experimental\]**
 
 ## Usage
 
@@ -39,3 +32,14 @@ animal(formula, pedigree = NULL, ...)
 `NULL`, invisibly. The call is interpreted by
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
 when it appears inside a model formula.
+
+## Details
+
+`animal()` marks an additive-genetic random effect in an
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+formula. The first implemented parser contract accepts
+`animal(1 | id, pedigree = ped)`, or `animal(1 | id)` when `data` is an
+[`hs_data()`](https://itchyshin.github.io/hsquared/reference/hs_data.md)
+object with a pedigree component. General fitting still waits for the
+production Julia engine bridge, so this function is a syntax marker
+rather than a standalone modelling helper.

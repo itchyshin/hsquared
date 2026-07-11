@@ -1,9 +1,6 @@
 # Extract experimental multivariate covariance standard errors
 
-`covariance_standard_errors()` returns **experimental** large-sample
-(delta-method) standard errors for the multivariate genetic/residual
-covariance and correlation matrices and per-trait `h²`, for an opt-in
-**unstructured** multivariate fit, when the engine returned them.
+**\[experimental\]**
 
 ## Usage
 
@@ -29,6 +26,11 @@ and a per-trait `heritability` SE vector, for `hsquared_fit` objects
 that contain them.
 
 ## Details
+
+`covariance_standard_errors()` returns **experimental** large-sample
+(delta-method) standard errors for the multivariate genetic/residual
+covariance and correlation matrices and per-trait `h²`, for an opt-in
+**unstructured** multivariate fit, when the engine returned them.
 
 Heavy caveats (engine row `V4-MV-REML`, `partial`): the strict per-seed
 recovery gate is still a non-pass (7/12 unstructured seeds in the

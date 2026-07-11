@@ -1,9 +1,6 @@
 # Extract repeatability estimates
 
-`repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
-opt-in, experimental repeatability (permanent-environment) model. It
-works for `hsquared_fit` objects fitted with
-`engine_control = list(target = "repeatability")`.
+**\[experimental\]**
 
 ## Usage
 
@@ -24,3 +21,10 @@ repeatability(object, ...)
 ## Value
 
 Repeatability results for repeatability `hsquared_fit` objects.
+
+## Details
+
+`repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
+opt-in, experimental repeatability (permanent-environment) model. It
+works for `hsquared_fit` objects fitted with
+`engine_control = list(target = "repeatability")`.

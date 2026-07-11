@@ -1,23 +1,6 @@
 # Quantitative-genetic formula markers
 
-These functions provide readable formula vocabulary for standard
-quantitative-genetic, parental, inheritance, and custom-kernel models.
-Called directly they are inert (they return `NULL`); they take meaning
-only inside an
-[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-formula. `permanent()`, `common_env()`, and `maternal_genetic()` now fit
-through an opt-in, experimental engine path (`engine = "julia"`,
-REML-only, not the default, mirroring a `partial` validation gate) as
-the second random effect alongside
-[`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md).
-`metafounder()` now fits through an opt-in, supplied-variance,
-experimental engine path (`engine = "julia"`, `target = "metafounder"`);
-`Gamma` and the variance components are supplied, not estimated. The
-remaining markers (paternal/maternal-environment, dominance, epistasis,
-cytoplasmic, imprinting, custom relationship/precision, genetic groups /
-unknown-parent-groups, and inbreeding) are still inert syntax
-reservations that the parser rejects with a planned-not-implemented
-message.
+**\[experimental\]**
 
 ## Usage
 
@@ -104,6 +87,35 @@ inbreeding(formula, ...)
 when they appear inside model formulas.
 
 ## Details
+
+These functions provide readable formula vocabulary for standard
+quantitative-genetic, parental, inheritance, and custom-kernel models.
+Called directly they are inert (they return `NULL`); they take meaning
+only inside an
+[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
+formula. `permanent()`, `common_env()`, and `maternal_genetic()` now fit
+through an opt-in, experimental engine path (`engine = "julia"`,
+REML-only, not the default, mirroring a `partial` validation gate) as
+the second random effect alongside
+[`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md).
+`metafounder()` now fits through an opt-in, supplied-variance,
+experimental engine path (`engine = "julia"`, `target = "metafounder"`);
+`Gamma` and the variance components are supplied, not estimated.
+`relmat()` and `precision()` now fit through an opt-in, EXPERIMENTAL
+supplied-relationship primary engine path (`engine = "julia"`,
+REML-only, not the default, mirroring a `partial` validation gate):
+`relmat(1 | id, K = K)` supplies a dense symmetric positive-definite
+relationship/covariance matrix K (the parser marshals the inverse
+`Kinv = solve(K)`; `relmat()` also accepts a directly supplied inverse
+via `Kinv =`/`Q =`, no solve), and `precision(1 | id, Q = Q)` supplies
+the precision (inverse) directly (`Kinv =` also accepted); both fit
+through the SAME supplied-relationship-inverse path as
+[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)'s
+`Ginv`, and the supplied matrix is provenance, not an estimate. The
+remaining markers (paternal/maternal-environment, dominance, epistasis,
+cytoplasmic, imprinting, genetic groups / unknown-parent-groups, and
+inbreeding) are still inert syntax reservations that the parser rejects
+with a planned-not-implemented message.
 
 Some markers use generic names (e.g. `group()`, `inbreeding()`). They
 are formula-only tokens detected by call head and are not meant to be

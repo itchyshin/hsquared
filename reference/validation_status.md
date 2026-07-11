@@ -1,9 +1,6 @@
 # Inspect validation evidence status
 
-`validation_status()` reports the current validation atoms and planned
-comparator lanes for `hsquared`. It is a status table only: it does not
-run validation checks, fit models, or promote any capability to working
-status.
+**\[experimental\]**
 
 ## Usage
 
@@ -15,6 +12,13 @@ validation_status()
 
 A data frame of validation status records with class
 `"hs_validation_status"`.
+
+## Details
+
+`validation_status()` reports the current validation atoms and planned
+comparator lanes for `hsquared`. It is a status table only: it does not
+run validation checks, fit models, or promote any capability to working
+status.
 
 ## Examples
 

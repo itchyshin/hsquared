@@ -36,7 +36,8 @@ plot(x, type = c("variance", "residuals"), ...)
   [`variance_component_standard_errors()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)),
   it adds approximate `+/- 1.96 * SE` whiskers and labels the panel
   experimental; those intervals are asymptotic, REML-only, and not
-  coverage-calibrated.
+  coverage-calibrated (the raw variance-component SE covers
+  approximately nominally; only h^2 over-covers).
 
 - `type = "residuals"` plots residuals against fitted values (with a
   zero reference line), when the fit carries fitted values and a

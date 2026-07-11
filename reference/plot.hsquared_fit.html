@@ -92,7 +92,8 @@ available:</p>
 points. When the fit carries the <strong>experimental</strong> variance-component
 standard errors (see <code><a href="variance_component_standard_errors.html">variance_component_standard_errors()</a></code>), it adds
 approximate <code>+/- 1.96 * SE</code> whiskers and labels the panel experimental;
-those intervals are asymptotic, REML-only, and not coverage-calibrated.</p></li>
+those intervals are asymptotic, REML-only, and not coverage-calibrated (the raw
+variance-component SE covers approximately nominally; only h^2 over-covers).</p></li>
 <li><p><code>type = "residuals"</code> plots residuals against fitted values (with a zero
 reference line), when the fit carries fitted values and a response.</p></li>
 </ul><p>No plotting dependency is added; this uses base graphics only.</p>
@@ -107,7 +108,7 @@ reference line), when the fit carries fitted values and a response.</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

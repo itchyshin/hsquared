@@ -1,7 +1,6 @@
 # Extract random effects
 
-`ranef()` is part of the planned v0.1 fitted-object contract for
-`hsquared_fit` objects.
+**\[experimental\]**
 
 ## Usage
 
@@ -22,3 +21,8 @@ ranef(object, ...)
 ## Value
 
 Random-effect estimates for `hsquared_fit` objects.
+
+## Details
+
+`ranef()` is part of the planned v0.1 fitted-object contract for
+`hsquared_fit` objects.

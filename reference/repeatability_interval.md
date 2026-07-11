@@ -1,9 +1,6 @@
 # Extract an experimental repeatability confidence interval
 
-`repeatability_interval()` returns an **experimental** large-sample
-(logit delta-method) confidence interval for the repeatability
-coefficient `t = (Va + Vpe) / Vp` of the opt-in repeatability
-(permanent-environment) model, available only when the fit contains it.
+**\[experimental\]**
 
 ## Usage
 
@@ -27,6 +24,11 @@ A one-row data frame with `estimate` (the repeatability `t`), `lower`,
 `upper`, `level`, and `se`, for `hsquared_fit` objects that contain it.
 
 ## Details
+
+`repeatability_interval()` returns an **experimental** large-sample
+(logit delta-method) confidence interval for the repeatability
+coefficient `t = (Va + Vpe) / Vp` of the opt-in repeatability
+(permanent-environment) model, available only when the fit contains it.
 
 It mirrors the engine row `V3-REPEAT-REML` (`partial`): the engine's
 repeatability REML estimator and this interval are engine-internal

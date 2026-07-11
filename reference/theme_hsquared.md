@@ -1,8 +1,6 @@
 # hsquared ggplot2 theme
 
-A light, publication-oriented `ggplot2` theme shared by the hsquared
-[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
-figures. Exported so users can restyle or extend the figures.
+**\[experimental\]**
 
 ## Usage
 
@@ -19,3 +17,9 @@ theme_hsquared(base_size = 12)
 ## Value
 
 A `ggplot2` theme object.
+
+## Details
+
+A light, publication-oriented `ggplot2` theme shared by the hsquared
+[`autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+figures. Exported so users can restyle or extend the figures.

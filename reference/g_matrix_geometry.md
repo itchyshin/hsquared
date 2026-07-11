@@ -1,12 +1,6 @@
 # G-matrix geometry and evolvability
 
-These extractors summarise the genetic variance-covariance matrix `G` of
-an opt-in multivariate `hsquared_fit` (`target = "multivariate"`)
-through its **rotation-invariant** geometry, following Hansen & Houle
-(2008). They are defined on `G` itself (not on factor loadings), so they
-are well defined for any multivariate fit — unstructured, diagonal, or
-(when bridged) low-rank / factor-analytic — and do not depend on a
-loading rotation convention.
+**\[experimental\]**
 
 ## Usage
 
@@ -56,6 +50,14 @@ A scalar for the directional metrics; a list for `eigen_G()` (`values`,
 `vectors`) and `g_max()` (`eigenvalue`, `eigenvector`).
 
 ## Details
+
+These extractors summarise the genetic variance-covariance matrix `G` of
+an opt-in multivariate `hsquared_fit` (`target = "multivariate"`)
+through its **rotation-invariant** geometry, following Hansen & Houle
+(2008). They are defined on `G` itself (not on factor loadings), so they
+are well defined for any multivariate fit — unstructured, diagonal, or
+(when bridged) low-rank / factor-analytic — and do not depend on a
+loading rotation convention.
 
 - `eigen_G()` returns the genetic eigenstructure: `values` (the variance
   along each genetic principal axis, descending) and `vectors` (the

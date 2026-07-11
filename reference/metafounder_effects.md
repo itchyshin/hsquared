@@ -1,13 +1,6 @@
 # Reserved metafounder effect extractor
 
-`metafounder_effects()` reserves the extractor name for future fitted
-metafounder solutions. Current experimental metafounder and `H^Gamma`
-fits expose supplied `Gamma` and group-assignment provenance via
-[`gamma_matrix()`](https://itchyshin.github.io/hsquared/reference/gamma_matrix.md)
-and
-[`metafounder_groups()`](https://itchyshin.github.io/hsquared/reference/metafounder_groups.md),
-but the engine does not yet return explicit combined-system metafounder
-effects for extraction.
+**\[experimental\]**
 
 ## Usage
 
@@ -28,3 +21,14 @@ metafounder_effects(object, ...)
 ## Value
 
 This extractor currently errors for all objects.
+
+## Details
+
+`metafounder_effects()` reserves the extractor name for future fitted
+metafounder solutions. Current experimental metafounder and `H^Gamma`
+fits expose supplied `Gamma` and group-assignment provenance via
+[`gamma_matrix()`](https://itchyshin.github.io/hsquared/reference/gamma_matrix.md)
+and
+[`metafounder_groups()`](https://itchyshin.github.io/hsquared/reference/metafounder_groups.md),
+but the engine does not yet return explicit combined-system metafounder
+effects for extraction.
