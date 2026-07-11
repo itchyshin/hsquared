@@ -19,6 +19,21 @@
 # COMPUTE (doc 40): Totoro (384-core, no queue), OPENBLAS_NUM_THREADS=1,
 # parallelism capped <= 96 cores; DRAC fir is the confirm-tier fallback.
 # Requires local Julia + HSquared.jl + JuliaCall.
+#
+# PARALLELISM -- IMPORTANT. This R data-raw driver is the SERIAL reference DGP.
+# Do NOT parallelize it with parallel::mclapply: mclapply FORKS R, and each fork
+# embeds its own JuliaCall Julia -- fork + embedded Julia is segfault-prone (the
+# known JuliaCall back-to-back-fit gotcha) and never uses Julia's native
+# threading, where the speed actually is. The confirm-tier (500 seeds x 2 cells)
+# should run as a PURE-JULIA sim in the twin: extend
+# HSquared.jl/sim/phase4_multivariate_reml_recovery.jl to this t=3 /
+# 2-truth-point / full-sib design and parallelize the SEED loop with Julia
+# threading -- `julia -t 96 --project=.` + `Threads.@threads` (or
+# Distributed/`pmap` with `addprocs(96)`), keeping OPENBLAS_NUM_THREADS=1 so BLAS
+# does not oversubscribe against the seed threads. That is a Julia-lane hand-off
+# (Codex or the user runs it; never concurrent with Claude). This R driver stays
+# serial -- fine for the small screen, and it is the DGP oracle the Julia sim
+# must match element-for-element.
 # Run (screen):
 #   HSQUARED_RUN_MV_BROADENED=true Rscript data-raw/multivariate-recovery-broadened-study.R
 # Run (confirm):
