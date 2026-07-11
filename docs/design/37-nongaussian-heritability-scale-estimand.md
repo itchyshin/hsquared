@@ -1,7 +1,10 @@
 # 37 · Non-Gaussian heritability-scale estimand contract (NG-1)
 
-> **Status: PROPOSAL — awaiting named-lens sign-off (NG-2: Fisher / Falconer /
-> Darwin) + maintainer ratification.** This is a pure design / symbolic-alignment
+> **Status: NG-2 SIGNED OFF — ratify-with-fixes (3–1), 2026-07-11.** Framework and
+> all math independently re-derived and confirmed sound (no mathematical or
+> estimand error); resolved decisions in the sign-off block below (§0a) and §6;
+> the remaining edits are labelling/wording only (§8). Awaiting §8 edits, the
+> Boole grammar freeze, and the maintainer's final nod. This is a pure design / symbolic-alignment
 > slice: no code, no API change, no default change, no `validation_status` flip.
 > It ratifies **how `hsquared` (the R lane) will define, compute, label, and
 > surface heritability for non-Gaussian animal models** once the bridge exposes
@@ -22,6 +25,23 @@ bridge carries a heritability across, the scale label travels with the number an
 no bare `h²` ever appears R-side. **Engine-covered ≠ R-public-covered**
 (`docs/dev-log/decisions.md`, 2026-07-11 Release Model; §5 non-negotiable in the
 execution plan).
+
+## 0a. NG-2 sign-off record
+
+**NG-2 sign-off — 2026-07-11 (integrator).** Ratified-with-fixes 3–1 (Fisher,
+Falconer, Darwin: ratify-with-fixes; MathCheck: ratify). The framework, all
+constants/denominators/transforms, and the honesty/NaN gates were independently
+re-derived and confirmed sound — **no mathematical or estimand error found**; the
+required edits are labelling, wording, citation-attribution, and one flag flip
+only (§8). Resolved decisions (§6): **Q1** logit `primary` = **latent
+(logistic-liability)**, both scales always surfaced, observation-primary reserved
+for genuine multi-trial Binomial (m ≫ 1); **Q2** default = conditional h²
+(`predictor_variance = 0`; marginal opt-in and labelled only); **Q3** ordinal
+per-category behind `observation_heritability()`, scalar `NaN`, liability primary;
+**Q4** Gamma/probit/ordinal remain `planned` in R until an R fitter exists;
+**Q5** the A=I anchor is necessary-not-sufficient, paired with a pedigree-A
+recovery gate across the m = 1→5→20 ladder (Bayesian = concordance, not parity);
+**Q6** μ defaults to the single intercept and hard-errors on the multi-β case.
 
 ---
 
@@ -242,15 +262,21 @@ printed `summary()` leads with and the one a downstream reduction should prefer:
 |---|---|---|
 | Gaussian | latent (= observation) | scales coincide |
 | Poisson, Gamma (log) | **observation/data** | the measured trait; Poisson latent is degenerate |
-| Bernoulli, Binomial (logit) | **observation/data** *(PROPOSED — NG-2 open question)* | the measurable-trait h² an applied user asks about; latent surfaced alongside for cross-study/evolutionary comparison |
+| Bernoulli, Binomial (logit) | **latent (= logistic-liability)** *(NG-2 ruling 2026-07-11)* | incidence-independent, selection-relevant, and consistent with the probit row (same threshold-trait class); observation surfaced alongside. Observation-primary is reserved for genuine multi-trial Binomial (m ≫ 1); single-trial Bernoulli leads with latent |
 | Bernoulli-probit, Ordered-probit | **liability** | selection-relevant threshold heritability |
 
-The logit `primary = observation` choice is **the one genuinely contestable
-default** and is flagged as an explicit NG-2 decision (§6): the latent scale is
-what is comparable to a Gaussian animal-model h² and to most published
-evolutionary estimates, whereas the observation scale is what a breeder measured.
-Whichever is chosen, **both are surfaced** — the choice governs only the
-`primary` flag, never suppression of a defined scale.
+The logit `primary` scale was the one genuinely contestable default; **NG-2
+(2026-07-11) ruled it `latent` (the logistic-liability scale)** — Falconer and
+Darwin both ruled latent, zero votes for observation. Latent is
+incidence-independent, selection-relevant, and consistent with the probit row
+(logit vs probit is a near-arbitrary link choice for the same threshold trait),
+and it matches this section's own definition of `primary` as the
+selection/interpretation-relevant scale. The observation scale is what a breeder
+measured but is incidence-dependent and not cross-study comparable; it is
+surfaced alongside and is primary only for genuine multi-trial Binomial (m ≫ 1).
+Whichever leads, **both are surfaced** — the choice governs only the `primary`
+flag, never suppression of a defined scale. (de Villemereuil recommends
+*reporting* the data scale alongside the latent, not demoting the latent.)
 
 ### 4.2 Per-family R-surface status (engine-ahead is honestly disclosed)
 
@@ -445,34 +471,36 @@ This document is the scale note; the comparator is still owed.
 
 ---
 
-## 6. Open questions (for NG-2 + maintainer)
+## 6. Resolved questions (NG-2, 2026-07-11)
 
-1. **Logit `primary` scale.** Is the applied default for Bernoulli/Binomial the
-   **observation** scale (measurable trait; de Villemereuil applied
-   recommendation) or the **latent** scale (comparable to Gaussian h² and to
-   published evolutionary estimates)? Both are surfaced; only the `primary` flag
-   turns on this call. **Proposed: observation.** Fisher/Falconer decide.
-2. **`V_fixed` default.** Default `predictor_variance = 0` (intercept-only
-   spread) vs requiring the user to supply it whenever fixed effects are present.
-   The engine requires `mu` (and effectively `V_fixed`) only when >1 fixed effect
-   makes the intercept ambiguous (§4.3(5)); is that the R default too, or should R
-   compute `V_fixed` from the design automatically? (de Villemereuil et al. 2018
-   is the authority on whether to include it.)
-3. **Ordinal observed-scale exposure.** Surface the per-category vector
-   `h2_observation_by_category` in the primary object, or hold it behind a
-   dedicated `observation_heritability(fit)` accessor to avoid implying a single
-   ordinal data-scale h²? (§4.3(6).)
-4. **Tier-B timing.** Gamma / probit / ordinal h² math is engine-done and
-   validated. Do we expose their R heritability surface *before* their R
-   **fitting** surface exists, or keep them fully `planned` until the fitter is
-   wired? (Twin-discipline default: keep planned.)
-5. **Comparator honesty policy (NG-6).** The exact wording of the disclosed
-   same-estimand gap for the pedigree-A case, and whether `ordinal::clmm` /
-   glmmTMB on the `A = I` reduction is a sufficient covered anchor for the
-   threshold and logit families respectively.
-6. **Which `μ` the extractor uses by default.** The engine defaults `μ` to the
-   fit's single intercept (`HSquared.jl/src/nongaussian.jl:1357-1363`). Confirm R
-   mirrors this and errors (not guesses) on the multi-`β` case.
+All six resolved by the NG-2 sign-off; recorded here and in §0a.
+
+1. **Logit `primary` scale — `latent` (logistic-liability).** Falconer + Darwin
+   ruled latent; Fisher + MathCheck did not oppose and flagged the logit/probit
+   inconsistency that latent-primary cures; zero votes for observation. Both
+   scales stay surfaced; observation-primary reserved for genuine multi-trial
+   Binomial (m ≫ 1). Supersedes the earlier "proposed: observation."
+2. **`V_fixed` default — conditional.** Default `predictor_variance = 0` =
+   conditional h² (labelled). With non-intercept fixed effects, require the user
+   to supply it or warn the h² is conditional; **marginal** (V_fixed folded in) is
+   opt-in and labelled only — **no silent auto-computation from the design**
+   (de Villemereuil et al. 2018; Wilson 2008).
+3. **Ordinal observed-scale — behind the accessor.** Per-category vector held
+   behind `observation_heritability()`; the scalar `h2_observation` stays `NaN`
+   with a caveat pointing to the accessor; `liability` primary.
+4. **Tier-B timing — keep `planned`.** Gamma/probit/ordinal stay fully `planned`
+   in R until their R fitter is wired (engine-covered ≠ R-public-covered).
+5. **Comparator honesty (NG-6) — necessary-not-sufficient.** The A=I
+   glmmTMB/`ordinal::clmm` leg is a necessary same-estimand anchor but **not
+   sufficient** (iid reduction only; shares Laplace bias; exercises no pedigree-A
+   machinery); it must be paired with a pedigree-A recovery-substitution
+   multi-seed gate spanning the **m = 1 → 5 → 20** information ladder. Bayesian
+   (MCMCglmm/brms/INLA) agreement = concordance, never same-estimand parity.
+6. **Default `μ` — single intercept, hard-error on multi-β.** μ defaults to the
+   fit's single intercept (`HSquared.jl/src/nongaussian.jl:1357-1363`); with
+   factor/uncentred covariates μ = intercept is a **reference-level conditional**
+   estimand, not a population average — R mirrors the engine and errors (never
+   guesses) on the ambiguous multi-`β` case.
 
 ---
 
@@ -507,6 +535,57 @@ This document is the scale note; the comparator is still owed.
 
 ---
 
-*PROPOSAL — NG-1. Ratification blocks: NG-2 (Fisher/Falconer/Darwin scale + primary
-sign-off), Boole grammar/argument freeze, maintainer ratification. No code, no
-default, no `validation_status` change lands with this document.*
+## 8. NG-2 required edits (labelling / wording / citation — no math change)
+
+Enumerated by the NG-2 sign-off; the math is clean, so these are the only
+outstanding changes before the doc is final. The decision-bearing items are
+already applied above (§0a, §4.1, §6); the remainder are wording/labelling polish
+to apply in the same pass as the Boole grammar freeze.
+
+1. **[APPLIED]** §4.1 logit `primary` → latent; §6 Q1 recorded as ruled.
+2. **[APPLIED]** Bernoulli vs Binomial(m≫1): observation-primary reserved for
+   genuine multi-trial proportions; single-trial Bernoulli leads with latent.
+3. **de Villemereuil citation:** he recommends *reporting the data scale
+   alongside* the latent, not demoting it — re-cite as support for surfacing
+   observation; note the field convention (QGglmm, MCMCglmm, Wilson 2010, NS 2017)
+   leads with latent.
+4. **Logit-liability legibility (§3, §2.3, §4.1/§4.4):** state that for logit the
+   `latent` row **is** the logistic-liability scale (V_link = π²/3), so "(logit
+   liability)" coincides with the latent row (not a 4th scale); optionally expose
+   a `liability` alias row for logit.
+5. **§4.3(5)/Q2 V_fixed:** state default = conditional h²; with real fixed effects
+   `predictor_variance = 0` also mis-specifies the observation-scale integration
+   (Ψ, mean, sampling term) — an estimand effect, not a relabel; require input or
+   warn; marginal opt-in + labelled; forbid silent auto-fold (de Villemereuil
+   2018; Wilson 2008).
+6. **§4.3(1) Poisson-latent NaN wording:** reword as a deliberate honesty gate
+   ("degenerate by design — finite but residual-free ratio"), not a software
+   error; mirror the §4.4 example caveat into the gate text.
+7. **§5(2)/NG-6 disclosure:** require the pedigree-A recovery gate to span the
+   m = 1→5→20 ladder; pin the exact wording (no free frequentist same-estimand
+   estimator for pedigree-A; external validation limited to the A=I reduction;
+   pedigree-A correctness is recovery-gated, not comparator-gated; Bayesian =
+   concordance, not parity) and make the pedigree gap the **most prominent** line.
+8. **§4.3/Q6 μ caveat:** μ = intercept with factor/uncentred covariates is a
+   reference-level conditional estimand (population mean only under
+   centred/reference covariates); pass data-average η otherwise; error, never
+   guess.
+9. **Latent-scale magnitude warning (§4.3/§4.4):** "latent-scale h² is typically
+   **larger** than the observed measurable-trait h² and is **not** the proportion
+   of observable phenotypic variance among relatives; never report it without the
+   scale label."
+10. **Dempster–Lerner scope guard (§2.3/table):** the z²/[p(1−p)] transform and
+    ordering is Gaussian-**probit-specific**; the logit "liability" is a logistic
+    analogue and logit observed-0/1 comes from GH quadrature — the logit caveat
+    must not quote the probit ordering.
+11. **Poisson-forced vs Gamma-chosen (§4.1 table):** distinguish Poisson (latent
+    **forced** NaN → observation the only choice) from Gamma (latent trigamma
+    non-degenerate → observation a *chosen* primary); do not share their rationale.
+12. **(polish, optional):** §2.1 V_link footnote distinguishing the link's
+    intrinsic latent residual from NS's delta-method observation-level term.
+
+---
+
+*NG-1 — NG-2 signed off (2026-07-11). Remaining ratification blocks: the §8
+wording edits, the Boole grammar/argument freeze, and the maintainer's final nod.
+No code, no default, no `validation_status` change lands with this document.*
