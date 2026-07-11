@@ -51,6 +51,9 @@ to phenotype records. When supplied, the column must exist in both
 An \code{hs_data} object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{hs_data()} collects phenotype, pedigree, genotype, marker, expression,
 annotation, and environment inputs into one checked container. It is a
 lightweight data-contract object for future genomic, QTL/eQTL, and
@@ -58,8 +61,7 @@ multi-omics workflows. It does not fit models. The v0.1 parser can use an
 \code{hs_data} object directly as \code{data}, reading model variables from
 \code{phenotypes} and making named components such as \code{pedigree} available to
 formula terms.
-}
-\details{
+
 \code{summary(hs_data(...))} reports ID overlap diagnostics, pedigree diagnostics,
 and, when expression, genotype, or marker components are supplied,
 expression-feature, genotype-column, marker-map, and genotype-marker

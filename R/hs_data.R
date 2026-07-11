@@ -1,5 +1,7 @@
 #' Create an hsquared data container
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `hs_data()` collects phenotype, pedigree, genotype, marker, expression,
 #' annotation, and environment inputs into one checked container. It is a
 #' lightweight data-contract object for future genomic, QTL/eQTL, and
@@ -156,6 +158,8 @@ print.hs_data <- function(x, ...) {
 }
 
 #' Inspect hsquared data-container status
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `data_status()` gives a direct user-facing view of the checks stored in an
 #' [hs_data()] object. It reports component presence, ID overlap diagnostics,

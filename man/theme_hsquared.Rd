@@ -13,6 +13,9 @@ theme_hsquared(base_size = 12)
 A \code{ggplot2} theme object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 A light, publication-oriented \code{ggplot2} theme shared by the hsquared
 \code{autoplot()} figures. Exported so users can restyle or extend the figures.
 }

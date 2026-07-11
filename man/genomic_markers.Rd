@@ -75,6 +75,9 @@ scans.}
 appear inside model formulas.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These functions provide readable formula vocabulary for genomic, single-step,
 marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 return \code{NULL}); they take meaning only inside an \code{\link[=hsquared]{hsquared()}} formula.

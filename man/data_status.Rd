@@ -13,6 +13,9 @@ data_status(data)
 An \code{"hs_data_status"} object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{data_status()} gives a direct user-facing view of the checks stored in an
 \code{\link[=hs_data]{hs_data()}} object. It reports component presence, ID overlap diagnostics,
 pedigree diagnostics, expression-feature diagnostics, genotype-column

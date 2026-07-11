@@ -64,13 +64,15 @@ restates the uncalibrated-significance caveat for the nominal columns (and, for
 \code{method = "loco"}, the genomic-vs-pedigree scale mismatch).
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{gwas()} runs a dense, supplied-variance, relatedness-corrected mixed-model
 (GLS) Wald marker scan on a fitted Gaussian animal model, reusing the fit's
 estimated variance components \verb{(σ²a, σ²e)} and pedigree relationship. It is an
 experimental, validation-scale screen that surfaces the Julia-owned
 \code{HSquared.mixed_model_marker_scan()}.
-}
-\details{
+
 \strong{The default \code{p_value}/\code{bonferroni_p}/\code{bh_qvalue} columns are NOT genome-wide
 calibrated.} They are marker-by-marker Wald (nominal) p-values plus
 deterministic Bonferroni and Benjamini-Hochberg adjustments over the \emph{supplied}

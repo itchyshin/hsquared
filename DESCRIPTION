@@ -22,6 +22,7 @@ Language: en-US
 Roxygen: list(markdown = TRUE)
 Imports:
     ggplot2,
+    lifecycle,
     Matrix,
     stats
 Suggests:

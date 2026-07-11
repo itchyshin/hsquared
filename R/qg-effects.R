@@ -1,5 +1,7 @@
 #' Quantitative-genetic formula markers
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' These functions provide readable formula vocabulary for standard
 #' quantitative-genetic, parental, inheritance, and custom-kernel models. Called
 #' directly they are inert (they return `NULL`); they take meaning only inside an

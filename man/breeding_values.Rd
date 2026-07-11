@@ -21,6 +21,9 @@ BLUP(object, ...)
 Breeding value results for \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{breeding_values()} is part of the planned v0.1 fitted-object contract. It
 works for \code{hsquared_fit} objects that contain a Julia result. \code{EBV()} and
 \code{BLUP()} are aliases for applied quantitative-genetic workflows.

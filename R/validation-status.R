@@ -1,5 +1,7 @@
 #' Inspect validation evidence status
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `validation_status()` reports the current validation atoms and planned
 #' comparator lanes for `hsquared`. It is a status table only: it does not run
 #' validation checks, fit models, or promote any capability to working status.

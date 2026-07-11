@@ -13,6 +13,9 @@ hs_recovery_forest(data)
 A \code{ggplot} object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 Visualizes a bias +/- 2\emph{MCSE recovery study (e.g.
 \code{data-raw/multivariate-recovery-study.R}): each target's bias with its
 +/- 2}MCSE interval and a zero-bias reference line. Targets whose interval

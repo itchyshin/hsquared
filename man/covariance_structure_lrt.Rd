@@ -18,13 +18,15 @@ A one-row data frame with \code{statistic}, \code{df}, \code{pvalue}, \code{boun
 the \code{constrained} / \code{full} genetic-structure labels.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{covariance_structure_lrt(constrained, full)} is an \strong{experimental} nested
 likelihood-ratio test comparing two opt-in multivariate fits \strong{on the same
 data}: a \code{constrained} genetic structure (currently \code{genetic_structure = "diagonal"}) against the \code{full} \code{"unstructured"} fit. The statistic is
 \code{2 * (logLik(full) - logLik(constrained))} on
 \code{df = n_genetic_params(full) - n_genetic_params(constrained)}.
-}
-\details{
+
 For diagonal-vs-unstructured the null (off-diagonal genetic covariances = 0)
 is interior, so the χ² reference is exact (\code{boundary = FALSE}). Structures
 whose null lies on a rank/PSD boundary (low-rank / factor-analytic) would need

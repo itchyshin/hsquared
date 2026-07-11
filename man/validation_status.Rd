@@ -11,6 +11,9 @@ A data frame of validation status records with class
 \code{"hs_validation_status"}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{validation_status()} reports the current validation atoms and planned
 comparator lanes for \code{hsquared}. It is a status table only: it does not run
 validation checks, fit models, or promote any capability to working status.

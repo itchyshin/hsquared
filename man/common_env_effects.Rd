@@ -16,6 +16,9 @@ Common-environment effect results for two-effect \code{hsquared_fit}
 objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{common_env_effects()} returns the predicted common-environment effects of
 the opt-in, experimental two-effect model (\code{target = "two_effect"}).
 }

@@ -21,6 +21,9 @@ Optional only when the enclosing \code{\link[=hsquared]{hsquared()}} or \code{\l
 appears inside a model formula.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{animal()} marks an additive-genetic random effect in an \code{hsquared()}
 formula. The first implemented parser contract accepts
 \code{animal(1 | id, pedigree = ped)}, or \code{animal(1 | id)} when \code{data} is an

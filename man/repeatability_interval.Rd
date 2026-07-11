@@ -16,12 +16,14 @@ A one-row data frame with \code{estimate} (the repeatability \code{t}), \code{lo
 \code{upper}, \code{level}, and \code{se}, for \code{hsquared_fit} objects that contain it.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{repeatability_interval()} returns an \strong{experimental} large-sample (logit
 delta-method) confidence interval for the repeatability coefficient
 \code{t = (Va + Vpe) / Vp} of the opt-in repeatability (permanent-environment)
 model, available only when the fit contains it.
-}
-\details{
+
 It mirrors the engine row \code{V3-REPEAT-REML} (\code{partial}): the engine's
 repeatability REML estimator and this interval are engine-internal
 self-consistency tested (recovery of \code{t} and interval bracketing / range /

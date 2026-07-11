@@ -14,4 +14,7 @@
 #' factor-analytic models remain planned.
 #'
 #' @keywords internal
+## usethis namespace: start
+#' @importFrom lifecycle deprecated
+## usethis namespace: end
 "_PACKAGE"

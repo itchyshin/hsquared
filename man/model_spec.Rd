@@ -30,6 +30,9 @@ REML.}
 An \code{"hs_model_spec"} object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{model_spec()} validates the narrow v0.1 animal-model grammar and returns
 the R-side model specification that would be used to build the Julia bridge
 payload. It is a preview and diagnostics helper: it does not fit a model.

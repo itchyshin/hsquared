@@ -3120,7 +3120,7 @@ hs_validate_julia_target <- function(target) {
         "direct_maternal"
       )
   ) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`engine_control$target` must be one of \"fit_animal_model\", ",
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
       "\"metafounder\", \"two_effect\", \"multi_effect\", \"genomic\", ",
@@ -3146,29 +3146,26 @@ hs_validate_genetic_structure_control <- function(control, target) {
   }
   allowed <- c("unstructured", "diagonal", "lowrank", "factor_analytic")
   if (!value %in% allowed) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`engine_control$genetic_structure` must be one of \"unstructured\", ",
-      "\"diagonal\", \"lowrank\", or \"factor_analytic\".",
-      call. = FALSE
+      "\"diagonal\", \"lowrank\", or \"factor_analytic\"."
     )
   }
   if (!identical(target, "multivariate")) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`engine_control$genetic_structure` is only planned for the ",
       "`target = \"multivariate\"` bridge. Remove `genetic_structure`, or use ",
-      "`target = \"multivariate\"` with a `cbind(...)` response.",
-      call. = FALSE
+      "`target = \"multivariate\"` with a `cbind(...)` response."
     )
   }
   if (value %in% c("lowrank", "factor_analytic")) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Structured multivariate genetic covariance controls ",
       "(`genetic_structure = \"lowrank\"` or \"factor_analytic\") are planned, ",
       "not implemented in the R bridge: they are gated on a validated ",
       "rotation/interpretation convention for the loadings. The opt-in ",
       "multivariate path estimates `\"unstructured\"` or `\"diagonal\"` G0; use ",
-      "one of those.",
-      call. = FALSE
+      "one of those."
     )
   }
   # "unstructured" (default) and "diagonal" are both reachable. "diagonal" has
@@ -3190,13 +3187,12 @@ hs_validate_genetic_structure_control <- function(control, target) {
         call. = FALSE
       )
     }
-    stop(
+    hs_abort_unsupported_syntax(
       "`engine_control$rank` is reserved for future `lowrank` and ",
       "`factor_analytic` structured covariance controls. The current ",
       "multivariate bridge estimates unstructured or diagonal G0 with ",
       "unstructured R0 only; remove `rank` until low-rank or ",
-      "factor-analytic support is available.",
-      call. = FALSE
+      "factor-analytic support is available."
     )
   }
   value

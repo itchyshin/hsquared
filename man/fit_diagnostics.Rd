@@ -16,6 +16,9 @@ A data frame with \code{metric} and \code{value} columns and class
 \code{"hs_fit_diagnostics"}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{fit_diagnostics()} returns a compact diagnostics table for an
 \code{hsquared_fit} object. It is an inspection helper over the current result
 payload: it does not refit the model, rerun validation checks, or promote an

@@ -83,7 +83,7 @@ hsquared <- function(
 
   if (identical(control$engine, "fit")) {
     if (isTRUE(spec$response$multivariate)) {
-      stop(
+      hs_abort_unsupported_syntax(
         "The multivariate animal model is experimental and opt-in; the ",
         "default `engine = \"fit\"` path fits the univariate Gaussian animal ",
         "model only. Use `control = hs_control(engine = \"julia\", ",
@@ -92,7 +92,7 @@ hsquared <- function(
       )
     }
     if (identical(spec$random$animal$design, "random_regression")) {
-      stop(
+      hs_abort_unsupported_syntax(
         "The random-regression (reaction-norm) animal model is experimental ",
         "and opt-in; the default `engine = \"fit\"` path fits the ",
         "random-intercept Gaussian animal model only. Use `control = ",
@@ -102,7 +102,7 @@ hsquared <- function(
       )
     }
     if (!isTRUE(REML)) {
-      stop(
+      hs_abort_unsupported_syntax(
         "The v0.1 default fit path estimates variance components by REML ",
         "(average-information REML). ML estimation (`REML = FALSE`) is not yet ",
         "implemented on the fit path; use `REML = TRUE` (the default).",
@@ -118,7 +118,7 @@ hsquared <- function(
       } else {
         paste0("`", opt_in_effect[[1L]], "`")
       }
-      stop(
+      hs_abort_unsupported_syntax(
         "The ",
         model_label,
         " model is experimental and opt-in; the default `engine = \"fit\"` ",
@@ -173,7 +173,7 @@ hsquared <- function(
     if (
       isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
     ) {
-      stop(
+      hs_abort_unsupported_syntax(
         "A `cbind(...)` multivariate response requires the opt-in ",
         "`target = \"multivariate\"` Julia engine path. The `",
         target,
@@ -184,7 +184,7 @@ hsquared <- function(
     if (
       identical(target, "multivariate") && !isTRUE(spec$response$multivariate)
     ) {
-      stop(
+      hs_abort_unsupported_syntax(
         "`target = \"multivariate\"` requires a `cbind(trait1, trait2, ...)` ",
         "response with `animal(1 | id, pedigree = ped)`.",
         call. = FALSE
@@ -192,7 +192,7 @@ hsquared <- function(
     }
     rr_design <- identical(spec$random$animal$design, "random_regression")
     if (rr_design && !identical(target, "random_regression")) {
-      stop(
+      hs_abort_unsupported_syntax(
         "An `animal(rr(...) | id)` random-regression term requires the opt-in ",
         "`target = \"random_regression\"` Julia engine path. The `",
         target,
@@ -201,7 +201,7 @@ hsquared <- function(
       )
     }
     if (identical(target, "random_regression") && !rr_design) {
-      stop(
+      hs_abort_unsupported_syntax(
         "`target = \"random_regression\"` requires an ",
         "`animal(rr(covariate, order = k) | id, pedigree = ped)` term in the ",
         "formula.",
@@ -222,7 +222,7 @@ hsquared <- function(
       identical(target, "metafounder") ||
       snp_blup_supplied
     if (!isTRUE(REML) && !supplied_variance_exempt) {
-      stop(
+      hs_abort_unsupported_syntax(
         "ML estimation (`REML = FALSE`) is not implemented; the v0.1 fit path ",
         "estimates variance components by REML. Use `REML = TRUE`.",
         call. = FALSE
@@ -241,7 +241,7 @@ hsquared <- function(
         } else {
           paste0("`", second_effect[[1L]], "(...)`")
         }
-        stop(
+        hs_abort_unsupported_syntax(
           "The formula has a ",
           effect_label,
           " term, so it needs `target = \"",
@@ -293,7 +293,7 @@ hsquared <- function(
     }
     if (identical(target, "nongaussian")) {
       if (identical(family$family, "gaussian")) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"nongaussian\"` fits non-Gaussian families ",
           "(`poisson(log)`, `binomial(logit)`); `family = gaussian()` fits ",
           "through the default path or `target = \"ai_reml\"`.",
@@ -330,7 +330,7 @@ hsquared <- function(
 
     if (identical(target, "metafounder")) {
       if (is.null(spec$random$metafounder)) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"metafounder\"` requires ",
           "`metafounder(1 | id, pedigree = ped, group = mf_group, ",
           "Gamma = Gamma)` in the formula.",
@@ -397,7 +397,7 @@ hsquared <- function(
 
     if (identical(target, "repeatability")) {
       if (is.null(spec$random$permanent)) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"repeatability\"` requires a `permanent(1 | id)` term ",
           "alongside `animal(1 | id, ...)` in the formula.",
           call. = FALSE
@@ -428,7 +428,7 @@ hsquared <- function(
         is.null(spec$random$common_env) &&
           is.null(spec$random$maternal_genetic)
       ) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"two_effect\"` requires a `common_env(1 | group)` term, ",
           "or a `maternal_genetic(1 | dam)` term, alongside ",
           "`animal(1 | id, ...)` in the formula.",
@@ -460,7 +460,7 @@ hsquared <- function(
         is.null(spec$random$iid_effects) ||
           length(spec$random$iid_effects) == 0L
       ) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"multi_effect\"` requires an `animal(1 | id, ...)` term ",
           "plus one or more bare `(1 | group)` i.i.d. random effects in the ",
           "formula.",
@@ -485,7 +485,7 @@ hsquared <- function(
 
     if (identical(target, "direct_maternal")) {
       if (is.null(spec$random$maternal_genetic)) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"direct_maternal\"` requires a `maternal_genetic(1 | dam)` ",
           "term alongside `animal(1 | id, pedigree = ped)` in the formula. ",
           "This is the opt-in correlated direct-maternal model (Phase 4). ",
@@ -510,7 +510,7 @@ hsquared <- function(
         is.null(genomic_effect) ||
           !identical(genomic_effect$source, "markers")
       ) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"snp_blup\"` requires a `genomic(1 | id, markers = M)` ",
           "term (a raw marker matrix). SNP-BLUP estimates marker effects, so ",
           "a precomputed `Ginv` cannot be used.",
@@ -539,7 +539,7 @@ hsquared <- function(
     if (identical(target, "single_step_construct")) {
       ss <- spec$random$single_step
       if (!is.null(ss) && identical(ss$source, "metafounder_construct")) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`single_step()` with `group` and `Gamma` is the planned ",
           "`target = \"metafounder_single_step\"` contract, not the ordinary ",
           "`target = \"single_step_construct\"` path.",
@@ -547,7 +547,7 @@ hsquared <- function(
         )
       }
       if (is.null(ss) || !identical(ss$source, "construct")) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"single_step_construct\"` requires a ",
           "`single_step(1 | id, pedigree = ped, markers = M)` term in the ",
           "formula.",
@@ -577,7 +577,7 @@ hsquared <- function(
     if (identical(target, "metafounder_single_step")) {
       ss <- spec$random$single_step
       if (is.null(ss) || !identical(ss$source, "metafounder_construct")) {
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"metafounder_single_step\"` requires ",
           "`single_step(1 | id, pedigree = ped, markers = M, group = ",
           "mf_group, Gamma = Gamma)` in the formula.",
@@ -607,7 +607,7 @@ hsquared <- function(
     if (target %in% c("genomic", "single_step")) {
       if (is.null(spec$random[[target]])) {
         arg <- if (identical(target, "genomic")) "Ginv" else "Hinv"
-        stop(
+        hs_abort_unsupported_syntax(
           "`target = \"",
           target,
           "\"` requires a `",

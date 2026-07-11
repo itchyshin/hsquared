@@ -17,12 +17,14 @@ A one-row data frame with \code{term} and \code{estimate}, plus an
 objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{maternal_proportion()} returns the estimated maternal variance ratio
 \code{m2 = sigma_m2 / (sigma_a2 + sigma_m2 + sigma_e2)} from the opt-in,
 experimental maternal two-effect model
 (\code{target = "two_effect"} with a \code{maternal_genetic()} term).
-}
-\details{
+
 Falconer fence: \code{m2} is a \strong{variance ratio} (the proportion of phenotypic
 variance from the maternal (dam) genetic effect), \strong{not a heritability}. In
 the same fit, \code{\link[=heritability]{heritability()}} reports the narrow-sense \emph{direct}

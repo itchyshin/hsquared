@@ -16,6 +16,9 @@ A numeric matrix with metafounder labels when the fitted object
 contains a supplied \code{Gamma} payload.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{gamma_matrix()} returns the supplied metafounder \code{Gamma} matrix carried by
 an experimental metafounder or \code{H^Gamma} single-step \code{hsquared_fit} object.
 It is provenance for the fitted relationship, not an estimated parameter.

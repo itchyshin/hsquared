@@ -15,10 +15,12 @@ heritability(object, ...)
 Heritability results for \code{hsquared_fit} objects.
 }
 \description{
-\code{heritability()} is part of the planned v0.1 fitted-object contract. It
-works for \code{hsquared_fit} objects that contain a Julia result.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \details{
+\code{heritability()} is part of the planned v0.1 fitted-object contract. It
+works for \code{hsquared_fit} objects that contain a Julia result.
+
 Falconer fence for the opt-in two-effect model (\code{target = "two_effect"}):
 the reported number is the \strong{narrow-sense direct heritability}
 \code{h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)} \emph{within that model} (the

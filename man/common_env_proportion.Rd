@@ -16,12 +16,14 @@ A one-row data frame with \code{term} and \code{estimate}, plus an
 \code{"interpretation"} attribute, for two-effect \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{common_env_proportion()} returns the estimated common-environment variance
 ratio \code{c2 = sigma_c2 / (sigma_a2 + sigma_c2 + sigma_e2)} from the opt-in,
 experimental two-effect model
 (\code{target = "two_effect"} with a \code{common_env()} term).
-}
-\details{
+
 Falconer fence: \code{c2} is a \strong{variance ratio} (the proportion of phenotypic
 variance from the shared common-environment effect), \strong{not a heritability}.
 In the same fit, \code{\link[=heritability]{heritability()}} reports narrow-sense

@@ -15,6 +15,9 @@ repeatability(object, ...)
 Repeatability results for repeatability \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{repeatability()} reports the repeatability \code{R = (Va + Vpe) / Vp} of the
 opt-in, experimental repeatability (permanent-environment) model. It works
 for \code{hsquared_fit} objects fitted with

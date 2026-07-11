@@ -46,14 +46,15 @@ A scalar for the directional metrics; a list for \code{eigen_G()}
 (\code{values}, \code{vectors}) and \code{g_max()} (\code{eigenvalue}, \code{eigenvector}).
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These extractors summarise the genetic variance-covariance matrix \code{G} of an
 opt-in multivariate \code{hsquared_fit} (\code{target = "multivariate"}) through its
 \strong{rotation-invariant} geometry, following Hansen & Houle (2008). They are
 defined on \code{G} itself (not on factor loadings), so they are well defined for
 any multivariate fit — unstructured, diagonal, or (when bridged) low-rank /
 factor-analytic — and do not depend on a loading rotation convention.
-}
-\details{
 \itemize{
 \item \code{eigen_G()} returns the genetic eigenstructure: \code{values} (the variance along
 each genetic principal axis, descending) and \code{vectors} (the genetic

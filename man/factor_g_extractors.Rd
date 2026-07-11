@@ -22,6 +22,9 @@ latent_breeding_values(object, ...)
 These reserved extractors currently error for \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These extractor names are reserved for future factor-analytic G-matrix
 results. The current package can report invariant covariance and correlation
 matrices from opt-in multivariate fits, but it does not yet expose

@@ -1,5 +1,7 @@
 #' Inspect planned compute backends
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `backend_info()` reports which backend names are accepted by
 #' [hs_control()] and whether any of them are execution-ready from the R
 #' package. In the current package state, backend names are control metadata

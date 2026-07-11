@@ -35,13 +35,15 @@ single numerics (the raw variance component).
 }
 }
 \description{
-These extractors summarize an opt-in, \strong{experimental} direct-maternal
-correlated model (\code{target = "direct_maternal"}), fitted with
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
+These extractors summarize an opt-in, \strong{covered at validation scale}
+direct-maternal correlated model (\code{target = "direct_maternal"}), fitted with
 \code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)}.
 The model estimates a 2x2 genetic covariance matrix G_dm between the direct
 additive and maternal additive effects, plus a residual variance.
-}
-\details{
+
 Willham fence: the direct-maternal model (Willham 1963, 1972) distinguishes
 the \strong{direct} narrow-sense heritability \code{h2_d = sigma_ad / sigma_P} from
 the maternal variance ratio \code{m2 = sigma_am / sigma_P}, the Willham total
