@@ -3,6 +3,34 @@
 `hsquared` and `HSquared.jl` are twin packages with one project identity.
 `hsquared` owns the R interface; `HSquared.jl` owns the sparse Julia engine.
 
+## Release Model (version tracks covered capability, not phases)
+
+Release numbers are **decoupled from the phase plan below**. The version tracks
+`covered` capability, not everything surfaced, and the phases are the engineering
+order — not the release schedule. See
+[`docs/dev-log/decisions.md`](docs/dev-log/decisions.md) ("2026-07-11: Release
+Model").
+
+- **First registration is `0.5.0`, not `1.0`**, shipped with a prominent
+  **experimental** label — mirroring the sibling packages (drmTMB, gllvmTMB) and
+  the standing rule that lab packages ship experimental on first CRAN until the
+  maintainer declares maturity. `0.5.0` ships on the current covered surface (the
+  five recovery-gated Gaussian models) and does **not** wait on Phase 6. The
+  R+Julia twin registers as **one** data-publication (one DOI); the Julia engine
+  registers first, then the R package to CRAN.
+- **Phases 3–6 land as post-`0.5` minors**, each promoted only when its pillar's
+  pre-declared recovery gate + external same-estimand comparator goes green:
+  `0.6` multivariate (Phase 3) · `0.7` genomic GREML (Phase 5) · `0.8`
+  factor-analytic G + single-step (Phase 4) · `0.9` interval-coverage calibration
+  + non-Gaussian approaching (Phase 6).
+- **`1.0` is the maturity milestone, and `1.0` ≠ "Phase 6 done."** It requires
+  every pillar to be **covered + production + interval-coverage-calibrated**, a
+  committed-stable public API, and the maintainer's explicit declaration.
+  Interval-coverage calibration exists for no model today, so `1.0` is materially
+  later than Phase 6. Non-Gaussian (Phase 6) is the longest pole — blocked on an
+  undefined non-Gaussian-scale heritability estimand and comparator scarcity, not
+  compute — so it is sequenced last and kept off the release critical path.
+
 ## Phase 0: Team Operating System And Public Scaffold
 
 Status: complete for the public scaffold.

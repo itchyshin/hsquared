@@ -102,3 +102,64 @@ grammar and argument-naming freeze: before any Standard-tier flip, Boole freezes
 the auto-routing grammar (how a formula auto-selects the engine target) and the
 argument-naming predicate (the names/spellings of the user-facing arguments for
 the flipped surface) as a precondition of the flip, not a follow-up.
+
+## 2026-07-11: Release Model — First Registration is 0.5.0, Decoupled From Phases
+
+The first public registration of the twin (`hsquared` to CRAN, `HSquared.jl` to
+the Julia General registry) is numbered **0.5.0**, **not 1.0.0**, and ships with a
+prominent **experimental** label. This mirrors the sibling-package doctrine —
+drmTMB (hub D-40) and gllvmTMB (hub D-42) both take their first CRAN release at
+0.5.0 — and the standing rule that every lab package ships experimental on first
+CRAN until the maintainer personally declares maturity (hub D-41, which names
+`hsquared`/`HSquared.jl` explicitly). The R+Julia twin is one data-publication
+under one DOI (hub D-23).
+
+**Releases are decoupled from roadmap phases.** The version number tracks
+`covered` capability, not surfaced-but-experimental capability, and advances on
+its own cadence. 0.5.0 ships on the current covered surface — the five
+recovery-gated Gaussian models (v0.1 univariate animal model + common-env
+`two_effect`, arbitrary-N `multi_effect`, `random_regression` k=2, and
+`direct_maternal` 2×2 G) — and does **not** wait on Phase 6. Roadmap Phases 3–6
+land afterwards as post-0.5 minors, each promoted only when its pillar's
+pre-declared recovery gate + external same-estimand comparator goes green under
+the Standard-Tier Covered-Flip Gate (above):
+
+- `0.5.0` — first registration, covered Gaussian surface, experimental banner.
+- `0.6.0` — multivariate promoted to R-public-covered (Phase 3).
+- `0.7.0` — genomic GREML leg covered (Phase 5, first leg).
+- `0.8.0` — factor-analytic G + single-step (Phase 4).
+- `0.9.0` — interval-coverage calibration across covered pillars; non-Gaussian
+  approaching covered once its scale-estimand is resolved.
+- `1.0.0` — the maturity milestone (below).
+
+**1.0 is the maturity milestone, and 1.0 ≠ "Phase 6 done."** Every pillar must
+clear three axes — **covered** (recovery-gated + external same-estimand
+comparator + R-public-exported), **production** (lifts the dense, n≤~1000 ceiling;
+sparse kernels; real pedigrees), and **calibrated** (interval coverage validated
+by a coverage simulation, not only point-estimate bias/MCSE) — plus a
+committed-stable public API and the maintainer's explicit maturity declaration.
+Interval-coverage calibration currently exists for no model in either lane, so 1.0
+is materially later than Phase 6. Phase 6 (non-Gaussian) is the longest pole and
+is blocked on a not-yet-defined heritability estimand on the non-Gaussian scale
+and on same-estimand comparator scarcity — neither of which is compute-bound — so
+non-Gaussian is sequenced last and kept off the release critical path; no
+heritability is reported for non-Gaussian fits until the scale note and a
+same-estimand comparator exist.
+
+**Reserved formula-marker verbs stay exported.** The inert reserved verbs
+(`epistasis`, `imprinting`, `cytoplasmic`, `qtl_scan`, `marker_scan`,
+`dominance`) remain exported and lifecycle-badged (experimental/planned), not
+removed from the namespace. Their export is what lets `y ~ epistasis(...)` raise
+the helpful `hsquared_unsupported_syntax` parser error that names the unsupported
+syntax and points to the closest planned path (the User Interface Mantra);
+de-exporting them would replace that with a bare "could not find function" error
+and break four test files. This considered a proposal to shrink the committed
+public surface by de-exporting them and rejected it.
+
+**Julia registers first**, then R CRAN (2026-07-09 decision above). Provenance:
+grounded in the sibling-package versioning doctrine (hub D-40/D-42/D-41/D-23), a
+five-lens release-strategy panel (unanimous "execute-with-deltas": keep the
+technical Phase 1→6 ladder, fix only the release trigger), and the per-pillar
+registration-runway map (2026-07-11). The API-stability contract that scopes the
+stable-vs-experimental surface for 0.5.0 is proposed in
+`docs/design/35-api-stability-contract.md` (awaiting maintainer ratification).
