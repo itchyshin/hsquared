@@ -3,6 +3,21 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-11 (MV-5: broadened-recovery driver committed, pre-run)
+
+- Wrote the MV-5 broadened-recovery driver `data-raw/multivariate-recovery-broadened-study.R`
+  (R lane), implementing the doc-40 pre-declaration: **t=3**, **two PD (G0,R0)
+  truth points** (r_g 0.11 / 0.61), **full-sib** design (12×12×3 = 456 animals),
+  cold start, screen 48 seeds/cell → confirm 500, gate = every interior G0/R0
+  element `|bias| ≤ 2·MCSE` in both cells. A faithful t=3 generalization of the
+  verified t=2 driver's DGP. Committed **before any run** (pre-registration
+  integrity; no post-hoc relaxation).
+- Checks (pure-R, no engine): `parse()` clean; both truth points PD (min
+  eigenvalues 0.571/0.895/0.235/0.874 > 0); `air format` applied. The run itself
+  is a **live Julia campaign** on Totoro — Codex/live-toolchain work per the
+  division of labour (not run by Claude). A quick ADEMP/simulation-check review
+  is owed before the confirm tier.
+
 ## 2026-07-11 (MV-2 + MV-3: BLUPF90 2nd-comparator citation + derived-estimand identity gate)
 
 - **MV-2 (verified, then refreshed).** Confirmed against the twin that the
