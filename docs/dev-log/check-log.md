@@ -3,6 +3,48 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-11 (0.2.0 code-arc baseline assembly merge)
+
+- Assembled the `0.2.0` baseline onto local `main` by merging five
+  already-reviewed PRs in order — **#125** (0.1 honesty baseline) → **#127**
+  (`relmat()`/`precision()` experimental supplied-relationship surface) →
+  **#128** (Track A hardening: `hsquared_unsupported_syntax` condition class +
+  lifecycle badges) → **#129** (interval/recovery pre-registration + evidence) →
+  **#130** (handover). Five `--no-ff` merge commits (`065e128`, `f7aa2d8`,
+  `ebe101f`, `60350bc`, `f43c93a`); base `origin/main` `34dfb6d`.
+- **Cumulative-merge simulation** (`git merge-tree --write-tree`, chained) run
+  before touching `main`: #125/#127/#130 clean; the six R/man files shared by
+  #127 and #128 auto-merged clean. Two conflicts, both non-code:
+  `man/direct_maternal_extractors.Rd` (generated; resolved to #128's badged
+  version) and `docs/dev-log/coordination-board.md` (hand-merged: #125 header
+  correction + both 2026-07-09 and 2026-07-10 rows, newest-first). Also scoped
+  the board header line so "everything below is historical" no longer scans over
+  the two prepended in-progress rows (Rose note).
+- Claim boundary: **assembly only, no promotion.** `public_covered_count`
+  stays **5**; `validation_status()` covered rows unchanged (**4** on both
+  `origin/main` and the assembled `HEAD`); `DESCRIPTION` Version stays
+  `0.1.0.9000` (the `0.2.0` bump is a deferred later step); `relmat()`/
+  `precision()` remain experimental/NOT-covered; intervals + repeatability
+  remain experimental with the banked-negative point-bias caveat intact.
+- Checks (assembled `HEAD`, R 4.6.0): `Rscript -e 'devtools::document()'`
+  **zero delta** (merged `man/` already source-consistent, confirming the
+  generated-`.Rd` resolution); `air format` on the 20 merged R files produced a
+  delta **only** in pre-existing non-conformant code (identical delta on pristine
+  `origin/main` — reverted as out-of-scope for a merge); full
+  `Rscript -e 'devtools::test()'` **exit 0, 0 failures** (9 expected skips —
+  live JuliaCall/Julia/`pedigreemm` absent locally);
+  `_R_CHECK_FORCE_SUGGESTS_=false Rscript -e 'rcmdcheck::rcmdcheck(args =
+  c("--as-cran","--no-manual"), error_on = "never")'` **0 errors / 0 warnings /
+  2 notes** — NOTE 1 = new-submission/dev-version (`0.1.0.9000`), expected;
+  NOTE 2 = non-standard top-level `scratchpad/` (untracked local dir, not in git,
+  absent from a clean CI checkout).
+- Rose (`rose-systems-auditor`, pre-public audit of the assembled whole):
+  **CLEAN — no blockers.** All five honesty invariants PASS; both conflict
+  resolutions confirmed lossless; no leftover conflict markers; `git diff
+  --check` clean. Two non-blocking follow-ups recorded: (1) the board header
+  scope-fix (applied); (2) fold a `relmat()`/`precision()` experimental bullet
+  into the NEWS dev section at the deferred `0.2.0` cut.
+
 ## 2026-07-02 (covered-status surface reconciliation)
 
 - Propagated four prior maintainer-signed **G10** covered flips — common-env
