@@ -16,3 +16,4 @@
 ^pkgdown-site$
 ^pkgdown$
 ^sim$
+^vignettes/articles$
