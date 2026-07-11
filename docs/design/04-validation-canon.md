@@ -128,3 +128,28 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
   elements, all four fixed effects, and both per-trait h2 values; posterior
   mean EBV correlations are > 0.9997. This is Bayesian agreement evidence only,
   not a same-estimand REML comparator and not a covered-status promotion.
+
+## Locked Derived-Estimand Identities (Standard-Tier Covered-Flip Gate)
+
+Per the 2026-07-09 Standard-Tier Covered-Flip Gate
+(`docs/dev-log/decisions.md`), a derived estimand flips `covered` only with a
+within-package identity test asserting it equals its defining function of the
+covered components, plus a locked, pinned citation for that identity. The pinned
+multivariate (0.6) identities:
+
+- **Genetic correlation** `r_g[i,j] = σ_g,ij / sqrt(σ²_g,i · σ²_g,j)` =
+  `cov2cor(G0)`. Identity test:
+  `genetic_correlation(fit) == cov2cor(genetic_covariance(fit))` (MV-3,
+  `tests/testthat/test-multivariate.R`). Locked citation: Falconer & Mackay
+  (1996), *Introduction to Quantitative Genetics*, 4th ed., ch. 19; Lynch & Walsh
+  (1998), *Genetics and Analysis of Quantitative Traits*, ch. 21.
+- **Per-trait heritability** `h²_k = σ²_a,k / (σ²_a,k + σ²_e,k)` =
+  `diag(G0) / (diag(G0) + diag(R0))`. Identity test:
+  `heritability(fit)$estimate == diag(G0)/(diag(G0)+diag(R0))` (MV-3, verified on
+  the engine's serialized `phase4_multitrait_parity` values). Locked citation:
+  Falconer & Mackay (1996), ch. 8, 10; Lynch & Walsh (1998), ch. 4, 7.
+
+These are the R-lane derived-estimand identity gates for the 0.6 multivariate
+covered flip; the component estimands `G0`/`R0` are external-same-estimand-
+comparator gated (`sommer` in-suite MV-1 + executed `blupf90+` MV-2). The flip
+itself remains twin-gated + Darwin biology sign-off + Rose.

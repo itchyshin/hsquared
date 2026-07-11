@@ -3,6 +3,31 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-11 (MV-2 + MV-3: BLUPF90 2nd-comparator citation + derived-estimand identity gate)
+
+- **MV-2 (verified, then refreshed).** Confirmed against the twin that the
+  `blupf90+` 2.60 AI-REML multivariate comparator genuinely RAN (2026-06-29;
+  `HSquared.jl/docs/dev-log/recovery-checkpoints/2026-06-29-v4-blupf90-comparator.md`
+  + `comparator/blupf90_multitrait/`): converged from a **non-degenerate neutral
+  start** (7 rounds, 9.6e-13) to the same full-unstructured optimum on the
+  `phase4_multitrait_parity` fixture — G0/R0 to the ~1e-5 5-sig-fig stdout floor,
+  β/EBV to ~1e-7, EBV corr 1.000000; a genuine 2nd same-estimand REML lineage
+  beyond `sommer`. Refreshed the stale "2nd comparator owed" wording in
+  `capability-status.md` (MV row) and `validation-debt-register.md` (rows 28) to
+  cite it as DISCHARGED, and to mark the full-unstructured `sommer` leg now
+  in-suite CI-gated (MV-1). Retained debts restated honestly: broader recovery
+  (full-sib + 3+-trait; MV-5) + deep-inbreeding boundary. **No promotion** —
+  multivariate stays `partial`; the flip is still twin-gated + Darwin + Rose.
+- **MV-3.** Added the derived-estimand identity gate for the 0.6 multivariate
+  flip: `r_g == cov2cor(G0)` (already asserted via `genetic_correlation(fit) ==
+  cov2cor(G0)`) + the newly-added per-trait `h² == diag(G0)/(diag(G0)+diag(R0))`
+  identity, verified on the engine's serialized `phase4_multitrait_parity` values
+  (`test-multivariate.R`). Locked citation (Falconer & Mackay 1996; Lynch & Walsh
+  1998) recorded in `docs/design/04-validation-canon.md`.
+- Checks: `NOT_CRAN=true devtools::test(filter = "multivariate")` — passed (only
+  the 2 live-Julia bridge tests skip); `air format` delta confined; edits to the
+  status ledgers are wording/citation only (no `validation_status()` change).
+
 ## 2026-07-11 (MV-1: in-suite full-unstructured sommer comparator gate)
 
 - Promoted the full-unstructured `sommer::mmer` multivariate comparator from the

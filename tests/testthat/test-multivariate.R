@@ -594,6 +594,22 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
   expect_equal(residual_correlation(fit), stats::cov2cor(R0), tolerance = 1e-10)
   expect_equal(heritability(fit)$estimate, h2$h2, tolerance = 1e-10)
 
+  # MV-3 covered-flip identity gate (Standard-Tier gate, docs/dev-log/decisions.md;
+  # locked citation docs/design/04-validation-canon.md -- Falconer & Mackay 1996;
+  # Lynch & Walsh 1998 ch. 4, 21): each derived estimand equals its defining
+  # function of the covered components G0, R0. The genetic-correlation identity
+  # r_g == cov2cor(G0) is the extractor assertion above; the per-trait
+  # heritability identity h2_k == G0[k,k]/(G0[k,k]+R0[k,k]) holds on the engine's
+  # serialized values. Both off-diagonals are genuine (not 0/1), so the r_g
+  # identity is a real test.
+  expect_equal(
+    h2$h2,
+    unname(diag(G0) / (diag(G0) + diag(R0))),
+    tolerance = 1e-5
+  )
+  expect_gt(abs(stats::cov2cor(G0)[1, 2]), 0.05)
+  expect_lt(abs(stats::cov2cor(G0)[1, 2]), 0.99)
+
   fixed <- fixef(fit)
   expected_fixed <- data.frame(
     term = rep(c("(Intercept)", "x"), times = 2L),
