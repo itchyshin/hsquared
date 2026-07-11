@@ -90,8 +90,17 @@ REML-only, not the default, mirroring a \code{partial} validation gate) as the
 second random effect alongside \code{animal()}. \code{metafounder()} now fits through an
 opt-in, supplied-variance, experimental engine path (\code{engine = "julia"},
 \code{target = "metafounder"}); \code{Gamma} and the variance components are supplied,
-not estimated. The remaining markers (paternal/maternal-environment,
-dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+not estimated. \code{relmat()} and \code{precision()} now fit through an opt-in,
+EXPERIMENTAL supplied-relationship primary engine path (\code{engine = "julia"},
+REML-only, not the default, mirroring a \code{partial} validation gate):
+\code{relmat(1 | id, K = K)} supplies a dense symmetric positive-definite
+relationship/covariance matrix K (the parser marshals the inverse
+\code{Kinv = solve(K)}; \code{relmat()} also accepts a directly supplied inverse via
+\verb{Kinv =}/\verb{Q =}, no solve), and \code{precision(1 | id, Q = Q)} supplies the
+precision (inverse) directly (\verb{Kinv =} also accepted); both fit through the
+SAME supplied-relationship-inverse path as \code{genomic()}'s \code{Ginv}, and the
+supplied matrix is provenance, not an estimate. The remaining markers
+(paternal/maternal-environment, dominance, epistasis, cytoplasmic, imprinting,
 genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.
 }

@@ -604,6 +604,47 @@ hsquared <- function(
       ))
     }
 
+    # Experimental supplied-relationship primary effects. They carry a supplied
+    # relationship inverse (relmat's Kinv = solve(K), or precision's Q) in the
+    # same spec/payload shape as genomic's Ginv, so they fit through the SAME
+    # covered supplied-relationship-inverse REML path (fit_ai_reml). Opt-in,
+    # experimental, NOT the default; does not change the covered surface.
+    if (target %in% c("relmat", "precision")) {
+      if (is.null(spec$random[[target]])) {
+        arg <- if (identical(target, "relmat")) "K" else "Q"
+        stop(
+          "`target = \"",
+          target,
+          "\"` requires a `",
+          target,
+          "(1 | id, ",
+          arg,
+          " = ",
+          arg,
+          ")` term in the formula.",
+          call. = FALSE
+        )
+      }
+      return(hs_fit_julia_genomic_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          100L
+        )
+      ))
+    }
+
     if (target %in% c("genomic", "single_step")) {
       if (is.null(spec$random[[target]])) {
         arg <- if (identical(target, "genomic")) "Ginv" else "Hinv"

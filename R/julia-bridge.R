@@ -956,7 +956,8 @@ hs_fit_julia_two_effect_payload <- function(
     "sigma2 = hsq_initial_sigma_c2,",
     "sigma_e2 = hsq_initial_sigma_e2),",
     "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
-    ids2_cmd, ");",
+    ids2_cmd,
+    ");",
     "catch; nothing; end; else; nothing; end;",
     "hsq_has_ci = hsq_ci !== nothing;"
   ))
@@ -1022,9 +1023,12 @@ hs_fit_julia_direct_maternal_payload <- function(
   # the engine's payload-v2 §2 correlated-block schema:
   #   type="correlated", Z=Zd (block1), partner_incidence=Zm (block2), pedigree.
   blocks <- payload$random_effects
-  if (is.null(blocks) || length(blocks) < 2L ||
+  if (
+    is.null(blocks) ||
+      length(blocks) < 2L ||
       !identical(blocks[[1L]]$type, "pedigree") ||
-      !identical(blocks[[2L]]$type, "pedigree")) {
+      !identical(blocks[[2L]]$type, "pedigree")
+  ) {
     stop(
       "Internal bridge error: the direct-maternal payload expects two pedigree ",
       "blocks (animal + maternal). Ensure the formula includes ",
@@ -1059,9 +1063,15 @@ hs_fit_julia_direct_maternal_payload <- function(
 
   # Pedigree columns (from the animal block; maternal block shares the same
   # pedigree since dams are pedigree animals)
-  JuliaCall::julia_assign("hsq_blkped_id",   as.character(b_animal$pedigree$id))
-  JuliaCall::julia_assign("hsq_blkped_sire", hs_parent_for_julia(b_animal$pedigree$sire))
-  JuliaCall::julia_assign("hsq_blkped_dam",  hs_parent_for_julia(b_animal$pedigree$dam))
+  JuliaCall::julia_assign("hsq_blkped_id", as.character(b_animal$pedigree$id))
+  JuliaCall::julia_assign(
+    "hsq_blkped_sire",
+    hs_parent_for_julia(b_animal$pedigree$sire)
+  )
+  JuliaCall::julia_assign(
+    "hsq_blkped_dam",
+    hs_parent_for_julia(b_animal$pedigree$dam)
+  )
 
   # Build the correlated block Dict and the full payload Dict on the Julia side,
   # matching the frozen payload-v2 correlated-block schema:
@@ -1127,7 +1137,13 @@ hs_fit_julia_direct_maternal_payload <- function(
   beta <- JuliaCall::julia_eval("collect(Float64, hsq_fit_dm.beta)")
 
   result <- hs_normalize_direct_maternal_result(
-    raw, direct_ids, direct_vals, maternal_ids, maternal_vals, beta, payload
+    raw,
+    direct_ids,
+    direct_vals,
+    maternal_ids,
+    maternal_vals,
+    beta,
+    payload
   )
 
   hs_new_fit(
@@ -1153,13 +1169,15 @@ hs_normalize_direct_maternal_result <- function(
 ) {
   fixed_names <- payload$metadata$fixed_colnames
   fe <- as.numeric(beta)
-  if (length(fe) == length(fixed_names)) names(fe) <- fixed_names
+  if (length(fe) == length(fixed_names)) {
+    names(fe) <- fixed_names
+  }
 
-  sigma_ad  <- as.numeric(raw$direct_variance)
-  sigma_am  <- as.numeric(raw$partner_variance)
-  sigma_dm  <- as.numeric(raw$covariance)
-  sigma_e2  <- as.numeric(raw$residual)
-  r_am      <- as.numeric(raw$correlation)
+  sigma_ad <- as.numeric(raw$direct_variance)
+  sigma_am <- as.numeric(raw$partner_variance)
+  sigma_dm <- as.numeric(raw$covariance)
+  sigma_e2 <- as.numeric(raw$residual)
+  r_am <- as.numeric(raw$correlation)
   converged <- isTRUE(raw$converged)
 
   sigma_P <- sigma_ad + sigma_am + sigma_dm + sigma_e2
@@ -1173,12 +1191,12 @@ hs_normalize_direct_maternal_result <- function(
   h2_direct <- if (sigma_P > 0) sigma_ad / sigma_P else NA_real_
 
   direct_bv <- data.frame(
-    id    = as.character(direct_ids),
+    id = as.character(direct_ids),
     value = as.numeric(direct_vals),
     stringsAsFactors = FALSE
   )
   maternal_bv <- data.frame(
-    id    = as.character(maternal_ids),
+    id = as.character(maternal_ids),
     value = as.numeric(maternal_vals),
     stringsAsFactors = FALSE
   )
@@ -1186,15 +1204,15 @@ hs_normalize_direct_maternal_result <- function(
   list(
     variance_components = data.frame(
       component = c("direct", "maternal", "covariance", "residual"),
-      estimate  = c(sigma_ad, sigma_am, sigma_dm, sigma_e2),
+      estimate = c(sigma_ad, sigma_am, sigma_dm, sigma_e2),
       stringsAsFactors = FALSE
     ),
     # A labelled heritability: direct h2 only. heritability() on a
     # direct_maternal fit returns this with an interpretation fence
     # (NOT a bare scalar).
     heritability = data.frame(
-      term      = "direct",
-      estimate  = h2_direct,
+      term = "direct",
+      estimate = h2_direct,
       stringsAsFactors = FALSE
     ),
     # The genetic correlation r_am between direct and maternal effects.
@@ -1202,25 +1220,25 @@ hs_normalize_direct_maternal_result <- function(
     # (antagonistic direct-maternal covariance; Willham 1963, 1972).
     # Never conflate with a multivariate trait-to-trait genetic correlation.
     genetic_correlation = data.frame(
-      term_1  = "direct",
-      term_2  = "maternal",
+      term_1 = "direct",
+      term_2 = "maternal",
       estimate = r_am,
       stringsAsFactors = FALSE
     ),
     # Explicitly labelled direct and partner variance fields for accessors.
-    direct_variance   = sigma_ad,
-    partner_variance  = sigma_am,
-    covariance        = sigma_dm,
-    breeding_values   = direct_bv,
-    random_effects    = list(
-      animal   = direct_bv,
+    direct_variance = sigma_ad,
+    partner_variance = sigma_am,
+    covariance = sigma_dm,
+    breeding_values = direct_bv,
+    random_effects = list(
+      animal = direct_bv,
       maternal = maternal_bv
     ),
-    maternal_effects  = maternal_bv,
-    fixed_effects     = fe,
-    loglik            = if (converged) as.numeric(raw$loglik) else NA_real_,
-    nobs              = length(payload$y),
-    converged         = converged,
+    maternal_effects = maternal_bv,
+    fixed_effects = fe,
+    loglik = if (converged) as.numeric(raw$loglik) else NA_real_,
+    nobs = length(payload$y),
+    converged = converged,
     diagnostics = list(
       target = "direct_maternal",
       variance_components = "estimated_direct_maternal_reml",
@@ -1321,7 +1339,13 @@ hs_fit_julia_n_effect_payload <- function(
           "\"sire\" => hsq_blkped_sire_%d, \"dam\" => hsq_blkped_dam_%d), ",
           "\"ids\" => %s);"
         ),
-        blk_sym, b$name, z_name, i, i, i, ids_name
+        blk_sym,
+        b$name,
+        z_name,
+        i,
+        i,
+        i,
+        ids_name
       ))
     } else {
       # iid block: identity relationship, no pedigree.
@@ -1330,7 +1354,10 @@ hs_fit_julia_n_effect_payload <- function(
           "%s = Dict{String,Any}(\"name\" => \"%s\", \"type\" => \"iid\", ",
           "\"Z\" => %s, \"relmat_status\" => \"identity\", \"ids\" => %s);"
         ),
-        blk_sym, b$name, z_name, ids_name
+        blk_sym,
+        b$name,
+        z_name,
+        ids_name
       ))
     }
   }
@@ -1352,7 +1379,9 @@ hs_fit_julia_n_effect_payload <- function(
   # the dense optimum) at validation scale, and the EXPERIMENTAL matrix-free
   # Monte-Carlo fit for large problems the dense factorization cannot reach.
   # result_payload_v2 builds the block-structured result from the same parse.
-  JuliaCall::julia_command("hsq_parsed = HSquared.parse_payload_v2(hsq_payload);")
+  JuliaCall::julia_command(
+    "hsq_parsed = HSquared.parse_payload_v2(hsq_payload);"
+  )
   JuliaCall::julia_command(sprintf(
     "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
     scale_method
@@ -1380,10 +1409,12 @@ hs_fit_julia_n_effect_payload <- function(
   re_ids <- vector("list", n_blocks)
   for (i in seq_len(n_blocks)) {
     re_ids[[i]] <- JuliaCall::julia_eval(sprintf(
-      "string.(collect(hsq_result.random_effects[%d].ids))", i
+      "string.(collect(hsq_result.random_effects[%d].ids))",
+      i
     ))
     re_values[[i]] <- JuliaCall::julia_eval(sprintf(
-      "collect(Float64, hsq_result.random_effects[%d].values)", i
+      "collect(Float64, hsq_result.random_effects[%d].values)",
+      i
     ))
   }
 
@@ -3114,6 +3145,8 @@ hs_validate_julia_target <- function(target) {
         "single_step_construct",
         "metafounder_single_step",
         "snp_blup",
+        "relmat",
+        "precision",
         "multivariate",
         "random_regression",
         "nongaussian",
@@ -3125,7 +3158,8 @@ hs_validate_julia_target <- function(target) {
       "\"henderson_mme\", \"sparse_reml\", \"ai_reml\", \"repeatability\", ",
       "\"metafounder\", \"two_effect\", \"multi_effect\", \"genomic\", ",
       "\"single_step\", ",
-      "\"single_step_construct\", \"metafounder_single_step\", \"snp_blup\", \"multivariate\", ",
+      "\"single_step_construct\", \"metafounder_single_step\", \"snp_blup\", ",
+      "\"relmat\", \"precision\", \"multivariate\", ",
       "\"random_regression\", \"nongaussian\", or \"direct_maternal\".",
       call. = FALSE
     )
@@ -3222,6 +3256,10 @@ hs_effect_targets <- function(type) {
       "single_step_construct",
       "metafounder_single_step"
     ),
+    # Experimental supplied-relationship primary effects: each fits only through
+    # its own opt-in supplied-relationship-inverse target.
+    relmat = "relmat",
+    precision = "precision",
     stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }
@@ -3242,6 +3280,8 @@ hs_second_effect_target <- function(type) {
     metafounder = "metafounder",
     genomic = "genomic",
     single_step = "single_step",
+    relmat = "relmat",
+    precision = "precision",
     stop("Unknown random effect type: ", type, call. = FALSE)
   )
 }

@@ -61,15 +61,16 @@ hs_build_model_spec <- function(
     stop(
       "`formula` must contain exactly one primary term: ",
       "`animal(1 | id, pedigree = ped)`, `genomic(1 | id, Ginv = Ginv)`, ",
-      "or `metafounder(1 | id, pedigree = ped, group = mf_group, ",
-      "Gamma = Gamma)`.",
+      "`metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`, ",
+      "`relmat(1 | id, K = K)`, or `precision(1 | id, Q = Q)`.",
       call. = FALSE
     )
   }
   if (length(primary_pos) > 1L) {
     stop(
       "`formula` can contain only one primary effect ",
-      "(`animal()`, `genomic()`, `single_step()`, or `metafounder()`).",
+      "(`animal()`, `genomic()`, `single_step()`, `metafounder()`, ",
+      "`relmat()`, or `precision()`).",
       call. = FALSE
     )
   }
@@ -228,7 +229,12 @@ hs_build_model_spec <- function(
 
   random <- list()
   random[[primary_type]] <- primary_spec
-  bridge_target <- if (primary_type %in% c("genomic", "single_step")) {
+  bridge_target <- if (primary_type %in% c("relmat", "precision")) {
+    # Experimental supplied-relationship primary effect: the supplied inverse
+    # (Kinv from relmat's K, or the precision Q) fits through the SAME covered
+    # relationship-inverse REML path as genomic()'s Ginv.
+    "fit_ai_reml(y, X, Z, Kinv; method = :REML)"
+  } else if (primary_type %in% c("genomic", "single_step")) {
     if (identical(primary_spec$source, "metafounder_construct")) {
       paste0(
         "fit_metafounder_single_step_reml(y, X, Z, pedigree, ",
@@ -1295,16 +1301,44 @@ hs_is_single_step_primary_call <- function(expr) {
   hs_is_call(expr, "single_step")
 }
 
+# Opt-in, EXPERIMENTAL supplied-relationship primary effects that let a user
+# bring their own relationship matrix for the animal-model random effect.
+# `relmat(1 | id, K = K)` supplies a dense symmetric positive-definite
+# relationship/covariance matrix K (the parser marshals the inverse Kinv =
+# solve(K)); `precision(1 | id, Q = Q)` supplies the precision (inverse)
+# directly. Both are parsed as supplied-relationship-inverse primary effects and
+# fit through the SAME covered engine path as genomic()'s Ginv.
+hs_is_relmat_primary_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "relmat")
+}
+
+hs_is_precision_primary_call <- function(expr) {
+  expr <- hs_unwrap_parentheses(expr)
+  hs_is_call(expr, "precision")
+}
+
 # The opt-in primary effects whose relationship is a user-supplied inverse:
-# `genomic()` (a genomic relationship inverse `Ginv`) and `single_step()` (a
-# single-step relationship inverse `Hinv`). Both fit by REML on a relationship-
-# inverse-based animal_model_spec.
+# `genomic()` (a genomic relationship inverse `Ginv`), `single_step()` (a
+# single-step relationship inverse `Hinv`), and the experimental
+# `relmat()`/`precision()` supplied-relationship terms (a supplied covariance
+# inverted to `Kinv`, or a supplied precision). All fit by REML on a
+# relationship-inverse-based animal_model_spec.
 hs_is_relinv_primary_call <- function(expr) {
-  hs_is_genomic_primary_call(expr) || hs_is_single_step_primary_call(expr)
+  hs_is_genomic_primary_call(expr) ||
+    hs_is_single_step_primary_call(expr) ||
+    hs_is_relmat_primary_call(expr) ||
+    hs_is_precision_primary_call(expr)
 }
 
 hs_parse_relinv_primary_call <- function(call, data, env, model_data = NULL) {
   call <- hs_unwrap_parentheses(call)
+  # Experimental supplied-relationship terms take their own parse: `relmat()`
+  # supplies a covariance K (inverted to Kinv), `precision()` supplies the
+  # inverse Q directly. Both return a supplied-inverse primary spec.
+  if (hs_is_relmat_primary_call(call) || hs_is_precision_primary_call(call)) {
+    return(hs_parse_supplied_relmat_call(call, data, env))
+  }
   if (hs_is_genomic_primary_call(call)) {
     term <- "genomic"
     arg_name <- "Ginv"
@@ -2018,6 +2052,224 @@ hs_validate_genomic_markers <- function(markers) {
     )
   }
   markers
+}
+
+# Parse an experimental supplied-relationship primary term. `relmat(1 | id,
+# K = K)` supplies a relationship/covariance matrix K, marshalled as the inverse
+# Kinv = solve(K); `precision(1 | id, Q = Q)` (also `Kinv =`) supplies the
+# precision (inverse) directly. Mirrors the genomic supplied-`Ginv` parse: the
+# supplied inverse is carried in `ginv` with `source = "supplied"`, so the
+# existing supplied-relationship-inverse bridge/engine path fits it unchanged.
+hs_parse_supplied_relmat_call <- function(call, data, env) {
+  call <- hs_unwrap_parentheses(call)
+  is_precision <- hs_is_precision_primary_call(call)
+  term <- if (is_precision) "precision" else "relmat"
+  # `relmat` supplies a covariance `K` (marshalled as `Kinv = solve(K)`) OR a
+  # relationship inverse directly via `Kinv`/`Q` (the precision spelling, no
+  # solve); `precision` supplies the inverse `Q` (or the `Kinv` spelling)
+  # directly. `primary_arg` names the canonical argument for messages; `accepted`
+  # lists every spelling the term takes.
+  primary_arg <- if (is_precision) "Q" else "K"
+  accepted <- if (is_precision) c("Q", "Kinv") else c("K", "Kinv", "Q")
+  example <- sprintf("`%s(1 | id, %s = %s)`", term, primary_arg, primary_arg)
+
+  args <- as.list(call)[-1L]
+  arg_names <- names(args)
+  if (is.null(arg_names)) {
+    arg_names <- rep("", length(args))
+  }
+
+  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if (length(bar_candidates) != 1L) {
+    stop(
+      "`",
+      term,
+      "()` must have one random-effect expression, for example ",
+      example,
+      ".",
+      call. = FALSE
+    )
+  }
+
+  bar <- hs_unwrap_parentheses(args[[bar_candidates]])
+  if (!hs_is_call(bar, "|") || length(bar) != 3L) {
+    stop(
+      "The first `",
+      term,
+      "()` argument must be a random-effect expression such as `1 | id`.",
+      call. = FALSE
+    )
+  }
+
+  lhs <- hs_unwrap_parentheses(bar[[2L]])
+  group_expr <- hs_unwrap_parentheses(bar[[3L]])
+  if (!hs_is_one(lhs)) {
+    stop(
+      "Only random-intercept syntax ",
+      example,
+      " is implemented. ",
+      term,
+      " slopes are planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  if (!is.symbol(group_expr)) {
+    stop(
+      "The grouping variable in `",
+      term,
+      "()` must be a bare column name.",
+      call. = FALSE
+    )
+  }
+
+  group <- as.character(group_expr)
+  if (!group %in% names(data)) {
+    stop(
+      "`",
+      term,
+      "()` grouping variable `",
+      group,
+      "` was not found in `data`.",
+      call. = FALSE
+    )
+  }
+
+  named_args <- args[arg_names != ""]
+  unsupported <- setdiff(names(named_args), accepted)
+  if (length(unsupported) > 0L) {
+    stop(
+      "`",
+      term,
+      "()` argument",
+      if (length(unsupported) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unsupported), collapse = ", "),
+      if (length(unsupported) > 1L) " are " else " is ",
+      "planned, not implemented.",
+      call. = FALSE
+    )
+  }
+  supplied <- intersect(accepted, names(named_args))
+  if (length(supplied) == 0L) {
+    stop(
+      "`",
+      term,
+      "()` requires a `",
+      primary_arg,
+      "` argument (a ",
+      if (is_precision) "precision (inverse) matrix" else "relationship matrix",
+      " with id row/column names).",
+      call. = FALSE
+    )
+  }
+  if (length(supplied) > 1L) {
+    stop(
+      "`",
+      term,
+      "()` takes exactly one of ",
+      paste(sprintf("`%s`", accepted), collapse = " or "),
+      ".",
+      call. = FALSE
+    )
+  }
+  arg_used <- supplied[[1L]]
+
+  supplied_matrix <- hs_eval_genomic_ginv(
+    named_args[[arg_used]],
+    data,
+    env,
+    what = arg_used
+  )
+  supplied_matrix <- hs_validate_relmat_matrix(supplied_matrix, arg_used)
+
+  # A covariance is inverted to its precision (`Kinv = solve(K)`); a directly
+  # supplied inverse (`precision()`'s `Q`, or `relmat()`/`precision()`'s `Kinv`,
+  # or `relmat()`'s `Q`) is carried verbatim, no solve. Only the covariance
+  # spelling `K` needs inverting. Both travel as `ginv` (the supplied
+  # relationship inverse) so the shared supplied-inverse bridge path is reused.
+  relinv <- if (identical(arg_used, "K")) {
+    solve(supplied_matrix)
+  } else {
+    supplied_matrix
+  }
+  relinv_ids <- rownames(supplied_matrix)
+
+  observed_ids <- as.character(data[[group]])
+  unknown <- setdiff(unique(observed_ids), relinv_ids)
+  if (length(unknown) > 0L) {
+    shown <- unknown[seq_len(min(5L, length(unknown)))]
+    stop(
+      "`",
+      term,
+      "()` ids must be present in the `",
+      arg_used,
+      "` dimnames. ID(s) not in the `",
+      arg_used,
+      "`: ",
+      paste(sprintf("`%s`", shown), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  list(
+    type = term,
+    term = hs_deparse(call),
+    design = "intercept",
+    group = group,
+    values = observed_ids,
+    ids = relinv_ids,
+    ginv = relinv,
+    source = "supplied",
+    relationship = term,
+    covariance = "scalar"
+  )
+}
+
+# Validate a supplied `relmat()`/`precision()` matrix: numeric, square, finite,
+# symmetric, positive-definite, and ID-keyed via matching row/column names. These
+# are data-validation errors (a different family from unsupported-syntax errors).
+hs_validate_relmat_matrix <- function(mat, arg_name) {
+  if (inherits(mat, "Matrix")) {
+    mat <- as.matrix(mat)
+  }
+  if (!is.matrix(mat) || !is.numeric(mat)) {
+    stop("`", arg_name, "` must be a numeric matrix.", call. = FALSE)
+  }
+  if (nrow(mat) != ncol(mat)) {
+    stop("`", arg_name, "` must be a square matrix.", call. = FALSE)
+  }
+  if (any(!is.finite(mat))) {
+    stop("`", arg_name, "` must contain only finite values.", call. = FALSE)
+  }
+  ids <- rownames(mat)
+  if (is.null(ids) || any(is.na(ids)) || anyDuplicated(ids) > 0L) {
+    stop(
+      "`",
+      arg_name,
+      "` must have unique, non-missing row/column names matching the ids.",
+      call. = FALSE
+    )
+  }
+  if (!identical(ids, colnames(mat))) {
+    stop("`", arg_name, "` row and column names must match.", call. = FALSE)
+  }
+  if (!isSymmetric(unname(mat))) {
+    stop("`", arg_name, "` must be symmetric.", call. = FALSE)
+  }
+  # Positive definiteness via a Cholesky factorization (fails on any
+  # non-positive eigenvalue), so the supplied relationship inverse is a valid
+  # precision for the REML animal-model spec.
+  chol_ok <- tryCatch(
+    {
+      chol(mat)
+      TRUE
+    },
+    error = function(err) FALSE
+  )
+  if (!chol_ok) {
+    stop("`", arg_name, "` must be positive definite.", call. = FALSE)
+  }
+  mat
 }
 
 hs_normalize_parent <- function(x) {
