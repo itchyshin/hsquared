@@ -15,6 +15,9 @@ metafounder_effects(object, ...)
 This extractor currently errors for all objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{metafounder_effects()} reserves the extractor name for future fitted
 metafounder solutions. Current experimental metafounder and \code{H^Gamma} fits
 expose supplied \code{Gamma} and group-assignment provenance via \code{\link[=gamma_matrix]{gamma_matrix()}}

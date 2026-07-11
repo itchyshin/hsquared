@@ -21,14 +21,16 @@ A one-row data frame with \code{estimate} (the ratio), \code{lower}, \code{upper
 contain it.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{common_env_proportion_interval()} and \code{maternal_proportion_interval()}
 return an \strong{experimental} large-sample (logit delta-method) confidence
 interval for the second variance ratio (\code{c2} / \code{m2}, \code{ratio2}) of the opt-in
 two-effect model, available only when the fit contains it. On the same
 two-effect fit, \code{\link[=heritability_interval]{heritability_interval()}} returns the matching interval for
 the direct heritability (\code{h2}, \code{ratio1}).
-}
-\details{
+
 This mirrors the engine row \code{V3-TWOEFFECT-REML}: the interval is the asymptotic
 delta-method CI built from the two-effect REML observed information (the
 finite-difference Hessian of the two-effect REML log-likelihood at the

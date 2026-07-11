@@ -1,5 +1,7 @@
 #' Extract variance components
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `variance_components()` is part of the planned v0.1 fitted-object contract.
 #' It works for `hsquared_fit` objects that contain a Julia result.
 #'
@@ -27,6 +29,8 @@ variance_components.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract heritability estimates
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `heritability()` is part of the planned v0.1 fitted-object contract. It
 #' works for `hsquared_fit` objects that contain a Julia result.
@@ -120,6 +124,8 @@ heritability.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract multivariate covariance and correlation matrices
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' These extractors return the genetic (`G`) and residual (`R`) covariance or
 #' correlation matrices from opt-in multivariate `hsquared_fit` objects
@@ -286,6 +292,8 @@ hs_multivariate_extractor_default <- function(name) {
 
 #' Extract a supplied metafounder Gamma matrix
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `gamma_matrix()` returns the supplied metafounder `Gamma` matrix carried by
 #' an experimental metafounder or `H^Gamma` single-step `hsquared_fit` object.
 #' It is provenance for the fitted relationship, not an estimated parameter.
@@ -332,6 +340,8 @@ gamma_matrix.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract supplied metafounder group assignments
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `metafounder_groups()` returns the ID-keyed metafounder group assignments
 #' carried by an experimental metafounder or `H^Gamma` single-step
@@ -386,6 +396,8 @@ metafounder_groups.hsquared_fit <- function(object, ...) {
 
 #' Reserved metafounder effect extractor
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `metafounder_effects()` reserves the extractor name for future fitted
 #' metafounder solutions. Current experimental metafounder and `H^Gamma` fits
 #' expose supplied `Gamma` and group-assignment provenance via [gamma_matrix()]
@@ -421,6 +433,8 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 }
 
 #' Reserved factor-analytic and G-matrix extractors
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' These extractor names are reserved for future factor-analytic G-matrix
 #' results. The current package can report invariant covariance and correlation
@@ -576,6 +590,8 @@ hs_factor_g_extractor_planned <- function(
 
 #' Extract repeatability estimates
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
 #' opt-in, experimental repeatability (permanent-environment) model. It works
 #' for `hsquared_fit` objects fitted with
@@ -605,6 +621,8 @@ repeatability.hsquared_fit <- function(object, ...) {
 
 #' Extract permanent-environment effects
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `permanent_effects()` returns the predicted permanent-environment effects of
 #' the opt-in, experimental repeatability model.
 #'
@@ -633,6 +651,8 @@ permanent_effects.hsquared_fit <- function(object, ...) {
 
 #' Extract common-environment effects
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `common_env_effects()` returns the predicted common-environment effects of
 #' the opt-in, experimental two-effect model (`target = "two_effect"`).
 #'
@@ -660,6 +680,8 @@ common_env_effects.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract maternal genetic effects
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `maternal_effects()` returns the predicted maternal genetic effects of the
 #' opt-in, experimental maternal two-effect model
@@ -713,6 +735,8 @@ hs_two_effect_ratio_fence <- function(kind = c("common_env", "maternal")) {
 
 #' Extract the common-environment variance ratio (c2)
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `common_env_proportion()` returns the estimated common-environment variance
 #' ratio `c2 = sigma_c2 / (sigma_a2 + sigma_c2 + sigma_e2)` from the opt-in,
 #' experimental two-effect model
@@ -755,6 +779,8 @@ common_env_proportion.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract the maternal variance ratio (m2)
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `maternal_proportion()` returns the estimated maternal variance ratio
 #' `m2 = sigma_m2 / (sigma_a2 + sigma_m2 + sigma_e2)` from the opt-in,
@@ -802,6 +828,8 @@ maternal_proportion.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract breeding values
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `breeding_values()` is part of the planned v0.1 fitted-object contract. It
 #' works for `hsquared_fit` objects that contain a Julia result. `EBV()` and
@@ -869,6 +897,8 @@ hs_breeding_values_default <- function(name) {
 
 #' Extract prediction error variances
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `prediction_error_variance()` is part of the planned v0.1 fitted-object
 #' contract. It returns values only when an `hsquared_fit` object contains a
 #' Julia result field for prediction error variances.
@@ -900,6 +930,8 @@ prediction_error_variance.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract reliability and accuracy estimates
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `reliability()` is part of the planned v0.1 fitted-object contract. It
 #' returns values only when an `hsquared_fit` object contains a Julia result
@@ -966,6 +998,8 @@ accuracy.hsquared_fit <- function(object, ...) {
 
 #' Extract an experimental heritability confidence interval
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `heritability_interval()` returns an **experimental** large-sample confidence
 #' interval for `h^2`. It is available only when an `hsquared_fit` object
 #' contains the interval field, which the default Gaussian animal-model fit
@@ -1013,6 +1047,8 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract experimental variance-component and heritability standard errors
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `variance_component_standard_errors()` and `heritability_standard_error()`
 #' return **experimental** large-sample (delta-method) standard errors derived
@@ -1080,6 +1116,8 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
 
 #' Extract an experimental repeatability confidence interval
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `repeatability_interval()` returns an **experimental** large-sample (logit
 #' delta-method) confidence interval for the repeatability coefficient
 #' `t = (Va + Vpe) / Vp` of the opt-in repeatability (permanent-environment)
@@ -1123,6 +1161,8 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract an experimental common-environment / maternal variance-ratio interval
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `common_env_proportion_interval()` and `maternal_proportion_interval()`
 #' return an **experimental** large-sample (logit delta-method) confidence
@@ -1206,6 +1246,8 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 
 #' Extract experimental multivariate covariance standard errors
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `covariance_standard_errors()` returns **experimental** large-sample
 #' (delta-method) standard errors for the multivariate genetic/residual
 #' covariance and correlation matrices and per-trait `h²`, for an opt-in
@@ -1256,6 +1298,8 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 }
 
 #' Likelihood-ratio test for genetic covariance structure
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `covariance_structure_lrt(constrained, full)` is an **experimental** nested
 #' likelihood-ratio test comparing two opt-in multivariate fits **on the same
@@ -1335,6 +1379,8 @@ covariance_structure_lrt <- function(constrained, full, ...) {
 }
 
 #' Inspect fitted-model diagnostics
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `fit_diagnostics()` returns a compact diagnostics table for an
 #' `hsquared_fit` object. It is an inspection helper over the current result
@@ -1533,6 +1579,8 @@ hs_diagnostic_value <- function(x) {
 
 #' Extract planned marker, QTL, GWAS, and eQTL results
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
 #' They return values only when an `hsquared_fit` object contains the
 #' corresponding result field. `marker_effects()` and
@@ -1729,6 +1777,8 @@ hs_marker_extractor_default <- function(name) {
 
 #' Extract fixed effects
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `fixef()` is part of the planned v0.1 fitted-object contract for
 #' `hsquared_fit` objects.
 #'
@@ -1760,6 +1810,8 @@ coef.hsquared_fit <- function(object, ...) {
 }
 
 #' Extract random effects
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' `ranef()` is part of the planned v0.1 fitted-object contract for
 #' `hsquared_fit` objects.
@@ -2044,6 +2096,8 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 
 #' Random-regression (reaction-norm) extractors
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' These extractors summarize an opt-in, **experimental** random-regression
 #' (reaction-norm) fit (`target = "random_regression"`), fitted with an
 #' `animal(rr(covariate, order = k) | id, pedigree = ped)` term. The model
@@ -2306,6 +2360,8 @@ hs_require_direct_maternal <- function(object, name) {
 }
 
 #' Direct-maternal correlated model extractors
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' These extractors summarize an opt-in, **covered at validation scale**
 #' direct-maternal correlated model (`target = "direct_maternal"`), fitted with

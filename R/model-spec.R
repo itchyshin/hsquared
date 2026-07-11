@@ -58,7 +58,7 @@ hs_build_model_spec <- function(
   primary_pos <- c(animal_pos, relinv_pos, metafounder_pos)
 
   if (length(primary_pos) == 0L) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`formula` must contain exactly one primary term: ",
       "`animal(1 | id, pedigree = ped)`, `genomic(1 | id, Ginv = Ginv)`, ",
       "`metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`, ",
@@ -67,7 +67,7 @@ hs_build_model_spec <- function(
     )
   }
   if (length(primary_pos) > 1L) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`formula` can contain only one primary effect ",
       "(`animal()`, `genomic()`, `single_step()`, `metafounder()`, ",
       "`relmat()`, or `precision()`).",
@@ -104,7 +104,7 @@ hs_build_model_spec <- function(
   second_pos <- which(vapply(rhs_terms, hs_is_second_effect_call, logical(1L)))
   second_spec <- NULL
   if (length(second_pos) > 0L && !identical(primary_type, "animal")) {
-    stop(
+    hs_abort_unsupported_syntax(
       "A second random effect (`permanent()`/`common_env()`/",
       "`maternal_genetic()`) requires an `animal()` primary term, not `",
       primary_type,
@@ -113,7 +113,7 @@ hs_build_model_spec <- function(
     )
   }
   if (length(second_pos) > 1L) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`formula` can contain at most one additional random effect ",
       "(`permanent()`, `common_env()`, or `maternal_genetic()`) alongside ",
       "`animal()`.",
@@ -284,7 +284,7 @@ hs_build_model_spec <- function(
   # not (yet) combine with additional i.i.d. effects in the R bridge.
   if (length(iid_effects) > 0L) {
     if (!identical(primary_type, "animal")) {
-      stop(
+      hs_abort_unsupported_syntax(
         "A bare `(1 | group)` i.i.d. random effect currently combines only with ",
         "an `animal(1 | id, pedigree = ped)` primary term, not `",
         primary_type,
@@ -294,7 +294,7 @@ hs_build_model_spec <- function(
       )
     }
     if (identical(primary_spec$design, "random_regression")) {
-      stop(
+      hs_abort_unsupported_syntax(
         "A bare `(1 | group)` i.i.d. random effect does not (yet) combine with ",
         "an `animal(rr(...) | id)` random-regression design; both are opt-in, ",
         "and the combination is planned, not implemented.",
@@ -313,7 +313,7 @@ hs_build_model_spec <- function(
   if (
     identical(primary_spec$design, "random_regression") && !is.null(second_spec)
   ) {
-    stop(
+    hs_abort_unsupported_syntax(
       "A `rr(...)` random-regression term in `animal()` is a single-effect, ",
       "opt-in model; combining it with a second random effect ",
       "(`permanent()`/`common_env()`/`maternal_genetic()`) is planned, not ",
@@ -327,7 +327,7 @@ hs_build_model_spec <- function(
         !is.null(second_spec) ||
         length(iid_effects) > 0L
     ) {
-      stop(
+      hs_abort_unsupported_syntax(
         "The opt-in multivariate path currently supports only ",
         "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
         "Multivariate genomic, single-step, second-effect, and multi-effect ",
@@ -336,7 +336,7 @@ hs_build_model_spec <- function(
       )
     }
     if (identical(primary_spec$design, "random_regression")) {
-      stop(
+      hs_abort_unsupported_syntax(
         "Multivariate random regression (`cbind(...)` response with a ",
         "`rr(...)` term) is planned, not implemented. Use a univariate ",
         "response with the opt-in `target = \"random_regression\"` path.",
@@ -560,7 +560,7 @@ hs_validate_cbind_bare_columns <- function(lhs) {
     return(invisible(TRUE))
   }
   offending <- vapply(args[!bare], hs_deparse, character(1L))
-  stop(
+  hs_abort_unsupported_syntax(
     "v0.1 multivariate responses require bare trait columns inside ",
     "`cbind()`. Derived or transformed column",
     if (length(offending) > 1L) "s " else " ",
@@ -623,7 +623,7 @@ hs_check_offset_term <- function(fixed_terms) {
   if (length(offset_pos) == 0L) {
     return(invisible(NULL))
   }
-  stop(
+  hs_abort_unsupported_syntax(
     "Offset terms (`",
     hs_deparse(fixed_terms[[offset_pos[[1L]]]]),
     "`) are planned, not implemented in v0.1. Remove the `offset()` term ",
@@ -645,7 +645,7 @@ hs_check_dot_term <- function(rhs_terms) {
   if (!any(is_dot)) {
     return(invisible(NULL))
   }
-  stop(
+  hs_abort_unsupported_syntax(
     "The `.` all-columns shorthand is not supported. List the fixed-effect ",
     "terms explicitly, for example ",
     "`y ~ sex + age + animal(1 | id, pedigree = ped)`.",
@@ -733,7 +733,7 @@ hs_validate_model_inputs <- function(
     !is.na(link_for_family) &&
     identical(family$link, unname(link_for_family))
   if (!family_ok) {
-    stop(
+    hs_abort_unsupported_syntax(
       "The requested family `",
       hs_family_label(family),
       "` is not fitted on this path. The default `hsquared()` path fits ",
@@ -796,7 +796,7 @@ hs_parse_metafounder_call <- function(call, data, env, model_data) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Only random-intercept syntax `metafounder(1 | id, ...)` is implemented. ",
       "Metafounder slopes are planned, not implemented.",
       call. = FALSE
@@ -1109,7 +1109,7 @@ hs_parse_rr_lhs <- function(lhs, data) {
 }
 
 hs_stop_animal_non_intercept <- function() {
-  stop(
+  hs_abort_unsupported_syntax(
     "Only random-intercept syntax `animal(1 | id, pedigree = ped)` and the ",
     "opt-in random-regression syntax `animal(rr(covariate, order = k) | id, ",
     "pedigree = ped)` are implemented inside `animal()`. For the current opt-in ",
@@ -1124,7 +1124,7 @@ hs_stop_animal_non_intercept <- function() {
 }
 
 hs_stop_animal_covariance_arg <- function() {
-  stop(
+  hs_abort_unsupported_syntax(
     "`animal()` argument `cov` is planned, not implemented. For the current ",
     "opt-in multivariate animal model, put traits on the left-hand side as ",
     "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
@@ -1379,7 +1379,7 @@ hs_parse_relinv_primary_call <- function(call, data, env, model_data = NULL) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Only random-intercept syntax ",
       example,
       " is implemented. ",
@@ -2482,7 +2482,7 @@ hs_parse_common_env_call <- function(call, data) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Only random-intercept syntax `common_env(1 | group)` is implemented. ",
       "Common-environment slopes are planned, not implemented.",
       call. = FALSE
@@ -2559,7 +2559,7 @@ hs_parse_maternal_genetic_call <- function(call, data, animal_spec) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Only random-intercept syntax `maternal_genetic(1 | dam)` is implemented. ",
       "Maternal slopes are planned, not implemented.",
       call. = FALSE
@@ -2651,7 +2651,7 @@ hs_parse_permanent_call <- function(call, data, animal_spec) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Only random-intercept syntax `permanent(1 | id)` is implemented. ",
       "Permanent-environment slopes are planned, not implemented.",
       call. = FALSE
@@ -2738,7 +2738,7 @@ hs_planned_qg_effect_marker_names <- function() {
 hs_stop_planned_marker <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   marker <- as.character(expr[[1L]])
-  stop(
+  hs_abort_unsupported_syntax(
     "`",
     marker,
     "()` is planned, not implemented. Run `formula_status()` for the live ",
@@ -2785,15 +2785,14 @@ hs_check_nested_effect <- function(term) {
   if (is.na(marker)) {
     return(invisible(NULL))
   }
-  stop(
+  hs_abort_unsupported_syntax(
     "`",
     marker,
     "()` cannot appear inside an interaction or function call (`",
     hs_deparse(term),
     "`). Name it as a top-level random effect, for example ",
     "`y ~ ... + animal(1 | id, pedigree = ped)`. Run `formula_status()` for ",
-    "the live list of which terms parse and which fit.",
-    call. = FALSE
+    "the live list of which terms parse and which fit."
   )
 }
 
@@ -2853,7 +2852,7 @@ hs_parse_bare_iid_call <- function(term, data) {
   lhs <- hs_unwrap_parentheses(bar[[2L]])
   group_expr <- hs_unwrap_parentheses(bar[[3L]])
   if (!hs_is_one(lhs)) {
-    stop(
+    hs_abort_unsupported_syntax(
       "Only random-intercept syntax `(1 | group)` is accepted as an i.i.d. ",
       "random effect. Random slopes are planned, not implemented.",
       call. = FALSE
@@ -2890,7 +2889,7 @@ hs_parse_bare_iid_call <- function(term, data) {
 }
 
 hs_stop_unsupported_random_effect <- function(term) {
-  stop(
+  hs_abort_unsupported_syntax(
     "Unsupported random-effect term `",
     hs_deparse(term),
     "`. Only a bare random INTERCEPT `(1 | group)` is accepted as an i.i.d. ",

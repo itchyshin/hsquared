@@ -14,6 +14,9 @@ A data frame of backend status records with class
 \code{"hs_backend_info"}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{backend_info()} reports which backend names are accepted by
 \code{\link[=hs_control]{hs_control()}} and whether any of them are execution-ready from the R
 package. In the current package state, backend names are control metadata

@@ -81,6 +81,9 @@ covariance over the \code{m} metafounder pseudo-populations; Legarra et al.
 appear inside model formulas.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These functions provide readable formula vocabulary for standard
 quantitative-genetic, parental, inheritance, and custom-kernel models. Called
 directly they are inert (they return \code{NULL}); they take meaning only inside an
@@ -103,8 +106,7 @@ supplied matrix is provenance, not an estimate. The remaining markers
 (paternal/maternal-environment, dominance, epistasis, cytoplasmic, imprinting,
 genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 reservations that the parser rejects with a planned-not-implemented message.
-}
-\details{
+
 Some markers use generic names (e.g. \code{group()}, \code{inbreeding()}). They are
 formula-only tokens detected by call head and are not meant to be called
 directly, so attaching \code{hsquared} alongside a package that exports a

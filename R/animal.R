@@ -1,5 +1,7 @@
 #' Animal-model formula marker
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `animal()` marks an additive-genetic random effect in an `hsquared()`
 #' formula. The first implemented parser contract accepts
 #' `animal(1 | id, pedigree = ped)`, or `animal(1 | id)` when `data` is an

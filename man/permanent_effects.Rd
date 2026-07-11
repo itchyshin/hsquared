@@ -16,6 +16,9 @@ Permanent-environment effect results for repeatability
 \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{permanent_effects()} returns the predicted permanent-environment effects of
 the opt-in, experimental repeatability model.
 }

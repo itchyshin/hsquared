@@ -32,6 +32,9 @@ A numeric matrix for \code{hsquared_fit} objects that contain the
 requested multivariate result field.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These extractors return the genetic (\code{G}) and residual (\code{R}) covariance or
 correlation matrices from opt-in multivariate \code{hsquared_fit} objects
 (\code{target = "multivariate"}). \code{G_matrix()} is an applied-workflow alias for

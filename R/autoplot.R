@@ -1,5 +1,7 @@
 #' ggplot2 visualizations for hsquared results
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `autoplot()` methods render the quantitative-genetic results an
 #' `hsquared_fit` (or a `gwas()` scan) carries as `ggplot2` objects, in the
 #' style of the `brms`/`bayesplot` ecosystem and consistent with the sister
@@ -67,6 +69,8 @@ NULL
 ggplot2::autoplot
 
 #' hsquared ggplot2 theme
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' A light, publication-oriented `ggplot2` theme shared by the hsquared
 #' `autoplot()` figures. Exported so users can restyle or extend the figures.
@@ -1050,6 +1054,8 @@ hs_autoplot_qq <- function(df, method = "mixed") {
 # --- recovery forest (validation-study data frame) -------------------------
 
 #' Forest plot of a known-truth recovery study
+#'
+#' `r lifecycle::badge("experimental")`
 #'
 #' Visualizes a bias +/- 2*MCSE recovery study (e.g.
 #' `data-raw/multivariate-recovery-study.R`): each target's bias with its

@@ -1,5 +1,7 @@
 #' Post-fit relatedness-corrected marker scan (GWAS)
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `gwas()` runs a dense, supplied-variance, relatedness-corrected mixed-model
 #' (GLS) Wald marker scan on a fitted Gaussian animal model, reusing the fit's
 #' estimated variance components `(σ²a, σ²e)` and pedigree relationship. It is an

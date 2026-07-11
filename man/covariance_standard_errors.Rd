@@ -18,12 +18,14 @@ per-trait \code{heritability} SE vector, for \code{hsquared_fit} objects that co
 them.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{covariance_standard_errors()} returns \strong{experimental} large-sample
 (delta-method) standard errors for the multivariate genetic/residual
 covariance and correlation matrices and per-trait \verb{h²}, for an opt-in
 \strong{unstructured} multivariate fit, when the engine returned them.
-}
-\details{
+
 Heavy caveats (engine row \code{V4-MV-REML}, \code{partial}): the strict per-seed
 recovery gate is still a non-pass (7/12 unstructured seeds in the updated
 study), but a 12-seed bias/MCSE study (twin \code{HSquared.jl#78}) shows \strong{no

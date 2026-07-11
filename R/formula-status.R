@@ -1,5 +1,7 @@
 #' Inspect formula grammar status
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `formula_status()` reports which pieces of the planned `hsquared()` formula
 #' language are parsed today, reserved as syntax markers, or still roadmap-only.
 #' It is a status table, not a model-fitting helper.

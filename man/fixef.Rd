@@ -15,6 +15,9 @@ fixef(object, ...)
 Fixed-effect estimates for \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{fixef()} is part of the planned v0.1 fitted-object contract for
 \code{hsquared_fit} objects.
 }

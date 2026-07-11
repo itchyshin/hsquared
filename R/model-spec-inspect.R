@@ -1,5 +1,7 @@
 #' Inspect a parsed hsquared model specification
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' `model_spec()` validates the narrow v0.1 animal-model grammar and returns
 #' the R-side model specification that would be used to build the Julia bridge
 #' payload. It is a preview and diagnostics helper: it does not fit a model.
@@ -47,7 +49,7 @@ model_spec <- function(
   )
   relinv_type <- intersect(names(spec$random), c("genomic", "single_step"))
   if (length(relinv_type) > 0L) {
-    stop(
+    hs_abort_unsupported_syntax(
       "`model_spec()` previews the pedigree animal-model grammar only. The ",
       relinv_type[[1L]],
       " model is experimental and opt-in; fit it with ",

@@ -1,5 +1,7 @@
 #' Genomic and QTL formula markers
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' These functions provide readable formula vocabulary for genomic, single-step,
 #' marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 #' return `NULL`); they take meaning only inside an [hsquared()] formula.

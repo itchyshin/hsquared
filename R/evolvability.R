@@ -1,5 +1,7 @@
 #' G-matrix geometry and evolvability
 #'
+#' `r lifecycle::badge("experimental")`
+#'
 #' These extractors summarise the genetic variance-covariance matrix `G` of an
 #' opt-in multivariate `hsquared_fit` (`target = "multivariate"`) through its
 #' **rotation-invariant** geometry, following Hansen & Houle (2008). They are

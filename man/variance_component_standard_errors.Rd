@@ -20,14 +20,16 @@ heritability_standard_error(object, ...)
 numeric. Only for \code{hsquared_fit} objects that contain them.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{variance_component_standard_errors()} and \code{heritability_standard_error()}
 return \strong{experimental} large-sample (delta-method) standard errors derived
 from the REML average-information matrix. They are available only when an
 \code{hsquared_fit} object contains them; the default Gaussian animal-model fit
 populates them from the engine when a local Julia engine is present and the
 AI matrix is invertible.
-}
-\details{
+
 These mirror the engine row \code{V1-HERIT-CI} (\code{partial}): asymptotic, REML-only,
 and unreliable at small \code{n} or near a variance-component boundary (where the
 AI matrix is ill-conditioned and the fields are omitted). They are not

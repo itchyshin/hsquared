@@ -30,14 +30,16 @@ genetic-correlation surface instead of the covariance surface).}
 A \code{ggplot} object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{autoplot()} methods render the quantitative-genetic results an
 \code{hsquared_fit} (or a \code{gwas()} scan) carries as \code{ggplot2} objects, in the
 style of the \code{brms}/\code{bayesplot} ecosystem and consistent with the sister
 packages \code{drmTMB}/\code{gllvmTMB}. They are \strong{uncertainty-first}: where the fit
 carries the experimental standard errors / reliabilities, the figures show
 them (clearly labelled experimental and asymptotic).
-}
-\details{
+
 Available \code{type}s for \code{autoplot.hsquared_fit()}:
 \itemize{
 \item \code{"variance"} (default) -- a horizontal forest of the variance components

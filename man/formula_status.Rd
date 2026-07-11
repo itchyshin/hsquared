@@ -11,6 +11,9 @@ A data frame of formula grammar records with class
 \code{"hs_formula_status"}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{formula_status()} reports which pieces of the planned \code{hsquared()} formula
 language are parsed today, reserved as syntax markers, or still roadmap-only.
 It is a status table, not a model-fitting helper.

@@ -17,6 +17,9 @@ A one-row data frame with \code{estimate}, \code{lower}, \code{upper}, \code{lev
 contain it.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{heritability_interval()} returns an \strong{experimental} large-sample confidence
 interval for \code{h^2}. It is available only when an \code{hsquared_fit} object
 contains the interval field, which the default Gaussian animal-model fit
@@ -28,8 +31,7 @@ multi-effect fit (\code{target = "multi_effect"}, K >= 3 blocks) it returns the
 ANIMAL block's ratio interval (the animal additive variance over the total
 phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
-}
-\details{
+
 The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
 not a coverage-calibrated interval, and is unreliable at small \code{n} (as with the
 \code{partial} \code{V1-HERIT-CI}). The underlying estimators \code{V3-TWOEFFECT-REML} /

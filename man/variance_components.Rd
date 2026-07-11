@@ -15,6 +15,9 @@ variance_components(object, ...)
 Variance component results for \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{variance_components()} is part of the planned v0.1 fitted-object contract.
 It works for \code{hsquared_fit} objects that contain a Julia result.
 }

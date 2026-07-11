@@ -16,6 +16,9 @@ A data frame with columns \code{id}, \code{metafounder_group}, and
 \code{is_metafounder}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{metafounder_groups()} returns the ID-keyed metafounder group assignments
 carried by an experimental metafounder or \code{H^Gamma} single-step
 \code{hsquared_fit} object. These assignments are provenance for the supplied

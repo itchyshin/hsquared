@@ -15,6 +15,9 @@ maternal_effects(object, ...)
 Maternal genetic effect results for maternal \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{maternal_effects()} returns the predicted maternal genetic effects of the
 opt-in, experimental maternal two-effect model
 (\code{target = "two_effect"} with a \code{maternal_genetic()} term).

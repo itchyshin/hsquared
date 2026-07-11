@@ -39,14 +39,15 @@ returns a data frame; the trajectory extractors return a data frame with a
 \code{covariate} column and the evaluated \code{value}s.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These extractors summarize an opt-in, \strong{experimental} random-regression
 (reaction-norm) fit (\code{target = "random_regression"}), fitted with an
 \code{animal(rr(covariate, order = k) | id, pedigree = ped)} term. The model
 estimates a \verb{k x k} genetic covariance matrix \code{K_g} among an animal's
 normalized-Legendre random-regression coefficients plus a single homogeneous
 residual variance.
-}
-\details{
 \itemize{
 \item \code{rr_covariance()} returns the estimated \verb{k x k} coefficient genetic
 covariance matrix \code{K_g}.

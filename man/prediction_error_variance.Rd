@@ -15,6 +15,9 @@ prediction_error_variance(object, ...)
 Prediction error variances for \code{hsquared_fit} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 \code{prediction_error_variance()} is part of the planned v0.1 fitted-object
 contract. It returns values only when an \code{hsquared_fit} object contains a
 Julia result field for prediction error variances.

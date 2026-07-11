@@ -32,6 +32,9 @@ The requested marker or scan result for \code{hsquared_fit} objects that
 contain the corresponding field.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
 These extractor names cover genomic, QTL, GWAS, and eQTL fitted results.
 They return values only when an \code{hsquared_fit} object contains the
 corresponding result field. \code{marker_effects()} and
