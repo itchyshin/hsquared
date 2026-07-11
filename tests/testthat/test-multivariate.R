@@ -98,7 +98,7 @@ test_that("multivariate parser rejects fixed-effect NA and rank-deficient X", {
   )
 })
 
-test_that("multivariate target is explicitly opt-in and cbind-only", {
+test_that("multivariate cbind auto-routes on the default path and stays cbind-only", {
   ped <- data.frame(
     id = c("sire", "dam", "calf"),
     sire = c(NA, NA, "sire"),
