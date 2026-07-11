@@ -3,6 +3,32 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-11 (MV-4: multivariate cbind() auto-route on the default path)
+
+- Implemented the ratified doc-38 grammar freeze (MV-4): a `cbind(...)` Gaussian
+  response now auto-routes to `hs_fit_julia_multivariate_payload` on the default
+  `engine = "fit"` path (removed the opt-in abort at `R/hsquared.R:85`; branched
+  the fit dispatch), and a multivariate response under `engine = "julia"` with no
+  explicit target auto-selects `target = "multivariate"` (§H2). The opt-in
+  spelling remains a valid back-compat alias.
+- Claim boundary: **implementation only, NO promotion.** Multivariate stays
+  `partial`/experimental in `validation_status()` and the capability ledgers; the
+  lifecycle badge is unchanged; `public_covered_count` unaffected. The
+  `partial → covered` R flip is the separate 0.6 gate (component comparator +
+  `h2_T`/`r_g` identity tests + Darwin + Rose), not this slice. The spec fence
+  (`R/model-spec.R`) still rejects multivariate + genomic/second-effect/iid/rr.
+- Checks: `air format R/hsquared.R tests/testthat/test-multivariate.R` (delta
+  confined to the edited regions; no pre-existing reformatting);
+  `devtools::test(filter = "multivariate")` clean (3 live-Julia skips);
+  full `devtools::test()` **exit 0, 0 failures** (live JuliaCall/comparator skips
+  only); grep confirms no other test depended on the removed abort messages
+  (the `experimental and opt-in` matches in test-repeatability/genomic/common-env/
+  single-step/relmat are each that model's own still-present opt-in abort).
+- Tests: updated the two stale default-path/opt-in abort assertions in
+  `test-multivariate.R` to verify the auto-route — `engine = "validate"` confirms
+  the multivariate target Julia-free, and a bridge-gated check confirms the old
+  `experimental and opt-in` / `requires the opt-in target` aborts no longer fire.
+
 ## 2026-07-11 (0.2.0 code-arc baseline assembly merge)
 
 - Assembled the `0.2.0` baseline onto local `main` by merging five

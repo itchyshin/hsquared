@@ -110,23 +110,42 @@ test_that("multivariate target is explicitly opt-in and cbind-only", {
     id = ped$id
   )
 
-  expect_error(
-    hsquared(
-      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
-      data = dat
-    ),
-    "experimental and opt-in",
+  # MV-4 (doc 38): the multivariate cbind + gaussian response auto-routes to the
+  # multivariate REML target on the default path (grammar confirmed Julia-free).
+  spec_default <- suppressMessages(hsquared(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    control = hs_control(engine = "validate")
+  ))
+  expect_true(grepl(
+    "fit_multivariate_reml",
+    spec_default$bridge$target,
     fixed = TRUE
-  )
-  expect_error(
-    hsquared(
-      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
-      data = dat,
-      control = hs_control(engine = "julia")
-    ),
-    "requires the opt-in `target = \"multivariate\"`",
-    fixed = TRUE
-  )
+  ))
+
+  # The auto-route (and the engine = "julia" no-target auto-select, §H2) reach the
+  # fitter dispatch: without the Julia bridge neither still raises the old
+  # "experimental and opt-in" / "requires the opt-in target" aborts.
+  if (!hsquared:::hs_julia_bridge_available()) {
+    err_default <- tryCatch(
+      hsquared(
+        cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+        data = dat
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    expect_false(grepl("experimental and opt-in", err_default, fixed = TRUE))
+
+    err_julia <- tryCatch(
+      hsquared(
+        cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+        data = dat,
+        control = hs_control(engine = "julia")
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    expect_false(grepl("requires the opt-in", err_julia, fixed = TRUE))
+  }
   expect_error(
     hsquared(
       y1 ~ animal(1 | id, pedigree = ped),
