@@ -1,7 +1,7 @@
 # 38 — Multivariate Grammar Freeze (0.6.0)
 
-> **STATUS: PROPOSAL — awaiting Boole freeze ratification + maintainer
-> ratification.** This is the Boole gate item 4 artifact (auto-routing grammar +
+> **STATUS: RATIFIED — Boole freeze + maintainer, 2026-07-11** (§H resolved in
+> the Ratification section). This is the Boole gate item 4 artifact (auto-routing grammar +
 > argument-naming freeze) and a **precondition** of the `0.6.0` multivariate
 > covered flip, not a follow-up to it (`docs/dev-log/decisions.md`,
 > "2026-07-09: Standard-Tier Covered-Flip Gate", item four:
@@ -422,13 +422,26 @@ recovery/comparator gate).
 
 ## Ratification
 
-- **Boole (formula/API freeze):** _pending_ — freezes §A (predicate), §B
-  (disambiguation), and §D (argument names) as a precondition of the 0.6 flip.
+- **Boole (formula/API freeze):** **RATIFIED 2026-07-11** — §A (predicate), §B
+  (disambiguation), and §D (argument names) frozen as a precondition of the 0.6
+  flip.
 - **Darwin (biology sign-off on the recovered quantity — the genetic
   covariance/correlation):** tracked separately under the Covered-Flip Gate,
   item three (`docs/dev-log/decisions.md:95`).
-- **Maintainer:** _pending_ — accepts the API-stable-at-0.6 partition (§E) and
-  resolves the Open questions (§H).
+- **Maintainer:** **RATIFIED 2026-07-11** — accepts the API-stable-at-0.6
+  partition (§E); §H resolved as below.
 
-Until Boole and the maintainer sign, this is a proposal; the default-path
-auto-route must not be implemented against an unratified predicate.
+**§H resolutions (maintainer, 2026-07-11):**
+
+1. **Trait count** — grammar frozen for `k ≥ 2`; the covered numeric claim is
+   scoped to `k = 2` at 0.6. `k ≥ 3` stays **parseable-and-fittable-but-
+   experimental** (option (a)); no k≥3 opt-in gate.
+2. **`engine = "julia"` with no explicit target** — **auto-selects
+   `"multivariate"`** for symmetry with the default path.
+3. **Residual structure** — unstructured `R0` is the frozen surface; whether the
+   in-suite comparator must be promoted to full-unstructured before the flip is a
+   **gate** decision (0.6 flip), not part of this freeze.
+4. **`diagonal` genetic structure** — stays **experimental** at 0.6.
+
+The default-path auto-route (MV-4) is now authorised to implement against this
+frozen predicate.
