@@ -3,6 +3,29 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-11 (MV-1: in-suite full-unstructured sommer comparator gate)
+
+- Promoted the full-unstructured `sommer::mmer` multivariate comparator from the
+  reproducible `data-raw/multivariate-comparator-study.R` into a **CI-gated
+  in-suite test** (`test-multivariate.R`, new `test_that` after the
+  diagonal-residual check). The existing in-suite check uses `sommer::mmes` +
+  `dsm(trait)` (DIAGONAL residual, off-diagonal fixed to 0); the new test uses the
+  classic `mmer` + `vsr(..., Gtc = unsm(2))` route, which fits a full
+  **unstructured** residual and so confronts the engine's off-diagonal `R0[2,1]`
+  the diagonal check cannot reach — closing the standing honesty debt that only
+  the diagonal-residual comparator was CI-gated (doc-33 retained debt).
+- Asserts full `G0`, full `R0` (incl. the off-diagonal), per-trait `h²`, and the
+  40 EBVs against the serialized `phase4_multitrait_parity` fixture, from an
+  independently `nadiv::makeA`-rebuilt `A` and an independent REML optimiser.
+- Claim boundary: **same-estimand comparator EVIDENCE only, NO promotion.**
+  Multivariate stays `partial`; this is one leg of the 0.6 covered-flip gate, not
+  the flip. The recovery leg (MV-5), the derived-estimand identity tests (MV-3),
+  Darwin, and Rose are still owed.
+- Checks: `NOT_CRAN=true devtools::test(filter = "multivariate")` — the sommer
+  comparator tests (diagonal + new full-unstructured) **executed and passed**
+  (sommer 4.4.5 + nadiv installed); only the 2 live-Julia bridge tests skipped.
+  `air format` delta confined to the new test.
+
 ## 2026-07-11 (MV-4: multivariate cbind() auto-route on the default path)
 
 - Implemented the ratified doc-38 grammar freeze (MV-4): a `cbind(...)` Gaussian

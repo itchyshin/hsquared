@@ -705,3 +705,91 @@ test_that("optional sommer comparator matches the Phase 4 diagonal-residual targ
   )
   expect_equal(Rhat[upper.tri(Rhat)], 0, tolerance = 1e-12)
 })
+
+test_that("optional sommer comparator matches the Phase 4 FULL-UNSTRUCTURED target", {
+  # MV-1: the diagonal-residual check above (sommer::mmes + dsm(trait)) fixes the
+  # residual off-diagonal to zero and so cannot confront the engine's off-diagonal
+  # R0[2,1]. The classic sommer::mmer interface fits a FULL UNSTRUCTURED residual
+  # (mmes raises an Armadillo out-of-bounds on the unstructured residual in this
+  # records-within-animal layout), so this in-suite test reaches the off-diagonal
+  # the diagonal check cannot -- promoting the reproducible comparator study
+  # (data-raw/multivariate-comparator-study.R) into a CI-gated same-estimand check.
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("sommer")
+  testthat::skip_if_not_installed("nadiv")
+
+  ped <- hs_read_phase4_fixture("pedigree.csv")
+  pheno <- hs_read_phase4_fixture("phenotypes.csv")
+  G0 <- hs_phase4_matrix("expected_genetic_covariance.csv")
+  R0 <- hs_phase4_matrix("expected_residual_covariance.csv")
+  h2 <- hs_read_phase4_fixture("expected_heritability.csv")
+  ebv_target <- hs_read_phase4_fixture("expected_ebv.csv")
+
+  # Rebuild A from the pedigree (nadiv), NOT copied from the engine.
+  pedn <- data.frame(
+    id = ped$animal,
+    sire = ped$sire,
+    dam = ped$dam,
+    stringsAsFactors = FALSE
+  )
+  pedn$sire[pedn$sire == "0"] <- NA
+  pedn$dam[pedn$dam == "0"] <- NA
+  A <- suppressWarnings(as.matrix(nadiv::makeA(pedn)))
+  A <- A[ped$animal, ped$animal]
+  pheno$animal <- factor(pheno$animal, levels = rownames(A))
+
+  fit <- tryCatch(
+    suppressWarnings(sommer::mmer(
+      cbind(trait1, trait2) ~ x,
+      random = ~ sommer::vsr(animal, Gu = A, Gtc = sommer::unsm(2)),
+      rcov = ~ sommer::vsr(units, Gtc = sommer::unsm(2)),
+      data = pheno,
+      verbose = FALSE,
+      dateWarning = FALSE
+    )),
+    error = function(e) e
+  )
+  if (inherits(fit, "error")) {
+    testthat::skip(paste(
+      "sommer mmer unstructured comparator did not fit this fixture:",
+      conditionMessage(fit)
+    ))
+  }
+
+  G0_hat <- fit$sigma[["u:animal"]]
+  R0_hat <- fit$sigma[["u:units"]]
+  if (is.null(G0_hat) || is.null(R0_hat)) {
+    testthat::skip(
+      "sommer sigma layout changed; comparator extraction needs review."
+    )
+  }
+  dimnames(G0_hat) <- dimnames(G0)
+  dimnames(R0_hat) <- dimnames(R0)
+
+  # Full G0 and full R0 -- including the OFF-DIAGONAL residual the diagonal check
+  # cannot reach -- match the serialized engine target.
+  expect_equal(G0_hat, G0, tolerance = 5e-4)
+  expect_equal(R0_hat, R0, tolerance = 5e-4)
+  # The residual off-diagonal is genuinely estimated (not fixed to zero) and
+  # agrees with the engine within optimiser tolerance.
+  expect_gt(abs(R0[2, 1]), 0)
+  expect_lt(abs(R0_hat[2, 1] - R0[2, 1]), 5e-4)
+
+  expect_equal(
+    unname(diag(G0_hat) / (diag(G0_hat) + diag(R0_hat))),
+    unname(h2$h2),
+    tolerance = 5e-4
+  )
+
+  # EBV confrontation against the serialized target (independent A + optimiser).
+  ebv_hat <- fit$U[["u:animal"]]
+  ebv_hat_mat <- cbind(
+    trait1 = ebv_hat$trait1[ebv_target$animal],
+    trait2 = ebv_hat$trait2[ebv_target$animal]
+  )
+  expect_equal(
+    unname(ebv_hat_mat),
+    unname(as.matrix(ebv_target[, c("trait1", "trait2")])),
+    tolerance = 5e-3
+  )
+})
