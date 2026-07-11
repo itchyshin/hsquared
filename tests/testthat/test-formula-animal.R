@@ -341,7 +341,10 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
   ids <- ped$id
   nest <- c("nst1", "nst1", "nst2", "nst2", "nst3", "nst3", "nst4", "nst4")
   year <- c("y1", "y2", "y1", "y2", "y1", "y2", "y1", "y2")
-  nest_e <- stats::setNames(stats::rnorm(4, 0, 0.6), c("nst1", "nst2", "nst3", "nst4"))
+  nest_e <- stats::setNames(
+    stats::rnorm(4, 0, 0.6),
+    c("nst1", "nst2", "nst3", "nst4")
+  )
   year_e <- stats::setNames(stats::rnorm(2, 0, 0.5), c("y1", "y2"))
   dat <- data.frame(
     y = 3 + nest_e[nest] + year_e[year] + stats::rnorm(8, 0, 0.7),
@@ -395,7 +398,9 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
   hi <- heritability_interval(fit)
   expect_s3_class(hi, "data.frame")
   expect_equal(nrow(hi), 1L)
-  expect_true(all(c("estimate", "lower", "upper", "level", "se", "method") %in% names(hi)))
+  expect_true(all(
+    c("estimate", "lower", "upper", "level", "se", "method") %in% names(hi)
+  ))
   expect_equal(hi$method, "delta")
   # h2 interval estimate equals the animal point ratio.
   expect_equal(hi$estimate, h2$estimate, tolerance = 1e-6)
@@ -428,33 +433,57 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
     "Julia bridge (Julia + JuliaCall + HSquared.jl project) not available"
   )
   set.seed(7)
-  nf <- 16L; noff <- 120L
+  nf <- 16L
+  noff <- 120L
   fid <- paste0("f", seq_len(nf))
-  sires <- fid[1:8]; dams <- fid[9:16]
+  sires <- fid[1:8]
+  dams <- fid[9:16]
   oid <- paste0("o", seq_len(noff))
   ped <- data.frame(
     id = c(fid, oid),
     sire = c(rep(NA, nf), sires[((seq_len(noff) - 1L) %% 8L) + 1L]),
-    dam  = c(rep(NA, nf), dams[((seq_len(noff) - 1L) %% 8L) + 1L]),
+    dam = c(rep(NA, nf), dams[((seq_len(noff) - 1L) %% 8L) + 1L]),
     stringsAsFactors = FALSE
   )
   n <- nf + noff
-  nestlev <- paste0("nst", 1:10); yearlev <- paste0("y", 1:5)
-  nest <- sample(nestlev, n, replace = TRUE); year <- sample(yearlev, n, replace = TRUE)
+  nestlev <- paste0("nst", 1:10)
+  yearlev <- paste0("y", 1:5)
+  nest <- sample(nestlev, n, replace = TRUE)
+  year <- sample(yearlev, n, replace = TRUE)
   nest_e <- stats::setNames(stats::rnorm(10, 0, sqrt(0.5)), nestlev)
   year_e <- stats::setNames(stats::rnorm(5, 0, sqrt(0.5)), yearlev)
   a_e <- stats::setNames(stats::rnorm(n, 0, 1), c(fid, oid))
   dat <- data.frame(
-    y = 3 + a_e[c(fid, oid)] + nest_e[nest] + year_e[year] + stats::rnorm(n, 0, 1),
-    id = c(fid, oid), nest = nest, year = year, stringsAsFactors = FALSE
+    y = 3 +
+      a_e[c(fid, oid)] +
+      nest_e[nest] +
+      year_e[year] +
+      stats::rnorm(n, 0, 1),
+    id = c(fid, oid),
+    nest = nest,
+    year = year,
+    stringsAsFactors = FALSE
   )
   f <- y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year)
 
-  fit_dense <- hsquared(f, data = dat, family = stats::gaussian(),
-    control = hs_control(engine = "julia", engine_control = list(target = "multi_effect")))
-  fit_auto <- hsquared(f, data = dat, family = stats::gaussian(),
-    control = hs_control(engine = "julia",
-      engine_control = list(target = "multi_effect", scale_method = "auto")))
+  fit_dense <- hsquared(
+    f,
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "multi_effect")
+    )
+  )
+  fit_auto <- hsquared(
+    f,
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "multi_effect", scale_method = "auto")
+    )
+  )
 
   expect_s3_class(fit_auto, "hsquared_fit")
   vc_d <- variance_components(fit_dense)
@@ -469,9 +498,15 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
 
   # an invalid scale_method is rejected before hitting the engine
   expect_error(
-    hsquared(f, data = dat, family = stats::gaussian(),
-      control = hs_control(engine = "julia",
-        engine_control = list(target = "multi_effect", scale_method = "bogus"))),
+    hsquared(
+      f,
+      data = dat,
+      family = stats::gaussian(),
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "multi_effect", scale_method = "bogus")
+      )
+    ),
     "should be one of"
   )
 })
@@ -529,14 +564,17 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
     fixed = TRUE
   )
 
+  # `relmat()`/`precision()` are now parsed opt-in EXPERIMENTAL primary effects
+  # (a supplied relationship/precision), so `animal() + relmat()` is rejected as
+  # two primary effects rather than a planned-marker error.
   expect_error(
     hsquared:::hs_build_model_spec(
-      y ~ animal(1 | id, pedigree = ped) + relmat(1 | id, Q = Q),
+      y ~ animal(1 | id, pedigree = ped) + relmat(1 | id, K = Q),
       data = dat,
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "`relmat()` is planned, not implemented.",
+    "only one primary effect",
     fixed = TRUE
   )
 

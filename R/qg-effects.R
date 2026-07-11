@@ -9,8 +9,17 @@
 #' second random effect alongside `animal()`. `metafounder()` now fits through an
 #' opt-in, supplied-variance, experimental engine path (`engine = "julia"`,
 #' `target = "metafounder"`); `Gamma` and the variance components are supplied,
-#' not estimated. The remaining markers (paternal/maternal-environment,
-#' dominance, epistasis, cytoplasmic, imprinting, custom relationship/precision,
+#' not estimated. `relmat()` and `precision()` now fit through an opt-in,
+#' EXPERIMENTAL supplied-relationship primary engine path (`engine = "julia"`,
+#' REML-only, not the default, mirroring a `partial` validation gate):
+#' `relmat(1 | id, K = K)` supplies a dense symmetric positive-definite
+#' relationship/covariance matrix K (the parser marshals the inverse
+#' `Kinv = solve(K)`; `relmat()` also accepts a directly supplied inverse via
+#' `Kinv =`/`Q =`, no solve), and `precision(1 | id, Q = Q)` supplies the
+#' precision (inverse) directly (`Kinv =` also accepted); both fit through the
+#' SAME supplied-relationship-inverse path as `genomic()`'s `Ginv`, and the
+#' supplied matrix is provenance, not an estimate. The remaining markers
+#' (paternal/maternal-environment, dominance, epistasis, cytoplasmic, imprinting,
 #' genetic groups / unknown-parent-groups, and inbreeding) are still inert syntax
 #' reservations that the parser rejects with a planned-not-implemented message.
 #'

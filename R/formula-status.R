@@ -125,7 +125,10 @@ hs_formula_status_syntax <- function() {
     rep("parsed", 7L),
     rep("reserved", 5L),
     "parsed",
-    rep("reserved", 7L),
+    # inbreeding, cytoplasmic, imprinting, dominance, epistasis (reserved), then
+    # the experimental opt-in relmat()/precision() supplied-relationship terms.
+    rep("reserved", 5L),
+    rep("parsed", 2L),
     rep("parsed", 6L),
     rep("reserved", 3L),
     "parsed",
@@ -143,7 +146,9 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in random-regression)",
     rep("not available", 5L),
     "fitted (opt-in supplied-Gamma metafounder)",
-    rep("not available", 7L),
+    rep("not available", 5L),
+    "fitted (opt-in supplied relationship, experimental)",
+    "fitted (opt-in supplied precision, experimental)",
     "fitted (opt-in genomic)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
@@ -245,7 +250,23 @@ hs_formula_status_behavior <- function() {
       "for Ainv construction in the engine; this reserved term is the future",
       "user-facing F-as-effect surface, not yet fittable."
     ),
-    rep(inert_marker_text, 6L),
+    rep(inert_marker_text, 4L),
+    paste(
+      "Primary supplied-relationship effect of the opt-in, EXPERIMENTAL model:",
+      "the user supplies a dense symmetric positive-definite relationship",
+      "matrix `K` (ID-keyed via row/column names); the parser marshals the",
+      "inverse Kinv = solve(K) and fits through the SAME supplied-relationship-",
+      "inverse REML path as genomic()'s `Ginv` (engine = \"julia\", target =",
+      "\"relmat\"). NOT covered, NOT the default; `K` is supplied provenance,",
+      "not estimated."
+    ),
+    paste(
+      "Primary supplied-precision effect of the opt-in, EXPERIMENTAL model: the",
+      "user supplies the precision (inverse) `Q` directly (ID-keyed; `Kinv =`",
+      "also accepted); fits through the SAME supplied-relationship-inverse REML",
+      "path as genomic()'s `Ginv` (engine = \"julia\", target = \"precision\").",
+      "NOT covered, NOT the default; `Q` is supplied provenance, not estimated."
+    ),
     paste(
       "Primary genomic effect of the opt-in, experimental GREML model; requires",
       "a user-supplied `Ginv` and engine = \"julia\", target = \"genomic\"."

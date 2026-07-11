@@ -3,6 +3,15 @@ hs_build_bridge_payload <- function(spec) {
   if (is.null(relinv_primary)) {
     relinv_primary <- spec$random$single_step
   }
+  # Experimental supplied-relationship primary effects (`relmat()`/`precision()`)
+  # carry the same supplied-inverse spec shape as genomic's `Ginv`, so they reuse
+  # the supplied-relationship-inverse payload path unchanged.
+  if (is.null(relinv_primary)) {
+    relinv_primary <- spec$random$relmat
+  }
+  if (is.null(relinv_primary)) {
+    relinv_primary <- spec$random$precision
+  }
   if (!is.null(relinv_primary)) {
     return(hs_build_relinv_bridge_payload(spec, relinv_primary))
   }
@@ -74,21 +83,21 @@ hs_build_bridge_payload <- function(spec) {
   # the frozen schema 21-payload-v2-multiblock-schema.md). The `random_effects`
   # list is ADDITIVE; the v0.1 dispatch in julia-bridge.R is unchanged.
   pedigree_rows <- list(
-    id             = pedigree$data$id,
-    sire           = pedigree$data$sire,
-    dam            = pedigree$data$dam,
-    sire_index     = pedigree$parent_index$sire,
-    dam_index      = pedigree$parent_index$dam,
+    id = pedigree$data$id,
+    sire = pedigree$data$sire,
+    dam = pedigree$data$dam,
+    sire_index = pedigree$parent_index$sire,
+    dam_index = pedigree$parent_index$dam,
     original_order = pedigree$original_order
   )
   block1 <- list(
-    name          = "animal",
-    type          = "pedigree",
-    Z             = Z,
+    name = "animal",
+    type = "pedigree",
+    Z = Z,
     relmat_inverse = NULL,
     relmat_status = "build_in_julia",
-    pedigree      = pedigree_rows,
-    ids           = ids
+    pedigree = pedigree_rows,
+    ids = ids
   )
   random_effects <- if (is.null(effect2)) {
     # v0.1: single pedigree block only
@@ -98,23 +107,27 @@ hs_build_bridge_payload <- function(spec) {
     # `second$type` encodes "common_env", "maternal_genetic" (from model-spec.R)
     block2_name <- switch(
       effect2$type,
-      common_env      = "common_env",
+      common_env = "common_env",
       maternal_genetic = "maternal",
-      effect2$type   # fallback: preserve the raw type
+      effect2$type # fallback: preserve the raw type
     )
     block2_type <- if (identical(second_type, "identity")) "iid" else "pedigree"
     block2 <- list(
-      name           = block2_name,
-      type           = block2_type,
-      Z              = Z2,
+      name = block2_name,
+      type = block2_type,
+      Z = Z2,
       relmat_inverse = NULL,
-      relmat_status  = if (identical(second_type, "identity")) {
+      relmat_status = if (identical(second_type, "identity")) {
         "identity"
       } else {
         "build_in_julia"
       },
-      pedigree       = if (identical(block2_type, "pedigree")) pedigree_rows else NULL,
-      ids            = effect2$levels
+      pedigree = if (identical(block2_type, "pedigree")) {
+        pedigree_rows
+      } else {
+        NULL
+      },
+      ids = effect2$levels
     )
     list(block1, block2)
   }
@@ -125,13 +138,13 @@ hs_build_bridge_payload <- function(spec) {
   if (!is.null(permanent)) {
     perm_ids <- unique(as.character(permanent$values))
     block_perm <- list(
-      name           = "permanent",
-      type           = "iid",
-      Z              = Z,
+      name = "permanent",
+      type = "iid",
+      Z = Z,
       relmat_inverse = NULL,
-      relmat_status  = "identity",
-      pedigree       = NULL,
-      ids            = perm_ids
+      relmat_status = "identity",
+      pedigree = NULL,
+      ids = perm_ids
     )
     random_effects <- c(random_effects, list(block_perm))
   }
@@ -155,13 +168,13 @@ hs_build_bridge_payload <- function(spec) {
         dimnames = list(NULL, levels_i)
       )
       block_iid <- list(
-        name           = eff$group,
-        type           = "iid",
-        Z              = Zi,
+        name = eff$group,
+        type = "iid",
+        Z = Zi,
         relmat_inverse = NULL,
-        relmat_status  = "identity",
-        pedigree       = NULL,
-        ids            = levels_i
+        relmat_status = "identity",
+        pedigree = NULL,
+        ids = levels_i
       )
       random_effects <- c(random_effects, list(block_iid))
     }
