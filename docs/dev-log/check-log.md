@@ -3,6 +3,45 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-12 (doc-site R-lane quick-win batch — H6/M1/M2/M3/L5/L6)
+
+- Branch `docs/2026-07-12-docsite-quickwins` off `origin/main` (`74158e9`).
+  R-lane-only subset of the 2026-07-11 doc-site audit quick wins; no code-path,
+  no covered flip. Every wording edit validated against
+  `docs/design/capability-status.md` rows 29 (common_env covered), 33
+  (relmat/precision experimental, NOT covered) and 46 (scoped `genome_wide`
+  permutation cutoff).
+- **H6** — `vignettes/articles/visualizing-models.Rmd`: attached per-trait
+  `heritability` (`horn = 0.06`, below the 0.1 default) to the illustrative
+  `fit_mv` so the low-h² imprecision dagger flag the caption promises actually
+  renders. Verified: `autoplot(fit_mv, "g_matrix")` subtitle now carries the
+  "involves a low-h² (< 0.1) trait — correlation imprecise" flag,
+  **`ANY_DAGGER_FLAG: TRUE`** (was FALSE at audit).
+- **M1** — `_pkgdown.yml`: added the two navbar Articles entries omitted from the
+  menu but present in the `articles:` index (`visualizing-models`,
+  `multi-effect-comparator`).
+- **M2** — moved `relmat()`/`precision()` out of the planned/rejected lists into
+  the opt-in experimental group (REML-only, experimental, NOT covered, count
+  unchanged) on all three pages: `vignettes/hsquared.Rmd`,
+  `vignettes/articles/model-status.Rmd`,
+  `vignettes/articles/inheritance-systems.Rmd`.
+- **L5** — `vignettes/hsquared.Rmd`: split `common_env()` (two-effect leg) out as
+  **covered at validation scale**; kept `permanent()`/`maternal_genetic()`/
+  `genomic()`/`single_step()` as the partial-gate opt-in terms.
+- **M3** — replaced the "no permutation-backed cutoff / calibration remains
+  planned" wording with the scoped `gwas(fit, markers, method = "single",
+  genome_wide = TRUE)` add-one-permutation framing (fixed-effect/intercept-only
+  scope; mixed/loco stay uncalibrated) on
+  `vignettes/articles/qtl-gwas-eqtl-status.Rmd` and
+  `vignettes/articles/genomic-prediction.Rmd`.
+- **L6** — `vignettes/articles/genomic-prediction.Rmd`: joined the orphaned
+  "…marker scan is now available." full-stop so the "experimentally / not
+  genome-wide calibrated" qualifiers are no longer detached.
+- Checks (R 4.6.0): `Rscript -e 'pkgdown::check_pkgdown()'` → **No problems
+  found**; end-to-end knit of `visualizing-models.Rmd` via `rmarkdown::render()`
+  → **OK** (706 KB, figures rendered); H6 flag assertion above via
+  `devtools::load_all()` + `autoplot()`. No R source or tests touched.
+
 ## 2026-07-11 (0.2.0 code-arc baseline assembly merge)
 
 - Assembled the `0.2.0` baseline onto local `main` by merging five

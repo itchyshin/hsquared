@@ -79,7 +79,14 @@ g <- matrix(
 sds <- c(1.1, 0.9, 0.6)
 g_cov <- outer(sds, sds) * g
 fit_mv <- structure(
-  list(result = list(genetic_correlation = g, genetic_covariance = g_cov)),
+  list(result = list(
+    genetic_correlation = g, genetic_covariance = g_cov,
+    # per-trait h^2 so the low-h^2 imprecision flag fires: horn is below the
+    # 0.1 default, so its off-diagonal correlations are marked as imprecise.
+    heritability = data.frame(
+      term = c("mass", "length", "horn"), estimate = c(0.31, 0.24, 0.06)
+    )
+  )),
   class = "hsquared_fit"
 )
 

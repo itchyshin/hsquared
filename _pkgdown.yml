@@ -26,6 +26,8 @@ navbar:
           href: articles/fitting-models.html
         - text: Worked example (gryphon)
           href: articles/gryphon-worked-example.html
+        - text: Visualizing models
+          href: articles/visualizing-models.html
         - text: Genomic prediction
           href: articles/genomic-prediction.html
         - text: QTL, GWAS, and eQTL status
@@ -44,6 +46,8 @@ navbar:
           href: articles/benchmark-comparators.html
         - text: "Two-effect model: sommer comparator"
           href: articles/two-effect-comparator.html
+        - text: "Multi-effect model: sommer comparator"
+          href: articles/multi-effect-comparator.html
         - text: "Random regression (k = 2): sommer comparator"
           href: articles/rr-comparator.html
         - text: Formula grammar roadmap
