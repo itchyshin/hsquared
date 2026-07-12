@@ -32,7 +32,10 @@ The short version:
   `hs_gwas` object; `marker_scan()`, `qtl_scan()`, fit-level `qtl_table()`,
   `gwas_table()`, `eqtl_table()`, and map-annotated `lod_scores()` remain
   reserved vocabulary for the planned map-annotated / formula-grammar API.
-- No QTL or eQTL model, and no *calibrated* genome-wide GWAS, is fitted today.
+- No QTL or eQTL model is fitted today. Genome-wide calibration exists only as a
+  scoped, opt-in permutation cutoff for the **single-marker** scan
+  (`method = "single", genome_wide = TRUE`); the relatedness-corrected
+  `mixed`/`loco` scans stay uncalibrated (see *Post-fit GWAS* below).
 
 The goal is to make the future syntax visible without making users wonder
 whether a scan engine is already hidden somewhere.
@@ -80,16 +83,18 @@ gwas_table(scan)     # effect/se/z/chisq/p_value/bonferroni_p/bh_qvalue/lod
 lod_scores(scan)     # marker + LOD only
 ```
 
-The p-values are **not genome-wide calibrated**: nominal Wald p-values plus
-Bonferroni/Benjamini-Hochberg over the supplied markers only, with no
-R-side threshold activation, no permutation-backed cutoff, no realistic-LD
-production calibration, and no external scan comparator. The Julia lane has a
-fixed-marker-panel type-I smoke harness (HSquared.jl PR #134); that is useful
-validation infrastructure, but it is not an R significance threshold. A
-leave-one-group-out mode is available with `method = "loco"` and
-`marker_groups =`, but it is still validation-scale and uncalibrated. Do not
-report genome-wide significance from these p-values. The calibrated-threshold
-activation and the formula-grammar / map-annotated path below remain planned.
+The default p-values are **not genome-wide calibrated**: nominal Wald p-values
+plus Bonferroni/Benjamini-Hochberg over the supplied markers only, with no
+realistic-LD production calibration and no external scan comparator. A
+**scoped, opt-in** genome-wide cutoff *is* available for the single-marker scan:
+`gwas(fit, markers, method = "single", genome_wide = TRUE)` adds a
+`genome_wide_p` column from an exact per-dataset add-one permutation rule
+(fixed-effect / intercept-only scope; rejected for `method = "mixed"`/`"loco"`;
+experimental, validation-scale, not the default). The relatedness-corrected
+`mixed` and leave-one-group-out `loco` (`marker_groups =`) scans stay
+uncalibrated. The Julia lane also has a fixed-marker-panel type-I smoke harness
+(HSquared.jl PR #134). Do not report genome-wide significance from the nominal
+p-value columns. The formula-grammar / map-annotated path below remains planned.
 
 Data diagnostics are also live:
 

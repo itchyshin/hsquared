@@ -45,16 +45,19 @@ advanced opt-in engine controls.
   model.
 - `genomic()` (supplied `Ginv` or a `markers` matrix), `single_step()`
   (supplied `Hinv`, or constructed `Hinv` from `pedigree` + `markers`),
-  `permanent()`, `common_env()`, and `maternal_genetic()` parse and fit only
-  through the opt-in `engine = "julia"` targets — some covered at validation
-  scale, some experimental (see the two opt-in sections below); the default
-  `engine = "fit"` path rejects them.
+  `permanent()`, `common_env()`, `maternal_genetic()`, and the
+  supplied-relationship primaries `relmat()` (dense `K`) and `precision()`
+  (supplied inverse `Q`) parse and fit only through the opt-in `engine = "julia"`
+  targets — some covered at validation scale, some experimental (see the two
+  opt-in sections below); the default `engine = "fit"` path rejects them.
+  `relmat()`/`precision()` are REML-only, experimental, and **not** covered (they
+  do not change the covered-model count).
 - `markers()`, `marker_scan()`, and `qtl_scan()` reserve planned genomic/QTL
   formula vocabulary and currently error as not implemented.
 - `maternal_env()`, `paternal_genetic()`, `paternal_env()`, `cytoplasmic()`,
-  `imprinting()`, `dominance()`, `epistasis()`, `relmat()`, and `precision()`
-  reserve standard quantitative-genetic and inheritance-kernel vocabulary and
-  currently error as not implemented.
+  `imprinting()`, `dominance()`, and `epistasis()` reserve standard
+  quantitative-genetic and inheritance-kernel vocabulary and currently error as
+  not implemented.
 - `animal()` as an inert formula marker.
 - A v0.1 parser for `animal(1 | id, pedigree = ped)`, and for
   `animal(1 | id)` when `data` is an `hs_data()` bundle with a pedigree

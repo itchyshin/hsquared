@@ -76,16 +76,18 @@ The parser currently accepts:
 - numeric Gaussian responses.
 
 Several terms beyond the default contract now fit through an opt-in,
-experimental engine path (`engine = "julia"`, not the default, each mirroring a
-`partial` validation gate): `permanent()`, `common_env()`, `maternal_genetic()`,
-`genomic()` (GREML or SNP-BLUP), and `single_step()`. See the "Fitting models"
-article for the opt-in calls.
+experimental engine path (`engine = "julia"`, not the default). The
+common-environment leg of the two-effect model (`common_env()`) is **covered at
+validation scale**; the remaining opt-in terms each mirror a `partial`
+validation gate: `permanent()`, `maternal_genetic()`, `genomic()` (GREML or
+SNP-BLUP), `single_step()`, and the supplied-relationship primaries `relmat()`
+and `precision()` (REML-only, experimental, **not** covered — they do not change
+the covered-model count). See the "Fitting models" article for the opt-in calls.
 
 The remaining grammar is still important because it defines the roadmap. Terms
 such as `cov = fa(K = 2)`, QTL effects, `paternal_genetic()`, `dominance()`,
-`epistasis()`, `relmat()`, `precision()`, selfing, polyploidy, haplodiploidy,
-and GLLVM-style latent genetic axes are planned lanes, not current fitting
-features.
+`epistasis()`, selfing, polyploidy, haplodiploidy, and GLLVM-style latent
+genetic axes are planned lanes, not current fitting features.
 
 ## Twin-package flow
 
