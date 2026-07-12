@@ -37,6 +37,7 @@
 <li><a class="dropdown-item" href="../articles/hsquared.html">Getting started</a></li>
     <li><a class="dropdown-item" href="../articles/fitting-models.html">Fitting models</a></li>
     <li><a class="dropdown-item" href="../articles/gryphon-worked-example.html">Worked example (gryphon)</a></li>
+    <li><a class="dropdown-item" href="../articles/visualizing-models.html">Visualizing models</a></li>
     <li><a class="dropdown-item" href="../articles/genomic-prediction.html">Genomic prediction</a></li>
     <li><a class="dropdown-item" href="../articles/qtl-gwas-eqtl-status.html">QTL, GWAS, and eQTL status</a></li>
     <li><a class="dropdown-item" href="../articles/multivariate.html">Multivariate Gaussian animal models</a></li>
@@ -46,6 +47,7 @@
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
     <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
+    <li><a class="dropdown-item" href="../articles/multi-effect-comparator.html">Multi-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/rr-comparator.html">Random regression (k = 2): sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
@@ -155,16 +157,20 @@ component;</li>
 </ul>
 <p>Several terms beyond the default contract now fit through an opt-in,
 experimental engine path (<code>engine = "julia"</code>, not the
-default, each mirroring a <code>partial</code> validation gate):
-<code><a href="../reference/qg_effect_markers.html">permanent()</a></code>, <code><a href="../reference/qg_effect_markers.html">common_env()</a></code>,
+default). The common-environment leg of the two-effect model
+(<code><a href="../reference/qg_effect_markers.html">common_env()</a></code>) is <strong>covered at validation
+scale</strong>; the remaining opt-in terms each mirror a
+<code>partial</code> validation gate: <code><a href="../reference/qg_effect_markers.html">permanent()</a></code>,
 <code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>, <code><a href="../reference/genomic_markers.html">genomic()</a></code> (GREML or
-SNP-BLUP), and <code><a href="../reference/genomic_markers.html">single_step()</a></code>. See the “Fitting models”
-article for the opt-in calls.</p>
+SNP-BLUP), <code><a href="../reference/genomic_markers.html">single_step()</a></code>, and the supplied-relationship
+primaries <code><a href="../reference/qg_effect_markers.html">relmat()</a></code> and <code><a href="../reference/qg_effect_markers.html">precision()</a></code> (REML-only,
+experimental, <strong>not</strong> covered — they do not change the
+covered-model count). See the “Fitting models” article for the opt-in
+calls.</p>
 <p>The remaining grammar is still important because it defines the
 roadmap. Terms such as <code>cov = fa(K = 2)</code>, QTL effects,
 <code><a href="../reference/qg_effect_markers.html">paternal_genetic()</a></code>, <code><a href="../reference/qg_effect_markers.html">dominance()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">epistasis()</a></code>, <code><a href="../reference/qg_effect_markers.html">relmat()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">precision()</a></code>, selfing, polyploidy, haplodiploidy, and
+<code><a href="../reference/qg_effect_markers.html">epistasis()</a></code>, selfing, polyploidy, haplodiploidy, and
 GLLVM-style latent genetic axes are planned lanes, not current fitting
 features.</p>
 </div>

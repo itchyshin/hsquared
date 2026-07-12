@@ -41,9 +41,11 @@ is supplied, not estimated, and there is no metafounder-specific
 extractor or external comparator evidence. APY, low-rank marker solvers,
 weighted genomic relationships, production-scale single-step
 construction, and Bayesian marker models are planned. A post-fit,
-relatedness-corrected marker scan is now available. experimentally via
+relatedness-corrected marker scan is now available experimentally via
 `gwas(fit, markers)` (see *Post-fit marker scan* below) — its p-values
-are **not** genome-wide calibrated; QTL/eQTL scans remain planned.
+are **not** genome-wide calibrated by default; an opt-in per-dataset
+permutation cutoff exists for the single-marker scope (see below).
+QTL/eQTL scans remain planned.
 
 ## Supplied Ginv
 
@@ -246,15 +248,19 @@ gwas_table(scan)
 lod_scores(scan)
 ```
 
-The p-values are **not genome-wide calibrated**: they are nominal Wald
-p-values plus Bonferroni/Benjamini-Hochberg over the supplied markers
-only, with no R-side threshold activation, no permutation-backed cutoff,
-no realistic-LD production calibration, and no external scan comparator.
-The Julia lane has a fixed-marker-panel type-I smoke harness
-(HSquared.jl PR \#134), but that is not an R significance threshold. A
-leave-one-group-out mode is available with `method = "loco"` and
-`marker_groups =`, but it is still validation-scale and uncalibrated. Do
-not report genome-wide significance from these p-values.
+The default p-values are **not genome-wide calibrated**: they are
+nominal Wald p-values plus Bonferroni/Benjamini-Hochberg over the
+supplied markers only, with no realistic-LD production calibration and
+no external scan comparator. A **scoped, opt-in** genome-wide cutoff
+*is* available for the single-marker scan:
+`gwas(fit, markers, method = "single", genome_wide = TRUE)` adds a
+`genome_wide_p` column from an exact per-dataset add-one permutation
+rule (fixed-effect / intercept-only scope; rejected for
+`method = "mixed"`/`"loco"`; experimental, validation-scale, not the
+default). The relatedness-corrected `mixed` and leave-one-group-out
+`loco` (`marker_groups =`) scans stay uncalibrated. The Julia lane also
+has a fixed-marker-panel type-I smoke harness (HSquared.jl PR \#134). Do
+not report genome-wide significance from the nominal p-value columns.
 
 `gwas_table(scan)` and `lod_scores(scan)` are thin views of the
 already-computed `hs_gwas` result. Fit-level tabular

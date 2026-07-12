@@ -70,13 +70,19 @@ y ~ animal(1 | id, pedigree = ped) +
 y ~ animal(1 | id, pedigree = ped) +
   dominance(1 | id, pedigree = ped) +
   epistasis(1 | id, pedigree = ped)
-
-y ~ relmat(1 | id, K = K_custom)
-y ~ precision(1 | id, Q = Q_custom)
 ```
 
 These examples do not fit yet. Today the parser rejects them as planned,
 not implemented.
+
+The supplied-relationship primaries `relmat(1 | id, K = K_custom)` and
+`precision(1 | id, Q = Q_custom)` are the exception: they **do** fit
+through the opt-in `engine = "julia"` path (the same
+supplied-relationship-inverse engine as
+[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)).
+They are REML-only, experimental, and **not** covered — supply a dense
+positive-definite `K` (or its inverse `Q`), and the matrix is carried as
+provenance, not estimated.
 
 ## Planned inheritance systems
 

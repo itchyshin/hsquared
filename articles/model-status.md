@@ -54,12 +54,18 @@ container, extractors, and advanced opt-in engine controls.
   (supplied `Hinv`, or constructed `Hinv` from `pedigree` + `markers`),
   [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-  and
-  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-  parse and fit only through the opt-in `engine = "julia"` targets —
-  some covered at validation scale, some experimental (see the two
-  opt-in sections below); the default `engine = "fit"` path rejects
-  them.
+  [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
+  and the supplied-relationship primaries
+  [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  (dense `K`) and
+  [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  (supplied inverse `Q`) parse and fit only through the opt-in
+  `engine = "julia"` targets — some covered at validation scale, some
+  experimental (see the two opt-in sections below); the default
+  `engine = "fit"` path rejects them.
+  [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)/[`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  are REML-only, experimental, and **not** covered (they do not change
+  the covered-model count).
 - [`markers()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   [`marker_scan()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
   and
@@ -72,10 +78,8 @@ container, extractors, and advanced opt-in engine controls.
   [`cytoplasmic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`imprinting()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   [`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-  [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-  [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
   and
-  [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+  [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   reserve standard quantitative-genetic and inheritance-kernel
   vocabulary and currently error as not implemented.
 - [`animal()`](https://itchyshin.github.io/hsquared/reference/animal.md)

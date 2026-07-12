@@ -82,23 +82,29 @@ The parser currently accepts:
 - numeric Gaussian responses.
 
 Several terms beyond the default contract now fit through an opt-in,
-experimental engine path (`engine = "julia"`, not the default, each
-mirroring a `partial` validation gate):
+experimental engine path (`engine = "julia"`, not the default). The
+common-environment leg of the two-effect model
+([`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md))
+is **covered at validation scale**; the remaining opt-in terms each
+mirror a `partial` validation gate:
 [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-[`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-(GREML or SNP-BLUP), and
-[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md).
-See the “Fitting models” article for the opt-in calls.
+(GREML or SNP-BLUP),
+[`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
+and the supplied-relationship primaries
+[`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+and
+[`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
+(REML-only, experimental, **not** covered — they do not change the
+covered-model count). See the “Fitting models” article for the opt-in
+calls.
 
 The remaining grammar is still important because it defines the roadmap.
 Terms such as `cov = fa(K = 2)`, QTL effects,
 [`paternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`dominance()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`epistasis()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-[`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-[`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 selfing, polyploidy, haplodiploidy, and GLLVM-style latent genetic axes
 are planned lanes, not current fitting features.
 

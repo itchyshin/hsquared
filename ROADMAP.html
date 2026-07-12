@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/hsquared.html">Getting started</a></li>
     <li><a class="dropdown-item" href="articles/fitting-models.html">Fitting models</a></li>
     <li><a class="dropdown-item" href="articles/gryphon-worked-example.html">Worked example (gryphon)</a></li>
+    <li><a class="dropdown-item" href="articles/visualizing-models.html">Visualizing models</a></li>
     <li><a class="dropdown-item" href="articles/genomic-prediction.html">Genomic prediction</a></li>
     <li><a class="dropdown-item" href="articles/qtl-gwas-eqtl-status.html">QTL, GWAS, and eQTL status</a></li>
     <li><a class="dropdown-item" href="articles/multivariate.html">Multivariate Gaussian animal models</a></li>
@@ -30,6 +31,7 @@
     <li><a class="dropdown-item" href="articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
     <li><a class="dropdown-item" href="articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
+    <li><a class="dropdown-item" href="articles/multi-effect-comparator.html">Multi-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="articles/rr-comparator.html">Random regression (k = 2): sommer comparator</a></li>
     <li><a class="dropdown-item" href="articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
@@ -54,6 +56,18 @@
 <div id="hsquared-roadmap" class="section level1">
 
 <p><code>hsquared</code> and <code>HSquared.jl</code> are twin packages with one project identity. <code>hsquared</code> owns the R interface; <code>HSquared.jl</code> owns the sparse Julia engine.</p>
+<div class="section level2">
+<h2 id="release-model-version-tracks-covered-capability-not-phases">Release Model (version tracks covered capability, not phases)<a class="anchor" aria-label="anchor" href="#release-model-version-tracks-covered-capability-not-phases"></a></h2>
+<p>Release numbers are <strong>decoupled from the phase plan below</strong>. The version tracks <code>covered</code> capability, not everything surfaced, and the phases are the engineering order — not the release schedule. See <a href="docs/dev-log/decisions.html"><code>docs/dev-log/decisions.md</code></a> (“2026-07-11: Release Model”).</p>
+<ul><li>
+<strong>First registration is <code>0.5.0</code>, not <code>1.0</code></strong>, shipped with a prominent <strong>experimental</strong> label — mirroring the sibling packages (drmTMB, gllvmTMB) and the standing rule that lab packages ship experimental on first CRAN until the maintainer declares maturity. <code>0.5.0</code> ships on the current covered surface (the five recovery-gated Gaussian models) and does <strong>not</strong> wait on Phase 6. The R+Julia twin registers as <strong>one</strong> data-publication (one DOI); the Julia engine registers first, then the R package to CRAN.</li>
+<li>
+<strong>Phases 3–6 land as post-<code>0.5</code> minors</strong>, each promoted only when its pillar’s pre-declared recovery gate + external same-estimand comparator goes green: <code>0.6</code> multivariate (Phase 3) · <code>0.7</code> genomic GREML (Phase 5) · <code>0.8</code> factor-analytic G + single-step (Phase 4) · <code>0.9</code> interval-coverage calibration
+<ul><li>non-Gaussian approaching (Phase 6).</li>
+</ul></li>
+<li>
+<strong><code>1.0</code> is the maturity milestone, and <code>1.0</code> ≠ “Phase 6 done.”</strong> It requires every pillar to be <strong>covered + production + interval-coverage-calibrated</strong>, a committed-stable public API, and the maintainer’s explicit declaration. Interval-coverage calibration exists for no model today, so <code>1.0</code> is materially later than Phase 6. Non-Gaussian (Phase 6) is the longest pole — blocked on an undefined non-Gaussian-scale heritability estimand and comparator scarcity, not compute — so it is sequenced last and kept off the release critical path.</li>
+</ul></div>
 <div class="section level2">
 <h2 id="phase-0-team-operating-system-and-public-scaffold">Phase 0: Team Operating System And Public Scaffold<a class="anchor" aria-label="anchor" href="#phase-0-team-operating-system-and-public-scaffold"></a></h2>
 <p>Status: complete for the public scaffold.</p>

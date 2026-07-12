@@ -37,6 +37,7 @@
 <li><a class="dropdown-item" href="../articles/hsquared.html">Getting started</a></li>
     <li><a class="dropdown-item" href="../articles/fitting-models.html">Fitting models</a></li>
     <li><a class="dropdown-item" href="../articles/gryphon-worked-example.html">Worked example (gryphon)</a></li>
+    <li><a class="dropdown-item" href="../articles/visualizing-models.html">Visualizing models</a></li>
     <li><a class="dropdown-item" href="../articles/genomic-prediction.html">Genomic prediction</a></li>
     <li><a class="dropdown-item" href="../articles/qtl-gwas-eqtl-status.html">QTL, GWAS, and eQTL status</a></li>
     <li><a class="dropdown-item" href="../articles/multivariate.html">Multivariate Gaussian animal models</a></li>
@@ -46,6 +47,7 @@
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
     <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
+    <li><a class="dropdown-item" href="../articles/multi-effect-comparator.html">Multi-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/rr-comparator.html">Random regression (k = 2): sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
@@ -182,10 +184,11 @@ no metafounder-specific extractor or external comparator evidence. APY,
 low-rank marker solvers, weighted genomic relationships,
 production-scale single-step construction, and Bayesian marker models
 are planned. A post-fit, relatedness-corrected marker scan is now
-available. experimentally via <code>gwas(fit, markers)</code> (see
+available experimentally via <code>gwas(fit, markers)</code> (see
 <em>Post-fit marker scan</em> below) — its p-values are
-<strong>not</strong> genome-wide calibrated; QTL/eQTL scans remain
-planned.</p>
+<strong>not</strong> genome-wide calibrated by default; an opt-in
+per-dataset permutation cutoff exists for the single-marker scope (see
+below). QTL/eQTL scans remain planned.</p>
 </div>
 <div class="section level2">
 <h2 id="supplied-ginv">Supplied Ginv<a class="anchor" aria-label="anchor" href="#supplied-ginv"></a>
@@ -368,16 +371,21 @@ animal (in the fit’s pedigree order), one column per marker.</p>
 <span><span class="va">scan</span> <span class="co"># effect, se, z, chisq, p_value, bonferroni_p, bh_qvalue, lod</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">gwas_table</a></span><span class="op">(</span><span class="va">scan</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/marker_extractors.html">lod_scores</a></span><span class="op">(</span><span class="va">scan</span><span class="op">)</span></span></code></pre></div>
-<p>The p-values are <strong>not genome-wide calibrated</strong>: they
-are nominal Wald p-values plus Bonferroni/Benjamini-Hochberg over the
-supplied markers only, with no R-side threshold activation, no
-permutation-backed cutoff, no realistic-LD production calibration, and
-no external scan comparator. The Julia lane has a fixed-marker-panel
-type-I smoke harness (HSquared.jl PR #134), but that is not an R
-significance threshold. A leave-one-group-out mode is available with
-<code>method = "loco"</code> and <code>marker_groups =</code>, but it is
-still validation-scale and uncalibrated. Do not report genome-wide
-significance from these p-values.</p>
+<p>The default p-values are <strong>not genome-wide calibrated</strong>:
+they are nominal Wald p-values plus Bonferroni/Benjamini-Hochberg over
+the supplied markers only, with no realistic-LD production calibration
+and no external scan comparator. A <strong>scoped, opt-in</strong>
+genome-wide cutoff <em>is</em> available for the single-marker scan:
+<code>gwas(fit, markers, method = "single", genome_wide = TRUE)</code>
+adds a <code>genome_wide_p</code> column from an exact per-dataset
+add-one permutation rule (fixed-effect / intercept-only scope; rejected
+for <code>method = "mixed"</code>/<code>"loco"</code>; experimental,
+validation-scale, not the default). The relatedness-corrected
+<code>mixed</code> and leave-one-group-out <code>loco</code>
+(<code>marker_groups =</code>) scans stay uncalibrated. The Julia lane
+also has a fixed-marker-panel type-I smoke harness (HSquared.jl PR
+#134). Do not report genome-wide significance from the nominal p-value
+columns.</p>
 <p><code>gwas_table(scan)</code> and <code>lod_scores(scan)</code> are
 thin views of the already-computed <code>hs_gwas</code> result.
 Fit-level tabular <code><a href="../reference/marker_extractors.html">gwas_table()</a></code> / <code><a href="../reference/marker_extractors.html">qtl_table()</a></code> /

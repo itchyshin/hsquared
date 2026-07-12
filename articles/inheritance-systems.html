@@ -37,6 +37,7 @@
 <li><a class="dropdown-item" href="../articles/hsquared.html">Getting started</a></li>
     <li><a class="dropdown-item" href="../articles/fitting-models.html">Fitting models</a></li>
     <li><a class="dropdown-item" href="../articles/gryphon-worked-example.html">Worked example (gryphon)</a></li>
+    <li><a class="dropdown-item" href="../articles/visualizing-models.html">Visualizing models</a></li>
     <li><a class="dropdown-item" href="../articles/genomic-prediction.html">Genomic prediction</a></li>
     <li><a class="dropdown-item" href="../articles/qtl-gwas-eqtl-status.html">QTL, GWAS, and eQTL status</a></li>
     <li><a class="dropdown-item" href="../articles/multivariate.html">Multivariate Gaussian animal models</a></li>
@@ -46,6 +47,7 @@
     <li><a class="dropdown-item" href="../articles/validation-evidence.html">Validation evidence</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark-comparators.html">Benchmark: sommer &amp; pedigreemm</a></li>
     <li><a class="dropdown-item" href="../articles/two-effect-comparator.html">Two-effect model: sommer comparator</a></li>
+    <li><a class="dropdown-item" href="../articles/multi-effect-comparator.html">Multi-effect model: sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/rr-comparator.html">Random regression (k = 2): sommer comparator</a></li>
     <li><a class="dropdown-item" href="../articles/formula-grammar.html">Formula grammar roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/genomics-gpu-roadmap.html">Genomics and GPU roadmap</a></li>
@@ -136,12 +138,18 @@ extractor boundaries.</p>
 <span></span>
 <span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/animal.html">animal</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="../reference/qg_effect_markers.html">dominance</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="../reference/qg_effect_markers.html">epistasis</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/qg_effect_markers.html">relmat</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, K <span class="op">=</span> <span class="va">K_custom</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="../reference/qg_effect_markers.html">precision</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Q <span class="op">=</span> <span class="va">Q_custom</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/qg_effect_markers.html">epistasis</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, pedigree <span class="op">=</span> <span class="va">ped</span><span class="op">)</span></span></code></pre></div>
 <p>These examples do not fit yet. Today the parser rejects them as
 planned, not implemented.</p>
+<p>The supplied-relationship primaries
+<code>relmat(1 | id, K = K_custom)</code> and
+<code>precision(1 | id, Q = Q_custom)</code> are the exception: they
+<strong>do</strong> fit through the opt-in <code>engine = "julia"</code>
+path (the same supplied-relationship-inverse engine as
+<code><a href="../reference/genomic_markers.html">genomic()</a></code>). They are REML-only, experimental, and
+<strong>not</strong> covered — supply a dense positive-definite
+<code>K</code> (or its inverse <code>Q</code>), and the matrix is
+carried as provenance, not estimated.</p>
 </div>
 <div class="section level2">
 <h2 id="planned-inheritance-systems">Planned inheritance systems<a class="anchor" aria-label="anchor" href="#planned-inheritance-systems"></a>
