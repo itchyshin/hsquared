@@ -3,6 +3,31 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-12 (assemble PRs #131/#132/#133 onto `main`)
+
+- Merged the three open, CI-green, Rose-CLEAN PRs onto `main` by ordered
+  `--no-ff` local merges (repo convention; base `74158e9`): **#131**
+  (`833b7ea`, planning/design docs 35–43 + decisions) → **#132** (`ff89ac7`,
+  MV-4 cbind auto-route + MV-1/2/3 evidence + MV-5 driver) → **#133** (`8e48c9b`,
+  doc-site R-lane quick wins). Pushed `74158e9..8e48c9b`. All three show
+  **MERGED** on GitHub (#131 head `472a50c` confirmed ancestor of `main`).
+- **Conflicts:** #131 and #132 merged clean. #133 conflicted only on the two
+  additive-prepend surfaces it shares with #132 — `docs/dev-log/check-log.md`
+  and `docs/dev-log/coordination-board.md`; both resolved **newest-first**
+  (2026-07-12 doc-site entry above the 2026-07-11 MV entries; every prior entry
+  preserved). `git diff --check` clean, no leftover conflict markers.
+- **Claim boundary: assembly only, NO promotion.** No covered flip in any PR;
+  `public_covered_count` untouched; multivariate stays partial/experimental;
+  `DESCRIPTION` Version unchanged. Merging does **not** cut a release — the 0.5
+  release decisions (twin `#267/#268`, stale-`v0.1.0`-tag, `SystemRequirements`,
+  `cran-comments`, Julia-registers-first) remain separately maintainer-gated.
+- **Checks (assembled `HEAD` `8e48c9b`, R 4.6.0):**
+  `Rscript -e 'devtools::document()'` → **zero delta** (`man/`, `NAMESPACE`
+  unchanged); `Rscript -e 'devtools::test()'` → **`FAIL 0 | WARN 0 | SKIP 66 |
+  PASS 1740`** (66 skips = live JuliaCall/Julia/`pedigreemm` absent locally).
+  Both #132 and #133 were independently R-CMD-check-green on their PRs before the
+  merge.
+
 ## 2026-07-12 (doc-site R-lane quick-win batch — H6/M1/M2/M3/L5/L6)
 
 - Branch `docs/2026-07-12-docsite-quickwins` off `origin/main` (`74158e9`).
