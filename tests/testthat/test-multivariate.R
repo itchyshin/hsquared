@@ -98,7 +98,7 @@ test_that("multivariate parser rejects fixed-effect NA and rank-deficient X", {
   )
 })
 
-test_that("multivariate target is explicitly opt-in and cbind-only", {
+test_that("multivariate cbind auto-routes on the default path and stays cbind-only", {
   ped <- data.frame(
     id = c("sire", "dam", "calf"),
     sire = c(NA, NA, "sire"),
@@ -110,23 +110,42 @@ test_that("multivariate target is explicitly opt-in and cbind-only", {
     id = ped$id
   )
 
-  expect_error(
-    hsquared(
-      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
-      data = dat
-    ),
-    "experimental and opt-in",
+  # MV-4 (doc 38): the multivariate cbind + gaussian response auto-routes to the
+  # multivariate REML target on the default path (grammar confirmed Julia-free).
+  spec_default <- suppressMessages(hsquared(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    control = hs_control(engine = "validate")
+  ))
+  expect_true(grepl(
+    "fit_multivariate_reml",
+    spec_default$bridge$target,
     fixed = TRUE
-  )
-  expect_error(
-    hsquared(
-      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
-      data = dat,
-      control = hs_control(engine = "julia")
-    ),
-    "requires the opt-in `target = \"multivariate\"`",
-    fixed = TRUE
-  )
+  ))
+
+  # The auto-route (and the engine = "julia" no-target auto-select, §H2) reach the
+  # fitter dispatch: without the Julia bridge neither still raises the old
+  # "experimental and opt-in" / "requires the opt-in target" aborts.
+  if (!hsquared:::hs_julia_bridge_available()) {
+    err_default <- tryCatch(
+      hsquared(
+        cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+        data = dat
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    expect_false(grepl("experimental and opt-in", err_default, fixed = TRUE))
+
+    err_julia <- tryCatch(
+      hsquared(
+        cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+        data = dat,
+        control = hs_control(engine = "julia")
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    expect_false(grepl("requires the opt-in", err_julia, fixed = TRUE))
+  }
   expect_error(
     hsquared(
       y1 ~ animal(1 | id, pedigree = ped),
@@ -575,6 +594,22 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
   expect_equal(residual_correlation(fit), stats::cov2cor(R0), tolerance = 1e-10)
   expect_equal(heritability(fit)$estimate, h2$h2, tolerance = 1e-10)
 
+  # MV-3 covered-flip identity gate (Standard-Tier gate, docs/dev-log/decisions.md;
+  # locked citation docs/design/04-validation-canon.md -- Falconer & Mackay 1996;
+  # Lynch & Walsh 1998 ch. 4, 21): each derived estimand equals its defining
+  # function of the covered components G0, R0. The genetic-correlation identity
+  # r_g == cov2cor(G0) is the extractor assertion above; the per-trait
+  # heritability identity h2_k == G0[k,k]/(G0[k,k]+R0[k,k]) holds on the engine's
+  # serialized values. Both off-diagonals are genuine (not 0/1), so the r_g
+  # identity is a real test.
+  expect_equal(
+    h2$h2,
+    unname(diag(G0) / (diag(G0) + diag(R0))),
+    tolerance = 1e-5
+  )
+  expect_gt(abs(stats::cov2cor(G0)[1, 2]), 0.05)
+  expect_lt(abs(stats::cov2cor(G0)[1, 2]), 0.99)
+
   fixed <- fixef(fit)
   expected_fixed <- data.frame(
     term = rep(c("(Intercept)", "x"), times = 2L),
@@ -685,4 +720,92 @@ test_that("optional sommer comparator matches the Phase 4 diagonal-residual targ
     tolerance = 5e-4
   )
   expect_equal(Rhat[upper.tri(Rhat)], 0, tolerance = 1e-12)
+})
+
+test_that("optional sommer comparator matches the Phase 4 FULL-UNSTRUCTURED target", {
+  # MV-1: the diagonal-residual check above (sommer::mmes + dsm(trait)) fixes the
+  # residual off-diagonal to zero and so cannot confront the engine's off-diagonal
+  # R0[2,1]. The classic sommer::mmer interface fits a FULL UNSTRUCTURED residual
+  # (mmes raises an Armadillo out-of-bounds on the unstructured residual in this
+  # records-within-animal layout), so this in-suite test reaches the off-diagonal
+  # the diagonal check cannot -- promoting the reproducible comparator study
+  # (data-raw/multivariate-comparator-study.R) into a CI-gated same-estimand check.
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("sommer")
+  testthat::skip_if_not_installed("nadiv")
+
+  ped <- hs_read_phase4_fixture("pedigree.csv")
+  pheno <- hs_read_phase4_fixture("phenotypes.csv")
+  G0 <- hs_phase4_matrix("expected_genetic_covariance.csv")
+  R0 <- hs_phase4_matrix("expected_residual_covariance.csv")
+  h2 <- hs_read_phase4_fixture("expected_heritability.csv")
+  ebv_target <- hs_read_phase4_fixture("expected_ebv.csv")
+
+  # Rebuild A from the pedigree (nadiv), NOT copied from the engine.
+  pedn <- data.frame(
+    id = ped$animal,
+    sire = ped$sire,
+    dam = ped$dam,
+    stringsAsFactors = FALSE
+  )
+  pedn$sire[pedn$sire == "0"] <- NA
+  pedn$dam[pedn$dam == "0"] <- NA
+  A <- suppressWarnings(as.matrix(nadiv::makeA(pedn)))
+  A <- A[ped$animal, ped$animal]
+  pheno$animal <- factor(pheno$animal, levels = rownames(A))
+
+  fit <- tryCatch(
+    suppressWarnings(sommer::mmer(
+      cbind(trait1, trait2) ~ x,
+      random = ~ sommer::vsr(animal, Gu = A, Gtc = sommer::unsm(2)),
+      rcov = ~ sommer::vsr(units, Gtc = sommer::unsm(2)),
+      data = pheno,
+      verbose = FALSE,
+      dateWarning = FALSE
+    )),
+    error = function(e) e
+  )
+  if (inherits(fit, "error")) {
+    testthat::skip(paste(
+      "sommer mmer unstructured comparator did not fit this fixture:",
+      conditionMessage(fit)
+    ))
+  }
+
+  G0_hat <- fit$sigma[["u:animal"]]
+  R0_hat <- fit$sigma[["u:units"]]
+  if (is.null(G0_hat) || is.null(R0_hat)) {
+    testthat::skip(
+      "sommer sigma layout changed; comparator extraction needs review."
+    )
+  }
+  dimnames(G0_hat) <- dimnames(G0)
+  dimnames(R0_hat) <- dimnames(R0)
+
+  # Full G0 and full R0 -- including the OFF-DIAGONAL residual the diagonal check
+  # cannot reach -- match the serialized engine target.
+  expect_equal(G0_hat, G0, tolerance = 5e-4)
+  expect_equal(R0_hat, R0, tolerance = 5e-4)
+  # The residual off-diagonal is genuinely estimated (not fixed to zero) and
+  # agrees with the engine within optimiser tolerance.
+  expect_gt(abs(R0[2, 1]), 0)
+  expect_lt(abs(R0_hat[2, 1] - R0[2, 1]), 5e-4)
+
+  expect_equal(
+    unname(diag(G0_hat) / (diag(G0_hat) + diag(R0_hat))),
+    unname(h2$h2),
+    tolerance = 5e-4
+  )
+
+  # EBV confrontation against the serialized target (independent A + optimiser).
+  ebv_hat <- fit$U[["u:animal"]]
+  ebv_hat_mat <- cbind(
+    trait1 = ebv_hat$trait1[ebv_target$animal],
+    trait2 = ebv_hat$trait2[ebv_target$animal]
+  )
+  expect_equal(
+    unname(ebv_hat_mat),
+    unname(as.matrix(ebv_target[, c("trait1", "trait2")])),
+    tolerance = 5e-3
+  )
 })

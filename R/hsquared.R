@@ -82,15 +82,11 @@ hsquared <- function(
   payload <- hs_build_bridge_payload(spec)
 
   if (identical(control$engine, "fit")) {
-    if (isTRUE(spec$response$multivariate)) {
-      hs_abort_unsupported_syntax(
-        "The multivariate animal model is experimental and opt-in; the ",
-        "default `engine = \"fit\"` path fits the univariate Gaussian animal ",
-        "model only. Use `control = hs_control(engine = \"julia\", ",
-        "engine_control = list(target = \"multivariate\"))`.",
-        call. = FALSE
-      )
-    }
+    # MV-4 (doc 38): a multivariate `cbind(...)` Gaussian response auto-routes to
+    # the multivariate REML fitter (dispatched below), no longer requiring the
+    # opt-in `target = "multivariate"`. The spec fence (`R/model-spec.R`) already
+    # guarantees an animal-only, single-effect, random-intercept multivariate
+    # response, so clauses (4)-(7) of the frozen dispatch key hold here.
     if (identical(spec$random$animal$design, "random_regression")) {
       hs_abort_unsupported_syntax(
         "The random-regression (reaction-norm) animal model is experimental ",
@@ -150,6 +146,18 @@ hsquared <- function(
         call. = FALSE
       )
     }
+    if (isTRUE(spec$response$multivariate)) {
+      return(hs_fit_julia_multivariate_payload(
+        payload,
+        project = project,
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", 2000L),
+        genetic_structure = hs_validate_genetic_structure_control(
+          control,
+          "multivariate"
+        )
+      ))
+    }
     return(hs_fit_julia_ai_reml_payload(
       payload,
       project = project,
@@ -169,13 +177,23 @@ hsquared <- function(
       "target",
       "fit_animal_model"
     ))
+    # MV-4 (doc 38 §H2): a multivariate `cbind(...)` response under
+    # `engine = "julia"` with no explicit target auto-selects the multivariate
+    # target, mirroring the default-path auto-route. An explicit
+    # non-multivariate target with a multivariate response still errors below.
+    if (
+      isTRUE(spec$response$multivariate) &&
+        identical(target, "fit_animal_model")
+    ) {
+      target <- "multivariate"
+    }
     genetic_structure <- hs_validate_genetic_structure_control(control, target)
     if (
       isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
     ) {
       hs_abort_unsupported_syntax(
-        "A `cbind(...)` multivariate response requires the opt-in ",
-        "`target = \"multivariate\"` Julia engine path. The `",
+        "A `cbind(...)` multivariate response requires the multivariate Julia ",
+        "engine path; the `",
         target,
         "` target fits a univariate response.",
         call. = FALSE

@@ -3,6 +3,95 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-11 (MV-5: broadened-recovery driver committed, pre-run)
+
+- Wrote the MV-5 broadened-recovery driver `data-raw/multivariate-recovery-broadened-study.R`
+  (R lane), implementing the doc-40 pre-declaration: **t=3**, **two PD (G0,R0)
+  truth points** (r_g 0.11 / 0.61), **full-sib** design (12×12×3 = 456 animals),
+  cold start, screen 48 seeds/cell → confirm 500, gate = every interior G0/R0
+  element `|bias| ≤ 2·MCSE` in both cells. A faithful t=3 generalization of the
+  verified t=2 driver's DGP. Committed **before any run** (pre-registration
+  integrity; no post-hoc relaxation).
+- Checks (pure-R, no engine): `parse()` clean; both truth points PD (min
+  eigenvalues 0.571/0.895/0.235/0.874 > 0); `air format` applied. The run itself
+  is a **live Julia campaign** on Totoro — Codex/live-toolchain work per the
+  division of labour (not run by Claude). A quick ADEMP/simulation-check review
+  is owed before the confirm tier.
+
+## 2026-07-11 (MV-2 + MV-3: BLUPF90 2nd-comparator citation + derived-estimand identity gate)
+
+- **MV-2 (verified, then refreshed).** Confirmed against the twin that the
+  `blupf90+` 2.60 AI-REML multivariate comparator genuinely RAN (2026-06-29;
+  `HSquared.jl/docs/dev-log/recovery-checkpoints/2026-06-29-v4-blupf90-comparator.md`
+  + `comparator/blupf90_multitrait/`): converged from a **non-degenerate neutral
+  start** (7 rounds, 9.6e-13) to the same full-unstructured optimum on the
+  `phase4_multitrait_parity` fixture — G0/R0 to the ~1e-5 5-sig-fig stdout floor,
+  β/EBV to ~1e-7, EBV corr 1.000000; a genuine 2nd same-estimand REML lineage
+  beyond `sommer`. Refreshed the stale "2nd comparator owed" wording in
+  `capability-status.md` (MV row) and `validation-debt-register.md` (rows 28) to
+  cite it as DISCHARGED, and to mark the full-unstructured `sommer` leg now
+  in-suite CI-gated (MV-1). Retained debts restated honestly: broader recovery
+  (full-sib + 3+-trait; MV-5) + deep-inbreeding boundary. **No promotion** —
+  multivariate stays `partial`; the flip is still twin-gated + Darwin + Rose.
+- **MV-3.** Added the derived-estimand identity gate for the 0.6 multivariate
+  flip: `r_g == cov2cor(G0)` (already asserted via `genetic_correlation(fit) ==
+  cov2cor(G0)`) + the newly-added per-trait `h² == diag(G0)/(diag(G0)+diag(R0))`
+  identity, verified on the engine's serialized `phase4_multitrait_parity` values
+  (`test-multivariate.R`). Locked citation (Falconer & Mackay 1996; Lynch & Walsh
+  1998) recorded in `docs/design/04-validation-canon.md`.
+- Checks: `NOT_CRAN=true devtools::test(filter = "multivariate")` — passed (only
+  the 2 live-Julia bridge tests skip); `air format` delta confined; edits to the
+  status ledgers are wording/citation only (no `validation_status()` change).
+
+## 2026-07-11 (MV-1: in-suite full-unstructured sommer comparator gate)
+
+- Promoted the full-unstructured `sommer::mmer` multivariate comparator from the
+  reproducible `data-raw/multivariate-comparator-study.R` into a **CI-gated
+  in-suite test** (`test-multivariate.R`, new `test_that` after the
+  diagonal-residual check). The existing in-suite check uses `sommer::mmes` +
+  `dsm(trait)` (DIAGONAL residual, off-diagonal fixed to 0); the new test uses the
+  classic `mmer` + `vsr(..., Gtc = unsm(2))` route, which fits a full
+  **unstructured** residual and so confronts the engine's off-diagonal `R0[2,1]`
+  the diagonal check cannot reach — closing the standing honesty debt that only
+  the diagonal-residual comparator was CI-gated (doc-33 retained debt).
+- Asserts full `G0`, full `R0` (incl. the off-diagonal), per-trait `h²`, and the
+  40 EBVs against the serialized `phase4_multitrait_parity` fixture, from an
+  independently `nadiv::makeA`-rebuilt `A` and an independent REML optimiser.
+- Claim boundary: **same-estimand comparator EVIDENCE only, NO promotion.**
+  Multivariate stays `partial`; this is one leg of the 0.6 covered-flip gate, not
+  the flip. The recovery leg (MV-5), the derived-estimand identity tests (MV-3),
+  Darwin, and Rose are still owed.
+- Checks: `NOT_CRAN=true devtools::test(filter = "multivariate")` — the sommer
+  comparator tests (diagonal + new full-unstructured) **executed and passed**
+  (sommer 4.4.5 + nadiv installed); only the 2 live-Julia bridge tests skipped.
+  `air format` delta confined to the new test.
+
+## 2026-07-11 (MV-4: multivariate cbind() auto-route on the default path)
+
+- Implemented the ratified doc-38 grammar freeze (MV-4): a `cbind(...)` Gaussian
+  response now auto-routes to `hs_fit_julia_multivariate_payload` on the default
+  `engine = "fit"` path (removed the opt-in abort at `R/hsquared.R:85`; branched
+  the fit dispatch), and a multivariate response under `engine = "julia"` with no
+  explicit target auto-selects `target = "multivariate"` (§H2). The opt-in
+  spelling remains a valid back-compat alias.
+- Claim boundary: **implementation only, NO promotion.** Multivariate stays
+  `partial`/experimental in `validation_status()` and the capability ledgers; the
+  lifecycle badge is unchanged; `public_covered_count` unaffected. The
+  `partial → covered` R flip is the separate 0.6 gate (component comparator +
+  `h2_T`/`r_g` identity tests + Darwin + Rose), not this slice. The spec fence
+  (`R/model-spec.R`) still rejects multivariate + genomic/second-effect/iid/rr.
+- Checks: `air format R/hsquared.R tests/testthat/test-multivariate.R` (delta
+  confined to the edited regions; no pre-existing reformatting);
+  `devtools::test(filter = "multivariate")` clean (3 live-Julia skips);
+  full `devtools::test()` **exit 0, 0 failures** (live JuliaCall/comparator skips
+  only); grep confirms no other test depended on the removed abort messages
+  (the `experimental and opt-in` matches in test-repeatability/genomic/common-env/
+  single-step/relmat are each that model's own still-present opt-in abort).
+- Tests: updated the two stale default-path/opt-in abort assertions in
+  `test-multivariate.R` to verify the auto-route — `engine = "validate"` confirms
+  the multivariate target Julia-free, and a bridge-gated check confirms the old
+  `experimental and opt-in` / `requires the opt-in target` aborts no longer fire.
+
 ## 2026-07-11 (0.2.0 code-arc baseline assembly merge)
 
 - Assembled the `0.2.0` baseline onto local `main` by merging five
