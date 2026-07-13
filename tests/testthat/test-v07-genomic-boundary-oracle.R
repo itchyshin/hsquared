@@ -1,7 +1,9 @@
-oracle_tool <- normalizePath(
-  testthat::test_path("..", "..", "tools", "v07_genomic_boundary_oracle.R"),
-  mustWork = TRUE
+oracle_tool <- testthat::test_path("..", "..", "tools", "v07_genomic_boundary_oracle.R")
+testthat::skip_if_not(
+  file.exists(oracle_tool),
+  "repository-only v0.7 boundary oracle is unavailable in the built package"
 )
+oracle_tool <- normalizePath(oracle_tool, mustWork = TRUE)
 source(oracle_tool, local = TRUE)
 
 v07_test_hash <- function(letter, n = 64L) paste(rep(letter, n), collapse = "")

@@ -93,8 +93,12 @@
 #'   `heritability_interval()` and
 #'   `heritability_standard_error()` are unavailable. The R capability remains
 #'   `partial`/experimental and validation-scale; the explicit route does not
-#'   move `public_covered_count` from 5. The stopped diagnostic pilot means the
-#'   route must remain opt-in.
+#'   move `public_covered_count` from 5. A fail-closed boundary candidate matched
+#'   an independent oracle on all 240 sealed holdouts, correcting 30
+#'   classifications with no losses, but one cell had a 5.99x p95 runtime ratio
+#'   against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
+#'   not run, and the route must remain opt-in pending performance work and a new
+#'   untouched holdout.
 #'   `target = "single_step"` remains an experimental, opt-in path for
 #'   `single_step(1 | id, Hinv = Hinv)` (a supplied single-step relationship
 #'   inverse). Both targets surface `HSquared.fit_ai_reml()` and are REML-only;

@@ -3,6 +3,41 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-13 (v0.7 sealed genomic boundary holdout — negative endpoint)
+
+- Frozen Julia candidate: core `ecc058f380be71058c9cfde373c345ab7a2f6aba`,
+  sealed execution `d89100cd93a33d42cbaf50737d60a08f95e0658f`.
+  Frozen R bridge/oracle: `68e2bd06be0bcc85e9a832e3c0c327bcdc53d3a1`.
+- Totoro retained all 240 attempted datasets: candidate valid 240, default valid
+  210, wins 30, losses 0, unresolved 0, candidate invalid 0. Cell
+  attempted/wins/losses were 48/11/0, 48/2/0, 48/11/0, 48/6/0, and 48/0/0
+  in the preregistered cell order; net gain `(30 - 0) / 240 = 0.125`.
+- Independent base R reproduced the 210 interior, 17 lower, and 13 upper
+  classifications, all paired counts, the one-sided Clopper-Pearson lower bound
+  `0.904966147`, and all five nearest-rank p95 ratios.
+- Scientific resolution passed, but the conjunctive outcome was
+  `BOUNDARY_HOLDOUT_FAIL`: `n120_m600_r050` was 5.99x at p95 versus the frozen
+  3x cap. The 240 seeds are spent; the nine-cell recovery campaign did not run.
+- The Julia launcher repair `75279136` is post-seal orchestration only and not
+  part of the sealed candidate. It changed no packet, candidate, seed, or gate.
+- Prior checks at the frozen commits: R engine-free suite 1,896 pass / 0 fail /
+  0 warn / 68 ordinary skips; commit-pinned live genomic R-Julia suite 265 pass
+  / 0 fail / 0 warn / 0 skip; Julia boundary 72/72; full Julia `Pkg.test()` green.
+- Final closeout tree: `devtools::document()` regenerated `man/hs_control.Rd`;
+  `devtools::test(reporter = "summary")` completed with 0 failures, 0 warnings,
+  and 68 expected live/toolchain skips; the standalone oracle file test passed;
+  `pkgdown::check_pkgdown()` found no problems.
+- The first `R CMD check --no-manual` exposed that the repo-only oracle test
+  normalized `tools/v07_genomic_boundary_oracle.R` before checking whether that
+  repository path existed in the built package. The test now explicitly skips
+  the unavailable repo-only tool in built-package checks while continuing to
+  run locally; its focused local test stayed green. The repaired
+  `_R_CHECK_FORCE_SUGGESTS_=false` `rcmdcheck` rerun finished **0 errors / 0
+  warnings / 0 notes**.
+- Claim boundary: explicit experimental route only; no default activation,
+  nine-cell recovery, runtime-acceptability, production, interval, heritability,
+  capability, count, release, or G10 claim. `public_covered_count` remains 5.
+
 ## 2026-07-12 (v0.7 independent genomic boundary oracle — pre-run)
 
 - Added the standalone base-R oracle at
