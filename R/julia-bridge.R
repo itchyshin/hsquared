@@ -2453,7 +2453,16 @@ hs_fit_julia_genomic_payload <- function(
     }
   }
   rel <- payload$relationship
-  fit_cmd <- if (identical(rel, "genomic")) {
+  boundary_eligible <- identical(rel, "genomic") &&
+    nrow(payload$Z) == ncol(payload$Z) &&
+    nrow(payload$Z) <= 2000L &&
+    isTRUE(all.equal(
+      as.matrix(payload$Z),
+      diag(nrow(payload$Z)),
+      tolerance = 1e-12,
+      check.attributes = FALSE
+    ))
+  fit_cmd <- if (boundary_eligible) {
     paste(
       "hsq_boundary_result = HSquared._fit_ai_reml_genomic_boundary(",
       "hsq_spec;",
@@ -2494,7 +2503,7 @@ hs_fit_julia_genomic_payload <- function(
   } else {
     NULL
   }
-  raw_boundary <- if (identical(payload$relationship, "genomic")) {
+  raw_boundary <- if (boundary_eligible) {
     JuliaCall::julia_eval(paste0(
       "Dict(String(k) => (getfield(hsq_boundary_result.boundary, k) === nothing ",
       "? missing : getfield(hsq_boundary_result.boundary, k)) ",
@@ -2518,10 +2527,8 @@ hs_fit_julia_genomic_payload <- function(
   )
   if (identical(rel, "genomic")) {
     provenance <- hs_normalize_genomic_provenance(raw_provenance)
-    boundary <- hs_normalize_genomic_boundary(raw_boundary)
     payload$relationship_provenance <- provenance
     result$relationship_provenance <- provenance
-    result$genomic_boundary <- boundary
     result$heritability$component <- "genomic_variance_ratio"
     result$heritability$relationship_scale <- provenance$relationship_scale
     result$heritability$relationship_source <- provenance$relationship_source
@@ -2529,17 +2536,23 @@ hs_fit_julia_genomic_payload <- function(
     result$heritability$allele_frequency_source <-
       provenance$allele_frequency_source
     result$heritability$ridge <- provenance$ridge
-    result$heritability$numerical_estimate <- result$heritability$estimate
-    if (!is.na(boundary$profile_ratio)) {
-      result$heritability$estimate <- boundary$profile_ratio
+    if (!is.null(raw_boundary)) {
+      boundary <- hs_normalize_genomic_boundary(raw_boundary)
+      result$genomic_boundary <- boundary
+      result$heritability$numerical_estimate <- boundary$numerical_ratio
+      if (!is.na(boundary$profile_ratio)) {
+        result$heritability$estimate <- boundary$profile_ratio
+      }
     }
     # Genomic ratio uncertainty is not yet scale-labelled or separately
     # calibrated. Keep the engine's raw capability out of the public R result
     # until that contract is validated.
     result$heritability_interval <- NULL
     result$heritability_se <- NULL
-    if (boundary$status %in% c("boundary_lower", "boundary_upper")) {
+    if (!is.null(result$genomic_boundary) &&
+        result$genomic_boundary$status %in% c("boundary_lower", "boundary_upper")) {
       result$breeding_values <- NULL
+      result$breeding_values_plot_data <- NULL
       result$random_effects <- NULL
       result$predictions <- NULL
       result$prediction_error_variance <- NULL

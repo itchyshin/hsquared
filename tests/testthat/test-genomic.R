@@ -165,6 +165,7 @@ test_that("the explicit supplied-Ginv route fits [live]", {
   )
 
   expect_s3_class(fit, "hsquared_fit")
+  expect_null(fit$result$genomic_boundary)
   expect_equal(fit$spec$target, "genomic")
   vc <- variance_components(fit)
   expect_equal(vc$component, c("genomic", "residual"))
@@ -191,6 +192,43 @@ test_that("the explicit supplied-Ginv route fits [live]", {
     ],
     "estimated_genomic_ai_reml"
   )
+})
+
+test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live boundary GREML."
+  )
+  set.seed(99)
+  n <- 8L
+  y <- stats::rnorm(n)
+  A <- matrix(stats::rnorm(n * n), n, n)
+  K <- crossprod(A) / n + diag(n) * 0.05
+  ids <- paste0("b", seq_len(n))
+  Q <- solve(K)
+  dimnames(Q) <- list(ids, ids)
+  dat <- data.frame(y = y, id = ids)
+  fit <- hsquared(
+    y ~ genomic(1 | id, Ginv = Q),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+  expect_true(fit$result$converged)
+  expect_identical(fit$result$genomic_boundary$status, "boundary_lower")
+  expect_identical(heritability(fit)$estimate, 0)
+  expect_identical(heritability(fit)$numerical_estimate, 1e-7)
+  expect_null(fit$result[["breeding_values"]])
+  expect_null(fit$result$prediction_error_variance)
+  expect_null(fit$result$reliability)
+  expect_error(breeding_values(fit), "does not contain")
+  printed <- capture.output(print(fit))
+  expect_true(any(grepl("scientific endpoint.*0", printed)))
+  expect_true(any(grepl("numerical MME.*1e-07", printed)))
 })
 
 test_that("genomic() accepts a marker matrix to build the relationship", {
