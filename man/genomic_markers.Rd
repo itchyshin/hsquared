@@ -82,9 +82,12 @@ appear inside model formulas.
 These functions provide readable formula vocabulary for genomic, single-step,
 marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 return \code{NULL}); they take meaning only inside an \code{\link[=hsquared]{hsquared()}} formula.
-\code{genomic()} now auto-routes a narrow Gaussian REML random-intercept model on
-the default fit path; the explicit \verb{engine = "julia", target = "genomic"}
-spelling remains an alias. \code{single_step()} remains opt-in and experimental.
+\code{genomic()} fits a narrow Gaussian REML random-intercept model only through
+the explicit \verb{engine = "julia", target = "genomic"} path. \code{single_step()}
+also remains opt-in and experimental.
+The reported genomic coefficient is \code{sigma_g2 / (sigma_g2 + sigma_e2)} on
+the declared relationship scale, not generally an average marginal
+phenotypic-variance fraction or pedigree/population heritability.
 Accepted genomic forms are \code{genomic(1 | id, Ginv = Ginv)} or
 \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
 \code{target = "snp_blup"}), and \code{single_step(1 | id, Hinv = Hinv)} (a precomputed

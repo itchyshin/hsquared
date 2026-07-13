@@ -5,9 +5,12 @@
 #' These functions provide readable formula vocabulary for genomic, single-step,
 #' marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 #' return `NULL`); they take meaning only inside an [hsquared()] formula.
-#' `genomic()` now auto-routes a narrow Gaussian REML random-intercept model on
-#' the default fit path; the explicit `engine = "julia", target = "genomic"`
-#' spelling remains an alias. `single_step()` remains opt-in and experimental.
+#' `genomic()` fits a narrow Gaussian REML random-intercept model only through
+#' the explicit `engine = "julia", target = "genomic"` path. `single_step()`
+#' also remains opt-in and experimental.
+#' The reported genomic coefficient is `sigma_g2 / (sigma_g2 + sigma_e2)` on
+#' the declared relationship scale, not generally an average marginal
+#' phenotypic-variance fraction or pedigree/population heritability.
 #' Accepted genomic forms are `genomic(1 | id, Ginv = Ginv)` or
 #' `genomic(1 | id, markers = M)` (GREML, or SNP-BLUP via
 #' `target = "snp_blup"`), and `single_step(1 | id, Hinv = Hinv)` (a precomputed

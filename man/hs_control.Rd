@@ -15,9 +15,8 @@ hs_control(
 }
 \arguments{
 \item{engine}{Execution engine. \code{"fit"} (default) fits the v0.1 Gaussian
-animal model or the narrow Gaussian REML \code{genomic()} route via the
-\code{HSquared.jl} engine; this requires a local Julia, the \code{JuliaCall} package,
-and an \code{HSquared.jl} checkout. \code{"validate"}
+animal model via the \code{HSquared.jl} engine; this requires a local Julia,
+the \code{JuliaCall} package, and an \code{HSquared.jl} checkout. \code{"validate"}
 validates the parser and bridge payload without fitting, then returns the
 validated spec invisibly (after a confirming message). \code{"julia"} exposes
 the advanced opt-in bridge with explicit \code{target} control.}
@@ -91,17 +90,22 @@ relationship) — and surfaces the Julia-owned
 \code{HSquared.fit_two_effect_reml()} REML-only optimizer (three-component
 \code{initial} with \code{sigma_a2}/\code{sigma_c2}/\code{sigma_e2}). It is REML only and not
 the default.
-\code{target = "genomic"} is the explicit alias for the narrow Gaussian REML
-genomic model that now auto-routes under \code{engine = "fit"}. It accepts
+\code{target = "genomic"} is the explicit experimental narrow Gaussian REML
+genomic route. It accepts
 \code{genomic(1 | id, markers = M)}, using sample allele frequencies,
 unweighted VanRaden method 1, and ridge \code{0.01}, or
 \code{genomic(1 | id, Ginv = Ginv)}, whose construction method, allele-frequency
 source, ridge, and scale denominator remain unknown. \code{heritability()}
-returns a coefficient-scale \code{genomic_variance_ratio} on the declared
-relationship scale; genomic \code{heritability_interval()} and
+returns the genomic variance-component ratio on the declared relationship
+scale, \code{sigma_g2 / (sigma_g2 + sigma_e2)}. Because relationship scaling
+enters through the kernel, this is not generally the fraction of average
+marginal phenotypic variance and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability. Genomic
+\code{heritability_interval()} and
 \code{heritability_standard_error()} are unavailable. The R capability remains
-\code{partial}/experimental and validation-scale; this activation does not move
-\code{public_covered_count} from 5.
+\code{partial}/experimental and validation-scale; the explicit route does not
+move \code{public_covered_count} from 5. The stopped diagnostic pilot means the
+route must remain opt-in.
 \code{target = "single_step"} remains an experimental, opt-in path for
 \code{single_step(1 | id, Hinv = Hinv)} (a supplied single-step relationship
 inverse). Both targets surface \code{HSquared.fit_ai_reml()} and are REML-only;
@@ -152,8 +156,7 @@ An object of class \code{"hs_control"}.
 \description{
 \code{hs_control()} records execution and storage controls for hsquared model
 calls. The default \code{engine = "fit"} fits the validated v0.1 Gaussian
-animal model and the narrow experimental Gaussian genomic REML route through
-the \code{HSquared.jl} engine (average-information REML);
+animal model through the \code{HSquared.jl} engine (average-information REML);
 \code{engine = "validate"} parses and validates the contract without fitting,
 returning the validated spec invisibly; and \code{engine = "julia"} exposes
 advanced engine controls.

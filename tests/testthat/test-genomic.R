@@ -1,7 +1,7 @@
 # v0.7 genomic GREML activation: a single genomic random effect from either a
 # supplied precision or the frozen sample-p VanRaden-1 marker construction.
-# Gaussian REML auto-routes on the default fit path; the explicit Julia target
-# remains an alias.
+# Gaussian REML remains an explicit Julia target after the activation pilot
+# stopped; the default fit path must reject it.
 
 hs_test_ginv <- function(ids) {
   n <- length(ids)
@@ -87,7 +87,7 @@ test_that("genomic is a valid opt-in julia target", {
   expect_equal(hsquared:::hs_validate_julia_target("genomic"), "genomic")
 })
 
-test_that("the default fit path auto-routes a genomic() formula", {
+test_that("the default fit path keeps genomic() opt-in", {
   ids <- paste0("g", 1:3)
   Ginv <- hs_test_ginv(ids)
   dat <- data.frame(y = c(1, 2, 3), id = ids)
@@ -100,30 +100,15 @@ test_that("the default fit path auto-routes a genomic() formula", {
   ))
   expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
 
-  if (!hsquared:::hs_julia_bridge_available()) {
-    default_error <- tryCatch(
-      hsquared(
-        y ~ genomic(1 | id, Ginv = Ginv),
-        data = dat,
-        family = stats::gaussian()
-      ),
-      error = function(e) conditionMessage(e)
-    )
-    explicit_error <- tryCatch(
-      hsquared(
-        y ~ genomic(1 | id, Ginv = Ginv),
-        data = dat,
-        family = stats::gaussian(),
-        control = hs_control(
-          engine = "julia",
-          engine_control = list(target = "genomic")
-        )
-      ),
-      error = function(e) conditionMessage(e)
-    )
-    expect_false(grepl("experimental and opt-in", default_error, fixed = TRUE))
-    expect_false(grepl("experimental and opt-in", explicit_error, fixed = TRUE))
-  }
+  expect_error(
+    hsquared(
+      y ~ genomic(1 | id, Ginv = Ginv),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    "experimental and opt-in",
+    fixed = TRUE
+  )
 
   expect_error(
     hsquared(
@@ -145,7 +130,7 @@ test_that("the genomic bridge requires an internal payload", {
   )
 })
 
-test_that("default and explicit supplied-Ginv routes are identical [live]", {
+test_that("the explicit supplied-Ginv route fits [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -172,11 +157,6 @@ test_that("default and explicit supplied-Ginv routes are identical [live]", {
   fit <- hsquared(
     y ~ genomic(1 | id, Ginv = Ginv),
     data = dat,
-    family = stats::gaussian()
-  )
-  fit_explicit <- hsquared(
-    y ~ genomic(1 | id, Ginv = Ginv),
-    data = dat,
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
@@ -187,11 +167,9 @@ test_that("default and explicit supplied-Ginv routes are identical [live]", {
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "genomic")
   vc <- variance_components(fit)
-  expect_equal(vc, variance_components(fit_explicit), tolerance = 1e-10)
   expect_equal(vc$component, c("genomic", "residual"))
   expect_true(all(is.finite(vc$estimate)) && all(vc$estimate > 0))
   ratio <- heritability(fit)
-  expect_equal(ratio, heritability(fit_explicit), tolerance = 1e-10)
   expect_equal(ratio$term, "genomic")
   expect_equal(ratio$component, "genomic_variance_ratio")
   expect_equal(ratio$relationship_source, "supplied_Ginv")
@@ -722,7 +700,7 @@ test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", 
   )
 })
 
-test_that("marker, explicit alias, and exact supplied-Q routes agree [live]", {
+test_that("explicit marker and exact supplied-Q routes agree [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -750,11 +728,6 @@ test_that("marker, explicit alias, and exact supplied-Q routes agree [live]", {
   fit <- hsquared(
     y ~ x + genomic(1 | id, markers = M),
     data = dat,
-    family = stats::gaussian()
-  )
-  fit_explicit <- hsquared(
-    y ~ x + genomic(1 | id, markers = M),
-    data = dat,
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
@@ -765,12 +738,10 @@ test_that("marker, explicit alias, and exact supplied-Q routes agree [live]", {
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "genomic")
   vc <- variance_components(fit)
-  expect_equal(vc, variance_components(fit_explicit), tolerance = 1e-10)
   expect_equal(vc$component, c("genomic", "residual"))
   expect_true(all(is.finite(vc$estimate)) && all(vc$estimate > 0))
   expect_equal(nrow(breeding_values(fit)), na)
   expect_equal(breeding_values(fit)$id, ids)
-  expect_equal(breeding_values(fit_explicit)$id, ids)
   ratio <- heritability(fit)
   expect_equal(ratio$term, "genomic")
   expect_equal(ratio$component, "genomic_variance_ratio")
@@ -793,7 +764,11 @@ test_that("marker, explicit alias, and exact supplied-Q routes agree [live]", {
   fit_q <- hsquared(
     y ~ x + genomic(1 | id, Ginv = Q),
     data = dat,
-    family = stats::gaussian()
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
   )
 
   expect_equal(breeding_values(fit_q)$id, ids)
@@ -873,21 +848,28 @@ test_that("frozen activation fixture matches base R and both public routes [live
   Q_julia <- JuliaCall::julia_eval("hsq_fixture_construction.Q")
   expect_lte(max(abs(Q - Q_julia)), 1e-10)
   dimnames(Q_julia) <- list(ids, ids)
+  genomic_control <- hs_control(
+    engine = "julia",
+    engine_control = list(target = "genomic")
+  )
 
   fit_markers <- hsquared(
     y ~ x + genomic(1 | id, markers = M),
     data = dat,
-    family = stats::gaussian()
+    family = stats::gaussian(),
+    control = genomic_control
   )
   fit_q_base_r <- hsquared(
     y ~ x + genomic(1 | id, Ginv = Q),
     data = dat,
-    family = stats::gaussian()
+    family = stats::gaussian(),
+    control = genomic_control
   )
   fit_q <- hsquared(
     y ~ x + genomic(1 | id, Ginv = Q_julia),
     data = dat,
-    family = stats::gaussian()
+    family = stats::gaussian(),
+    control = genomic_control
   )
 
   expect_equal(

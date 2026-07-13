@@ -7,12 +7,16 @@
 #' Julia and `HSquared.jl` are available and otherwise errors with install
 #' guidance; `hs_control(engine = "validate")` validates the contract without
 #' fitting, then returns the validated model spec invisibly. A narrow Gaussian
-#' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model
-#' also auto-routes on the default fit path; the explicit Julia
-#' `target = "genomic"` spelling is an alias. Marker construction uses sample
-#' allele frequencies, unweighted VanRaden method 1, and ridge `0.01`.
+#' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model is
+#' available only through the explicit experimental Julia `target = "genomic"`.
+#' Marker construction uses sample allele frequencies, unweighted VanRaden
+#' method 1, and ridge `0.01`.
 #' `heritability()` labels its coefficient-scale result
-#' `genomic_variance_ratio`; genomic ratio intervals and standard errors are
+#' `genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`: the genomic
+#' variance-component ratio on the declared relationship scale. It is not
+#' generally the fraction of average marginal phenotypic variance and is not
+#' pedigree-, founder-base-, population-, or universal narrow-sense
+#' heritability. Genomic ratio intervals and standard errors are
 #' unavailable. Repeatability, two-effect, marker-effect, multivariate, and
 #' non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no
 #' heritability) models are opt-in experimental paths; factor-analytic models
@@ -37,10 +41,9 @@
 #' @param control An object created by [hs_control()].
 #' @param ... Reserved for future arguments.
 #'
-#' @return A `"hsquared_fit"` object from the fitted Gaussian animal or narrow
-#'   genomic REML model. Genomic fits remain `partial`/experimental and carry
-#'   their relationship-scale provenance; supplied `Ginv` construction remains
-#'   unknown.
+#' @return A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model.
+#'   Explicit experimental genomic fits carry their relationship-scale
+#'   provenance; supplied `Ginv` construction remains unknown.
 #'   When the Julia engine is unavailable, an informative error. When
 #'   `engine = "validate"`, the validated model specification is returned
 #'   invisibly as a named list (after a confirming message), for programmatic
@@ -114,11 +117,7 @@ hsquared <- function(
         call. = FALSE
       )
     }
-    default_genomic <- !is.null(spec$random$genomic)
-    opt_in_effect <- setdiff(
-      names(spec$random),
-      c("animal", if (default_genomic) "genomic")
-    )
+    opt_in_effect <- setdiff(names(spec$random), "animal")
     if (length(opt_in_effect) > 0L) {
       # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
       # name them honestly rather than printing the internal slot name.
@@ -146,7 +145,7 @@ hsquared <- function(
     )
     if (!hs_julia_bridge_available(project)) {
       stop(
-        "Fitting this Gaussian REML model requires the HSquared.jl Julia ",
+        "Fitting the v0.1 Gaussian animal model requires the HSquared.jl Julia ",
         "engine (Julia, the `JuliaCall` R package, and a from-source checkout ",
         "of `HSquared.jl`, which is not yet a registered Julia package). To ",
         "fit: (1) `git clone https://github.com/itchyshin/HSquared.jl`; ",
@@ -169,18 +168,6 @@ hsquared <- function(
           control,
           "multivariate"
         )
-      ))
-    }
-    if (default_genomic) {
-      return(hs_fit_julia_genomic_payload(
-        payload,
-        project = project,
-        initial = hs_engine_control_value(
-          control,
-          "initial",
-          c(sigma_a2 = 1, sigma_e2 = 1)
-        ),
-        iterations = hs_engine_control_value(control, "iterations", 100L)
       ))
     }
     return(hs_fit_julia_ai_reml_payload(

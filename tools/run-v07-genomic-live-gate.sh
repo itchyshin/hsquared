@@ -8,6 +8,22 @@ set -euo pipefail
 #   HSQUARED_JULIA_PROJECT=/absolute/path/to/HSquared.jl \
 #     bash tools/run-v07-genomic-live-gate.sh
 
+v07_log_has_skips() {
+  grep -Eq '══ Skipped|SKIP[[:space:]]+[1-9][0-9]*' "$1"
+}
+
+if [[ "${1:-}" == "--selftest" ]]; then
+  ZERO="$(mktemp)"
+  POSITIVE="$(mktemp)"
+  trap 'rm -f "$ZERO" "$POSITIVE"' EXIT
+  printf '%s\n' 'PASS 148 FAIL 0 WARN 0 SKIP 0' > "$ZERO"
+  printf '%s\n' 'PASS 147 FAIL 0 WARN 0 SKIP 1' > "$POSITIVE"
+  ! v07_log_has_skips "$ZERO" || { echo "zero-skip selftest failed" >&2; exit 1; }
+  v07_log_has_skips "$POSITIVE" || { echo "positive-skip selftest failed" >&2; exit 1; }
+  echo "V07_GENOMIC_LIVE_GATE_SELFTEST_PASS"
+  exit 0
+fi
+
 : "${EXPECTED_R_COMMIT:?set EXPECTED_R_COMMIT to the exact hsquared commit}"
 : "${EXPECTED_JULIA_COMMIT:?set EXPECTED_JULIA_COMMIT to the exact HSquared.jl commit}"
 : "${HSQUARED_JULIA_PROJECT:?set HSQUARED_JULIA_PROJECT to the HSquared.jl checkout}"
@@ -44,7 +60,7 @@ trap 'rm -f "$LOG"' EXIT
 Rscript -e 'devtools::test(filter = "boundary-genomic|genomic", reporter = "summary")' \
   2>&1 | tee "$LOG"
 
-if grep -Eq '══ Skipped|Reason: .*required|SKIP' "$LOG"; then
+if v07_log_has_skips "$LOG"; then
   echo "v0.7 live gate skipped required evidence" >&2
   exit 1
 fi
@@ -57,4 +73,3 @@ echo "V07_GENOMIC_LIVE_GATE_PASS"
 echo "hsquared_commit=$R_COMMIT"
 echo "HSquared_jl_commit=$JULIA_COMMIT"
 echo "fixture_tree=$FIXTURE_TREE"
-

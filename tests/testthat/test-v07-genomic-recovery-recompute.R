@@ -1,4 +1,12 @@
-source(testthat::test_path("..", "..", "tools", "v07_genomic_recovery_recompute.R"), local = TRUE)
+checker <- system.file(
+  "tools", "v07_genomic_recovery_recompute.R", package = "hsquared"
+)
+if (!nzchar(checker)) {
+  checker <- testthat::test_path(
+    "..", "..", "inst", "tools", "v07_genomic_recovery_recompute.R"
+  )
+}
+source(checker, local = TRUE)
 
 v07_test_hash <- function(letter) paste(rep(letter, 64L), collapse = "")
 
@@ -7,6 +15,7 @@ v07_test_inputs <- function(tier = "confirm") {
   raw <- data.frame(
     tier = tier, cell_id = "n120_m600_r020", seed = seeds, n = 120, m = 600,
     truth_sigma_g2 = 0.2, truth_sigma_e2 = 0.8, truth_ratio = 0.2,
+    ridge = 0.01,
     estimate_sigma_g2 = c(0.19, 0.20, 0.21, 0.20, NA),
     estimate_sigma_e2 = c(0.79, 0.80, 0.81, 0.80, NA),
     estimate_ratio = c(0.194, 0.200, 0.206, 0.200, NA),
@@ -92,6 +101,7 @@ test_that("pilot sizing uses the preregistered upper SD bound", {
 
   expect_gt(upper_sd, raw_sd)
   expect_gt(expected_n, naive_n)
+  expect_equal(out$pilot_sd_upper[out$target == "sigma_g2"], upper_sd)
   expect_equal(out$required_n_raw[out$target == "sigma_g2"], expected_n)
 })
 
@@ -123,6 +133,10 @@ test_that("every preregistered mutation turns at least one gate red", {
   ridge$ridge[[1]] <- 0.02
   expect_error(v07_validate_inputs(x$raw, ridge, "confirm", expected), "frozen ridge")
 
+  raw_ridge <- x$raw
+  raw_ridge$ridge[[1]] <- 0.02
+  expect_error(v07_validate_inputs(raw_ridge, x$manifest, "confirm", expected), "raw/manifest mismatch")
+
   marker_hash <- x$raw
   marker_hash$marker_hash[[1]] <- "mutated"
   expect_error(v07_validate_inputs(marker_hash, x$manifest, "confirm", expected), "SHA-256")
@@ -142,14 +156,34 @@ test_that("raw checksum sealing detects a valid-looking hash mutation", {
   skip_if(Sys.which("shasum") == "" && Sys.which("sha256sum") == "")
   root <- withr::local_tempdir()
   dir.create(file.path(root, "raw", "confirm"), recursive = TRUE)
+  dir.create(file.path(root, "raw", "pilot"), recursive = TRUE)
   x <- v07_test_inputs("confirm")
-  path <- file.path(root, "raw", "confirm", "1.tsv")
-  utils::write.table(x$raw[1, ], path, sep = "\t", quote = FALSE, row.names = FALSE)
-  v07_write_raw_lock(root)
-  expect_invisible(v07_verify_raw_lock(root))
-  expect_error(v07_write_raw_lock(root), "refusing to reseal")
+  confirm_path <- file.path(root, "raw", "confirm", "1.tsv")
+  pilot_path <- file.path(root, "raw", "pilot", "1.tsv")
+  utils::write.table(x$raw[1, ], confirm_path, sep = "\t", quote = FALSE, row.names = FALSE)
+  pilot_row <- x$raw[1, ]
+  pilot_row$tier <- "pilot"
+  utils::write.table(pilot_row, pilot_path, sep = "\t", quote = FALSE, row.names = FALSE)
+
+  v07_write_raw_lock(root, "pilot")
+  v07_write_raw_lock(root, "confirm")
+  expect_true(file.exists(file.path(root, "pilot_raw_sha256.tsv")))
+  expect_true(file.exists(file.path(root, "confirm_raw_sha256.tsv")))
+  expect_invisible(v07_verify_raw_lock(root, "pilot"))
+  expect_invisible(v07_verify_raw_lock(root, "confirm"))
+  expect_error(v07_write_raw_lock(root, "pilot"), "refusing to reseal")
+  expect_error(v07_write_raw_lock(root, "confirm"), "refusing to reseal")
+
   changed <- x$raw[1, ]
   changed$marker_hash <- v07_test_hash("f")
-  utils::write.table(changed, path, sep = "\t", quote = FALSE, row.names = FALSE)
-  expect_error(v07_verify_raw_lock(root), "checksum lock")
+  utils::write.table(changed, confirm_path, sep = "\t", quote = FALSE, row.names = FALSE)
+  expect_error(v07_verify_raw_lock(root, "confirm"), "checksum lock")
+  expect_invisible(v07_verify_raw_lock(root, "pilot"))
+
+  extra_path <- file.path(root, "raw", "pilot", "extra.tsv")
+  utils::write.table(pilot_row, extra_path, sep = "\t", quote = FALSE, row.names = FALSE)
+  expect_error(v07_verify_raw_lock(root, "pilot"), "file set differs")
+  unlink(extra_path)
+  unlink(pilot_path)
+  expect_error(v07_verify_raw_lock(root, "pilot"), "file set differs")
 })

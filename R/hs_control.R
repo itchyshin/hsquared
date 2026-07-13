@@ -2,16 +2,14 @@
 #'
 #' `hs_control()` records execution and storage controls for hsquared model
 #' calls. The default `engine = "fit"` fits the validated v0.1 Gaussian
-#' animal model and the narrow experimental Gaussian genomic REML route through
-#' the `HSquared.jl` engine (average-information REML);
+#' animal model through the `HSquared.jl` engine (average-information REML);
 #' `engine = "validate"` parses and validates the contract without fitting,
 #' returning the validated spec invisibly; and `engine = "julia"` exposes
 #' advanced engine controls.
 #'
 #' @param engine Execution engine. `"fit"` (default) fits the v0.1 Gaussian
-#'   animal model or the narrow Gaussian REML `genomic()` route via the
-#'   `HSquared.jl` engine; this requires a local Julia, the `JuliaCall` package,
-#'   and an `HSquared.jl` checkout. `"validate"`
+#'   animal model via the `HSquared.jl` engine; this requires a local Julia,
+#'   the `JuliaCall` package, and an `HSquared.jl` checkout. `"validate"`
 #'   validates the parser and bridge payload without fitting, then returns the
 #'   validated spec invisibly (after a confirming message). `"julia"` exposes
 #'   the advanced opt-in bridge with explicit `target` control.
@@ -81,17 +79,22 @@
 #'   `HSquared.fit_two_effect_reml()` REML-only optimizer (three-component
 #'   `initial` with `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and not
 #'   the default.
-#'   `target = "genomic"` is the explicit alias for the narrow Gaussian REML
-#'   genomic model that now auto-routes under `engine = "fit"`. It accepts
+#'   `target = "genomic"` is the explicit experimental narrow Gaussian REML
+#'   genomic route. It accepts
 #'   `genomic(1 | id, markers = M)`, using sample allele frequencies,
 #'   unweighted VanRaden method 1, and ridge `0.01`, or
 #'   `genomic(1 | id, Ginv = Ginv)`, whose construction method, allele-frequency
 #'   source, ridge, and scale denominator remain unknown. `heritability()`
-#'   returns a coefficient-scale `genomic_variance_ratio` on the declared
-#'   relationship scale; genomic `heritability_interval()` and
+#'   returns the genomic variance-component ratio on the declared relationship
+#'   scale, `sigma_g2 / (sigma_g2 + sigma_e2)`. Because relationship scaling
+#'   enters through the kernel, this is not generally the fraction of average
+#'   marginal phenotypic variance and is not pedigree-, founder-base-,
+#'   population-, or universal narrow-sense heritability. Genomic
+#'   `heritability_interval()` and
 #'   `heritability_standard_error()` are unavailable. The R capability remains
-#'   `partial`/experimental and validation-scale; this activation does not move
-#'   `public_covered_count` from 5.
+#'   `partial`/experimental and validation-scale; the explicit route does not
+#'   move `public_covered_count` from 5. The stopped diagnostic pilot means the
+#'   route must remain opt-in.
 #'   `target = "single_step"` remains an experimental, opt-in path for
 #'   `single_step(1 | id, Hinv = Hinv)` (a supplied single-step relationship
 #'   inverse). Both targets surface `HSquared.fit_ai_reml()` and are REML-only;
