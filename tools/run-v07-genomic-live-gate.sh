@@ -12,6 +12,10 @@ v07_log_has_skips() {
   grep -Eq '══ Skipped|SKIP[[:space:]]+[1-9][0-9]*' "$1"
 }
 
+v07_log_has_failures() {
+  grep -Eq '══ Failed|FAIL[[:space:]]+[1-9][0-9]*' "$1"
+}
+
 if [[ "${1:-}" == "--selftest" ]]; then
   ZERO="$(mktemp)"
   POSITIVE="$(mktemp)"
@@ -20,6 +24,9 @@ if [[ "${1:-}" == "--selftest" ]]; then
   printf '%s\n' 'PASS 147 FAIL 0 WARN 0 SKIP 1' > "$POSITIVE"
   ! v07_log_has_skips "$ZERO" || { echo "zero-skip selftest failed" >&2; exit 1; }
   v07_log_has_skips "$POSITIVE" || { echo "positive-skip selftest failed" >&2; exit 1; }
+  ! v07_log_has_failures "$ZERO" || { echo "zero-failure selftest failed" >&2; exit 1; }
+  printf '%s\n' 'PASS 147 FAIL 1 WARN 0 SKIP 0' > "$POSITIVE"
+  v07_log_has_failures "$POSITIVE" || { echo "positive-failure selftest failed" >&2; exit 1; }
   echo "V07_GENOMIC_LIVE_GATE_SELFTEST_PASS"
   exit 0
 fi
@@ -60,6 +67,10 @@ trap 'rm -f "$LOG"' EXIT
 Rscript -e 'devtools::test(filter = "boundary-genomic|genomic", reporter = "summary")' \
   2>&1 | tee "$LOG"
 
+if v07_log_has_failures "$LOG"; then
+  echo "v0.7 live gate had required test failures" >&2
+  exit 1
+fi
 if v07_log_has_skips "$LOG"; then
   echo "v0.7 live gate skipped required evidence" >&2
   exit 1

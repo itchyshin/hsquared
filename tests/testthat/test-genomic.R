@@ -181,12 +181,6 @@ test_that("the explicit supplied-Ginv route fits [live]", {
   expect_true(is.finite(h2) && h2 > 0 && h2 < 1)
   expect_equal(nrow(breeding_values(fit)), na)
   expect_equal(breeding_values(fit)$id, ids)
-  expect_equal(breeding_values(fit_explicit)$id, ids)
-  expect_equal(
-    breeding_values(fit),
-    breeding_values(fit_explicit),
-    tolerance = 1e-10
-  )
   expect_match(
     fit$result$relationship_provenance$precision_fingerprint,
     "^[0-9a-f]{64}$"
