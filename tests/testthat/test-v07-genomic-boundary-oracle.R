@@ -12,7 +12,7 @@ v07_test_write <- function(x, path) {
 
 v07_test_reseal <- function(root) {
   lock <- data.frame(
-    file = v07_sealed_files,
+    relative_path = v07_sealed_files,
     sha256 = vapply(
       v07_sealed_files,
       function(file) v07_sha256_file(file.path(root, file)),
@@ -36,10 +36,10 @@ v07_test_packet <- function() {
 
   metadata <- c(
     schema_version = v07_exchange_schema,
-    phase = "discovery",
+    phase = "holdout",
     cell_id = "n120_m600_r020",
-    seed = "2027130002",
-    role = "failure",
+    seed = "2027135001",
+    role = "holdout",
     n = "8",
     p = "1",
     m = "12",
@@ -61,7 +61,7 @@ v07_test_packet <- function() {
     v07_arm_columns
   )
   arm[c("phase", "cell_id", "seed", "role")] <-
-    list("discovery", "n120_m600_r020", 2027130002, "failure")
+    list("holdout", "n120_m600_r020", 2027135001, "holdout")
   arm$arm_id <- "C100_E0"
   arm$cap <- 100
   arm$em_warmup <- 0
@@ -89,9 +89,15 @@ v07_test_packet <- function() {
   arm$id_hash <- v07_test_hash("b")
   arm$kernel_hash <- v07_test_hash("c")
 
-  v07_test_write(data.frame(y = y), file.path(root, "y.tsv"))
-  v07_test_write(as.data.frame(X), file.path(root, "X.tsv"))
-  v07_test_write(as.data.frame(K), file.path(root, "K.tsv"))
+  v07_test_write(data.frame(row = seq_along(y), y = y), file.path(root, "y.tsv"))
+  v07_test_write(
+    data.frame(row = seq_len(nrow(X)), as.data.frame(X), check.names = FALSE),
+    file.path(root, "X.tsv")
+  )
+  v07_test_write(
+    data.frame(row = seq_len(nrow(K)), as.data.frame(K), check.names = FALSE),
+    file.path(root, "K.tsv")
+  )
   v07_test_write(metadata, file.path(root, "metadata.tsv"))
   arm <- as.data.frame(arm, check.names = FALSE)
   second_arm <- arm

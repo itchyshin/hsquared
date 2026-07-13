@@ -14,7 +14,7 @@ v07_frozen_documents <- c(
   doc45b_commit = "a4a5e27ae2dbc7e86012aa1f81438ce73ebaf156",
   doc45b_sha256 = "75ae42baa13ce5044e95be4d2a4d4a5b71a2eef3b98caa22c57adbad9e46c6a3"
 )
-v07_sealed_files <- c("y.tsv", "X.tsv", "K.tsv", "metadata.tsv", "arms.tsv")
+v07_sealed_files <- c("K.tsv", "X.tsv", "arms.tsv", "metadata.tsv", "y.tsv")
 v07_metadata_keys <- c(
   "schema_version",
   "phase",
@@ -67,6 +67,12 @@ v07_arm_columns <- c(
   "marker_hash",
   "id_hash",
   "kernel_hash"
+)
+v07_atomic_arm_ids <- c(
+  "C100_E0", "C1000_E0", "C100_E5", "C1000_E5",
+  "S050_C100_E0", "S050_C1000_E0", "S050_C100_E5", "S050_C1000_E5",
+  "S010_C100_E0", "S010_C1000_E0", "S010_C100_E5", "S010_C1000_E5",
+  "S090_C100_E0", "S090_C1000_E0", "S090_C100_E5", "S090_C1000_E5"
 )
 v07_oracle_columns <- c(
   "phase",
@@ -157,7 +163,7 @@ v07_read_tsv <- function(path) {
   if (!file.exists(path)) {
     v07_stop("missing exchange file: ", path)
   }
-  tryCatch(
+  out <- tryCatch(
     utils::read.delim(
       path,
       header = TRUE,
@@ -171,16 +177,31 @@ v07_read_tsv <- function(path) {
       v07_stop("cannot read ", path, ": ", conditionMessage(e))
     }
   )
+  lines <- readLines(path, warn = FALSE)
+  if (!length(lines) || !identical(lines[[1L]], paste(names(out), collapse = "\t"))) {
+    v07_stop("noncanonical TSV header in: ", path)
+  }
+  tokens <- if (nrow(out)) {
+    rows <- strsplit(lines[-1L], "\t", fixed = TRUE)
+    if (length(rows) != nrow(out) || any(lengths(rows) != ncol(out))) {
+      v07_stop("noncanonical TSV row width in: ", path)
+    }
+    matrix(unlist(rows, use.names = FALSE), nrow = nrow(out), byrow = TRUE)
+  } else {
+    matrix(character(), nrow = 0L, ncol = ncol(out))
+  }
+  attr(out, "v07_tokens") <- tokens
+  out
 }
 
 v07_verify_seal <- function(dataset_dir) {
   lock_path <- file.path(dataset_dir, "files.sha256.tsv")
   lock <- v07_read_tsv(lock_path)
-  v07_assert_names(lock, c("file", "sha256"), "files.sha256.tsv")
-  if (nrow(lock) != length(v07_sealed_files) || anyDuplicated(lock$file)) {
+  v07_assert_names(lock, c("relative_path", "sha256"), "files.sha256.tsv")
+  if (nrow(lock) != length(v07_sealed_files) || anyDuplicated(lock$relative_path)) {
     v07_stop("files.sha256.tsv must contain each sealed file exactly once")
   }
-  if (!identical(lock$file, v07_sealed_files)) {
+  if (!identical(lock$relative_path, v07_sealed_files)) {
     v07_stop("sealed file set or order mismatch")
   }
   actual_files <- sort(basename(list.files(dataset_dir, full.names = TRUE)))
@@ -311,6 +332,20 @@ v07_validate_arms <- function(arms, metadata) {
   ) {
     v07_stop("arms.tsv contains a duplicate atomic arm")
   }
+  phase <- metadata[["phase"]]
+  if (identical(phase, "discovery")) {
+    if (!identical(as.character(arms$arm_id), v07_atomic_arm_ids)) {
+      v07_stop("discovery arms.tsv arm set or frozen order mismatch")
+    }
+  } else if (identical(phase, "holdout")) {
+    indices <- match(as.character(arms$arm_id), v07_atomic_arm_ids)
+    if (anyNA(indices) || arms$arm_id[[1L]] != "C100_E0" ||
+        any(diff(indices) <= 0)) {
+      v07_stop("holdout arms.tsv arm set or frozen order mismatch")
+    }
+  } else {
+    v07_stop("unsupported phase in arms.tsv")
+  }
   numeric_fields <- c(
     "cap",
     "em_warmup",
@@ -333,10 +368,24 @@ v07_validate_arms <- function(arms, metadata) {
   )
   for (field in numeric_fields) {
     value <- suppressWarnings(as.numeric(arms[[field]]))
-    if (any(!is.finite(value))) {
-      v07_stop("arms.tsv has non-finite numeric field: ", field)
-    }
     arms[[field]] <- value
+  }
+  always_finite <- c(
+    "cap",
+    "em_warmup",
+    "start_sigma_g2",
+    "start_sigma_e2",
+    "iterations",
+    "em_steps",
+    "factorizations",
+    "step_halvings",
+    "runtime_seconds",
+    "peak_rss_mb"
+  )
+  for (field in always_finite) {
+    if (any(!is.finite(arms[[field]]))) {
+      v07_stop("arms.tsv has non-finite required field: ", field)
+    }
   }
   integer_fields <- c(
     "cap",
@@ -347,11 +396,10 @@ v07_validate_arms <- function(arms, metadata) {
     "step_halvings"
   )
   if (
-    any(vapply(
-      arms[integer_fields],
-      function(x) any(x < 0 | x != floor(x)),
-      logical(1L)
-    ))
+    any(vapply(arms[setdiff(integer_fields, "iterations")],
+      function(x) any(x < 0 | x != floor(x)), logical(1L))) ||
+      any(arms$iterations != floor(arms$iterations)) ||
+      any(arms$iterations < -1)
   ) {
     v07_stop("arms.tsv contains an invalid counter")
   }
@@ -359,9 +407,11 @@ v07_validate_arms <- function(arms, metadata) {
     any(!arms$cap %in% c(100, 1000)) ||
       any(!arms$em_warmup %in% c(0, 5)) ||
       any(arms$start_sigma_g2 <= 0 | arms$start_sigma_e2 <= 0) ||
-      any(arms$estimate_sigma_g2 < 0 | arms$estimate_sigma_e2 < 0) ||
-      any(arms$estimate_ratio < 0 | arms$estimate_ratio > 1) ||
-      any(arms$smallest_component < 0) ||
+      any(arms$estimate_sigma_g2[is.finite(arms$estimate_sigma_g2)] < 0) ||
+      any(arms$estimate_sigma_e2[is.finite(arms$estimate_sigma_e2)] < 0) ||
+      any(arms$estimate_ratio[is.finite(arms$estimate_ratio)] < 0 |
+          arms$estimate_ratio[is.finite(arms$estimate_ratio)] > 1) ||
+      any(arms$smallest_component[is.finite(arms$smallest_component)] < 0) ||
       any(arms$runtime_seconds < 0 | arms$peak_rss_mb < 0)
   ) {
     v07_stop("arms.tsv contains a value outside the frozen domain")
@@ -371,6 +421,38 @@ v07_validate_arms <- function(arms, metadata) {
     v07_stop("arms.tsv converged must contain only TRUE or FALSE")
   }
   arms$converged <- logical_value == "true"
+  success <- arms$converged & arms$error_class == "none"
+  if (any(arms$converged != (arms$error_class == "none"))) {
+    v07_stop("arms.tsv convergence/error_class inconsistency")
+  }
+  success_finite <- c(
+    "estimate_sigma_g2",
+    "estimate_sigma_e2",
+    "estimate_ratio",
+    "julia_objective",
+    "ai_score_norm",
+    "julia_fd_log_gradient_norm",
+    "smallest_component"
+  )
+  if (any(success) && any(vapply(
+    arms[success_finite],
+    function(x) any(!is.finite(x[success])),
+    logical(1L)
+  ))) {
+    v07_stop("successful arm contains a non-finite required diagnostic")
+  }
+  failed <- !success
+  if (any(failed)) {
+    if (any(arms$termination_reason[failed] %in% c("", "converged")) ||
+        any(arms$error_class[failed] == "none")) {
+      v07_stop("failed arm lacks a fail-closed termination/error class")
+    }
+    prefit <- arms$termination_reason == "exception"
+    if (any(arms$iterations == -1 & !prefit) ||
+        any(prefit & arms$iterations != -1)) {
+      v07_stop("iterations=-1 is reserved for pre-fit exceptions")
+    }
+  }
   character_fields <- setdiff(
     names(arms),
     c(numeric_fields, "converged", "seed")
@@ -392,19 +474,22 @@ v07_read_exchange <- function(dataset_dir) {
   seal <- v07_verify_seal(dataset_dir)
   metadata <- v07_read_metadata(file.path(dataset_dir, "metadata.tsv"))
   y_frame <- v07_read_tsv(file.path(dataset_dir, "y.tsv"))
-  v07_assert_names(y_frame, "y", "y.tsv")
+  v07_assert_names(y_frame, c("row", "y"), "y.tsv")
+  if (!identical(as.integer(y_frame$row), seq_len(nrow(y_frame)))) {
+    v07_stop("y.tsv row index drift")
+  }
   y <- as.numeric(y_frame$y)
   if (any(!is.finite(y))) {
     v07_stop("y.tsv contains non-finite or nonnumeric values")
   }
-  X <- v07_numeric_matrix(
-    v07_read_tsv(file.path(dataset_dir, "X.tsv")),
-    "X.tsv"
-  )
-  K <- v07_numeric_matrix(
-    v07_read_tsv(file.path(dataset_dir, "K.tsv")),
-    "K.tsv"
-  )
+  X_frame <- v07_read_tsv(file.path(dataset_dir, "X.tsv"))
+  K_frame <- v07_read_tsv(file.path(dataset_dir, "K.tsv"))
+  if (!identical(as.integer(X_frame$row), seq_len(nrow(X_frame))) ||
+      !identical(as.integer(K_frame$row), seq_len(nrow(K_frame)))) {
+    v07_stop("X.tsv or K.tsv row index drift")
+  }
+  X <- v07_numeric_matrix(X_frame[-1L], "X.tsv")
+  K <- v07_numeric_matrix(K_frame[-1L], "K.tsv")
   n <- as.integer(metadata[["n"]])
   p <- as.integer(metadata[["p"]])
   if (
@@ -431,11 +516,18 @@ v07_read_exchange <- function(dataset_dir) {
   tryCatch(chol(K), error = function(e) {
     v07_stop("K.tsv is not positive definite")
   })
-  arms <- v07_validate_arms(
-    v07_read_tsv(file.path(dataset_dir, "arms.tsv")),
-    metadata
+  arms_raw <- v07_read_tsv(file.path(dataset_dir, "arms.tsv"))
+  arm_tokens <- attr(arms_raw, "v07_tokens")
+  arms <- v07_validate_arms(arms_raw, metadata)
+  list(
+    y = y,
+    X = X,
+    K = K,
+    metadata = metadata,
+    arms = arms,
+    arm_tokens = arm_tokens,
+    seal = seal
   )
-  list(y = y, X = X, K = K, metadata = metadata, arms = arms, seal = seal)
 }
 
 v07_reml_parts <- function(V, y, X) {
@@ -592,10 +684,6 @@ v07_classify_oracle <- function(y, X, K, reverse_kkt = FALSE) {
   }
   tie_tol <- n * 1e-10
   best <- which.max(candidates_ll)
-  endpoint_tie <- any(
-    abs(candidates_ll[c("lower", "upper")] - max(candidates_ll)) <= tie_tol
-  ) &&
-    names(candidates_ll)[[best]] == "interior"
   endpoint_pair_tie <- abs(
     candidates_ll[["lower"]] - candidates_ll[["upper"]]
   ) <=
@@ -604,19 +692,17 @@ v07_classify_oracle <- function(y, X, K, reverse_kkt = FALSE) {
       candidates_ll[["interior"]]
   class <- "oracle_unresolved"
   if (
-    !endpoint_tie &&
-      !endpoint_pair_tie &&
-      candidates_ll[["lower"]] - max(candidates_ll[c("interior", "upper")]) >
-        tie_tol &&
+    !endpoint_pair_tie &&
+      candidates_ll[["lower"]] + tie_tol >=
+        max(candidates_ll[c("interior", "upper")]) &&
       lower_kkt
   ) {
     class <- "lower_boundary"
     ratio <- 0
   } else if (
-    !endpoint_tie &&
-      !endpoint_pair_tie &&
-      candidates_ll[["upper"]] - max(candidates_ll[c("lower", "interior")]) >
-        tie_tol &&
+    !endpoint_pair_tie &&
+      candidates_ll[["upper"]] + tie_tol >=
+        max(candidates_ll[c("lower", "interior")]) &&
       upper_kkt
   ) {
     class <- "upper_boundary"
@@ -665,10 +751,11 @@ v07_build_oracle_rows <- function(exchange) {
   out$oracle_ratio <- oracle$ratio
   out$oracle_sigma_g2 <- oracle$sigma_g2
   out$oracle_sigma_e2 <- oracle$sigma_e2
-  out$oracle_arm_loglik <- vapply(
-    arms$estimate_ratio,
-    function(r) v07_profile_loglik(r, exchange$y, exchange$X, exchange$K),
-    numeric(1L)
+  out$oracle_arm_loglik <- mapply(
+    v07_component_loglik,
+    arms$estimate_sigma_g2,
+    arms$estimate_sigma_e2,
+    MoreArgs = list(y = exchange$y, X = exchange$X, K = exchange$K)
   )
   out$oracle_loglik <- oracle$loglik
   out$objective_gap_per_observation <- abs(
@@ -700,22 +787,74 @@ v07_build_oracle_rows <- function(exchange) {
     out$oracle_fd_log_gradient_norm <= 1e-8
   out$dataset_files_digest <- exchange$seal$digest
   out <- out[v07_oracle_columns]
+  attr(out, "v07_raw_tokens") <- exchange$arm_tokens
   v07_assert_names(out, v07_oracle_columns, "oracle output")
-  if (
-    any(
-      !is.finite(as.matrix(out[c(
-        "oracle_arm_loglik",
-        "oracle_loglik",
-        "objective_gap_per_observation",
-        "oracle_fd_log_gradient_norm",
-        "lower_derivative_per_observation",
-        "upper_derivative_per_observation"
-      )]))
-    )
-  ) {
-    v07_stop("independent oracle produced a non-finite diagnostic")
+  failed <- !arms$converged
+  always_finite <- c(
+    "oracle_loglik",
+    "lower_derivative_per_observation",
+    "upper_derivative_per_observation"
+  )
+  if (any(vapply(out[always_finite], function(x) any(!is.finite(x)), logical(1L)))) {
+    v07_stop("independent oracle produced a non-finite dataset diagnostic")
+  }
+  arm_diagnostics <- c(
+    "oracle_arm_loglik",
+    "objective_gap_per_observation",
+    "oracle_fd_log_gradient_norm"
+  )
+  if (any(!failed) && any(vapply(
+    out[arm_diagnostics],
+    function(x) any(!is.finite(x[!failed])),
+    logical(1L)
+  ))) {
+    v07_stop("independent oracle produced a non-finite successful-arm diagnostic")
   }
   out
+}
+
+v07_format_token <- function(x) {
+  if (is.logical(x)) {
+    return(ifelse(x, "true", "false"))
+  }
+  if (is.numeric(x)) {
+    if (is.nan(x) || is.na(x)) {
+      return("NaN")
+    }
+    if (is.infinite(x)) {
+      return(if (x > 0) "Inf" else "-Inf")
+    }
+    if (x == 0) {
+      return("0")
+    }
+    return(sprintf("%.17g", x))
+  }
+  as.character(x)
+}
+
+v07_write_oracle_table <- function(x, path) {
+  raw_tokens <- attr(x, "v07_raw_tokens")
+  if (is.null(raw_tokens) ||
+      nrow(raw_tokens) != nrow(x) ||
+      ncol(raw_tokens) != length(v07_arm_columns)) {
+    v07_stop("oracle output is missing the byte-exact raw arm tokens")
+  }
+  con <- file(path, open = "wb")
+  on.exit(close(con), add = TRUE)
+  writeLines(paste(v07_oracle_columns, collapse = "\t"), con, sep = "\n")
+  for (i in seq_len(nrow(x))) {
+    suffix <- vapply(
+      x[i, (length(v07_arm_columns) + 1L):length(v07_oracle_columns), drop = FALSE],
+      function(value) v07_format_token(value[[1L]]),
+      character(1L)
+    )
+    writeLines(
+      paste(c(raw_tokens[i, ], suffix), collapse = "\t"),
+      con,
+      sep = "\n"
+    )
+  }
+  invisible(path)
 }
 
 v07_write_create_once <- function(x, output) {
@@ -732,14 +871,7 @@ v07_write_create_once <- function(x, output) {
   }
   tmp <- tempfile(paste0(".", basename(output), "."), tmpdir = parent)
   on.exit(unlink(tmp), add = TRUE)
-  utils::write.table(
-    x,
-    tmp,
-    sep = "\t",
-    quote = FALSE,
-    row.names = FALSE,
-    na = "NA"
-  )
+  v07_write_oracle_table(x, tmp)
   if (file.exists(output) || !file.rename(tmp, output)) {
     v07_stop("atomic create-once output failed: ", output)
   }
@@ -786,6 +918,15 @@ v07_compare_output <- function(actual, expected, tolerance = 1e-12) {
   v07_assert_names(actual, v07_oracle_columns, "saved oracle output")
   if (nrow(actual) != nrow(expected)) {
     v07_stop("oracle output row-count mismatch")
+  }
+  actual_tokens <- attr(actual, "v07_tokens")
+  expected_tokens <- attr(expected, "v07_raw_tokens")
+  if (!is.null(actual_tokens) && !is.null(expected_tokens) &&
+      !identical(
+        actual_tokens[, seq_along(v07_arm_columns), drop = FALSE],
+        expected_tokens
+      )) {
+    v07_stop("oracle output changed or reordered byte-exact raw arm fields")
   }
   numeric <- names(expected)[vapply(expected, is.numeric, logical(1L))]
   logical <- names(expected)[vapply(expected, is.logical, logical(1L))]
