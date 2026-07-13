@@ -21,8 +21,8 @@ inputs:
 | durable Julia holdout PASS checkpoint | `6e31575777d12263702ae1f6b28c315ade3f6705` |
 | checkpoint document SHA-256 | `51307db4cc977125e21bb764bbdf8a021a2b8a5c38584dd98da26d4029ecfb3f` |
 | checkpoint check-log SHA-256 | `3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83` |
-| standalone base-R recomputer SHA-256 | `331a6a52ee823a635072668fc286aa73c93404efb80c75e6df3ea4a5b60538e9` |
-| Julia recomputer SHA-256 | `908c090a727ae96fed348affab314ae349526dfe865c7b6cc174178df632fc4c` |
+| standalone base-R recomputer SHA-256 | `d07ca5012ab28e4b5b10b1649e995bd4627b03407896890ba163e96335d8ce3a` |
+| Julia recomputer SHA-256 | `a61d2c70846cda0f85431429a385ca222c94afff6c81812d20bff71bb2721935` |
 | boundary-v2 candidate seal SHA-256 | `e82e023957514621083df6ea7424cc2d14159aa43e9b567122a6edf944cfb724` |
 | `holdout_gate.tsv` SHA-256 | `5d60afc5df62706444149544d5c4aa2d0e1a684d213d594a44a1e7eea622d5c1` |
 | `holdout_timing.tsv` SHA-256 | `098b02ae95083f793de5605c85dbba6db2126cbf1daf4c5d53891969afe8c097` |
@@ -45,6 +45,13 @@ changing either fitted candidate. The driver commit, this document's SHA-256,
 both campaign scripts' SHA-256 values, platform versions, thread settings, and
 the predecessor-evidence hashes are recorded in the seal. Any mismatch stops
 before a manifest or dataset is created.
+
+Because an R tool cannot embed its own future commit without a circular hash,
+the exact two execution commits are admitted by a separate create-once
+execution-admission receipt after Fisher, Grace, and Rose each return `CLEAN`.
+The campaign seal binds that receipt's canonical path and SHA-256 and every
+later driver/recomputer invocation rechecks it. Operator-supplied clean
+descendants without this exact reviewed receipt are not admissible.
 
 Before the seal can exist, both independent recomputers must already exist and
 be hash-bound: the base-R recomputer in the exact R checkout and the Julia
@@ -81,7 +88,8 @@ remains held and unmerged while the campaign runs.
 
 The launcher may use independent OS processes, for example `xargs -P`, but
 must never put `mclapply()` around JuliaCall. It sets Julia, OpenBLAS, OMP, and
-vecLib threads to one. Compute runs on Totoro or DRAC, never GitHub Actions.
+vecLib threads to one. This frozen environment is Totoro-only and never GitHub
+Actions. A DRAC run requires a new seal and preregistration amendment.
 
 ## 3. Frozen ADEMP design and seed space
 
@@ -139,16 +147,23 @@ The manifest is the attempted denominator. A per-seed fit catches ordinary R,
 bridge, construction, and Julia errors and still writes one immutable row with
 an explicit failure class. A killed process leaves a missing manifest member;
 summary is then forbidden rather than silently shrinking the denominator.
+If failure occurs before a reconstructable packet exists, the attempt row is
+retained but the missing packet makes corpus sealing and summary impossible;
+that failure therefore cannot contribute to a recovery claim.
 Candidate fit estimates, convergence, optimizer/boundary fields, runtime,
 peak RSS, relationship method/scale, ridge, scale denominator, and marker,
 ID-order, kernel, and precision fingerprints are retained. All paths and rows
 are rechecked against the seal and manifest before fitting and before summary.
 
-The scientific recovery values are derived from the boundary profile:
-`sigma_g2 = profile_ratio * profile_t_hat`,
-`sigma_e2 = (1-profile_ratio) * profile_t_hat`, and
-`ratio = profile_ratio`. The numerical MME variance components and numerical
-ratio are recorded separately. The exact successful status set is
+The scientific recovery values use the boundary-profile ratio and the fitted
+numerical total variance. Define
+`fitted_total_variance = numerical_sigma_g2 + numerical_sigma_e2`, then
+`sigma_g2 = profile_ratio * fitted_total_variance`,
+`sigma_e2 = (1-profile_ratio) * fitted_total_variance`, and
+`ratio = profile_ratio`. This is deliberately a **profile-resolved ratio ×
+fitted numerical total**, not an independently recovered profile total. The
+numerical MME variance components and numerical ratio are recorded separately.
+The exact successful status set is
 `boundary_lower`, `boundary_upper`, `interior`, and `interior_rescued`.
 Resolved endpoints are successful, remain in both the convergence and bias
 denominators, and use scientific ratios exactly 0 or 1; they are never dropped
@@ -163,6 +178,17 @@ status breakdown (`interior`, `interior_rescued`, both boundaries, unresolved,
 other error, and resolved-valid counts) and a deterministic whole-campaign
 status in addition to per-cell decisions.
 
+Before any summary is written, `{tier}_corpus_lock.tsv` binds the manifest,
+every attempt primary, and every packet primary by output-relative path and
+SHA-256. The driver, base-R recomputer, and Julia recomputer each verify that
+same corpus. Three-way adjudication recomputes the driver summary from current
+bytes and then writes `{tier}_adjudication_receipt.tsv`, binding the campaign
+seal, corpus-lock hash, all three summary hashes, both recomputer hashes, and
+campaign status. Confirmation can be admitted only from a currently valid
+pilot receipt. Verification is an explicit exact stage machine: `sealed`,
+`pilot_manifest`, `pilot_complete`, `confirm_manifest`, or `confirm_complete`;
+a seal-only tree cannot pass a later stage.
+
 ## 5. Pilot sizing and frozen stopping rules
 
 Pilot estimates never enter confirmatory bias. If any cell has fewer than 46
@@ -173,6 +199,11 @@ SD bound from the finite converged pilot estimates:
 \[
 s_U=s\sqrt{(n_{conv}-1)/\chi^2_{0.05,n_{conv}-1}}.
 \]
+
+This is a frozen **Normal-theory planning bound**, not a distribution-free 95%
+guarantee. Boundary mass can violate the Normal sampling assumption; the risk
+is an underpowered negative confirmation, not permission to relax the final
+equivalence gate.
 
 Margins are `0.05 * theta` for each variance component and `0.02` for the
 genomic ratio. The required confirmation denominator is
@@ -202,7 +233,8 @@ order, pilot/confirmation membership, or attempt status. They also exercise
 two writers contending for one create-once path, missing/additional outputs,
 checksum corruption, and orphan primary/sidecar files.
 
-Passing recovery-v2 permits independent Julia recomputation and the remaining
-doc-44 audits. It does not itself activate the default route. Until the full
-chain and explicit maintainer G10 decision, the genomic row remains partial,
-the default route remains held, and `public_covered_count` remains 5.
+Passing recovery-v2 requires three-way driver/base-R/Julia recomputation and
+adjudication, then permits the remaining doc-44 audits. It does not itself
+activate the default route. Until the full chain and explicit maintainer G10
+decision, the genomic row remains partial, the default route remains held, and
+`public_covered_count` remains 5.

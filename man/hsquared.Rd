@@ -55,7 +55,9 @@ Julia and \code{HSquared.jl} are available and otherwise errors with install
 guidance; \code{hs_control(engine = "validate")} validates the contract without
 fitting, then returns the validated model spec invisibly. A narrow Gaussian
 REML \code{genomic(1 | id, markers = M)} or \code{genomic(1 | id, Ginv = Q)} model is
-available only through the explicit experimental Julia \code{target = "genomic"}.
+routed by the ordinary no-control call on this held candidate branch. The
+explicit experimental Julia \code{target = "genomic"} remains supported. This is
+not public activation: recovery-v2 and Rose/G10 review remain outstanding.
 Marker construction uses sample allele frequencies, unweighted VanRaden
 method 1, and ridge \code{0.01}.
 \code{heritability()} labels its coefficient-scale result

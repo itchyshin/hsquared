@@ -38,12 +38,11 @@ claims rather than slogans.
 
 ## Genomic syntax
 
-The basic genomic GREML effect above is the eventual default form. Today it
-fits through an opt-in, experimental control (`engine = "julia"`,
-`target = "genomic"`; a raw `markers = M` matrix and a SNP-BLUP
-`target = "snp_blup"` path are also available) — see the "Fitting models"
-article. The default `engine = "fit"` call shown here is the planned future
-surface.
+The basic genomic GREML effect above is the implemented held candidate form on
+this branch. The ordinary no-control call and explicit `target = "genomic"`
+compatibility route are both available, but this is not activation on main:
+recovery-v2 and Rose/G10 remain open. A raw `markers = M` matrix is supported;
+the SNP-BLUP `target = "snp_blup"` path remains explicitly opt-in.
 
 ```{r, eval = FALSE}
 fit <- hsquared(

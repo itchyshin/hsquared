@@ -17,8 +17,8 @@ v07_boundary_bindings <- c(
   holdout_checkpoint_doc_sha256 = "51307db4cc977125e21bb764bbdf8a021a2b8a5c38584dd98da26d4029ecfb3f",
   holdout_checklog_sha256 = "3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83"
 )
-v07_r_recomputer_sha256 <- "331a6a52ee823a635072668fc286aa73c93404efb80c75e6df3ea4a5b60538e9"
-v07_julia_recomputer_sha256 <- "908c090a727ae96fed348affab314ae349526dfe865c7b6cc174178df632fc4c"
+v07_r_recomputer_sha256 <- "d07ca5012ab28e4b5b10b1649e995bd4627b03407896890ba163e96335d8ce3a"
+v07_julia_recomputer_sha256 <- "a61d2c70846cda0f85431429a385ca222c94afff6c81812d20bff71bb2721935"
 v07_expected_environment <- c(
   host = "totoro",
   cpu_model = "AMD EPYC 9655 96-Core Processor",
@@ -70,7 +70,7 @@ v07_attempt_columns <- c(
   "truth_sigma_g2", "truth_sigma_e2", "truth_ratio", "ridge", "attempted",
   "status", "error_class", "converged", "boundary_status", "boundary_reason",
   "boundary_epsilon", "scientific_sigma_g2", "scientific_sigma_e2",
-  "scientific_ratio", "profile_t_hat", "numerical_sigma_g2",
+  "scientific_ratio", "fitted_total_variance", "numerical_sigma_g2",
   "numerical_sigma_e2", "numerical_ratio", "profile_loglik",
   "lower_derivative_per_observation", "upper_derivative_per_observation",
   "iterations", "objective",
@@ -90,6 +90,16 @@ v07_summary_columns <- c(
   "required_n_raw", "required_n", "cell_status", "campaign_status",
   "failure_classes"
 )
+v07_corpus_columns <- c("relative_path", "sha256")
+v07_receipt_columns <- c(
+  "tier", "seal_sha256", "corpus_lock_sha256", "driver_summary_sha256",
+  "base_r_summary_sha256", "julia_summary_sha256", "r_recomputer_sha256",
+  "julia_recomputer_sha256", "campaign_status"
+)
+v07_admission_columns <- c(
+  "schema_version", "r_execution_commit", "julia_execution_commit",
+  "fisher_verdict", "grace_verdict", "rose_verdict", "reviewed_at_utc"
+)
 v07_seal_keys <- c(
   "schema_version", "driver_commit", "julia_execution_commit",
   "r_selected_tree", "julia_selected_tree", "driver_sha256", "launcher_sha256",
@@ -98,7 +108,8 @@ v07_seal_keys <- c(
   "candidate_seal_sha256", "holdout_gate_sha256", "holdout_timing_sha256",
   "summary_files_lock_sha256", "holdout_checkpoint_doc_sha256",
   "holdout_checklog_sha256", "r_recomputer_sha256",
-  "julia_recomputer_sha256", "driver_root", "r_root", "julia_root", "host",
+  "julia_recomputer_sha256", "admission_receipt_sha256", "admission_receipt_path",
+  "output_root", "driver_root", "r_root", "julia_root", "host",
   "cpu_model", "machine", "kernel", "arch", "julia_version", "r_version",
   "julia_num_threads", "openblas_num_threads", "omp_num_threads",
   "veclib_maximum_threads", "seed_formula", "pilot_offsets",
@@ -144,6 +155,10 @@ v07_sha256 <- function(path) {
 }
 
 v07_realpath <- function(path) normalizePath(path, winslash = "/", mustWork = TRUE)
+v07_is_symlink <- function(path) {
+  link <- Sys.readlink(path)
+  !is.na(link) & nzchar(link)
+}
 
 v07_git <- function(root, ...) {
   v07_system("git", c("-C", shQuote(root), ...))
@@ -190,6 +205,45 @@ v07_assert_separate_roots <- function(driver_root, r_root, julia_root) {
   roots
 }
 
+v07_is_nested <- function(path, root) {
+  identical(path, root) || startsWith(paste0(path, "/"), paste0(root, "/"))
+}
+
+v07_assert_new_output_root <- function(out_dir, roots) {
+  if (!grepl("^/", out_dir) || !identical(sub("/+$", "", out_dir), out_dir)) {
+    v07_abort("OUT must be an absolute normalized path without a trailing slash")
+  }
+  if (file.exists(out_dir) || dir.exists(out_dir) || v07_is_symlink(out_dir)) {
+    v07_abort("OUT must be absent before seal")
+  }
+  parent <- dirname(out_dir)
+  if (!dir.exists(parent) || v07_is_symlink(parent)) {
+    v07_abort("OUT parent must be an existing real directory")
+  }
+  real_parent <- v07_realpath(parent)
+  expected <- file.path(real_parent, basename(out_dir))
+  if (!identical(out_dir, expected)) v07_abort("OUT must be canonical and may not traverse symlinks")
+  for (root in roots) {
+    if (v07_is_nested(out_dir, root) || v07_is_nested(root, out_dir)) {
+      v07_abort("OUT and checkout roots must not be nested")
+    }
+  }
+  out_dir
+}
+
+v07_assert_output_root <- function(out_dir, roots, expected) {
+  if (!dir.exists(out_dir) || v07_is_symlink(out_dir) ||
+      !identical(v07_realpath(out_dir), expected) || !identical(out_dir, expected)) {
+    v07_abort("output root differs from the canonical sealed path")
+  }
+  for (root in roots) {
+    if (v07_is_nested(expected, root) || v07_is_nested(root, expected)) {
+      v07_abort("sealed output and checkout roots must not be nested")
+    }
+  }
+  invisible(expected)
+}
+
 v07_cpu_model <- function() {
   if (file.exists("/proc/cpuinfo")) {
     x <- readLines("/proc/cpuinfo", warn = FALSE)
@@ -215,10 +269,7 @@ v07_assert_compute_host <- function() {
   if (identical(Sys.getenv("V07_RECOVERY_TESTING"), "true")) return(invisible(TRUE))
   host <- tolower(Sys.info()[["nodename"]] %||% "")
   on_totoro <- identical(host, "totoro") || startsWith(host, "totoro.")
-  on_drac_compute <- nzchar(Sys.getenv("SLURM_JOB_ID"))
-  if (!on_totoro && !on_drac_compute) {
-    v07_abort("recovery-v2 may run only on Totoro or inside a DRAC SLURM job")
-  }
+  if (!on_totoro) v07_abort("this frozen recovery-v2 campaign may run only on Totoro")
   invisible(TRUE)
 }
 
@@ -347,14 +398,52 @@ v07_assert_holdout_checkpoint <- function(julia_root) {
   invisible(TRUE)
 }
 
+v07_read_admission <- function(path, driver_commit, julia_execution_commit) {
+  if (!grepl("^/", path) || v07_is_symlink(path) || !identical(v07_realpath(path), path)) {
+    v07_abort("execution admission receipt must be an absolute canonical regular file")
+  }
+  x <- v07_read_tsv(path, v07_admission_columns)
+  if (nrow(x) != 1L ||
+      !identical(x$schema_version, "v07-genomic-recovery-v2-admission-1") ||
+      !identical(x$r_execution_commit, driver_commit) ||
+      !identical(x$julia_execution_commit, julia_execution_commit) ||
+      any(unlist(x[c("fisher_verdict", "grace_verdict", "rose_verdict")], use.names = FALSE) != "CLEAN") ||
+      !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", x$reviewed_at_utc)) {
+    v07_abort("execution admission receipt does not admit these exact CLEAN execution commits")
+  }
+  invisible(x)
+}
+
+v07_write_admission <- function(path, driver_commit, julia_execution_commit, reviewed_at_utc) {
+  if (!grepl("^/", path) || file.exists(path) || file.exists(paste0(path, ".sha256")) ||
+      !dir.exists(dirname(path)) || v07_is_symlink(dirname(path)) ||
+      !identical(file.path(v07_realpath(dirname(path)), basename(path)), path)) {
+    v07_abort("new admission path must be absent beneath a canonical real parent")
+  }
+  if (!v07_hex40(driver_commit) || !v07_hex40(julia_execution_commit) ||
+      !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", reviewed_at_utc)) {
+    v07_abort("admission requires two full commits and an ISO UTC review time")
+  }
+  x <- data.frame(
+    schema_version = "v07-genomic-recovery-v2-admission-1",
+    r_execution_commit = driver_commit,
+    julia_execution_commit = julia_execution_commit,
+    fisher_verdict = "CLEAN", grace_verdict = "CLEAN", rose_verdict = "CLEAN",
+    reviewed_at_utc = reviewed_at_utc, stringsAsFactors = FALSE
+  )
+  v07_write_once(path, v07_tsv_text(x))
+  invisible(x)
+}
+
 v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_commit,
-                            julia_execution_commit) {
-  if (file.exists(out_dir) || dir.exists(out_dir)) v07_abort("OUT must be absent before seal")
+                            julia_execution_commit, admission_receipt) {
   v07_assert_compute_host()
   roots <- v07_assert_separate_roots(driver_root, r_root, julia_root)
+  output_root <- v07_assert_new_output_root(out_dir, roots)
   if (!v07_hex40(driver_commit) || !v07_hex40(julia_execution_commit)) {
     v07_abort("driver and Julia execution commits must be full SHA-1 values")
   }
+  v07_read_admission(admission_receipt, driver_commit, julia_execution_commit)
   v07_assert_git(roots[["driver_root"]], driver_commit, "driver")
   v07_assert_git(roots[["r_root"]], driver_commit, "R execution")
   v07_assert_git(roots[["julia_root"]], julia_execution_commit, "Julia execution")
@@ -385,7 +474,9 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
     v07_boundary_bindings,
     r_recomputer_sha256 = v07_r_recomputer_sha256,
     julia_recomputer_sha256 = v07_julia_recomputer_sha256,
-    roots, env,
+    admission_receipt_sha256 = v07_sha256(admission_receipt),
+    admission_receipt_path = admission_receipt,
+    output_root = output_root, roots, env,
     seed_formula = "2027120000+10000*cell_index+offset",
     pilot_offsets = "7001:7048", confirmation_offsets = "8001:10000",
     excluded_offsets = "1:48,1001:3000,5001:5048,6001:6048",
@@ -396,6 +487,7 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
   )
   if (!identical(names(values), v07_seal_keys)) v07_abort("internal seal writer/key drift")
   dir.create(out_dir, recursive = FALSE)
+  v07_assert_output_root(out_dir, roots, output_root)
   seal <- data.frame(key = names(values), value = unname(values), stringsAsFactors = FALSE)
   v07_write_once(v07_seal_path(out_dir), v07_tsv_text(seal))
   invisible(seal)
@@ -404,6 +496,7 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
 v07_assert_bound_state <- function(out_dir, driver_root, r_root, julia_root) {
   seal <- v07_read_seal(out_dir)
   roots <- v07_assert_separate_roots(driver_root, r_root, julia_root)
+  v07_assert_output_root(out_dir, roots, seal[["output_root"]])
   if (!identical(unname(roots), unname(seal[names(roots)]))) v07_abort("checkout path differs from seal")
   v07_assert_git(roots[["driver_root"]], seal[["driver_commit"]], "driver")
   v07_assert_git(roots[["r_root"]], seal[["driver_commit"]], "R execution")
@@ -426,6 +519,11 @@ v07_assert_bound_state <- function(out_dir, driver_root, r_root, julia_root) {
     if (!identical(v07_sha256(sealed_files[[key]]), seal[[key]])) {
       v07_abort("%s bytes differ from seal", key)
     }
+  }
+  v07_read_admission(seal[["admission_receipt_path"]], seal[["driver_commit"]],
+    seal[["julia_execution_commit"]])
+  if (!identical(v07_sha256(seal[["admission_receipt_path"]]), seal[["admission_receipt_sha256"]])) {
+    v07_abort("execution admission receipt differs from seal")
   }
   v07_assert_environment(roots[["julia_root"]])
   invisible(list(seal = seal, roots = roots))
@@ -500,7 +598,7 @@ v07_fit_one <- function(manifest_row, r_root, julia_root) {
     attempted = TRUE, status = "fit_error", error_class = "unclassified_error",
     converged = FALSE, boundary_status = NA_character_, boundary_reason = NA_character_,
     boundary_epsilon = NA_real_, scientific_sigma_g2 = NA_real_, scientific_sigma_e2 = NA_real_,
-    scientific_ratio = NA_real_, profile_t_hat = NA_real_, numerical_sigma_g2 = NA_real_,
+    scientific_ratio = NA_real_, fitted_total_variance = NA_real_, numerical_sigma_g2 = NA_real_,
     numerical_sigma_e2 = NA_real_, numerical_ratio = NA_real_, profile_loglik = NA_real_,
     lower_derivative_per_observation = NA_real_, upper_derivative_per_observation = NA_real_,
     iterations = NA_real_, objective = NA_real_, gradient_norm = NA_real_,
@@ -563,14 +661,13 @@ v07_fit_one <- function(manifest_row, r_root, julia_root) {
     ng <- vc$estimate[vc$component == "genomic"]
     ne <- vc$estimate[vc$component == "residual"]
     if (length(ng) != 1L || length(ne) != 1L) v07_abort("variance_component_schema")
-    # The selected Julia implementation constructs resolved endpoint numerical
-    # components from exact profile t_hat; their sum retains that total. The
-    # interior and rescued representations are independently profile-parity gated.
-    pt <- as.numeric(ng + ne)
+    # The preregistered scientific endpoint combines the profile-resolved ratio
+    # with the fitted numerical total. It is not a separately profile-fitted total.
+    fitted_total <- as.numeric(ng + ne)
     boundary_evidence <- c(boundary$profile_loglik,
       boundary$lower_derivative_per_observation,
       boundary$upper_derivative_per_observation)
-    if (!is.finite(pr) || !is.finite(pt) || pt < 0 || pr < 0 || pr > 1 ||
+    if (!is.finite(pr) || !is.finite(fitted_total) || fitted_total <= 0 || pr < 0 || pr > 1 ||
         any(!is.finite(boundary_evidence))) v07_abort("invalid_scientific_profile")
     prov <- fit$result$relationship_provenance
     hashes <- c(prov$marker_content_fingerprint, prov$id_order_fingerprint,
@@ -580,8 +677,9 @@ v07_fit_one <- function(manifest_row, r_root, julia_root) {
     result$status <- "success"; result$error_class <- "none"; result$converged <- TRUE
     result$boundary_status <- boundary$status; result$boundary_reason <- boundary$reason
     result$boundary_epsilon <- boundary$boundary_epsilon
-    result$scientific_sigma_g2 <- pr * pt; result$scientific_sigma_e2 <- (1 - pr) * pt
-    result$scientific_ratio <- pr; result$profile_t_hat <- pt
+    result$scientific_sigma_g2 <- pr * fitted_total
+    result$scientific_sigma_e2 <- (1 - pr) * fitted_total
+    result$scientific_ratio <- pr; result$fitted_total_variance <- fitted_total
     result$numerical_sigma_g2 <- as.numeric(ng); result$numerical_sigma_e2 <- as.numeric(ne)
     result$numerical_ratio <- as.numeric(boundary$numerical_ratio)
     result$profile_loglik <- as.numeric(boundary$profile_loglik)
@@ -658,9 +756,9 @@ v07_run_one <- function(out_dir, driver_root, r_root, julia_root, tier, cell_id,
   if (file.exists(path) || file.exists(paste0(path, ".sha256"))) v07_abort("attempt already exists")
   row <- v07_fit_one(manifest[hit, , drop = FALSE], bound$roots[["r_root"]], bound$roots[["julia_root"]])
   packet <- attr(row, "packet"); attr(row, "packet") <- NULL
-  v07_write_packet(out_dir, tier, cell_id, seed, packet)
   row$driver_commit <- bound$seal[["driver_commit"]]
   row$seal_sha256 <- v07_sha256(v07_seal_path(out_dir))
+  if (!is.null(packet)) v07_write_packet(out_dir, tier, cell_id, seed, packet)
   v07_write_once(path, v07_tsv_text(row))
   invisible(row)
 }
@@ -674,7 +772,7 @@ v07_as_numeric <- function(x, field) {
 v07_normalize_attempts <- function(x) {
   numeric <- c("cell_index", "seed_offset", "seed", "n", "m", "truth_sigma_g2",
     "truth_sigma_e2", "truth_ratio", "ridge", "boundary_epsilon",
-    "scientific_sigma_g2", "scientific_sigma_e2", "scientific_ratio", "profile_t_hat",
+    "scientific_sigma_g2", "scientific_sigma_e2", "scientific_ratio", "fitted_total_variance",
     "numerical_sigma_g2", "numerical_sigma_e2", "numerical_ratio", "profile_loglik",
     "lower_derivative_per_observation", "upper_derivative_per_observation", "iterations",
     "objective", "gradient_norm", "runtime_seconds", "peak_rss_mb", "scale_denominator")
@@ -717,16 +815,25 @@ v07_validate_attempts <- function(attempts, manifest, tier) {
   evidence <- is.finite(attempts$profile_loglik) &
     is.finite(attempts$lower_derivative_per_observation) &
     is.finite(attempts$upper_derivative_per_observation) &
-    is.finite(attempts$profile_t_hat) & attempts$profile_t_hat >= 0
+    is.finite(attempts$fitted_total_variance) & attempts$fitted_total_variance >= 0
   if (any(good & !evidence)) v07_abort("successful fit lacks finite boundary evidence")
   lower <- good & attempts$boundary_status == "boundary_lower"
   upper <- good & attempts$boundary_status == "boundary_upper"
+  interior <- good & attempts$boundary_status %in% c("interior", "interior_rescued")
   if (any(attempts$scientific_ratio[lower] != 0) || any(attempts$scientific_sigma_g2[lower] != 0) ||
       any(attempts$scientific_ratio[upper] != 1) || any(attempts$scientific_sigma_e2[upper] != 0)) {
     v07_abort("resolved endpoint is not represented on the scientific boundary")
   }
-  if (any(good & abs(attempts$scientific_sigma_g2 - attempts$scientific_ratio * attempts$profile_t_hat) > 1e-12) ||
-      any(good & abs(attempts$scientific_sigma_e2 - (1 - attempts$scientific_ratio) * attempts$profile_t_hat) > 1e-12)) {
+  total <- attempts$numerical_sigma_g2 + attempts$numerical_sigma_e2
+  if (any(good & (!is.finite(total) | total <= 0)) ||
+      any(good & abs(attempts$numerical_ratio - attempts$numerical_sigma_g2 / total) > 1e-12) ||
+      any(attempts$numerical_ratio[lower] != v07_boundary_epsilon) ||
+      any(attempts$numerical_ratio[upper] != 1 - v07_boundary_epsilon) ||
+      any(attempts$scientific_ratio[interior] <= 0 | attempts$scientific_ratio[interior] >= 1)) {
+    v07_abort("status-specific numerical/scientific ratio mismatch")
+  }
+  if (any(good & abs(attempts$scientific_sigma_g2 - attempts$scientific_ratio * attempts$fitted_total_variance) > 1e-12) ||
+      any(good & abs(attempts$scientific_sigma_e2 - (1 - attempts$scientific_ratio) * attempts$fitted_total_variance) > 1e-12)) {
     v07_abort("scientific components do not equal the frozen profile endpoint")
   }
   if (any(good & attempts$route != "ordinary_auto_genomic")) v07_abort("route mutation")
@@ -751,6 +858,7 @@ v07_validate_attempts <- function(attempts, manifest, tier) {
 }
 
 v07_read_attempts <- function(out_dir, manifest, tier) {
+  v07_verify_tier_layout(out_dir, manifest, tier)
   expected <- vapply(seq_len(nrow(manifest)), function(i) {
     v07_attempt_path(out_dir, tier, manifest$cell_id[[i]], manifest$seed[[i]])
   }, character(1L))
@@ -763,7 +871,14 @@ v07_read_attempts <- function(out_dir, manifest, tier) {
   for (i in seq_len(nrow(manifest))) {
     v07_verify_packet(out_dir, tier, manifest$cell_id[[i]], manifest$seed[[i]])
   }
-  do.call(rbind, rows)
+  attempts <- do.call(rbind, rows)
+  seal <- v07_read_seal(out_dir)
+  seal_sha256 <- v07_sha256(v07_seal_path(out_dir))
+  if (any(attempts$driver_commit != seal[["driver_commit"]]) ||
+      any(attempts$seal_sha256 != seal_sha256)) {
+    v07_abort("attempt provenance differs from the current campaign seal")
+  }
+  attempts
 }
 
 v07_wilson <- function(k, n) {
@@ -774,7 +889,8 @@ v07_wilson <- function(k, n) {
 }
 
 v07_failure_classes <- function(x) {
-  tab <- sort(table(x)); paste(sprintf("%s=%d", names(tab), as.integer(tab)), collapse = ";")
+  tab <- table(x); tab <- tab[sort(names(tab))]
+  paste(sprintf("%s=%d", names(tab), as.integer(tab)), collapse = ";")
 }
 
 v07_summarize <- function(attempts, manifest, tier) {
@@ -873,7 +989,9 @@ v07_compare_summary <- function(x, y, tolerance = 1e-10) {
     "required_n_raw", "required_n")
   for (field in numeric) {
     a <- as.numeric(x[[field]]); b <- as.numeric(y[[field]])
-    same <- is.na(a) == is.na(b) & (is.na(a) | (is.finite(a) & is.finite(b) & abs(a - b) <= tolerance))
+    same <- is.na(a) == is.na(b) & (is.na(a) |
+      (is.finite(a) & is.finite(b) & abs(a - b) <= tolerance) |
+      (is.infinite(a) & is.infinite(b) & sign(a) == sign(b)))
     if (!all(same)) v07_abort("summary mismatch in %s", field)
   }
   other <- setdiff(v07_summary_columns, numeric)
@@ -883,29 +1001,167 @@ v07_compare_summary <- function(x, y, tolerance = 1e-10) {
   invisible(TRUE)
 }
 
+v07_corpus_lock_path <- function(out_dir, tier) file.path(out_dir, paste0(tier, "_corpus_lock.tsv"))
+v07_receipt_path <- function(out_dir, tier) file.path(out_dir, paste0(tier, "_adjudication_receipt.tsv"))
+
+v07_verify_tier_layout <- function(out_dir, manifest, tier) {
+  cells <- unique(as.character(manifest$cell_id))
+  for (kind in c("attempts", "packets")) {
+    root <- file.path(out_dir, kind, tier)
+    actual <- sort(list.dirs(root, recursive = FALSE, full.names = FALSE))
+    if (!identical(actual, sort(cells))) v07_abort("%s/%s cell directory set drift", kind, tier)
+    dirs <- file.path(root, actual)
+    if (any(v07_is_symlink(dirs))) v07_abort("symlinked %s/%s cell directory", kind, tier)
+  }
+  for (cell in cells) {
+    rows <- manifest[manifest$cell_id == cell, , drop = FALSE]
+    attempt_root <- file.path(out_dir, "attempts", tier, cell)
+    attempt_names <- sprintf("%d.tsv", as.integer(rows$seed))
+    expected_attempt <- sort(c(attempt_names, paste0(attempt_names, ".sha256")))
+    if (!identical(sort(list.files(attempt_root, all.files = TRUE, no.. = TRUE)), expected_attempt)) {
+      v07_abort("attempt file set drift for %s/%s", tier, cell)
+    }
+    packet_root <- file.path(out_dir, "packets", tier, cell)
+    expected_packet <- sort(sprintf("%d", as.integer(rows$seed)))
+    actual_packet <- sort(list.dirs(packet_root, recursive = FALSE, full.names = FALSE))
+    if (!identical(actual_packet, expected_packet)) v07_abort("packet directory set drift for %s/%s", tier, cell)
+    packet_dirs <- file.path(packet_root, actual_packet)
+    if (any(v07_is_symlink(packet_dirs))) v07_abort("symlinked packet directory for %s/%s", tier, cell)
+  }
+  invisible(TRUE)
+}
+
+v07_corpus_entries <- function(out_dir, manifest, tier) {
+  v07_verify_tier_layout(out_dir, manifest, tier)
+  paths <- file.path(out_dir, paste0(tier, "_manifest.tsv"))
+  for (i in seq_len(nrow(manifest))) {
+    paths <- c(paths,
+      v07_attempt_path(out_dir, tier, manifest$cell_id[[i]], manifest$seed[[i]]),
+      file.path(v07_packet_dir(out_dir, tier, manifest$cell_id[[i]], manifest$seed[[i]]),
+        c("markers.tsv", "ids.tsv", "phenotype.tsv", "truth.tsv", "packet_files_lock.tsv")))
+  }
+  invisible(lapply(paths, v07_verify_pair))
+  root <- v07_realpath(out_dir)
+  real <- vapply(paths, v07_realpath, character(1L))
+  prefix <- paste0(root, "/")
+  if (any(!startsWith(real, prefix))) v07_abort("corpus path escapes output root")
+  out <- data.frame(
+    relative_path = substring(real, nchar(prefix) + 1L),
+    sha256 = vapply(real, v07_sha256, character(1L)),
+    stringsAsFactors = FALSE
+  )
+  out <- out[order(out$relative_path), v07_corpus_columns, drop = FALSE]
+  if (anyDuplicated(out$relative_path)) v07_abort("duplicate corpus path")
+  rownames(out) <- NULL
+  out
+}
+
+v07_write_corpus_lock <- function(out_dir, manifest, tier) {
+  lock <- v07_corpus_entries(out_dir, manifest, tier)
+  path <- v07_corpus_lock_path(out_dir, tier)
+  if (xor(file.exists(path), file.exists(paste0(path, ".sha256")))) {
+    v07_abort("orphan corpus-lock primary/sidecar")
+  }
+  if (!file.exists(path)) v07_write_once(path, v07_tsv_text(lock))
+  v07_verify_corpus_lock(out_dir, manifest, tier)
+  invisible(lock)
+}
+
+v07_verify_corpus_lock <- function(out_dir, manifest, tier) {
+  observed <- v07_read_tsv(v07_corpus_lock_path(out_dir, tier), v07_corpus_columns)
+  expected <- v07_corpus_entries(out_dir, manifest, tier)
+  if (!identical(observed, expected)) v07_abort("%s corpus differs from its sealed lock", tier)
+  invisible(expected)
+}
+
 v07_write_summary <- function(out_dir, driver_root, r_root, julia_root, tier) {
   v07_assert_compute_host(); v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
   manifest <- v07_read_tsv(file.path(out_dir, paste0(tier, "_manifest.tsv")), v07_manifest_columns)
   attempts <- v07_read_attempts(out_dir, manifest, tier)
+  v07_write_corpus_lock(out_dir, manifest, tier)
   summary <- v07_summarize(attempts, manifest, tier)
   v07_write_once(file.path(out_dir, paste0(tier, "_summary_driver_r.tsv")), v07_tsv_text(summary))
   invisible(summary)
 }
 
 v07_adjudicate_summaries <- function(out_dir, driver_root, r_root, julia_root, tier) {
-  v07_assert_compute_host(); v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
+  v07_assert_compute_host(); bound <- v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
+  manifest <- v07_read_tsv(file.path(out_dir, paste0(tier, "_manifest.tsv")), v07_manifest_columns)
+  attempts <- v07_read_attempts(out_dir, manifest, tier)
+  v07_verify_corpus_lock(out_dir, manifest, tier)
+  expected <- v07_summarize(attempts, manifest, tier)
   driver <- v07_read_tsv(file.path(out_dir, paste0(tier, "_summary_driver_r.tsv")), v07_summary_columns)
   base_r <- v07_read_tsv(file.path(out_dir, paste0(tier, "_summary_base_r.tsv")), v07_summary_columns)
   julia <- v07_read_tsv(file.path(out_dir, paste0(tier, "_summary_julia.tsv")), v07_summary_columns)
+  v07_compare_summary(expected, driver, tolerance = 1e-10)
   v07_compare_summary(driver, base_r, tolerance = 1e-10)
   v07_compare_summary(driver, julia, tolerance = 1e-10)
+  statuses <- unique(as.character(driver$campaign_status))
+  if (length(statuses) != 1L) v07_abort("summary has multiple campaign statuses")
+  summaries <- c(
+    driver_summary_sha256 = v07_sha256(file.path(out_dir, paste0(tier, "_summary_driver_r.tsv"))),
+    base_r_summary_sha256 = v07_sha256(file.path(out_dir, paste0(tier, "_summary_base_r.tsv"))),
+    julia_summary_sha256 = v07_sha256(file.path(out_dir, paste0(tier, "_summary_julia.tsv")))
+  )
+  receipt <- data.frame(
+    tier = tier,
+    seal_sha256 = v07_sha256(v07_seal_path(out_dir)),
+    corpus_lock_sha256 = v07_sha256(v07_corpus_lock_path(out_dir, tier)),
+    driver_summary_sha256 = summaries[["driver_summary_sha256"]],
+    base_r_summary_sha256 = summaries[["base_r_summary_sha256"]],
+    julia_summary_sha256 = summaries[["julia_summary_sha256"]],
+    r_recomputer_sha256 = bound$seal[["r_recomputer_sha256"]],
+    julia_recomputer_sha256 = bound$seal[["julia_recomputer_sha256"]],
+    campaign_status = statuses,
+    stringsAsFactors = FALSE
+  )
+  receipt_path <- v07_receipt_path(out_dir, tier)
+  if (xor(file.exists(receipt_path), file.exists(paste0(receipt_path, ".sha256")))) {
+    v07_abort("orphan adjudication-receipt primary/sidecar")
+  }
+  if (!file.exists(receipt_path)) v07_write_once(receipt_path, v07_tsv_text(receipt))
+  v07_verify_adjudication_receipt(out_dir, driver_root, r_root, julia_root, tier)
   invisible(driver)
+}
+
+v07_verify_adjudication_receipt <- function(out_dir, driver_root, r_root, julia_root, tier) {
+  bound <- v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
+  manifest <- v07_read_tsv(file.path(out_dir, paste0(tier, "_manifest.tsv")), v07_manifest_columns)
+  attempts <- v07_read_attempts(out_dir, manifest, tier)
+  v07_verify_corpus_lock(out_dir, manifest, tier)
+  expected <- v07_summarize(attempts, manifest, tier)
+  summaries <- list(
+    driver = v07_read_tsv(file.path(out_dir, paste0(tier, "_summary_driver_r.tsv")), v07_summary_columns),
+    base_r = v07_read_tsv(file.path(out_dir, paste0(tier, "_summary_base_r.tsv")), v07_summary_columns),
+    julia = v07_read_tsv(file.path(out_dir, paste0(tier, "_summary_julia.tsv")), v07_summary_columns)
+  )
+  v07_compare_summary(expected, summaries$driver)
+  v07_compare_summary(summaries$driver, summaries$base_r)
+  v07_compare_summary(summaries$driver, summaries$julia)
+  status <- unique(as.character(summaries$driver$campaign_status))
+  if (length(status) != 1L) v07_abort("summary has multiple campaign statuses")
+  observed <- v07_read_tsv(v07_receipt_path(out_dir, tier), v07_receipt_columns)
+  if (nrow(observed) != 1L) v07_abort("adjudication receipt must have one row")
+  expected_receipt <- data.frame(
+    tier = tier,
+    seal_sha256 = v07_sha256(v07_seal_path(out_dir)),
+    corpus_lock_sha256 = v07_sha256(v07_corpus_lock_path(out_dir, tier)),
+    driver_summary_sha256 = v07_sha256(file.path(out_dir, paste0(tier, "_summary_driver_r.tsv"))),
+    base_r_summary_sha256 = v07_sha256(file.path(out_dir, paste0(tier, "_summary_base_r.tsv"))),
+    julia_summary_sha256 = v07_sha256(file.path(out_dir, paste0(tier, "_summary_julia.tsv"))),
+    r_recomputer_sha256 = bound$seal[["r_recomputer_sha256"]],
+    julia_recomputer_sha256 = bound$seal[["julia_recomputer_sha256"]],
+    campaign_status = status,
+    stringsAsFactors = FALSE
+  )
+  if (!identical(observed, expected_receipt)) v07_abort("adjudication receipt/current corpus mismatch")
+  invisible(summaries$driver)
 }
 
 v07_write_confirmation_manifest <- function(out_dir, driver_root, r_root, julia_root) {
   v07_assert_compute_host(); v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
   pilot <- v07_read_tsv(file.path(out_dir, "pilot_manifest.tsv"), v07_manifest_columns)
-  summary <- v07_adjudicate_summaries(out_dir, driver_root, r_root, julia_root, "pilot")
+  summary <- v07_verify_adjudication_receipt(out_dir, driver_root, r_root, julia_root, "pilot")
   if (any(summary$cell_status != "CONFIRMATION_ELIGIBLE")) {
     v07_abort("whole campaign stops: at least one pilot cell is ineligible")
   }
@@ -918,26 +1174,62 @@ v07_write_confirmation_manifest <- function(out_dir, driver_root, r_root, julia_
   invisible(manifest)
 }
 
-v07_verify_tree <- function(out_dir, driver_root, r_root, julia_root) {
+v07_pair_names <- function(name) c(name, paste0(name, ".sha256"))
+
+v07_stage_top <- function(stage) {
+  if (is.null(stage) || length(stage) != 1L) v07_abort("verification stage is required")
+  sealed <- v07_pair_names("campaign_seal.tsv")
+  pilot_manifest <- c(sealed, v07_pair_names("pilot_manifest.tsv"))
+  pilot_complete <- c(pilot_manifest, "attempts", "packets",
+    unlist(lapply(c("pilot_summary_driver_r.tsv", "pilot_summary_base_r.tsv",
+      "pilot_summary_julia.tsv", "pilot_corpus_lock.tsv", "pilot_adjudication_receipt.tsv"), v07_pair_names)))
+  confirm_manifest <- c(pilot_complete, v07_pair_names("confirm_manifest.tsv"))
+  confirm_complete <- c(confirm_manifest,
+    unlist(lapply(c("confirm_summary_driver_r.tsv", "confirm_summary_base_r.tsv",
+      "confirm_summary_julia.tsv", "confirm_corpus_lock.tsv", "confirm_adjudication_receipt.tsv"), v07_pair_names)))
+  stages <- list(sealed = sealed, pilot_manifest = pilot_manifest,
+    pilot_complete = pilot_complete, confirm_manifest = confirm_manifest,
+    confirm_complete = confirm_complete)
+  if (is.null(stages[[stage]])) v07_abort("unknown verification stage: %s", stage)
+  sort(unname(stages[[stage]]))
+}
+
+v07_verify_tree <- function(out_dir, driver_root, r_root, julia_root, stage) {
   v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
   top <- sort(list.files(out_dir, recursive = FALSE, all.files = TRUE, no.. = TRUE))
-  allowed_top <- c(
-    "attempts", "packets", "campaign_seal.tsv", "campaign_seal.tsv.sha256",
-    "pilot_manifest.tsv", "pilot_manifest.tsv.sha256",
-    "confirm_manifest.tsv", "confirm_manifest.tsv.sha256",
-    "pilot_summary_driver_r.tsv", "pilot_summary_driver_r.tsv.sha256",
-    "pilot_summary_base_r.tsv", "pilot_summary_base_r.tsv.sha256",
-    "pilot_summary_julia.tsv", "pilot_summary_julia.tsv.sha256",
-    "confirm_summary_driver_r.tsv", "confirm_summary_driver_r.tsv.sha256",
-    "confirm_summary_base_r.tsv", "confirm_summary_base_r.tsv.sha256",
-    "confirm_summary_julia.tsv", "confirm_summary_julia.tsv.sha256"
-  )
-  if (any(!top %in% allowed_top)) v07_abort("unexpected top-level campaign output")
+  expected_top <- v07_stage_top(stage)
+  if (!identical(top, expected_top)) v07_abort("campaign tree does not exactly match stage %s", stage)
+  top_paths <- file.path(out_dir, top)
+  if (any(v07_is_symlink(top_paths))) v07_abort("symlinked top-level campaign entry")
+  if (stage %in% c("pilot_complete", "confirm_manifest", "confirm_complete")) {
+    expected_tiers <- if (stage == "confirm_complete") c("confirm", "pilot") else "pilot"
+    for (kind in c("attempts", "packets")) {
+      tiers <- sort(list.dirs(file.path(out_dir, kind), recursive = FALSE, full.names = FALSE))
+      if (!identical(tiers, sort(expected_tiers))) v07_abort("%s tier directory set differs from stage %s", kind, stage)
+      if (any(v07_is_symlink(file.path(out_dir, kind, tiers)))) v07_abort("symlinked campaign tier directory")
+    }
+  }
   files <- list.files(out_dir, recursive = TRUE, full.names = TRUE, all.files = TRUE, no.. = TRUE)
   primaries <- files[!file.info(files)$isdir & !endsWith(files, ".sha256")]
   sidecars <- files[!file.info(files)$isdir & endsWith(files, ".sha256")]
   if (!identical(sort(paste0(primaries, ".sha256")), sort(sidecars))) v07_abort("orphan/additional sidecar in output tree")
   invisible(lapply(primaries, v07_verify_pair))
+  pilot <- NULL
+  if (stage != "sealed") {
+    pilot <- v07_read_tsv(file.path(out_dir, "pilot_manifest.tsv"), v07_manifest_columns)
+    v07_validate_disjoint_seeds(pilot)
+  }
+  if (stage %in% c("pilot_complete", "confirm_manifest", "confirm_complete")) {
+    v07_verify_adjudication_receipt(out_dir, driver_root, r_root, julia_root, "pilot")
+  }
+  if (stage %in% c("confirm_manifest", "confirm_complete")) {
+    confirm <- v07_read_tsv(file.path(out_dir, "confirm_manifest.tsv"), v07_manifest_columns)
+    v07_validate_disjoint_seeds(pilot, confirm)
+  }
+  if (stage == "confirm_complete") {
+    v07_verify_adjudication_receipt(out_dir, driver_root, r_root, julia_root, "confirm")
+  }
+  invisible(TRUE)
 }
 
 v07_selftest <- function() {
@@ -950,6 +1242,14 @@ v07_selftest <- function() {
   path <- file.path(root, "once.tsv"); v07_write_once(path, "x\n"); v07_verify_pair(path)
   failed <- inherits(try(v07_write_once(path, "y\n"), silent = TRUE), "try-error")
   stopifnot(failed, v07_hex64(v07_r_recomputer_sha256), v07_hex64(v07_julia_recomputer_sha256))
+  if (.Platform$OS.type != "windows") {
+    contested <- file.path(root, "contested.tsv")
+    jobs <- lapply(1:2, function(i) parallel::mcparallel(
+      !inherits(try(v07_write_once(contested, sprintf("writer%d\n", i)), silent = TRUE), "try-error")
+    ))
+    wins <- unlist(parallel::mccollect(jobs), use.names = FALSE)
+    stopifnot(sum(wins) == 1L, file.exists(contested), file.exists(paste0(contested, ".sha256")))
+  }
   message("v0.7 genomic recovery-v2 selftest: PASS (no campaign seal created)")
   invisible(TRUE)
 }
@@ -957,6 +1257,10 @@ v07_selftest <- function() {
 v07_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   mode <- v07_option(args, "mode")
   if (identical(mode, "selftest")) return(v07_selftest())
+  if (identical(mode, "admission")) {
+    return(v07_write_admission(v07_option(args, "path"), v07_option(args, "driver-commit"),
+      v07_option(args, "julia-execution-commit"), v07_option(args, "reviewed-at-utc")))
+  }
   out <- v07_option(args, "out-dir")
   driver <- v07_option(args, "driver-root"); r_root <- v07_option(args, "r-root")
   julia <- v07_option(args, "julia-root")
@@ -965,7 +1269,7 @@ v07_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   if (mode == "seal") {
     v07_create_seal(out, driver, r_root, julia, v07_option(args, "driver-commit"),
-      v07_option(args, "julia-execution-commit"))
+      v07_option(args, "julia-execution-commit"), v07_option(args, "admission-receipt"))
   } else if (mode == "pilot-manifest") {
     v07_write_pilot_manifest(out, driver, r_root, julia)
   } else if (mode == "confirmation-manifest") {
@@ -978,7 +1282,7 @@ v07_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   } else if (mode == "adjudicate") {
     v07_adjudicate_summaries(out, driver, r_root, julia, v07_option(args, "tier"))
   } else if (mode == "verify") {
-    v07_verify_tree(out, driver, r_root, julia)
+    v07_verify_tree(out, driver, r_root, julia, v07_option(args, "stage"))
   } else v07_abort("unknown mode: %s", mode)
 }
 

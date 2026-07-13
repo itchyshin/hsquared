@@ -25,13 +25,14 @@ It is for users who already have a genomic relationship inverse, a marker
 matrix, or a single-step relationship inverse and want to understand which path
 is live today.
 
-The genomic GREML paths are experimental, REML-only, Julia-backed, and remain
-explicit targets. A repaired boundary candidate resolved all 240 sealed holdouts
-and corrected 30 classifications with no losses, but its preregistered activation
-gate failed because one cell was 5.99 times slower at p95 than the old path, above
-the frozen 3 times cap. They require
-`control = hs_control(engine = "julia", engine_control = list(target =
-"genomic"))`; other genomic paths below use their own explicit targets. All require local Julia,
+The genomic GREML paths are experimental, REML-only, and Julia-backed. On this
+held branch, the two narrow GREML forms use the ordinary no-control call; the
+explicit `target = "genomic"` route remains supported. The first offset-5001
+candidate remains a banked 5.99-times runtime failure. The revised offset-6001
+candidate passed its fresh holdout (240/240 valid, 40 wins, 0 losses, maximum
+p95 ratio 1.370), clearing only the performance gate. Recovery-v2 and Rose/G10
+remain open, so this is not activation on main. Other genomic paths below keep
+their own explicit targets. All require local Julia,
 `JuliaCall`, and a sibling `HSquared.jl` checkout.
 
 ## Three current paths
@@ -40,8 +41,8 @@ The current R surface has three distinct genomic paths.
 
 | Path | Formula term | Target | Variances |
 | --- | --- | --- | --- |
-| GBLUP / genomic GREML from a supplied inverse | `genomic(1 | id, Ginv = Ginv)` | `target = "genomic"` | estimated by the Julia AI-REML path |
-| GBLUP / genomic GREML from raw markers | `genomic(1 | id, markers = M)` | `target = "genomic"` | estimated after the frozen engine construction |
+| GBLUP / genomic GREML from a supplied inverse | `genomic(1 | id, Ginv = Ginv)` | held ordinary route; explicit `target = "genomic"` supported | estimated by the Julia AI-REML path |
+| GBLUP / genomic GREML from raw markers | `genomic(1 | id, markers = M)` | held ordinary route; explicit `target = "genomic"` supported | estimated after the frozen engine construction |
 | SNP-BLUP / RR-BLUP marker effects | `genomic(1 | id, markers = M)` | `target = "snp_blup"` | supplied by the user, or REML-estimated when omitted |
 
 There is also a single-step surface:
@@ -302,8 +303,9 @@ eqtl_table(fit_g)   # reserved
 
 ## Current evidence boundary
 
-The current R genomic and single-step rows remain `partial`; the explicit route
-does not change `public_covered_count` (still 5).
+The current R genomic and single-step rows remain `partial`; the held ordinary
+candidate and explicit compatibility route do not change `public_covered_count`
+(still 5).
 
 Covered in the R lane:
 
@@ -328,10 +330,9 @@ Covered in the R lane:
 Still planned:
 
 - production relationship-matrix construction and scaling/blending controls;
-- component and allocation profiling on the already-open discovery data,
-  output-equivalent performance work, a new preregistration, and a fresh
-  untouched holdout block; the 240 opened holdout seeds cannot adjudicate a
-  revised candidate, and the nine-cell recovery campaign remains held;
+- the frozen recovery-v2 pilot/confirmation, three-way recomputation, Rose
+  audit, and G10; the fresh performance holdout has passed but recovery-v2 has
+  not run;
 - robustness studies for LD, population structure, imputation, base-frequency
   misspecification, real panels, and production genotype data; the sealed
   holdout used only independent HWE/no-LD markers;
@@ -355,7 +356,7 @@ single-step blending of pedigree and genomic information. Useful anchors are
 (2010)](https://pubmed.ncbi.nlm.nih.gov/20105546/).
 
 For `hsquared`, those papers motivate the roadmap. The package exposes one
-narrow opt-in genomic GREML route while keeping default activation, recovery,
+narrow held genomic GREML candidate while keeping public activation, recovery,
 interval, and broad production genomic claims behind explicit validation gates.
 
 See also:

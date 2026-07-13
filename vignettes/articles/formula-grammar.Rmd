@@ -101,10 +101,10 @@ y ~ sex + batch + single_step(1 | id, Hinv = Hinv)
 ```
 
 Current status: `markers()`, `marker_scan()`, and `qtl_scan()` are planned
-markers and do not fit yet. `genomic()` and `single_step()` now fit through an
-opt-in, experimental engine path (`engine = "julia"`, `target = "genomic"` /
-`"single_step"` / `"snp_blup"`; REML-only or supplied-variance, not the
-default, mirroring a `partial` validation gate).
+markers and do not fit yet. The narrow Gaussian-REML `genomic()` forms have a
+held ordinary-route candidate on this branch; explicit `target = "genomic"`
+remains supported. `single_step()` and SNP-BLUP remain opt-in experimental
+targets. The genomic row stays `partial` pending recovery-v2 and Rose/G10.
 
 ## Multivariate and factor-analytic grammar
 

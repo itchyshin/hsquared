@@ -44,7 +44,8 @@ advanced opt-in engine controls.
   normalized pedigree ordering, and Julia target metadata. It does not fit a
   model.
 - Narrow univariate Gaussian REML `genomic()` (supplied `Ginv` or a `markers`
-  matrix) remains an explicit Julia `target = "genomic"`. `single_step()`
+  matrix) has a held ordinary-route candidate; explicit Julia `target = "genomic"`
+  remains supported. `single_step()`
   (supplied `Hinv`, or constructed `Hinv` from
   `pedigree` + `markers`), `permanent()`, `common_env()`, `maternal_genetic()`, and the
   supplied-relationship primaries `relmat()` (dense `K`) and `precision()`
@@ -195,23 +196,22 @@ These models fit through the same opt-in
 comparator/known-truth-validated at the bar above; each mirrors a `partial` gate
 in the `HSquared.jl` twin.
 
-The genomic GREML route also remains explicit:
-`genomic(1 | id, markers = M)` and `genomic(1 | id, Ginv = Q)` require
-`target = "genomic"` and remain experimental/partial. Marker input means sample-frequency
+The genomic GREML route has a held ordinary no-control candidate:
+`genomic(1 | id, markers = M)` and `genomic(1 | id, Ginv = Q)` route on this
+branch, while explicit `target = "genomic"` remains supported. The row remains
+experimental/partial. Marker input means sample-frequency
 VanRaden1 with `K_lambda = G + 0.01I`; supplied `Ginv` construction is unknown.
 `heritability()` returns the genomic variance-component ratio
 `sigma_g2 / (sigma_g2 + sigma_e2)` on the declared relationship scale. It is
 not generally an average marginal phenotypic-variance fraction and is not
 pedigree-, founder-base-, population-, or universal narrow-sense h²; genomic
 interval/SE accessors are unavailable. Fixture, independent-construction, and live
-marker-versus-exact-Q identity evidence exist. A repaired boundary candidate
-matched an independent base-R oracle on all 240 sealed holdouts, correcting 30
-classifications with no losses, but the conjunctive gate still failed: the
-`n120_m600_r050` p95 runtime ratio was 5.99 times against the frozen 3 times cap.
-Default activation was not added, the nine-cell campaign did not run, and
-`public_covered_count` remains 5. The 240 seeds are spent; a revised candidate
-requires performance work on discovery data, a new preregistration, and a fresh
-holdout block. The study used independent HWE/no-LD markers and provides no robustness
+marker-versus-exact-Q identity evidence exist. The original offset-5001
+candidate remains a banked 5.99-times runtime failure. The separately
+preregistered revised offset-6001 candidate passed its fresh holdout (240/240
+valid, 40 wins, 0 losses, maximum p95 ratio 1.370), clearing only the
+performance gate. Recovery-v2 has not run, Rose/G10 remain open, and
+`public_covered_count` remains 5. The study used independent HWE/no-LD markers and provides no robustness
 evidence for LD, population structure, imputation, base-frequency
 misspecification, real panels, or production genotype data.
 
@@ -282,8 +282,8 @@ unsupported form rather than guessing.
 
 ## Not implemented yet
 
-- General default model fitting beyond the v0.1 univariate Gaussian animal
-  model and the explicit experimental genomic route (the reserved inheritance
+- General public activation beyond the v0.1 univariate Gaussian animal model;
+  the genomic ordinary route is a held branch candidate (the reserved inheritance
   kernels). The multivariate, standard two-effect, repeatability, SNP-BLUP,
   single-step, and non-Gaussian
   (`poisson`/`binomial`, Laplace or variational REML, no heritability) models fit
@@ -294,8 +294,8 @@ unsupported form rather than guessing.
   implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a default for
-  any model other than the v0.1 univariate Gaussian animal model or the explicit
-  experimental genomic route (the explicit models above return them; the covered ones
+  any model other than the v0.1 univariate Gaussian animal model or the held
+  experimental genomic candidate (the explicit models above return them; the covered ones
   are validated at validation scale only, the experimental ones are not).
 - Log-likelihood or information criteria for supplied-variance Henderson MME
   bridge results.

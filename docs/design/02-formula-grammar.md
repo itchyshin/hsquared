@@ -33,8 +33,9 @@ Current default-fit limits:
 - Gaussian identity-link response only;
 - `cov =`, long-format trait syntax, marker scans, selfing, QTL, and
   non-Gaussian syntax aborts before marshalling;
-- genomic, repeatability, two-effect, single-step, SNP-BLUP, and multivariate
-  models remain explicit experimental targets, not default-fit routes.
+- the narrow Gaussian-REML single-genomic-effect form has an implemented held
+  ordinary-route candidate; repeatability, two-effect, single-step, SNP-BLUP,
+  and multivariate models remain explicit experimental targets.
 
 Current bridge-payload notes:
 
@@ -43,7 +44,8 @@ Current bridge-payload notes:
 - pedigree IDs are normalized to parent-before-offspring order;
 - the payload records parent indices for Julia-side sparse `Ainv`
   construction;
-- the default fit path supports the v0.1 pedigree animal model; genomic,
+- the default fit path supports the v0.1 pedigree animal model and, on this
+  held branch only, the narrow Gaussian-REML single-genomic-effect candidate;
   repeatability, two-effect, SNP-BLUP, single-step, and multivariate paths
   remain explicit experimental targets;
   non-Gaussian, QTL/GWAS/eQTL, structured covariance grammar, and unusual
@@ -72,8 +74,10 @@ relmat(1 | id, K = custom_K)
 precision(1 | id, Q = custom_Q)
 ```
 
-The two univariate Gaussian REML `genomic()` forms above are available through
-the explicit `engine = "julia", target = "genomic"` path. `markers = M` means
+The two univariate Gaussian REML `genomic()` forms above route through the
+ordinary no-control call on this held candidate branch. The explicit
+`engine = "julia", target = "genomic"` path remains supported. This is not
+activation on main: recovery-v2 and Rose/G10 remain outstanding. `markers = M` means
 sample-frequency, unweighted VanRaden method
 1 with `K_lambda = G + 0.01I`; supplied `Ginv` is fitted unchanged and its
 construction method, allele-frequency base, ridge, and denominator remain

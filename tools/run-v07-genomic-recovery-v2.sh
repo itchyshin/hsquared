@@ -4,7 +4,8 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  run-v07-genomic-recovery-v2.sh seal OUT DRIVER_ROOT R_ROOT JULIA_ROOT DRIVER_COMMIT JULIA_EXECUTION_COMMIT
+  run-v07-genomic-recovery-v2.sh admission RECEIPT DRIVER_COMMIT JULIA_EXECUTION_COMMIT REVIEWED_AT_UTC
+  run-v07-genomic-recovery-v2.sh seal OUT DRIVER_ROOT R_ROOT JULIA_ROOT DRIVER_COMMIT JULIA_EXECUTION_COMMIT ADMISSION_RECEIPT
   run-v07-genomic-recovery-v2.sh pilot-manifest OUT DRIVER_ROOT R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v2.sh run-tier OUT DRIVER_ROOT R_ROOT JULIA_ROOT pilot|confirm [WORKERS]
   run-v07-genomic-recovery-v2.sh summarize OUT DRIVER_ROOT R_ROOT JULIA_ROOT pilot|confirm
@@ -12,14 +13,22 @@ Usage:
   run-v07-genomic-recovery-v2.sh recompute-julia OUT DRIVER_ROOT R_ROOT JULIA_ROOT pilot|confirm
   run-v07-genomic-recovery-v2.sh adjudicate OUT DRIVER_ROOT R_ROOT JULIA_ROOT pilot|confirm
   run-v07-genomic-recovery-v2.sh confirmation-manifest OUT DRIVER_ROOT R_ROOT JULIA_ROOT
-  run-v07-genomic-recovery-v2.sh verify OUT DRIVER_ROOT R_ROOT JULIA_ROOT
+  run-v07-genomic-recovery-v2.sh verify OUT DRIVER_ROOT R_ROOT JULIA_ROOT sealed|pilot_manifest|pilot_complete|confirm_manifest|confirm_complete
 
-This launcher runs one R process per seed. Use only on Totoro/DRAC, never CI.
+This frozen campaign runs one R process per seed on Totoro only, never CI.
+Any DRAC execution requires a new environment seal and preregistration amendment.
 EOF
 }
 
-[[ $# -ge 5 ]] || { usage >&2; exit 64; }
+[[ $# -ge 1 ]] || { usage >&2; exit 64; }
 mode=$1
+if [[ "$mode" == admission ]]; then
+  [[ $# -eq 5 ]] || { usage >&2; exit 64; }
+  tool="$(cd "$(dirname "$0")" && pwd)/v07_genomic_recovery_v2.R"
+  exec Rscript "$tool" --mode=admission --path="$2" --driver-commit="$3" \
+    --julia-execution-commit="$4" --reviewed-at-utc="$5"
+fi
+[[ $# -ge 5 ]] || { usage >&2; exit 64; }
 out=$2
 driver_root=$3
 r_root=$4
@@ -36,9 +45,9 @@ common=(--out-dir="$out" --driver-root="$driver_root" --r-root="$r_root" --julia
 
 case "$mode" in
   seal)
-    [[ $# -eq 7 ]] || { usage >&2; exit 64; }
+    [[ $# -eq 8 ]] || { usage >&2; exit 64; }
     exec Rscript "$tool" --mode=seal "${common[@]}" --driver-commit="$6" \
-      --julia-execution-commit="$7"
+      --julia-execution-commit="$7" --admission-receipt="$8"
     ;;
   pilot-manifest)
     [[ $# -eq 5 ]] || { usage >&2; exit 64; }
@@ -68,8 +77,8 @@ case "$mode" in
     exec Rscript "$tool" --mode=adjudicate "${common[@]}" --tier="$6"
     ;;
   verify)
-    [[ $# -eq 5 ]] || { usage >&2; exit 64; }
-    exec Rscript "$tool" --mode=verify "${common[@]}"
+    [[ $# -eq 6 ]] || { usage >&2; exit 64; }
+    exec Rscript "$tool" --mode=verify "${common[@]}" --stage="$6"
     ;;
   run-tier)
     [[ $# -ge 6 && $# -le 7 ]] || { usage >&2; exit 64; }

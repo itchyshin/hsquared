@@ -45,7 +45,7 @@ passed a pre-declared 48-seed recovery gate plus a same-estimand REML comparator
 common-environment two-effect, arbitrary-N multi-effect, random regression k = 2,
 and the direct–maternal correlated 2×2 G model. Further opt-in models mirror a
 `partial` validation gate: permanent environment, the maternal-genetic independent
-two-effect leg, genomic (GREML or SNP-BLUP), single-step effects, and the
+two-effect leg, SNP-BLUP, single-step effects, and the
 multivariate Gaussian animal model via a `cbind()` response. All opt-in models
 are experimental and not production. The rest — paternal effects, dominance, epistasis, cytoplasmic
 inheritance, imprinting, custom relationship or precision matrices, and
@@ -77,11 +77,12 @@ fit <- hsquared(
 
 This fits by default: the R side builds the `y`, `X`, sparse `Z`, and normalized
 pedigree payload, the `HSquared.jl` engine builds `Ainv`, estimates the variance
-components by REML, and returns an `hsquared_fit` object. A genomic GREML /
-SNP-BLUP effect, single-step, the multivariate Gaussian animal model, and
+components by REML, and returns an `hsquared_fit` object. A narrow genomic
+GREML model has an implemented but held ordinary no-control route candidate on
+this branch; it is not activated on main or released, and recovery-v2 plus
+Rose/G10 remain open. SNP-BLUP, single-step, the multivariate Gaussian animal model, and
 non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no heritability)
-models also fit through the opt-in, experimental `engine = "julia"` path (not the
-default);
+models fit through the opt-in, experimental `engine = "julia"` path;
 factor-analytic models remain planned.
 For the multivariate Gaussian path, use:
 

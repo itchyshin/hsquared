@@ -20,7 +20,7 @@ v07_test_attempts <- function() {
   x$scientific_sigma_g2 <- x$truth_sigma_g2 + delta
   x$scientific_sigma_e2 <- x$truth_sigma_e2 - delta
   x$scientific_ratio <- x$scientific_sigma_g2
-  x$profile_t_hat <- 1
+  x$fitted_total_variance <- 1
   x$numerical_sigma_g2 <- x$scientific_sigma_g2
   x$numerical_sigma_e2 <- x$scientific_sigma_e2
   x$numerical_ratio <- x$scientific_ratio
@@ -98,6 +98,19 @@ test_that("create-once outputs use an exclusive hard link and sealed sidecar", {
   expect_error(v07_write_once(orphan, "x\n"), "orphan")
 })
 
+test_that("concurrent writers produce exactly one immutable winner", {
+  skip_on_os("windows")
+  root <- tempfile("v07-concurrent-"); dir.create(root)
+  withr::defer(unlink(root, recursive = TRUE))
+  path <- file.path(root, "one.tsv")
+  jobs <- lapply(1:2, function(i) parallel::mcparallel(
+    !inherits(try(v07_write_once(path, sprintf("writer%d\n", i)), silent = TRUE), "try-error")
+  ))
+  wins <- unlist(parallel::mccollect(jobs), use.names = FALSE)
+  expect_equal(sum(wins), 1L)
+  expect_invisible(v07_verify_pair(path))
+})
+
 test_that("reconstructable packets have an exact locked file set", {
   root <- tempfile("v07-packet-"); dir.create(root)
   withr::defer(unlink(root, recursive = TRUE))
@@ -115,6 +128,35 @@ test_that("reconstructable packets have an exact locked file set", {
   expect_error(v07_verify_packet(root, "pilot", "fixture", 1), "file set")
 })
 
+test_that("tier corpus locks bind manifest attempts and packet primaries", {
+  root <- tempfile("v07-corpus-"); dir.create(root)
+  root <- normalizePath(root, winslash = "/")
+  withr::defer(unlink(root, recursive = TRUE))
+  manifest <- data.frame(
+    tier = "pilot", cell_id = "fixture", cell_index = 1, seed_offset = 7001,
+    seed = 1, n = 2, m = 1, truth_sigma_g2 = 0.5, truth_sigma_e2 = 0.5,
+    truth_ratio = 0.5, ridge = 0.01, regime = "fixture"
+  )
+  v07_write_once(file.path(root, "pilot_manifest.tsv"), v07_tsv_text(manifest))
+  packet <- list(
+    markers = data.frame(id = c("a", "b"), m000001 = c(0, 2)),
+    ids = data.frame(index = 1:2, id = c("a", "b")),
+    phenotype = data.frame(index = 1:2, id = c("a", "b"), y = c(1, 2)),
+    truth = data.frame(cell_id = "fixture", seed = 1, n = 2, requested_m = 1,
+      retained_m = 1, truth_sigma_g2 = 0.5, truth_sigma_e2 = 0.5,
+      truth_ratio = 0.5, ridge = 0.01, scale_denominator = 0.5)
+  )
+  v07_write_packet(root, "pilot", "fixture", 1, packet)
+  attempt_path <- v07_attempt_path(root, "pilot", "fixture", 1)
+  v07_write_once(attempt_path, "x\n1\n")
+  expect_invisible(v07_write_corpus_lock(root, manifest, "pilot"))
+  expect_invisible(v07_verify_corpus_lock(root, manifest, "pilot"))
+
+  unlink(c(attempt_path, paste0(attempt_path, ".sha256")))
+  v07_write_once(attempt_path, "x\n2\n")
+  expect_error(v07_verify_corpus_lock(root, manifest, "pilot"), "differs")
+})
+
 test_that("root isolation and recomputer digests are frozen", {
   base <- tempfile("v07-roots-"); dir.create(base)
   withr::defer(unlink(base, recursive = TRUE))
@@ -129,6 +171,26 @@ test_that("root isolation and recomputer digests are frozen", {
   expect_invisible(v07_assert_recomputer(r_recomputer, v07_r_recomputer_sha256, "base-R"))
   expect_invisible(v07_assert_recomputer(julia_recomputer, v07_julia_recomputer_sha256, "Julia"))
   expect_invisible(v07_selftest())
+})
+
+test_that("output roots and verification stages are fail-closed", {
+  base <- tempfile("v07-output-"); dir.create(base)
+  base <- normalizePath(base, winslash = "/")
+  withr::defer(unlink(base, recursive = TRUE))
+  roots <- file.path(base, c("driver", "r", "julia")); vapply(roots, dir.create, logical(1L))
+  output <- file.path(base, "campaign")
+  expect_identical(v07_assert_new_output_root(output, roots), output)
+  expect_error(v07_assert_new_output_root("relative-campaign", roots), "absolute")
+  expect_error(v07_assert_new_output_root(file.path(roots[[1L]], "nested"), roots), "nested")
+  link <- file.path(dirname(base), paste0(basename(base), "-link"))
+  file.symlink(base, link); withr::defer(unlink(link))
+  expect_error(v07_assert_new_output_root(file.path(link, "campaign"), roots), "real directory|canonical")
+
+  expect_true(all(c("pilot_corpus_lock.tsv", "pilot_adjudication_receipt.tsv") %in%
+    v07_stage_top("pilot_complete")))
+  expect_true(all(c("confirm_corpus_lock.tsv", "confirm_adjudication_receipt.tsv") %in%
+    v07_stage_top("confirm_complete")))
+  expect_error(v07_stage_top("unknown"), "unknown verification stage")
 })
 
 test_that("execution commits preserve the selected implementation trees", {
@@ -153,7 +215,7 @@ test_that("resolved endpoints use scientific components and stay eligible", {
   lower <- 1L
   x$attempts$boundary_status[[lower]] <- "boundary_lower"
   x$attempts$boundary_reason[[lower]] <- "boundary_lower"
-  x$attempts$profile_t_hat[[lower]] <- 0.9
+  x$attempts$fitted_total_variance[[lower]] <- 0.9
   x$attempts$scientific_ratio[[lower]] <- 0
   x$attempts$scientific_sigma_g2[[lower]] <- 0
   x$attempts$scientific_sigma_e2[[lower]] <- 0.9
@@ -164,7 +226,7 @@ test_that("resolved endpoints use scientific components and stay eligible", {
   upper <- 49L
   x$attempts$boundary_status[[upper]] <- "boundary_upper"
   x$attempts$boundary_reason[[upper]] <- "boundary_upper"
-  x$attempts$profile_t_hat[[upper]] <- 1.1
+  x$attempts$fitted_total_variance[[upper]] <- 1.1
   x$attempts$scientific_ratio[[upper]] <- 1
   x$attempts$scientific_sigma_g2[[upper]] <- 1.1
   x$attempts$scientific_sigma_e2[[upper]] <- 0
@@ -202,7 +264,7 @@ test_that("pilot summary uses upper-SD sizing and whole-campaign stop rules", {
   )] <- NA
   stopped[idx, c(
     "boundary_epsilon", "scientific_sigma_g2", "scientific_sigma_e2",
-    "scientific_ratio", "profile_t_hat", "numerical_sigma_g2",
+    "scientific_ratio", "fitted_total_variance", "numerical_sigma_g2",
     "numerical_sigma_e2", "numerical_ratio", "scale_denominator"
   )] <- NA_real_
   out <- v07_summarize(stopped, x$manifest, "pilot")
@@ -218,8 +280,8 @@ test_that("every frozen mutation makes a structural or summary gate red", {
 
   estimate <- x$attempts
   estimate$scientific_sigma_g2[[1L]] <- estimate$scientific_sigma_g2[[1L]] + 0.01
-  estimate$profile_t_hat[[1L]] <- estimate$scientific_sigma_g2[[1L]] + estimate$scientific_sigma_e2[[1L]]
-  estimate$scientific_ratio[[1L]] <- estimate$scientific_sigma_g2[[1L]] / estimate$profile_t_hat[[1L]]
+  estimate$fitted_total_variance[[1L]] <- estimate$scientific_sigma_g2[[1L]] + estimate$scientific_sigma_e2[[1L]]
+  estimate$scientific_ratio[[1L]] <- estimate$scientific_sigma_g2[[1L]] / estimate$fitted_total_variance[[1L]]
   changed <- v07_summarize(estimate, x$manifest, "pilot")
   expect_error(v07_compare_summary(baseline, changed), "summary mismatch")
 
@@ -235,11 +297,25 @@ test_that("every frozen mutation makes a structural or summary gate red", {
   mutate_and_fail("id_hash", v07_test_hash("a"), "ID-order")
   mutate_and_fail("attempted", FALSE, "attempted=true")
   mutate_and_fail("status", "fit_error", "status/convergence")
+  mutate_and_fail("numerical_ratio", 0.4, "ratio mismatch")
 
   removed <- x$attempts[-1L, ]
   expect_error(v07_validate_attempts(removed, x$manifest, "pilot"), "manifest denominator")
   duplicated <- rbind(x$attempts, x$attempts[1L, ])
   expect_error(v07_validate_attempts(duplicated, x$manifest, "pilot"), "duplicate")
+})
+
+test_that("summary comparison handles signed infinity and lexical failures", {
+  x <- v07_test_attempts()
+  baseline <- v07_summarize(x$attempts, x$manifest, "pilot")
+  infinite <- baseline
+  infinite$required_n_raw[[1L]] <- Inf
+  infinite$required_n[[1L]] <- Inf
+  expect_invisible(v07_compare_summary(infinite, infinite))
+  opposite <- infinite; opposite$required_n[[1L]] <- -Inf
+  expect_error(v07_compare_summary(infinite, opposite), "summary mismatch")
+  expect_identical(v07_failure_classes(c("z", "z", "a")), "a=1;z=2")
+  expect_identical(v07r_failure_classes(c("z", "z", "a")), "a=1;z=2")
 })
 
 test_that("launcher passes only xargs cell and seed as positional arguments", {

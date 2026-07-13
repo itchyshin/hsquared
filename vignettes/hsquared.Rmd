@@ -75,8 +75,9 @@ The parser currently accepts:
   with a pedigree component;
 - numeric Gaussian responses.
 
-One narrow experimental genomic GREML route is available through the explicit
-`engine = "julia", target = "genomic"` path:
+On this held candidate branch, one narrow experimental genomic GREML route is
+available through the ordinary no-control call; the explicit
+`engine = "julia", target = "genomic"` compatibility route remains supported:
 
 ```r
 y ~ fixed + genomic(1 | id, markers = M)
@@ -93,14 +94,12 @@ the genomic variance-component ratio on the declared relationship scale. It is
 not generally the fraction of average marginal phenotypic variance and is not
 pedigree-, founder-base-, population-, or universal narrow-sense heritability;
 genomic interval and ratio-SE accessors are unavailable.
-A fail-closed boundary candidate matched an independent base-R oracle on all
-240 sealed holdouts, correcting 30 classifications with no losses. The
-conjunctive activation gate nevertheless failed because `n120_m600_r050` had a
-5.99x candidate/default p95 runtime ratio against the frozen 3x cap. Default
-activation was not added, the nine-cell campaign did not run, and the route
-remains partial/experimental without changing `public_covered_count` (5). The
-240 seeds are spent; a revised candidate requires performance work on discovery
-data, a new preregistration, and a fresh holdout. The holdout used independent
+A first offset-5001 boundary candidate remains a banked 5.99x runtime-gate
+failure. The separately preregistered revised offset-6001 candidate passed its
+fresh holdout (240/240 valid, 40 wins, 0 losses, maximum p95 ratio 1.370),
+clearing only the performance gate. Recovery-v2 has not run; the route remains
+partial/held and is not activated on main or released. `public_covered_count`
+remains 5. The holdout used independent
 HWE/no-LD markers. It provides no robustness
 evidence for LD, population structure, imputation, base-frequency
 misspecification, real panels, or production genotype data.
