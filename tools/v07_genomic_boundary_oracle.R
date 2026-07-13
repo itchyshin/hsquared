@@ -191,7 +191,8 @@ v07_holdout_seal_keys <- strsplit(
     "schema_version candidate_id doc46_commit doc46_sha256 doc47_commit doc47_sha256",
     "reference_commit julia_boundary_impl_commit r_boundary_impl_commit r_execution_commit",
     "localization_driver_sha256 performance_driver_sha256 boundary_driver_sha256",
-    "launcher_sha256 r_oracle_sha256 exchange_schema exchange_schema_sha256 profiler_schema",
+    "launcher_sha256 genomic_source_sha256 r_oracle_sha256 exchange_schema",
+    "exchange_schema_sha256 profiler_schema",
     "profiler_candidate_id packet_file_set provenance_domain_hex provenance_encoding",
     "result_digest_encoding id_hash_kind kernel_hash_kind precision_hash_kind",
     "qk_identity_tolerance relationship_source relationship_method allele_frequency_source",
@@ -269,6 +270,25 @@ v07_sha256_raw <- function(value) {
   writeBin(value, connection)
   close(connection)
   v07_sha256_file(path)
+}
+
+v07_holdout_exchange_schema_preimage <- function() {
+  lines <- c(
+    paste0("schema_version=", v07_holdout_schema),
+    paste0("candidate_id=", v07_holdout_candidate_id),
+    paste0("holdout_columns=", paste(c("cell_id", "seed", "n", "m", "ridge"),
+      collapse = ",")),
+    paste0("fit_columns=", paste(v07_holdout_fit_columns, collapse = ",")),
+    paste0("result_fields=", paste(v07_holdout_result_fields, collapse = ",")),
+    paste0("metadata_keys=", paste(v07_holdout_metadata_keys, collapse = ",")),
+    paste0("packet_files=", paste(v07_holdout_files, collapse = ",")),
+    paste0("oracle_columns=", paste(v07_holdout_oracle_columns, collapse = ","))
+  )
+  paste0(paste(lines, collapse = "\n"), "\n")
+}
+
+v07_holdout_exchange_schema_sha256 <- function() {
+  v07_sha256_raw(charToRaw(enc2utf8(v07_holdout_exchange_schema_preimage())))
 }
 
 v07_u64_raw <- function(value) {
@@ -355,6 +375,7 @@ v07_holdout_read_candidate_seal <- function(path, r_repo, oracle_path = v07_orac
     reference_commit = v07_holdout_reference_commit,
     julia_boundary_impl_commit = v07_holdout_julia_implementation_commit,
     exchange_schema = v07_holdout_schema,
+    exchange_schema_sha256 = v07_holdout_exchange_schema_sha256(),
     profiler_schema = "v07-genomic-boundary-performance-v2",
     profiler_candidate_id = v07_holdout_candidate_id,
     packet_file_set = paste(v07_holdout_files, collapse = ","),
@@ -1458,7 +1479,11 @@ v07_holdout_validate_fits <- function(fits, metadata) {
     v07_stop("doc47 fits.tsv contains an invalid counter, runtime, or epsilon")
   }
   for (index in seq_len(nrow(fits))) {
-    if (!identical(as.character(fits$error_class[[index]]), "none")) {
+    error_class <- as.character(fits$error_class[[index]])
+    if (!identical(error_class, "none")) {
+      if (!identical(as.character(fits$termination_reason[[index]]), error_class)) {
+        v07_stop("doc47 failed fit termination reason/error class mismatch")
+      }
       if (!identical(as.character(fits$optimizer_status[[index]]), "exception") ||
           !identical(as.character(fits$boundary_status[[index]]), "exception") ||
           fits$converged[[index]]) {
@@ -1467,7 +1492,8 @@ v07_holdout_validate_fits <- function(fits, metadata) {
       failed_fields <- c(
         "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
         "profile_t_hat", "profile_loglik", "objective", "ai_score_norm",
-        "fd_log_gradient_norm"
+        "fd_log_gradient_norm", "lower_derivative_per_observation",
+        "upper_derivative_per_observation"
       )
       if (any(vapply(fits[index, failed_fields, drop = FALSE], function(x) {
         !is.na(x[[1L]])
@@ -1479,6 +1505,18 @@ v07_holdout_validate_fits <- function(fits, metadata) {
   if (identical(as.character(fits$error_class[[1L]]), "none") &&
       !identical(as.character(fits$boundary_status[[1L]]), "not_classified")) {
     v07_stop("doc47 default fit must be not_classified")
+  }
+  if (identical(as.character(fits$error_class[[1L]]), "none")) {
+    default_status <- as.character(fits$optimizer_status[[1L]])
+    if (!default_status %in% c("converged", "not_converged")) {
+      v07_stop("doc47 default optimizer status is invalid")
+    }
+    if (!identical(as.character(fits$termination_reason[[1L]]), default_status)) {
+      v07_stop("doc47 default termination reason/status mismatch")
+    }
+    if (!identical(fits$converged[[1L]], default_status == "converged")) {
+      v07_stop("doc47 default convergence/status mismatch")
+    }
   }
   default_missing <- c(
     "profile_ratio", "profile_t_hat", "profile_loglik",
@@ -1496,6 +1534,28 @@ v07_holdout_validate_fits <- function(fits, metadata) {
   status <- as.character(fits$boundary_status[[2L]])
   if (!identical(as.character(fits$error_class[[2L]]), "none")) return(fits)
   if (!status %in% allowed) v07_stop("doc47 candidate boundary_status is invalid")
+  expected <- switch(status,
+    boundary_lower = c("boundary_lower", "boundary_lower", "true"),
+    boundary_upper = c("boundary_upper", "boundary_upper", "true"),
+    interior = c("ai_interior", "converged", "true"),
+    interior_rescued = c("profile_interior", "interior_rescued", "true"),
+    boundary_unresolved = c(NA_character_, "boundary_unresolved", "false")
+  )
+  if (is.na(expected[[1L]])) {
+    if (!nzchar(as.character(fits$termination_reason[[2L]]))) {
+      v07_stop("doc47 unresolved candidate termination reason is empty")
+    }
+  } else if (!identical(
+    as.character(fits$termination_reason[[2L]]), expected[[1L]]
+  )) {
+    v07_stop("doc47 candidate termination reason mismatch")
+  }
+  if (!identical(as.character(fits$optimizer_status[[2L]]), expected[[2L]])) {
+    v07_stop("doc47 candidate optimizer status mismatch")
+  }
+  if (!identical(fits$converged[[2L]], expected[[3L]] == "true")) {
+    v07_stop("doc47 candidate convergence/status mismatch")
+  }
   resolved <- status != "boundary_unresolved"
   candidate_fields <- c(
     "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
@@ -1643,24 +1703,44 @@ v07_build_holdout_oracle <- function(exchange) {
 v07_write_holdout_oracle <- function(x, output) {
   v07_assert_names(x, v07_holdout_oracle_columns, "doc47 oracle output")
   sidecar <- paste0(output, ".sha256")
+  claim <- paste0(output, ".create-once-claim")
+  dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
+  if (!dir.create(claim, showWarnings = FALSE)) {
+    v07_stop("refusing to overwrite or race create-once output: ", output)
+  }
+  linked_output <- FALSE
+  linked_sidecar <- FALSE
+  staged_sha256 <- NULL
+  on.exit({
+    if (linked_output && !linked_sidecar && file.exists(output) &&
+        !is.null(staged_sha256) &&
+        identical(v07_sha256_file(output), staged_sha256)) {
+      unlink(output)
+    }
+    unlink(claim, recursive = TRUE)
+  }, add = TRUE)
   if (file.exists(output) || file.exists(sidecar)) {
     v07_stop("refusing to overwrite create-once output or sidecar: ", output)
   }
-  dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
-  tmp <- tempfile(paste0(".", basename(output), "."), tmpdir = dirname(output))
-  on.exit(unlink(tmp), add = TRUE)
-  utils::write.table(x, tmp, sep = "\t", quote = FALSE, row.names = FALSE,
+  staged_output <- file.path(claim, basename(output))
+  staged_sidecar <- file.path(claim, basename(sidecar))
+  utils::write.table(x, staged_output, sep = "\t", quote = FALSE, row.names = FALSE,
     na = "NaN")
-  if (file.exists(output) || !file.rename(tmp, output)) {
-    v07_stop("atomic create-once doc47 oracle output failed")
+  staged_sha256 <- v07_sha256_file(staged_output)
+  lock <- data.frame(
+    sha256 = staged_sha256,
+    file = basename(output)
+  )
+  utils::write.table(lock, staged_sidecar, sep = "\t", quote = FALSE,
+    row.names = FALSE)
+  if (!isTRUE(suppressWarnings(file.link(staged_output, output)))) {
+    v07_stop("atomic exclusive doc47 oracle output link failed")
   }
-  lock <- data.frame(sha256 = v07_sha256_file(output), file = basename(output))
-  lock_tmp <- tempfile(paste0(".", basename(sidecar), "."), tmpdir = dirname(output))
-  on.exit(unlink(lock_tmp), add = TRUE)
-  utils::write.table(lock, lock_tmp, sep = "\t", quote = FALSE, row.names = FALSE)
-  if (file.exists(sidecar) || !file.rename(lock_tmp, sidecar)) {
-    unlink(output); v07_stop("atomic create-once doc47 oracle sidecar failed")
+  linked_output <- TRUE
+  if (!isTRUE(suppressWarnings(file.link(staged_sidecar, sidecar)))) {
+    v07_stop("atomic exclusive doc47 oracle sidecar link failed")
   }
+  linked_sidecar <- TRUE
   invisible(output)
 }
 
@@ -1739,6 +1819,19 @@ v07_oracle_main <- function(args = commandArgs(trailingOnly = TRUE)) {
 v07_selftest <- function() {
   # Independent in-memory tests-of-the-tests. The testthat suite exercises the
   # sealed exchange and mutation surface more extensively.
+  if (!identical(
+    v07_holdout_exchange_schema_sha256(),
+    "2472abefc1323ac6cea778b7070f1e0a8e3a8860eeac2c6bddbe7ddf4e44c813"
+  )) {
+    v07_stop("selftest doc47 exchange-schema digest drift")
+  }
+  launcher <- match("launcher_sha256", v07_holdout_seal_keys)
+  if (!identical(
+    v07_holdout_seal_keys[launcher + seq_len(2L)],
+    c("genomic_source_sha256", "r_oracle_sha256")
+  )) {
+    v07_stop("selftest doc47 candidate-seal order drift")
+  }
   set.seed(1)
   y <- stats::rnorm(8)
   K <- crossprod(matrix(stats::rnorm(64), 8, 8)) / 8 + diag(8) * 0.1

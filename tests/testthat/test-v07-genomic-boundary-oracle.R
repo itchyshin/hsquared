@@ -360,6 +360,7 @@ v07_test_holdout_binding <- local({
     values[c(
       "schema_version", "exchange_schema"
     )] <- v07_holdout_schema
+    values["exchange_schema_sha256"] <- v07_holdout_exchange_schema_sha256()
     values[c("candidate_id", "profiler_candidate_id")] <- v07_holdout_candidate_id
     values["doc46_commit"] <- v07_holdout_doc46[["commit"]]
     values["doc46_sha256"] <- v07_holdout_doc46[["sha256"]]
@@ -473,7 +474,7 @@ v07_test_holdout_packet <- function(binding = v07_test_holdout_binding()) {
       cell_id = metadata[["cell_id"]], seed = as.numeric(metadata[["seed"]]),
       route = route, timed_order = "default_ai>boundary_candidate", converged = TRUE,
       termination_reason = if (candidate) "ai_interior" else "converged",
-      optimizer_status = if (candidate) "ai_interior" else "converged",
+      optimizer_status = "converged",
       iterations = 10, sigma_g2 = oracle$sigma_g2,
       sigma_e2 = oracle$sigma_e2, numerical_ratio = oracle$ratio,
       profile_ratio = if (candidate) oracle$ratio else NaN,
@@ -532,6 +533,18 @@ v07_test_read_holdout <- function(root, binding = v07_test_holdout_binding()) {
   )
 }
 
+v07_test_mutate_holdout_fit <- function(root, row, values) {
+  path <- file.path(root, "fits.tsv")
+  fits <- v07_read_tsv(path)
+  for (field in names(values)) fits[[field]][[row]] <- values[[field]]
+  v07_test_write(fits, path)
+  fits <- v07_read_tsv(path)
+  fits$result_digest[[row]] <- v07_holdout_result_digest(fits[row, , drop = FALSE])
+  v07_test_write(fits, path)
+  v07_test_holdout_reseal(root)
+  invisible(root)
+}
+
 test_that("doc47 v2 holdout constants bind the selected candidate", {
   expect_identical(v07_holdout_schema, "v07-genomic-boundary-holdout-v2")
   expect_identical(v07_holdout_candidate_id, "doc47_boundary_performance_v1")
@@ -549,6 +562,29 @@ test_that("doc47 v2 holdout constants bind the selected candidate", {
   expect_identical(
     v07_holdout_files,
     c("K.tsv", "Q.tsv", "X.tsv", "fits.tsv", "ids.tsv", "metadata.tsv", "y.tsv")
+  )
+  launcher <- match("launcher_sha256", v07_holdout_seal_keys)
+  expect_identical(
+    v07_holdout_seal_keys[launcher + seq_len(2L)],
+    c("genomic_source_sha256", "r_oracle_sha256")
+  )
+})
+
+test_that("doc47 exchange schema digest binds the exact canonical preimage", {
+  expected <- paste0(
+    "schema_version=v07-genomic-boundary-holdout-v2\n",
+    "candidate_id=doc47_boundary_performance_v1\n",
+    "holdout_columns=cell_id,seed,n,m,ridge\n",
+    "fit_columns=", paste(v07_holdout_fit_columns, collapse = ","), "\n",
+    "result_fields=", paste(v07_holdout_result_fields, collapse = ","), "\n",
+    "metadata_keys=", paste(v07_holdout_metadata_keys, collapse = ","), "\n",
+    "packet_files=K.tsv,Q.tsv,X.tsv,fits.tsv,ids.tsv,metadata.tsv,y.tsv\n",
+    "oracle_columns=", paste(v07_holdout_oracle_columns, collapse = ","), "\n"
+  )
+  expect_identical(v07_holdout_exchange_schema_preimage(), expected)
+  expect_identical(
+    v07_holdout_exchange_schema_sha256(),
+    "2472abefc1323ac6cea778b7070f1e0a8e3a8860eeac2c6bddbe7ddf4e44c813"
   )
 })
 
@@ -577,6 +613,12 @@ test_that("doc47 sealed holdout packet produces and verifies one oracle row", {
   expect_invisible(v07_verify_holdout_oracle(output, out))
   expect_error(v07_write_holdout_oracle(out, output), "refusing to overwrite")
 
+  orphan_output <- paste0(output, "-orphan")
+  writeLines("orphan", paste0(orphan_output, ".sha256"))
+  expect_error(v07_write_holdout_oracle(out, orphan_output), "refusing to overwrite")
+  expect_false(file.exists(orphan_output))
+  expect_false(file.exists(paste0(orphan_output, ".create-once-claim")))
+
   changed <- v07_read_tsv(output)
   changed$precision_hash <- v07_test_hash("f")
   v07_test_write(changed, output)
@@ -587,11 +629,45 @@ test_that("doc47 sealed holdout packet produces and verifies one oracle row", {
   expect_error(v07_verify_holdout_oracle(output, out), "precision_hash")
 })
 
+test_that("doc47 create-once writer admits only one concurrent claimant", {
+  skip_on_os("windows")
+  skip_if(Sys.which("shasum") == "" && Sys.which("sha256sum") == "")
+  root <- v07_test_holdout_packet()
+  out <- v07_build_holdout_oracle(v07_test_read_holdout(root))
+  output <- file.path(dirname(root), paste0(basename(root), "-race.tsv"))
+  results <- parallel::mclapply(seq_len(2L), function(index) {
+    tryCatch({
+      v07_write_holdout_oracle(out, output)
+      "created"
+    }, error = function(condition) paste0("refused:", conditionMessage(condition)))
+  }, mc.cores = 2L, mc.preschedule = FALSE)
+  expect_identical(sum(unlist(results) == "created"), 1L)
+  expect_true(any(startsWith(unlist(results), "refused:")))
+  expect_invisible(v07_verify_holdout_oracle(output, out))
+  expect_false(file.exists(paste0(output, ".create-once-claim")))
+  expect_identical(
+    sort(basename(list.files(dirname(output), pattern = paste0("^", basename(output))))),
+    sort(c(basename(output), paste0(basename(output), ".sha256")))
+  )
+})
+
 test_that("doc47 candidate seal and frozen R checkout mutations fail closed", {
   binding <- v07_test_holdout_binding()
   mutated <- tempfile("v07-mutated-seal-", fileext = ".tsv")
   seal <- v07_read_tsv(binding$seal)
   seal$value[seal$key == "candidate_id"] <- "doc46_boundary_v1"
+  v07_test_write(seal, mutated)
+  v07_test_write(
+    data.frame(sha256 = v07_sha256_file(mutated), file = basename(mutated)),
+    paste0(mutated, ".sha256")
+  )
+  expect_error(
+    v07_holdout_read_candidate_seal(mutated, binding$repo, binding$oracle),
+    "frozen contract"
+  )
+
+  seal <- v07_read_tsv(binding$seal)
+  seal$value[seal$key == "exchange_schema_sha256"] <- v07_test_hash("0")
   v07_test_write(seal, mutated)
   v07_test_write(
     data.frame(sha256 = v07_sha256_file(mutated), file = basename(mutated)),
@@ -685,6 +761,49 @@ test_that("doc47 packet hash, order, fit, seed, and hash drift fail closed", {
   fits$result_digest[[2L]] <- v07_holdout_result_digest(fits[2L, , drop = FALSE])
   v07_test_write(fits, fits_path); v07_test_holdout_reseal(root)
   expect_error(v07_test_read_holdout(root), "lower-boundary scientific/numerical")
+
+  root <- v07_test_holdout_packet()
+  fits_path <- file.path(root, "fits.tsv")
+  fits <- v07_read_tsv(fits_path)
+  fits$error_class[[2L]] <- "InjectedFailure"
+  fits$termination_reason[[2L]] <- "InjectedFailure"
+  fits$optimizer_status[[2L]] <- "exception"
+  fits$boundary_status[[2L]] <- "exception"
+  fits$converged[[2L]] <- FALSE
+  missing <- c(
+    "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
+    "profile_t_hat", "profile_loglik", "objective", "ai_score_norm",
+    "fd_log_gradient_norm"
+  )
+  fits[2L, missing] <- NaN
+  fits$lower_derivative_per_observation[[2L]] <- 0.25
+  fits$upper_derivative_per_observation[[2L]] <- NaN
+  v07_test_write(fits, fits_path)
+  fits <- v07_read_tsv(fits_path)
+  fits$result_digest[[2L]] <- v07_holdout_result_digest(fits[2L, , drop = FALSE])
+  v07_test_write(fits, fits_path); v07_test_holdout_reseal(root)
+  expect_error(v07_test_read_holdout(root), "retained scientific values")
+
+  root <- v07_test_holdout_packet()
+  fits_path <- file.path(root, "fits.tsv")
+  fits <- v07_read_tsv(fits_path)
+  fits$error_class[[2L]] <- "InjectedFailure"
+  fits$termination_reason[[2L]] <- "WrongFailure"
+  fits$optimizer_status[[2L]] <- "exception"
+  fits$boundary_status[[2L]] <- "exception"
+  fits$converged[[2L]] <- FALSE
+  failed_fields <- c(
+    "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
+    "profile_t_hat", "profile_loglik", "objective", "ai_score_norm",
+    "fd_log_gradient_norm", "lower_derivative_per_observation",
+    "upper_derivative_per_observation"
+  )
+  fits[2L, failed_fields] <- NaN
+  v07_test_write(fits, fits_path)
+  fits <- v07_read_tsv(fits_path)
+  fits$result_digest[[2L]] <- v07_holdout_result_digest(fits[2L, , drop = FALSE])
+  v07_test_write(fits, fits_path); v07_test_holdout_reseal(root)
+  expect_error(v07_test_read_holdout(root), "termination reason/error class")
 })
 
 test_that("doc47 endpoint adjacency, tie, and KKT signs fail safely", {
@@ -705,6 +824,31 @@ test_that("doc47 endpoint adjacency, tie, and KKT signs fail safely", {
     v07_classify_oracle(stats::rnorm(8), X, diag(8))$class,
     "oracle_unresolved"
   )
+})
+
+test_that("doc47 successful route status and reason mappings fail closed", {
+  root <- v07_test_holdout_packet()
+  v07_test_mutate_holdout_fit(root, 1L, list(termination_reason = "not_converged"))
+  expect_error(v07_test_read_holdout(root), "default termination reason/status")
+
+  root <- v07_test_holdout_packet()
+  v07_test_mutate_holdout_fit(root, 1L, list(
+    optimizer_status = "not_converged",
+    termination_reason = "not_converged"
+  ))
+  expect_error(v07_test_read_holdout(root), "default convergence/status")
+
+  root <- v07_test_holdout_packet()
+  v07_test_mutate_holdout_fit(root, 2L, list(termination_reason = "profile_interior"))
+  expect_error(v07_test_read_holdout(root), "candidate termination reason")
+
+  root <- v07_test_holdout_packet()
+  v07_test_mutate_holdout_fit(root, 2L, list(optimizer_status = "interior_rescued"))
+  expect_error(v07_test_read_holdout(root), "candidate optimizer status")
+
+  root <- v07_test_holdout_packet()
+  v07_test_mutate_holdout_fit(root, 2L, list(converged = FALSE))
+  expect_error(v07_test_read_holdout(root), "candidate convergence/status")
 })
 
 test_that("doc47 CLI modes create and independently verify synthetic output", {
