@@ -72,6 +72,13 @@ test_that("the preregistered manifests use only the fresh disjoint blocks", {
   expect_true(all(7001:7048 %in% v07_reserved_offsets$failed_environment_pilot))
   expect_identical(v07_expected_environment[["juliacall_version"]], "0.17.6")
   expect_identical(v07_expected_environment[["pkgload_version"]], "1.5.1")
+  expect_identical(
+    v07_expected_environment[["juliacall_source_commit"]],
+    "947d1f3aaba5fec0f5cf61394869a5a47ffa7551"
+  )
+  expect_true(v07_hex64(
+    v07_expected_environment[["juliacall_installed_tree_sha256"]]
+  ))
 
   overlap <- confirm
   overlap$seed[[1L]] <- pilot$seed[[1L]]
@@ -105,6 +112,19 @@ test_that("create-once outputs use an exclusive hard link and sealed sidecar", {
   orphan <- file.path(root, "orphan.tsv")
   writeLines("orphan", paste0(orphan, ".sha256"))
   expect_error(v07_write_once(orphan, "x\n"), "orphan")
+})
+
+test_that("directory-tree hashes bind installed bridge bytes", {
+  root <- tempfile("v07-tree-"); dir.create(root)
+  withr::defer(unlink(root, recursive = TRUE))
+  writeLines("one", file.path(root, "a"))
+  dir.create(file.path(root, "nested"))
+  writeLines("two", file.path(root, "nested", "b"))
+  first <- v07_tree_sha256(root)
+  expect_true(v07_hex64(first))
+  expect_identical(v07_tree_sha256(root), first)
+  writeLines("changed", file.path(root, "nested", "b"))
+  expect_false(identical(v07_tree_sha256(root), first))
 })
 
 test_that("concurrent writers produce exactly one immutable winner", {
@@ -288,7 +308,9 @@ test_that("execution commits preserve the selected implementation trees", {
   )
   expect_true(all(c(
     "julia_execution_commit", "r_selected_tree", "julia_selected_tree",
-    "holdout_checkpoint_doc_sha256", "holdout_checklog_sha256"
+    "holdout_checkpoint_doc_sha256", "holdout_checklog_sha256",
+    "juliacall_source_commit", "juliacall_installed_tree_sha256",
+    "julia_dependency_manifest_sha256", "julia_libunwind_sha256"
   ) %in% v07_seal_keys))
 })
 
@@ -414,7 +436,26 @@ test_that("launcher passes only xargs cell and seed as positional arguments", {
   launcher <- paste(readLines(testthat::test_path("..", "..", "tools", "run-v07-genomic-recovery-v2.sh")), collapse = "\n")
   expect_match(launcher, "cell=\u00241; seed=\u00242", fixed = TRUE)
   expect_match(launcher, "export V07_TOOL=", fixed = TRUE)
+  expect_match(
+    launcher,
+    'export R_LIBS="/home/snakagaw/R/v07-lib:/home/snakagaw/R/lib"',
+    fixed = TRUE
+  )
   expect_false(grepl("sh _ _", launcher, fixed = TRUE))
+})
+
+test_that("sealing performs the real JuliaCall lifecycle before output creation", {
+  code <- paste(readLines(
+    testthat::test_path("..", "..", "tools", "v07_genomic_recovery_v2.R")
+  ), collapse = "\n")
+  create_start <- regexpr("v07_create_seal <- function", code, fixed = TRUE)[[1L]]
+  create_end <- regexpr("v07_assert_bound_state <- function", code, fixed = TRUE)[[1L]]
+  create <- substring(code, create_start, create_end - 1L)
+  expect_lt(
+    regexpr("v07_assert_live_bridge", create, fixed = TRUE)[[1L]],
+    regexpr("dir.create(out_dir", create, fixed = TRUE)[[1L]]
+  )
+  expect_match(code, 'JuliaCall::julia_eval("isdefined(Main, :HSquared)")', fixed = TRUE)
 })
 
 test_that("independent base-R summary matches the campaign arithmetic", {

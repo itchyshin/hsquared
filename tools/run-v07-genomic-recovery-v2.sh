@@ -48,6 +48,7 @@ export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 export VECLIB_MAXIMUM_THREADS=1
 export JULIA_NUM_THREADS=1
+export R_LIBS="/home/snakagaw/R/v07-lib:/home/snakagaw/R/lib"
 
 common=(--out-dir="$out" --driver-root="$driver_root" --r-root="$r_root" --julia-root="$julia_root")
 

@@ -62,7 +62,10 @@ v07r_seal_keys <- c(
   "julia_recomputer_sha256", "admission_receipt_sha256", "admission_receipt_path",
   "output_root", "driver_root", "r_root", "julia_root", "host",
   "cpu_model", "machine", "kernel", "arch", "julia_version", "r_version",
-  "juliacall_version", "pkgload_version",
+  "r_libs", "juliacall_version", "pkgload_version",
+  "juliacall_source_commit", "juliacall_source_archive",
+  "juliacall_source_archive_sha256", "juliacall_installed_tree_sha256",
+  "julia_dependency_manifest_sha256", "julia_libunwind_sha256",
   "julia_num_threads", "openblas_num_threads", "omp_num_threads",
   "veclib_maximum_threads", "seed_formula", "pilot_offsets",
   "confirmation_offsets", "excluded_offsets", "ridge", "relationship_method",
@@ -354,7 +357,11 @@ v07r_validate_seal <- function(out_dir) {
   values <- stats::setNames(as.character(seal$value), seal$key)
   required <- c("schema_version", "r_auto_route_commit", "julia_candidate_commit",
     "relationship_method", "allele_frequency_source", "relationship_scale", "ridge",
-    "boundary_epsilon", "boundary_kkt_tolerance", "juliacall_version", "pkgload_version",
+    "boundary_epsilon", "boundary_kkt_tolerance", "r_libs",
+    "juliacall_version", "pkgload_version", "juliacall_source_commit",
+    "juliacall_source_archive", "juliacall_source_archive_sha256",
+    "juliacall_installed_tree_sha256", "julia_dependency_manifest_sha256",
+    "julia_libunwind_sha256",
     "driver_commit", "julia_execution_commit",
     "r_selected_tree", "julia_selected_tree", "r_recomputer_sha256",
     "julia_recomputer_sha256", "admission_receipt_sha256", "admission_receipt_path",
@@ -372,13 +379,30 @@ v07r_validate_seal <- function(out_dir) {
       as.numeric(values[["boundary_kkt_tolerance"]]) != v07r_boundary_kkt_tolerance ||
       !identical(values[["juliacall_version"]], "0.17.6") ||
       !identical(values[["pkgload_version"]], "1.5.1") ||
+      !identical(values[["r_libs"]],
+        "/home/snakagaw/R/v07-lib:/home/snakagaw/R/lib") ||
+      !identical(values[["juliacall_source_commit"]],
+        "947d1f3aaba5fec0f5cf61394869a5a47ffa7551") ||
+      !identical(values[["juliacall_source_archive"]], paste0(
+        "/home/snakagaw/R/v07-lib/sources/JuliaCall-",
+        "947d1f3aaba5fec0f5cf61394869a5a47ffa7551.tar.gz")) ||
+      !identical(values[["juliacall_source_archive_sha256"]],
+        "50b64935587342774bb2ee0ebba258af57e161579f858d7de3429034e18756c3") ||
+      !identical(values[["juliacall_installed_tree_sha256"]],
+        "811147c85b18af7319084714698f474c7b404d8ba20c0796acfce85c60c7f692") ||
+      !identical(values[["julia_dependency_manifest_sha256"]],
+        "773b0b30edc7c6c799947fda10b24386f2d1b364448df82736b5d0ef909f74dc") ||
+      !identical(values[["julia_libunwind_sha256"]],
+        "a88a96958909da84881a565c8ea219535425db20a184b09d25968e45212ced94") ||
       !identical(values[["pilot_offsets"]], "7101:7148") ||
       !identical(values[["excluded_offsets"]],
         "1:48,1001:3000,5001:5048,6001:6048,7001:7048") ||
       any(!grepl("^[0-9a-f]{40}$", values[c("driver_commit", "julia_execution_commit",
         "r_selected_tree", "julia_selected_tree")])) ||
       any(!grepl("^[0-9a-f]{64}$", values[c("r_recomputer_sha256",
-        "julia_recomputer_sha256", "admission_receipt_sha256")])) ||
+        "julia_recomputer_sha256", "admission_receipt_sha256",
+        "juliacall_source_archive_sha256", "juliacall_installed_tree_sha256",
+        "julia_dependency_manifest_sha256", "julia_libunwind_sha256")])) ||
       !identical(values[["output_root"]], output_root) ||
       !identical(values[["output_absent_before_seal"]], "true")) {
     v07r_abort("campaign seal contract drift")

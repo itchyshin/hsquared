@@ -4,7 +4,12 @@
 > first offset-7001 infrastructure smoke attempt was immutably retained as a
 > bridge-availability failure because Totoro lacked `JuliaCall`; no recovery
 > summary was produced. The entire 7001:7048 block is retired. This amendment
-> binds the installed bridge packages and moves the fresh pilot to 7101:7148.
+> moves the fresh pilot to 7101:7148. Before that new output root existed, a
+> real JuliaCall lifecycle audit found that CRAN `JuliaCall 0.17.6` segfaulted
+> on Totoro's Ubuntu 24.04 system-`libunwind` path. No offset-7101 data were
+> generated. The environment is amended again here to bind the upstream fixed
+> JuliaCall source, installed bytes, Julia dependency manifest, and bundled
+> `libunwind`, and to require a successful live setup before creating the root.
 > It does not activate the default route, promote a capability, change
 > `public_covered_count`, or authorize a release.
 
@@ -23,8 +28,8 @@ inputs:
 | durable Julia holdout PASS checkpoint | `6e31575777d12263702ae1f6b28c315ade3f6705` |
 | checkpoint document SHA-256 | `b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707` |
 | checkpoint check-log SHA-256 | `3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83` |
-| standalone base-R recomputer SHA-256 | `bc78cb988690487fd80f0ab3804aed608e93c3cf41004ff56530bc3b94ff5f2e` |
-| Julia recomputer SHA-256 | `c60c51176554a5ead33c0e35885a8cfc4bc32136e560848fcdff6ae22ea1f86a` |
+| standalone base-R recomputer SHA-256 | `fb6393e26fa4fd9706a2980267b423081f5270609438c76250e3ddbf218cba70` |
+| Julia recomputer SHA-256 | `0ab682198c34c3e83858b34edec551c404a50cbcfa1caf48278fb71584c202f8` |
 | boundary-v2 candidate seal SHA-256 | `e82e023957514621083df6ea7424cc2d14159aa43e9b567122a6edf944cfb724` |
 | `holdout_gate.tsv` SHA-256 | `5d60afc5df62706444149544d5c4aa2d0e1a684d213d594a44a1e7eea622d5c1` |
 | `holdout_timing.tsv` SHA-256 | `098b02ae95083f793de5605c85dbba6db2126cbf1daf4c5d53891969afe8c097` |
@@ -87,17 +92,39 @@ hsquared::hsquared(
 
 This is the ordinary public formula with no explicit engine or target control.
 The held auto-route candidate injects the exact Julia project through the
-process environment. The seal additionally binds `JuliaCall 0.17.6` and
-`pkgload 1.5.1`; either package being absent or at another version stops before
-the output root exists. The campaign tests default dispatch, public R grammar,
-validation, bridge, exact selected Julia project, and the returned R object. It
-is not a Julia-native or explicit-target recovery shortcut. The candidate
-remains held and unmerged while the campaign runs.
+process environment. A package-version check alone is insufficient because the
+CRAN and fixed upstream builds both report `JuliaCall 0.17.6`. The seal therefore
+binds all of the following before the output root exists:
+
+- `R_LIBS=/home/snakagaw/R/v07-lib:/home/snakagaw/R/lib`;
+- `JuliaCall` upstream commit
+  `947d1f3aaba5fec0f5cf61394869a5a47ffa7551`, which contains the parent and
+  child-process `libunwind` fixes from JuliaInterop/JuliaCall PRs 265 and 282;
+- its source archive SHA-256
+  `50b64935587342774bb2ee0ebba258af57e161579f858d7de3429034e18756c3` and
+  installed-tree SHA-256
+  `811147c85b18af7319084714698f474c7b404d8ba20c0796acfce85c60c7f692`;
+- the Julia v1.10 dependency-manifest SHA-256
+  `773b0b30edc7c6c799947fda10b24386f2d1b364448df82736b5d0ef909f74dc`;
+- Julia's bundled `libunwind` SHA-256
+  `a88a96958909da84881a565c8ea219535425db20a184b09d25968e45212ced94`;
+- `pkgload 1.5.1`, Julia `1.10.10`, R `4.5.3`, and all thread limits.
+
+The seal command must then execute the real lifecycle—`pkgload::load_all()` of
+the exact R checkout, `JuliaCall::julia_setup()`, activation of the exact Julia
+checkout, `using HSquared`, and a Julia evaluation—and must do so before
+`dir.create(out_dir)`. Missing dependencies, wrong source or manifest bytes, a
+segfault, or a wrong active project therefore leaves no campaign root. The
+campaign tests default dispatch, public R grammar, validation, bridge, exact
+selected Julia project, and the returned R object. It is not a Julia-native or
+explicit-target recovery shortcut. The candidate remains held and unmerged
+while the campaign runs.
 
 The launcher may use independent OS processes, for example `xargs -P`, but
 must never put `mclapply()` around JuliaCall. It sets Julia, OpenBLAS, OMP, and
-vecLib threads to one. This frozen environment is Totoro-only and never GitHub
-Actions. A DRAC run requires a new seal and preregistration amendment.
+vecLib threads to one and exports the sealed `R_LIBS`. This frozen environment
+is Totoro-only and never GitHub Actions. A DRAC run requires a new seal and
+preregistration amendment.
 
 ## 3. Frozen ADEMP design and seed space
 
@@ -146,8 +173,9 @@ claim.
 
 The seal, manifests, completed per-seed attempts, and summaries are
 create-once. The
-output root must be absent until every host, checkout, version, thread,
-recomputer, and predecessor-evidence check passes. A writer
+output root must be absent until every host, checkout, version, source archive,
+installed package tree, Julia dependency manifest, bundled `libunwind`, live
+bridge lifecycle, thread, recomputer, and predecessor-evidence check passes. A writer
 creates bytes in a same-directory temporary file and claims the final name by
 an exclusive hard link. It never overwrites or renames over an existing path.
 Every primary file has a SHA-256 sidecar. Missing, additional, duplicated,

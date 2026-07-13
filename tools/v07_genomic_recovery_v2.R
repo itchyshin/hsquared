@@ -17,8 +17,8 @@ v07_boundary_bindings <- c(
   holdout_checkpoint_doc_sha256 = "b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707",
   holdout_checklog_sha256 = "3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83"
 )
-v07_r_recomputer_sha256 <- "bc78cb988690487fd80f0ab3804aed608e93c3cf41004ff56530bc3b94ff5f2e"
-v07_julia_recomputer_sha256 <- "c60c51176554a5ead33c0e35885a8cfc4bc32136e560848fcdff6ae22ea1f86a"
+v07_r_recomputer_sha256 <- "fb6393e26fa4fd9706a2980267b423081f5270609438c76250e3ddbf218cba70"
+v07_julia_recomputer_sha256 <- "0ab682198c34c3e83858b34edec551c404a50cbcfa1caf48278fb71584c202f8"
 v07_expected_environment <- c(
   host = "totoro",
   cpu_model = "AMD EPYC 9655 96-Core Processor",
@@ -27,7 +27,21 @@ v07_expected_environment <- c(
   arch = "x86_64",
   julia_version = "1.10.10",
   r_version = "R version 4.5.3 (2026-03-11)",
+  r_libs = "/home/snakagaw/R/v07-lib:/home/snakagaw/R/lib",
   juliacall_version = "0.17.6", pkgload_version = "1.5.1",
+  juliacall_source_commit = "947d1f3aaba5fec0f5cf61394869a5a47ffa7551",
+  juliacall_source_archive = paste0(
+    "/home/snakagaw/R/v07-lib/sources/JuliaCall-",
+    "947d1f3aaba5fec0f5cf61394869a5a47ffa7551.tar.gz"
+  ),
+  juliacall_source_archive_sha256 =
+    "50b64935587342774bb2ee0ebba258af57e161579f858d7de3429034e18756c3",
+  juliacall_installed_tree_sha256 =
+    "811147c85b18af7319084714698f474c7b404d8ba20c0796acfce85c60c7f692",
+  julia_dependency_manifest_sha256 =
+    "773b0b30edc7c6c799947fda10b24386f2d1b364448df82736b5d0ef909f74dc",
+  julia_libunwind_sha256 =
+    "a88a96958909da84881a565c8ea219535425db20a184b09d25968e45212ced94",
   julia_num_threads = "1", openblas_num_threads = "1",
   omp_num_threads = "1", veclib_maximum_threads = "1"
 )
@@ -120,7 +134,10 @@ v07_seal_keys <- c(
   "julia_recomputer_sha256", "admission_receipt_sha256", "admission_receipt_path",
   "output_root", "driver_root", "r_root", "julia_root", "host",
   "cpu_model", "machine", "kernel", "arch", "julia_version", "r_version",
-  "juliacall_version", "pkgload_version",
+  "r_libs", "juliacall_version", "pkgload_version",
+  "juliacall_source_commit", "juliacall_source_archive",
+  "juliacall_source_archive_sha256", "juliacall_installed_tree_sha256",
+  "julia_dependency_manifest_sha256", "julia_libunwind_sha256",
   "julia_num_threads", "openblas_num_threads", "omp_num_threads",
   "veclib_maximum_threads", "seed_formula", "pilot_offsets",
   "confirmation_offsets", "excluded_offsets", "ridge", "relationship_method",
@@ -163,6 +180,24 @@ v07_sha256 <- function(path) {
   hash <- strsplit(out[[1L]], "[[:space:]]+")[[1L]][[1L]]
   if (!v07_hex64(hash)) v07_abort("invalid SHA-256 output for %s", path)
   hash
+}
+
+v07_tree_sha256 <- function(root) {
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  files <- sort(list.files(
+    root, recursive = TRUE, full.names = TRUE, all.files = TRUE,
+    no.. = TRUE, include.dirs = FALSE
+  ))
+  info <- file.info(files)
+  files <- files[!is.na(info$isdir) & !info$isdir]
+  if (!length(files)) v07_abort("cannot hash empty directory tree: %s", root)
+  relative <- substring(files, nchar(root) + 2L)
+  hashes <- vapply(files, v07_sha256, character(1L))
+  payload <- paste0(hashes, "  ./", relative, collapse = "\n")
+  path <- tempfile("v07-tree-hash-")
+  on.exit(unlink(path), add = TRUE)
+  writeBin(charToRaw(paste0(payload, "\n")), path)
+  v07_sha256(path)
 }
 
 v07_realpath <- function(path) normalizePath(path, winslash = "/", mustWork = TRUE)
@@ -286,6 +321,21 @@ v07_assert_compute_host <- function() {
 
 v07_runtime_environment <- function(julia_root) {
   julia <- v07_julia_environment(julia_root)
+  julia_bin <- normalizePath(Sys.which("julia"), winslash = "/", mustWork = TRUE)
+  julia_home <- dirname(dirname(julia_bin))
+  libunwind <- normalizePath(
+    file.path(julia_home, "lib", "julia", "libunwind.so.8"),
+    winslash = "/", mustWork = TRUE
+  )
+  juliacall_path <- normalizePath(
+    find.package("JuliaCall"), winslash = "/", mustWork = TRUE
+  )
+  source_archive <- v07_expected_environment[["juliacall_source_archive"]]
+  source_name <- basename(source_archive)
+  source_commit <- sub(
+    "^JuliaCall-([0-9a-f]{40})[.]tar[.]gz$", "\\1", source_name
+  )
+  dependency_manifest <- path.expand("~/.julia/environments/v1.10/Manifest.toml")
   c(
     host = strsplit(tolower(Sys.info()[["nodename"]]), ".", fixed = TRUE)[[1L]][[1L]],
     cpu_model = v07_cpu_model(),
@@ -294,10 +344,17 @@ v07_runtime_environment <- function(julia_root) {
     arch = julia[["arch"]],
     julia_version = julia[["julia_version"]],
     r_version = R.version.string,
+    r_libs = Sys.getenv("R_LIBS"),
     juliacall_version = if (requireNamespace("JuliaCall", quietly = TRUE))
       as.character(utils::packageVersion("JuliaCall")) else "MISSING",
     pkgload_version = if (requireNamespace("pkgload", quietly = TRUE))
       as.character(utils::packageVersion("pkgload")) else "MISSING",
+    juliacall_source_commit = source_commit,
+    juliacall_source_archive = source_archive,
+    juliacall_source_archive_sha256 = v07_sha256(source_archive),
+    juliacall_installed_tree_sha256 = v07_tree_sha256(juliacall_path),
+    julia_dependency_manifest_sha256 = v07_sha256(dependency_manifest),
+    julia_libunwind_sha256 = v07_sha256(libunwind),
     julia_num_threads = Sys.getenv("JULIA_NUM_THREADS"),
     openblas_num_threads = Sys.getenv("OPENBLAS_NUM_THREADS"),
     omp_num_threads = Sys.getenv("OMP_NUM_THREADS"),
@@ -312,6 +369,27 @@ v07_assert_environment <- function(julia_root) {
     v07_abort("runtime environment differs from frozen Totoro seal: %s", paste(bad, collapse = ", "))
   }
   actual
+}
+
+v07_assert_live_bridge <- function(r_root, julia_root) {
+  if (!requireNamespace("pkgload", quietly = TRUE) ||
+      !requireNamespace("JuliaCall", quietly = TRUE)) {
+    v07_abort("live bridge preflight requires pkgload and JuliaCall")
+  }
+  pkgload::load_all(r_root, quiet = TRUE)
+  Sys.setenv(HSQUARED_JULIA_PROJECT = julia_root)
+  setup <- get("hs_julia_setup", envir = asNamespace("hsquared"), inherits = FALSE)
+  setup(julia_root)
+  active <- as.character(JuliaCall::julia_eval("Base.active_project()"))
+  expected <- normalizePath(
+    file.path(julia_root, "Project.toml"), winslash = "/", mustWork = TRUE
+  )
+  if (length(active) != 1L ||
+      !identical(normalizePath(active, winslash = "/", mustWork = TRUE), expected) ||
+      !isTRUE(as.logical(JuliaCall::julia_eval("isdefined(Main, :HSquared)")))) {
+    v07_abort("live JuliaCall lifecycle did not activate the sealed HSquared project")
+  }
+  invisible(TRUE)
 }
 
 v07_format <- function(x) {
@@ -537,6 +615,7 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
   )
   v07_assert_holdout_checkpoint(roots[["julia_root"]])
   env <- v07_assert_environment(roots[["julia_root"]])
+  v07_assert_live_bridge(roots[["r_root"]], roots[["julia_root"]])
   driver <- file.path(roots[["driver_root"]], "tools", "v07_genomic_recovery_v2.R")
   launcher <- file.path(roots[["driver_root"]], "tools", "run-v07-genomic-recovery-v2.sh")
   doc48 <- file.path(roots[["driver_root"]], "docs", "design", "48-v07-genomic-recovery-v2.md")
@@ -609,6 +688,7 @@ v07_assert_bound_state <- function(out_dir, driver_root, r_root, julia_root) {
     v07_abort("execution admission receipt differs from seal")
   }
   v07_assert_environment(roots[["julia_root"]])
+  v07_assert_live_bridge(roots[["r_root"]], roots[["julia_root"]])
   invisible(list(seal = seal, roots = roots))
 }
 
