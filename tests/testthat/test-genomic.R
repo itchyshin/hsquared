@@ -87,7 +87,7 @@ test_that("genomic is a valid opt-in julia target", {
   expect_equal(hsquared:::hs_validate_julia_target("genomic"), "genomic")
 })
 
-test_that("the default fit path keeps genomic() opt-in", {
+test_that("the held default fit candidate accepts only genomic REML", {
   ids <- paste0("g", 1:3)
   Ginv <- hs_test_ginv(ids)
   dat <- data.frame(y = c(1, 2, 3), id = ids)
@@ -100,15 +100,25 @@ test_that("the default fit path keeps genomic() opt-in", {
   ))
   expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
 
-  expect_error(
+  default_result <- tryCatch(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
       data = dat,
       family = stats::gaussian()
     ),
-    "experimental and opt-in",
-    fixed = TRUE
+    error = identity
   )
+  if (inherits(default_result, "error")) {
+    expect_false(grepl(
+      "experimental and opt-in",
+      conditionMessage(default_result),
+      fixed = TRUE
+    ))
+    expect_match(conditionMessage(default_result), "HSquared.jl", fixed = TRUE)
+  } else {
+    expect_s3_class(default_result, "hsquared_fit")
+    expect_identical(default_result$spec$target, "genomic")
+  }
 
   expect_error(
     hsquared(
@@ -806,7 +816,7 @@ test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", 
   )
 })
 
-test_that("explicit marker and exact supplied-Q routes agree [live]", {
+test_that("default marker, explicit alias, and exact supplied-Q routes agree [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -834,6 +844,11 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
   fit <- hsquared(
     y ~ x + genomic(1 | id, markers = M),
     data = dat,
+    family = stats::gaussian()
+  )
+  fit_explicit <- hsquared(
+    y ~ x + genomic(1 | id, markers = M),
+    data = dat,
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
@@ -855,6 +870,20 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
   expect_equal(ratio$relationship_method, "vanraden1")
   expect_equal(ratio$allele_frequency_source, "sample")
   expect_equal(ratio$ridge, 0.01)
+  expect_equal(
+    variance_components(fit),
+    variance_components(fit_explicit),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    heritability(fit)$estimate,
+    heritability(fit_explicit)$estimate,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    fit$result$relationship_provenance$precision_fingerprint,
+    fit_explicit$result$relationship_provenance$precision_fingerprint
+  )
 
   # Reuse the engine's exact frozen construction as a supplied precision. This
   # proves the two R routes reach the same supplied-Q estimator and the same
@@ -870,11 +899,7 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
   fit_q <- hsquared(
     y ~ x + genomic(1 | id, Ginv = Q),
     data = dat,
-    family = stats::gaussian(),
-    control = hs_control(
-      engine = "julia",
-      engine_control = list(target = "genomic")
-    )
+    family = stats::gaussian()
   )
 
   expect_equal(breeding_values(fit_q)$id, ids)

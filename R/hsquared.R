@@ -117,7 +117,14 @@ hsquared <- function(
         call. = FALSE
       )
     }
-    opt_in_effect <- setdiff(names(spec$random), "animal")
+    # Held v0.7 activation candidate: the already-validated narrow genomic
+    # random-intercept model follows the same bridge as the explicit genomic
+    # target. This branch remains unmerged until the recovery and Rose gates.
+    default_genomic <- !is.null(spec$random$genomic)
+    opt_in_effect <- setdiff(
+      names(spec$random),
+      c("animal", if (default_genomic) "genomic")
+    )
     if (length(opt_in_effect) > 0L) {
       # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
       # name them honestly rather than printing the internal slot name.
@@ -168,6 +175,18 @@ hsquared <- function(
           control,
           "multivariate"
         )
+      ))
+    }
+    if (default_genomic) {
+      return(hs_fit_julia_genomic_payload(
+        payload,
+        project = project,
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(control, "iterations", 100L)
       ))
     }
     return(hs_fit_julia_ai_reml_payload(
