@@ -19,7 +19,7 @@ inputs:
 | held R ordinary-auto-route candidate | `10efc7c58e94da230cbb224b8d2f0698e2550665` |
 | R boundary-oracle implementation | `05ba8aed1c19a7971eeaaf3199fd1afe7d899561` |
 | durable Julia holdout PASS checkpoint | `6e31575777d12263702ae1f6b28c315ade3f6705` |
-| checkpoint document SHA-256 | `51307db4cc977125e21bb764bbdf8a021a2b8a5c38584dd98da26d4029ecfb3f` |
+| checkpoint document SHA-256 | `b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707` |
 | checkpoint check-log SHA-256 | `3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83` |
 | standalone base-R recomputer SHA-256 | `f449ea8d91969a3e006129ddcb33de7367472c7926e18f7844e951004f4336e0` |
 | Julia recomputer SHA-256 | `7cd15783f00336baff77dd4317f6724e0705ca4fb97396b403761c67b54040f9` |

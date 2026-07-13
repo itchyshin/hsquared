@@ -14,7 +14,7 @@ v07_boundary_bindings <- c(
   holdout_gate_sha256 = "5d60afc5df62706444149544d5c4aa2d0e1a684d213d594a44a1e7eea622d5c1",
   holdout_timing_sha256 = "098b02ae95083f793de5605c85dbba6db2126cbf1daf4c5d53891969afe8c097",
   summary_files_lock_sha256 = "4f895bbaab54dd15781ac031de8e3053d1e02eabedbec7ae19da97dca6ee873a",
-  holdout_checkpoint_doc_sha256 = "51307db4cc977125e21bb764bbdf8a021a2b8a5c38584dd98da26d4029ecfb3f",
+  holdout_checkpoint_doc_sha256 = "b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707",
   holdout_checklog_sha256 = "3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83"
 )
 v07_r_recomputer_sha256 <- "f449ea8d91969a3e006129ddcb33de7367472c7926e18f7844e951004f4336e0"
