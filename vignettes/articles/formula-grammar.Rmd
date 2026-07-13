@@ -104,7 +104,9 @@ Current status: `markers()`, `marker_scan()`, and `qtl_scan()` are planned
 markers and do not fit yet. The narrow Gaussian-REML `genomic()` forms have a
 held ordinary-route candidate on this branch; explicit `target = "genomic"`
 remains supported. `single_step()` and SNP-BLUP remain opt-in experimental
-targets. The genomic row stays `partial` pending recovery-v2 and Rose/G10.
+targets. The genomic row stays `partial`: offset-7101 closed as an
+unadjudicated diagnostic precision blocker, and any future activation attempt
+needs a redesigned experiment, fresh admission/seeds, Rose, and G10.
 
 ## Multivariate and factor-analytic grammar
 

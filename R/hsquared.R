@@ -10,7 +10,9 @@
 #' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model is
 #' routed by the ordinary no-control call on this held candidate branch. The
 #' explicit experimental Julia `target = "genomic"` remains supported. This is
-#' not public activation: recovery-v2 and Rose/G10 review remain outstanding.
+#' not public activation: offset-7101 closed as an unadjudicated diagnostic
+#' precision blocker. Any future activation attempt needs a redesigned
+#' experiment, fresh admission/seeds, Rose, and G10.
 #' Marker construction uses sample allele frequencies, unweighted VanRaden
 #' method 1, and ridge `0.01`.
 #' `heritability()` labels its coefficient-scale result

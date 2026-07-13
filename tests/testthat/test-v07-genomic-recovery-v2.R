@@ -58,7 +58,7 @@ v07_test_attempts <- function() {
 test_that("the preregistered manifests use only the fresh disjoint blocks", {
   pilot <- v07_manifest("pilot")
   expect_equal(nrow(pilot), 9L * 48L)
-  expect_identical(pilot$seed_offset, rep(7101:7148, times = 9L))
+  expect_identical(pilot$seed_offset, rep(7201:7248, times = 9L))
   expect_identical(
     pilot$seed,
     v07_seed_base + 10000L * pilot$cell_index + pilot$seed_offset
@@ -70,6 +70,12 @@ test_that("the preregistered manifests use only the fresh disjoint blocks", {
   expect_true(all(confirm$seed_offset >= 8001 & confirm$seed_offset <= 8200))
   expect_invisible(v07_validate_disjoint_seeds(pilot, confirm))
   expect_true(all(7001:7048 %in% v07_reserved_offsets$failed_environment_pilot))
+  expect_true(all(7101:7148 %in% v07_reserved_offsets$failed_adjudication_pilot))
+  retired <- pilot
+  retired$seed_offset <- rep(7101:7148, times = 9L)
+  retired$seed <- v07_seed_base + 10000L * retired$cell_index + retired$seed_offset
+  expect_error(v07_validate_disjoint_seeds(retired), "pilot offset drift")
+  expect_error(v07r_validate_manifest(retired, "pilot"), "manifest scientific/seed contract drift")
   expect_identical(v07_expected_environment[["juliacall_version"]], "0.17.6")
   expect_identical(v07_expected_environment[["pkgload_version"]], "1.5.1")
   expect_identical(
@@ -428,6 +434,27 @@ test_that("summary comparison handles signed infinity and lexical failures", {
   expect_invisible(v07_compare_summary(infinite, infinite))
   opposite <- infinite; opposite$required_n[[1L]] <- -Inf
   expect_error(v07_compare_summary(infinite, opposite), "summary mismatch")
+
+  root <- tempfile("v07-summary-roundtrip-"); dir.create(root)
+  withr::defer(unlink(root, recursive = TRUE))
+  path <- file.path(root, "summary.tsv")
+  v07_write_once(path, v07_tsv_text(baseline))
+  roundtrip <- v07_read_tsv(path, v07_summary_columns)
+  expect_type(baseline$target_pass, "logical")
+  expect_type(roundtrip$target_pass, "character")
+  expect_invisible(v07_compare_summary(baseline, roundtrip))
+  expect_invisible(v07r_compare(baseline, roundtrip))
+  inverted <- roundtrip
+  inverted$target_pass[[1L]] <- if (inverted$target_pass[[1L]] == "true") "false" else "true"
+  expect_error(v07_compare_summary(baseline, inverted), "summary mismatch in target_pass")
+  expect_error(v07r_compare(baseline, inverted), "summary mismatch in target_pass")
+  invalid <- roundtrip; invalid$target_pass[[1L]] <- "not-a-boolean"
+  expect_error(v07_compare_summary(baseline, invalid), "invalid logical summary field")
+  expect_error(v07r_compare(baseline, invalid), "invalid logical summary field")
+  missing <- roundtrip; missing$target_pass[[1L]] <- NA_character_
+  expect_error(v07_compare_summary(baseline, missing), "invalid logical summary field")
+  expect_error(v07r_compare(baseline, missing), "invalid logical summary field")
+
   expect_identical(v07_failure_classes(c("z", "z", "a")), "a=1;z=2")
   expect_identical(v07r_failure_classes(c("z", "z", "a")), "a=1;z=2")
 })

@@ -77,7 +77,9 @@ precision(1 | id, Q = custom_Q)
 The two univariate Gaussian REML `genomic()` forms above route through the
 ordinary no-control call on this held candidate branch. The explicit
 `engine = "julia", target = "genomic"` path remains supported. This is not
-activation on main: recovery-v2 and Rose/G10 remain outstanding. `markers = M` means
+activation on main: offset-7101 closed as an unadjudicated diagnostic precision
+blocker. Any future activation attempt needs a redesigned experiment, fresh
+admission and seeds, Rose, and G10. `markers = M` means
 sample-frequency, unweighted VanRaden method
 1 with `K_lambda = G + 0.01I`; supplied `Ginv` is fitted unchanged and its
 construction method, allele-frequency base, ridge, and denominator remain

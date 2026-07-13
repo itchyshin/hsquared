@@ -7581,3 +7581,22 @@ release".
 - Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
   `git diff --check` clean; boundary grep over the edited articles and
   after-task report confirms the fixed-panel-smoke/no-R-threshold wording.
+
+## 2026-07-13 — v0.7 genomic recovery-v2 precision blocker
+
+- Totoro pilot completed 432/432 successful converged attempts with no dropped
+  or replaced seeds.
+- Driver R and independent base R summaries are byte-identical; independent
+  Julia agrees within `3.33e-16` and all three say `PRECISION_BLOCKER`.
+- Five cells exceed the frozen 2,000-fit ceiling; maximum required N is 16,325.
+- A logical `FALSE` versus serialized `false` comparison withheld the sealed
+  adjudication receipt. The offset-7101 root remains immutable; no confirmation
+  manifest exists and offsets 7101:7148 are retired.
+- Repair checks: focused recovery-v2 tests 134/134; full R suite 0 failures and
+  0 warnings; forced non-lazy pkgdown build and stale-render scan clean;
+  `R CMD check --no-manual` 0 errors / 0 warnings / 0 notes; Julia
+  recomputer self-test, full `Pkg.test()`, Documenter build, preamble cap, and
+  diff checks green.
+- No activation, capability/count promotion, G10, merge, release, or GitHub
+  Actions campaign occurred. Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-13-v07-genomic-recovery-v2-precision-blocker.md`.

@@ -1,17 +1,19 @@
 # 48 — v0.7 genomic GREML recovery-v2 preregistration amendment
 
-> **Status: AMENDED AND FROZEN BEFORE ANY OFFSET-7101 DATA GENERATION.** The
-> first offset-7001 infrastructure smoke attempt was immutably retained as a
-> bridge-availability failure because Totoro lacked `JuliaCall`; no recovery
-> summary was produced. The entire 7001:7048 block is retired. This amendment
-> moves the fresh pilot to 7101:7148. Before that new output root existed, a
-> real JuliaCall lifecycle audit found that CRAN `JuliaCall 0.17.6` segfaulted
-> on Totoro's Ubuntu 24.04 system-`libunwind` path. No offset-7101 data were
-> generated. The environment is amended again here to bind the upstream fixed
-> JuliaCall source, installed bytes, Julia dependency manifest, and bundled
-> `libunwind`, and to require a successful live setup before creating the root.
-> It does not activate the default route, promote a capability, change
-> `public_covered_count`, or authorize a release.
+> **Status: OFFSET-7101 PILOT CLOSED; SUCCESSOR TOOLING AMENDED BEFORE ANY
+> OFFSET-7201 DATA GENERATION.** The offset-7101 pilot completed 432/432
+> successful converged fits. Its three create-once summaries agree on
+> `PRECISION_BLOCKER`, with five cells above the frozen 2,000-replicate cap and
+> a maximum required denominator of 16,325. The sealed adjudicator nevertheless
+> stopped before minting a receipt because an in-memory logical `FALSE` was
+> compared lexically with its own TSV spelling `false`. No confirmation
+> manifest exists. The root remains immutable diagnostic output and offsets
+> 7101:7148 are retired. This amendment normalizes only the logical summary
+> field, mutation-tests the serialization boundary, and reserves 7201:7248 for
+> a separately admitted future pilot. The current arc stops at its
+> preregistered precision-blocker endpoint; it does not activate the default
+> route, promote a capability, change `public_covered_count`, or authorize a
+> release.
 
 ## 1. Admitted implementation and predecessor evidence
 
@@ -21,15 +23,15 @@ inputs:
 | item | frozen identity |
 | --- | --- |
 | Julia selected implementation | `fc9d39df650b20aa09d769d9f9528eed1b606f1e` |
-| Julia execution/tooling commit | `c92663a47c8f5ce93cc984522614e4169717706c` |
+| Julia execution/tooling commit | `c3e62092620eba698d75a02cdc0c8b35802fbb0a` |
 | Julia holdout driver/execution | `fe5987c2dc5002d3b41910a0356554a8f4d7e359` |
 | held R ordinary-auto-route candidate | `10efc7c58e94da230cbb224b8d2f0698e2550665` |
 | R boundary-oracle implementation | `05ba8aed1c19a7971eeaaf3199fd1afe7d899561` |
 | durable Julia holdout PASS checkpoint | `6e31575777d12263702ae1f6b28c315ade3f6705` |
 | checkpoint document SHA-256 | `b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707` |
 | checkpoint check-log SHA-256 | `3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83` |
-| standalone base-R recomputer SHA-256 | `fb6393e26fa4fd9706a2980267b423081f5270609438c76250e3ddbf218cba70` |
-| Julia recomputer SHA-256 | `0ab682198c34c3e83858b34edec551c404a50cbcfa1caf48278fb71584c202f8` |
+| standalone base-R recomputer SHA-256 | `4d2ef38e54afb970cd7fc8679b5db1a17238851cb83a599e14f1d079fa63612c` |
+| Julia recomputer SHA-256 | `af0d83a638f4060a6464d0fb85e87c262fbeec69af712ca1043821785b6298f1` |
 | boundary-v2 candidate seal SHA-256 | `e82e023957514621083df6ea7424cc2d14159aa43e9b567122a6edf944cfb724` |
 | `holdout_gate.tsv` SHA-256 | `5d60afc5df62706444149544d5c4aa2d0e1a684d213d594a44a1e7eea622d5c1` |
 | `holdout_timing.tsv` SHA-256 | `098b02ae95083f793de5605c85dbba6db2126cbf1daf4c5d53891969afe8c097` |
@@ -68,7 +70,7 @@ Before the seal can exist, both independent recomputers must already exist and
 be hash-bound: the base-R recomputer in the exact R checkout and the Julia
 recomputer in the exact Julia checkout. Their source schemas must cover the
 attempted denominator, upper-SD sizing, bias interval, Wilson interval, and
-stopping status. Recovery does not open offset 7101 while either recomputer is
+stopping status. Any successor campaign does not open offset 7201 while either recomputer is
 missing or incompatible.
 
 After each tier, the campaign driver, standalone base-R recomputer, and Julia
@@ -140,7 +142,8 @@ Cells are indexed in that table order with `r_G` varying fastest. Their seed
 base is `2027120000 + 10000 * cell_index`.
 
 - the failed environment-smoke block `7001:7048` is excluded in full;
-- pilot offsets are exactly `7101:7148` in each cell;
+- the unadjudicated precision-blocker pilot `7101:7148` is excluded in full;
+- any successor pilot offsets are exactly `7201:7248` in each cell;
 - confirmation offsets are prefixes of `8001:10000`, sized independently by
   the pilot rule below;
 - historical offsets `1:48`, confirmation `1001:3000`, holdout `5001:5048`,
@@ -282,7 +285,9 @@ Before launch, tests must show red gates after mutating each of: an estimate, a
 truth, a seed, a retained failure, a cell label, ridge, a provenance hash, ID
 order, pilot/confirmation membership, or attempt status. They also exercise
 two writers contending for one create-once path, missing/additional outputs,
-checksum corruption, and orphan primary/sidecar files.
+checksum corruption, orphan primary/sidecar files, logical-to-TSV round trips,
+valid Boolean inversions, invalid/missing Boolean tokens, and retired pilot
+membership.
 
 Passing recovery-v2 requires three-way driver/base-R/Julia recomputation and
 adjudication, then permits the remaining doc-44 audits. It does not itself

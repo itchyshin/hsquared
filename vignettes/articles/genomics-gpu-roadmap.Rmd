@@ -41,7 +41,9 @@ claims rather than slogans.
 The basic genomic GREML effect above is the implemented held candidate form on
 this branch. The ordinary no-control call and explicit `target = "genomic"`
 compatibility route are both available, but this is not activation on main:
-recovery-v2 and Rose/G10 remain open. A raw `markers = M` matrix is supported;
+offset-7101 closed as an unadjudicated diagnostic precision blocker. Any future
+activation attempt needs a redesigned experiment, fresh admission/seeds, Rose,
+and G10. A raw `markers = M` matrix is supported;
 the SNP-BLUP `target = "snp_blup"` path remains explicitly opt-in.
 
 ```{r, eval = FALSE}

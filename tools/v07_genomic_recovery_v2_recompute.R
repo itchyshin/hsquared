@@ -324,7 +324,7 @@ v07r_validate_manifest <- function(manifest, tier) {
   if (!identical(as.character(manifest$cell_id), expected_cell)) v07r_abort("manifest cell/order drift")
   cell_match <- match(manifest$cell_id, v07r_cells$cell_id)
   expected_offset <- unlist(lapply(as.integer(counts), function(n) {
-    if (tier == "pilot") 7101:7148 else 8001:(8000L + n)
+    if (tier == "pilot") 7201:7248 else 8001:(8000L + n)
   }), use.names = FALSE)
   numeric <- c("cell_index", "seed_offset", "seed", "n", "m", "truth_sigma_g2",
     "truth_sigma_e2", "truth_ratio", "ridge")
@@ -394,9 +394,9 @@ v07r_validate_seal <- function(out_dir) {
         "773b0b30edc7c6c799947fda10b24386f2d1b364448df82736b5d0ef909f74dc") ||
       !identical(values[["julia_libunwind_sha256"]],
         "a88a96958909da84881a565c8ea219535425db20a184b09d25968e45212ced94") ||
-      !identical(values[["pilot_offsets"]], "7101:7148") ||
+      !identical(values[["pilot_offsets"]], "7201:7248") ||
       !identical(values[["excluded_offsets"]],
-        "1:48,1001:3000,5001:5048,6001:6048,7001:7048") ||
+        "1:48,1001:3000,5001:5048,6001:6048,7001:7048,7101:7148") ||
       any(!grepl("^[0-9a-f]{40}$", values[c("driver_commit", "julia_execution_commit",
         "r_selected_tree", "julia_selected_tree")])) ||
       any(!grepl("^[0-9a-f]{64}$", values[c("r_recomputer_sha256",
@@ -655,7 +655,20 @@ v07r_compare <- function(x, y, tolerance = 1e-10) {
   for (field in numeric) if (!v07r_equal_numeric(as.numeric(x[[field]]), as.numeric(y[[field]]), tolerance)) {
     v07r_abort("summary mismatch in %s", field)
   }
-  for (field in setdiff(v07r_summary_columns, numeric)) {
+  logical <- "target_pass"
+  for (field in logical) {
+    normalize <- function(value) {
+      token <- tolower(as.character(value))
+      if (any(is.na(token)) || any(!token %in% c("true", "false"))) {
+        v07r_abort("invalid logical summary field %s", field)
+      }
+      token == "true"
+    }
+    if (!identical(normalize(x[[field]]), normalize(y[[field]]))) {
+      v07r_abort("summary mismatch in %s", field)
+    }
+  }
+  for (field in setdiff(v07r_summary_columns, c(numeric, logical))) {
     if (!identical(as.character(x[[field]]), as.character(y[[field]]))) v07r_abort("summary mismatch in %s", field)
   }
   invisible(TRUE)

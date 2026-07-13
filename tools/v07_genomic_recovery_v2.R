@@ -17,8 +17,8 @@ v07_boundary_bindings <- c(
   holdout_checkpoint_doc_sha256 = "b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707",
   holdout_checklog_sha256 = "3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83"
 )
-v07_r_recomputer_sha256 <- "fb6393e26fa4fd9706a2980267b423081f5270609438c76250e3ddbf218cba70"
-v07_julia_recomputer_sha256 <- "0ab682198c34c3e83858b34edec551c404a50cbcfa1caf48278fb71584c202f8"
+v07_r_recomputer_sha256 <- "4d2ef38e54afb970cd7fc8679b5db1a17238851cb83a599e14f1d079fa63612c"
+v07_julia_recomputer_sha256 <- "af0d83a638f4060a6464d0fb85e87c262fbeec69af712ca1043821785b6298f1"
 v07_expected_environment <- c(
   host = "totoro",
   cpu_model = "AMD EPYC 9655 96-Core Processor",
@@ -58,7 +58,8 @@ v07_reserved_offsets <- list(
   spent_holdout = 5001:5048,
   spent_boundary_holdout = 6001:6048,
   failed_environment_pilot = 7001:7048,
-  recovery_pilot = 7101:7148,
+  failed_adjudication_pilot = 7101:7148,
+  recovery_pilot = 7201:7248,
   recovery_confirmation = 8001:10000
 )
 
@@ -639,8 +640,8 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
     admission_receipt_path = admission_receipt,
     output_root = output_root, roots, env,
     seed_formula = "2027120000+10000*cell_index+offset",
-    pilot_offsets = "7101:7148", confirmation_offsets = "8001:10000",
-    excluded_offsets = "1:48,1001:3000,5001:5048,6001:6048,7001:7048",
+    pilot_offsets = "7201:7248", confirmation_offsets = "8001:10000",
+    excluded_offsets = "1:48,1001:3000,5001:5048,6001:6048,7001:7048,7101:7148",
     ridge = "0.01", relationship_method = "vanraden1",
     allele_frequency_source = "sample", relationship_scale = "K_lambda",
     boundary_epsilon = "1e-07", boundary_kkt_tolerance = "1e-08",
@@ -697,7 +698,7 @@ v07_manifest <- function(tier, required = NULL) {
   rows <- list(); at <- 0L
   for (i in seq_len(nrow(v07_cells))) {
     count <- if (tier == "pilot") 48L else as.integer(required[[v07_cells$cell_id[[i]]]])
-    offsets <- if (tier == "pilot") 7101:7148 else 8001:(8000L + count)
+    offsets <- if (tier == "pilot") 7201:7248 else 8001:(8000L + count)
     for (offset in offsets) {
       at <- at + 1L
       cell <- v07_cells[i, ]
@@ -716,14 +717,15 @@ v07_manifest <- function(tier, required = NULL) {
 }
 
 v07_validate_disjoint_seeds <- function(pilot, confirm = NULL) {
-  if (!all(pilot$seed_offset == rep(7101:7148, times = 9L))) v07_abort("pilot offset drift")
+  if (!all(pilot$seed_offset == rep(7201:7248, times = 9L))) v07_abort("pilot offset drift")
   if (!is.null(confirm)) {
     if (length(intersect(pilot$seed, confirm$seed))) v07_abort("pilot/confirmation seed overlap")
     if (any(confirm$seed_offset < 8001 | confirm$seed_offset > 10000)) v07_abort("confirmation offset drift")
   }
   all_offsets <- unlist(v07_reserved_offsets[c(
     "historical_pilot", "historical_confirmation", "spent_holdout",
-    "spent_boundary_holdout", "failed_environment_pilot"
+    "spent_boundary_holdout", "failed_environment_pilot",
+    "failed_adjudication_pilot"
   )], use.names = FALSE)
   if (any(pilot$seed_offset %in% all_offsets) || (!is.null(confirm) && any(confirm$seed_offset %in% all_offsets))) {
     v07_abort("recovery manifest overlaps a reserved historical seed block")
@@ -1231,7 +1233,20 @@ v07_compare_summary <- function(x, y, tolerance = 1e-10) {
       (is.infinite(a) & is.infinite(b) & sign(a) == sign(b)))
     if (!all(same)) v07_abort("summary mismatch in %s", field)
   }
-  other <- setdiff(v07_summary_columns, numeric)
+  logical <- "target_pass"
+  for (field in logical) {
+    normalize <- function(value) {
+      token <- tolower(as.character(value))
+      if (any(is.na(token)) || any(!token %in% c("true", "false"))) {
+        v07_abort("invalid logical summary field %s", field)
+      }
+      token == "true"
+    }
+    if (!identical(normalize(x[[field]]), normalize(y[[field]]))) {
+      v07_abort("summary mismatch in %s", field)
+    }
+  }
+  other <- setdiff(v07_summary_columns, c(numeric, logical))
   for (field in other) if (!identical(as.character(x[[field]]), as.character(y[[field]]))) {
     v07_abort("summary mismatch in %s", field)
   }
@@ -1471,7 +1486,7 @@ v07_verify_tree <- function(out_dir, driver_root, r_root, julia_root, stage) {
 
 v07_selftest <- function() {
   pilot <- v07_manifest("pilot")
-  stopifnot(nrow(pilot) == 432L, identical(pilot$seed_offset, rep(7101:7148, 9L)))
+  stopifnot(nrow(pilot) == 432L, identical(pilot$seed_offset, rep(7201:7248, 9L)))
   code <- paste(deparse(body(v07_fit_call)), collapse = "\n")
   stopifnot(grepl("hsquared::hsquared", code, fixed = TRUE),
     !grepl("hs_control", code, fixed = TRUE), !grepl("engine_control", code, fixed = TRUE))
