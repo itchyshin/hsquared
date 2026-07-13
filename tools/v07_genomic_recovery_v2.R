@@ -26,7 +26,7 @@ v07_expected_environment <- c(
   kernel = "Linux",
   arch = "x86_64",
   julia_version = "1.10.10",
-  r_version = "R version 4.5.3 (2026-03-11) -- \"Reassured Reassurer\"",
+  r_version = "R version 4.5.3 (2026-03-11)",
   julia_num_threads = "1", openblas_num_threads = "1",
   omp_num_threads = "1", veclib_maximum_threads = "1"
 )
