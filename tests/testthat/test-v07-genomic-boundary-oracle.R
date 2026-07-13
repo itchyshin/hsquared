@@ -302,3 +302,156 @@ test_that("CLI oracle and verify modes exercise a sealed packet end to end", {
   expect_identical(attr(repeated, "status"), 1L)
   expect_true(any(grepl("refusing to overwrite", repeated, fixed = TRUE)))
 })
+
+v07_test_holdout_reseal <- function(root) {
+  lock <- data.frame(
+    relative_path = v07_holdout_files,
+    sha256 = vapply(v07_holdout_files, function(file) {
+      v07_sha256_file(file.path(root, file))
+    }, character(1L))
+  )
+  v07_test_write(lock, file.path(root, "files.sha256.tsv"))
+}
+
+v07_test_holdout_packet <- function() {
+  root <- tempfile("v07-doc46-packet-")
+  dir.create(root)
+  set.seed(1)
+  y <- stats::rnorm(8)
+  X <- matrix(1, 8, 1, dimnames = list(NULL, "x1"))
+  K <- crossprod(matrix(stats::rnorm(64), 8, 8)) / 8 + diag(8) * 0.1
+  colnames(K) <- paste0("k", seq_len(8))
+  oracle <- v07_classify_oracle(y, X, K)
+  stopifnot(oracle$class == "interior_oracle")
+  metadata <- c(
+    schema_version = v07_holdout_schema,
+    candidate_id = v07_holdout_candidate_id,
+    cell_id = "n120_m600_r020",
+    seed = "2027135001",
+    n = "8", p = "1", m = "12", ridge = "0.01",
+    marker_hash = v07_test_hash("a"),
+    id_hash = v07_test_hash("b"),
+    kernel_hash = v07_test_hash("c"),
+    doc46_commit = v07_holdout_doc46[["commit"]],
+    doc46_sha256 = v07_holdout_doc46[["sha256"]],
+    julia_boundary_impl_commit = v07_test_hash("1", 40),
+    r_boundary_impl_commit = v07_test_hash("2", 40),
+    discovery_digest = v07_test_hash("3"),
+    discovery_candidate_seal_sha256 = v07_test_hash("4"),
+    candidate_seal_sha256 = v07_test_hash("5"),
+    holdout_manifest_sha256 = v07_test_hash("6"),
+    execution_commit = v07_test_hash("7", 40),
+    driver_sha256 = v07_test_hash("8"),
+    r_oracle_sha256 = v07_sha256_file(oracle_tool)
+  )
+  mkfit <- function(route) {
+    candidate <- route == "boundary_candidate"
+    data.frame(
+      cell_id = metadata[["cell_id"]], seed = as.numeric(metadata[["seed"]]),
+      route = route, converged = TRUE,
+      termination_reason = if (candidate) "ai_interior" else "converged",
+      iterations = 10, sigma_g2 = oracle$sigma_g2,
+      sigma_e2 = oracle$sigma_e2, numerical_ratio = oracle$ratio,
+      profile_ratio = if (candidate) oracle$ratio else NaN,
+      profile_t_hat = if (candidate) oracle$sigma_g2 + oracle$sigma_e2 else NaN,
+      boundary_status = if (candidate) "interior" else "not_classified",
+      boundary_epsilon = v07_holdout_epsilon,
+      profile_loglik = if (candidate) oracle$loglik else NaN,
+      lower_derivative_per_observation = if (candidate) {
+        oracle$d0_per_observation
+      } else NaN,
+      upper_derivative_per_observation = if (candidate) {
+        oracle$d1_per_observation
+      } else NaN,
+      objective = -oracle$loglik, ai_score_norm = 0,
+      fd_log_gradient_norm = 0, runtime_seconds = 0.1,
+      marker_hash = metadata[["marker_hash"]],
+      id_hash = metadata[["id_hash"]], kernel_hash = metadata[["kernel_hash"]],
+      check.names = FALSE
+    )
+  }
+  v07_test_write(data.frame(row = seq_along(y), y = y), file.path(root, "y.tsv"))
+  v07_test_write(data.frame(row = seq_len(8), X, check.names = FALSE),
+    file.path(root, "X.tsv"))
+  v07_test_write(data.frame(row = seq_len(8), K, check.names = FALSE),
+    file.path(root, "K.tsv"))
+  v07_test_write(data.frame(key = names(metadata), value = unname(metadata)),
+    file.path(root, "metadata.tsv"))
+  v07_test_write(rbind(mkfit("default_ai"), mkfit("boundary_candidate")),
+    file.path(root, "fits.tsv"))
+  v07_test_holdout_reseal(root)
+  root
+}
+
+test_that("doc46 sealed holdout packet produces and verifies one oracle row", {
+  skip_if(Sys.which("shasum") == "" && Sys.which("sha256sum") == "")
+  root <- v07_test_holdout_packet()
+  exchange <- v07_read_holdout_exchange(root)
+  out <- v07_build_holdout_oracle(exchange)
+  expect_identical(names(out), v07_holdout_oracle_columns)
+  expect_equal(nrow(out), 1L)
+  expect_identical(out$oracle_class, "interior_oracle")
+  output <- file.path(dirname(root), paste0(basename(root), "-oracle.tsv"))
+  expect_invisible(v07_write_holdout_oracle(out, output))
+  expect_invisible(v07_verify_holdout_oracle(output, out))
+  expect_error(v07_write_holdout_oracle(out, output), "refusing to overwrite")
+})
+
+test_that("doc46 packet hash, order, fit, seed, and hash drift fail closed", {
+  skip_if(Sys.which("shasum") == "" && Sys.which("sha256sum") == "")
+  root <- v07_test_holdout_packet()
+  lock <- v07_read_tsv(file.path(root, "files.sha256.tsv"))
+  v07_test_write(lock[c(2, 1, 3:5), ], file.path(root, "files.sha256.tsv"))
+  expect_error(v07_read_holdout_exchange(root), "set or order")
+
+  root <- v07_test_holdout_packet()
+  fits <- v07_read_tsv(file.path(root, "fits.tsv"))
+  fits$objective[[2L]] <- fits$objective[[2L]] + 1
+  v07_test_write(fits, file.path(root, "fits.tsv"))
+  expect_error(v07_read_holdout_exchange(root), "sealed file hash mismatch")
+
+  root <- v07_test_holdout_packet()
+  fits <- v07_read_tsv(file.path(root, "fits.tsv"))
+  fits$seed[[2L]] <- fits$seed[[2L]] + 1
+  v07_test_write(fits, file.path(root, "fits.tsv")); v07_test_holdout_reseal(root)
+  expect_error(v07_read_holdout_exchange(root), "mismatch in seed")
+
+  root <- v07_test_holdout_packet()
+  fits <- v07_read_tsv(file.path(root, "fits.tsv"))
+  fits$kernel_hash[[2L]] <- v07_test_hash("f")
+  v07_test_write(fits, file.path(root, "fits.tsv")); v07_test_holdout_reseal(root)
+  expect_error(v07_read_holdout_exchange(root), "mismatch in kernel_hash")
+})
+
+test_that("doc46 endpoint adjacency, tie, and KKT signs fail safely", {
+  expect_false(v07_is_distinct_interior(v07_holdout_epsilon))
+  expect_true(v07_is_distinct_interior(2 * v07_holdout_epsilon))
+  expect_false(v07_is_distinct_interior(1 - v07_holdout_epsilon))
+  expect_true(v07_is_distinct_interior(1 - 2 * v07_holdout_epsilon))
+
+  set.seed(99)
+  y <- stats::rnorm(8); A <- matrix(stats::rnorm(64), 8, 8)
+  K <- crossprod(A) / 8 + diag(8) * 0.05; X <- matrix(1, 8, 1)
+  expect_identical(v07_classify_oracle(y, X, K)$class, "lower_boundary")
+  expect_identical(
+    v07_classify_oracle(y, X, K, reverse_kkt = TRUE)$class,
+    "oracle_unresolved"
+  )
+  expect_identical(
+    v07_classify_oracle(stats::rnorm(8), X, diag(8))$class,
+    "oracle_unresolved"
+  )
+})
+
+test_that("doc46 CLI modes create and independently verify synthetic output", {
+  skip_if(Sys.which("shasum") == "" && Sys.which("sha256sum") == "")
+  root <- v07_test_holdout_packet()
+  output <- file.path(dirname(root), paste0(basename(root), "-cli-oracle.tsv"))
+  common <- c("--dataset", shQuote(root), "--output", shQuote(output))
+  created <- system2(file.path(R.home("bin"), "Rscript"),
+    c(shQuote(oracle_tool), "holdout-oracle", common), stdout = TRUE, stderr = TRUE)
+  expect_null(attr(created, "status"))
+  verified <- system2(file.path(R.home("bin"), "Rscript"),
+    c(shQuote(oracle_tool), "holdout-verify", common), stdout = TRUE, stderr = TRUE)
+  expect_null(attr(verified, "status"))
+})
