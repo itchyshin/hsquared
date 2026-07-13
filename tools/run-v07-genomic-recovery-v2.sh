@@ -4,7 +4,8 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  run-v07-genomic-recovery-v2.sh admission RECEIPT DRIVER_COMMIT JULIA_EXECUTION_COMMIT REVIEWED_AT_UTC
+  run-v07-genomic-recovery-v2.sh review RECEIPT Fisher|Grace|Rose CLEAN|BLOCKED DRIVER_COMMIT JULIA_EXECUTION_COMMIT REVIEWED_AT_UTC
+  run-v07-genomic-recovery-v2.sh admission RECEIPT DRIVER_COMMIT JULIA_EXECUTION_COMMIT FISHER_REVIEW GRACE_REVIEW ROSE_REVIEW REVIEWED_AT_UTC
   run-v07-genomic-recovery-v2.sh seal OUT DRIVER_ROOT R_ROOT JULIA_ROOT DRIVER_COMMIT JULIA_EXECUTION_COMMIT ADMISSION_RECEIPT
   run-v07-genomic-recovery-v2.sh pilot-manifest OUT DRIVER_ROOT R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v2.sh run-tier OUT DRIVER_ROOT R_ROOT JULIA_ROOT pilot|confirm [WORKERS]
@@ -22,11 +23,18 @@ EOF
 
 [[ $# -ge 1 ]] || { usage >&2; exit 64; }
 mode=$1
+if [[ "$mode" == review ]]; then
+  [[ $# -eq 7 ]] || { usage >&2; exit 64; }
+  tool="$(cd "$(dirname "$0")" && pwd)/v07_genomic_recovery_v2.R"
+  exec Rscript "$tool" --mode=review --path="$2" --reviewer="$3" --verdict="$4" \
+    --driver-commit="$5" --julia-execution-commit="$6" --reviewed-at-utc="$7"
+fi
 if [[ "$mode" == admission ]]; then
-  [[ $# -eq 5 ]] || { usage >&2; exit 64; }
+  [[ $# -eq 8 ]] || { usage >&2; exit 64; }
   tool="$(cd "$(dirname "$0")" && pwd)/v07_genomic_recovery_v2.R"
   exec Rscript "$tool" --mode=admission --path="$2" --driver-commit="$3" \
-    --julia-execution-commit="$4" --reviewed-at-utc="$5"
+    --julia-execution-commit="$4" --fisher-review="$5" --grace-review="$6" \
+    --rose-review="$7" --reviewed-at-utc="$8"
 fi
 [[ $# -ge 5 ]] || { usage >&2; exit 64; }
 out=$2

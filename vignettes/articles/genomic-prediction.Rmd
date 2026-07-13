@@ -108,9 +108,10 @@ and is not pedigree-, founder-base-, population-, or universal narrow-sense
 heritability.
 Genomic `heritability_interval()` and `heritability_standard_error()` are
 unavailable until a scale-labelled interval contract is separately validated.
-The R surface remains partial because the sealed boundary candidate failed its
-runtime gate, the nine-cell campaign did not run, and production-scale genomic
-validation is not complete.
+The R surface remains partial because the original offset-5001 boundary
+candidate failed its runtime gate. An output-equivalent repair passed a
+separate fresh offset-6001 holdout, but the nine-cell recovery-v2 campaign has
+not run and production-scale genomic validation is not complete.
 
 ## Marker-built G
 

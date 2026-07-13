@@ -34,9 +34,15 @@ v07r_summary_columns <- c(
   "required_n_raw", "required_n", "cell_status", "campaign_status",
   "failure_classes"
 )
+v07r_review_columns <- c(
+  "schema_version", "reviewer", "verdict", "r_execution_commit",
+  "julia_execution_commit", "reviewed_at_utc"
+)
 v07r_admission_columns <- c(
   "schema_version", "r_execution_commit", "julia_execution_commit",
-  "fisher_verdict", "grace_verdict", "rose_verdict", "reviewed_at_utc"
+  "fisher_review_sha256", "fisher_review_path", "grace_review_sha256",
+  "grace_review_path", "rose_review_sha256", "rose_review_path",
+  "reviewed_at_utc"
 )
 v07r_truth_columns <- c(
   "cell_id", "seed", "n", "requested_m", "retained_m", "truth_sigma_g2",
@@ -60,6 +66,7 @@ v07r_seal_keys <- c(
   "veclib_maximum_threads", "seed_formula", "pilot_offsets",
   "confirmation_offsets", "excluded_offsets", "ridge", "relationship_method",
   "allele_frequency_source", "relationship_scale", "boundary_epsilon",
+  "boundary_kkt_tolerance",
   "resolved_statuses", "output_absent_before_seal"
 )
 v07r_expected_cells <- c(
@@ -74,9 +81,10 @@ v07r_reason <- c(
 )
 v07r_ridge <- 0.01
 v07r_boundary_epsilon <- 1e-7
+v07r_boundary_kkt_tolerance <- 1e-8
 v07r_qk_tolerance <- 1e-10
 v07r_schema <- "v07-genomic-recovery-v2"
-v07r_r_implementation <- "1082d84f4269d4f79fdc248558ec56b8f710b8d2"
+v07r_r_implementation <- "10efc7c58e94da230cbb224b8d2f0698e2550665"
 v07r_julia_implementation <- "fc9d39df650b20aa09d769d9f9528eed1b606f1e"
 v07r_seed_base <- 2027120000
 v07r_cells <- data.frame(
@@ -345,7 +353,7 @@ v07r_validate_seal <- function(out_dir) {
   values <- stats::setNames(as.character(seal$value), seal$key)
   required <- c("schema_version", "r_auto_route_commit", "julia_candidate_commit",
     "relationship_method", "allele_frequency_source", "relationship_scale", "ridge",
-    "boundary_epsilon", "driver_commit", "julia_execution_commit",
+    "boundary_epsilon", "boundary_kkt_tolerance", "driver_commit", "julia_execution_commit",
     "r_selected_tree", "julia_selected_tree", "r_recomputer_sha256",
     "julia_recomputer_sha256", "admission_receipt_sha256", "admission_receipt_path",
     "output_root", "r_root", "output_absent_before_seal")
@@ -358,6 +366,7 @@ v07r_validate_seal <- function(out_dir) {
       !identical(values[["relationship_scale"]], "K_lambda") ||
       as.numeric(values[["ridge"]]) != v07r_ridge ||
       as.numeric(values[["boundary_epsilon"]]) != v07r_boundary_epsilon ||
+      as.numeric(values[["boundary_kkt_tolerance"]]) != v07r_boundary_kkt_tolerance ||
       any(!grepl("^[0-9a-f]{40}$", values[c("driver_commit", "julia_execution_commit",
         "r_selected_tree", "julia_selected_tree")])) ||
       any(!grepl("^[0-9a-f]{64}$", values[c("r_recomputer_sha256",
@@ -376,14 +385,38 @@ v07r_validate_seal <- function(out_dir) {
   admission_path <- values[["admission_receipt_path"]]
   if (!grepl("^/", admission_path) || v07r_is_symlink(admission_path) ||
       !identical(normalizePath(admission_path, winslash = "/", mustWork = TRUE), admission_path) ||
+      !file.exists(paste0(admission_path, ".sha256")) ||
+      inherits(try(v07r_verify_pair(admission_path), silent = TRUE), "try-error") ||
       !identical(v07r_sha256(admission_path), values[["admission_receipt_sha256"]])) {
     v07r_abort("execution admission receipt differs from campaign seal")
   }
   admission <- v07r_read_tsv(admission_path, v07r_admission_columns)
-  if (nrow(admission) != 1L || admission$r_execution_commit != values[["driver_commit"]] ||
+  if (nrow(admission) != 1L ||
+      admission$schema_version != "v07-genomic-recovery-v2-admission-2" ||
+      admission$r_execution_commit != values[["driver_commit"]] ||
       admission$julia_execution_commit != values[["julia_execution_commit"]] ||
-      any(unlist(admission[c("fisher_verdict", "grace_verdict", "rose_verdict")], use.names = FALSE) != "CLEAN")) {
+      !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", admission$reviewed_at_utc)) {
     v07r_abort("execution admission does not admit the sealed commits")
+  }
+  for (reviewer in c("fisher", "grace", "rose")) {
+    review_path <- admission[[paste0(reviewer, "_review_path")]]
+    review_hash <- admission[[paste0(reviewer, "_review_sha256")]]
+    if (!grepl("^/", review_path) || v07r_is_symlink(review_path) ||
+        !identical(normalizePath(review_path, winslash = "/", mustWork = TRUE), review_path) ||
+        !file.exists(paste0(review_path, ".sha256")) ||
+        inherits(try(v07r_verify_pair(review_path), silent = TRUE), "try-error") ||
+        !identical(v07r_sha256(review_path), review_hash)) {
+      v07r_abort("%s review receipt differs from admission", reviewer)
+    }
+    review <- v07r_read_tsv(review_path, v07r_review_columns)
+    label <- c(fisher = "Fisher", grace = "Grace", rose = "Rose")[[reviewer]]
+    if (nrow(review) != 1L || review$schema_version != "v07-genomic-recovery-v2-review-1" ||
+        review$reviewer != label || review$verdict != "CLEAN" ||
+        review$r_execution_commit != values[["driver_commit"]] ||
+        review$julia_execution_commit != values[["julia_execution_commit"]] ||
+        !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", review$reviewed_at_utc)) {
+      v07r_abort("%s review does not attest CLEAN for the sealed commits", reviewer)
+    }
   }
   list(values = values, sha256 = v07r_sha256(path))
 }
@@ -464,6 +497,12 @@ v07r_read_campaign <- function(out_dir, tier) {
     is.finite(attempts$lower_derivative_per_observation) &
     is.finite(attempts$upper_derivative_per_observation)
   if (any(good & !evidence)) v07r_abort("nonfinite boundary evidence")
+  if (any(lower & attempts$lower_derivative_per_observation > v07r_boundary_kkt_tolerance) ||
+      any(upper & attempts$upper_derivative_per_observation < -v07r_boundary_kkt_tolerance) ||
+      any(interior & !(attempts$lower_derivative_per_observation > v07r_boundary_kkt_tolerance &
+        attempts$upper_derivative_per_observation < -v07r_boundary_kkt_tolerance))) {
+    v07r_abort("status-specific boundary KKT derivative signs mismatch")
+  }
   t_hat <- attempts$numerical_sigma_g2 + attempts$numerical_sigma_e2
   derived_g <- attempts$scientific_ratio * t_hat
   derived_e <- (1 - attempts$scientific_ratio) * t_hat

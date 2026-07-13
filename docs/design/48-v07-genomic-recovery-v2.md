@@ -14,15 +14,15 @@ inputs:
 | item | frozen identity |
 | --- | --- |
 | Julia selected implementation | `fc9d39df650b20aa09d769d9f9528eed1b606f1e` |
-| Julia execution/tooling commit | `8f0f4ec2a001004f65740b2057e08c80250a2d91` |
+| Julia execution/tooling commit | `8c8387a68cb61766f490cb951972f5d694957356` |
 | Julia holdout driver/execution | `fe5987c2dc5002d3b41910a0356554a8f4d7e359` |
-| held R ordinary-auto-route candidate | `1082d84f4269d4f79fdc248558ec56b8f710b8d2` |
+| held R ordinary-auto-route candidate | `10efc7c58e94da230cbb224b8d2f0698e2550665` |
 | R boundary-oracle implementation | `05ba8aed1c19a7971eeaaf3199fd1afe7d899561` |
 | durable Julia holdout PASS checkpoint | `6e31575777d12263702ae1f6b28c315ade3f6705` |
 | checkpoint document SHA-256 | `51307db4cc977125e21bb764bbdf8a021a2b8a5c38584dd98da26d4029ecfb3f` |
 | checkpoint check-log SHA-256 | `3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83` |
-| standalone base-R recomputer SHA-256 | `d07ca5012ab28e4b5b10b1649e995bd4627b03407896890ba163e96335d8ce3a` |
-| Julia recomputer SHA-256 | `a61d2c70846cda0f85431429a385ca222c94afff6c81812d20bff71bb2721935` |
+| standalone base-R recomputer SHA-256 | `f449ea8d91969a3e006129ddcb33de7367472c7926e18f7844e951004f4336e0` |
+| Julia recomputer SHA-256 | `7cd15783f00336baff77dd4317f6724e0705ca4fb97396b403761c67b54040f9` |
 | boundary-v2 candidate seal SHA-256 | `e82e023957514621083df6ea7424cc2d14159aa43e9b567122a6edf944cfb724` |
 | `holdout_gate.tsv` SHA-256 | `5d60afc5df62706444149544d5c4aa2d0e1a684d213d594a44a1e7eea622d5c1` |
 | `holdout_timing.tsv` SHA-256 | `098b02ae95083f793de5605c85dbba6db2126cbf1daf4c5d53891969afe8c097` |
@@ -47,11 +47,15 @@ the predecessor-evidence hashes are recorded in the seal. Any mismatch stops
 before a manifest or dataset is created.
 
 Because an R tool cannot embed its own future commit without a circular hash,
-the exact two execution commits are admitted by a separate create-once
-execution-admission receipt after Fisher, Grace, and Rose each return `CLEAN`.
-The campaign seal binds that receipt's canonical path and SHA-256 and every
-later driver/recomputer invocation rechecks it. Operator-supplied clean
-descendants without this exact reviewed receipt are not admissible.
+the exact two execution commits are admitted only after Fisher, Grace, and Rose
+each produce a separate create-once review receipt. Every receipt names its
+reviewer, verdict, exact R and Julia execution commits, and review time. The
+execution-admission receipt accepts only three `CLEAN`, exact-commit receipts
+and binds each canonical path and SHA-256; it no longer invents reviewer
+verdicts. The campaign seal then binds the admission receipt's canonical path
+and SHA-256, and every later driver/recomputer invocation rechecks the full
+receipt chain. Missing, `BLOCKED`, wrong-commit, or mutated reviews stop before
+the output root exists.
 
 Before the seal can exist, both independent recomputers must already exist and
 be hash-bound: the base-R recomputer in the exact R checkout and the Julia
@@ -135,13 +139,21 @@ claim.
 
 ## 4. Immutable manifests, attempts, and outputs
 
-The seal, manifests, per-seed attempts, and summaries are create-once. The
+The seal, manifests, completed per-seed attempts, and summaries are
+create-once. The
 output root must be absent until every host, checkout, version, thread,
 recomputer, and predecessor-evidence check passes. A writer
 creates bytes in a same-directory temporary file and claims the final name by
 an exclusive hard link. It never overwrites or renames over an existing path.
 Every primary file has a SHA-256 sidecar. Missing, additional, duplicated,
-corrupt, or orphan primary/sidecar files make the gate red.
+corrupt, or orphan primary/sidecar files make the gate red. A rerun first
+classifies each seed slot. A complete attempt-plus-packet is verified and
+skipped; a packet/attempt interrupted before the immutable attempt was claimed
+may be removed only when it contains a known subset of the exact expected
+files, then the same manifest seed is rerun. Unexpected files, corrupted
+complete pairs, or an immutable attempt paired with an incomplete packet stop
+rather than being cleaned. Thus process interruption is resumable without
+overwriting completed evidence or replacing a seed.
 
 The manifest is the attempted denominator. A per-seed fit catches ordinary R,
 bridge, construction, and Julia errors and still writes one immutable row with
@@ -167,7 +179,12 @@ The exact successful status set is
 `boundary_lower`, `boundary_upper`, `interior`, and `interior_rescued`.
 Resolved endpoints are successful, remain in both the convergence and bias
 denominators, and use scientific ratios exactly 0 or 1; they are never dropped
-or replaced by epsilon-shifted numerical components.
+or replaced by epsilon-shifted numerical components. With frozen KKT tolerance
+`1e-8`, a lower endpoint additionally requires lower derivative `<= 1e-8`, an
+upper endpoint requires upper derivative `>= -1e-8`, and either interior status
+requires lower derivative `> 1e-8` and upper derivative `< -1e-8`. The driver
+and both independent recomputers enforce these signs, and sign-reversal
+mutations must make the gate red.
 
 Raw files stay local. Only manifests, compact summaries, hashes, failure
 classifications, commands, and environment evidence may be committed later.

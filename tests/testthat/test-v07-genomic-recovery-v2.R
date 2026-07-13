@@ -25,8 +25,8 @@ v07_test_attempts <- function() {
   x$numerical_sigma_e2 <- x$scientific_sigma_e2
   x$numerical_ratio <- x$scientific_ratio
   x$profile_loglik <- -100
-  x$lower_derivative_per_observation <- -0.1
-  x$upper_derivative_per_observation <- 0.1
+  x$lower_derivative_per_observation <- 0.1
+  x$upper_derivative_per_observation <- -0.1
   x$iterations <- 8
   x$objective <- 100
   x$gradient_norm <- 1e-9
@@ -111,6 +111,37 @@ test_that("concurrent writers produce exactly one immutable winner", {
   expect_invisible(v07_verify_pair(path))
 })
 
+test_that("admission requires three immutable exact-commit CLEAN review receipts", {
+  root <- tempfile("v07-reviews-"); dir.create(root)
+  root <- normalizePath(root, winslash = "/")
+  withr::defer(unlink(root, recursive = TRUE))
+  r_commit <- paste(rep("a", 40L), collapse = "")
+  j_commit <- paste(rep("b", 40L), collapse = "")
+  reviewed <- "2026-07-13T20:00:00Z"
+  clean <- file.path(root, paste0(tolower(c("Fisher", "Grace", "Rose")), ".tsv"))
+  for (i in seq_along(clean)) {
+    v07_write_review(clean[[i]], c("Fisher", "Grace", "Rose")[[i]], "CLEAN",
+      r_commit, j_commit, reviewed)
+  }
+  admission <- file.path(root, "admission.tsv")
+  expect_invisible(v07_write_admission(admission, r_commit, j_commit,
+    clean[[1L]], clean[[2L]], clean[[3L]], reviewed))
+  expect_invisible(v07_read_admission(admission, r_commit, j_commit))
+
+  missing <- file.path(root, "missing.tsv")
+  expect_error(v07_read_review(missing, "Fisher", r_commit, j_commit), "primary/sidecar")
+  blocked <- file.path(root, "blocked.tsv")
+  v07_write_review(blocked, "Rose", "BLOCKED", r_commit, j_commit, reviewed)
+  expect_error(v07_read_review(blocked, "Rose", r_commit, j_commit), "does not attest CLEAN")
+  mismatched <- file.path(root, "mismatched.tsv")
+  v07_write_review(mismatched, "Grace", "CLEAN", paste(rep("c", 40L), collapse = ""),
+    j_commit, reviewed)
+  expect_error(v07_read_review(mismatched, "Grace", r_commit, j_commit), "exact execution commits")
+
+  writeLines("mutated", clean[[1L]])
+  expect_error(v07_read_admission(admission, r_commit, j_commit), "checksum")
+})
+
 test_that("reconstructable packets have an exact locked file set", {
   root <- tempfile("v07-packet-"); dir.create(root)
   withr::defer(unlink(root, recursive = TRUE))
@@ -126,6 +157,37 @@ test_that("reconstructable packets have an exact locked file set", {
   expect_invisible(v07_verify_packet(root, "pilot", "fixture", 1))
   writeLines("orphan", file.path(v07_packet_dir(root, "pilot", "fixture", 1), "extra.tsv.sha256"))
   expect_error(v07_verify_packet(root, "pilot", "fixture", 1), "file set")
+})
+
+test_that("known interrupted seed outputs can be cleared and rerun safely", {
+  root <- tempfile("v07-resume-"); dir.create(root)
+  root <- normalizePath(root, winslash = "/")
+  withr::defer(unlink(root, recursive = TRUE))
+  cell <- "fixture"; seed <- 1
+  attempt <- v07_attempt_path(root, "pilot", cell, seed)
+  dir.create(dirname(attempt), recursive = TRUE)
+  writeLines("partial", attempt)
+  expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "interrupted")
+  expect_invisible(v07_clear_interrupted_seed(root, "pilot", cell, seed))
+  expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "absent")
+
+  packet <- list(
+    markers = data.frame(id = c("a", "b"), m000001 = c(0, 2)),
+    ids = data.frame(index = 1:2, id = c("a", "b")),
+    phenotype = data.frame(index = 1:2, id = c("a", "b"), y = c(1, 2)),
+    truth = data.frame(cell_id = cell, seed = seed, n = 2, requested_m = 1,
+      retained_m = 1, truth_sigma_g2 = 0.5, truth_sigma_e2 = 0.5,
+      truth_ratio = 0.5, ridge = 0.01, scale_denominator = 0.5)
+  )
+  v07_write_packet(root, "pilot", cell, seed, packet)
+  expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "interrupted")
+  expect_invisible(v07_clear_interrupted_seed(root, "pilot", cell, seed))
+  expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "absent")
+
+  unexpected <- v07_packet_dir(root, "pilot", cell, seed)
+  dir.create(unexpected, recursive = TRUE)
+  writeLines("do not delete", file.path(unexpected, "unexpected.txt"))
+  expect_error(v07_seed_output_state(root, "pilot", cell, seed), "unexpected file")
 })
 
 test_that("tier corpus locks bind manifest attempts and packet primaries", {
@@ -222,6 +284,7 @@ test_that("resolved endpoints use scientific components and stay eligible", {
   x$attempts$numerical_ratio[[lower]] <- 1e-7
   x$attempts$numerical_sigma_g2[[lower]] <- 9e-8
   x$attempts$numerical_sigma_e2[[lower]] <- 0.89999991
+  x$attempts$lower_derivative_per_observation[[lower]] <- -0.1
 
   upper <- 49L
   x$attempts$boundary_status[[upper]] <- "boundary_upper"
@@ -233,6 +296,7 @@ test_that("resolved endpoints use scientific components and stay eligible", {
   x$attempts$numerical_ratio[[upper]] <- 1 - 1e-7
   x$attempts$numerical_sigma_g2[[upper]] <- 1.09999989
   x$attempts$numerical_sigma_e2[[upper]] <- 1.1e-7
+  x$attempts$upper_derivative_per_observation[[upper]] <- 0.1
 
   validated <- v07_validate_attempts(x$attempts, x$manifest, "pilot")
   expect_true(validated$converged[[lower]])
@@ -243,6 +307,13 @@ test_that("resolved endpoints use scientific components and stay eligible", {
   bad <- x$attempts
   bad$scientific_sigma_g2[[lower]] <- 1e-7
   expect_error(v07_validate_attempts(bad, x$manifest, "pilot"), "scientific boundary")
+
+  bad_lower_kkt <- x$attempts
+  bad_lower_kkt$lower_derivative_per_observation[[lower]] <- 1
+  expect_error(v07_validate_attempts(bad_lower_kkt, x$manifest, "pilot"), "KKT")
+  bad_upper_kkt <- x$attempts
+  bad_upper_kkt$upper_derivative_per_observation[[upper]] <- -1
+  expect_error(v07_validate_attempts(bad_upper_kkt, x$manifest, "pilot"), "KKT")
 })
 
 test_that("pilot summary uses upper-SD sizing and whole-campaign stop rules", {
@@ -298,6 +369,7 @@ test_that("every frozen mutation makes a structural or summary gate red", {
   mutate_and_fail("attempted", FALSE, "attempted=true")
   mutate_and_fail("status", "fit_error", "status/convergence")
   mutate_and_fail("numerical_ratio", 0.4, "ratio mismatch")
+  mutate_and_fail("lower_derivative_per_observation", -1, "KKT")
 
   removed <- x$attempts[-1L, ]
   expect_error(v07_validate_attempts(removed, x$manifest, "pilot"), "manifest denominator")

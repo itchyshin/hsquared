@@ -4,7 +4,7 @@
 # main runs only when this file is invoked directly.
 
 v07_schema <- "v07-genomic-recovery-v2"
-v07_r_auto_route_commit <- "1082d84f4269d4f79fdc248558ec56b8f710b8d2"
+v07_r_auto_route_commit <- "10efc7c58e94da230cbb224b8d2f0698e2550665"
 v07_r_oracle_commit <- "05ba8aed1c19a7971eeaaf3199fd1afe7d899561"
 v07_julia_candidate_commit <- "fc9d39df650b20aa09d769d9f9528eed1b606f1e"
 v07_julia_holdout_commit <- "fe5987c2dc5002d3b41910a0356554a8f4d7e359"
@@ -17,8 +17,8 @@ v07_boundary_bindings <- c(
   holdout_checkpoint_doc_sha256 = "51307db4cc977125e21bb764bbdf8a021a2b8a5c38584dd98da26d4029ecfb3f",
   holdout_checklog_sha256 = "3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83"
 )
-v07_r_recomputer_sha256 <- "d07ca5012ab28e4b5b10b1649e995bd4627b03407896890ba163e96335d8ce3a"
-v07_julia_recomputer_sha256 <- "a61d2c70846cda0f85431429a385ca222c94afff6c81812d20bff71bb2721935"
+v07_r_recomputer_sha256 <- "f449ea8d91969a3e006129ddcb33de7367472c7926e18f7844e951004f4336e0"
+v07_julia_recomputer_sha256 <- "7cd15783f00336baff77dd4317f6724e0705ca4fb97396b403761c67b54040f9"
 v07_expected_environment <- c(
   host = "totoro",
   cpu_model = "AMD EPYC 9655 96-Core Processor",
@@ -35,6 +35,7 @@ v07_resolved_statuses <- c(
 )
 v07_ridge <- 0.01
 v07_boundary_epsilon <- 1e-7
+v07_boundary_kkt_tolerance <- 1e-8
 v07_seed_base <- 2027120000
 v07_reserved_offsets <- list(
   historical_pilot = 1:48,
@@ -96,9 +97,15 @@ v07_receipt_columns <- c(
   "base_r_summary_sha256", "julia_summary_sha256", "r_recomputer_sha256",
   "julia_recomputer_sha256", "campaign_status"
 )
+v07_review_columns <- c(
+  "schema_version", "reviewer", "verdict", "r_execution_commit",
+  "julia_execution_commit", "reviewed_at_utc"
+)
 v07_admission_columns <- c(
   "schema_version", "r_execution_commit", "julia_execution_commit",
-  "fisher_verdict", "grace_verdict", "rose_verdict", "reviewed_at_utc"
+  "fisher_review_sha256", "fisher_review_path", "grace_review_sha256",
+  "grace_review_path", "rose_review_sha256", "rose_review_path",
+  "reviewed_at_utc"
 )
 v07_seal_keys <- c(
   "schema_version", "driver_commit", "julia_execution_commit",
@@ -115,6 +122,7 @@ v07_seal_keys <- c(
   "veclib_maximum_threads", "seed_formula", "pilot_offsets",
   "confirmation_offsets", "excluded_offsets", "ridge", "relationship_method",
   "allele_frequency_source", "relationship_scale", "boundary_epsilon",
+  "boundary_kkt_tolerance",
   "resolved_statuses", "output_absent_before_seal"
 )
 
@@ -398,37 +406,104 @@ v07_assert_holdout_checkpoint <- function(julia_root) {
   invisible(TRUE)
 }
 
-v07_read_admission <- function(path, driver_commit, julia_execution_commit) {
-  if (!grepl("^/", path) || v07_is_symlink(path) || !identical(v07_realpath(path), path)) {
-    v07_abort("execution admission receipt must be an absolute canonical regular file")
+v07_assert_external_pair <- function(path, label) {
+  if (is.null(path) || !grepl("^/", path) || v07_is_symlink(path) ||
+      !file.exists(path) || !file.exists(paste0(path, ".sha256")) ||
+      !identical(v07_realpath(path), path)) {
+    v07_abort("%s must be an absolute canonical primary/sidecar pair", label)
   }
-  x <- v07_read_tsv(path, v07_admission_columns)
+  v07_verify_pair(path)
+  invisible(path)
+}
+
+v07_read_review <- function(path, reviewer, driver_commit, julia_execution_commit) {
+  v07_assert_external_pair(path, paste(reviewer, "review receipt"))
+  x <- v07_read_tsv(path, v07_review_columns)
   if (nrow(x) != 1L ||
-      !identical(x$schema_version, "v07-genomic-recovery-v2-admission-1") ||
+      !identical(x$schema_version, "v07-genomic-recovery-v2-review-1") ||
+      !identical(x$reviewer, reviewer) || !identical(x$verdict, "CLEAN") ||
       !identical(x$r_execution_commit, driver_commit) ||
       !identical(x$julia_execution_commit, julia_execution_commit) ||
-      any(unlist(x[c("fisher_verdict", "grace_verdict", "rose_verdict")], use.names = FALSE) != "CLEAN") ||
       !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", x$reviewed_at_utc)) {
-    v07_abort("execution admission receipt does not admit these exact CLEAN execution commits")
+    v07_abort("%s review does not attest CLEAN for the exact execution commits", reviewer)
   }
   invisible(x)
 }
 
-v07_write_admission <- function(path, driver_commit, julia_execution_commit, reviewed_at_utc) {
-  if (!grepl("^/", path) || file.exists(path) || file.exists(paste0(path, ".sha256")) ||
+v07_write_review <- function(path, reviewer, verdict, driver_commit,
+                             julia_execution_commit, reviewed_at_utc) {
+  if (is.null(path) || length(path) != 1L || !grepl("^/", path) ||
+      file.exists(path) || file.exists(paste0(path, ".sha256")) ||
       !dir.exists(dirname(path)) || v07_is_symlink(dirname(path)) ||
+      !identical(file.path(v07_realpath(dirname(path)), basename(path)), path)) {
+    v07_abort("new review path must be absent beneath a canonical real parent")
+  }
+  if (is.null(reviewer) || length(reviewer) != 1L ||
+      is.null(verdict) || length(verdict) != 1L ||
+      !reviewer %in% c("Fisher", "Grace", "Rose") || !verdict %in% c("CLEAN", "BLOCKED") ||
+      !v07_hex40(driver_commit) || !v07_hex40(julia_execution_commit) ||
+      is.null(reviewed_at_utc) || length(reviewed_at_utc) != 1L ||
+      !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", reviewed_at_utc)) {
+    v07_abort("review requires a known reviewer/verdict, two full commits, and an ISO UTC time")
+  }
+  x <- data.frame(
+    schema_version = "v07-genomic-recovery-v2-review-1", reviewer = reviewer,
+    verdict = verdict, r_execution_commit = driver_commit,
+    julia_execution_commit = julia_execution_commit,
+    reviewed_at_utc = reviewed_at_utc, stringsAsFactors = FALSE
+  )
+  v07_write_once(path, v07_tsv_text(x))
+  invisible(x)
+}
+
+v07_read_admission <- function(path, driver_commit, julia_execution_commit) {
+  v07_assert_external_pair(path, "execution admission receipt")
+  x <- v07_read_tsv(path, v07_admission_columns)
+  if (nrow(x) != 1L ||
+      !identical(x$schema_version, "v07-genomic-recovery-v2-admission-2") ||
+      !identical(x$r_execution_commit, driver_commit) ||
+      !identical(x$julia_execution_commit, julia_execution_commit) ||
+      !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", x$reviewed_at_utc)) {
+    v07_abort("execution admission receipt does not bind the exact execution commits")
+  }
+  for (reviewer in c("fisher", "grace", "rose")) {
+    receipt_path <- x[[paste0(reviewer, "_review_path")]]
+    receipt_hash <- x[[paste0(reviewer, "_review_sha256")]]
+    label <- c(fisher = "Fisher", grace = "Grace", rose = "Rose")[[reviewer]]
+    v07_read_review(receipt_path, label, driver_commit, julia_execution_commit)
+    if (!identical(v07_sha256(receipt_path), receipt_hash)) {
+      v07_abort("%s review receipt differs from admission", reviewer)
+    }
+  }
+  invisible(x)
+}
+
+v07_write_admission <- function(path, driver_commit, julia_execution_commit,
+                                fisher_review, grace_review, rose_review,
+                                reviewed_at_utc) {
+  if (is.null(path) || !grepl("^/", path) || file.exists(path) ||
+      file.exists(paste0(path, ".sha256")) || !dir.exists(dirname(path)) ||
+      v07_is_symlink(dirname(path)) ||
       !identical(file.path(v07_realpath(dirname(path)), basename(path)), path)) {
     v07_abort("new admission path must be absent beneath a canonical real parent")
   }
   if (!v07_hex40(driver_commit) || !v07_hex40(julia_execution_commit) ||
+      is.null(reviewed_at_utc) || length(reviewed_at_utc) != 1L ||
       !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", reviewed_at_utc)) {
     v07_abort("admission requires two full commits and an ISO UTC review time")
   }
+  reviews <- c(fisher = fisher_review, grace = grace_review, rose = rose_review)
+  for (reviewer in names(reviews)) {
+    label <- c(fisher = "Fisher", grace = "Grace", rose = "Rose")[[reviewer]]
+    v07_read_review(reviews[[reviewer]], label,
+      driver_commit, julia_execution_commit)
+  }
   x <- data.frame(
-    schema_version = "v07-genomic-recovery-v2-admission-1",
-    r_execution_commit = driver_commit,
-    julia_execution_commit = julia_execution_commit,
-    fisher_verdict = "CLEAN", grace_verdict = "CLEAN", rose_verdict = "CLEAN",
+    schema_version = "v07-genomic-recovery-v2-admission-2",
+    r_execution_commit = driver_commit, julia_execution_commit = julia_execution_commit,
+    fisher_review_sha256 = v07_sha256(fisher_review), fisher_review_path = fisher_review,
+    grace_review_sha256 = v07_sha256(grace_review), grace_review_path = grace_review,
+    rose_review_sha256 = v07_sha256(rose_review), rose_review_path = rose_review,
     reviewed_at_utc = reviewed_at_utc, stringsAsFactors = FALSE
   )
   v07_write_once(path, v07_tsv_text(x))
@@ -482,7 +557,8 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
     excluded_offsets = "1:48,1001:3000,5001:5048,6001:6048",
     ridge = "0.01", relationship_method = "vanraden1",
     allele_frequency_source = "sample", relationship_scale = "K_lambda",
-    boundary_epsilon = "1e-07", resolved_statuses = paste(v07_resolved_statuses, collapse = ","),
+    boundary_epsilon = "1e-07", boundary_kkt_tolerance = "1e-08",
+    resolved_statuses = paste(v07_resolved_statuses, collapse = ","),
     output_absent_before_seal = "true"
   )
   if (!identical(names(values), v07_seal_keys)) v07_abort("internal seal writer/key drift")
@@ -745,6 +821,61 @@ v07_verify_packet <- function(out_dir, tier, cell_id, seed) {
   invisible(TRUE)
 }
 
+v07_seed_output_state <- function(out_dir, tier, cell_id, seed) {
+  attempt <- v07_attempt_path(out_dir, tier, cell_id, seed)
+  attempt_files <- c(attempt, paste0(attempt, ".sha256"))
+  attempt_present <- file.exists(attempt_files)
+  if (all(attempt_present)) {
+    v07_verify_pair(attempt)
+  } else if (any(attempt_present)) {
+    attempt_complete <- FALSE
+  }
+  attempt_complete <- all(attempt_present)
+
+  packet <- v07_packet_dir(out_dir, tier, cell_id, seed)
+  primary <- c("markers.tsv", "ids.tsv", "phenotype.tsv", "truth.tsv", "packet_files_lock.tsv")
+  expected <- sort(c(primary, paste0(primary, ".sha256")))
+  packet_complete <- FALSE
+  packet_present <- dir.exists(packet) || file.exists(packet)
+  if (packet_present) {
+    if (!dir.exists(packet) || v07_is_symlink(packet)) v07_abort("seed packet path is not a real directory")
+    actual <- sort(list.files(packet, all.files = TRUE, no.. = TRUE))
+    if (length(setdiff(actual, expected))) v07_abort("interrupted seed packet contains an unexpected file")
+    if (identical(actual, expected)) {
+      v07_verify_packet(out_dir, tier, cell_id, seed)
+      packet_complete <- TRUE
+    }
+  }
+
+  if (attempt_complete && packet_complete) return("complete")
+  if (!any(attempt_present) && !packet_present) return("absent")
+  if (attempt_complete && !packet_present) {
+    row <- v07_read_tsv(attempt, v07_attempt_columns)
+    if (nrow(row) == 1L && identical(row$status, "fit_error") && row$error_class != "none") {
+      return("terminal_prepacket_failure")
+    }
+    v07_abort("successful or malformed attempt exists without its packet")
+  }
+  if (attempt_complete && packet_present && !packet_complete) {
+    v07_abort("immutable attempt exists with an incomplete packet")
+  }
+  "interrupted"
+}
+
+v07_clear_interrupted_seed <- function(out_dir, tier, cell_id, seed) {
+  if (!identical(v07_seed_output_state(out_dir, tier, cell_id, seed), "interrupted")) {
+    v07_abort("only a provably interrupted seed may be cleared")
+  }
+  attempt <- v07_attempt_path(out_dir, tier, cell_id, seed)
+  packet <- v07_packet_dir(out_dir, tier, cell_id, seed)
+  unlink(c(attempt, paste0(attempt, ".sha256")), force = TRUE)
+  if (dir.exists(packet)) unlink(packet, recursive = TRUE, force = TRUE)
+  if (!identical(v07_seed_output_state(out_dir, tier, cell_id, seed), "absent")) {
+    v07_abort("interrupted seed cleanup did not restore an absent slot")
+  }
+  invisible(TRUE)
+}
+
 v07_run_one <- function(out_dir, driver_root, r_root, julia_root, tier, cell_id, seed) {
   v07_assert_compute_host()
   bound <- v07_assert_bound_state(out_dir, driver_root, r_root, julia_root)
@@ -753,7 +884,11 @@ v07_run_one <- function(out_dir, driver_root, r_root, julia_root, tier, cell_id,
   hit <- manifest$cell_id == cell_id & manifest$seed == seed
   if (sum(hit) != 1L) v07_abort("requested cell/seed is not exactly one manifest row")
   path <- v07_attempt_path(out_dir, tier, cell_id, seed)
-  if (file.exists(path) || file.exists(paste0(path, ".sha256"))) v07_abort("attempt already exists")
+  state <- v07_seed_output_state(out_dir, tier, cell_id, seed)
+  if (state %in% c("complete", "terminal_prepacket_failure")) {
+    return(invisible(v07_read_tsv(path, v07_attempt_columns)))
+  }
+  if (identical(state, "interrupted")) v07_clear_interrupted_seed(out_dir, tier, cell_id, seed)
   row <- v07_fit_one(manifest[hit, , drop = FALSE], bound$roots[["r_root"]], bound$roots[["julia_root"]])
   packet <- attr(row, "packet"); attr(row, "packet") <- NULL
   row$driver_commit <- bound$seal[["driver_commit"]]
@@ -820,6 +955,12 @@ v07_validate_attempts <- function(attempts, manifest, tier) {
   lower <- good & attempts$boundary_status == "boundary_lower"
   upper <- good & attempts$boundary_status == "boundary_upper"
   interior <- good & attempts$boundary_status %in% c("interior", "interior_rescued")
+  if (any(lower & attempts$lower_derivative_per_observation > v07_boundary_kkt_tolerance) ||
+      any(upper & attempts$upper_derivative_per_observation < -v07_boundary_kkt_tolerance) ||
+      any(interior & !(attempts$lower_derivative_per_observation > v07_boundary_kkt_tolerance &
+        attempts$upper_derivative_per_observation < -v07_boundary_kkt_tolerance))) {
+    v07_abort("status-specific boundary KKT derivative signs mismatch")
+  }
   if (any(attempts$scientific_ratio[lower] != 0) || any(attempts$scientific_sigma_g2[lower] != 0) ||
       any(attempts$scientific_ratio[upper] != 1) || any(attempts$scientific_sigma_e2[upper] != 0)) {
     v07_abort("resolved endpoint is not represented on the scientific boundary")
@@ -1257,9 +1398,16 @@ v07_selftest <- function() {
 v07_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   mode <- v07_option(args, "mode")
   if (identical(mode, "selftest")) return(v07_selftest())
+  if (identical(mode, "review")) {
+    return(v07_write_review(v07_option(args, "path"), v07_option(args, "reviewer"),
+      v07_option(args, "verdict"), v07_option(args, "driver-commit"),
+      v07_option(args, "julia-execution-commit"), v07_option(args, "reviewed-at-utc")))
+  }
   if (identical(mode, "admission")) {
     return(v07_write_admission(v07_option(args, "path"), v07_option(args, "driver-commit"),
-      v07_option(args, "julia-execution-commit"), v07_option(args, "reviewed-at-utc")))
+      v07_option(args, "julia-execution-commit"), v07_option(args, "fisher-review"),
+      v07_option(args, "grace-review"), v07_option(args, "rose-review"),
+      v07_option(args, "reviewed-at-utc")))
   }
   out <- v07_option(args, "out-dir")
   driver <- v07_option(args, "driver-root"); r_root <- v07_option(args, "r-root")
