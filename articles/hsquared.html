@@ -155,14 +155,39 @@ validates the model without fitting.</p>
 component;</li>
 <li>numeric Gaussian responses.</li>
 </ul>
-<p>Several terms beyond the default contract now fit through an opt-in,
-experimental engine path (<code>engine = "julia"</code>, not the
-default). The common-environment leg of the two-effect model
-(<code><a href="../reference/qg_effect_markers.html">common_env()</a></code>) is <strong>covered at validation
-scale</strong>; the remaining opt-in terms each mirror a
-<code>partial</code> validation gate: <code><a href="../reference/qg_effect_markers.html">permanent()</a></code>,
-<code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>, <code><a href="../reference/genomic_markers.html">genomic()</a></code> (GREML or
-SNP-BLUP), <code><a href="../reference/genomic_markers.html">single_step()</a></code>, and the supplied-relationship
+<p>One narrow experimental genomic GREML route is available through the
+explicit <code>engine = "julia", target = "genomic"</code> path:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="va">fixed</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, markers <span class="op">=</span> <span class="va">M</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">~</span> <span class="va">fixed</span> <span class="op">+</span> <span class="fu"><a href="../reference/genomic_markers.html">genomic</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">id</span>, Ginv <span class="op">=</span> <span class="va">Q</span><span class="op">)</span></span></code></pre></div>
+<p>Marker input uses sample-frequency, unweighted VanRaden method 1 with
+<code>K_lambda = G + 0.01I</code>; supplied <code>Ginv</code> is used
+unchanged and its construction details remain unknown.
+<code><a href="../reference/heritability.html">heritability()</a></code> labels</p>
+<p><code>genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)</code>,</p>
+<p>the genomic variance-component ratio on the declared relationship
+scale. It is not generally the fraction of average marginal phenotypic
+variance and is not pedigree-, founder-base-, population-, or universal
+narrow-sense heritability; genomic interval and ratio-SE accessors are
+unavailable. A fail-closed boundary candidate matched an independent
+base-R oracle on all 240 sealed holdouts, correcting 30 classifications
+with no losses. The conjunctive activation gate nevertheless failed
+because <code>n120_m600_r050</code> had a 5.99x candidate/default p95
+runtime ratio against the frozen 3x cap. Default activation was not
+added, the nine-cell campaign did not run, and the route remains
+partial/experimental without changing <code>public_covered_count</code>
+(5). The 240 seeds are spent; a revised candidate requires performance
+work on discovery data, a new preregistration, and a fresh holdout. The
+holdout used independent HWE/no-LD markers. It provides no robustness
+evidence for LD, population structure, imputation, base-frequency
+misspecification, real panels, or production genotype data.</p>
+<p>Several other terms fit through an opt-in experimental engine path
+(<code>engine = "julia"</code>, not the default). The common-environment
+leg of the two-effect model (<code><a href="../reference/qg_effect_markers.html">common_env()</a></code>) is
+<strong>covered at validation scale</strong>; the remaining opt-in terms
+each mirror a <code>partial</code> validation gate:
+<code><a href="../reference/qg_effect_markers.html">permanent()</a></code>, <code><a href="../reference/qg_effect_markers.html">maternal_genetic()</a></code>, genomic
+SNP-BLUP, <code><a href="../reference/genomic_markers.html">single_step()</a></code>, and the supplied-relationship
 primaries <code><a href="../reference/qg_effect_markers.html">relmat()</a></code> and <code><a href="../reference/qg_effect_markers.html">precision()</a></code> (REML-only,
 experimental, <strong>not</strong> covered — they do not change the
 covered-model count). See the “Fitting models” article for the opt-in

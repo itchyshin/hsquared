@@ -292,7 +292,7 @@ formula_status()
     ##   Phase 3+      reserved                                       not available
     ##   Phase 3+        parsed fitted (opt-in supplied relationship, experimental)
     ##   Phase 3+        parsed    fitted (opt-in supplied precision, experimental)
-    ##    Phase 5        parsed                             fitted (opt-in genomic)
+    ##    Phase 5        parsed               fitted (opt-in genomic, experimental)
     ##    Phase 5        parsed                  fitted (opt-in genomic / SNP-BLUP)
     ##    Phase 5        parsed                         fitted (opt-in single-step)
     ##    Phase 5        parsed            fitted (opt-in single-step construction)

@@ -48,8 +48,10 @@ container, extractors, and advanced opt-in engine controls.
   previews the parsed v0.1 animal-model contract, including fixed-effect
   design columns, sparse animal-effect design dimensions, normalized
   pedigree ordering, and Julia target metadata. It does not fit a model.
-- [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-  (supplied `Ginv` or a `markers` matrix),
+- Narrow univariate Gaussian REML
+  [`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
+  (supplied `Ginv` or a `markers` matrix) remains an explicit Julia
+  `target = "genomic"`.
   [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
   (supplied `Hinv`, or constructed `Hinv` from `pedigree` + `markers`),
   [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
@@ -59,10 +61,8 @@ container, extractors, and advanced opt-in engine controls.
   [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   (dense `K`) and
   [`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
-  (supplied inverse `Q`) parse and fit only through the opt-in
-  `engine = "julia"` targets — some covered at validation scale, some
-  experimental (see the two opt-in sections below); the default
-  `engine = "fit"` path rejects them.
+  (supplied inverse `Q`) remain explicit `engine = "julia"` targets —
+  some covered at validation scale, some experimental (see below).
   [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)/[`precision()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)
   are REML-only, experimental, and **not** covered (they do not change
   the covered-model count).
@@ -258,6 +258,30 @@ These models fit through the same opt-in
 comparator/known-truth-validated at the bar above; each mirrors a
 `partial` gate in the `HSquared.jl` twin.
 
+The genomic GREML route also remains explicit:
+`genomic(1 | id, markers = M)` and `genomic(1 | id, Ginv = Q)` require
+`target = "genomic"` and remain experimental/partial. Marker input means
+sample-frequency VanRaden1 with `K_lambda = G + 0.01I`; supplied `Ginv`
+construction is unknown.
+[`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+returns the genomic variance-component ratio
+`sigma_g2 / (sigma_g2 + sigma_e2)` on the declared relationship scale.
+It is not generally an average marginal phenotypic-variance fraction and
+is not pedigree-, founder-base-, population-, or universal narrow-sense
+h²; genomic interval/SE accessors are unavailable. Fixture,
+independent-construction, and live marker-versus-exact-Q identity
+evidence exist. A repaired boundary candidate matched an independent
+base-R oracle on all 240 sealed holdouts, correcting 30 classifications
+with no losses, but the conjunctive gate still failed: the
+`n120_m600_r050` p95 runtime ratio was 5.99 times against the frozen 3
+times cap. Default activation was not added, the nine-cell campaign did
+not run, and `public_covered_count` remains 5. The 240 seeds are spent;
+a revised candidate requires performance work on discovery data, a new
+preregistration, and a fresh holdout block. The study used independent
+HWE/no-LD markers and provides no robustness evidence for LD, population
+structure, imputation, base-frequency misspecification, real panels, or
+production genotype data.
+
 - Repeatability / permanent environment —
   `animal(1 | id) + permanent(1 | id)`, `target = "repeatability"`
   (needs repeated records per individual).
@@ -269,9 +293,6 @@ comparator/known-truth-validated at the bar above; each mirrors a
   maternal-A2 design are still owed, so it stays experimental. (The
   *correlated* direct–maternal model above is a different, covered
   target.)
-- Genomic GREML — `genomic(1 | id, Ginv = Ginv)` or
-  `genomic(1 | id, markers = M)` (the engine builds the genomic
-  relationship from the marker matrix), `target = "genomic"`.
 - Single-step — `single_step(1 | id, Hinv = Hinv)` on a supplied
   single-step inverse, `target = "single_step"`, or
   `single_step(1 | id, pedigree = ped, markers = M)`,
@@ -342,26 +363,28 @@ names each unsupported form rather than guessing.
 ## Not implemented yet
 
 - General default model fitting beyond the v0.1 univariate Gaussian
-  animal model (the reserved inheritance kernels). The multivariate,
-  standard two-effect, repeatability, genomic, SNP-BLUP, single-step,
-  and non-Gaussian (`poisson`/`binomial`, Laplace or variational REML,
-  no heritability) models fit only through opt-in `engine = "julia"`
-  targets, never as the default — some covered at validation scale, some
-  experimental (see the two opt-in sections above).
+  animal model and the explicit experimental genomic route (the reserved
+  inheritance kernels). The multivariate, standard two-effect,
+  repeatability, SNP-BLUP, single-step, and non-Gaussian
+  (`poisson`/`binomial`, Laplace or variational REML, no heritability)
+  models fit only through explicit `engine = "julia"` targets, never as
+  the default — some covered at validation scale, some experimental (see
+  the two opt-in sections above).
 - ML estimation on the fit path (`REML = FALSE` is rejected; only REML
   is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a
   default for any model other than the v0.1 univariate Gaussian animal
-  model (the opt-in models above return them; the covered ones are
-  validated at validation scale only, the experimental ones are not
-  validated).
+  model or the explicit experimental genomic route (the explicit models
+  above return them; the covered ones are validated at validation scale
+  only, the experimental ones are not).
 - Log-likelihood or information criteria for supplied-variance Henderson
   MME bridge results.
 - Production sparse PEV or reliability.
 - Full Mrode animal-model fit-output validation with estimated variance
   components.
-- ASReml, BLUPF90, DMU, or WOMBAT comparator validation.
+- Broad ASReml, DMU, WOMBAT, or additional BLUPF90 validation beyond the
+  scoped comparator runs cited above.
 - File-backed genotype/omics loading or streaming computation.
 - Automatic model construction from genotype, marker, expression,
   annotation, or environment components in
@@ -376,8 +399,8 @@ names each unsupported form rather than guessing.
   marker-imputation results (the opt-in SNP-BLUP path above does return
   marker effects via
   [`marker_effects()`](https://itchyshin.github.io/hsquared/reference/marker_extractors.md)).
-- Genomic and single-step models as a default or production path (an
-  opt-in experimental path exists; see above).
+- Production genomic or single-step workflows; both genomic GREML and
+  single-step remain explicit experimental targets.
 - Factor-analytic and structured
   [`cov()`](https://rdrr.io/r/stats/cor.html) G matrices (the
   unstructured multivariate G/R path fits opt-in and experimentally; see

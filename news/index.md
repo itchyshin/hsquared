@@ -4,6 +4,33 @@
 
 ### New features
 
+- **Genomic GREML hardening plus a banked negative activation gate.**
+  The explicit `engine = "julia", target = "genomic"` route now has
+  stricter marker/ID validation, engine-owned construction provenance, a
+  deterministic cross-twin fixture, independent base-R construction,
+  exact marker-versus-supplied-Q identity, and a fresh hash-pinned
+  `blupf90+` point-estimate comparison. Marker input uses sample allele
+  frequencies, unweighted VanRaden method 1, and `K = G + 0.01I`;
+  supplied `Ginv` construction remains unknown.
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+  returns `genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`,
+  the genomic variance-component ratio on the declared relationship
+  scale—not generally an average marginal phenotypic-variance fraction
+  or pedigree/founder-base/population heritability. Ratio intervals and
+  standard errors are unavailable. A fail-closed boundary candidate
+  matched an independent base-R oracle on all 240 sealed holdouts,
+  corrected 30 boundary classifications with no losses, and produced no
+  invalid or unresolved fits. The conjunctive activation gate
+  nevertheless failed because `n120_m600_r050` had a 5.99x
+  candidate/default p95 runtime ratio against the frozen 3x cap. The 240
+  seeds are spent, the nine-cell recovery campaign did not run, and
+  default routing was not added. The holdout used independent HWE/no-LD
+  markers and provides no robustness evidence for LD, population
+  structure, imputation, base-frequency misspecification, real panels,
+  or production genotype data. The R row remains `partial`/experimental,
+  the route is not a production genotype pipeline, and
+  `public_covered_count` remains 5.
+
 - **Large-scale multi-effect fitting: `engine_control`
   `scale_method = "auto"` (opt-in, experimental).** For the arbitrary-N
   independent `(1 | g)` multi-effect model (`target = "multi_effect"`),

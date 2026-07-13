@@ -87,11 +87,15 @@
 <code>hsquared</code>. It is for users who already have a genomic
 relationship inverse, a marker matrix, or a single-step relationship
 inverse and want to understand which path is live today.</p>
-<p>The current genomic paths are experimental, REML-only unless stated
-otherwise, and Julia-backed. They are not the default
-<code><a href="../reference/hsquared.html">hsquared()</a></code> fit. They require
-<code>control = hs_control(engine = "julia", engine_control = list(...))</code>,
-a local Julia, <code>JuliaCall</code>, and a sibling
+<p>The genomic GREML paths are experimental, REML-only, Julia-backed,
+and remain explicit targets. A repaired boundary candidate resolved all
+240 sealed holdouts and corrected 30 classifications with no losses, but
+its preregistered activation gate failed because one cell was 5.99 times
+slower at p95 than the old path, above the frozen 3 times cap. They
+require
+<code>control = hs_control(engine = "julia", engine_control = list(target = "genomic"))</code>;
+other genomic paths below use their own explicit targets. All require
+local Julia, <code>JuliaCall</code>, and a sibling
 <code>HSquared.jl</code> checkout.</p>
 <div class="section level2">
 <h2 id="three-current-paths">Three current paths<a class="anchor" aria-label="anchor" href="#three-current-paths"></a>
@@ -121,7 +125,7 @@ a local Julia, <code>JuliaCall</code>, and a sibling
 <td>GBLUP / genomic GREML from raw markers</td>
 <td><code>genomic(1 | id, markers = M)</code></td>
 <td><code>target = "genomic"</code></td>
-<td>estimated after the engine builds and regularizes G</td>
+<td>estimated after the frozen engine construction</td>
 </tr>
 <tr class="odd">
 <td>SNP-BLUP / RR-BLUP marker effects</td>
@@ -212,14 +216,29 @@ whose row and column names match the IDs in the phenotype data.</p>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/fit_diagnostics.html">fit_diagnostics</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span></code></pre></div>
 <p>Read the random effect as a genomic breeding value:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝐠</mi><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mi>𝐆</mi><msubsup><mi>σ</mi><mi>g</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathbf g \sim
-N(0, \mathbf G \sigma_g^2)</annotation></semantics></math>, with
-<code>Ginv</code> supplied on the inverse scale.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝐠</mi><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>g</mi><mn>2</mn></msubsup><msup><mi>𝐐</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathbf g \sim N(0, \sigma_g^2\mathbf Q^{-1})</annotation></semantics></math>,
+with <code>Ginv = Q</code> supplied on the precision scale.
+<code>hsquared</code> does not infer how <code>Q</code> was constructed:
+method, allele-frequency source, ridge, denominator, and
+covariance-kernel fingerprint remain unknown; the ordered-ID and
+supplied-precision fingerprints are known.</p>
 <p>The parser checks that every observed ID is present in the
 <code>Ginv</code> dimnames. The current path estimates the genomic and
-residual variance components by the Julia AI-REML engine. It is still
-partial because broad comparator parity and production-scale genomic
-validation are not complete.</p>
+residual variance components by the Julia AI-REML engine.
+<code>heritability(fit_g)</code> retains <code>term = "genomic"</code>
+for compatibility but labels the coefficient
+<code>genomic_variance_ratio</code> on
+<code>inverse_of_supplied_precision</code>:
+<code>sigma_g2 / (sigma_g2 + sigma_e2)</code>, conditional on the
+precision supplied by the user. It is not generally an average marginal
+phenotypic-variance fraction and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability. Genomic
+<code><a href="../reference/heritability_interval.html">heritability_interval()</a></code> and
+<code><a href="../reference/variance_component_standard_errors.html">heritability_standard_error()</a></code> are unavailable until a
+scale-labelled interval contract is separately validated. The R surface
+remains partial because the sealed boundary candidate failed its runtime
+gate, the nine-cell campaign did not run, and production-scale genomic
+validation is not complete.</p>
 </div>
 <div class="section level2">
 <h2 id="marker-built-g">Marker-built G<a class="anchor" aria-label="anchor" href="#marker-built-g"></a>
@@ -241,10 +260,24 @@ validation are not complete.</p>
 <span><span class="fu"><a href="../reference/variance_components.html">variance_components</a></span><span class="op">(</span><span class="va">fit_marker_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/heritability.html">heritability</a></span><span class="op">(</span><span class="va">fit_marker_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_marker_g</span><span class="op">)</span></span></code></pre></div>
-<p>The engine centers the marker matrix, builds a genomic relationship
-matrix, and uses a regularized inverse for the REML fit. This is
-convenient for small and validation-scale examples. It is not yet a
-production genotype pipeline: PLINK/VCF readers, imputation hooks,
+<p>The frozen construction uses sample allele frequencies
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>j</mi></msub><mo>=</mo><mrow><mi mathvariant="normal">mean</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>M</mi><mrow><mi>⋅</mi><mi>j</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">p_j=\operatorname{mean}(M_{\cdot j})/2</annotation></semantics></math>,
+unweighted VanRaden method 1,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi><mo>=</mo><mi>W</mi><msup><mi>W</mi><mo>′</mo></msup><mi>/</mi><mi>k</mi></mrow><annotation encoding="application/x-tex">G=WW'/k</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>K</mi><mi>λ</mi></msub><mo>=</mo><mi>G</mi><mo>+</mo><mn>0.01</mn><mi>I</mi></mrow><annotation encoding="application/x-tex">K_\lambda=G+0.01I</annotation></semantics></math>;
+the REML solver receives
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>λ</mi></msub><mo>=</mo><msubsup><mi>K</mi><mi>λ</mi><mrow><mi>−</mi><mn>1</mn></mrow></msubsup></mrow><annotation encoding="application/x-tex">Q_\lambda=K_\lambda^{-1}</annotation></semantics></math>.
+The fit carries engine-generated SHA-256 fingerprints for ID order,
+marker content, <code>K_lambda</code>, and <code>Q_lambda</code>.
+<code>heritability(fit_marker_g)</code> labels its coefficient
+<code>genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)</code>
+on <code>K_lambda</code>: the genomic variance-component ratio on the
+declared relationship scale. It is not generally an average marginal
+phenotypic-variance fraction and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability.</p>
+<p>This is convenient for small and validation-scale examples. It is not
+yet a production genotype pipeline: PLINK/VCF readers, imputation hooks,
 scaling/blending choices, APY, and large on-disk marker workflows remain
 future work.</p>
 </div>
@@ -352,6 +385,10 @@ for validation work but are not comparator-validated defaults.</p>
 <span><span class="fu"><a href="../reference/variance_components.html">variance_components</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/heritability.html">heritability</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/breeding_values.html">breeding_values</a></span><span class="op">(</span><span class="va">fit_g</span><span class="op">)</span></span></code></pre></div>
+<p>Do not call <code><a href="../reference/heritability_interval.html">heritability_interval()</a></code> or
+<code><a href="../reference/variance_component_standard_errors.html">heritability_standard_error()</a></code> on a genomic fit; those
+public surfaces are deliberately fenced. Inspect the relationship-scale
+and provenance columns returned by <code><a href="../reference/heritability.html">heritability()</a></code>.</p>
 <p>For SNP-BLUP, also use:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/marker_extractors.html">marker_effects</a></span><span class="op">(</span><span class="va">fit_snp</span><span class="op">)</span></span>
@@ -399,8 +436,9 @@ map-annotated scan API:</p>
 <div class="section level2">
 <h2 id="current-evidence-boundary">Current evidence boundary<a class="anchor" aria-label="anchor" href="#current-evidence-boundary"></a>
 </h2>
-<p>The current genomic and single-step rows are
-<code>partial</code>.</p>
+<p>The current R genomic and single-step rows remain
+<code>partial</code>; the explicit route does not change
+<code>public_covered_count</code> (still 5).</p>
 <p>Covered in the R lane:</p>
 <ul>
 <li>parser and payload checks for supplied <code>Ginv</code>, marker
@@ -413,9 +451,13 @@ supplied <code>Hinv</code>, constructed single-step, animal-only
 supplied-<code>Gamma</code> metafounder, supplied-<code>Gamma</code>
 <code>H^Gamma</code>, and SNP-BLUP when Julia and the sibling engine are
 available;</li>
-<li>extractor checks for variance components, genomic heritability,
-genomic breeding values, marker effects, and provenance
-diagnostics.</li>
+<li>an exact live identity gate showing the explicit marker route and
+the exact supplied-<code>Q_lambda</code> route return the same fitted
+quantities, plus an independent base-R reconstruction of the frozen
+symbolic inputs;</li>
+<li>extractor checks for variance components, the scale-labelled genomic
+variance ratio, genomic breeding values, marker effects, and provenance
+diagnostics;</li>
 <li>a Julia-native supplied-variance GBLUP/SNP-BLUP target fixture
 (<code>HSquared.jl</code> PR #140, commit <code>008ea4d</code>) for
 future external comparator runs. This is a target fixture, not
@@ -425,16 +467,23 @@ comparator evidence.</li>
 <ul>
 <li>production relationship-matrix construction and scaling/blending
 controls;</li>
-<li>external same-estimand genomic comparator evidence against the PR
-#140 target fixture;</li>
+<li>component and allocation profiling on the already-open discovery
+data, output-equivalent performance work, a new preregistration, and a
+fresh untouched holdout block; the 240 opened holdout seeds cannot
+adjudicate a revised candidate, and the nine-cell recovery campaign
+remains held;</li>
+<li>robustness studies for LD, population structure, imputation,
+base-frequency misspecification, real panels, and production genotype
+data; the sealed holdout used only independent HWE/no-LD markers;</li>
 <li>production-scale and externally comparator-validated single-step
 construction;</li>
 <li>external validation for animal-only metafounder and single-step
 <code>H^Gamma</code>;</li>
 <li>APY and low-rank large-marker workflows;</li>
 <li>PLINK/VCF/BCF readers and on-disk marker storage;</li>
-<li>genomic comparator parity with sommer, BLUPF90-family tools, JWAS,
-or other agreed benchmarks;</li>
+<li>broader external construction comparators beyond the independent
+base-R calculation and the fresh hash-pinned exact-<code>Q_lambda</code>
+<code>blupf90+</code> run;</li>
 <li>marker scans, QTL, GWAS, and eQTL;</li>
 <li>uncertainty intervals and reliability for production genomic
 predictions.</li>
@@ -451,8 +500,9 @@ Goddard (2001)</a>, <a href="https://pubmed.ncbi.nlm.nih.gov/18946147/" class="e
 and <a href="https://pubmed.ncbi.nlm.nih.gov/20105546/" class="external-link">Aguilar,
 Misztal, Johnson, Legarra, Tsuruta and Lawlor (2010)</a>.</p>
 <p>For <code>hsquared</code>, those papers motivate the roadmap. The
-current package exposes small, opt-in genomic building blocks and keeps
-broad production genomic claims behind explicit validation gates.</p>
+package exposes one narrow opt-in genomic GREML route while keeping
+default activation, recovery, interval, and broad production genomic
+claims behind explicit validation gates.</p>
 <p>See also:</p>
 <ul>
 <li><a href="fitting-models.html">Fitting models</a></li>

@@ -5,11 +5,14 @@ This article shows the current opt-in genomic prediction surface in
 inverse, a marker matrix, or a single-step relationship inverse and want
 to understand which path is live today.
 
-The current genomic paths are experimental, REML-only unless stated
-otherwise, and Julia-backed. They are not the default
-[`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-fit. They require
-`control = hs_control(engine = "julia", engine_control = list(...))`, a
+The genomic GREML paths are experimental, REML-only, Julia-backed, and
+remain explicit targets. A repaired boundary candidate resolved all 240
+sealed holdouts and corrected 30 classifications with no losses, but its
+preregistered activation gate failed because one cell was 5.99 times
+slower at p95 than the old path, above the frozen 3 times cap. They
+require
+`control = hs_control(engine = "julia", engine_control = list(target = "genomic"))`;
+other genomic paths below use their own explicit targets. All require
 local Julia, `JuliaCall`, and a sibling `HSquared.jl` checkout.
 
 ## Three current paths
@@ -19,7 +22,7 @@ The current R surface has three distinct genomic paths.
 | Path | Formula term | Target | Variances |
 |----|----|----|----|
 | GBLUP / genomic GREML from a supplied inverse | `genomic(1 | id, Ginv = Ginv)` | `target = "genomic"` | estimated by the Julia AI-REML path |
-| GBLUP / genomic GREML from raw markers | `genomic(1 | id, markers = M)` | `target = "genomic"` | estimated after the engine builds and regularizes G |
+| GBLUP / genomic GREML from raw markers | `genomic(1 | id, markers = M)` | `target = "genomic"` | estimated after the frozen engine construction |
 | SNP-BLUP / RR-BLUP marker effects | `genomic(1 | id, markers = M)` | `target = "snp_blup"` | supplied by the user, or REML-estimated when omitted |
 
 There is also a single-step surface:
@@ -71,14 +74,29 @@ breeding_values(fit_g)
 fit_diagnostics(fit_g)
 ```
 
-Read the random effect as a genomic breeding value: $`\mathbf g \sim
-N(0, \mathbf G \sigma_g^2)`$, with `Ginv` supplied on the inverse scale.
+Read the random effect as a genomic breeding value:
+$`\mathbf g \sim N(0, \sigma_g^2\mathbf Q^{-1})`$, with `Ginv = Q`
+supplied on the precision scale. `hsquared` does not infer how `Q` was
+constructed: method, allele-frequency source, ridge, denominator, and
+covariance-kernel fingerprint remain unknown; the ordered-ID and
+supplied-precision fingerprints are known.
 
 The parser checks that every observed ID is present in the `Ginv`
 dimnames. The current path estimates the genomic and residual variance
-components by the Julia AI-REML engine. It is still partial because
-broad comparator parity and production-scale genomic validation are not
-complete.
+components by the Julia AI-REML engine. `heritability(fit_g)` retains
+`term = "genomic"` for compatibility but labels the coefficient
+`genomic_variance_ratio` on `inverse_of_supplied_precision`:
+`sigma_g2 / (sigma_g2 + sigma_e2)`, conditional on the precision
+supplied by the user. It is not generally an average marginal
+phenotypic-variance fraction and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability. Genomic
+[`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
+and
+[`heritability_standard_error()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)
+are unavailable until a scale-labelled interval contract is separately
+validated. The R surface remains partial because the sealed boundary
+candidate failed its runtime gate, the nine-cell campaign did not run,
+and production-scale genomic validation is not complete.
 
 ## Marker-built G
 
@@ -103,10 +121,20 @@ heritability(fit_marker_g)
 breeding_values(fit_marker_g)
 ```
 
-The engine centers the marker matrix, builds a genomic relationship
-matrix, and uses a regularized inverse for the REML fit. This is
-convenient for small and validation-scale examples. It is not yet a
-production genotype pipeline: PLINK/VCF readers, imputation hooks,
+The frozen construction uses sample allele frequencies
+$`p_j=\operatorname{mean}(M_{\cdot j})/2`$, unweighted VanRaden method
+1, $`G=WW'/k`$, and $`K_\lambda=G+0.01I`$; the REML solver receives
+$`Q_\lambda=K_\lambda^{-1}`$. The fit carries engine-generated SHA-256
+fingerprints for ID order, marker content, `K_lambda`, and `Q_lambda`.
+`heritability(fit_marker_g)` labels its coefficient
+`genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)` on
+`K_lambda`: the genomic variance-component ratio on the declared
+relationship scale. It is not generally an average marginal
+phenotypic-variance fraction and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability.
+
+This is convenient for small and validation-scale examples. It is not
+yet a production genotype pipeline: PLINK/VCF readers, imputation hooks,
 scaling/blending choices, APY, and large on-disk marker workflows remain
 future work.
 
@@ -223,6 +251,14 @@ heritability(fit_g)
 breeding_values(fit_g)
 ```
 
+Do not call
+[`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
+or
+[`heritability_standard_error()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)
+on a genomic fit; those public surfaces are deliberately fenced. Inspect
+the relationship-scale and provenance columns returned by
+[`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md).
+
 For SNP-BLUP, also use:
 
 ``` r
@@ -280,7 +316,8 @@ eqtl_table(fit_g)   # reserved
 
 ## Current evidence boundary
 
-The current genomic and single-step rows are `partial`.
+The current R genomic and single-step rows remain `partial`; the
+explicit route does not change `public_covered_count` (still 5).
 
 Covered in the R lane:
 
@@ -292,8 +329,13 @@ Covered in the R lane:
   supplied `Hinv`, constructed single-step, animal-only supplied-`Gamma`
   metafounder, supplied-`Gamma` `H^Gamma`, and SNP-BLUP when Julia and
   the sibling engine are available;
-- extractor checks for variance components, genomic heritability,
-  genomic breeding values, marker effects, and provenance diagnostics.
+- an exact live identity gate showing the explicit marker route and the
+  exact supplied-`Q_lambda` route return the same fitted quantities,
+  plus an independent base-R reconstruction of the frozen symbolic
+  inputs;
+- extractor checks for variance components, the scale-labelled genomic
+  variance ratio, genomic breeding values, marker effects, and
+  provenance diagnostics;
 - a Julia-native supplied-variance GBLUP/SNP-BLUP target fixture
   (`HSquared.jl` PR \#140, commit `008ea4d`) for future external
   comparator runs. This is a target fixture, not comparator evidence.
@@ -302,16 +344,23 @@ Still planned:
 
 - production relationship-matrix construction and scaling/blending
   controls;
-- external same-estimand genomic comparator evidence against the PR
-  \#140 target fixture;
+- component and allocation profiling on the already-open discovery data,
+  output-equivalent performance work, a new preregistration, and a fresh
+  untouched holdout block; the 240 opened holdout seeds cannot
+  adjudicate a revised candidate, and the nine-cell recovery campaign
+  remains held;
+- robustness studies for LD, population structure, imputation,
+  base-frequency misspecification, real panels, and production genotype
+  data; the sealed holdout used only independent HWE/no-LD markers;
 - production-scale and externally comparator-validated single-step
   construction;
 - external validation for animal-only metafounder and single-step
   `H^Gamma`;
 - APY and low-rank large-marker workflows;
 - PLINK/VCF/BCF readers and on-disk marker storage;
-- genomic comparator parity with sommer, BLUPF90-family tools, JWAS, or
-  other agreed benchmarks;
+- broader external construction comparators beyond the independent
+  base-R calculation and the fresh hash-pinned exact-`Q_lambda`
+  `blupf90+` run;
 - marker scans, QTL, GWAS, and eQTL;
 - uncertainty intervals and reliability for production genomic
   predictions.
@@ -327,9 +376,10 @@ information. Useful anchors are [Meuwissen, Hayes and Goddard
 Misztal, Johnson, Legarra, Tsuruta and Lawlor
 (2010)](https://pubmed.ncbi.nlm.nih.gov/20105546/).
 
-For `hsquared`, those papers motivate the roadmap. The current package
-exposes small, opt-in genomic building blocks and keeps broad production
-genomic claims behind explicit validation gates.
+For `hsquared`, those papers motivate the roadmap. The package exposes
+one narrow opt-in genomic GREML route while keeping default activation,
+recovery, interval, and broad production genomic claims behind explicit
+validation gates.
 
 See also:
 

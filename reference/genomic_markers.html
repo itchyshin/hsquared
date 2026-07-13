@@ -60,7 +60,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">genomic</span><span class="op">(</span><span class="va">formula</span>, G <span class="op">=</span> <span class="cn">NULL</span>, Ginv <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">genomic</span><span class="op">(</span><span class="va">formula</span>, G <span class="op">=</span> <span class="cn">NULL</span>, Ginv <span class="op">=</span> <span class="cn">NULL</span>, markers <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">single_step</span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>,</span>
@@ -97,6 +97,13 @@
 and single-step models.</p></dd>
 
 
+<dt id="arg-markers">markers<a class="anchor" aria-label="anchor" href="#arg-markers"></a></dt>
+<dd><p>An individual-by-marker numeric dosage matrix with rows named
+by genotyped ID. For <code>genomic()</code>, the engine uses sample allele frequencies,
+VanRaden method 1, and ridge <code>0.01</code>. For <code>single_step()</code>, this is the
+genotyped-subset marker matrix used to construct the genomic relationship.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Reserved for future syntax.</p></dd>
 
@@ -106,12 +113,6 @@ and single-step models.</p></dd>
 single-step <code>H^-1</code> <em>construction</em> path
 (<code>single_step(1 | id, pedigree = ped, markers = M)</code>), in place of a
 precomputed <code>Hinv</code>.</p></dd>
-
-
-<dt id="arg-markers">markers<a class="anchor" aria-label="anchor" href="#arg-markers"></a></dt>
-<dd><p>A genotyped-subset marker matrix (rows named by genotyped id)
-for the single-step construction path; the engine builds the genomic
-relationship from it.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
@@ -161,10 +162,14 @@ appear inside model formulas.</p>
     <p>These functions provide readable formula vocabulary for genomic, single-step,
 marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 return <code>NULL</code>); they take meaning only inside an <code><a href="hsquared.html">hsquared()</a></code> formula.
-<code>genomic()</code> and <code>single_step()</code> now fit through an opt-in, experimental
-engine path (<code>engine = "julia"</code>, REML-only or supplied-variance, not the
-default, mirroring a <code>partial</code> validation gate): <code>genomic(1 | id, Ginv = Ginv)</code>
-or <code>genomic(1 | id, markers = M)</code> (GREML, or SNP-BLUP via
+<code>genomic()</code> fits a narrow Gaussian REML random-intercept model only through
+the explicit <code>engine = "julia", target = "genomic"</code> path. <code>single_step()</code>
+also remains opt-in and experimental.
+The reported genomic coefficient is <code>sigma_g2 / (sigma_g2 + sigma_e2)</code> on
+the declared relationship scale, not generally an average marginal
+phenotypic-variance fraction or pedigree/population heritability.
+Accepted genomic forms are <code>genomic(1 | id, Ginv = Ginv)</code> or
+<code>genomic(1 | id, markers = M)</code> (GREML, or SNP-BLUP via
 <code>target = "snp_blup"</code>), and <code>single_step(1 | id, Hinv = Hinv)</code> (a precomputed
 inverse) or <code>single_step(1 | id, pedigree = ped, markers = M)</code> (the engine
 constructs <code>H^-1</code> from the pedigree + genotyped-subset markers via

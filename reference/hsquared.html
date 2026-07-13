@@ -5,11 +5,21 @@ Gaussian animal model y ~ fixed + animal(1 | id, pedigree = ped) by REML
 through the HSquared.jl engine. The default control fits when a local
 Julia and HSquared.jl are available and otherwise errors with install
 guidance; hs_control(engine = "validate") validates the contract without
-fitting, then returns the validated model spec invisibly. Genomic,
-repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
-(poisson/binomial, Laplace or variational REML, no heritability) models
-are opt-in experimental paths; factor-analytic models remain planned. The
-non-Gaussian marginal is selected with
+fitting, then returns the validated model spec invisibly. A narrow Gaussian
+REML genomic(1 | id, markers = M) or genomic(1 | id, Ginv = Q) model is
+available only through the explicit experimental Julia target = "genomic".
+Marker construction uses sample allele frequencies, unweighted VanRaden
+method 1, and ridge 0.01.
+heritability() labels its coefficient-scale result
+genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2): the genomic
+variance-component ratio on the declared relationship scale. It is not
+generally the fraction of average marginal phenotypic variance and is not
+pedigree-, founder-base-, population-, or universal narrow-sense
+heritability. Genomic ratio intervals and standard errors are
+unavailable. Repeatability, two-effect, marker-effect, multivariate, and
+non-Gaussian (poisson/binomial, Laplace or variational REML, no
+heritability) models are opt-in experimental paths; factor-analytic models
+remain planned. The non-Gaussian marginal is selected with
 engine_control = list(target = "nongaussian", marginal = "laplace") (default)
 or "variational" (the variational/ELBO marginal; aliases "la"/"va").'><meta property="og:description" content='hsquared() is the R entry point for heritability, breeding-value,
 G-matrix, and inheritance-structured mixed models. v0.1 fits the univariate
@@ -17,11 +27,21 @@ Gaussian animal model y ~ fixed + animal(1 | id, pedigree = ped) by REML
 through the HSquared.jl engine. The default control fits when a local
 Julia and HSquared.jl are available and otherwise errors with install
 guidance; hs_control(engine = "validate") validates the contract without
-fitting, then returns the validated model spec invisibly. Genomic,
-repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
-(poisson/binomial, Laplace or variational REML, no heritability) models
-are opt-in experimental paths; factor-analytic models remain planned. The
-non-Gaussian marginal is selected with
+fitting, then returns the validated model spec invisibly. A narrow Gaussian
+REML genomic(1 | id, markers = M) or genomic(1 | id, Ginv = Q) model is
+available only through the explicit experimental Julia target = "genomic".
+Marker construction uses sample allele frequencies, unweighted VanRaden
+method 1, and ridge 0.01.
+heritability() labels its coefficient-scale result
+genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2): the genomic
+variance-component ratio on the declared relationship scale. It is not
+generally the fraction of average marginal phenotypic variance and is not
+pedigree-, founder-base-, population-, or universal narrow-sense
+heritability. Genomic ratio intervals and standard errors are
+unavailable. Repeatability, two-effect, marker-effect, multivariate, and
+non-Gaussian (poisson/binomial, Laplace or variational REML, no
+heritability) models are opt-in experimental paths; factor-analytic models
+remain planned. The non-Gaussian marginal is selected with
 engine_control = list(target = "nongaussian", marginal = "laplace") (default)
 or "variational" (the variational/ELBO marginal; aliases "la"/"va").'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -85,11 +105,21 @@ Gaussian animal model <code>y ~ fixed + animal(1 | id, pedigree = ped)</code> by
 through the <code>HSquared.jl</code> engine. The default <code>control</code> fits when a local
 Julia and <code>HSquared.jl</code> are available and otherwise errors with install
 guidance; <code>hs_control(engine = "validate")</code> validates the contract without
-fitting, then returns the validated model spec invisibly. Genomic,
-repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
-(<code>poisson</code>/<code>binomial</code>, Laplace or variational REML, no heritability) models
-are opt-in experimental paths; factor-analytic models remain planned. The
-non-Gaussian marginal is selected with
+fitting, then returns the validated model spec invisibly. A narrow Gaussian
+REML <code>genomic(1 | id, markers = M)</code> or <code>genomic(1 | id, Ginv = Q)</code> model is
+available only through the explicit experimental Julia <code>target = "genomic"</code>.
+Marker construction uses sample allele frequencies, unweighted VanRaden
+method 1, and ridge <code>0.01</code>.
+<code><a href="heritability.html">heritability()</a></code> labels its coefficient-scale result
+<code>genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)</code>: the genomic
+variance-component ratio on the declared relationship scale. It is not
+generally the fraction of average marginal phenotypic variance and is not
+pedigree-, founder-base-, population-, or universal narrow-sense
+heritability. Genomic ratio intervals and standard errors are
+unavailable. Repeatability, two-effect, marker-effect, multivariate, and
+non-Gaussian (<code>poisson</code>/<code>binomial</code>, Laplace or variational REML, no
+heritability) models are opt-in experimental paths; factor-analytic models
+remain planned. The non-Gaussian marginal is selected with
 <code>engine_control = list(target = "nongaussian", marginal = "laplace")</code> (default)
 or <code>"variational"</code> (the variational/ELBO marginal; aliases <code>"la"</code>/<code>"va"</code>).</p>
     </div>
@@ -147,6 +177,8 @@ implemented and is rejected with an error.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>"hsquared_fit"</code> object from the fitted v0.1 Gaussian animal model.
+Explicit experimental genomic fits carry their relationship-scale
+provenance; supplied <code>Ginv</code> construction remains unknown.
 When the Julia engine is unavailable, an informative error. When
 <code>engine = "validate"</code>, the validated model specification is returned
 invisibly as a named list (after a confirming message), for programmatic

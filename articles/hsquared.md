@@ -81,16 +81,49 @@ The parser currently accepts:
   bundle with a pedigree component;
 - numeric Gaussian responses.
 
-Several terms beyond the default contract now fit through an opt-in,
-experimental engine path (`engine = "julia"`, not the default). The
-common-environment leg of the two-effect model
+One narrow experimental genomic GREML route is available through the
+explicit `engine = "julia", target = "genomic"` path:
+
+``` r
+
+y ~ fixed + genomic(1 | id, markers = M)
+y ~ fixed + genomic(1 | id, Ginv = Q)
+```
+
+Marker input uses sample-frequency, unweighted VanRaden method 1 with
+`K_lambda = G + 0.01I`; supplied `Ginv` is used unchanged and its
+construction details remain unknown.
+[`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+labels
+
+`genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`,
+
+the genomic variance-component ratio on the declared relationship scale.
+It is not generally the fraction of average marginal phenotypic variance
+and is not pedigree-, founder-base-, population-, or universal
+narrow-sense heritability; genomic interval and ratio-SE accessors are
+unavailable. A fail-closed boundary candidate matched an independent
+base-R oracle on all 240 sealed holdouts, correcting 30 classifications
+with no losses. The conjunctive activation gate nevertheless failed
+because `n120_m600_r050` had a 5.99x candidate/default p95 runtime ratio
+against the frozen 3x cap. Default activation was not added, the
+nine-cell campaign did not run, and the route remains
+partial/experimental without changing `public_covered_count` (5). The
+240 seeds are spent; a revised candidate requires performance work on
+discovery data, a new preregistration, and a fresh holdout. The holdout
+used independent HWE/no-LD markers. It provides no robustness evidence
+for LD, population structure, imputation, base-frequency
+misspecification, real panels, or production genotype data.
+
+Several other terms fit through an opt-in experimental engine path
+(`engine = "julia"`, not the default). The common-environment leg of the
+two-effect model
 ([`common_env()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md))
 is **covered at validation scale**; the remaining opt-in terms each
 mirror a `partial` validation gate:
 [`permanent()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
 [`maternal_genetic()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md),
-[`genomic()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md)
-(GREML or SNP-BLUP),
+genomic SNP-BLUP,
 [`single_step()`](https://itchyshin.github.io/hsquared/reference/genomic_markers.md),
 and the supplied-relationship primaries
 [`relmat()`](https://itchyshin.github.io/hsquared/reference/qg_effect_markers.md)

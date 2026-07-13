@@ -176,13 +176,30 @@ relationship) — and surfaces the Julia-owned
 <code>HSquared.fit_two_effect_reml()</code> REML-only optimizer (three-component
 <code>initial</code> with <code>sigma_a2</code>/<code>sigma_c2</code>/<code>sigma_e2</code>). It is REML only and not
 the default.
-<code>target = "genomic"</code> and <code>target = "single_step"</code> are experimental, opt-in
-paths that fit a single effect whose relationship is a user-supplied inverse:
-<code>genomic(1 | id, Ginv = Ginv)</code> (a genomic relationship inverse) or
-<code>genomic(1 | id, markers = M)</code> (a marker matrix the engine turns into a
-genomic relationship), and <code>single_step(1 | id, Hinv = Hinv)</code> (a single-step
-relationship inverse). All surface <code>HSquared.fit_ai_reml()</code>. They are REML
-only and not the default.
+<code>target = "genomic"</code> is the explicit experimental narrow Gaussian REML
+genomic route. It accepts
+<code>genomic(1 | id, markers = M)</code>, using sample allele frequencies,
+unweighted VanRaden method 1, and ridge <code>0.01</code>, or
+<code>genomic(1 | id, Ginv = Ginv)</code>, whose construction method, allele-frequency
+source, ridge, and scale denominator remain unknown. <code><a href="heritability.html">heritability()</a></code>
+returns the genomic variance-component ratio on the declared relationship
+scale, <code>sigma_g2 / (sigma_g2 + sigma_e2)</code>. Because relationship scaling
+enters through the kernel, this is not generally the fraction of average
+marginal phenotypic variance and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability. Genomic
+<code><a href="heritability_interval.html">heritability_interval()</a></code> and
+<code><a href="variance_component_standard_errors.html">heritability_standard_error()</a></code> are unavailable. The R capability remains
+<code>partial</code>/experimental and validation-scale; the explicit route does not
+move <code>public_covered_count</code> from 5. A fail-closed boundary candidate matched
+an independent oracle on all 240 sealed holdouts, correcting 30
+classifications with no losses, but one cell had a 5.99x p95 runtime ratio
+against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
+not run, and the route must remain opt-in pending performance work and a new
+untouched holdout.
+<code>target = "single_step"</code> remains an experimental, opt-in path for
+<code>single_step(1 | id, Hinv = Hinv)</code> (a supplied single-step relationship
+inverse). Both targets surface <code>HSquared.fit_ai_reml()</code> and are REML-only;
+single-step is not a default route.
 <code>target = "single_step_construct"</code> fits
 <code>single_step(1 | id, pedigree = ped, markers = M)</code> after the engine builds
 <code>H^-1</code> from the pedigree and genotyped-subset markers. <code>target = "metafounder_single_step"</code> fits

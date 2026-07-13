@@ -5,7 +5,7 @@
 ## Usage
 
 ``` r
-genomic(formula, G = NULL, Ginv = NULL, ...)
+genomic(formula, G = NULL, Ginv = NULL, markers = NULL, ...)
 
 single_step(
   formula,
@@ -40,6 +40,14 @@ qtl_scan(position, genotype_probs = NULL, ...)
   Relationship or precision matrices for future genomic and single-step
   models.
 
+- markers:
+
+  An individual-by-marker numeric dosage matrix with rows named by
+  genotyped ID. For `genomic()`, the engine uses sample allele
+  frequencies, VanRaden method 1, and ridge `0.01`. For `single_step()`,
+  this is the genotyped-subset marker matrix used to construct the
+  genomic relationship.
+
 - ...:
 
   Reserved for future syntax.
@@ -50,12 +58,6 @@ qtl_scan(position, genotype_probs = NULL, ...)
   *construction* path
   (`single_step(1 | id, pedigree = ped, markers = M)`), in place of a
   precomputed `Hinv`.
-
-- markers:
-
-  A genotyped-subset marker matrix (rows named by genotyped id) for the
-  single-step construction path; the engine builds the genomic
-  relationship from it.
 
 - group:
 
@@ -105,12 +107,16 @@ These functions provide readable formula vocabulary for genomic,
 single-step, marker-effect, GWAS, and QTL/eQTL models. Called directly
 they are inert (they return `NULL`); they take meaning only inside an
 [`hsquared()`](https://itchyshin.github.io/hsquared/reference/hsquared.md)
-formula. `genomic()` and `single_step()` now fit through an opt-in,
-experimental engine path (`engine = "julia"`, REML-only or
-supplied-variance, not the default, mirroring a `partial` validation
-gate): `genomic(1 | id, Ginv = Ginv)` or `genomic(1 | id, markers = M)`
-(GREML, or SNP-BLUP via `target = "snp_blup"`), and
-`single_step(1 | id, Hinv = Hinv)` (a precomputed inverse) or
+formula. `genomic()` fits a narrow Gaussian REML random-intercept model
+only through the explicit `engine = "julia", target = "genomic"` path.
+`single_step()` also remains opt-in and experimental. The reported
+genomic coefficient is `sigma_g2 / (sigma_g2 + sigma_e2)` on the
+declared relationship scale, not generally an average marginal
+phenotypic-variance fraction or pedigree/population heritability.
+Accepted genomic forms are `genomic(1 | id, Ginv = Ginv)` or
+`genomic(1 | id, markers = M)` (GREML, or SNP-BLUP via
+`target = "snp_blup"`), and `single_step(1 | id, Hinv = Hinv)` (a
+precomputed inverse) or
 `single_step(1 | id, pedigree = ped, markers = M)` (the engine
 constructs `H^-1` from the pedigree + genotyped-subset markers via
 `target = "single_step_construct"`). Adding `group` plus supplied

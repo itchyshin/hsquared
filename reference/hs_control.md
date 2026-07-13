@@ -111,14 +111,35 @@ hs_control(
   pedigree relationship) — and surfaces the Julia-owned
   `HSquared.fit_two_effect_reml()` REML-only optimizer (three-component
   `initial` with `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and
-  not the default. `target = "genomic"` and `target = "single_step"` are
-  experimental, opt-in paths that fit a single effect whose relationship
-  is a user-supplied inverse: `genomic(1 | id, Ginv = Ginv)` (a genomic
-  relationship inverse) or `genomic(1 | id, markers = M)` (a marker
-  matrix the engine turns into a genomic relationship), and
-  `single_step(1 | id, Hinv = Hinv)` (a single-step relationship
-  inverse). All surface `HSquared.fit_ai_reml()`. They are REML only and
-  not the default. `target = "single_step_construct"` fits
+  not the default. `target = "genomic"` is the explicit experimental
+  narrow Gaussian REML genomic route. It accepts
+  `genomic(1 | id, markers = M)`, using sample allele frequencies,
+  unweighted VanRaden method 1, and ridge `0.01`, or
+  `genomic(1 | id, Ginv = Ginv)`, whose construction method,
+  allele-frequency source, ridge, and scale denominator remain unknown.
+  [`heritability()`](https://itchyshin.github.io/hsquared/reference/heritability.md)
+  returns the genomic variance-component ratio on the declared
+  relationship scale, `sigma_g2 / (sigma_g2 + sigma_e2)`. Because
+  relationship scaling enters through the kernel, this is not generally
+  the fraction of average marginal phenotypic variance and is not
+  pedigree-, founder-base-, population-, or universal narrow-sense
+  heritability. Genomic
+  [`heritability_interval()`](https://itchyshin.github.io/hsquared/reference/heritability_interval.md)
+  and
+  [`heritability_standard_error()`](https://itchyshin.github.io/hsquared/reference/variance_component_standard_errors.md)
+  are unavailable. The R capability remains `partial`/experimental and
+  validation-scale; the explicit route does not move
+  `public_covered_count` from 5. A fail-closed boundary candidate
+  matched an independent oracle on all 240 sealed holdouts, correcting
+  30 classifications with no losses, but one cell had a 5.99x p95
+  runtime ratio against the frozen 3x cap. The seeds are spent, the
+  nine-cell campaign did not run, and the route must remain opt-in
+  pending performance work and a new untouched holdout.
+  `target = "single_step"` remains an experimental, opt-in path for
+  `single_step(1 | id, Hinv = Hinv)` (a supplied single-step
+  relationship inverse). Both targets surface `HSquared.fit_ai_reml()`
+  and are REML-only; single-step is not a default route.
+  `target = "single_step_construct"` fits
   `single_step(1 | id, pedigree = ped, markers = M)` after the engine
   builds `H^-1` from the pedigree and genotyped-subset markers.
   `target = "metafounder_single_step"` fits
