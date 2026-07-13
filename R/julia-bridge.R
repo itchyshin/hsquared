@@ -2634,12 +2634,12 @@ hs_v07_genomic_boundary_contract <- function() {
   list(
     doc46_commit = "fe96a147",
     doc46_sha256 = "283ab00bab3da925f0ac2916959efacaa7fb711c5da4dce09dd49ea568eef030",
-    julia_implementation_commit = "ecc058f380be71058c9cfde373c345ab7a2f6aba",
+    julia_implementation_commit = "fc9d39df650b20aa09d769d9f9528eed1b606f1e",
     boundary_epsilon = 1e-7,
     grid_step = 0.0025,
     derivative_delta = 1e-6,
     kkt_tolerance = 1e-8,
-    candidate_id = "v07_genomic_closed_boundary_v1"
+    candidate_id = "doc47_boundary_performance_v1"
   )
 }
 

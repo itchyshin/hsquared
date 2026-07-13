@@ -588,9 +588,9 @@ test_that("genomic boundary metadata distinguishes endpoint from MME representat
   )
   expect_identical(
     contract$julia_implementation_commit,
-    "ecc058f380be71058c9cfde373c345ab7a2f6aba"
+    "fc9d39df650b20aa09d769d9f9528eed1b606f1e"
   )
-  expect_identical(contract$candidate_id, "v07_genomic_closed_boundary_v1")
+  expect_identical(contract$candidate_id, "doc47_boundary_performance_v1")
   lower <- list(
     status = "boundary_lower",
     reason = "boundary_lower",
