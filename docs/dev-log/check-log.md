@@ -3,6 +3,43 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-12 (v0.7 independent genomic boundary oracle — pre-run)
+
+- Added the standalone base-R oracle at
+  `tools/v07_genomic_boundary_oracle.R`. It reads only a create-once sealed
+  `y.tsv` / `X.tsv` / `K.tsv` / `metadata.tsv` / `arms.tsv` packet, calls no
+  package construction or fitting helper, evaluates the frozen 401-point grid
+  plus `optimize(..., tol = 1e-12)`, applies the endpoint tie/KKT rules, and
+  writes the exact 42-column per-arm join plus a create-once SHA-256 sidecar.
+- The tool binds docs 45, 45a, and 45b by exact commit and file SHA-256. Its
+  first 30 output fields preserve the Julia raw-arm schema; the remaining
+  fields independently recompute the profiled arm likelihood, closed-domain
+  oracle, log-variance finite-difference gradient, endpoint derivatives, and
+  interior-agreement gate. `dataset_files_digest` is the SHA-256 of the sealed
+  `files.sha256.tsv` itself, matching the Julia verifier contract.
+- A pre-run self-test exposed that base R `optimize()` stops at approximately
+  `sqrt(.Machine$double.eps)` from a boundary even when `tol = 1e-12`. The
+  preregistration was amended before any discovery or holdout run: doc 45b
+  freezes endpoint adjacency at `1e-7`, with symmetric threshold mutations.
+- Mutation gates cover packet file set/order and hashes, metadata identities,
+  nonfinite matrices, arm identity, endpoint KKT sign, endpoint ties, the exact
+  `1e-7` adjacency threshold, output schema/order, parameters, raw objective,
+  independent likelihood/gradient, oracle class, seed, termination reason,
+  file digest, output sidecar, and create-once refusal.
+- Exact checks (R 4.6.0):
+  `Rscript tools/v07_genomic_boundary_oracle.R selftest` →
+  `V07_GENOMIC_BOUNDARY_ORACLE_SELFTEST_PASS`;
+  `Rscript -e 'testthat::test_file("tests/testthat/test-v07-genomic-boundary-oracle.R")'`
+  → **FAIL 0 / WARN 0 / SKIP 0 / PASS 44** after the final packet-digest and
+  direct CLI `oracle`/`verify` alignment;
+  `Rscript -e 'devtools::document()'` → zero generated delta;
+  `Rscript -e 'devtools::test(reporter = "summary")'` → **DONE**, no failures
+  or warnings (engine-dependent checks skipped under their existing guards);
+  `air format` applied to both R files; `git diff --check` green.
+- **Boundary:** no discovery or holdout dataset was opened, and this is
+  optimizer-localization infrastructure only. It supplies no recovery,
+  activation, capability-status, or `public_covered_count` evidence.
+
 ## 2026-07-12 (assemble PRs #131/#132/#133 onto `main`)
 
 - Merged the three open, CI-green, Rose-CLEAN PRs onto `main` by ordered
