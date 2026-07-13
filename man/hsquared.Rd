@@ -38,6 +38,8 @@ implemented and is rejected with an error.}
 }
 \value{
 A \code{"hsquared_fit"} object from the fitted v0.1 Gaussian animal model.
+Explicit experimental genomic fits carry their relationship-scale
+provenance; supplied \code{Ginv} construction remains unknown.
 When the Julia engine is unavailable, an informative error. When
 \code{engine = "validate"}, the validated model specification is returned
 invisibly as a named list (after a confirming message), for programmatic
@@ -51,11 +53,21 @@ Gaussian animal model \code{y ~ fixed + animal(1 | id, pedigree = ped)} by REML
 through the \code{HSquared.jl} engine. The default \code{control} fits when a local
 Julia and \code{HSquared.jl} are available and otherwise errors with install
 guidance; \code{hs_control(engine = "validate")} validates the contract without
-fitting, then returns the validated model spec invisibly. Genomic,
-repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
-(\code{poisson}/\code{binomial}, Laplace or variational REML, no heritability) models
-are opt-in experimental paths; factor-analytic models remain planned. The
-non-Gaussian marginal is selected with
+fitting, then returns the validated model spec invisibly. A narrow Gaussian
+REML \code{genomic(1 | id, markers = M)} or \code{genomic(1 | id, Ginv = Q)} model is
+available only through the explicit experimental Julia \code{target = "genomic"}.
+Marker construction uses sample allele frequencies, unweighted VanRaden
+method 1, and ridge \code{0.01}.
+\code{heritability()} labels its coefficient-scale result
+\code{genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)}: the genomic
+variance-component ratio on the declared relationship scale. It is not
+generally the fraction of average marginal phenotypic variance and is not
+pedigree-, founder-base-, population-, or universal narrow-sense
+heritability. Genomic ratio intervals and standard errors are
+unavailable. Repeatability, two-effect, marker-effect, multivariate, and
+non-Gaussian (\code{poisson}/\code{binomial}, Laplace or variational REML, no
+heritability) models are opt-in experimental paths; factor-analytic models
+remain planned. The non-Gaussian marginal is selected with
 \code{engine_control = list(target = "nongaussian", marginal = "laplace")} (default)
 or \code{"variational"} (the variational/ELBO marginal; aliases \code{"la"}/\code{"va"}).
 }

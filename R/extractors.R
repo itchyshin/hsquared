@@ -123,6 +123,11 @@ heritability.hsquared_fit <- function(object, ...) {
   hs_fit_result(object, "heritability", "heritability estimates")
 }
 
+hs_fit_is_genomic <- function(object) {
+  inherits(object, "hsquared_fit") &&
+    identical(object$spec$target, "genomic")
+}
+
 #' Extract multivariate covariance and correlation matrices
 #'
 #' `r lifecycle::badge("experimental")`
@@ -1039,6 +1044,14 @@ heritability_interval.default <- function(object, ...) {
 
 #' @export
 heritability_interval.hsquared_fit <- function(object, ...) {
+  if (hs_fit_is_genomic(object)) {
+    stop(
+      "`heritability_interval()` is not available for genomic fits. The ",
+      "genomic variance ratio is defined on the declared relationship scale; ",
+      "a scale-labelled, calibrated interval has not been validated.",
+      call. = FALSE
+    )
+  }
   hs_fit_result(
     object,
     "heritability_interval",
@@ -1107,6 +1120,13 @@ heritability_standard_error.default <- function(object, ...) {
 
 #' @export
 heritability_standard_error.hsquared_fit <- function(object, ...) {
+  if (hs_fit_is_genomic(object)) {
+    stop(
+      "`heritability_standard_error()` is not available for genomic fits. ",
+      "A scale-labelled genomic-ratio standard error has not been validated.",
+      call. = FALSE
+    )
+  }
   hs_fit_result(
     object,
     "heritability_se",

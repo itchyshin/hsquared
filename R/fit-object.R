@@ -61,6 +61,14 @@ print.hsquared_fit <- function(x, ...) {
   if (!is.null(converged)) {
     cat("  converged: ", isTRUE(converged), "\n", sep = "")
   }
+  boundary <- x$result$genomic_boundary
+  if (!is.null(boundary)) {
+    cat("  genomic boundary status: ", boundary$status, "\n", sep = "")
+    if (boundary$status %in% c("boundary_lower", "boundary_upper")) {
+      cat("  genomic ratio (scientific endpoint): ", boundary$profile_ratio, "\n", sep = "")
+      cat("  genomic ratio (numerical MME): ", boundary$numerical_ratio, "\n", sep = "")
+    }
+  }
   invisible(x)
 }
 
@@ -76,6 +84,7 @@ summary.hsquared_fit <- function(object, ...) {
       heritability = object$result$heritability,
       fixed_effects = object$result$fixed_effects,
       diagnostics = object$result$diagnostics,
+      genomic_boundary = object$result$genomic_boundary,
       converged = object$result$converged,
       at_boundary = hs_fit_boundary_flag(object),
       at_boundary_class = hs_fit_boundary_class(object),
@@ -97,6 +106,15 @@ print.summary_hsquared_fit <- function(x, ...) {
   cat("  method: ", x$method %||% "unknown", "\n", sep = "")
   if (!is.null(x$converged)) {
     cat("  converged: ", isTRUE(x$converged), "\n", sep = "")
+  }
+  if (!is.null(x$genomic_boundary)) {
+    cat("  genomic boundary status: ", x$genomic_boundary$status, "\n", sep = "")
+    if (x$genomic_boundary$status %in% c("boundary_lower", "boundary_upper")) {
+      cat("  genomic ratio (scientific endpoint): ",
+          x$genomic_boundary$profile_ratio, "\n", sep = "")
+      cat("  genomic ratio (numerical MME): ",
+          x$genomic_boundary$numerical_ratio, "\n", sep = "")
+    }
   }
   if (isTRUE(x$at_boundary)) {
     if (identical(x$at_boundary_class, "negative")) {

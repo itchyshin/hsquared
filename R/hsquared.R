@@ -6,11 +6,21 @@
 #' through the `HSquared.jl` engine. The default `control` fits when a local
 #' Julia and `HSquared.jl` are available and otherwise errors with install
 #' guidance; `hs_control(engine = "validate")` validates the contract without
-#' fitting, then returns the validated model spec invisibly. Genomic,
-#' repeatability, two-effect, marker-effect, multivariate, and non-Gaussian
-#' (`poisson`/`binomial`, Laplace or variational REML, no heritability) models
-#' are opt-in experimental paths; factor-analytic models remain planned. The
-#' non-Gaussian marginal is selected with
+#' fitting, then returns the validated model spec invisibly. A narrow Gaussian
+#' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model is
+#' available only through the explicit experimental Julia `target = "genomic"`.
+#' Marker construction uses sample allele frequencies, unweighted VanRaden
+#' method 1, and ridge `0.01`.
+#' `heritability()` labels its coefficient-scale result
+#' `genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`: the genomic
+#' variance-component ratio on the declared relationship scale. It is not
+#' generally the fraction of average marginal phenotypic variance and is not
+#' pedigree-, founder-base-, population-, or universal narrow-sense
+#' heritability. Genomic ratio intervals and standard errors are
+#' unavailable. Repeatability, two-effect, marker-effect, multivariate, and
+#' non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no
+#' heritability) models are opt-in experimental paths; factor-analytic models
+#' remain planned. The non-Gaussian marginal is selected with
 #' `engine_control = list(target = "nongaussian", marginal = "laplace")` (default)
 #' or `"variational"` (the variational/ELBO marginal; aliases `"la"`/`"va"`).
 #'
@@ -32,6 +42,8 @@
 #' @param ... Reserved for future arguments.
 #'
 #' @return A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model.
+#'   Explicit experimental genomic fits carry their relationship-scale
+#'   provenance; supplied `Ginv` construction remains unknown.
 #'   When the Julia engine is unavailable, an informative error. When
 #'   `engine = "validate"`, the validated model specification is returned
 #'   invisibly as a named list (after a confirming message), for programmatic

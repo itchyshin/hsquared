@@ -90,13 +90,30 @@ relationship) — and surfaces the Julia-owned
 \code{HSquared.fit_two_effect_reml()} REML-only optimizer (three-component
 \code{initial} with \code{sigma_a2}/\code{sigma_c2}/\code{sigma_e2}). It is REML only and not
 the default.
-\code{target = "genomic"} and \code{target = "single_step"} are experimental, opt-in
-paths that fit a single effect whose relationship is a user-supplied inverse:
-\code{genomic(1 | id, Ginv = Ginv)} (a genomic relationship inverse) or
-\code{genomic(1 | id, markers = M)} (a marker matrix the engine turns into a
-genomic relationship), and \code{single_step(1 | id, Hinv = Hinv)} (a single-step
-relationship inverse). All surface \code{HSquared.fit_ai_reml()}. They are REML
-only and not the default.
+\code{target = "genomic"} is the explicit experimental narrow Gaussian REML
+genomic route. It accepts
+\code{genomic(1 | id, markers = M)}, using sample allele frequencies,
+unweighted VanRaden method 1, and ridge \code{0.01}, or
+\code{genomic(1 | id, Ginv = Ginv)}, whose construction method, allele-frequency
+source, ridge, and scale denominator remain unknown. \code{heritability()}
+returns the genomic variance-component ratio on the declared relationship
+scale, \code{sigma_g2 / (sigma_g2 + sigma_e2)}. Because relationship scaling
+enters through the kernel, this is not generally the fraction of average
+marginal phenotypic variance and is not pedigree-, founder-base-,
+population-, or universal narrow-sense heritability. Genomic
+\code{heritability_interval()} and
+\code{heritability_standard_error()} are unavailable. The R capability remains
+\code{partial}/experimental and validation-scale; the explicit route does not
+move \code{public_covered_count} from 5. A fail-closed boundary candidate matched
+an independent oracle on all 240 sealed holdouts, correcting 30
+classifications with no losses, but one cell had a 5.99x p95 runtime ratio
+against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
+not run, and the route must remain opt-in pending performance work and a new
+untouched holdout.
+\code{target = "single_step"} remains an experimental, opt-in path for
+\code{single_step(1 | id, Hinv = Hinv)} (a supplied single-step relationship
+inverse). Both targets surface \code{HSquared.fit_ai_reml()} and are REML-only;
+single-step is not a default route.
 \code{target = "single_step_construct"} fits
 \code{single_step(1 | id, pedigree = ped, markers = M)} after the engine builds
 \code{H^-1} from the pedigree and genotyped-subset markers. \code{target = "metafounder_single_step"} fits

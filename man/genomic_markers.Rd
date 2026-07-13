@@ -9,7 +9,7 @@
 \alias{qtl_scan}
 \title{Genomic and QTL formula markers}
 \usage{
-genomic(formula, G = NULL, Ginv = NULL, ...)
+genomic(formula, G = NULL, Ginv = NULL, markers = NULL, ...)
 
 single_step(
   formula,
@@ -38,16 +38,17 @@ qtl_scan(position, genotype_probs = NULL, ...)
 \item{G, Ginv, H, Hinv}{Relationship or precision matrices for future genomic
 and single-step models.}
 
+\item{markers}{An individual-by-marker numeric dosage matrix with rows named
+by genotyped ID. For \code{genomic()}, the engine uses sample allele frequencies,
+VanRaden method 1, and ridge \code{0.01}. For \code{single_step()}, this is the
+genotyped-subset marker matrix used to construct the genomic relationship.}
+
 \item{...}{Reserved for future syntax.}
 
 \item{pedigree}{A pedigree data frame (\code{id}, \code{sire}, \code{dam}) for the
 single-step \code{H^-1} \emph{construction} path
 (\code{single_step(1 | id, pedigree = ped, markers = M)}), in place of a
 precomputed \code{Hinv}.}
-
-\item{markers}{A genotyped-subset marker matrix (rows named by genotyped id)
-for the single-step construction path; the engine builds the genomic
-relationship from it.}
 
 \item{group}{Animal-to-metafounder group labels for the future \code{H^Gamma}
 single-step path; must be supplied together with \code{Gamma}.}
@@ -81,10 +82,14 @@ appear inside model formulas.
 These functions provide readable formula vocabulary for genomic, single-step,
 marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 return \code{NULL}); they take meaning only inside an \code{\link[=hsquared]{hsquared()}} formula.
-\code{genomic()} and \code{single_step()} now fit through an opt-in, experimental
-engine path (\code{engine = "julia"}, REML-only or supplied-variance, not the
-default, mirroring a \code{partial} validation gate): \code{genomic(1 | id, Ginv = Ginv)}
-or \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
+\code{genomic()} fits a narrow Gaussian REML random-intercept model only through
+the explicit \verb{engine = "julia", target = "genomic"} path. \code{single_step()}
+also remains opt-in and experimental.
+The reported genomic coefficient is \code{sigma_g2 / (sigma_g2 + sigma_e2)} on
+the declared relationship scale, not generally an average marginal
+phenotypic-variance fraction or pedigree/population heritability.
+Accepted genomic forms are \code{genomic(1 | id, Ginv = Ginv)} or
+\code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
 \code{target = "snp_blup"}), and \code{single_step(1 | id, Hinv = Hinv)} (a precomputed
 inverse) or \code{single_step(1 | id, pedigree = ped, markers = M)} (the engine
 constructs \code{H^-1} from the pedigree + genotyped-subset markers via

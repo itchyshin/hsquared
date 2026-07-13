@@ -31,9 +31,7 @@ print.hs_formula_status <- function(x, ...) {
   cat("  parsed today: animal(1 | id, pedigree = ped); ")
   cat("animal(1 | id) with an hs_data pedigree\n")
   cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
-  cat(
-    "permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in\n"
-  )
+  cat("permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in\n")
   cat(
     "  planned grammar: rows marked planned/reserved error before fitting\n"
   )
@@ -151,7 +149,7 @@ hs_formula_status_fitting <- function() {
     rep("not available", 5L),
     "fitted (opt-in supplied relationship, experimental)",
     "fitted (opt-in supplied precision, experimental)",
-    "fitted (opt-in genomic)",
+    "fitted (opt-in genomic, experimental)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
@@ -270,13 +268,22 @@ hs_formula_status_behavior <- function() {
       "NOT covered, NOT the default; `Q` is supplied provenance, not estimated."
     ),
     paste(
-      "Primary genomic effect of the opt-in, experimental GREML model; requires",
-      "a user-supplied `Ginv` and engine = \"julia\", target = \"genomic\"."
+      "Primary genomic effect for the narrow opt-in Gaussian REML route; a",
+      "supplied `Ginv` is used without alteration and its construction method,",
+      "allele frequencies, ridge, and denominator remain unknown. The explicit",
+      "model requires engine = \"julia\", target = \"genomic\". The",
+      "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
+      "and SE accessors are unavailable. R status stays partial/experimental,",
+      "validation-scale; public_covered_count remains 5."
     ),
     paste(
-      "Primary genomic effect of the opt-in, experimental SNP-BLUP model;",
-      "requires a user-supplied marker matrix `markers` and engine = \"julia\",",
-      "target = \"genomic\"."
+      "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
+      "sample allele frequencies, unweighted VanRaden method 1, ridge 0.01.",
+      "Use target = \"genomic\"; target =",
+      "\"snp_blup\" remains opt-in. The coefficient-scale result is labelled",
+      "`genomic_variance_ratio`; interval and SE accessors are unavailable. R",
+      "status stays partial/experimental, validation-scale;",
+      "public_covered_count remains 5."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental model; requires a",

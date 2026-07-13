@@ -1,5 +1,12 @@
 # 43 — Genomic GREML G0: estimand, grammar freeze, comparator plan (0.7)
 
+> **SUPERSEDED 2026-07-12 by
+> `44-v07-genomic-public-activation.md`.** Do not use this proposal's open
+> decisions, universal ordering claim, unregularized SNP-BLUP framing,
+> comparator recipe, or 48-to-2,000 recovery recipe for implementation or a
+> promotion decision. Doc 44 is the frozen activation contract; this page is
+> retained verbatim except for corrections to claims known to be unsafe.
+
 > **Status: PROPOSAL, 2026-07-11.** The G0 start-now design for the 0.7 genomic
 > GREML covered flip (`docs/design/36-phase3-6-execution-plan.md`). Pins the
 > genomic-scale estimand, a Boole-freeze-ready dispatch grammar, and the
@@ -17,8 +24,8 @@ narrow-sense h²**. It differs on three axes, each of which must be disclosed:
 1. **Base population** — `G` is centred by `2p` and scaled by `k` (a
    sample/allele-frequency base), vs `A`'s founder base (VanRaden 2008;
    Legarra 2016).
-2. **SNP-capture** — `h²_g ≤ h²_pedigree` (markers capture only LD-tagged
-   additive variance; Yang et al. 2010).
+2. **No universal ordering** — genomic- and pedigree-scale ratios use different
+   covariance bases; neither is universally bounded above by the other.
 3. **Implementation scale** — the ridge/conditional-on-`Ginv` construction gives
    `diag(inv(Ginv)) ≠ 1` (`validation_status.jl:151`), so `σ²_g` is
    conditional-on-`Ginv`, not a founder-base additive variance.
@@ -37,7 +44,11 @@ the default `fit` path:
 - frozen argument names + the `family = gaussian()`, REML-only, single-effect
   precondition are the Boole-freeze surface (mirror the `docs/design/38` format).
 
-## 3. Comparator plan (same-estimand, not agreement)
+## 3. Superseded comparator plan
+
+The table and recipe below were proposal-stage options. They are superseded by
+doc 44's exact-precision and fingerprint gates and must not be executed as the
+activation protocol.
 
 | Tool | Role | Same-estimand? | Availability |
 |---|---|---|---|
@@ -58,7 +69,7 @@ Acceptance band (maintainer/Fisher to ratify): σ²_g/σ²_e within ~1–2% rela
 h² within ~0.01–0.02 absolute (mirror the pedigree gryphon band,
 `docs/design/23-comparator-policy.md:44-49`).
 
-## 4. Three consistency defects to fix BEFORE the flip
+## 4. Historical consistency defects
 
 - **N1 — one variance, two names.** The single genomic additive variance is
   `σ²_a` in the GBLUP payload but `σ²_g` in SNP-BLUP, related by

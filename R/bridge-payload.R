@@ -367,6 +367,42 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
     markers <- NULL
   }
 
+  is_genomic <- identical(primary$relationship, "genomic")
+  payload_source <- if (is_genomic && identical(source, "supplied")) {
+    "supplied_Ginv"
+  } else {
+    source
+  }
+  relationship_provenance <- if (identical(payload_source, "markers")) {
+    list(
+      relationship_source = "markers",
+      relationship_method = "vanraden1",
+      allele_frequency_source = "sample",
+      ridge = 0.01,
+      scale_denominator = NA_real_,
+      relationship_scale = "K_lambda",
+      id_order_fingerprint = NA_character_,
+      marker_content_fingerprint = NA_character_,
+      kernel_fingerprint = NA_character_,
+      precision_fingerprint = NA_character_
+    )
+  } else if (identical(payload_source, "supplied_Ginv")) {
+    list(
+      relationship_source = "supplied_Ginv",
+      relationship_method = NA_character_,
+      allele_frequency_source = NA_character_,
+      ridge = NA_real_,
+      scale_denominator = NA_real_,
+      relationship_scale = "inverse_of_supplied_precision",
+      id_order_fingerprint = NA_character_,
+      marker_content_fingerprint = NA_character_,
+      kernel_fingerprint = NA_character_,
+      precision_fingerprint = NA_character_
+    )
+  } else {
+    NULL
+  }
+
   structure(
     list(
       y = as.numeric(spec$response$values),
@@ -379,8 +415,9 @@ hs_build_relinv_bridge_payload <- function(spec, primary) {
       Ginv = ginv,
       markers = markers,
       marker_names = marker_names,
-      relationship_source = source,
-      ridge = 0.01,
+      relationship_source = payload_source,
+      ridge = if (identical(payload_source, "markers")) 0.01 else NA_real_,
+      relationship_provenance = relationship_provenance,
       relationship = primary$relationship,
       method = spec$method,
       family = spec$family$family,
