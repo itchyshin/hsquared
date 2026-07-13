@@ -828,7 +828,7 @@ v07_seed_output_state <- function(out_dir, tier, cell_id, seed) {
   if (all(attempt_present)) {
     v07_verify_pair(attempt)
   } else if (any(attempt_present)) {
-    attempt_complete <- FALSE
+    v07_abort("partial attempt primary/sidecar pair is tampered or orphaned")
   }
   attempt_complete <- all(attempt_present)
 
@@ -841,6 +841,12 @@ v07_seed_output_state <- function(out_dir, tier, cell_id, seed) {
     if (!dir.exists(packet) || v07_is_symlink(packet)) v07_abort("seed packet path is not a real directory")
     actual <- sort(list.files(packet, all.files = TRUE, no.. = TRUE))
     if (length(setdiff(actual, expected))) v07_abort("interrupted seed packet contains an unexpected file")
+    for (name in primary) {
+      has_primary <- name %in% actual
+      has_sidecar <- paste0(name, ".sha256") %in% actual
+      if (has_sidecar && !has_primary) v07_abort("packet sidecar exists without its primary")
+      if (has_primary && has_sidecar) v07_verify_pair(file.path(packet, name))
+    }
     if (identical(actual, expected)) {
       v07_verify_packet(out_dir, tier, cell_id, seed)
       packet_complete <- TRUE

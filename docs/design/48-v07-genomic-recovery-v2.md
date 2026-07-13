@@ -148,12 +148,13 @@ an exclusive hard link. It never overwrites or renames over an existing path.
 Every primary file has a SHA-256 sidecar. Missing, additional, duplicated,
 corrupt, or orphan primary/sidecar files make the gate red. A rerun first
 classifies each seed slot. A complete attempt-plus-packet is verified and
-skipped; a packet/attempt interrupted before the immutable attempt was claimed
-may be removed only when it contains a known subset of the exact expected
-files, then the same manifest seed is rerun. Unexpected files, corrupted
-complete pairs, or an immutable attempt paired with an incomplete packet stop
-rather than being cleaned. Thus process interruption is resumable without
-overwriting completed evidence or replacing a seed.
+skipped. A packet-only state may be removed only when neither the attempt
+primary nor its sidecar exists and the packet contains a known subset of the
+exact expected files; the same manifest seed is then rerun. Any partial attempt
+primary/sidecar pair, unexpected packet file, corrupted completed pair, or
+immutable attempt paired with an incomplete packet stops rather than being
+cleaned. Thus process interruption is resumable without treating orphaned or
+tampered attempt evidence as disposable and without replacing a seed.
 
 The manifest is the attempted denominator. A per-seed fit catches ordinary R,
 bridge, construction, and Julia errors and still writes one immutable row with

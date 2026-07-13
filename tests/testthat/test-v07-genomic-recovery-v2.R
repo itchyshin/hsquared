@@ -1,6 +1,12 @@
 tool <- testthat::test_path("..", "..", "tools", "v07_genomic_recovery_v2.R")
+testthat::skip_if_not(
+  file.exists(tool),
+  "repository-only v0.7 recovery-v2 campaign tools are unavailable in the built package"
+)
+tool <- normalizePath(tool, mustWork = TRUE)
 source(tool, local = TRUE)
 recompute_tool <- testthat::test_path("..", "..", "tools", "v07_genomic_recovery_v2_recompute.R")
+recompute_tool <- normalizePath(recompute_tool, mustWork = TRUE)
 source(recompute_tool, local = TRUE)
 
 v07_test_hash <- function(x) paste(rep(x, 64L), collapse = "")
@@ -167,8 +173,9 @@ test_that("known interrupted seed outputs can be cleared and rerun safely", {
   attempt <- v07_attempt_path(root, "pilot", cell, seed)
   dir.create(dirname(attempt), recursive = TRUE)
   writeLines("partial", attempt)
-  expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "interrupted")
-  expect_invisible(v07_clear_interrupted_seed(root, "pilot", cell, seed))
+  expect_error(v07_seed_output_state(root, "pilot", cell, seed), "tampered or orphaned")
+  expect_error(v07_clear_interrupted_seed(root, "pilot", cell, seed), "tampered or orphaned")
+  unlink(attempt)
   expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "absent")
 
   packet <- list(
@@ -184,10 +191,20 @@ test_that("known interrupted seed outputs can be cleared and rerun safely", {
   expect_invisible(v07_clear_interrupted_seed(root, "pilot", cell, seed))
   expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "absent")
 
-  unexpected <- v07_packet_dir(root, "pilot", cell, seed)
+  unexpected <- v07_packet_dir(root, "pilot", cell, seed + 1)
   dir.create(unexpected, recursive = TRUE)
   writeLines("do not delete", file.path(unexpected, "unexpected.txt"))
-  expect_error(v07_seed_output_state(root, "pilot", cell, seed), "unexpected file")
+  expect_error(v07_seed_output_state(root, "pilot", cell, seed + 1), "unexpected file")
+
+  v07_write_packet(root, "pilot", cell, seed, packet)
+  row <- v07_test_attempts()$attempts[1L, , drop = FALSE]
+  v07_write_once(attempt, v07_tsv_text(row))
+  expect_identical(v07_seed_output_state(root, "pilot", cell, seed), "complete")
+  unlink(paste0(attempt, ".sha256"))
+  expect_error(v07_seed_output_state(root, "pilot", cell, seed), "tampered or orphaned")
+  expect_error(v07_clear_interrupted_seed(root, "pilot", cell, seed), "tampered or orphaned")
+  expect_true(file.exists(attempt))
+  expect_true(dir.exists(v07_packet_dir(root, "pilot", cell, seed)))
 })
 
 test_that("tier corpus locks bind manifest attempts and packet primaries", {
