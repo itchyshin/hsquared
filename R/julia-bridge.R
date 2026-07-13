@@ -2435,7 +2435,8 @@ hs_fit_julia_genomic_payload <- function(
       "hsq_markers, hsq_ids; marker_names = hsq_marker_names,",
       "ridge = hsq_ridge);",
       "hsq_Ginvs = sparse(hsq_genomic_construction.Q);",
-      "hsq_genomic_provenance = hsq_genomic_construction.provenance;"
+      "hsq_genomic_provenance = hsq_genomic_construction.provenance;",
+      "hsq_genomic_kernel = hsq_genomic_construction.K;"
     )
   } else {
     JuliaCall::julia_assign("hsq_Ginv", payload$Ginv)
@@ -2443,12 +2444,14 @@ hs_fit_julia_genomic_payload <- function(
       paste(
         "hsq_Ginvs = sparse(hsq_Ginv);",
         "hsq_genomic_provenance =",
-        "HSquared._genomic_precision_provenance(hsq_Ginv, hsq_ids);"
+        "HSquared._genomic_precision_provenance(hsq_Ginv, hsq_ids);",
+        "hsq_genomic_kernel = nothing;"
       )
     } else {
       paste(
         "hsq_Ginvs = sparse(hsq_Ginv);",
-        "hsq_genomic_provenance = nothing;"
+        "hsq_genomic_provenance = nothing;",
+        "hsq_genomic_kernel = nothing;"
       )
     }
   }
@@ -2466,6 +2469,8 @@ hs_fit_julia_genomic_payload <- function(
     paste(
       "hsq_boundary_result = HSquared._fit_ai_reml_genomic_boundary(",
       "hsq_spec;",
+      "provenance = hsq_genomic_provenance,",
+      "kernel = hsq_genomic_kernel,",
       "initial = (sigma_a2 = hsq_initial_sigma_a2,",
       "sigma_e2 = hsq_initial_sigma_e2),",
       "iterations = hsq_iterations);",
@@ -2629,7 +2634,7 @@ hs_v07_genomic_boundary_contract <- function() {
   list(
     doc46_commit = "fe96a147",
     doc46_sha256 = "283ab00bab3da925f0ac2916959efacaa7fb711c5da4dce09dd49ea568eef030",
-    julia_implementation_commit = "837d6155876352a6977318be32aba47a6923e399",
+    julia_implementation_commit = "47bba6da3d996db8a4655ffc8008cb7f4d131d19",
     boundary_epsilon = 1e-7,
     grid_step = 0.0025,
     derivative_delta = 1e-6,
