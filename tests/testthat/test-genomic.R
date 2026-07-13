@@ -541,6 +541,80 @@ test_that("genomic provenance normalizer enforces the frozen contract", {
   )
 })
 
+test_that("genomic boundary metadata distinguishes endpoint from MME representation", {
+  contract <- hsquared:::hs_v07_genomic_boundary_contract()
+  expect_identical(contract$doc46_commit, "fe96a147")
+  expect_identical(
+    contract$doc46_sha256,
+    "283ab00bab3da925f0ac2916959efacaa7fb711c5da4dce09dd49ea568eef030"
+  )
+  expect_identical(
+    contract$julia_implementation_commit,
+    "837d6155876352a6977318be32aba47a6923e399"
+  )
+  expect_identical(contract$candidate_id, "v07_genomic_closed_boundary_v1")
+  lower <- list(
+    status = "boundary_lower",
+    reason = "boundary_lower",
+    profile_ratio = 0,
+    numerical_ratio = 1e-7,
+    boundary_epsilon = 1e-7,
+    profile_loglik = -10,
+    lower_derivative_per_observation = -0.1,
+    upper_derivative_per_observation = -0.2
+  )
+  normalized <- hsquared:::hs_normalize_genomic_boundary(lower)
+  expect_identical(normalized$status, "boundary_lower")
+  expect_identical(normalized$profile_ratio, 0)
+  expect_identical(normalized$numerical_ratio, 1e-7)
+
+  upper <- lower
+  upper$status <- upper$reason <- "boundary_upper"
+  upper$profile_ratio <- 1
+  upper$numerical_ratio <- 1 - 1e-7
+  expect_identical(
+    hsquared:::hs_normalize_genomic_boundary(upper)$profile_ratio,
+    1
+  )
+
+  interior <- lower
+  interior$status <- "interior"
+  interior$reason <- "ai_interior"
+  interior$profile_ratio <- 0.4
+  interior$numerical_ratio <- 0.4
+  expect_identical(
+    hsquared:::hs_normalize_genomic_boundary(interior)$status,
+    "interior"
+  )
+
+  unresolved <- lapply(lower, function(x) NA)
+  unresolved$status <- "boundary_unresolved"
+  unresolved$reason <- "endpoint_pair_tie"
+  unresolved$boundary_epsilon <- 1e-7
+  expect_true(is.na(
+    hsquared:::hs_normalize_genomic_boundary(unresolved)$profile_ratio
+  ))
+
+  mutated <- lower
+  mutated$boundary_epsilon <- 1e-6
+  expect_error(
+    hsquared:::hs_normalize_genomic_boundary(mutated),
+    "epsilon drift"
+  )
+  mutated <- lower
+  mutated$profile_ratio <- 1e-7
+  expect_error(
+    hsquared:::hs_normalize_genomic_boundary(mutated),
+    "lower-boundary ratio contract drift"
+  )
+  mutated <- lower
+  mutated$status <- "ordinary_convergence"
+  expect_error(
+    hsquared:::hs_normalize_genomic_boundary(mutated),
+    "unknown genomic boundary status"
+  )
+})
+
 test_that("genomic ratio keeps term compatibility and fences uncertainty", {
   fit <- structure(
     list(

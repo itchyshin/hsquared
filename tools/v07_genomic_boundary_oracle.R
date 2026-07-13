@@ -690,9 +690,13 @@ v07_classify_oracle <- function(y, X, K, reverse_kkt = FALSE) {
     tie_tol &&
     max(candidates_ll[c("lower", "upper")]) + tie_tol >=
       candidates_ll[["interior"]]
+  lower_interior_tie <- refined_is_distinct &&
+    abs(candidates_ll[["lower"]] - candidates_ll[["interior"]]) <= tie_tol
+  upper_interior_tie <- refined_is_distinct &&
+    abs(candidates_ll[["upper"]] - candidates_ll[["interior"]]) <= tie_tol
   class <- "oracle_unresolved"
   if (
-    !endpoint_pair_tie &&
+    !endpoint_pair_tie && !lower_interior_tie &&
       candidates_ll[["lower"]] + tie_tol >=
         max(candidates_ll[c("interior", "upper")]) &&
       lower_kkt
@@ -700,7 +704,7 @@ v07_classify_oracle <- function(y, X, K, reverse_kkt = FALSE) {
     class <- "lower_boundary"
     ratio <- 0
   } else if (
-    !endpoint_pair_tie &&
+    !endpoint_pair_tie && !upper_interior_tie &&
       candidates_ll[["upper"]] + tie_tol >=
         max(candidates_ll[c("lower", "interior")]) &&
       upper_kkt

@@ -2452,16 +2452,32 @@ hs_fit_julia_genomic_payload <- function(
       )
     }
   }
+  rel <- payload$relationship
+  fit_cmd <- if (identical(rel, "genomic")) {
+    paste(
+      "hsq_boundary_result = HSquared._fit_ai_reml_genomic_boundary(",
+      "hsq_spec;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations);",
+      "hsq_fit = hsq_boundary_result.fit;"
+    )
+  } else {
+    paste(
+      "hsq_boundary_result = nothing;",
+      "hsq_fit = HSquared.fit_ai_reml(",
+      "hsq_spec;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations);"
+    )
+  }
   JuliaCall::julia_command(paste(
     relinv_cmd,
     "hsq_spec = HSquared.animal_model_spec(",
     "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
     "ids = hsq_ids, method = :REML);",
-    "hsq_fit = HSquared.fit_ai_reml(",
-    "hsq_spec;",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations);",
+    fit_cmd,
     "hsq_result = HSquared.result_payload(hsq_fit);"
   ))
   hs_julia_attach_standard_plot_data()
@@ -2478,7 +2494,15 @@ hs_fit_julia_genomic_payload <- function(
   } else {
     NULL
   }
-  rel <- payload$relationship
+  raw_boundary <- if (identical(payload$relationship, "genomic")) {
+    JuliaCall::julia_eval(paste0(
+      "Dict(String(k) => (getfield(hsq_boundary_result.boundary, k) === nothing ",
+      "? missing : getfield(hsq_boundary_result.boundary, k)) ",
+      "for k in keys(hsq_boundary_result.boundary))"
+    ))
+  } else {
+    NULL
+  }
   result <- hs_normalize_julia_result(raw, payload)
   result$variance_components$component[
     result$variance_components$component == "animal"
@@ -2494,8 +2518,10 @@ hs_fit_julia_genomic_payload <- function(
   )
   if (identical(rel, "genomic")) {
     provenance <- hs_normalize_genomic_provenance(raw_provenance)
+    boundary <- hs_normalize_genomic_boundary(raw_boundary)
     payload$relationship_provenance <- provenance
     result$relationship_provenance <- provenance
+    result$genomic_boundary <- boundary
     result$heritability$component <- "genomic_variance_ratio"
     result$heritability$relationship_scale <- provenance$relationship_scale
     result$heritability$relationship_source <- provenance$relationship_source
@@ -2503,11 +2529,23 @@ hs_fit_julia_genomic_payload <- function(
     result$heritability$allele_frequency_source <-
       provenance$allele_frequency_source
     result$heritability$ridge <- provenance$ridge
+    result$heritability$numerical_estimate <- result$heritability$estimate
+    if (!is.na(boundary$profile_ratio)) {
+      result$heritability$estimate <- boundary$profile_ratio
+    }
     # Genomic ratio uncertainty is not yet scale-labelled or separately
     # calibrated. Keep the engine's raw capability out of the public R result
     # until that contract is validated.
     result$heritability_interval <- NULL
     result$heritability_se <- NULL
+    if (boundary$status %in% c("boundary_lower", "boundary_upper")) {
+      result$breeding_values <- NULL
+      result$random_effects <- NULL
+      result$predictions <- NULL
+      result$prediction_error_variance <- NULL
+      result$reliability <- NULL
+      result$variance_component_se <- NULL
+    }
     if (!is.null(result$variance_component_se)) {
       result$variance_component_se$component[
         result$variance_component_se$component == "animal"
@@ -2523,6 +2561,67 @@ hs_fit_julia_genomic_payload <- function(
     payload = payload,
     result = result,
     engine = "HSquared.jl"
+  )
+}
+
+hs_normalize_genomic_boundary <- function(raw) {
+  raw <- hs_drop_julia_classes(raw)
+  if (is.data.frame(raw)) raw <- as.list(raw)
+  if (!is.list(raw)) {
+    stop("Internal bridge error: genomic boundary metadata is missing.", call. = FALSE)
+  }
+  scalar_character <- function(name) {
+    x <- raw[[name]]
+    if (is.null(x) || !length(x) || all(is.na(x))) NA_character_ else as.character(x[[1L]])
+  }
+  scalar_numeric <- function(name) {
+    x <- raw[[name]]
+    if (is.null(x) || !length(x) || all(is.na(x))) NA_real_ else as.numeric(x[[1L]])
+  }
+  out <- list(
+    status = scalar_character("status"),
+    reason = scalar_character("reason"),
+    profile_ratio = scalar_numeric("profile_ratio"),
+    numerical_ratio = scalar_numeric("numerical_ratio"),
+    boundary_epsilon = scalar_numeric("boundary_epsilon"),
+    profile_loglik = scalar_numeric("profile_loglik"),
+    lower_derivative_per_observation = scalar_numeric("lower_derivative_per_observation"),
+    upper_derivative_per_observation = scalar_numeric("upper_derivative_per_observation")
+  )
+  allowed <- c("boundary_lower", "boundary_upper", "interior", "interior_rescued", "boundary_unresolved")
+  if (is.na(out$status) || !out$status %in% allowed) {
+    stop("Internal bridge error: unknown genomic boundary status.", call. = FALSE)
+  }
+  if (!identical(out$boundary_epsilon, 1e-7)) {
+    stop("Internal bridge error: genomic boundary epsilon drift.", call. = FALSE)
+  }
+  resolved <- !identical(out$status, "boundary_unresolved")
+  required <- unlist(out[c("profile_ratio", "numerical_ratio", "profile_loglik",
+    "lower_derivative_per_observation", "upper_derivative_per_observation")])
+  if (resolved && any(!is.finite(required))) {
+    stop("Internal bridge error: resolved genomic boundary metadata is non-finite.", call. = FALSE)
+  }
+  if (identical(out$status, "boundary_lower") &&
+      (!identical(out$profile_ratio, 0) || !identical(out$numerical_ratio, 1e-7))) {
+    stop("Internal bridge error: lower-boundary ratio contract drift.", call. = FALSE)
+  }
+  if (identical(out$status, "boundary_upper") &&
+      (!identical(out$profile_ratio, 1) || !identical(out$numerical_ratio, 1 - 1e-7))) {
+    stop("Internal bridge error: upper-boundary ratio contract drift.", call. = FALSE)
+  }
+  out
+}
+
+hs_v07_genomic_boundary_contract <- function() {
+  list(
+    doc46_commit = "fe96a147",
+    doc46_sha256 = "283ab00bab3da925f0ac2916959efacaa7fb711c5da4dce09dd49ea568eef030",
+    julia_implementation_commit = "837d6155876352a6977318be32aba47a6923e399",
+    boundary_epsilon = 1e-7,
+    grid_step = 0.0025,
+    derivative_delta = 1e-6,
+    kkt_tolerance = 1e-8,
+    candidate_id = "v07_genomic_closed_boundary_v1"
   )
 }
 
