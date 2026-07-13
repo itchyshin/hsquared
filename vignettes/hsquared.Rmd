@@ -75,12 +75,28 @@ The parser currently accepts:
   with a pedigree component;
 - numeric Gaussian responses.
 
-Several terms beyond the default contract now fit through an opt-in,
-experimental engine path (`engine = "julia"`, not the default). The
+One narrow experimental genomic GREML grammar now auto-routes from the default
+fit path:
+
+```r
+y ~ fixed + genomic(1 | id, markers = M)
+y ~ fixed + genomic(1 | id, Ginv = Q)
+```
+
+Marker input uses sample-frequency, unweighted VanRaden method 1 with
+`K_lambda = G + 0.01I`; supplied `Ginv` is used unchanged and its construction
+details remain unknown. `heritability()` labels the result
+`genomic_variance_ratio` on the declared relationship scale, not ordinary
+pedigree heritability; genomic interval and ratio-SE accessors are unavailable.
+This activation remains partial/experimental and does not change
+`public_covered_count` (5).
+
+Several other terms fit through an opt-in experimental engine path
+(`engine = "julia"`, not the default). The
 common-environment leg of the two-effect model (`common_env()`) is **covered at
 validation scale**; the remaining opt-in terms each mirror a `partial`
-validation gate: `permanent()`, `maternal_genetic()`, `genomic()` (GREML or
-SNP-BLUP), `single_step()`, and the supplied-relationship primaries `relmat()`
+validation gate: `permanent()`, `maternal_genetic()`, genomic SNP-BLUP,
+`single_step()`, and the supplied-relationship primaries `relmat()`
 and `precision()` (REML-only, experimental, **not** covered — they do not change
 the covered-model count). See the "Fitting models" article for the opt-in calls.
 

@@ -5,10 +5,11 @@
 #' These functions provide readable formula vocabulary for genomic, single-step,
 #' marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 #' return `NULL`); they take meaning only inside an [hsquared()] formula.
-#' `genomic()` and `single_step()` now fit through an opt-in, experimental
-#' engine path (`engine = "julia"`, REML-only or supplied-variance, not the
-#' default, mirroring a `partial` validation gate): `genomic(1 | id, Ginv = Ginv)`
-#' or `genomic(1 | id, markers = M)` (GREML, or SNP-BLUP via
+#' `genomic()` now auto-routes a narrow Gaussian REML random-intercept model on
+#' the default fit path; the explicit `engine = "julia", target = "genomic"`
+#' spelling remains an alias. `single_step()` remains opt-in and experimental.
+#' Accepted genomic forms are `genomic(1 | id, Ginv = Ginv)` or
+#' `genomic(1 | id, markers = M)` (GREML, or SNP-BLUP via
 #' `target = "snp_blup"`), and `single_step(1 | id, Hinv = Hinv)` (a precomputed
 #' inverse) or `single_step(1 | id, pedigree = ped, markers = M)` (the engine
 #' constructs `H^-1` from the pedigree + genotyped-subset markers via
@@ -40,7 +41,7 @@ NULL
 
 #' @rdname genomic_markers
 #' @export
-genomic <- function(formula, G = NULL, Ginv = NULL, ...) {
+genomic <- function(formula, G = NULL, Ginv = NULL, markers = NULL, ...) {
   invisible(NULL)
 }
 
@@ -49,9 +50,10 @@ genomic <- function(formula, G = NULL, Ginv = NULL, ...) {
 #'   single-step `H^-1` *construction* path
 #'   (`single_step(1 | id, pedigree = ped, markers = M)`), in place of a
 #'   precomputed `Hinv`.
-#' @param markers A genotyped-subset marker matrix (rows named by genotyped id)
-#'   for the single-step construction path; the engine builds the genomic
-#'   relationship from it.
+#' @param markers An individual-by-marker numeric dosage matrix with rows named
+#'   by genotyped ID. For `genomic()`, the engine uses sample allele frequencies,
+#'   VanRaden method 1, and ridge `0.01`. For `single_step()`, this is the
+#'   genotyped-subset marker matrix used to construct the genomic relationship.
 #' @param group Animal-to-metafounder group labels for the future `H^Gamma`
 #'   single-step path; must be supplied together with `Gamma`.
 #' @param Gamma A supplied metafounder relationship matrix for the future

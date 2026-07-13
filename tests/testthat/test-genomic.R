@@ -1,6 +1,7 @@
-# Opt-in, experimental genomic GREML model: a single genomic random effect with
-# a user-supplied genomic relationship inverse (Ginv) instead of a pedigree.
-# Surfaces fit_ai_reml on a Ginv-based animal_model_spec. REML only.
+# v0.7 genomic GREML activation: a single genomic random effect from either a
+# supplied precision or the frozen sample-p VanRaden-1 marker construction.
+# Gaussian REML auto-routes on the default fit path; the explicit Julia target
+# remains an alias.
 
 hs_test_ginv <- function(ids) {
   n <- length(ids)
@@ -86,17 +87,52 @@ test_that("genomic is a valid opt-in julia target", {
   expect_equal(hsquared:::hs_validate_julia_target("genomic"), "genomic")
 })
 
-test_that("the default engine = \"fit\" rejects a genomic() formula", {
+test_that("the default fit path auto-routes a genomic() formula", {
   ids <- paste0("g", 1:3)
   Ginv <- hs_test_ginv(ids)
   dat <- data.frame(y = c(1, 2, 3), id = ids)
+
+  spec <- suppressMessages(hsquared(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(engine = "validate")
+  ))
+  expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
+
+  if (!hsquared:::hs_julia_bridge_available()) {
+    default_error <- tryCatch(
+      hsquared(
+        y ~ genomic(1 | id, Ginv = Ginv),
+        data = dat,
+        family = stats::gaussian()
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    explicit_error <- tryCatch(
+      hsquared(
+        y ~ genomic(1 | id, Ginv = Ginv),
+        data = dat,
+        family = stats::gaussian(),
+        control = hs_control(
+          engine = "julia",
+          engine_control = list(target = "genomic")
+        )
+      ),
+      error = function(e) conditionMessage(e)
+    )
+    expect_false(grepl("experimental and opt-in", default_error, fixed = TRUE))
+    expect_false(grepl("experimental and opt-in", explicit_error, fixed = TRUE))
+  }
+
   expect_error(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
       data = dat,
-      family = stats::gaussian()
+      family = stats::gaussian(),
+      REML = FALSE
     ),
-    "experimental and opt-in",
+    "REML = FALSE",
     fixed = TRUE
   )
 })
@@ -109,7 +145,7 @@ test_that("the genomic bridge requires an internal payload", {
   )
 })
 
-test_that("hsquared fits the opt-in genomic GREML model", {
+test_that("default and explicit supplied-Ginv routes are identical [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -136,6 +172,11 @@ test_that("hsquared fits the opt-in genomic GREML model", {
   fit <- hsquared(
     y ~ genomic(1 | id, Ginv = Ginv),
     data = dat,
+    family = stats::gaussian()
+  )
+  fit_explicit <- hsquared(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = dat,
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
@@ -146,11 +187,32 @@ test_that("hsquared fits the opt-in genomic GREML model", {
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "genomic")
   vc <- variance_components(fit)
+  expect_equal(vc, variance_components(fit_explicit), tolerance = 1e-10)
   expect_equal(vc$component, c("genomic", "residual"))
   expect_true(all(is.finite(vc$estimate)) && all(vc$estimate > 0))
-  h2 <- heritability(fit)$estimate
+  ratio <- heritability(fit)
+  expect_equal(ratio, heritability(fit_explicit), tolerance = 1e-10)
+  expect_equal(ratio$term, "genomic")
+  expect_equal(ratio$component, "genomic_variance_ratio")
+  expect_equal(ratio$relationship_source, "supplied_Ginv")
+  expect_equal(ratio$relationship_scale, "inverse_of_supplied_precision")
+  expect_true(is.na(ratio$relationship_method))
+  expect_true(is.na(ratio$allele_frequency_source))
+  expect_true(is.na(ratio$ridge))
+  h2 <- ratio$estimate
   expect_true(is.finite(h2) && h2 > 0 && h2 < 1)
   expect_equal(nrow(breeding_values(fit)), na)
+  expect_equal(breeding_values(fit)$id, ids)
+  expect_equal(breeding_values(fit_explicit)$id, ids)
+  expect_equal(
+    breeding_values(fit),
+    breeding_values(fit_explicit),
+    tolerance = 1e-10
+  )
+  expect_match(
+    fit$result$relationship_provenance$precision_fingerprint,
+    "^[0-9a-f]{64}$"
+  )
   expect_equal(
     fit_diagnostics(fit)$value[
       fit_diagnostics(fit)$metric == "variance_components_source"
@@ -200,6 +262,23 @@ test_that("marker-based genomic builds a markers bridge payload", {
   expect_null(payload$Ginv)
   expect_true(is.matrix(payload$markers))
   expect_equal(dim(payload$markers), c(5L, 20L))
+  expect_equal(payload$ridge, 0.01)
+  expect_equal(
+    payload$relationship_provenance[c(
+      "relationship_source",
+      "relationship_method",
+      "allele_frequency_source",
+      "ridge",
+      "relationship_scale"
+    )],
+    list(
+      relationship_source = "markers",
+      relationship_method = "vanraden1",
+      allele_frequency_source = "sample",
+      ridge = 0.01,
+      relationship_scale = "K_lambda"
+    )
+  )
 })
 
 test_that("supplied-Ginv genomic still builds a supplied bridge payload", {
@@ -215,9 +294,18 @@ test_that("supplied-Ginv genomic still builds a supplied bridge payload", {
   )
   payload <- hsquared:::hs_build_bridge_payload(spec)
 
-  expect_equal(payload$relationship_source, "supplied")
+  expect_equal(payload$relationship_source, "supplied_Ginv")
   expect_null(payload$markers)
   expect_true(is.matrix(payload$Ginv))
+  expect_true(is.na(payload$ridge))
+  expect_equal(
+    payload$relationship_provenance$relationship_scale,
+    "inverse_of_supplied_precision"
+  )
+  expect_true(is.na(payload$relationship_provenance$relationship_method))
+  expect_true(is.na(payload$relationship_provenance$allele_frequency_source))
+  expect_true(is.na(payload$relationship_provenance$ridge))
+  expect_true(is.na(payload$relationship_provenance$scale_denominator))
 })
 
 test_that("genomic() takes exactly one of Ginv or markers", {
@@ -240,7 +328,7 @@ test_that("genomic() takes exactly one of Ginv or markers", {
 
 test_that("genomic() marker ids must cover the data ids", {
   ids <- paste0("g", 1:3)
-  M <- matrix(0, 3, 5)
+  M <- matrix(c(0, 1, 2, 1, 0, 2, 2, 1, 0, 0, 2, 1, 1, 2, 0), 3, 5)
   rownames(M) <- ids
   dat <- data.frame(y = c(1, 2), id = c("g1", "ghost"))
   expect_error(
@@ -251,6 +339,270 @@ test_that("genomic() marker ids must cover the data ids", {
       REML = TRUE
     ),
     "not in the `markers`",
+    fixed = TRUE
+  )
+})
+
+test_that("marker validation freezes dosage, names, and polymorphism", {
+  ids <- paste0("g", 1:3)
+  M <- matrix(c(0, 1, 2, 0, 2, 1), 3, 2)
+  rownames(M) <- ids
+
+  # Column names remain optional for backward compatibility.
+  expect_equal(hsquared:::hs_validate_genomic_markers(M), M)
+
+  bad <- M
+  bad[1, 1] <- NA_real_
+  expect_error(
+    hsquared:::hs_validate_genomic_markers(bad),
+    "finite, non-missing",
+    fixed = TRUE
+  )
+  bad <- M
+  bad[1, 1] <- 2.1
+  expect_error(
+    hsquared:::hs_validate_genomic_markers(bad),
+    "[0, 2]",
+    fixed = TRUE
+  )
+  bad <- M
+  rownames(bad)[1] <- ""
+  expect_error(
+    hsquared:::hs_validate_genomic_markers(bad),
+    "nonempty row names",
+    fixed = TRUE
+  )
+  bad <- M
+  colnames(bad) <- c("m", "m")
+  expect_error(
+    hsquared:::hs_validate_genomic_markers(bad),
+    "column names",
+    fixed = TRUE
+  )
+  monomorphic <- matrix(0, 3, 4, dimnames = list(ids, NULL))
+  expect_error(
+    hsquared:::hs_validate_genomic_markers(monomorphic),
+    "denominator `k` must be positive",
+    fixed = TRUE
+  )
+})
+
+test_that("supplied genomic precision is finite, symmetric, and positive definite", {
+  ids <- paste0("g", 1:3)
+  Q <- hs_test_ginv(ids)
+  expect_equal(hsquared:::hs_validate_genomic_ginv(Q), Q)
+
+  bad <- Q
+  bad[1, 2] <- bad[1, 2] + 0.1
+  expect_error(
+    hsquared:::hs_validate_genomic_ginv(bad),
+    "must be symmetric",
+    fixed = TRUE
+  )
+  bad <- diag(c(1, 1, -1))
+  dimnames(bad) <- list(ids, ids)
+  expect_error(
+    hsquared:::hs_validate_genomic_ginv(bad),
+    "positive definite",
+    fixed = TRUE
+  )
+  bad <- Q
+  bad[1, 1] <- Inf
+  expect_error(
+    hsquared:::hs_validate_genomic_ginv(bad),
+    "finite, non-missing",
+    fixed = TRUE
+  )
+})
+
+test_that("genomic payload preserves repeated records and extra genotyped ids", {
+  ids <- paste0("g", 1:4)
+  M <- matrix(
+    c(
+      0,
+      1,
+      2,
+      0,
+      2,
+      1,
+      0,
+      1,
+      0,
+      2,
+      1,
+      2
+    ),
+    4,
+    3
+  )
+  rownames(M) <- ids
+  dat <- data.frame(
+    y = c(1, 2, 3, 4),
+    id = c("g2", "g1", "g2", "g1")
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  expect_equal(payload$ids, ids)
+  expect_equal(payload$metadata$observed_ids, dat$id)
+  expect_equal(payload$metadata$observed_id_index, c(2L, 1L, 2L, 1L))
+  expect_equal(dim(payload$Z), c(4L, 4L))
+  expect_equal(
+    unname(as.matrix(payload$Z)),
+    rbind(c(0, 1, 0, 0), c(1, 0, 0, 0), c(0, 1, 0, 0), c(1, 0, 0, 0))
+  )
+})
+
+test_that("genomic grammar rejects knobs and additional random effects", {
+  ids <- paste0("g", 1:3)
+  M <- matrix(c(0, 1, 2, 2, 1, 0), 3, 2, dimnames = list(ids, NULL))
+  dat <- data.frame(y = 1:3, id = ids, pen = letters[1:3])
+
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ genomic(1 | id, markers = M, ridge = 0.02),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "`ridge`",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ genomic(1 | id, markers = M) + permanent(1 | pen),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "requires an `animal()` primary",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared(
+      y ~ genomic(1 | id, markers = M),
+      data = dat,
+      family = stats::poisson()
+    ),
+    "not fitted on this path",
+    fixed = TRUE
+  )
+})
+
+test_that("genomic provenance normalizer enforces the frozen contract", {
+  sha <- function(letter) paste(rep(letter, 64), collapse = "")
+  marker <- list(
+    relationship_source = "markers",
+    relationship_method = "vanraden1",
+    allele_frequency_source = "sample",
+    ridge = 0.01,
+    scale_denominator = 12.5,
+    relationship_scale = "K_lambda",
+    id_order_fingerprint = sha("a"),
+    marker_content_fingerprint = sha("b"),
+    kernel_fingerprint = sha("c"),
+    precision_fingerprint = sha("d")
+  )
+  expect_equal(
+    hsquared:::hs_normalize_genomic_provenance(marker),
+    marker
+  )
+
+  mutated <- marker
+  mutated$ridge <- 0.02
+  expect_error(
+    hsquared:::hs_normalize_genomic_provenance(mutated),
+    "frozen VanRaden-1",
+    fixed = TRUE
+  )
+  mutated <- marker
+  mutated$kernel_fingerprint <- "not-a-sha"
+  expect_error(
+    hsquared:::hs_normalize_genomic_provenance(mutated),
+    "lowercase SHA-256",
+    fixed = TRUE
+  )
+  for (field in c("relationship_source", "relationship_method", "ridge")) {
+    mutated <- marker
+    mutated[[field]] <- if (identical(field, "ridge")) NA_real_ else NA_character_
+    expect_error(
+      hsquared:::hs_normalize_genomic_provenance(mutated),
+      "Internal bridge error",
+      fixed = TRUE
+    )
+  }
+  mutated <- marker
+  mutated$relationship_source <- "bogus"
+  expect_error(
+    hsquared:::hs_normalize_genomic_provenance(mutated),
+    "source must be exactly",
+    fixed = TRUE
+  )
+
+  supplied <- list(
+    relationship_source = "supplied_Ginv",
+    relationship_method = NA_character_,
+    allele_frequency_source = NA_character_,
+    ridge = NA_real_,
+    scale_denominator = NA_real_,
+    relationship_scale = "inverse_of_supplied_precision",
+    id_order_fingerprint = sha("e"),
+    marker_content_fingerprint = NA_character_,
+    kernel_fingerprint = NA_character_,
+    precision_fingerprint = sha("f")
+  )
+  expect_equal(
+    hsquared:::hs_normalize_genomic_provenance(supplied),
+    supplied
+  )
+  mutated <- supplied
+  mutated$ridge <- 0.01
+  expect_error(
+    hsquared:::hs_normalize_genomic_provenance(mutated),
+    "must leave its construction",
+    fixed = TRUE
+  )
+})
+
+test_that("genomic ratio keeps term compatibility and fences uncertainty", {
+  fit <- structure(
+    list(
+      spec = list(target = "genomic"),
+      result = list(
+        heritability = data.frame(
+          term = "genomic",
+          component = "genomic_variance_ratio",
+          estimate = 0.4,
+          relationship_scale = "K_lambda",
+          relationship_source = "markers",
+          relationship_method = "vanraden1",
+          allele_frequency_source = "sample",
+          ridge = 0.01
+        ),
+        heritability_interval = data.frame(lower = 0.2, upper = 0.6),
+        heritability_se = 0.1
+      )
+    ),
+    class = "hsquared_fit"
+  )
+
+  out <- heritability(fit)
+  expect_equal(out$term, "genomic")
+  expect_equal(out$component, "genomic_variance_ratio")
+  expect_equal(out$relationship_scale, "K_lambda")
+  expect_error(
+    heritability_interval(fit),
+    "not available for genomic fits",
+    fixed = TRUE
+  )
+  expect_error(
+    heritability_standard_error(fit),
+    "not available for genomic fits",
     fixed = TRUE
   )
 })
@@ -370,7 +722,7 @@ test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", 
   )
 })
 
-test_that("hsquared fits the opt-in genomic model from a marker matrix", {
+test_that("marker, explicit alias, and exact supplied-Q routes agree [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -383,12 +735,25 @@ test_that("hsquared fits the opt-in genomic model from a marker matrix", {
   M <- matrix(stats::rbinom(na * 80, 2, 0.3), na, 80)
   rownames(M) <- ids
 
-  n <- 30
-  rec <- rep(ids, length.out = n)
-  dat <- data.frame(y = 3 + stats::rnorm(n, 0, 1), id = rec)
+  # Eight phenotyped individuals, four repeated, and two additional genotyped
+  # individuals without records. Include a nonconstant fixed covariate so this
+  # live identity gate exercises X and Z marshalling together.
+  record_rows <- c(seq_len(8), seq_len(4))
+  rec <- ids[record_rows]
+  x <- seq(-1, 1, length.out = length(rec))
+  dat <- data.frame(
+    y = 3 + 0.4 * x + stats::rnorm(length(rec), 0, 1),
+    x = x,
+    id = rec
+  )
 
   fit <- hsquared(
-    y ~ genomic(1 | id, markers = M),
+    y ~ x + genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian()
+  )
+  fit_explicit <- hsquared(
+    y ~ x + genomic(1 | id, markers = M),
     data = dat,
     family = stats::gaussian(),
     control = hs_control(
@@ -400,7 +765,164 @@ test_that("hsquared fits the opt-in genomic model from a marker matrix", {
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "genomic")
   vc <- variance_components(fit)
+  expect_equal(vc, variance_components(fit_explicit), tolerance = 1e-10)
   expect_equal(vc$component, c("genomic", "residual"))
   expect_true(all(is.finite(vc$estimate)) && all(vc$estimate > 0))
   expect_equal(nrow(breeding_values(fit)), na)
+  expect_equal(breeding_values(fit)$id, ids)
+  expect_equal(breeding_values(fit_explicit)$id, ids)
+  ratio <- heritability(fit)
+  expect_equal(ratio$term, "genomic")
+  expect_equal(ratio$component, "genomic_variance_ratio")
+  expect_equal(ratio$relationship_source, "markers")
+  expect_equal(ratio$relationship_method, "vanraden1")
+  expect_equal(ratio$allele_frequency_source, "sample")
+  expect_equal(ratio$ridge, 0.01)
+
+  # Reuse the engine's exact frozen construction as a supplied precision. This
+  # proves the two R routes reach the same supplied-Q estimator and the same
+  # canonical precision fingerprint.
+  JuliaCall::julia_assign("hsq_test_markers", unname(M))
+  JuliaCall::julia_assign("hsq_test_ids", ids)
+  JuliaCall::julia_command(paste(
+    "hsq_test_activation = HSquared._genomic_activation_construction(",
+    "hsq_test_markers, hsq_test_ids; marker_names=nothing, ridge=0.01);"
+  ))
+  Q <- JuliaCall::julia_eval("hsq_test_activation.Q")
+  dimnames(Q) <- list(ids, ids)
+  fit_q <- hsquared(
+    y ~ x + genomic(1 | id, Ginv = Q),
+    data = dat,
+    family = stats::gaussian()
+  )
+
+  expect_equal(breeding_values(fit_q)$id, ids)
+
+  expect_equal(
+    variance_components(fit),
+    variance_components(fit_q),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    heritability(fit)$estimate,
+    heritability(fit_q)$estimate,
+    tolerance = 1e-8
+  )
+  expect_equal(fixef(fit), fixef(fit_q), tolerance = 1e-8)
+  expect_equal(
+    breeding_values(fit)$value,
+    breeding_values(fit_q)$value,
+    tolerance = 1e-8
+  )
+  expect_equal(
+    fit$result$relationship_provenance$precision_fingerprint,
+    fit_q$result$relationship_provenance$precision_fingerprint
+  )
+})
+
+test_that("frozen activation fixture matches base R and both public routes [live]", {
+  testthat::skip_on_cran()
+  project <- hsquared:::hs_default_julia_project()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(project),
+    "JuliaCall, Julia, and local HSquared.jl are required for live fixture parity."
+  )
+  fixture <- file.path(
+    project,
+    "test",
+    "fixtures",
+    "genomic_public_activation_target"
+  )
+  testthat::skip_if_not(
+    dir.exists(fixture),
+    "The HSquared.jl genomic activation fixture is required."
+  )
+
+  marker_frame <- utils::read.csv(
+    file.path(fixture, "markers.csv"),
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  ids <- marker_frame$id
+  M <- as.matrix(marker_frame[, -1L, drop = FALSE])
+  storage.mode(M) <- "double"
+  rownames(M) <- ids
+  dat <- utils::read.csv(
+    file.path(fixture, "phenotypes.csv"),
+    stringsAsFactors = FALSE
+  )
+
+  # Independent base-R construction: no package or Julia construction helper.
+  p <- colMeans(M) / 2
+  W <- sweep(M, 2L, 2 * p, "-")
+  k <- 2 * sum(p * (1 - p))
+  G <- tcrossprod(W) / k
+  K <- G + diag(0.01, nrow(G))
+  Q <- solve(K)
+  dimnames(Q) <- list(ids, ids)
+
+  hsquared:::hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_fixture_markers", unname(M))
+  JuliaCall::julia_assign("hsq_fixture_ids", ids)
+  JuliaCall::julia_assign("hsq_fixture_marker_names", colnames(M))
+  JuliaCall::julia_command(paste(
+    "hsq_fixture_construction = HSquared._genomic_activation_construction(",
+    "hsq_fixture_markers, hsq_fixture_ids;",
+    "marker_names=hsq_fixture_marker_names, ridge=0.01);"
+  ))
+  Q_julia <- JuliaCall::julia_eval("hsq_fixture_construction.Q")
+  expect_lte(max(abs(Q - Q_julia)), 1e-10)
+  dimnames(Q_julia) <- list(ids, ids)
+
+  fit_markers <- hsquared(
+    y ~ x + genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian()
+  )
+  fit_q_base_r <- hsquared(
+    y ~ x + genomic(1 | id, Ginv = Q),
+    data = dat,
+    family = stats::gaussian()
+  )
+  fit_q <- hsquared(
+    y ~ x + genomic(1 | id, Ginv = Q_julia),
+    data = dat,
+    family = stats::gaussian()
+  )
+
+  expect_equal(
+    variance_components(fit_markers),
+    variance_components(fit_q),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    variance_components(fit_markers),
+    variance_components(fit_q_base_r),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    heritability(fit_markers)$estimate,
+    heritability(fit_q)$estimate,
+    tolerance = 1e-8
+  )
+  expect_equal(fixef(fit_markers), fixef(fit_q), tolerance = 1e-8)
+  expect_gte(
+    stats::cor(
+      breeding_values(fit_markers)$value,
+      breeding_values(fit_q)$value
+    ),
+    0.99999999
+  )
+  expect_lte(
+    max(abs(
+      breeding_values(fit_markers)$value - breeding_values(fit_q)$value
+    )),
+    1e-8
+  )
+  expect_equal(breeding_values(fit_markers)$id, ids)
+  expect_equal(breeding_values(fit_q)$id, ids)
+  expect_equal(
+    fit_markers$result$relationship_provenance$precision_fingerprint,
+    fit_q$result$relationship_provenance$precision_fingerprint
+  )
 })

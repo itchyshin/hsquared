@@ -33,9 +33,10 @@ Current default-fit limits:
 - Gaussian identity-link response only;
 - `cov =`, long-format trait syntax, marker scans, selfing, QTL, and
   non-Gaussian syntax aborts before marshalling;
-- repeatability, two-effect, genomic, single-step, SNP-BLUP, and multivariate
-  models are parsed only through opt-in experimental targets, not the default
-  v0.1 fit path.
+- the narrow genomic random-intercept forms
+  `genomic(1 | id, markers = M)` and `genomic(1 | id, Ginv = Q)` auto-route on
+  the default fit path; repeatability, two-effect, single-step, SNP-BLUP, and
+  multivariate models remain explicit experimental targets.
 
 Current bridge-payload notes:
 
@@ -44,15 +45,17 @@ Current bridge-payload notes:
 - pedigree IDs are normalized to parent-before-offspring order;
 - the payload records parent indices for Julia-side sparse `Ainv`
   construction;
-- the default fit path is the v0.1 univariate Gaussian animal model; genomic,
-  repeatability, two-effect, SNP-BLUP, and multivariate paths are opt-in and
-  experimental; non-Gaussian, QTL/GWAS/eQTL, structured covariance grammar, and
-  unusual inheritance remain planned.
+- the default fit path supports the v0.1 pedigree animal model and the narrow
+  v0.7 genomic GREML activation; repeatability, two-effect, SNP-BLUP,
+  single-step, and multivariate paths remain explicit experimental targets;
+  non-Gaussian, QTL/GWAS/eQTL, structured covariance grammar, and unusual
+  inheritance remain planned.
 
 ## Later Relationship Terms
 
 ```r
 genomic(1 | id, Ginv = Ginv)
+genomic(1 | id, markers = M)
 single_step(1 | id, Hinv = Hinv)
 single_step(1 | id, pedigree = ped, markers = M)
 single_step(1 | id, pedigree = ped, markers = M, group = group, Gamma = Gamma)
@@ -71,15 +74,26 @@ relmat(1 | id, K = custom_K)
 precision(1 | id, Q = custom_Q)
 ```
 
-Some later markers are now opt-in experimental (`genomic()`, the supplied-`Hinv`
-and constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and
+The two univariate Gaussian REML `genomic()` forms above now auto-route on the
+default path. `markers = M` means sample-frequency, unweighted VanRaden method
+1 with `K_lambda = G + 0.01I`; supplied `Ginv` is fitted unchanged and its
+construction method, allele-frequency base, ridge, and denominator remain
+unknown. The explicit `engine = "julia", target = "genomic"` spelling is a
+backward-compatible alias. The returned coefficient is labelled
+`genomic_variance_ratio` on the declared relationship scale, not ordinary
+pedigree heritability; genomic ratio intervals and standard errors are not
+available.
+
+Other later markers remain opt-in experimental (the supplied-`Hinv` and
+constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and
 `maternal_genetic()` in their gated targets). `single_step(..., group =, Gamma =)`
 is an opt-in experimental supplied-`Gamma` `H^Gamma` single-step path through
 `target = "metafounder_single_step"`; `Gamma` is supplied, not estimated.
 `metafounder(..., group =, Gamma =)` is an opt-in experimental animal-only
 supplied-variance `A^Gamma` path through `target = "metafounder"`; `Gamma` and
-the variance components are supplied, not estimated. None of the later markers
-changes the default v0.1 animal-model fit path.
+the variance components are supplied, not estimated. Apart from the frozen
+genomic activation above, none of the later markers changes the default fit
+path.
 
 ## Later Covariance Grammar
 

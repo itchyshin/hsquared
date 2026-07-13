@@ -2417,17 +2417,40 @@ hs_fit_julia_genomic_payload <- function(
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
   if (from_markers) {
-    # Build the genomic relationship inverse from the marker matrix in Julia.
+    # Build the frozen sample-p VanRaden-1 relationship and its regularized
+    # precision in Julia. The engine owns the canonical construction metadata
+    # and SHA-256 provenance fingerprints; R carries them unchanged.
     JuliaCall::julia_assign("hsq_markers", payload$markers)
     JuliaCall::julia_assign("hsq_ridge", payload$ridge)
+    if (is.null(payload$marker_names)) {
+      marker_names_cmd <- "hsq_marker_names = nothing;"
+    } else {
+      JuliaCall::julia_assign("hsq_marker_names", payload$marker_names)
+      marker_names_cmd <- ""
+    }
     relinv_cmd <- paste(
-      "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
-      "hsq_Ginvs = sparse(HSquared.genomic_relationship_inverse(",
-      "hsq_G; ridge = hsq_ridge));"
+      marker_names_cmd,
+      "hsq_genomic_construction =",
+      "HSquared._genomic_activation_construction(",
+      "hsq_markers, hsq_ids; marker_names = hsq_marker_names,",
+      "ridge = hsq_ridge);",
+      "hsq_Ginvs = sparse(hsq_genomic_construction.Q);",
+      "hsq_genomic_provenance = hsq_genomic_construction.provenance;"
     )
   } else {
     JuliaCall::julia_assign("hsq_Ginv", payload$Ginv)
-    relinv_cmd <- "hsq_Ginvs = sparse(hsq_Ginv);"
+    relinv_cmd <- if (identical(payload$relationship, "genomic")) {
+      paste(
+        "hsq_Ginvs = sparse(hsq_Ginv);",
+        "hsq_genomic_provenance =",
+        "HSquared._genomic_precision_provenance(hsq_Ginv, hsq_ids);"
+      )
+    } else {
+      paste(
+        "hsq_Ginvs = sparse(hsq_Ginv);",
+        "hsq_genomic_provenance = nothing;"
+      )
+    }
   }
   JuliaCall::julia_command(paste(
     relinv_cmd,
@@ -2446,6 +2469,15 @@ hs_fit_julia_genomic_payload <- function(
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
+  raw_provenance <- if (identical(payload$relationship, "genomic")) {
+    JuliaCall::julia_eval(paste0(
+      "Dict(String(k) => (getfield(hsq_genomic_provenance, k) === nothing ",
+      "? missing : getfield(hsq_genomic_provenance, k)) ",
+      "for k in keys(hsq_genomic_provenance))"
+    ))
+  } else {
+    NULL
+  }
   rel <- payload$relationship
   result <- hs_normalize_julia_result(raw, payload)
   result$variance_components$component[
@@ -2460,6 +2492,28 @@ hs_fit_julia_genomic_payload <- function(
     rel,
     "_ai_reml"
   )
+  if (identical(rel, "genomic")) {
+    provenance <- hs_normalize_genomic_provenance(raw_provenance)
+    payload$relationship_provenance <- provenance
+    result$relationship_provenance <- provenance
+    result$heritability$component <- "genomic_variance_ratio"
+    result$heritability$relationship_scale <- provenance$relationship_scale
+    result$heritability$relationship_source <- provenance$relationship_source
+    result$heritability$relationship_method <- provenance$relationship_method
+    result$heritability$allele_frequency_source <-
+      provenance$allele_frequency_source
+    result$heritability$ridge <- provenance$ridge
+    # Genomic ratio uncertainty is not yet scale-labelled or separately
+    # calibrated. Keep the engine's raw capability out of the public R result
+    # until that contract is validated.
+    result$heritability_interval <- NULL
+    result$heritability_se <- NULL
+    if (!is.null(result$variance_component_se)) {
+      result$variance_component_se$component[
+        result$variance_component_se$component == "animal"
+      ] <- "genomic"
+    }
+  }
   hs_new_fit(
     spec = list(
       method = "REML",
@@ -2470,6 +2524,112 @@ hs_fit_julia_genomic_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+}
+
+hs_normalize_genomic_provenance <- function(raw) {
+  raw <- hs_drop_julia_classes(raw)
+  if (is.data.frame(raw)) {
+    raw <- as.list(raw)
+  }
+  if (!is.list(raw)) {
+    stop(
+      "Internal bridge error: genomic relationship provenance is missing.",
+      call. = FALSE
+    )
+  }
+
+  value <- function(name, type = c("character", "numeric")) {
+    type <- match.arg(type)
+    x <- raw[[name]]
+    if (is.null(x) || length(x) < 1L || all(is.na(x))) {
+      return(if (identical(type, "numeric")) NA_real_ else NA_character_)
+    }
+    if (identical(type, "numeric")) {
+      as.numeric(x[[1L]])
+    } else {
+      as.character(x[[1L]])
+    }
+  }
+
+  out <- list(
+    relationship_source = value("relationship_source"),
+    relationship_method = value("relationship_method"),
+    allele_frequency_source = value("allele_frequency_source"),
+    ridge = value("ridge", "numeric"),
+    scale_denominator = value("scale_denominator", "numeric"),
+    relationship_scale = value("relationship_scale"),
+    id_order_fingerprint = value("id_order_fingerprint"),
+    marker_content_fingerprint = value("marker_content_fingerprint"),
+    kernel_fingerprint = value("kernel_fingerprint"),
+    precision_fingerprint = value("precision_fingerprint")
+  )
+
+  if (
+    length(out$relationship_source) != 1L ||
+      is.na(out$relationship_source) ||
+      !out$relationship_source %in% c("markers", "supplied_Ginv")
+  ) {
+    stop(
+      "Internal bridge error: genomic provenance source must be exactly ",
+      "`markers` or `supplied_Ginv`.",
+      call. = FALSE
+    )
+  }
+
+  required <- c("id_order_fingerprint", "precision_fingerprint")
+  if (identical(out$relationship_source, "markers")) {
+    required <- c(required, "marker_content_fingerprint", "kernel_fingerprint")
+  }
+  valid_sha256 <- function(x) {
+    length(x) == 1L && !is.na(x) && grepl("^[0-9a-f]{64}$", x)
+  }
+  if (!all(vapply(out[required], valid_sha256, logical(1L)))) {
+    stop(
+      "Internal bridge error: genomic provenance fingerprints must be ",
+      "lowercase SHA-256 values.",
+      call. = FALSE
+    )
+  }
+  if (
+    identical(out$relationship_source, "markers") &&
+      (is.na(out$relationship_method) ||
+        is.na(out$allele_frequency_source) ||
+        !is.finite(out$ridge) ||
+        !is.finite(out$scale_denominator) ||
+        !identical(out$relationship_method, "vanraden1") ||
+        !identical(out$allele_frequency_source, "sample") ||
+        !isTRUE(all.equal(out$ridge, 0.01)) ||
+        !is.finite(out$scale_denominator) ||
+        out$scale_denominator <= 0 ||
+        !identical(out$relationship_scale, "K_lambda"))
+  ) {
+    stop(
+      "Internal bridge error: marker provenance does not match the frozen ",
+      "VanRaden-1/sample-p/ridge-0.01 contract.",
+      call. = FALSE
+    )
+  }
+  if (
+    identical(out$relationship_source, "supplied_Ginv") &&
+      (!is.na(out$relationship_method) ||
+        !is.na(out$allele_frequency_source) ||
+        !is.na(out$ridge) ||
+        !is.na(out$scale_denominator) ||
+        !is.na(out$marker_content_fingerprint) ||
+        !is.na(out$kernel_fingerprint) ||
+        !identical(
+          out$relationship_scale,
+          "inverse_of_supplied_precision"
+        ))
+  ) {
+    stop(
+      "Internal bridge error: supplied-Ginv provenance must leave its ",
+      "construction method, allele frequencies, ridge, denominator, and ",
+      "kernel unknown.",
+      call. = FALSE
+    )
+  }
+  out
 }
 
 # Opt-in, experimental single-step H^-1 CONSTRUCTION estimator. Builds Ainv + dense

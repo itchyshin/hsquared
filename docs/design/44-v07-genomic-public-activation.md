@@ -441,11 +441,13 @@ Run nine cells:
 
 For each cell and seed, draw population minor-allele frequencies
 `pi_j ~ Uniform(0.05, 0.5)` and independent hard-call genotypes
-`M_ij ~ Binomial(2, pi_j)`. Construct the fitted kernel from realized sample
-frequencies `p_hat_j = sum_i M_ij/(2n)`, not from `pi_j`. Retain realized
-monomorphic columns because they contribute zero to `W` and `k`; if the entire
-panel has `k <= 0`, classify the seed as an input/convergence failure and do not
-redraw it. Set `(sigma_g2, sigma_e2) = (r_G, 1-r_G)` for
+`M_ij ~ Binomial(2, pi_j)`. Remove realized monomorphic columns, then construct
+the fitted kernel from realized sample frequencies
+`p_hat_j = sum_i M_ij/(2n)`, not from `pi_j`. This recovery-only preprocessing
+does not change the public input contract in Section 4.1, where monomorphic
+columns may be supplied and contribute zero. If removal leaves no columns or
+the retained panel has `k <= 0`, classify the seed as an input/convergence
+failure and do not redraw it. Set `(sigma_g2, sigma_e2) = (r_G, 1-r_G)` for
 `r_G in {0.2,0.5,0.8}`. “Total coefficient variance one” refers only to
 `sigma_g2 + sigma_e2 = 1`, not average marginal phenotypic variance. Build the
 exact `K_lambda = G(M,p_hat)+0.01I`, draw

@@ -1525,7 +1525,7 @@ hs_parse_relinv_primary_call <- function(call, data, env, model_data = NULL) {
     env,
     what = arg_used
   )
-  relinv <- hs_validate_genomic_ginv(relinv)
+  relinv <- hs_validate_genomic_ginv(relinv, what = arg_used)
   relinv_ids <- rownames(relinv)
   unknown <- setdiff(unique(observed_ids), relinv_ids)
   if (length(unknown) > 0L) {
@@ -2012,26 +2012,52 @@ hs_eval_genomic_ginv <- function(expr, data, env, what = "Ginv") {
   )
 }
 
-hs_validate_genomic_ginv <- function(ginv) {
+hs_validate_genomic_ginv <- function(ginv, what = "Ginv") {
   if (inherits(ginv, "Matrix")) {
     ginv <- as.matrix(ginv)
   }
   if (!is.matrix(ginv) || !is.numeric(ginv)) {
-    stop("`Ginv` must be a numeric matrix.", call. = FALSE)
+    stop("`", what, "` must be a numeric matrix.", call. = FALSE)
   }
-  if (nrow(ginv) != ncol(ginv)) {
-    stop("`Ginv` must be a square matrix.", call. = FALSE)
+  if (nrow(ginv) < 1L || ncol(ginv) < 1L || nrow(ginv) != ncol(ginv)) {
+    stop("`", what, "` must be a nonempty square matrix.", call. = FALSE)
+  }
+  if (any(!is.finite(ginv))) {
+    stop(
+      "`",
+      what,
+      "` must contain only finite, non-missing values.",
+      call. = FALSE
+    )
   }
   ids <- rownames(ginv)
-  if (is.null(ids) || any(is.na(ids)) || anyDuplicated(ids) > 0L) {
+  col_ids <- colnames(ginv)
+  invalid_ids <- function(x) {
+    is.null(x) || any(is.na(x)) || any(!nzchar(x)) || anyDuplicated(x) > 0L
+  }
+  if (invalid_ids(ids) || invalid_ids(col_ids)) {
     stop(
-      "`Ginv` must have unique, non-missing row/column names matching the ",
+      "`",
+      what,
+      "` must have unique, non-missing, nonempty row/column names matching the ",
       "genomic ids.",
       call. = FALSE
     )
   }
-  if (!identical(ids, colnames(ginv))) {
-    stop("`Ginv` row and column names must match.", call. = FALSE)
+  if (!identical(ids, col_ids)) {
+    stop(
+      "`",
+      what,
+      "` row and column names must match in order.",
+      call. = FALSE
+    )
+  }
+  scale <- max(1, max(abs(ginv)))
+  if (max(abs(ginv - t(ginv))) > 1e-10 * scale) {
+    stop("`", what, "` must be symmetric.", call. = FALSE)
+  }
+  if (inherits(try(chol(ginv), silent = TRUE), "try-error")) {
+    stop("`", what, "` must be positive definite.", call. = FALSE)
   }
   ginv
 }
@@ -2043,11 +2069,55 @@ hs_validate_genomic_markers <- function(markers) {
   if (!is.matrix(markers) || !is.numeric(markers)) {
     stop("`markers` must be a numeric marker matrix.", call. = FALSE)
   }
-  ids <- rownames(markers)
-  if (is.null(ids) || any(is.na(ids)) || anyDuplicated(ids) > 0L) {
+  if (nrow(markers) < 1L || ncol(markers) < 1L) {
     stop(
-      "`markers` must have unique, non-missing row names matching the ids ",
+      "`markers` must have at least one row and one marker column.",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(markers))) {
+    stop(
+      "`markers` must contain only finite, non-missing dosages.",
+      call. = FALSE
+    )
+  }
+  if (any(markers < 0 | markers > 2)) {
+    stop(
+      "`markers` dosages must lie in the closed interval [0, 2].",
+      call. = FALSE
+    )
+  }
+  ids <- rownames(markers)
+  if (
+    is.null(ids) ||
+      any(is.na(ids)) ||
+      any(!nzchar(ids)) ||
+      anyDuplicated(ids) > 0L
+  ) {
+    stop(
+      "`markers` must have unique, non-missing, nonempty row names matching the ids ",
       "(one row per genotyped individual).",
+      call. = FALSE
+    )
+  }
+  marker_names <- colnames(markers)
+  if (
+    !is.null(marker_names) &&
+      (any(is.na(marker_names)) ||
+        any(!nzchar(marker_names)) ||
+        anyDuplicated(marker_names) > 0L)
+  ) {
+    stop(
+      "`markers` column names, when supplied, must be unique, non-missing, and nonempty.",
+      call. = FALSE
+    )
+  }
+  p <- colMeans(markers) / 2
+  k <- 2 * sum(p * (1 - p))
+  if (!is.finite(k) || k <= 0) {
+    stop(
+      "`markers` must contain polymorphic variation: the sample-frequency ",
+      "VanRaden denominator `k` must be positive.",
       call. = FALSE
     )
   }
