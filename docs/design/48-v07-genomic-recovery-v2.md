@@ -21,7 +21,7 @@ inputs:
 | item | frozen identity |
 | --- | --- |
 | Julia selected implementation | `fc9d39df650b20aa09d769d9f9528eed1b606f1e` |
-| Julia execution/tooling commit | `b986dc6f608cb8fb5aa9f7fa7b158dfdedff33a9` |
+| Julia execution/tooling commit | `c92663a47c8f5ce93cc984522614e4169717706c` |
 | Julia holdout driver/execution | `fe5987c2dc5002d3b41910a0356554a8f4d7e359` |
 | held R ordinary-auto-route candidate | `10efc7c58e94da230cbb224b8d2f0698e2550665` |
 | R boundary-oracle implementation | `05ba8aed1c19a7971eeaaf3199fd1afe7d899561` |
