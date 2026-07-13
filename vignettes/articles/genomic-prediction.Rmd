@@ -30,8 +30,11 @@ held branch, the two narrow GREML forms use the ordinary no-control call; the
 explicit `target = "genomic"` route remains supported. The first offset-5001
 candidate remains a banked 5.99-times runtime failure. The revised offset-6001
 candidate passed its fresh holdout (240/240 valid, 40 wins, 0 losses, maximum
-p95 ratio 1.370), clearing only the performance gate. Recovery-v2 and Rose/G10
-remain open, so this is not activation on main. Other genomic paths below keep
+p95 ratio 1.370), clearing only the performance gate. The offset-7001
+infrastructure attempt failed before fitting because the bridge package was
+unavailable; it produced no recovery summary or recovery evidence, and offsets
+7001:7048 are retired. The amended 7101:7148 pilot and Rose/G10 remain open, so
+this is not activation on main. Other genomic paths below keep
 their own explicit targets. All require local Julia,
 `JuliaCall`, and a sibling `HSquared.jl` checkout.
 
@@ -110,8 +113,11 @@ Genomic `heritability_interval()` and `heritability_standard_error()` are
 unavailable until a scale-labelled interval contract is separately validated.
 The R surface remains partial because the original offset-5001 boundary
 candidate failed its runtime gate. An output-equivalent repair passed a
-separate fresh offset-6001 holdout, but the nine-cell recovery-v2 campaign has
-not run and production-scale genomic validation is not complete.
+separate fresh offset-6001 holdout. The offset-7001 infrastructure attempt
+failed before fitting because the bridge package was unavailable; it produced
+no recovery summary or recovery evidence, and offsets 7001:7048 are retired.
+The amended 7101:7148 pilot has not run, and production-scale genomic validation
+is not complete.
 
 ## Marker-built G
 
@@ -331,9 +337,11 @@ Covered in the R lane:
 Still planned:
 
 - production relationship-matrix construction and scaling/blending controls;
-- the frozen recovery-v2 pilot/confirmation, three-way recomputation, Rose
-  audit, and G10; the fresh performance holdout has passed but recovery-v2 has
-  not run;
+- the amended 7101:7148 recovery-v2 pilot/confirmation, three-way recomputation,
+  Rose audit, and G10; the fresh performance holdout has passed, but the
+  offset-7001 infrastructure attempt failed before fitting because the bridge
+  package was unavailable, produced no recovery summary or recovery evidence,
+  and retired offsets 7001:7048; the amended pilot has not run;
 - robustness studies for LD, population structure, imputation, base-frequency
   misspecification, real panels, and production genotype data; the sealed
   holdout used only independent HWE/no-LD markers;
