@@ -182,6 +182,24 @@ The two kernels must agree elementwise to `1e-10`. Define the deterministic
 \(n\times(n-1)\) Helmert contrast matrix \(C\) by, for column
 \(j=1,\ldots,n-1\),
 
+> **Prospective D0 provenance amendment (2026-07-13, before the first official
+> D0 receipt and before any fresh v3 phenotype).** The packet contains markers,
+> not a serialized `K`/`Q` pair. Exact raw-Float64 K/Q fingerprint reproduction
+> across independently evaluated R and Julia arithmetic is therefore not a D0
+> gate: last-bit reduction and BLAS order can change the byte hash without a
+> scientific difference. The frozen three-link rule is instead: (1) base R and
+> Julia must reproduce the marker and ID fingerprints exactly; (2) Julia must
+> independently reconstruct `K` and `Q` and match the packet's recorded K/Q
+> fingerprints exactly; and (3) base R must independently reconstruct `K` and
+> `Q`, satisfy `QK`, `K` versus `sym(Q^-1)`, every eigenvalue, and every summary
+> comparison at the frozen `1e-10` tolerance. Base R writes its native K/Q raw
+> fingerprints to a separate create-once descriptive table. The adjudicator
+> must verify that table's sidecar, exact schema, 432 unique packet keys, and
+> exact marker/ID consistency; its K/Q hashes are provenance diagnostics, not a
+> cross-language equality gate. This replaces the inherited doc-47 raw-K/Q-hash
+> rule only for D0 packets that do not serialize K/Q; it changes no numerical,
+> recovery, or activation threshold.
+
 \[
 C_{ij}=\begin{cases}
 1/\sqrt{j(j+1)}, & i\le j,\\

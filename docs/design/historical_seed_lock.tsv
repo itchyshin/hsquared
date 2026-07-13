@@ -1,0 +1,12 @@
+contract_id	source_docs	formula_kind	seed_base	cell_indices	offset_start	offset_end	disposition
+doc44_fixture	doc44	exact	20270701	0	0	0	spent
+doc44_pilot	doc44	cell_offset	2027120000	1:9	1	48	spent
+doc44_confirmation	doc44	cell_offset	2027120000	1:9	1001	3000	spent_or_reserved
+doc47_holdout	doc47	cell_offset	2027120000	1,2,3,7,9	5001	5048	spent
+doc48_holdout_complement	doc48	cell_offset	2027120000	4,5,6,8	5001	5048	reserved
+doc47_boundary_holdout	doc47	cell_offset	2027120000	1,2,3,7,9	6001	6048	spent
+doc48_boundary_complement	doc48	cell_offset	2027120000	4,5,6,8	6001	6048	reserved
+doc48_failed_environment	doc48	cell_offset	2027120000	1:9	7001	7048	spent
+doc48_precision_blocker	doc48	cell_offset	2027120000	1:9	7101	7148	spent
+doc48_successor_pilot	doc48	cell_offset	2027120000	1:9	7201	7248	reserved
+doc48_successor_confirmation	doc48	cell_offset	2027120000	1:9	8001	10000	reserved
