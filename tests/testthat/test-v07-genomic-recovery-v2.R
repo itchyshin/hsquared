@@ -58,7 +58,7 @@ v07_test_attempts <- function() {
 test_that("the preregistered manifests use only the fresh disjoint blocks", {
   pilot <- v07_manifest("pilot")
   expect_equal(nrow(pilot), 9L * 48L)
-  expect_identical(pilot$seed_offset, rep(7001:7048, times = 9L))
+  expect_identical(pilot$seed_offset, rep(7101:7148, times = 9L))
   expect_identical(
     pilot$seed,
     v07_seed_base + 10000L * pilot$cell_index + pilot$seed_offset
@@ -69,6 +69,9 @@ test_that("the preregistered manifests use only the fresh disjoint blocks", {
   expect_equal(nrow(confirm), 1800L)
   expect_true(all(confirm$seed_offset >= 8001 & confirm$seed_offset <= 8200))
   expect_invisible(v07_validate_disjoint_seeds(pilot, confirm))
+  expect_true(all(7001:7048 %in% v07_reserved_offsets$failed_environment_pilot))
+  expect_identical(v07_expected_environment[["juliacall_version"]], "0.17.6")
+  expect_identical(v07_expected_environment[["pkgload_version"]], "1.5.1")
 
   overlap <- confirm
   overlap$seed[[1L]] <- pilot$seed[[1L]]

@@ -17,8 +17,8 @@ v07_boundary_bindings <- c(
   holdout_checkpoint_doc_sha256 = "b410f01a8309b1a7887d0c272d9e1c8ac8b38310f08e7c598cd08e1adcb0b707",
   holdout_checklog_sha256 = "3a25ff9423aecd158e0361ff34016f38b810c0fb530d65a0d2c02dbce24c6e83"
 )
-v07_r_recomputer_sha256 <- "f449ea8d91969a3e006129ddcb33de7367472c7926e18f7844e951004f4336e0"
-v07_julia_recomputer_sha256 <- "7cd15783f00336baff77dd4317f6724e0705ca4fb97396b403761c67b54040f9"
+v07_r_recomputer_sha256 <- "bc78cb988690487fd80f0ab3804aed608e93c3cf41004ff56530bc3b94ff5f2e"
+v07_julia_recomputer_sha256 <- "c60c51176554a5ead33c0e35885a8cfc4bc32136e560848fcdff6ae22ea1f86a"
 v07_expected_environment <- c(
   host = "totoro",
   cpu_model = "AMD EPYC 9655 96-Core Processor",
@@ -27,6 +27,7 @@ v07_expected_environment <- c(
   arch = "x86_64",
   julia_version = "1.10.10",
   r_version = "R version 4.5.3 (2026-03-11)",
+  juliacall_version = "0.17.6", pkgload_version = "1.5.1",
   julia_num_threads = "1", openblas_num_threads = "1",
   omp_num_threads = "1", veclib_maximum_threads = "1"
 )
@@ -42,7 +43,8 @@ v07_reserved_offsets <- list(
   historical_confirmation = 1001:3000,
   spent_holdout = 5001:5048,
   spent_boundary_holdout = 6001:6048,
-  recovery_pilot = 7001:7048,
+  failed_environment_pilot = 7001:7048,
+  recovery_pilot = 7101:7148,
   recovery_confirmation = 8001:10000
 )
 
@@ -118,6 +120,7 @@ v07_seal_keys <- c(
   "julia_recomputer_sha256", "admission_receipt_sha256", "admission_receipt_path",
   "output_root", "driver_root", "r_root", "julia_root", "host",
   "cpu_model", "machine", "kernel", "arch", "julia_version", "r_version",
+  "juliacall_version", "pkgload_version",
   "julia_num_threads", "openblas_num_threads", "omp_num_threads",
   "veclib_maximum_threads", "seed_formula", "pilot_offsets",
   "confirmation_offsets", "excluded_offsets", "ridge", "relationship_method",
@@ -291,6 +294,10 @@ v07_runtime_environment <- function(julia_root) {
     arch = julia[["arch"]],
     julia_version = julia[["julia_version"]],
     r_version = R.version.string,
+    juliacall_version = if (requireNamespace("JuliaCall", quietly = TRUE))
+      as.character(utils::packageVersion("JuliaCall")) else "MISSING",
+    pkgload_version = if (requireNamespace("pkgload", quietly = TRUE))
+      as.character(utils::packageVersion("pkgload")) else "MISSING",
     julia_num_threads = Sys.getenv("JULIA_NUM_THREADS"),
     openblas_num_threads = Sys.getenv("OPENBLAS_NUM_THREADS"),
     omp_num_threads = Sys.getenv("OMP_NUM_THREADS"),
@@ -553,8 +560,8 @@ v07_create_seal <- function(out_dir, driver_root, r_root, julia_root, driver_com
     admission_receipt_path = admission_receipt,
     output_root = output_root, roots, env,
     seed_formula = "2027120000+10000*cell_index+offset",
-    pilot_offsets = "7001:7048", confirmation_offsets = "8001:10000",
-    excluded_offsets = "1:48,1001:3000,5001:5048,6001:6048",
+    pilot_offsets = "7101:7148", confirmation_offsets = "8001:10000",
+    excluded_offsets = "1:48,1001:3000,5001:5048,6001:6048,7001:7048",
     ridge = "0.01", relationship_method = "vanraden1",
     allele_frequency_source = "sample", relationship_scale = "K_lambda",
     boundary_epsilon = "1e-07", boundary_kkt_tolerance = "1e-08",
@@ -610,7 +617,7 @@ v07_manifest <- function(tier, required = NULL) {
   rows <- list(); at <- 0L
   for (i in seq_len(nrow(v07_cells))) {
     count <- if (tier == "pilot") 48L else as.integer(required[[v07_cells$cell_id[[i]]]])
-    offsets <- if (tier == "pilot") 7001:7048 else 8001:(8000L + count)
+    offsets <- if (tier == "pilot") 7101:7148 else 8001:(8000L + count)
     for (offset in offsets) {
       at <- at + 1L
       cell <- v07_cells[i, ]
@@ -629,12 +636,15 @@ v07_manifest <- function(tier, required = NULL) {
 }
 
 v07_validate_disjoint_seeds <- function(pilot, confirm = NULL) {
-  if (!all(pilot$seed_offset == rep(7001:7048, times = 9L))) v07_abort("pilot offset drift")
+  if (!all(pilot$seed_offset == rep(7101:7148, times = 9L))) v07_abort("pilot offset drift")
   if (!is.null(confirm)) {
     if (length(intersect(pilot$seed, confirm$seed))) v07_abort("pilot/confirmation seed overlap")
     if (any(confirm$seed_offset < 8001 | confirm$seed_offset > 10000)) v07_abort("confirmation offset drift")
   }
-  all_offsets <- unlist(v07_reserved_offsets[1:4], use.names = FALSE)
+  all_offsets <- unlist(v07_reserved_offsets[c(
+    "historical_pilot", "historical_confirmation", "spent_holdout",
+    "spent_boundary_holdout", "failed_environment_pilot"
+  )], use.names = FALSE)
   if (any(pilot$seed_offset %in% all_offsets) || (!is.null(confirm) && any(confirm$seed_offset %in% all_offsets))) {
     v07_abort("recovery manifest overlaps a reserved historical seed block")
   }
@@ -1381,7 +1391,7 @@ v07_verify_tree <- function(out_dir, driver_root, r_root, julia_root, stage) {
 
 v07_selftest <- function() {
   pilot <- v07_manifest("pilot")
-  stopifnot(nrow(pilot) == 432L, identical(pilot$seed_offset, rep(7001:7048, 9L)))
+  stopifnot(nrow(pilot) == 432L, identical(pilot$seed_offset, rep(7101:7148, 9L)))
   code <- paste(deparse(body(v07_fit_call)), collapse = "\n")
   stopifnot(grepl("hsquared::hsquared", code, fixed = TRUE),
     !grepl("hs_control", code, fixed = TRUE), !grepl("engine_control", code, fixed = TRUE))
