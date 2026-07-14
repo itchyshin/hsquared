@@ -19,16 +19,28 @@
 > rewritten as activation.
 > ```
 
-Status: **D0 COMPLETE; ORIGINAL D0F CORPUS LOCKED BUT UNADJUDICATED; FRESH D0F
-RETRY NOT YET PRESEALED.** The first D0F run completed 576 official R attempts,
+Status: **D0 COMPLETE; TWO D0F CORPORA LOCKED BUT UNADJUDICATED; THIRD
+PROSPECTIVE D0F RETRY PREPARED BUT NOT PRESEALED; NO NEW PHENOTYPE AND NO D1 OR
+D2 SEED CONSUMED.** The first D0F run completed 576
+official R attempts,
 but the exact presealed Julia replay tool stopped deterministically before
 writing any replay row. That root is a hash-locked, retired
-replay-infrastructure blocker,
-not D0F scientific evidence. The retry defined below must receive new hash-bound
-pre-seal plan receipts from Fisher, Noether, Grace, Rose, and Hopper, be
-committed, and be bound into a new stage preseal and new canonical root before
-any retry phenotype is generated. It does not reopen, rewrite, pool, or admit
-the blocked D0F corpus or the retired recovery-v2 offsets.
+replay-infrastructure blocker, not D0F scientific evidence. The first retry
+received the required hash-bound plan receipts, committed tooling, new stage
+preseal, and new canonical root before its first phenotype was generated. All
+576 official fits and all 576 base-R recomputations completed, but the exact
+Julia replay tool then failed before writing any replay row because a Git root
+returned as `SubString` promoted a `Cmd` argument vector to
+`Vector{AbstractString}`. That second root is also retired as a
+replay-infrastructure blocker. The third retry does not reopen, rewrite, pool,
+or admit either blocked D0F corpus or the retired recovery-v2 offsets.
+
+No D0F retry is adjudicated and therefore none can admit D1. The
+downstream D2-D4 evidence protocol in this document was prospectively amended
+on 2026-07-14, before any D2 seed was consumed, to require terminal ordered D2
+history, dedicated numerical validators, one-to-three selected D3 triplets,
+exactly three original D4 triplets, and acyclic official-attempt versus
+post-lock recomputation schemas.
 
 ## 1. Why recovery-v3 exists
 
@@ -331,12 +343,29 @@ Neither its 576 phenotype estimates nor any repaired post-hoc replay may enter
 the retry summary. The filesystem remains writable; admission relies on the
 recorded exact hashes, and the root is logically frozen and never reused.
 
-The only admitted replacement is a prospective fresh D0F retry: unchanged
+The first retry root
+`/home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0f-retry-r2-2cb5308-f7ff838`
+is permanently **UNADJUDICATED — REPLAY_INFRASTRUCTURE_BLOCKER**. It binds
+preseal `e55e68ef8734219572bf22cf51932b78c3efd38d2e04cb9eb83323ef80f98fa5`,
+official corpus lock
+`3191ba42c5061dc3693f930c81433682ff44a74f78bc27a6561c8292789ebc3f`,
+base-R summary
+`ea624296b249e37334c384c5a349037a5e91acd8f5c02b14615e2b35a25f6a6b`,
+and Julia replay commit
+`f7ff83855c4b4d14aad39516f37b7c1b5994b7ae` / tool SHA-256
+`8aac6c50775fcb0f5ebcd15235b2d2979bc2ac50a7b7006165342f8208d9d7de`.
+The exact failure was `MethodError: no method matching
+Cmd(::Vector{AbstractString})` in `_git_blob_sha256`; replay produced zero
+rows. The base-R summary is diagnostic infrastructure output only and cannot
+be adjudicated or used to tune the third retry.
+
+The only admitted continuation is a prospective third D0F retry: unchanged
 fixed panels, 24-by-8 allocation, estimand, model, ridge, summaries, tolerances,
-and stopping rules; a repaired replay tool; five new exact reviewer receipts; a
+and stopping rules; a repaired replay tool with an exact `SubString`-root
+regression and live Julia 1.10 preflight; five new exact reviewer receipts; a
 new root and preseal; and 576 new phenotypes from the disjoint seed space below.
 There is no pooling, paired reuse, seed replacement, threshold change, or
-selection based on the blocked estimates.
+selection based on either blocked corpus or summary.
 
 This mandatory mechanism-only arm uses the 24 smallest manifest seeds from
 each of the three original \(r_G=0.5\) v2 cells: `(120,600)`, `(300,150)`, and
@@ -370,7 +399,7 @@ without truncating a negative finite-sample \(V_{between}\). A deterministic
 phenotypes within panel, using a presealed index manifest, and reports percentile
 intervals. Base R generates each design's indices with
 `RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
-`2033000000 + design_index`. The create-once manifest is normalized to one row
+`2035000000 + design_index`. The create-once manifest is normalized to one row
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
@@ -504,10 +533,29 @@ reaches that cell, but it cannot influence selection until every earlier
 eligible candidate has been adjudicated. It is run once and shared by exact
 hash.
 
+Each D2 batch occupies a separate immutable presealed root. The authenticated
+history is ordered: D1 is `sequence_index = 0`, followed by
+`d2_batch_001`, `d2_batch_002`, and so on. Each next D2 manifest is derived
+from the canonical D1 summary plus every earlier D2 batch in that exact order.
+An omitted, duplicated, reordered, forked, caller-selected, or nonterminal
+history is inadmissible. D3 and D4 can be prepared only from the terminal D2
+history, meaning that the state machine admits no further D2 batch. There is no
+snapshot or early-history exception.
+
+A D2 adjudication receipt with `verdict = PASS` says that the evidence tree is
+valid and independently reproducible; it does not say that every cell is
+eligible. Authenticated cell statuses remain `ELIGIBLE`,
+`PRECISION_BLOCKER`, `FUTILITY_STOP`, or
+`STOP_LOW_PILOT_CONVERGENCE`. `RECOMPUTATION_BLOCKER` is not an authenticated
+pilot outcome: it prevents a PASS receipt and therefore cannot enter the
+ordered predecessor history.
+
 #### Stage D3 — selected exact-triplet confirmation
 
 A marker ratio reaches D3 only when the same selected \(n\) is eligible at all
-three \(r_G\) values. D3 confirms exactly those three cells with fresh seeds and
+three \(r_G\) values. D3 admits **one to three** complete selected triplets,
+depending only on the authenticated terminal D2 history, and confirms each
+admitted triplet's three cells with fresh seeds and
 the existing target-specific sizing rule, minimum 200 and maximum 2,000 per
 cell. For \(r_G=0.5\), sizing comes only from that exact cell's D1 batch; for
 each edge, it comes only from that exact cell's unique D2 batch. D0, D0F,
@@ -524,13 +572,21 @@ receive independent confirmation on still-fresh seeds.
 #### Stage D4 — original nine-cell broad confirmation
 
 D4 is separately presealed from D3 and is the only v3 stage that can discharge
-doc-44 G5. Its manifest can exist only if D1 and the mandatory D2 broad lane
+doc-44 G5. It binds authenticated D1 and terminal D2 broad-lane evidence only:
+D3 is neither a predecessor nor a sizing source. Its manifest can exist only if
+D1 and the mandatory D2 broad lane
 produce eligible fresh pilots for all nine original cells. It then confirms all
 nine exact doc-44 cells with independent fresh seeds and the unchanged
 target-specific 200-to-2,000 sizing rule. The interior size comes only from D1
 and each edge size only from its unique D2 batch. All nine confirmations must
 pass together. If any original pilot is ineligible or any D4 cell fails, broad
 activation remains withheld.
+
+D3 and D4 use distinct roots, preseals, manifests, and disjoint seed ranges.
+For D3, `campaign_pass` and `D3_PASS` refer only to the one-to-three triplets
+actually admitted; partial admission never implies support for an untested
+marker ratio. D4 always contains exactly the three original complete triplets,
+and `D4_PASS` requires all nine original cells to pass together.
 
 ### E — Estimands and targets
 
@@ -639,6 +695,100 @@ all-attempt `class=count` representation, including `none=48` when appropriate.
 Any R/Julia disagreement in these fields is a recomputation blocker, regardless
 of the otherwise implied cell status.
 
+### Downstream ordered schemas (prospective amendment)
+
+The downstream manifest has these exact ordered columns:
+
+```text
+stage cell_id cell_index seed_offset seed n m marker_ratio
+marker_ratio_code truth_sigma_g2 truth_sigma_e2 truth_ratio ridge
+```
+
+The official-attempt schema is the manifest schema followed by
+`retained_m`, the marker/ID/kernel/precision hashes, and the frozen result
+columns through `preseal_sha256`. It contains neither `manifest_sha256` nor
+`corpus_lock_sha256`.
+
+The post-lock base-R row has exactly the official columns followed by:
+
+```text
+manifest_sha256 corpus_lock_sha256 source_r_attempt_sha256
+source_r_max_abs_difference r_recomputer_commit r_recomputer_sha256
+```
+
+The post-lock Julia replay row has exactly the official columns followed by:
+
+```text
+manifest_sha256 corpus_lock_sha256 source_r_attempt_sha256
+source_r_max_abs_difference julia_replay_commit julia_replay_sha256
+```
+
+`source_r_attempt_sha256` is the digest of that seed's exact official row.
+`source_r_max_abs_difference` is the row-wise maximum over the shared
+scientific parity projection and must be finite, nonnegative, and no larger
+than `1e-10`. Base R retains the official result `route` and performance fields
+because it independently reconstructs construction and summaries without
+refitting. Julia uses `route = julia_profile_replay`, its replay-tool commit,
+and its own runtime/RSS. The shared scientific parity projection is every
+official column except `route`, `driver_commit`, `runtime_seconds`,
+`peak_rss_mb`, `r_implementation_commit`, and
+`julia_implementation_commit`. Those deliberately route-specific fields are
+validated against their own preseal bindings, never compared as scientific
+parity fields.
+
+The D2 summary is exactly the ordered D1 summary schema. The D3/D4 confirmation
+summary is:
+
+```text
+stage cell_id cell_index n m marker_ratio truth_ratio
+n_expected n_attempted n_converged n_bias_rows n_interior
+n_interior_rescued n_boundary_lower n_boundary_upper n_unresolved n_error
+convergence_rate wilson_lower wilson_upper target truth mean_estimate bias
+mcse bias_ci_lower bias_ci_upper margin rmse mcse_rmse empirical_sd
+summary_nonfinite target_bias_pass cell_convergence_pass cell_wilson_pass
+target_pass cell_pass cell_status median_runtime_seconds p95_runtime_seconds
+median_peak_rss_mb p95_peak_rss_mb rms_se_info
+empirical_sd_over_rms_se_info observed_boundary_lower observed_boundary_upper
+mcse_boundary_lower mcse_boundary_upper mean_spectral_cv mean_effective_rank
+triplet_id triplet_pass campaign_pass stage_decision failure_classes
+```
+
+The predecessor lock is ordered as:
+
+```text
+stage sequence_index role source_stage source_batch source_root
+adjudication_receipt_sha256 preseal_sha256 manifest_sha256
+corpus_lock_sha256 r_summary_sha256 julia_summary_sha256
+r_validator_sha256 julia_validator_sha256
+```
+
+The pilot-decision lock is ordered as:
+
+```text
+stage sequence_index source_stage source_batch selection_role cell_id
+eligible required_n required_n_source_target source_summary_sha256
+```
+
+For D3 and D4, any nonfinite admitted summary yields
+`RECOMPUTATION_BLOCKER`. Otherwise the stage decision is `D3_PASS` or
+`D3_FAIL`, and `D4_PASS` or `D4_FAIL`, respectively.
+`campaign_pass` covers exactly the complete triplets admitted to that stage;
+D4's admitted set is always the original three.
+
+For every D2-D4 cell, `n_attempted = n_expected`, `n_bias_rows = n_converged`,
+the four resolved counts sum to `n_converged`, and resolved + unresolved +
+error equals `n_expected`. Both Wilson limits, the convergence rate, both
+observed boundary proportions, and both boundary MCSEs are recomputed from
+those counts. `failure_classes` is lexically ordered, totals exactly
+`n_expected`, and has `none = n_converged`. Any violation is a recomputation
+blocker. A D2 cell with nonfinite summary inputs despite at least 46 successful
+finite fits has `cell_status = RECOMPUTATION_BLOCKER`, is never eligible,
+cannot produce a pilot-decision lock, and cannot appear in an admitted
+predecessor history. With fewer than 46 successful fits, expected undefined
+dispersion inputs remain an ordinary `STOP_LOW_PILOT_CONVERGENCE` result and do
+not stop other cells from advancing. The same blocker status is used for any
+nonfinite D3/D4 cell; its stage decision is `RECOMPUTATION_BLOCKER`.
+
 An unsuccessful attempt has `status = fit_error`, `converged = false`, and a
 non-`none` `error_class`. Scientific and numerical components, total variance,
 iterations, objective, and gradient are canonical `NA`. An ordinary fit error
@@ -686,9 +836,11 @@ phenotype seeds
 `design_index = 1:3`, `panel_rank = 1:24`, and `phenotype_rank = 1:8`. The
 source-safe verifier expands that true 3-by-24-by-8 grid as `D0F_RETIRED` and
 adds it to the spent historical space; the prior erroneous 3-by-8-by-24 audit
-expansion is not the record of seeds actually consumed. The fresh retry uses
-the same rank formula with base `2032000000` and is labelled `D0F_RETRY` in the
-seed-space audit. The operational manifest stage remains `d0f` so the unchanged
+expansion is not the record of seeds actually consumed. The blocked first
+retry's 576 seeds use the same rank formula with base `2032000000`; the verifier
+adds them to the retired space as `D0F_RETRY1_RETIRED`. The third prospective
+retry uses base `2034000000` and is labelled `D0F_RETRY` in the seed-space
+audit. The operational manifest stage remains `d0f` so the unchanged
 scientific schema is reused. All values remain below R's 32-bit integer maximum.
 All exact historical and retired seeds are excluded. Numeric offsets may recur
 only under a new base after the verifier proves exact zero intersection. No
@@ -697,11 +849,13 @@ the previously detected collision `2027142001`, or a duplicate must make the
 historical-lock verifier red.
 
 D0F bootstrap-index seeds are not phenotype seeds and are never fitted. The
-blocked run's three seeds `2031000000 + design_index` are nevertheless spent
-and retired because they generated its observed bootstrap manifest. The retry
-uses `2033000000 + design_index`, one per design. Both sets must be unique and
-in range; the retry set must be disjoint from every historical, retired D0F,
-D0F retry, D1, D2, D3, and D4 data-generating seed.
+original blocked run's three seeds `2031000000 + design_index` and the blocked
+first retry's three seeds `2033000000 + design_index` are nevertheless spent
+and retired because they generated observed bootstrap manifests. The third
+retry uses `2035000000 + design_index`, one per design. All three sets must be
+unique and in range; the current retry set must be disjoint from every
+historical, retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating
+seed.
 
 Every stage uses this acyclic create-once evidence chain:
 
@@ -746,20 +900,139 @@ adjacent `.sha256` sidecar. The final preseal primary is `stage_preseal.tsv`.
 Tools are verified at explicit canonical deployed paths outside the stage root.
 No aliases or alternate filenames are admitted.
 
-Every reviewer receipt has exactly these ordered columns:
+Every downstream D2/D3/D4 root additionally contains the canonical primaries
+`predecessor_lock.tsv` and `pilot_decision_lock.tsv`, each with its adjacent
+sidecar. A downstream preseal binds both lock hashes; the exact terminal history
+head and batch sequence; the downstream-contract hash and commit; the official
+driver, independent R validator, and Julia validator hashes and commits; the
+manifest, environment, cell table, historical seed lock, candidate commits,
+routes, relationship scale, ridge, and boundary controls. It contains no
+future corpus, recomputation, summary, or receipt hash.
+
+The dedicated downstream numerical validators are, for every D2, D3, and D4
+root:
+
+```text
+tools/v07_genomic_recovery_v3_downstream_recompute.R
+  --mode=validate-final --output-root=<root> --stage=d2|d3|d4
+
+HSquared.jl/sim/phase2_v07_genomic_recovery_v3_downstream_replay.jl
+  --mode=validate-final --output-root=<root> --stage=d2|d3|d4
+```
+
+Each validator has a SHA-256 sidecar, is bound by the preseal and final receipt,
+and must actually be executed with the exact `--mode=validate-final` CLI before
+a D2 root can be read as predecessor evidence. Verifying the validator file's
+sidecar without executing it is insufficient. Each operational validator reads
+the root's authenticated `cell_table.tsv`, verifies its sidecar and preseal
+hash, and derives cell identity from those bytes; it may independently
+regenerate a table only as a comparison that must agree exactly. Each validator
+reconstructs the complete final tree from immutable primaries. The
+synthetic confirmation mirror is not an operational validator. The ordered
+downstream receipt binds both locks, preseal, manifest, official corpus,
+base-R and Julia inventories and summaries, validator hashes and commits,
+attempt and summary parity maxima, the six post-run review receipts, and the
+stage decision.
+
+The downstream preseal schema identifier is
+`v07-genomic-recovery-v3-downstream-preseal-1`. Its ordered keys are:
+
+```text
+schema_version
+stage
+doc49_sha256
+cell_table_sha256
+historical_seed_lock_sha256
+manifest_sha256
+environment_manifest_sha256
+predecessor_lock_sha256
+pilot_decision_lock_sha256
+history_state
+history_batch_count
+current_sequence_index
+fisher_receipt_sha256
+noether_receipt_sha256
+hopper_receipt_sha256
+grace_receipt_sha256
+rose_receipt_sha256
+downstream_contract_commit
+downstream_contract_sha256
+r_driver_commit
+r_recomputer_commit
+julia_replay_commit
+r_auto_route_commit
+julia_candidate_commit
+r_driver_sha256
+r_recomputer_sha256
+julia_replay_sha256
+output_root
+official_route
+replay_route
+packet_schema_version
+truth_schema_version
+relationship_source
+relationship_method
+allele_frequency_source
+relationship_scale
+ridge
+boundary_epsilon
+boundary_kkt_tolerance
+output_subtrees_absent_before_preseal
+```
+
+`history_state` is `ordered_prefix` for the next D2 batch and `terminal`
+for D3/D4. If the predecessor lock contains D1 at sequence zero plus `k`
+completed D2 batches at exactly `1:k`, then `history_batch_count = k` and a new
+D2 preseal has `current_sequence_index = k + 1`. D3/D4 require terminal history
+and `current_sequence_index = NA`. The downstream adjudication-receipt schema identifier is
+`v07-genomic-recovery-v3-downstream-adjudication-1`. Its ordered columns are:
+
+```text
+schema_version stage verdict stage_decision preseal_sha256
+predecessor_lock_sha256 pilot_decision_lock_sha256 manifest_sha256
+corpus_lock_sha256 base_r_inventory_sha256 julia_inventory_sha256
+r_summary_sha256 julia_summary_sha256 r_validator_sha256
+julia_validator_sha256 r_driver_commit r_recomputer_commit julia_replay_commit
+attempt_max_abs_difference summary_max_abs_difference
+fisher_review_sha256 darwin_review_sha256 noether_review_sha256
+hopper_review_sha256 grace_review_sha256 rose_review_sha256
+```
+
+Each **prospective plan-review** receipt has exactly these ordered columns:
 
 ```text
 reviewer verdict doc49_sha256 r_driver_commit r_recomputer_commit
 julia_replay_commit r_auto_route_commit julia_candidate_commit
 ```
 
+Each **post-run evidence-review** receipt uses schema identifier
+`v07-genomic-recovery-v3-downstream-postrun-review-1` and has exactly:
+
+```text
+schema_version stage reviewer verdict stage_decision preseal_sha256
+predecessor_lock_sha256 pilot_decision_lock_sha256 manifest_sha256
+corpus_lock_sha256 base_r_inventory_sha256 julia_inventory_sha256
+r_summary_sha256 julia_summary_sha256 r_driver_commit
+r_recomputer_commit julia_replay_commit reviewed_at_utc
+```
+
+The prospective set is Fisher, Noether, Hopper, Grace, and Rose. The post-run
+set is Fisher, Darwin, Noether, Hopper, Grace, and Rose; every verdict must be
+`CLEAN`, and every evidence field must equal the final adjudication receipt.
+The two schemas are not interchangeable.
+
 Thus a plan receipt cannot review only the harness while leaving either fitted
 candidate implementation unbound. The R auto-route commit must be an ancestor
 of the deployed R driver/recomputer commit, and the Julia candidate commit must
 be an ancestor of the deployed Julia replay commit. Each deployed tool's bytes
 must equal its exact Git blob at the declared commit and its sidecar; existence
-of a commit object alone is insufficient. Both deployed repositories must have
-empty `git status --porcelain` output when a preseal is minted.
+of a commit object alone is insufficient. All declared R tool commits must
+equal the deployed R `HEAD`, and the Julia replay commit must equal the deployed
+Julia `HEAD`. The R implementation surfaces (`R/`, `DESCRIPTION`, `NAMESPACE`)
+and Julia implementation surfaces (`src/`, `ext/`, `Project.toml`,
+`Manifest.toml`) must be unchanged between the fitted candidate and deployed
+tool commits. Both deployed repositories must have empty
+`git status --porcelain` output when a preseal is minted.
 
 Environment admission compares the manifest with live state: normalized
 hostname, R and Julia versions, R RNG/normal/sample kinds, process thread
@@ -777,7 +1050,7 @@ packet   v07-genomic-recovery-v3-packet-1
 truth    v07-genomic-recovery-v3-truth-1
 ```
 
-`stage_preseal.tsv` contains exactly these keys in this order:
+For D0F and D1, `stage_preseal.tsv` contains exactly these keys in this order:
 
 ```text
 schema_version
@@ -823,7 +1096,8 @@ boundary_kkt_tolerance
 output_subtrees_absent_before_preseal
 ```
 
-The tool keys are language-specific and unambiguous. `r_driver_sha256` binds
+For D0F and D1, the tool keys are language-specific and unambiguous.
+`r_driver_sha256` binds
 `tools/v07_genomic_recovery_v3.R`; `r_recomputer_sha256` binds the operational
 independent `tools/v07_genomic_recovery_v3_recompute.R` (not the pure preseal
 helper); `julia_replay_sha256` binds
@@ -832,6 +1106,9 @@ helper); `julia_replay_sha256` binds
 `tools/v07_genomic_recovery_v3_d0_recompute.R`. The Julia spectral helper is
 loaded from, and therefore fixed by, the exact clean `julia_replay_commit`; it
 does not reuse the R D0-tool key.
+
+D2-D4 do not reuse those D0F/D1 validator keys. They use the dedicated
+downstream preseal and the two downstream numerical validators frozen above.
 
 D0F records `NA` for the two D1-only adjudication bindings. D1 records `NA` for
 the two D0F-only manifest hashes and must record a non-`NA` canonical fresh-D0F
@@ -937,6 +1214,14 @@ red for each of:
   checksum, or pilot/confirmation overlap;
 - D1 eligibility, ascending D2 traversal, one-batch-per-cell mapping, D3 pilot
   source mapping, and D4 original-cell admission;
+- a missing, duplicated, reordered, forked, or stale D2 history head;
+- a changed `sequence_index`, `selection_role`, or
+  `required_n_source_target`;
+- a caller-selected validator, forged lock row with a fresh sidecar, or the
+  synthetic mirror substituted for an operational validator;
+- a D3 manifest with zero, more than three, or an incomplete selected triplet,
+  and a D4 manifest that binds any D3 artifact or lacks an original triplet;
+- `corpus_lock_sha256` inserted into an official-attempt row;
 - logical TSV values and both valid Boolean inversions; and
 - one changed summary value in each of the driver-R, independent base-R, and
   Julia recomputations.
@@ -958,7 +1243,10 @@ red under every mutation.
    `min(96, floor(0.7 * available_RAM / smoke_peak_RSS))`.
 5. Run D1, corpus-lock and independently adjudicate it, then mint D2 only from its
    receipt.
-6. Run and adjudicate each deterministic D2 batch; mint D3 only for selected
+6. Do not prepare D2 until this amended doc hash, renewed plan-review receipts,
+   both dedicated numerical validators, their synthetic mutation suites, and
+   exact D1 final-tree validation are green. Then run and adjudicate each
+   deterministic D2 batch; mint D3 only for selected
    exact triplets, and D4 only if all original pilots are eligible.
 7. Run any admitted D3 and D4 stages, independently recompute them in both
    languages, mutation-test the adjudicator, and request the applicable audits.
@@ -967,6 +1255,12 @@ No heavy campaign runs on GitHub Actions. Raw attempts and packets stay in a
 new immutable Totoro output root. Only the preregistration, manifests, compact
 summaries, hashes, failure classifications, exact commands, and environment
 manifest may be committed.
+
+Commit `120d04d` and the Julia canonical confirmation mirror are pure
+schema/logic evidence: neither is a fit, recovery, or campaign result. D2 is
+sizing and selection evidence only. D3 supports only its admitted exact
+triplets. D4 pass discharges only doc-44 G5; G6-G7 audits and explicit G10
+remain mandatory, and `public_covered_count` remains unchanged.
 
 ## 8. Decision table
 

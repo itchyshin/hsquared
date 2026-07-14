@@ -76,9 +76,11 @@ v07s_expected_lock <- data.frame(
 v07s_expected_lock[] <- lapply(v07s_expected_lock, as.character)
 
 v07s_d0f_retired_phenotype_base <- 2029000000
-v07s_d0f_retry_phenotype_base <- 2032000000
+v07s_d0f_retired_retry_phenotype_base <- 2032000000
+v07s_d0f_retry_phenotype_base <- 2034000000
 v07s_d0f_retired_bootstrap_base <- 2031000000
-v07s_d0f_retry_bootstrap_base <- 2033000000
+v07s_d0f_retired_retry_bootstrap_base <- 2033000000
+v07s_d0f_retry_bootstrap_base <- 2035000000
 
 v07s_loaded_source_path <- local({
   file_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
@@ -251,9 +253,14 @@ v07s_v3_cells <- function() {
 
 v07s_d0f_seed_grid <- function(seed_base, stage) {
   if (
-    length(seed_base) != 1L || !is.numeric(seed_base) || is.na(seed_base) ||
-      !is.finite(seed_base) || seed_base != floor(seed_base) ||
-      length(stage) != 1L || is.na(stage) || !nzchar(stage)
+    length(seed_base) != 1L ||
+      !is.numeric(seed_base) ||
+      is.na(seed_base) ||
+      !is.finite(seed_base) ||
+      seed_base != floor(seed_base) ||
+      length(stage) != 1L ||
+      is.na(stage) ||
+      !nzchar(stage)
   ) {
     v07s_abort("D0F seed-grid base or stage is invalid")
   }
@@ -281,8 +288,10 @@ v07s_d0f_seed_grid <- function(seed_base, stage) {
   )
   rownames(out) <- NULL
   if (
-    nrow(out) != 576L || anyDuplicated(out$seed) ||
-      any(out$seed != floor(out$seed)) || any(out$seed < 1) ||
+    nrow(out) != 576L ||
+      anyDuplicated(out$seed) ||
+      any(out$seed != floor(out$seed)) ||
+      any(out$seed < 1) ||
       any(out$seed > .Machine$integer.max)
   ) {
     v07s_abort("D0F seed grid is not 576 unique in-range integers")
@@ -292,16 +301,22 @@ v07s_d0f_seed_grid <- function(seed_base, stage) {
 
 v07s_d0f_bootstrap_seeds <- function(seed_base) {
   if (
-    length(seed_base) != 1L || !is.numeric(seed_base) || is.na(seed_base) ||
-      !is.finite(seed_base) || seed_base != floor(seed_base)
+    length(seed_base) != 1L ||
+      !is.numeric(seed_base) ||
+      is.na(seed_base) ||
+      !is.finite(seed_base) ||
+      seed_base != floor(seed_base)
   ) {
     v07s_abort("D0F bootstrap seed base is invalid")
   }
   seeds <- as.double(seed_base) + seq_len(3L)
   if (
-    length(seeds) != 3L || anyDuplicated(seeds) ||
-      any(!is.finite(seeds)) || any(seeds != floor(seeds)) ||
-      any(seeds < 1) || any(seeds > .Machine$integer.max)
+    length(seeds) != 3L ||
+      anyDuplicated(seeds) ||
+      any(!is.finite(seeds)) ||
+      any(seeds != floor(seeds)) ||
+      any(seeds < 1) ||
+      any(seeds > .Machine$integer.max)
   ) {
     v07s_abort("D0F bootstrap seed space is not three unique in-range integers")
   }
@@ -309,7 +324,13 @@ v07s_d0f_bootstrap_seeds <- function(seed_base) {
 }
 
 v07s_expand_retired_d0f <- function() {
-  v07s_d0f_seed_grid(v07s_d0f_retired_phenotype_base, "D0F_RETIRED")
+  rbind(
+    v07s_d0f_seed_grid(v07s_d0f_retired_phenotype_base, "D0F_RETIRED"),
+    v07s_d0f_seed_grid(
+      v07s_d0f_retired_retry_phenotype_base,
+      "D0F_RETRY1_RETIRED"
+    )
+  )
 }
 
 v07s_expand_v3 <- function() {
@@ -369,12 +390,21 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
       contract_id = "doc49_d0f_retired_bootstrap",
       seed = v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base),
       stringsAsFactors = FALSE
+    ),
+    data.frame(
+      contract_id = "doc49_d0f_retry1_replay_blocker_bootstrap",
+      seed = v07s_d0f_bootstrap_seeds(
+        v07s_d0f_retired_retry_bootstrap_base
+      ),
+      stringsAsFactors = FALSE
     )
   )
   historical <- rbind(historical, retired)
   rownames(historical) <- NULL
   if (anyDuplicated(historical$seed)) {
-    v07s_abort("historical and retired D0F spaces contain an exact seed collision")
+    v07s_abort(
+      "historical and retired D0F spaces contain an exact seed collision"
+    )
   }
   required <- c("stage", "cell_id", "cell_index", "seed_offset", "seed")
   if (
@@ -388,7 +418,11 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
   }
   stage_counts <- table(proposed$stage)
   expected_stage_counts <- c(
-    D0F_RETRY = 576L, D1 = 576L, D2 = 1152L, D3 = 72000L, D4 = 18000L
+    D0F_RETRY = 576L,
+    D1 = 576L,
+    D2 = 1152L,
+    D3 = 72000L,
+    D4 = 18000L
   )
   if (
     !identical(names(stage_counts), names(expected_stage_counts)) ||
@@ -407,7 +441,9 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
     v07s_abort("known historical collision 2027142001 was admitted")
   }
   invisible(list(
-    historical = historical, proposed = proposed, retired_d0f = retired_d0f
+    historical = historical,
+    proposed = proposed,
+    retired_d0f = retired_d0f
   ))
 }
 
@@ -417,8 +453,17 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
   stage_counts <- table(valid$proposed$stage)
   stopifnot(
     2027142001 %in% valid$historical$seed,
-    nrow(valid$retired_d0f) == 576L,
-    identical(unique(valid$retired_d0f$stage), "D0F_RETIRED"),
+    nrow(valid$retired_d0f) == 1152L,
+    identical(
+      unique(valid$retired_d0f$stage),
+      c("D0F_RETIRED", "D0F_RETRY1_RETIRED")
+    ),
+    all(
+      v07s_d0f_bootstrap_seeds(
+        v07s_d0f_retired_retry_bootstrap_base
+      ) %in%
+        valid$historical$seed
+    ),
     length(intersect(valid$retired_d0f$seed, valid$proposed$seed)) == 0L,
     nrow(valid$proposed) == 92304L,
     identical(names(stage_counts), c("D0F_RETRY", "D1", "D2", "D3", "D4")),

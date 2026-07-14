@@ -1,5 +1,8 @@
 preseal_tool <- testthat::test_path(
-  "..", "..", "tools", "v07_genomic_recovery_v3_preseal.R"
+  "..",
+  "..",
+  "tools",
+  "v07_genomic_recovery_v3_preseal.R"
 )
 testthat::skip_if_not(
   file.exists(preseal_tool),
@@ -10,22 +13,31 @@ source(normalizePath(preseal_tool, mustWork = TRUE), local = TRUE)
 v3p_test_hash <- function(letter = "a") paste(rep(letter, 64L), collapse = "")
 
 v3p_test_d0f_adjudication_receipt <- function(
-  verdict = "PASS", stage_decision = "COMPLETE",
-  schema_version = v3p_d0f_adjudication_schema, stage = "d0f"
+  verdict = "PASS",
+  stage_decision = "COMPLETE",
+  schema_version = v3p_d0f_adjudication_schema,
+  stage = "d0f"
 ) {
   values <- setNames(
     rep(v3p_test_hash("a"), length(v3p_d0f_adjudication_columns)),
     v3p_d0f_adjudication_columns
   )
   values[c(
-    "schema_version", "stage", "verdict", "stage_decision",
-    "attempt_max_diff", "summary_max_diff"
+    "schema_version",
+    "stage",
+    "verdict",
+    "stage_decision",
+    "attempt_max_diff",
+    "summary_max_diff"
   )] <- c(schema_version, stage, verdict, stage_decision, "0", "0")
   values[c(
-    "r_driver_commit", "r_recomputer_commit", "julia_replay_commit"
+    "r_driver_commit",
+    "r_recomputer_commit",
+    "julia_replay_commit"
   )] <- paste(rep("b", 40L), collapse = "")
   values[paste0(v3p_reviewers, "_review_path")] <- file.path(
-    "postrun_receipts", paste0(v3p_reviewers, ".tsv")
+    "postrun_receipts",
+    paste0(v3p_reviewers, ".tsv")
   )
   out <- as.data.frame(as.list(values), stringsAsFactors = FALSE)
   out[v3p_d0f_adjudication_columns]
@@ -36,13 +48,17 @@ v3p_test_d0_manifest <- function() {
     cell <- v07d_cells[i, ]
     offset <- 7101:7148
     data.frame(
-      tier = "pilot", cell_id = cell$cell_id, cell_index = cell$cell_index,
+      tier = "pilot",
+      cell_id = cell$cell_id,
+      cell_index = cell$cell_index,
       seed_offset = offset,
       seed = 2027120000 + 10000 * cell$cell_index + offset,
-      n = cell$n, m = cell$m,
+      n = cell$n,
+      m = cell$m,
       truth_sigma_g2 = cell$truth_ratio,
       truth_sigma_e2 = 1 - cell$truth_ratio,
-      truth_ratio = cell$truth_ratio, ridge = 0.01,
+      truth_ratio = cell$truth_ratio,
+      ridge = 0.01,
       regime = "synthetic_test_only",
       stringsAsFactors = FALSE
     )
@@ -138,7 +154,10 @@ v3p_test_results <- function(n, estimate) {
 }
 
 v3p_test_fail_rows <- function(
-  attempts, rows, unresolved = TRUE, finite_boundary_evidence = TRUE
+  attempts,
+  rows,
+  unresolved = TRUE,
+  finite_boundary_evidence = TRUE
 ) {
   attempts$status[rows] <- "fit_error"
   attempts$error_class[rows] <- if (unresolved) {
@@ -148,17 +167,27 @@ v3p_test_fail_rows <- function(
   }
   attempts$converged[rows] <- FALSE
   required_na <- c(
-    "scientific_sigma_g2", "scientific_sigma_e2", "scientific_ratio",
-    "fitted_total_variance", "numerical_sigma_g2", "numerical_sigma_e2",
-    "numerical_ratio", "iterations", "objective", "gradient_norm"
+    "scientific_sigma_g2",
+    "scientific_sigma_e2",
+    "scientific_ratio",
+    "fitted_total_variance",
+    "numerical_sigma_g2",
+    "numerical_sigma_e2",
+    "numerical_ratio",
+    "iterations",
+    "objective",
+    "gradient_norm"
   )
-  for (field in required_na) attempts[[field]][rows] <- NA_real_
+  for (field in required_na) {
+    attempts[[field]][rows] <- NA_real_
+  }
   if (unresolved) {
     attempts$boundary_status[rows] <- "boundary_unresolved"
     attempts$boundary_reason[rows] <- "profile_unresolved"
     attempts$boundary_epsilon[rows] <- v3p_boundary_epsilon
     evidence <- c(
-      "profile_loglik", "lower_derivative_per_observation",
+      "profile_loglik",
+      "lower_derivative_per_observation",
       "upper_derivative_per_observation"
     )
     if (finite_boundary_evidence) {
@@ -166,7 +195,9 @@ v3p_test_fail_rows <- function(
       attempts$lower_derivative_per_observation[rows] <- 0
       attempts$upper_derivative_per_observation[rows] <- 0
     } else {
-      for (field in evidence) attempts[[field]][rows] <- NA_real_
+      for (field in evidence) {
+        attempts[[field]][rows] <- NA_real_
+      }
     }
   } else {
     attempts$boundary_status[rows] <- NA_character_
@@ -190,8 +221,11 @@ v3p_test_d0f <- function() {
   attempts <- cbind(manifest, v3p_test_results(nrow(manifest), estimates))
   attempts <- attempts[v3p_d0f_attempt_columns]
   list(
-    d0 = d0, diagnostics = diagnostics, fixed = fixed,
-    manifest = manifest, attempts = attempts
+    d0 = d0,
+    diagnostics = diagnostics,
+    fixed = fixed,
+    manifest = manifest,
+    attempts = attempts
   )
 }
 
@@ -243,7 +277,11 @@ v3p_test_julia_replay <- function(attempts) {
 }
 
 v3p_test_pair <- function(path, object) {
-  text <- if (is.data.frame(object)) v07d_tsv_text(object) else as.character(object)
+  text <- if (is.data.frame(object)) {
+    v07d_tsv_text(object)
+  } else {
+    as.character(object)
+  }
   v07d_write_once(path, text)
 }
 
@@ -255,35 +293,53 @@ v3p_test_tsv_hash <- function(object) {
 
 v3p_test_git <- function(root, ...) {
   out <- system2(
-    Sys.which("git"), c("-C", root, ...), stdout = TRUE, stderr = TRUE
+    Sys.which("git"),
+    c("-C", root, ...),
+    stdout = TRUE,
+    stderr = TRUE
   )
   status <- attr(out, "status")
-  if (!is.null(status) && status != 0L) stop(paste(out, collapse = "\n"))
+  if (!is.null(status) && status != 0L) {
+    stop(paste(out, collapse = "\n"))
+  }
   out
 }
 
 v3p_test_validate_stage <- function(...) {
   env <- environment(v3p_validate_stage_preseal)
   old_d0 <- get(
-    "v3p_validate_frozen_d0_artifacts", envir = env, inherits = FALSE
+    "v3p_validate_frozen_d0_artifacts",
+    envir = env,
+    inherits = FALSE
   )
-  old_live <- get("v3p_validate_environment_live", envir = env, inherits = FALSE)
+  old_live <- get(
+    "v3p_validate_environment_live",
+    envir = env,
+    inherits = FALSE
+  )
   old_d0f_final <- get(
-    "v3p_validate_d0f_final_tree", envir = env, inherits = FALSE
+    "v3p_validate_d0f_final_tree",
+    envir = env,
+    inherits = FALSE
   )
   assign(
     "v3p_validate_frozen_d0_artifacts",
     function(root, receipt_hash, diagnostics_hash) {
       root <- v3p_canonical_path(root, "synthetic D0 replay root", TRUE)
       v3p_verify_pair(
-        file.path(root, "receipt", "d0-check-log.md"), receipt_hash,
+        file.path(root, "receipt", "d0-check-log.md"),
+        receipt_hash,
         "synthetic D0 receipt"
       )
       diagnostics_path <- file.path(
-        root, "r", "d0_packet_diagnostics_base_r.tsv"
+        root,
+        "r",
+        "d0_packet_diagnostics_base_r.tsv"
       )
       v3p_verify_pair(
-        diagnostics_path, diagnostics_hash, "synthetic D0 diagnostics"
+        diagnostics_path,
+        diagnostics_hash,
+        "synthetic D0 diagnostics"
       )
       list(root = root, diagnostics_path = diagnostics_path)
     },
@@ -295,16 +351,30 @@ v3p_test_validate_stage <- function(...) {
     envir = env
   )
   assign(
-    "v3p_validate_d0f_final_tree", function(root) invisible(TRUE),
+    "v3p_validate_d0f_final_tree",
+    function(root) invisible(TRUE),
     envir = env
   )
-  on.exit(assign(
-    "v3p_validate_frozen_d0_artifacts", old_d0, envir = env
-  ), add = TRUE)
-  on.exit(assign("v3p_validate_environment_live", old_live, envir = env), add = TRUE)
-  on.exit(assign(
-    "v3p_validate_d0f_final_tree", old_d0f_final, envir = env
-  ), add = TRUE)
+  on.exit(
+    assign(
+      "v3p_validate_frozen_d0_artifacts",
+      old_d0,
+      envir = env
+    ),
+    add = TRUE
+  )
+  on.exit(
+    assign("v3p_validate_environment_live", old_live, envir = env),
+    add = TRUE
+  )
+  on.exit(
+    assign(
+      "v3p_validate_d0f_final_tree",
+      old_d0f_final,
+      envir = env
+    ),
+    add = TRUE
+  )
   v3p_validate_stage_preseal(...)
 }
 
@@ -314,7 +384,11 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   base <- normalizePath(base, winslash = "/", mustWork = TRUE)
   d0_root <- file.path(base, "d0")
   d0f_adjudication_root <- file.path(base, "d0f-adjudicated")
-  stage_root <- if (nested) file.path(d0_root, "stage") else file.path(base, "stage")
+  stage_root <- if (nested) {
+    file.path(d0_root, "stage")
+  } else {
+    file.path(base, "stage")
+  }
   git_root <- file.path(base, "deployed")
   dir.create(file.path(d0_root, "receipt"), recursive = TRUE)
   dir.create(file.path(d0_root, "r"), recursive = TRUE)
@@ -323,7 +397,9 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   dir.create(git_root)
   d0_root <- normalizePath(d0_root, winslash = "/", mustWork = TRUE)
   d0f_adjudication_root <- normalizePath(
-    d0f_adjudication_root, winslash = "/", mustWork = TRUE
+    d0f_adjudication_root,
+    winslash = "/",
+    mustWork = TRUE
   )
   stage_root <- normalizePath(stage_root, winslash = "/", mustWork = TRUE)
   git_root <- normalizePath(git_root, winslash = "/", mustWork = TRUE)
@@ -331,16 +407,21 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   d0_receipt <- file.path(d0_root, "receipt", "d0-check-log.md")
   d0_receipt_hash <- v3p_test_pair(d0_receipt, "synthetic D0 receipt\n")
   d0_diagnostics <- file.path(
-    d0_root, "r", "d0_packet_diagnostics_base_r.tsv"
+    d0_root,
+    "r",
+    "d0_packet_diagnostics_base_r.tsv"
   )
   d0_diagnostics_hash <- v3p_test_pair(
-    d0_diagnostics, "synthetic D0 diagnostics\n"
+    d0_diagnostics,
+    "synthetic D0 diagnostics\n"
   )
   d0f_adjudication_path <- file.path(
-    d0f_adjudication_root, "stage_adjudication_receipt.tsv"
+    d0f_adjudication_root,
+    "stage_adjudication_receipt.tsv"
   )
   d0f_adjudication_hash <- v3p_test_pair(
-    d0f_adjudication_path, v3p_test_d0f_adjudication_receipt()
+    d0f_adjudication_path,
+    v3p_test_d0f_adjudication_receipt()
   )
 
   tool_names <- c(
@@ -358,7 +439,10 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   dir.create(file.path(git_root, "src"))
   dir.create(file.path(git_root, "ext"))
   writeLines("synthetic R surface", file.path(git_root, "R", "surface.R"))
-  writeLines("synthetic Julia surface", file.path(git_root, "src", "surface.jl"))
+  writeLines(
+    "synthetic Julia surface",
+    file.path(git_root, "src", "surface.jl")
+  )
   writeLines("synthetic extension", file.path(git_root, "ext", "surface.jl"))
   for (name in c("DESCRIPTION", "NAMESPACE", "Project.toml", "Manifest.toml")) {
     writeLines(paste("synthetic", name), file.path(git_root, name))
@@ -370,71 +454,129 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   v3p_test_git(git_root, "commit", "--quiet", "-m", "synthetic-tools")
   commit <- trimws(v3p_test_git(git_root, "rev-parse", "HEAD")[[1L]])
 
-  doc_hash <- v3p_test_pair(file.path(stage_root, "doc49.md"), "synthetic doc49\n")
+  doc_hash <- v3p_test_pair(
+    file.path(stage_root, "doc49.md"),
+    "synthetic doc49\n"
+  )
   cell_hash <- v3p_test_pair(
-    file.path(stage_root, "cell_table.tsv"), v3p_cell_table()
+    file.path(stage_root, "cell_table.tsv"),
+    v3p_cell_table()
   )
   lock_hash <- v3p_test_pair(
-    file.path(stage_root, "historical_seed_lock.tsv"), v07s_expected_lock
+    file.path(stage_root, "historical_seed_lock.tsv"),
+    v07s_expected_lock
   )
   manifest_hash <- v3p_test_pair(
-    file.path(stage_root, "d1_manifest.tsv"), v3p_d1_manifest()
+    file.path(stage_root, "d1_manifest.tsv"),
+    v3p_d1_manifest()
   )
   environment <- v3p_environment_manifest(c(
-    stage = "d1", host = "totoro", r_version = as.character(getRversion()),
-    r_rng_kind = "Mersenne-Twister", r_normal_kind = "Inversion",
-    r_sample_kind = "Rejection", julia_version = "1.10.0",
-    openblas_num_threads = "1", julia_num_threads = "1", max_workers = "16"
+    stage = "d1",
+    host = "totoro",
+    r_version = as.character(getRversion()),
+    r_rng_kind = "Mersenne-Twister",
+    r_normal_kind = "Inversion",
+    r_sample_kind = "Rejection",
+    julia_version = "1.10.0",
+    openblas_num_threads = "1",
+    julia_num_threads = "1",
+    max_workers = "16"
   ))
   environment_hash <- v3p_test_pair(
-    file.path(stage_root, "environment_manifest.tsv"), environment
+    file.path(stage_root, "environment_manifest.tsv"),
+    environment
   )
 
   review_hashes <- setNames(character(length(v3p_reviewers)), v3p_reviewers)
   for (reviewer in v3p_reviewers) {
     receipt <- data.frame(
-      reviewer = reviewer, verdict = "CLEAN", doc49_sha256 = doc_hash,
-      r_driver_commit = commit, r_recomputer_commit = commit,
-      julia_replay_commit = commit, r_auto_route_commit = commit,
-      julia_candidate_commit = commit, stringsAsFactors = FALSE
+      reviewer = reviewer,
+      verdict = "CLEAN",
+      doc49_sha256 = doc_hash,
+      r_driver_commit = commit,
+      r_recomputer_commit = commit,
+      julia_replay_commit = commit,
+      r_auto_route_commit = commit,
+      julia_candidate_commit = commit,
+      stringsAsFactors = FALSE
     )[v3p_review_columns]
     review_hashes[[reviewer]] <- v3p_test_pair(
-      file.path(stage_root, "receipts", paste0(reviewer, ".tsv")), receipt
+      file.path(stage_root, "receipts", paste0(reviewer, ".tsv")),
+      receipt
     )
   }
 
-  values <- setNames(rep("NA", length(v3p_stage_preseal_keys)), v3p_stage_preseal_keys)
-  values[c(
-    "schema_version", "stage", "d0_output_root", "output_root",
-    "official_route", "replay_route", "packet_schema_version",
-    "truth_schema_version", "relationship_source", "relationship_method",
-    "allele_frequency_source", "relationship_scale", "ridge",
-    "boundary_epsilon", "boundary_kkt_tolerance",
-    "output_subtrees_absent_before_preseal"
-  )] <- c(
-    "v07-genomic-recovery-v3-stage-preseal-2", "d1", d0_root, stage_root,
-    "ordinary_auto_genomic", "julia_profile_replay",
-    "v07-genomic-recovery-v3-packet-1", "v07-genomic-recovery-v3-truth-1",
-    "markers", "vanraden1", "sample", "K_lambda", "0.01", "1e-07",
-    "1e-08", "true"
+  values <- setNames(
+    rep("NA", length(v3p_stage_preseal_keys)),
+    v3p_stage_preseal_keys
   )
   values[c(
-    "doc49_sha256", "cell_table_sha256", "manifest_sha256",
-    "environment_manifest_sha256", "d0_adjudication_receipt_sha256",
-    "d0_diagnostics_sha256", "d0f_adjudication_receipt_sha256",
+    "schema_version",
+    "stage",
+    "d0_output_root",
+    "output_root",
+    "official_route",
+    "replay_route",
+    "packet_schema_version",
+    "truth_schema_version",
+    "relationship_source",
+    "relationship_method",
+    "allele_frequency_source",
+    "relationship_scale",
+    "ridge",
+    "boundary_epsilon",
+    "boundary_kkt_tolerance",
+    "output_subtrees_absent_before_preseal"
+  )] <- c(
+    "v07-genomic-recovery-v3-stage-preseal-2",
+    "d1",
+    d0_root,
+    stage_root,
+    "ordinary_auto_genomic",
+    "julia_profile_replay",
+    "v07-genomic-recovery-v3-packet-1",
+    "v07-genomic-recovery-v3-truth-1",
+    "markers",
+    "vanraden1",
+    "sample",
+    "K_lambda",
+    "0.01",
+    "1e-07",
+    "1e-08",
+    "true"
+  )
+  values[c(
+    "doc49_sha256",
+    "cell_table_sha256",
+    "manifest_sha256",
+    "environment_manifest_sha256",
+    "d0_adjudication_receipt_sha256",
+    "d0_diagnostics_sha256",
+    "d0f_adjudication_receipt_sha256",
     "historical_seed_lock_sha256"
   )] <- c(
-    doc_hash, cell_hash, manifest_hash, environment_hash, d0_receipt_hash,
-    d0_diagnostics_hash, d0f_adjudication_hash, lock_hash
+    doc_hash,
+    cell_hash,
+    manifest_hash,
+    environment_hash,
+    d0_receipt_hash,
+    d0_diagnostics_hash,
+    d0f_adjudication_hash,
+    lock_hash
   )
   values[["d0f_adjudication_root"]] <- d0f_adjudication_root
   values[paste0(v3p_reviewers, "_receipt_sha256")] <- review_hashes
   values[c(
-    "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
-    "r_auto_route_commit", "julia_candidate_commit"
+    "r_driver_commit",
+    "r_recomputer_commit",
+    "julia_replay_commit",
+    "r_auto_route_commit",
+    "julia_candidate_commit"
   )] <- commit
   values[c(
-    "r_driver_sha256", "r_recomputer_sha256", "julia_replay_sha256",
+    "r_driver_sha256",
+    "r_recomputer_sha256",
+    "julia_replay_sha256",
     "d0_recomputer_sha256"
   )] <- vapply(tool_paths, v07d_sha256, character(1L))
   preseal <- data.frame(
@@ -450,15 +592,21 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
     r_recomputer_path = tool_paths[["r_recomputer"]],
     julia_replay_path = tool_paths[["julia_replay"]],
     d0_recomputer_path = tool_paths[["d0_recomputer"]],
-    r_driver_root = git_root, r_recomputer_root = git_root,
-    julia_replay_root = git_root, r_auto_route_root = git_root,
+    r_driver_root = git_root,
+    r_recomputer_root = git_root,
+    julia_replay_root = git_root,
+    r_auto_route_root = git_root,
     julia_candidate_root = git_root
   )
   list(
-    base = base, stage_root = stage_root, d0_root = d0_root,
+    base = base,
+    stage_root = stage_root,
+    d0_root = d0_root,
     d0f_adjudication_root = d0f_adjudication_root,
     d0f_adjudication_path = d0f_adjudication_path,
-    git_root = git_root, preseal = preseal, context = context,
+    git_root = git_root,
+    preseal = preseal,
+    context = context,
     tool_paths = tool_paths
   )
 }
@@ -469,9 +617,12 @@ test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
   expect_equal(nrow(fixture$manifest), 576L)
   expect_identical(
     fixture$fixed$panel_source_seed,
-    unlist(lapply(v3p_d0f_designs$source_cell_id, function(cell) {
-      sort(fixture$d0$seed[fixture$d0$cell_id == cell])[1:24]
-    }), use.names = FALSE)
+    unlist(
+      lapply(v3p_d0f_designs$source_cell_id, function(cell) {
+        sort(fixture$d0$seed[fixture$d0$cell_id == cell])[1:24]
+      }),
+      use.names = FALSE
+    )
   )
   expect_identical(
     fixture$manifest$seed,
@@ -483,7 +634,8 @@ test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
   )
   expect_true(all(fixture$manifest$seed > v07s_d0f_retry_phenotype_base))
   expect_length(
-    intersect(fixture$manifest$seed, v07s_expand_retired_d0f()$seed), 0L
+    intersect(fixture$manifest$seed, v07s_expand_retired_d0f()$seed),
+    0L
   )
   expect_length(intersect(fixture$manifest$seed, fixture$d0$seed), 0L)
 
@@ -499,7 +651,8 @@ test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
     too_many_diagnostic_markers$m[[1L]] + 1L
   expect_error(
     v3p_validate_d0_diagnostics(
-      v3p_test_d0_manifest(), too_many_diagnostic_markers
+      v3p_test_d0_manifest(),
+      too_many_diagnostic_markers
     ),
     "scientific contract drift"
   )
@@ -530,12 +683,19 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
   seeds <- v3p_validate_bootstrap_seed_space()
-  expect_identical(seeds, as.integer(2033000001:2033000003))
+  expect_identical(seeds, as.integer(2035000001:2035000003))
   expect_identical(anyDuplicated(seeds), 0L)
   expect_length(
     intersect(
       seeds,
       v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)
+    ),
+    0L
+  )
+  expect_length(
+    intersect(
+      seeds,
+      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry_bootstrap_base)
     ),
     0L
   )
@@ -556,11 +716,21 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
 
 test_that("committed cell table admits rounded marker ratio only", {
   path <- testthat::test_path(
-    "..", "..", "docs", "design", "v07_genomic_recovery_v3_cell_table.tsv"
+    "..",
+    "..",
+    "docs",
+    "design",
+    "v07_genomic_recovery_v3_cell_table.tsv"
   )
   actual <- utils::read.delim(
-    path, header = TRUE, sep = "\t", quote = "", comment.char = "",
-    check.names = FALSE, stringsAsFactors = FALSE, na.strings = "NA"
+    path,
+    header = TRUE,
+    sep = "\t",
+    quote = "",
+    comment.char = "",
+    check.names = FALSE,
+    stringsAsFactors = FALSE,
+    na.strings = "NA"
   )
   expect_silent(v3p_validate_cell_table(actual))
   rounded <- actual
@@ -615,19 +785,22 @@ test_that("attempt admission fails closed on membership, truth, and booleans", {
   truth <- d0f$attempts
   truth$truth_ratio[[1L]] <- 0.8
   expect_error(
-    v3p_admit_d0f_attempts(truth, d0f$manifest, binding), "truth_ratio"
+    v3p_admit_d0f_attempts(truth, d0f$manifest, binding),
+    "truth_ratio"
   )
 
   malformed <- d0f$attempts
   malformed$attempted <- as.character(malformed$attempted)
   malformed$attempted[[1L]] <- "yes"
   expect_error(
-    v3p_admit_d0f_attempts(malformed, d0f$manifest, binding), "invalid logical"
+    v3p_admit_d0f_attempts(malformed, d0f$manifest, binding),
+    "invalid logical"
   )
   attempted_false <- d0f$attempts
   attempted_false$attempted[[1L]] <- FALSE
   expect_error(
-    v3p_admit_d0f_attempts(attempted_false, d0f$manifest, binding), "denominator"
+    v3p_admit_d0f_attempts(attempted_false, d0f$manifest, binding),
+    "denominator"
   )
   converged_false <- d0f$attempts
   converged_false$converged[[1L]] <- FALSE
@@ -657,7 +830,9 @@ test_that("unsuccessful attempts obey the exact frozen NA and boundary conventio
   unresolved <- v3p_test_fail_rows(fixture$attempts, 1L)
   expect_silent(v3p_admit_d1_attempts(unresolved, fixture$manifest, binding))
   unresolved_na <- v3p_test_fail_rows(
-    fixture$attempts, 1L, finite_boundary_evidence = FALSE
+    fixture$attempts,
+    1L,
+    finite_boundary_evidence = FALSE
   )
   expect_silent(v3p_admit_d1_attempts(unresolved_na, fixture$manifest, binding))
   ordinary <- v3p_test_fail_rows(fixture$attempts, 1L, unresolved = FALSE)
@@ -705,7 +880,9 @@ test_that("D1 summaries implement frozen sizing and three-way adjudication", {
   fixture <- v3p_test_d1()
   binding <- v3p_test_binding()
   expect_silent(v3p_admit_d1_attempts(
-    fixture$attempts, fixture$manifest, binding
+    fixture$attempts,
+    fixture$manifest,
+    binding
   ))
   summary <- v3p_d1_summary(fixture$manifest, fixture$attempts, binding)
   expect_identical(names(summary), v3p_d1_summary_columns)
@@ -716,8 +893,12 @@ test_that("D1 summaries implement frozen sizing and three-way adjudication", {
   expect_true(all(summary$cell_eligible))
   julia <- v3p_test_julia_replay(fixture$attempts)
   expect_silent(v3p_adjudicate_attempts(
-    fixture$attempts, fixture$attempts, julia,
-    fixture$manifest, "d1", binding,
+    fixture$attempts,
+    fixture$attempts,
+    julia,
+    fixture$manifest,
+    "d1",
+    binding,
     rep(v3p_test_hash("a"), nrow(fixture$attempts))
   ))
   expect_silent(v3p_adjudicate_summaries(summary, summary, summary, "d1"))
@@ -726,8 +907,12 @@ test_that("D1 summaries implement frozen sizing and three-way adjudication", {
   changed_fingerprint$marker_hash[[1L]] <- v3p_test_hash("e")
   expect_error(
     v3p_adjudicate_attempts(
-      fixture$attempts, fixture$attempts, changed_fingerprint,
-      fixture$manifest, "d1", binding,
+      fixture$attempts,
+      fixture$attempts,
+      changed_fingerprint,
+      fixture$manifest,
+      "d1",
+      binding,
       rep(v3p_test_hash("a"), nrow(fixture$attempts))
     ),
     "summary mismatch in marker_hash"
@@ -745,7 +930,9 @@ test_that("D1 summaries implement frozen sizing and three-way adjudication", {
     "summary mismatch in bias"
   )
   malformed_summary <- summary
-  malformed_summary$cell_eligible <- as.character(malformed_summary$cell_eligible)
+  malformed_summary$cell_eligible <- as.character(
+    malformed_summary$cell_eligible
+  )
   malformed_summary$cell_eligible[[1L]] <- "maybe"
   expect_error(
     v3p_adjudicate_summaries(summary, summary, malformed_summary, "d1"),
@@ -775,7 +962,9 @@ test_that("attempt and Julia replay provenance bindings reject every forgery", {
   ordinary_wrong_driver$driver_commit[[1L]] <- binding$julia_replay_commit
   expect_error(
     v3p_admit_d1_attempts(
-      ordinary_wrong_driver, fixture$manifest, binding
+      ordinary_wrong_driver,
+      fixture$manifest,
+      binding
     ),
     "provenance binding is invalid"
   )
@@ -795,7 +984,11 @@ test_that("attempt and Julia replay provenance bindings reject every forgery", {
     changed[[field]][[1L]] <- replay_fields[[field]]
     expect_error(
       v3p_admit_julia_replay(
-        changed, fixture$manifest, "d1", binding, source_hashes
+        changed,
+        fixture$manifest,
+        "d1",
+        binding,
+        source_hashes
       ),
       "provenance or source parity binding is invalid",
       info = paste("Julia replay provenance mutation", field)
@@ -805,7 +998,11 @@ test_that("attempt and Julia replay provenance bindings reject every forgery", {
   changed_difference$source_r_max_abs_difference[[1L]] <- 1e-6
   expect_error(
     v3p_admit_julia_replay(
-      changed_difference, fixture$manifest, "d1", binding, source_hashes
+      changed_difference,
+      fixture$manifest,
+      "d1",
+      binding,
+      source_hashes
     ),
     "provenance or source parity binding is invalid"
   )
@@ -813,7 +1010,11 @@ test_that("attempt and Julia replay provenance bindings reject every forgery", {
   replay_wrong_driver$driver_commit[[1L]] <- binding$r_driver_commit
   expect_error(
     v3p_admit_julia_replay(
-      replay_wrong_driver, fixture$manifest, "d1", binding, source_hashes
+      replay_wrong_driver,
+      fixture$manifest,
+      "d1",
+      binding,
+      source_hashes
     ),
     "provenance binding is invalid"
   )
@@ -827,25 +1028,52 @@ test_that("shared D1 summary parity fixture pins cross-twin semantics", {
     "945ab4576b534420688190f6649d83cc476d3dfb0e4b6e56b35af1b1d5cb8087"
   )
   expected_first <- list(
-    stage = "d1", cell_id = "n0120_m0060_q0500_r050", cell_index = 2L,
-    n = 120L, m = 60L, marker_ratio = 0.5, truth_ratio = 0.5,
-    n_expected = 48L, n_attempted = 48L, n_converged = 48L,
-    n_bias_rows = 48L, n_interior = 45L, n_interior_rescued = 1L,
-    n_boundary_lower = 1L, n_boundary_upper = 1L, n_unresolved = 0L,
-    n_error = 0L, convergence_rate = 1,
-    wilson_lower = 0.925899870333882, wilson_upper = 1,
-    target = "sigma_g2", truth = 0.5,
-    mean_estimate = 0.500095833333333, bias = 9.58333333333353e-05,
-    mcse = 0.0148884905772755, bias_ci_lower = -0.0298559463492557,
-    bias_ci_upper = 0.0300476130159223, margin = 0.025,
-    rmse = 0.102070393907832, mcse_rmse = 0.0356952880225288,
-    empirical_sd = 0.103150488511407, pilot_sd_upper = 0.12449065181588,
-    required_n_raw = 382, required_n = 596, low_convergence = FALSE,
-    summary_nonfinite = FALSE, precision_blocked = FALSE,
-    futility_stopped = FALSE, target_futile = FALSE, cell_eligible = TRUE,
-    cell_status = "ELIGIBLE", median_runtime_seconds = 24.5,
-    p95_runtime_seconds = 45.65, median_peak_rss_mb = 124.5,
-    p95_peak_rss_mb = 145.65, rms_se_info = 0.1,
+    stage = "d1",
+    cell_id = "n0120_m0060_q0500_r050",
+    cell_index = 2L,
+    n = 120L,
+    m = 60L,
+    marker_ratio = 0.5,
+    truth_ratio = 0.5,
+    n_expected = 48L,
+    n_attempted = 48L,
+    n_converged = 48L,
+    n_bias_rows = 48L,
+    n_interior = 45L,
+    n_interior_rescued = 1L,
+    n_boundary_lower = 1L,
+    n_boundary_upper = 1L,
+    n_unresolved = 0L,
+    n_error = 0L,
+    convergence_rate = 1,
+    wilson_lower = 0.925899870333882,
+    wilson_upper = 1,
+    target = "sigma_g2",
+    truth = 0.5,
+    mean_estimate = 0.500095833333333,
+    bias = 9.58333333333353e-05,
+    mcse = 0.0148884905772755,
+    bias_ci_lower = -0.0298559463492557,
+    bias_ci_upper = 0.0300476130159223,
+    margin = 0.025,
+    rmse = 0.102070393907832,
+    mcse_rmse = 0.0356952880225288,
+    empirical_sd = 0.103150488511407,
+    pilot_sd_upper = 0.12449065181588,
+    required_n_raw = 382,
+    required_n = 596,
+    low_convergence = FALSE,
+    summary_nonfinite = FALSE,
+    precision_blocked = FALSE,
+    futility_stopped = FALSE,
+    target_futile = FALSE,
+    cell_eligible = TRUE,
+    cell_status = "ELIGIBLE",
+    median_runtime_seconds = 24.5,
+    p95_runtime_seconds = 45.65,
+    median_peak_rss_mb = 124.5,
+    p95_peak_rss_mb = 145.65,
+    rms_se_info = 0.1,
     empirical_sd_over_rms_se_info = 1.03150488511407,
     predicted_boundary_lower = 2.86651571879194e-07,
     predicted_boundary_upper = 2.86651571923535e-07,
@@ -853,7 +1081,8 @@ test_that("shared D1 summary parity fixture pins cross-twin semantics", {
     observed_boundary_upper = 0.0208333333333333,
     mcse_boundary_lower = 0.0206151772344408,
     mcse_boundary_upper = 0.0206151772344408,
-    mean_spectral_cv = 0.5, mean_effective_rank = 50,
+    mean_spectral_cv = 0.5,
+    mean_effective_rank = 50,
     failure_classes = "none=48"
   )
   expect_identical(names(expected_first), v3p_d1_summary_columns)
@@ -880,7 +1109,9 @@ test_that("shared D1 summary parity fixture pins cross-twin semantics", {
 test_that("D1 status precedence and independent reason flags stay fail closed", {
   fixture <- v3p_test_d1()
   binding <- v3p_test_binding()
-  first_cell <- which(fixture$attempts$cell_id == fixture$manifest$cell_id[[1L]])
+  first_cell <- which(
+    fixture$attempts$cell_id == fixture$manifest$cell_id[[1L]]
+  )
 
   failed <- first_cell[1:3]
   low <- v3p_test_fail_rows(fixture$attempts, failed)
@@ -995,7 +1226,8 @@ test_that("D0F decomposition preserves negative between-panel variance", {
 test_that("shared D0F summary parity fixture pins all typed fields", {
   parity <- v3p_d0f_summary_parity_fixture(v3p_test_binding())
   expect_identical(
-    names(parity), c("manifest", "attempts", "bootstrap", "summary")
+    names(parity),
+    c("manifest", "attempts", "bootstrap", "summary")
   )
   expect_equal(
     vapply(parity, nrow, integer(1L)),
@@ -1007,19 +1239,19 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   expect_identical(names(parity$summary), v3p_d0f_summary_columns)
   expect_identical(
     v3p_test_tsv_hash(parity$manifest),
-    "bba438bea935ab76590a99fce9a16ab3c7616b78e2e2ab8ff12376f9a71dea5d"
+    "abde0582fddcb9a16d3f7ed51fe94c1e70569bd6e7ff31b89857f0dec48b339e"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$attempts),
-    "0a58f93eaec49d4d7927c67d584273aa8d7e4e9e6ee2707498be8c94bbc078ac"
+    "2ded1580297ef3c9030f58d5d9432856bef3e7164bdae241bf5a93b70e179d16"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$bootstrap),
-    "609db9dbb3ba023728249645e14e13e579d7dd9cc1917a9241bcf9f3c1d60c4c"
+    "ff85a98bf160967f9699d01c53ed927c874d65c1f386780c3e62f43ef08cdef0"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$summary),
-    "887db362e24bbc930ea09a3f73188dc27eb411643f63411b827419cd4cee41d5"
+    "41eecb9f9d698244a31ded852accb881689aa24b0a0da324b321a82be6964c29"
   )
   expect_true(is.character(parity$summary$d0f_status))
   expect_true(is.logical(parity$summary$fit_blocker))
@@ -1032,7 +1264,10 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
     numeric_mutation$variance_within[[1L]] + 1e-4
   expect_error(
     v3p_adjudicate_summaries(
-      parity$summary, numeric_mutation, parity$summary, "d0f"
+      parity$summary,
+      numeric_mutation,
+      parity$summary,
+      "d0f"
     ),
     "summary mismatch in variance_within"
   )
@@ -1040,7 +1275,10 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   character_mutation$d0f_status[[1L]] <- "D0F_FIT_BLOCKER"
   expect_error(
     v3p_adjudicate_summaries(
-      parity$summary, character_mutation, parity$summary, "d0f"
+      parity$summary,
+      character_mutation,
+      parity$summary,
+      "d0f"
     ),
     "summary mismatch in d0f_status"
   )
@@ -1048,7 +1286,10 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   logical_mutation$fit_blocker[[1L]] <- TRUE
   expect_error(
     v3p_adjudicate_summaries(
-      parity$summary, logical_mutation, parity$summary, "d0f"
+      parity$summary,
+      logical_mutation,
+      parity$summary,
+      "d0f"
     ),
     "summary mismatch in fit_blocker"
   )
@@ -1060,17 +1301,28 @@ test_that("one D0F failure blocks all three decompositions without subsetting", 
   failed <- v3p_test_fail_rows(fixture$attempts, 1L)
   bootstrap <- v3p_d0f_bootstrap_manifest(3L)
   summary <- v3p_d0f_summary(
-    fixture$manifest, failed, bootstrap, v3p_test_hash("f"), binding
+    fixture$manifest,
+    failed,
+    bootstrap,
+    v3p_test_hash("f"),
+    binding
   )
   expect_true(all(summary$d0f_status == "D0F_FIT_BLOCKER"))
   expect_true(all(summary$fit_blocker))
   unavailable <- c(
-    "variance_within", "variance_within_bootstrap_lower",
-    "variance_within_bootstrap_upper", "variance_between",
-    "variance_between_bootstrap_lower", "variance_between_bootstrap_upper",
-    "mean_ratio", "mcse_mean_ratio", "empirical_sd_ratio",
-    "boundary_lower_proportion", "boundary_upper_proportion",
-    "mcse_boundary_lower", "mcse_boundary_upper"
+    "variance_within",
+    "variance_within_bootstrap_lower",
+    "variance_within_bootstrap_upper",
+    "variance_between",
+    "variance_between_bootstrap_lower",
+    "variance_between_bootstrap_upper",
+    "mean_ratio",
+    "mcse_mean_ratio",
+    "empirical_sd_ratio",
+    "boundary_lower_proportion",
+    "boundary_upper_proportion",
+    "mcse_boundary_lower",
+    "mcse_boundary_upper"
   )
   expect_true(all(is.na(unlist(summary[unavailable]))))
   expect_equal(sum(summary$n_attempted), 576L)
@@ -1086,10 +1338,16 @@ test_that("environment, lowercase booleans, and create-once gates fail closed", 
     "/tmp/Github Local/tool.R"
   )
   environment <- v3p_environment_manifest(c(
-    stage = "d1", host = "totoro", r_version = as.character(getRversion()),
-    r_rng_kind = "Mersenne-Twister", r_normal_kind = "Inversion",
-    r_sample_kind = "Rejection", julia_version = "1.10.0",
-    openblas_num_threads = "1", julia_num_threads = "1", max_workers = "16"
+    stage = "d1",
+    host = "totoro",
+    r_version = as.character(getRversion()),
+    r_rng_kind = "Mersenne-Twister",
+    r_normal_kind = "Inversion",
+    r_sample_kind = "Rejection",
+    julia_version = "1.10.0",
+    openblas_num_threads = "1",
+    julia_num_threads = "1",
+    max_workers = "16"
   ))
   expect_identical(environment$key, v3p_environment_keys)
   forged_live <- environment
@@ -1113,7 +1371,10 @@ test_that("environment, lowercase booleans, and create-once gates fail closed", 
     v3p_write_once(root, "manifest.tsv", environment),
     "create-once output exists"
   )
-  expect_error(v3p_write_once(root, "../escape.tsv", environment), "safe basename")
+  expect_error(
+    v3p_write_once(root, "../escape.tsv", environment),
+    "safe basename"
+  )
 
   link <- tempfile("v3p-link-")
   expect_true(file.symlink(root, link))
@@ -1126,7 +1387,8 @@ test_that("stage preseal verifies the exact existing tree and provenance", {
   on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
   expect_length(v3p_stage_preseal_keys, 41L)
   diagnostics_at <- match(
-    "d0_diagnostics_sha256", v3p_stage_preseal_keys
+    "d0_diagnostics_sha256",
+    v3p_stage_preseal_keys
   )
   expect_identical(
     v3p_stage_preseal_keys[c(diagnostics_at - 1L, diagnostics_at)],
@@ -1139,13 +1401,19 @@ test_that("stage preseal verifies the exact existing tree and provenance", {
   expect_identical(
     v3p_review_columns,
     c(
-      "reviewer", "verdict", "doc49_sha256", "r_driver_commit",
-      "r_recomputer_commit", "julia_replay_commit", "r_auto_route_commit",
+      "reviewer",
+      "verdict",
+      "doc49_sha256",
+      "r_driver_commit",
+      "r_recomputer_commit",
+      "julia_replay_commit",
+      "r_auto_route_commit",
       "julia_candidate_commit"
     )
   )
   expect_silent(v3p_test_validate_stage(
-    fixture$preseal, fixture$context
+    fixture$preseal,
+    fixture$context
   ))
 })
 
@@ -1155,13 +1423,24 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
   expected_hash <- v07d_sha256(valid$d0f_adjudication_path)
   env <- environment(v3p_validate_successful_d0f_adjudication)
   old_final <- get("v3p_validate_d0f_final_tree", envir = env, inherits = FALSE)
-  assign("v3p_validate_d0f_final_tree", function(root) invisible(TRUE), envir = env)
-  on.exit(assign("v3p_validate_d0f_final_tree", old_final, envir = env), add = TRUE)
+  assign(
+    "v3p_validate_d0f_final_tree",
+    function(root) invisible(TRUE),
+    envir = env
+  )
+  on.exit(
+    assign("v3p_validate_d0f_final_tree", old_final, envir = env),
+    add = TRUE
+  )
   expect_silent(v3p_validate_successful_d0f_adjudication(
-    valid$d0f_adjudication_root, expected_hash, valid$stage_root
+    valid$d0f_adjudication_root,
+    expected_hash,
+    valid$stage_root
   ))
   expect_silent(v3p_test_validate_stage(
-    valid$preseal, valid$context, include_preseal = FALSE
+    valid$preseal,
+    valid$context,
+    include_preseal = FALSE
   ))
 
   missing_primary <- v3p_test_preseal_fixture(write_preseal = FALSE)
@@ -1169,7 +1448,8 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
   unlink(missing_primary$d0f_adjudication_path)
   expect_error(
     v3p_validate_successful_d0f_adjudication(
-      missing_primary$d0f_adjudication_root, v3p_test_hash("a")
+      missing_primary$d0f_adjudication_root,
+      v3p_test_hash("a")
     ),
     "canonical plain path|primary is missing"
   )
@@ -1189,7 +1469,8 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
   on.exit(unlink(wrong_hash$base, recursive = TRUE), add = TRUE)
   expect_error(
     v3p_validate_successful_d0f_adjudication(
-      wrong_hash$d0f_adjudication_root, v3p_test_hash("0")
+      wrong_hash$d0f_adjudication_root,
+      v3p_test_hash("0")
     ),
     "hash mismatch|SHA-256"
   )
@@ -1197,12 +1478,19 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
   blocked <- v3p_test_preseal_fixture(write_preseal = FALSE)
   on.exit(unlink(blocked$base, recursive = TRUE), add = TRUE)
   old_blocked_root <- v3p_d0f_blocked_root
-  assign("v3p_d0f_blocked_root", blocked$d0f_adjudication_root,
+  assign(
+    "v3p_d0f_blocked_root",
+    blocked$d0f_adjudication_root,
     envir = environment(v3p_validate_successful_d0f_adjudication)
   )
-  on.exit(assign("v3p_d0f_blocked_root", old_blocked_root,
-    envir = environment(v3p_validate_successful_d0f_adjudication)
-  ), add = TRUE)
+  on.exit(
+    assign(
+      "v3p_d0f_blocked_root",
+      old_blocked_root,
+      envir = environment(v3p_validate_successful_d0f_adjudication)
+    ),
+    add = TRUE
+  )
   expect_error(
     v3p_validate_successful_d0f_adjudication(
       blocked$d0f_adjudication_root,
@@ -1211,11 +1499,15 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
     "blocked unadjudicated D0F root"
   )
   blocked_alias <- file.path(
-    dirname(blocked$d0f_adjudication_root), "stage", "..", "d0f-adjudicated"
+    dirname(blocked$d0f_adjudication_root),
+    "stage",
+    "..",
+    "d0f-adjudicated"
   )
   expect_error(
     v3p_validate_successful_d0f_adjudication(
-      blocked_alias, v07d_sha256(blocked$d0f_adjudication_path)
+      blocked_alias,
+      v07d_sha256(blocked$d0f_adjudication_path)
     ),
     "canonical plain path|textual path is not canonical"
   )
@@ -1224,12 +1516,14 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
   dir.create(nested_root)
   nested_path <- file.path(nested_root, "stage_adjudication_receipt.tsv")
   nested_hash <- v3p_test_pair(
-    nested_path, v3p_test_d0f_adjudication_receipt()
+    nested_path,
+    v3p_test_d0f_adjudication_receipt()
   )
   expect_error(
     v3p_validate_successful_d0f_adjudication(
       normalizePath(nested_root, winslash = "/", mustWork = TRUE),
-      nested_hash, valid$stage_root
+      nested_hash,
+      valid$stage_root
     ),
     "distinct and nonnested"
   )
@@ -1262,7 +1556,9 @@ test_that("live preseal validation executes exact seed-space admission", {
   on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
   expect_error(
     v3p_test_validate_stage(
-      fixture$preseal, fixture$context, include_preseal = FALSE
+      fixture$preseal,
+      fixture$context,
+      include_preseal = FALSE
     ),
     "overlap|collision|intersects"
   )
@@ -1288,7 +1584,8 @@ test_that("D1 rejects non-PASS, non-COMPLETE, and unadjudicated D0F receipts", {
     hash <- v3p_test_pair(fixture$d0f_adjudication_path, receipt)
     expect_error(
       v3p_validate_successful_d0f_adjudication(
-        fixture$d0f_adjudication_root, hash
+        fixture$d0f_adjudication_root,
+        hash
       ),
       "not one adjudicated PASS/COMPLETE d0f row",
       info = name
@@ -1317,7 +1614,9 @@ test_that("stage preseal hard-freezes D0 and both candidate commits", {
   ] <- receipt_hash
   expect_error(
     v3p_test_validate_stage(
-      fixture$preseal, fixture$context, include_preseal = FALSE
+      fixture$preseal,
+      fixture$context,
+      include_preseal = FALSE
     ),
     "does not bind the exact preseal plan"
   )
@@ -1326,7 +1625,9 @@ test_that("stage preseal hard-freezes D0 and both candidate commits", {
   ]
   expect_error(
     v3p_git_ancestor(
-      fixture$git_root, paste(rep("0", 40L), collapse = ""), commit,
+      fixture$git_root,
+      paste(rep("0", 40L), collapse = ""),
+      commit,
       "synthetic R"
     ),
     "not an ancestor"
@@ -1338,7 +1639,9 @@ test_that("stage preseal hard-freezes D0 and both candidate commits", {
   ] <- v3p_test_hash("0")
   expect_error(
     v3p_test_validate_stage(
-      diagnostics_mutation, fixture$context, include_preseal = FALSE
+      diagnostics_mutation,
+      fixture$context,
+      include_preseal = FALSE
     ),
     "hash mismatch|SHA-256"
   )
@@ -1354,17 +1657,26 @@ test_that("candidate-to-deployed implementation surfaces cannot drift", {
   )
   v3p_test_git(fixture$git_root, "add", "R/surface.R")
   v3p_test_git(
-    fixture$git_root, "commit", "--quiet", "-m", "synthetic-drift"
+    fixture$git_root,
+    "commit",
+    "--quiet",
+    "-m",
+    "synthetic-drift"
   )
   after <- v3p_git_head(fixture$git_root)
   expect_silent(v3p_git_unchanged(
-    fixture$git_root, before, after,
+    fixture$git_root,
+    before,
+    after,
     file.path(fixture$git_root, c("DESCRIPTION", "NAMESPACE")),
     "unchanged R metadata"
   ))
   expect_error(
     v3p_git_unchanged(
-      fixture$git_root, before, after, file.path(fixture$git_root, "R"),
+      fixture$git_root,
+      before,
+      after,
+      file.path(fixture$git_root, "R"),
       "R candidate implementation"
     ),
     "changed between candidate and deployed commits"
@@ -1382,7 +1694,10 @@ test_that("stage preseal rejects extra directories and special files", {
 
   fifo <- v3p_test_preseal_fixture()
   on.exit(unlink(fifo$base, recursive = TRUE), add = TRUE)
-  status <- system2(Sys.which("mkfifo"), file.path(fifo$stage_root, "unexpected"))
+  status <- system2(
+    Sys.which("mkfifo"),
+    file.path(fifo$stage_root, "unexpected")
+  )
   expect_identical(status, 0L)
   expect_error(
     v3p_test_validate_stage(fifo$preseal, fifo$context),
@@ -1396,7 +1711,8 @@ test_that("stage preseal rejects symlink sidecars and noncanonical roots", {
   sidecar <- file.path(symlinked$stage_root, "doc49.md.sha256")
   unlink(sidecar)
   expect_true(file.symlink(
-    file.path(symlinked$stage_root, "cell_table.tsv.sha256"), sidecar
+    file.path(symlinked$stage_root, "cell_table.tsv.sha256"),
+    sidecar
   ))
   expect_error(
     v3p_test_validate_stage(symlinked$preseal, symlinked$context),
@@ -1407,11 +1723,14 @@ test_that("stage preseal rejects symlink sidecars and noncanonical roots", {
   on.exit(unlink(noncanonical$base, recursive = TRUE), add = TRUE)
   at <- match("output_root", noncanonical$preseal$key)
   noncanonical$preseal$value[[at]] <- paste0(
-    dirname(noncanonical$stage_root), "/stage/../stage"
+    dirname(noncanonical$stage_root),
+    "/stage/../stage"
   )
   expect_error(
     v3p_test_validate_stage(
-      noncanonical$preseal, noncanonical$context, include_preseal = FALSE
+      noncanonical$preseal,
+      noncanonical$context,
+      include_preseal = FALSE
     ),
     "textual path is not canonical"
   )
@@ -1431,7 +1750,9 @@ test_that("stage preseal rejects nested roots and forged pair hashes", {
     v3p_test_hash("0")
   expect_error(
     v3p_test_validate_stage(
-      forged$preseal, forged$context, include_preseal = FALSE
+      forged$preseal,
+      forged$context,
+      include_preseal = FALSE
     ),
     "SHA-256 mismatch"
   )
@@ -1446,7 +1767,9 @@ test_that("stage preseal rejects empty primaries and dirty deployed worktrees", 
   empty$preseal$value[empty$preseal$key == "doc49_sha256"] <- empty_hash
   expect_error(
     v3p_test_validate_stage(
-      empty$preseal, empty$context, include_preseal = FALSE
+      empty$preseal,
+      empty$context,
+      include_preseal = FALSE
     ),
     "empty required primary|must both be nonempty"
   )
@@ -1456,7 +1779,9 @@ test_that("stage preseal rejects empty primaries and dirty deployed worktrees", 
   writeLines("dirty", file.path(dirty$git_root, "undeclared.txt"))
   expect_error(
     v3p_test_validate_stage(
-      dirty$preseal, dirty$context, include_preseal = FALSE
+      dirty$preseal,
+      dirty$context,
+      include_preseal = FALSE
     ),
     "worktree is dirty"
   )
@@ -1468,15 +1793,22 @@ test_that("stage preseal binds deployed bytes to the exact Git commit", {
   path <- fixture$tool_paths[["r_driver"]]
   unlink(c(path, paste0(path, ".sha256")))
   changed_hash <- v3p_test_pair(path, "changed synthetic R driver\n")
-  fixture$preseal$value[fixture$preseal$key == "r_driver_sha256"] <- changed_hash
+  fixture$preseal$value[
+    fixture$preseal$key == "r_driver_sha256"
+  ] <- changed_hash
   relative <- "tools/v07_genomic_recovery_v3.R"
   v3p_test_git(
-    fixture$git_root, "update-index", "--assume-unchanged",
-    relative, paste0(relative, ".sha256")
+    fixture$git_root,
+    "update-index",
+    "--assume-unchanged",
+    relative,
+    paste0(relative, ".sha256")
   )
   expect_error(
     v3p_test_validate_stage(
-      fixture$preseal, fixture$context, include_preseal = FALSE
+      fixture$preseal,
+      fixture$context,
+      include_preseal = FALSE
     ),
     "not the exact committed tool"
   )

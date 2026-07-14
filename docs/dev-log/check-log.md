@@ -7655,3 +7655,18 @@ release".
   recovery, activation, capability/count change, release, or G10 occurred.
   Full checkpoint:
   `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-replay-infrastructure-blocker.md`.
+
+## 2026-07-14 — v0.7 D0F retry-2 replay blocker and retry-3 repair
+
+- Retry 2 completed 576 official fits and 576 base-R recomputations but wrote
+  zero Julia replay rows because of `Cmd(::Vector{AbstractString})`; its root
+  and all seeds are retired and unadjudicated.
+- Prospective retry 3 uses disjoint bases `2034000000` / `2035000000`, concrete
+  Julia command typing, an exact runtime-type regression, and strengthened
+  downstream history/schema/provenance gates.
+- Focused R gates (52 + 218 + 156), built-package R check (0/0/0), Julia
+  selftest/full `Pkg.test()`, sidecars, diff checks, and independent
+  Fisher/Grace/Noether reviews are green.
+- No recovery, activation, capability/count change, or D1/D2 seed exists.
+  Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-retry2-infrastructure-blocker.md`.

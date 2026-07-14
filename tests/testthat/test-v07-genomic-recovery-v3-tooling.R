@@ -28,10 +28,13 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
   lock <- v07s_read_lock(v07s_default_lock())
   spaces <- v07s_validate_spaces(lock)
 
-  expect_equal(nrow(spaces$historical), 39172L)
+  expect_equal(nrow(spaces$historical), 39751L)
   expect_equal(nrow(spaces$proposed), 92304L)
-  expect_equal(nrow(spaces$retired_d0f), 576L)
-  expect_identical(unique(spaces$retired_d0f$stage), "D0F_RETIRED")
+  expect_equal(nrow(spaces$retired_d0f), 1152L)
+  expect_identical(
+    unique(spaces$retired_d0f$stage),
+    c("D0F_RETIRED", "D0F_RETRY1_RETIRED")
+  )
   expect_setequal(
     unique(spaces$proposed$stage),
     c("D0F_RETRY", "D1", "D2", "D3", "D4")
@@ -41,14 +44,25 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     spaces$historical$seed,
     v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)
   )
+  expect_contains(
+    spaces$historical$seed,
+    v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry_bootstrap_base)
+  )
   expect_length(intersect(spaces$historical$seed, spaces$proposed$seed), 0L)
   expect_length(intersect(spaces$retired_d0f$seed, spaces$proposed$seed), 0L)
 
   expect_identical(
     spaces$retired_d0f$seed,
-    v07s_d0f_seed_grid(
-      v07s_d0f_retired_phenotype_base, "D0F_RETIRED"
-    )$seed
+    c(
+      v07s_d0f_seed_grid(
+        v07s_d0f_retired_phenotype_base,
+        "D0F_RETIRED"
+      )$seed,
+      v07s_d0f_seed_grid(
+        v07s_d0f_retired_retry_phenotype_base,
+        "D0F_RETRY1_RETIRED"
+      )$seed
+    )
   )
   retry <- spaces$proposed[spaces$proposed$stage == "D0F_RETRY", ]
   expect_identical(
@@ -78,6 +92,15 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_bootstrap_collision),
+    "v3 seed intersects historical lock"
+  )
+  retired_retry_bootstrap_collision <- spaces$proposed
+  retired_retry_bootstrap_collision$seed[[1L]] <-
+    v07s_d0f_bootstrap_seeds(
+      v07s_d0f_retired_retry_bootstrap_base
+    )[[1L]]
+  expect_error(
+    v07s_validate_spaces(lock, retired_retry_bootstrap_collision),
     "v3 seed intersects historical lock"
   )
   wrong_stage <- spaces$proposed
