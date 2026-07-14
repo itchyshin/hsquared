@@ -976,8 +976,7 @@ v3c_validate_pilot_summary <- function(summary, manifest = NULL) {
     target_futile <- x$bias_ci_lower >= x$margin | x$bias_ci_upper <= -x$margin
     target_futile[is.na(target_futile)] <- FALSE
     futility_expected <- any(target_futile)
-    nonfinite_expected <- !low_expected &&
-      v3c_summary_nonfinite_expected(x, pilot = TRUE)
+    nonfinite_expected <- v3c_summary_nonfinite_expected(x, pilot = TRUE)
     if (
       unique(x$low_convergence) != low_expected ||
         unique(x$summary_nonfinite) != nonfinite_expected ||
@@ -1069,8 +1068,7 @@ v3c_validate_d1_summary <- function(summary) {
     target_futile <- x$bias_ci_lower >= x$margin | x$bias_ci_upper <= -x$margin
     target_futile[is.na(target_futile)] <- FALSE
     futility_expected <- any(target_futile)
-    nonfinite_expected <- !low_expected &&
-      v3c_summary_nonfinite_expected(x, pilot = TRUE)
+    nonfinite_expected <- v3c_summary_nonfinite_expected(x, pilot = TRUE)
     status <- if (low_expected) {
       "STOP_LOW_PILOT_CONVERGENCE"
     } else if (nonfinite_expected) {
@@ -1278,18 +1276,17 @@ v3c_fixture_d2_summary <- function(manifest, attempts, binding) {
     predicted_upper <- mean(
       1 - stats::pnorm((1 - m$truth_ratio[[1L]]) / x$se_info_r050)
     )
-    nonfinite <- !low &&
-      !(all(is.finite(unlist(metrics))) &&
-        is.finite(rms_se) &&
-        is.finite(ratio_sd) &&
-        is.finite(ratio_sd / rms_se) &&
-        all(is.finite(x$se_info_r050)) &&
-        is.finite(predicted_lower) &&
-        is.finite(predicted_upper) &&
-        all(is.finite(x$runtime_seconds)) &&
-        all(is.finite(x$peak_rss_mb)) &&
-        all(is.finite(x$eigen_cv_population)) &&
-        all(is.finite(x$effective_rank)))
+    nonfinite <- !(all(is.finite(unlist(metrics))) &&
+      is.finite(rms_se) &&
+      is.finite(ratio_sd) &&
+      is.finite(ratio_sd / rms_se) &&
+      all(is.finite(x$se_info_r050)) &&
+      is.finite(predicted_lower) &&
+      is.finite(predicted_upper) &&
+      all(is.finite(x$runtime_seconds)) &&
+      all(is.finite(x$peak_rss_mb)) &&
+      all(is.finite(x$eigen_cv_population)) &&
+      all(is.finite(x$effective_rank)))
     precision <- is.finite(required) && required > 2000L
     futile <- any(
       vapply(metrics, `[[`, numeric(1L), "target_futile") == 1,
@@ -1590,8 +1587,9 @@ v3c_decisions_from_summary <- function(summary, stage) {
   } else {
     v3c_abort("pilot decisions may derive only from D1 or D2 summaries")
   }
+  blocking_nonfinite <- summary$summary_nonfinite & !summary$low_convergence
   if (
-    any(summary$summary_nonfinite) ||
+    any(blocking_nonfinite) ||
       any(as.character(summary$cell_status) == "RECOMPUTATION_BLOCKER")
   ) {
     v3c_abort(
@@ -2521,7 +2519,8 @@ v3c_validate_final_d1 <- function(root, validator) {
 
 v3c_stage_decision_pilot <- function(summary) {
   if (
-    "summary_nonfinite" %in% names(summary) && any(summary$summary_nonfinite)
+    all(c("summary_nonfinite", "low_convergence") %in% names(summary)) &&
+      any(summary$summary_nonfinite & !summary$low_convergence)
   ) {
     return("RECOMPUTATION_BLOCKER")
   }

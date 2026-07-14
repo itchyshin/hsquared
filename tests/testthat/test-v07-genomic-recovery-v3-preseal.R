@@ -1107,6 +1107,19 @@ test_that("shared D1 summary parity fixture pins cross-twin semantics", {
 })
 
 test_that("D1 status precedence and independent reason flags stay fail closed", {
+  downstream <- new.env(parent = globalenv())
+  source(
+    normalizePath(
+      testthat::test_path(
+        "..",
+        "..",
+        "tools",
+        "v07_genomic_recovery_v3_downstream_contract.R"
+      ),
+      mustWork = TRUE
+    ),
+    local = downstream
+  )
   fixture <- v3p_test_d1()
   binding <- v3p_test_binding()
   first_cell <- which(
@@ -1143,6 +1156,8 @@ test_that("D1 status precedence and independent reason flags stay fail closed", 
     expect_true(all(!sparse_first$cell_eligible))
     expect_true(all(sparse_first$n_converged == n_success))
     expect_true(all(sparse_first$n_bias_rows == n_success))
+    expect_silent(downstream$v3c_validate_d1_summary(sparse_summary))
+    expect_silent(downstream$v3c_decisions_from_summary(sparse_summary, "d1"))
   }
 
   precision <- fixture$attempts

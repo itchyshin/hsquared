@@ -829,13 +829,15 @@ test_that("D2 pilot status precedence is low convergence then precision then fut
       "STOP_LOW_PILOT_CONVERGENCE"
   ))
 
-  recomputation_blocker <- v3ct_fail_rows(base, rows[1:47])
+  one_success <- v3ct_fail_rows(base, rows[1:47])
   blocker_summary <- v3c_fixture_d2_summary(
     manifest,
-    recomputation_blocker,
+    one_success,
     binding
   )
-  expect_false(any(blocker_summary$summary_nonfinite))
+  expect_true(all(blocker_summary$summary_nonfinite[
+    blocker_summary$cell_id == id
+  ]))
   expect_match(
     v3c_stage_decision_pilot(blocker_summary),
     "STOP_LOW_PILOT_CONVERGENCE"
@@ -851,6 +853,9 @@ test_that("D2 pilot status precedence is low convergence then precision then fut
 
   no_success <- v3ct_fail_rows(base, rows)
   no_success_summary <- v3c_fixture_d2_summary(manifest, no_success, binding)
+  expect_true(all(no_success_summary$summary_nonfinite[
+    no_success_summary$cell_id == id
+  ]))
   expect_true(all(
     no_success_summary$cell_status[no_success_summary$cell_id == id] ==
       "STOP_LOW_PILOT_CONVERGENCE"

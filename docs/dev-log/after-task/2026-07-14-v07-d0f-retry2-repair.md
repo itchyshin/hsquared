@@ -43,8 +43,8 @@ is not part of this repair or any evidence claim.
 - Seed-lock selftest: PASS, 39,751 historical/retired and 92,304 possible v3
   seeds.
 - Focused R tooling: 52/52 PASS.
-- Focused R preseal: 218/218 PASS.
-- Focused R downstream contract: 156/156 PASS.
+- Focused R preseal: 222/222 PASS.
+- Focused R downstream contract: 157/157 PASS.
 - Julia stage-replay selftest: PASS.
 - Updated Julia script/sidecar, Bash syntax, and launcher guard selftest: PASS
   locally; the actual zero-seed preflight remains a live Julia 1.10 retry-3
@@ -54,8 +54,9 @@ is not part of this repair or any evidence claim.
 - `air format` applied to the edited R scripts/tests; all focused checks rerun.
 - R and Julia SHA-256 sidecars: exact.
 - Both `git diff --check` gates: PASS.
-- Fisher, Grace, and Noether final independent reviews: `CLEAN` after the
-  deployed-HEAD and unchanged-implementation hardening pass.
+- Earlier Fisher/Grace/Noether repair reviews: `CLEAN`; fresh exact preflight
+  review was Grace `CLEAN`, Fisher/Noether `BLOCKED`, and exposed the two
+  neighbouring defects above. Exact review renewal is pending the landed fix.
 
 ## 6. Tests of the Tests
 
@@ -75,6 +76,8 @@ Wilson/boundary fields, duplicated seeds, and nonterminal or skipped history.
 | Review files could substitute identities | Fixed filename, reviewer, receipt, and driver commit must all agree. |
 | Matching live hash did not prove committed provenance | Require exact blob, deployed HEAD, ancestry, clean tree, and unchanged fitted surfaces. |
 | Downstream route schemas were conflated | Separate official/base-R/Julia schemas and compare only the frozen scientific projection. |
+| Preflight admitted an existing base-R output subtree | Add a strict preseal-only tree validator and mutation-test every output subtree and summary. |
+| D1 producer and downstream admission disagreed at 0–1 successful fits | Preserve `summary_nonfinite` as a secondary reason under low-convergence precedence and add a direct cross-layer regression. |
 
 ## 8. Consistency Audit
 
@@ -86,10 +89,11 @@ receipt/history/file-system bypasses.
 ## 9. What Did Not Go Smoothly
 
 Retry 2 completed all 576 official fits and all 576 base-R recomputations before
-the Julia preflight exposed a command-vector type defect. The first downstream
-amendment also required three review/fix cycles: route provenance, scientific
-low-convergence precedence, reviewer identity, canonical paths, and deployed
-Git state each exposed a neighbouring fail-open condition.
+the Julia preflight exposed a command-vector type defect. The downstream
+amendment required four review/fix cycles: route provenance, scientific
+low-convergence precedence, reviewer identity, canonical paths, deployed Git
+state, strict preflight-tree membership, and cross-layer low-convergence
+semantics each exposed a neighbouring fail-open condition.
 
 ## 10. Known Residuals
 

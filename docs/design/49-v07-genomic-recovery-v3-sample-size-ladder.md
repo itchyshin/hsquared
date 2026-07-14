@@ -797,8 +797,10 @@ blocker. A D2 cell with nonfinite summary inputs despite at least 46 successful
 finite fits has `cell_status = RECOMPUTATION_BLOCKER`, is never eligible,
 cannot produce a pilot-decision lock, and cannot appear in an admitted
 predecessor history. With fewer than 46 successful fits, expected undefined
-dispersion inputs remain an ordinary `STOP_LOW_PILOT_CONVERGENCE` result and do
-not stop other cells from advancing. The same blocker status is used for any
+dispersion inputs set the secondary `summary_nonfinite` reason but remain an
+ordinary `STOP_LOW_PILOT_CONVERGENCE` result; low-convergence precedence means
+that secondary reason does not stop other cells from advancing. The same
+blocker status is used for any
 nonfinite D3/D4 cell; its stage decision is `RECOMPUTATION_BLOCKER`.
 
 An unsuccessful attempt has `status = fit_error`, `converged = false`, and a
