@@ -8,6 +8,20 @@ testthat::skip_if_not(
 launcher_path <- normalizePath(launcher_path, winslash = "/", mustWork = TRUE)
 
 launcher_text <- paste(readLines(launcher_path, warn = FALSE), collapse = "\n")
+launcher_repo <- normalizePath(
+  testthat::test_path("..", ".."), winslash = "/", mustWork = TRUE
+)
+
+launcher_test_path <- function(name) {
+  file.path(normalizePath(tempdir(), winslash = "/"), name)
+}
+
+launcher_run <- function(args) {
+  suppressWarnings(system2(
+    "bash", c(shQuote(launcher_path), vapply(args, shQuote, character(1L))),
+    stdout = TRUE, stderr = TRUE
+  ))
+}
 
 test_that("recovery-v3 launcher is executable shell with the full phase surface", {
   expect_true(file.access(launcher_path, 1L) == 0L)
@@ -16,7 +30,7 @@ test_that("recovery-v3 launcher is executable shell with the full phase surface"
     0L
   )
   for (mode in c(
-    "selftest", "guard-selftest", "write-review", "prepare", "preseal", "smoke-n-ladder",
+    "selftest", "guard-selftest", "write-review", "prepare-adaptive", "prepare", "preseal", "smoke-n-ladder",
     "smoke-16", "verify-official", "recommend-workers", "run-official",
     "lock-corpus", "recompute-base-r", "summarize-r", "replay-julia",
     "verify-replay", "summarize-julia", "write-postrun-review",
@@ -59,6 +73,62 @@ test_that("launcher makes fresh-D0F adjudication a D1-only predecessor", {
     "V3D_D0F_PREDECESSOR_VALIDATED_SHA256", launcher_text, fixed = TRUE
   ))
   expect_match(launcher_text, "--mode=validate-final", fixed = TRUE)
+})
+
+test_that("launcher exposes canonical D1-to-D2 planning without claiming numerics", {
+  expect_match(launcher_text, "prepare-adaptive OUT d2|d3|d4", fixed = TRUE)
+  expect_match(launcher_text, "require_adaptive_stage", fixed = TRUE)
+  expect_match(launcher_text, "v07_genomic_recovery_v3_admission.R", fixed = TRUE)
+  expect_match(launcher_text, "--d1-root", fixed = TRUE)
+  expect_false(grepl("--d1-decisions", launcher_text, fixed = TRUE))
+  expect_false(grepl("--d2-decisions", launcher_text, fixed = TRUE))
+  expect_false(grepl("run-official OUT d2", launcher_text, fixed = TRUE))
+  expect_false(grepl("recompute-base-r OUT d2", launcher_text, fixed = TRUE))
+  expect_false(grepl("replay-julia OUT d2", launcher_text, fixed = TRUE))
+})
+
+test_that("adaptive launcher executes fail-closed path and arity guards", {
+  wrong_arity <- launcher_run(c("prepare-adaptive", "only-one-argument"))
+  expect_identical(attr(wrong_arity, "status"), 64L)
+
+  base <- launcher_test_path("v3 launcher paths with spaces")
+  unlink(base, recursive = TRUE)
+  dir.create(base)
+  d1 <- file.path(base, "d1 final")
+  dir.create(d1)
+
+  d3_out <- file.path(base, "d3 plan")
+  dir.create(d3_out)
+  d3 <- launcher_run(c("prepare-adaptive", d3_out, "d3", launcher_repo, d1))
+  expect_true(!is.null(attr(d3, "status")))
+  expect_match(paste(d3, collapse = "\n"), "D3/D4 remain blocked", fixed = TRUE)
+
+  nested <- file.path(d1, "attempts")
+  dir.create(nested)
+  nested_run <- launcher_run(c(
+    "prepare-adaptive", nested, "d2", launcher_repo, d1
+  ))
+  expect_true(!is.null(attr(nested_run, "status")))
+  expect_match(paste(nested_run, collapse = "\n"), "distinct and nonnested")
+
+  nonempty <- file.path(base, "nonempty plan")
+  dir.create(nonempty)
+  writeLines("unexpected", file.path(nonempty, "member"))
+  nonempty_run <- launcher_run(c(
+    "prepare-adaptive", nonempty, "d2", launcher_repo, d1
+  ))
+  expect_true(!is.null(attr(nonempty_run, "status")))
+  expect_match(paste(nonempty_run, collapse = "\n"), "must be empty")
+
+  target <- file.path(base, "real plan")
+  alias <- file.path(base, "plan alias")
+  dir.create(target)
+  testthat::skip_if_not(file.symlink(target, alias), "symlinks unavailable")
+  alias_run <- launcher_run(c(
+    "prepare-adaptive", alias, "d2", launcher_repo, d1
+  ))
+  expect_true(!is.null(attr(alias_run, "status")))
+  expect_match(paste(alias_run, collapse = "\n"), "existing real directory")
 })
 
 test_that("launcher freezes thread and process safety", {

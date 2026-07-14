@@ -7,6 +7,7 @@ Usage:
   run-v07-genomic-recovery-v3.sh selftest R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh guard-selftest
   run-v07-genomic-recovery-v3.sh write-review R_ROOT PATH REVIEWER CLEAN|BLOCKED DOC49_SHA R_DRIVER_COMMIT R_RECOMPUTER_COMMIT JULIA_REPLAY_COMMIT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT
+  run-v07-genomic-recovery-v3.sh prepare-adaptive OUT d2|d3|d4 R_ROOT D1_FINAL_ROOT
 
   run-v07-genomic-recovery-v3.sh prepare OUT d0f R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS
   run-v07-genomic-recovery-v3.sh prepare OUT d1 R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS D0F_ADJUDICATION_ROOT
@@ -40,6 +41,11 @@ die() {
 
 require_stage() {
   [[ "$1" == d0f || "$1" == d1 ]] || die "stage must be d0f or d1"
+}
+
+require_adaptive_stage() {
+  [[ "$1" == d2 || "$1" == d3 || "$1" == d4 ]] || \
+    die "adaptive stage must be d2, d3, or d4"
 }
 
 require_predecessor_arity() {
@@ -164,6 +170,11 @@ if [[ "$mode" == guard-selftest ]]; then
     die "D1 preseal predecessor negative control failed"
   require_predecessor_arity d1 prepare 3
   require_predecessor_arity d1 preseal 3
+  require_adaptive_stage d2
+  require_adaptive_stage d3
+  require_adaptive_stage d4
+  ( require_adaptive_stage d1 ) >/dev/null 2>&1 && \
+    die "adaptive-stage negative control failed"
 
   pair_root=$(mktemp -d "${TMPDIR:-/tmp}/v3-launcher-pairs.XXXXXX")
   trap 'rm -rf "$pair_root"' EXIT
@@ -202,6 +213,7 @@ if [[ "$mode" == selftest ]]; then
   export PATH="$(dirname "$julia_bin"):$PATH"
   Rscript --vanilla "$r_root/tools/v07_genomic_recovery_v3.R" --mode=selftest
   Rscript --vanilla "$r_root/tools/v07_genomic_recovery_v3_recompute.R" --mode=selftest
+  Rscript --vanilla "$r_root/tools/v07_genomic_recovery_v3_admission.R" --mode=selftest
   "$julia_bin" --project="$julia_root" --startup-file=no \
     "$julia_root/sim/phase2_v07_genomic_recovery_v3_stage_replay.jl" --mode=selftest
   exit 0
@@ -215,6 +227,20 @@ if [[ "$mode" == write-review ]]; then
     --doc49-sha256="$5" --r-driver-commit="$6" \
     --r-recomputer-commit="$7" --julia-replay-commit="$8" \
     --r-auto-route-commit="$9" --julia-candidate-commit="${10}"
+fi
+
+if [[ "$mode" == prepare-adaptive ]]; then
+  [[ $# -eq 4 ]] || { usage >&2; exit 64; }
+  out=$1
+  stage=$2
+  r_root=$3
+  d1_root=$4
+  require_adaptive_stage "$stage"
+  admission="$r_root/tools/v07_genomic_recovery_v3_admission.R"
+  [[ -f "$admission" ]] || die "deployed adaptive admission tool is missing"
+  exec Rscript --vanilla "$admission" --mode=prepare \
+    --output-root="$out" --stage="$stage" \
+    --d1-root="$d1_root"
 fi
 
 [[ $# -ge 4 ]] || { usage >&2; exit 64; }
