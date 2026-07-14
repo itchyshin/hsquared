@@ -985,7 +985,7 @@ v3p_validate_d0f_fixed_panels <- function(x, diagnostics = NULL) {
 }
 
 v3p_d0f_phenotype_seed <- function(design_index, panel_rank, phenotype_rank) {
-  seed <- 2029000000 + 100000 * as.double(design_index) +
+  seed <- v07s_d0f_retry_phenotype_base + 100000 * as.double(design_index) +
     1000 * as.double(panel_rank) + as.double(phenotype_rank)
   if (
     any(!is.finite(seed)) || any(seed != floor(seed)) || any(seed < 1) ||
@@ -1071,7 +1071,7 @@ v3p_validate_d0f_phenotype_manifest <- function(x, fixed_panels) {
 }
 
 v3p_d0f_bootstrap_seed <- function(design_index) {
-  seed <- 2031000000 + as.double(design_index)
+  seed <- v07s_d0f_retry_bootstrap_base + as.double(design_index)
   if (
     any(!is.finite(seed)) || any(seed != floor(seed)) || any(seed < 1) ||
       any(seed > .Machine$integer.max)

@@ -434,6 +434,10 @@ test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
       fixture$manifest$phenotype_rank
     )
   )
+  expect_true(all(fixture$manifest$seed > v07s_d0f_retry_phenotype_base))
+  expect_length(
+    intersect(fixture$manifest$seed, v07s_expand_retired_d0f()$seed), 0L
+  )
   expect_length(intersect(fixture$manifest$seed, fixture$d0$seed), 0L)
 
   wrong_hash <- fixture$fixed
@@ -479,8 +483,15 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
   seeds <- v3p_validate_bootstrap_seed_space()
-  expect_identical(seeds, as.integer(2031000001:2031000003))
+  expect_identical(seeds, as.integer(2033000001:2033000003))
   expect_identical(anyDuplicated(seeds), 0L)
+  expect_length(
+    intersect(
+      seeds,
+      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)
+    ),
+    0L
+  )
   proposed <- v07s_expand_v3()
   proposed$seed[[1L]] <- seeds[[1L]]
   expect_error(
@@ -949,19 +960,19 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   expect_identical(names(parity$summary), v3p_d0f_summary_columns)
   expect_identical(
     v3p_test_tsv_hash(parity$manifest),
-    "2176e25917549369382b3060540eb8cfc51c1123fd0d10a6c1866c65f759e4a5"
+    "bba438bea935ab76590a99fce9a16ab3c7616b78e2e2ab8ff12376f9a71dea5d"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$attempts),
-    "276a4f8b7a140a9e6be87b7ce7e577e48f3cc7eb83ee4138b90d6c970db7b4e4"
+    "0a58f93eaec49d4d7927c67d584273aa8d7e4e9e6ee2707498be8c94bbc078ac"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$bootstrap),
-    "5baf6a576d9575555e71b3c163b15a365be5293fb921a873041c6a1ee1473594"
+    "609db9dbb3ba023728249645e14e13e579d7dd9cc1917a9241bcf9f3c1d60c4c"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$summary),
-    "1ee7c9c2cb42c940ef55bb003fa5c02f811201a1002713e39365d10237529795"
+    "887db362e24bbc930ea09a3f73188dc27eb411643f63411b827419cd4cee41d5"
   )
   expect_true(is.character(parity$summary$d0f_status))
   expect_true(is.logical(parity$summary$fit_blocker))

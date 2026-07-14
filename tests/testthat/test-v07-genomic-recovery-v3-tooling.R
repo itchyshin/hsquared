@@ -28,14 +28,33 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
   lock <- v07s_read_lock(v07s_default_lock())
   spaces <- v07s_validate_spaces(lock)
 
-  expect_equal(nrow(spaces$historical), 38593L)
+  expect_equal(nrow(spaces$historical), 39172L)
   expect_equal(nrow(spaces$proposed), 92304L)
+  expect_equal(nrow(spaces$retired_d0f), 576L)
+  expect_identical(unique(spaces$retired_d0f$stage), "D0F_RETIRED")
   expect_setequal(
     unique(spaces$proposed$stage),
-    c("D0F", "D1", "D2", "D3", "D4")
+    c("D0F_RETRY", "D1", "D2", "D3", "D4")
   )
   expect_contains(spaces$historical$seed, 2027142001)
+  expect_contains(
+    spaces$historical$seed,
+    v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)
+  )
   expect_length(intersect(spaces$historical$seed, spaces$proposed$seed), 0L)
+  expect_length(intersect(spaces$retired_d0f$seed, spaces$proposed$seed), 0L)
+
+  expect_identical(
+    spaces$retired_d0f$seed,
+    v07s_d0f_seed_grid(
+      v07s_d0f_retired_phenotype_base, "D0F_RETIRED"
+    )$seed
+  )
+  retry <- spaces$proposed[spaces$proposed$stage == "D0F_RETRY", ]
+  expect_identical(
+    retry$seed,
+    v07s_d0f_seed_grid(v07s_d0f_retry_phenotype_base, "D0F_RETRY")$seed
+  )
 
   collision <- spaces$proposed
   collision$seed[[1L]] <- 2027142001
@@ -47,6 +66,34 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
   duplicate <- spaces$proposed
   duplicate$seed[[2L]] <- duplicate$seed[[1L]]
   expect_error(v07s_validate_spaces(lock, duplicate), "exact seed collision")
+
+  retired_collision <- spaces$proposed
+  retired_collision$seed[[1L]] <- spaces$retired_d0f$seed[[1L]]
+  expect_error(
+    v07s_validate_spaces(lock, retired_collision),
+    "v3 seed intersects historical lock"
+  )
+  retired_bootstrap_collision <- spaces$proposed
+  retired_bootstrap_collision$seed[[1L]] <-
+    v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)[[1L]]
+  expect_error(
+    v07s_validate_spaces(lock, retired_bootstrap_collision),
+    "v3 seed intersects historical lock"
+  )
+  wrong_stage <- spaces$proposed
+  wrong_stage$stage[[1L]] <- "D0F"
+  expect_error(
+    v07s_validate_spaces(lock, wrong_stage),
+    "stage names or exact denominators drift"
+  )
+  expect_error(
+    v07s_d0f_seed_grid(.Machine$integer.max, "D0F_RETRY"),
+    "unique in-range integers"
+  )
+  expect_error(
+    v07s_d0f_bootstrap_seeds(.Machine$integer.max),
+    "unique in-range integers"
+  )
 })
 
 test_that("D0 Helmert, information, and bootstrap conventions are frozen", {

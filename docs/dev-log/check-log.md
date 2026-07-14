@@ -7633,3 +7633,25 @@ release".
 - No official seed, recovery evidence, activation, capability/count change, or
   GitHub Actions campaign exists. Full log:
   `docs/dev-log/check-log.d/2026-07-13-v07-genomic-recovery-v3-operational-harness.md`.
+
+## 2026-07-14 — v0.7 D0F replay-infrastructure blocker and fresh retry
+
+- The first official D0F root completed 576/576 converged R fits and 576/576
+  base-R recomputations, but the presealed Julia fixed-panel validator failed
+  before writing any replay row because its `only()` filter omitted phenotype
+  rank. The root is immutable and unadjudicated, not recovery evidence.
+- Repaired the validator to require exact ranks `1:8` and common panel
+  fingerprints before a canonical rank-1 projection. Positive and three
+  mutation-red controls pass; Julia selftest and full `Pkg.test()` are green.
+- Corrected the neighbouring seed audit to retire the true 3x24x8 spent grid
+  plus its bootstrap seeds. The fresh retry bases `2032000000` and `2033000000`
+  are exact, in range, and disjoint; R selftests and focused tests pass
+  warning-free.
+- Built-package `_R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-manual` passes
+  with status `OK`, including package tests. A source-tree `devtools::test()`
+  sequence under local testthat 3.3.2 lost a long-standing helper only in the
+  final validation file; that file passes alone and is green under `R CMD check`.
+- No seed has been opened under the repaired contract. D1 remains paused; no
+  recovery, activation, capability/count change, release, or G10 occurred.
+  Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-replay-infrastructure-blocker.md`.

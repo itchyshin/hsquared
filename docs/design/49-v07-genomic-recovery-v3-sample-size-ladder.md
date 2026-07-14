@@ -19,11 +19,15 @@
 > rewritten as activation.
 > ```
 
-Status: **PREREGISTRATION DRAFT — NO V3 SEED IS ADMITTED.** This document must
-receive hash-bound pre-seal plan receipts from Fisher, Noether, Grace, and Rose,
-plus Hopper for the exact held bridge commit, be committed, and be bound into a
-new stage preseal before any recovery-v3 phenotype is generated. It does not
-reopen, rewrite, or admit the retired recovery-v2 offsets.
+Status: **D0 COMPLETE; ORIGINAL D0F CORPUS LOCKED BUT UNADJUDICATED; FRESH D0F
+RETRY NOT YET PRESEALED.** The first D0F run completed 576 official R attempts,
+but the exact presealed Julia replay tool stopped deterministically before
+writing any replay row. That root is an immutable replay-infrastructure blocker,
+not D0F scientific evidence. The retry defined below must receive new hash-bound
+pre-seal plan receipts from Fisher, Noether, Grace, Rose, and Hopper, be
+committed, and be bound into a new stage preseal and new canonical root before
+any retry phenotype is generated. It does not reopen, rewrite, pool, or admit
+the blocked D0F corpus or the retired recovery-v2 offsets.
 
 ## 1. Why recovery-v3 exists
 
@@ -311,6 +315,27 @@ select another pair inside the D0 root.
 
 #### Stage D0F — fixed-kernel phenotype replication
 
+The original official root
+`/home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0f-official-0a9d882-1a538212`
+is permanently **UNADJUDICATED — REPLAY_INFRASTRUCTURE_BLOCKER**. It binds
+preseal `2498301ca09949c584e74aa7bed0d468cd49cee893b1d6ded42d4785e30e1a32`,
+official corpus lock
+`dee0bb91f40bf0e9183ff6ccd8525b3ba97271edae8819413f90d57fa94bb963`,
+R summary `3f09b47037e8cfccb090efb2ea76bfa0825e1f01aed8ebacabd8b17731c577c2`,
+and Julia replay commit
+`1a538212e258ca8e355ecd07420351a5097e3111` / tool SHA-256
+`c8b4d2ceb4c01f807efa610002763fc1f5416c35a666427975a7f7972a3b0826`.
+The replay produced zero rows, so no D0F adjudication receipt can be minted.
+Neither its 576 phenotype estimates nor any repaired post-hoc replay may enter
+the retry summary. The root remains read-only forensic evidence.
+
+The only admitted replacement is a prospective fresh D0F retry: unchanged
+fixed panels, 24-by-8 allocation, estimand, model, ridge, summaries, tolerances,
+and stopping rules; a repaired replay tool; five new exact reviewer receipts; a
+new root and preseal; and 576 new phenotypes from the disjoint seed space below.
+There is no pooling, paired reuse, seed replacement, threshold change, or
+selection based on the blocked estimates.
+
 This mandatory mechanism-only arm uses the 24 smallest manifest seeds from
 each of the three original \(r_G=0.5\) v2 cells: `(120,600)`, `(300,150)`, and
 `(300,1000)`. Their marker, kernel, precision, and ID hashes are written to a
@@ -343,7 +368,7 @@ without truncating a negative finite-sample \(V_{between}\). A deterministic
 phenotypes within panel, using a presealed index manifest, and reports percentile
 intervals. Base R generates each design's indices with
 `RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
-`2031000000 + design_index`. The create-once manifest is normalized to one row
+`2033000000 + design_index`. The create-once manifest is normalized to one row
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
@@ -630,19 +655,28 @@ admitted. `marker_ratio_code` and exact `(n,m)` are identity fields; decimal
 - D4 original-cell confirmation: prefixes of `5001:7000`.
 
 The cell index includes `n`, `m`, and `r_G`, so no seed is shared across cells
-or stages. D0F phenotype seeds use the disjoint formula
+or stages. The blocked D0F run consumed and permanently retired the exact 576
+phenotype seeds
 `2029000000 + 100000 * design_index + 1000 * panel_rank + phenotype_rank`, with
-`panel_rank = 1:24` and `phenotype_rank = 1:8`. All values remain below R's
-32-bit integer maximum. All exact historical seeds are excluded. Numeric
-offsets may recur only under the new base after `historical_seed_lock.tsv`
-proves zero exact-seed intersection. No failed seed is replaced. A synthetic
-collision mutation and the previously detected collision `2027142001` must make
-the historical-lock verifier red.
+`design_index = 1:3`, `panel_rank = 1:24`, and `phenotype_rank = 1:8`. The
+source-safe verifier expands that true 3-by-24-by-8 grid as `D0F_RETIRED` and
+adds it to the spent historical space; the prior erroneous 3-by-8-by-24 audit
+expansion is not the record of seeds actually consumed. The fresh retry uses
+the same rank formula with base `2032000000` and is labelled `D0F_RETRY` in the
+seed-space audit. The operational manifest stage remains `d0f` so the unchanged
+scientific schema is reused. All values remain below R's 32-bit integer maximum.
+All exact historical and retired seeds are excluded. Numeric offsets may recur
+only under a new base after the verifier proves exact zero intersection. No
+failed or blocked seed is replaced. Mutations introducing a retired-D0F seed,
+the previously detected collision `2027142001`, or a duplicate must make the
+historical-lock verifier red.
 
-D0F bootstrap-index seeds are not phenotype seeds and are never fitted, but
-they are separately frozen at `2031000000 + design_index`, one per design.
-They must be unique across designs and disjoint from every D0, D0F, D1, D2,
-D3, and D4 data-generating seed.
+D0F bootstrap-index seeds are not phenotype seeds and are never fitted. The
+blocked run's three seeds `2031000000 + design_index` are nevertheless spent
+and retired because they generated its observed bootstrap manifest. The retry
+uses `2033000000 + design_index`, one per design. Both sets must be unique and
+in range; the retry set must be disjoint from every historical, retired D0F,
+D0F retry, D1, D2, D3, and D4 data-generating seed.
 
 Every stage uses this acyclic create-once evidence chain:
 
