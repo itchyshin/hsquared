@@ -4,6 +4,8 @@
   576 official fits, 576 base-R recomputations, zero Julia replay rows.
 - Repaired concrete Julia command typing and added the exact `SubString` root
   regression.
+- Added a zero-seed `preflight` command that must execute the sealed-tree and
+  exact Julia Git/blob checks before retry-3 smoke or official fitting.
 - Retired both prior 576-seed D0F spaces and both bootstrap spaces; retry 3 is
   disjoint at phenotype/bootstrap bases `2034000000` / `2035000000`.
 - Hardened the prospective D2-D4 contract across schemas, histories, counts,

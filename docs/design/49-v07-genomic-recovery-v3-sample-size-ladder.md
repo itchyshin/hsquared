@@ -367,6 +367,18 @@ new root and preseal; and 576 new phenotypes from the disjoint seed space below.
 There is no pooling, paired reuse, seed replacement, threshold change, or
 selection based on either blocked corpus or summary.
 
+After the new preseal is written and before any smoke or official phenotype is
+generated, the deployed Julia 1.10 tool must pass:
+
+```sh
+tools/run-v07-genomic-recovery-v3.sh preflight \
+  <new-d0f-root> d0f <deployed-r-root> <deployed-julia-root>
+```
+
+This zero-seed preflight validates the exact preseal tree and executes the
+Julia-side commit, Git-blob, sidecar, ancestry, clean-tree, and unchanged-engine
+checks. It creates no output and consumes no official random number or seed.
+
 This mandatory mechanism-only arm uses the 24 smallest manifest seeds from
 each of the three original \(r_G=0.5\) v2 cells: `(120,600)`, `(300,150)`, and
 `(300,1000)`. Their marker, kernel, precision, and ID hashes are written to a

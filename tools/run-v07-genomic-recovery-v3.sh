@@ -13,6 +13,7 @@ Usage:
   run-v07-genomic-recovery-v3.sh prepare OUT d1 R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS D0F_ADJUDICATION_ROOT
   run-v07-genomic-recovery-v3.sh preseal OUT d0f R_ROOT JULIA_ROOT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT
   run-v07-genomic-recovery-v3.sh preseal OUT d1 R_ROOT JULIA_ROOT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT D0F_ADJUDICATION_ROOT
+  run-v07-genomic-recovery-v3.sh preflight OUT d0f|d1 R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh smoke-n-ladder OUT d0f|d1 R_ROOT JULIA_ROOT [WORKERS]
   run-v07-genomic-recovery-v3.sh smoke-16 OUT d0f|d1 R_ROOT JULIA_ROOT [WORKERS]
   run-v07-genomic-recovery-v3.sh verify-official OUT d0f|d1 R_ROOT JULIA_ROOT
@@ -455,6 +456,11 @@ case "$mode" in
     exec Rscript --vanilla "$driver" --mode=write-preseal \
       "${driver_common[@]}" --r-auto-route-commit="$1" \
       --julia-candidate-commit="$2" "${predecessor[@]}"
+    ;;
+  preflight)
+    [[ $# -eq 0 ]] || { usage >&2; exit 64; }
+    exec "$julia_bin" --project="$julia_root" --startup-file=no \
+      "$julia_replay" --mode=preflight --out-dir="$out" --stage="$stage"
     ;;
   smoke-n-ladder)
     [[ $# -le 1 ]] || { usage >&2; exit 64; }

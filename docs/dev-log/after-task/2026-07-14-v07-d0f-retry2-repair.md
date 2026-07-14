@@ -10,8 +10,10 @@ and freeze the downstream D2-D4 contract before any D1 or D2 seed is opened.
 
 The exact retry-2 root, preseal, corpus lock, base-R summary, replay commit, and
 zero-row replay outcome are recorded as an unadjudicated infrastructure
-blocker. The Julia replay tool now constructs concrete `String` command vectors
-and tests the exact `SubString` Git-root case. The retry-2 phenotype/bootstrap
+blocker. The Julia replay tool now constructs concrete `String` command vectors,
+tests the exact `SubString` Git-root case, and exposes a zero-seed preflight
+that validates the sealed tree through the live Julia-side Git/blob path before
+any phenotype is generated. The retry-2 phenotype/bootstrap
 spaces are retired; retry 3 uses bases `2034000000` and `2035000000`.
 
 The downstream R contract now freezes distinct official, base-R, and Julia
@@ -44,6 +46,9 @@ is not part of this repair or any evidence claim.
 - Focused R preseal: 218/218 PASS.
 - Focused R downstream contract: 156/156 PASS.
 - Julia stage-replay selftest: PASS.
+- Updated Julia script/sidecar, Bash syntax, and launcher guard selftest: PASS
+  locally; the actual zero-seed preflight remains a live Julia 1.10 retry-3
+  admission gate.
 - Full Julia `Pkg.test()`: PASS.
 - Built-package `R CMD check --no-manual`: 0 errors, 0 warnings, 0 notes.
 - `air format` applied to the edited R scripts/tests; all focused checks rerun.
