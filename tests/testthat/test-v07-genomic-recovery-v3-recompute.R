@@ -879,10 +879,7 @@ test_that("synthetic finalization creates once and validates the exact tree", {
 })
 
 test_that("phase transitions fail closed before summaries, reviews, and receipt", {
-  local_mocked_bindings(
-    v3r_assert_execution_context = function(...) invisible(TRUE),
-    .package = NULL
-  )
+  no_compute <- function(...) invisible(TRUE)
   fixture <- v3r_test_packet_fixture()
   on.exit(unlink(fixture$root, recursive = TRUE), add = TRUE)
   state <- list(root = fixture$root, stage = "d1", manifest = fixture$row)
@@ -895,30 +892,30 @@ test_that("phase transitions fail closed before summaries, reviews, and receipt"
     v3r_main(c(
       "--mode=adjudicate", paste0("--output-root=", fixture$root),
       "--stage=d1"
-    )),
+    ), execution_guard = no_compute),
     "missing, orphaned"
   )
   expect_error(
     v3r_main(c(
       "--mode=validate-final", paste0("--output-root=", fixture$root),
       "--stage=d1"
-    )),
+    ), execution_guard = no_compute),
     "missing"
   )
 })
 
 test_that("CLI modes and launcher-facing options are stable", {
-  local_mocked_bindings(
-    v3r_assert_execution_context = function(...) invisible(TRUE),
-    .package = NULL
-  )
+  no_compute <- function(...) invisible(TRUE)
   expect_message(v3r_main(c("--mode=selftest")), "selftest: PASS")
   expect_error(
-    v3r_main(c("selftest", "--mode=selftest")),
+    v3r_main(c("selftest", "--mode=selftest"), execution_guard = no_compute),
     "either positionally"
   )
   expect_error(
-    v3r_main(c("--mode=recompute-one", "--output-root=/tmp", "--stage=d1")),
+    v3r_main(
+      c("--mode=recompute-one", "--output-root=/tmp", "--stage=d1"),
+      execution_guard = no_compute
+    ),
     "--group is required"
   )
 })

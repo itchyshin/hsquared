@@ -12,7 +12,7 @@ adjudication, and Totoro/DRAC launcher without consuming any official seed.
 - doc 49: `9bf45e555230e6ae423067dfbe703dfcdf69dee9dbd82b5f43f13896b1b51b90`
 - pure preseal helper: `d24e53f667db47b27e1185db01869bada3c804c775f66e1850987794dfbc7e8c`
 - official R driver: `8ef9a5a1b2a71a4b49933d7acfaf2cc18177e59b070ac541cfffc4743b410ee0`
-- independent base-R recomputer: `a71a92e6abc69cdb851644ef12c71b0d567d20a76edd5ede2f4226ef763534f9`
+- independent base-R recomputer: `2072535ff7357c7a0e4d0fee4f4008e8bf32048585179e81c41b0eb15ecf0c3c`
 - frozen D0 base-R recomputer: `3e1892f336d218782d9b0b1e0ef449329adf33d59298e5c0b3f25be64839dc01`
 - process launcher: `e87b425adfa48d493a8f4d314ec8966c30c5ec0622a41837e5480b14dff97de1`
 - Julia replay tool: `c8b4d2ceb4c01f807efa610002763fc1f5416c35a666427975a7f7972a3b0826`

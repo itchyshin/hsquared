@@ -1256,7 +1256,10 @@ v3r_selftest <- function() {
   invisible(TRUE)
 }
 
-v3r_main <- function(args = commandArgs(trailingOnly = TRUE)) {
+v3r_main <- function(
+  args = commandArgs(trailingOnly = TRUE),
+  execution_guard = v3r_assert_execution_context
+) {
   explicit_mode <- v3r_option(args, "mode")
   positional <- args[!startsWith(args, "--")]
   if (!is.null(explicit_mode) && length(positional)) {
@@ -1272,7 +1275,7 @@ v3r_main <- function(args = commandArgs(trailingOnly = TRUE)) {
     v3r_abort("exactly one positional mode is allowed")
   }
   if (mode == "selftest") return(v3r_selftest())
-  v3r_assert_execution_context()
+  execution_guard()
   root <- v3r_required(args, "output-root")
   stage <- v3r_stage(v3r_required(args, "stage"))
   if (mode == "recompute-one") {
