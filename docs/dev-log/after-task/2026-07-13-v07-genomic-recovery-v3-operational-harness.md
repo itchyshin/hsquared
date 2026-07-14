@@ -54,9 +54,11 @@ official seed.
 The official driver, independent recomputer/adjudicator, pure preseal helper,
 launcher guard, and Julia replay selftests passed without consuming an official
 seed. All four focused R files passed without `_problems`; the full R test suite
-completed with no extracted problems. The full Julia `Pkg.test()` suite passed.
-Both worktrees pass `git diff --check`. Exact commands and hashes are in the
-matching check log.
+completed with no extracted problems. A built-package `R CMD check` also passed
+its tests after repository-only test files were made to skip before resolving
+absent `tools/` paths (one expected new-submission NOTE). The full Julia
+`Pkg.test()` suite passed. Both worktrees pass `git diff --check`. Exact commands
+and hashes are in the matching check log.
 
 ## 6. Tests of the Tests
 
@@ -82,6 +84,7 @@ differ only while all numerical comparisons stay within `1e-10`.
 | Test reporter could exit zero while saving `_problems` | Every run now inspects `_problems` and uses executable negative controls. |
 | Cross-language raw K/Q hashes differed | Frozen native-hash provenance plus `1e-10` numerical parity. |
 | R 4.5/4.6 generated parity TSV hashes differed | Localized to last-bit quantiles; kept exact tool/schema binding and typed `1e-10` parity. |
+| Built-package CI lacked repository `tools/` | Repository-only tests now skip before path normalization; built-package tests pass. |
 
 ## 8. Consistency Audit
 

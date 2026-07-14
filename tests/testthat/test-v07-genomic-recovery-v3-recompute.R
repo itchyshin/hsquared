@@ -1,7 +1,10 @@
 recompute_tool <- testthat::test_path(
   "..", "..", "tools", "v07_genomic_recovery_v3_recompute.R"
 )
-testthat::expect_true(file.exists(recompute_tool))
+testthat::skip_if_not(
+  file.exists(recompute_tool),
+  "repository-only recovery-v3 recomputer is unavailable"
+)
 source(normalizePath(recompute_tool, mustWork = TRUE), local = TRUE)
 
 v3r_test_hash <- function(letter, n = 64L) {

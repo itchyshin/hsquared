@@ -1,7 +1,11 @@
-launcher_path <- normalizePath(
-  testthat::test_path("..", "..", "tools", "run-v07-genomic-recovery-v3.sh"),
-  winslash = "/", mustWork = TRUE
+launcher_path <- testthat::test_path(
+  "..", "..", "tools", "run-v07-genomic-recovery-v3.sh"
 )
+testthat::skip_if_not(
+  file.exists(launcher_path),
+  "repository-only recovery-v3 launcher is unavailable"
+)
+launcher_path <- normalizePath(launcher_path, winslash = "/", mustWork = TRUE)
 
 launcher_text <- paste(readLines(launcher_path, warn = FALSE), collapse = "\n")
 

@@ -32,6 +32,10 @@ adjudication, and Totoro/DRAC launcher without consuming any official seed.
   extracted `_problems`; the recomputer includes D0F and synthetic final-tree
   positive paths plus the native-hash regression.
 - Full R `devtools::test(reporter = "check")`: exit 0, no `_problems`.
+- Built-package `R CMD check --no-manual --as-cran`: tests PASS; one expected
+  new-submission NOTE with unavailable optional `pedigreemm` under
+  `_R_CHECK_FORCE_SUGGESTS_=false`. Repository-only launcher and recomputer
+  tests now test existence and skip before normalizing their `tools/` paths.
 - Full Julia `Pkg.test()`: PASS.
 - `git diff --check`: PASS in both twins.
 - Clean Totoro selftest initially stopped on raw D0F fixture SHA drift between
@@ -57,6 +61,8 @@ adjudication, and Totoro/DRAC launcher without consuming any official seed.
   `1e-10`; marker/ID identity remains exact.
 - Synthetic adjudication writes once, validates the exact final tree, and
   rejects overwrite or receipt drift.
+- Removing repository `tools/` from the built package skips the two
+  repository-only test files instead of failing path normalization.
 
 ## Independent verdicts
 
