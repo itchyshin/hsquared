@@ -35,6 +35,27 @@ test_that("launcher compute guard is executable and fail-closed", {
   expect_match(paste(output, collapse = "\n"), "guard selftest: PASS", fixed = TRUE)
 })
 
+test_that("launcher makes fresh-D0F adjudication a D1-only predecessor", {
+  expect_match(
+    launcher_text, "D1 $phase requires D0F_ADJUDICATION_ROOT", fixed = TRUE
+  )
+  expect_match(
+    launcher_text, "D0F $phase accepts no predecessor root", fixed = TRUE
+  )
+  expect_match(
+    launcher_text, "require_predecessor_arity d1 prepare 2", fixed = TRUE
+  )
+  expect_match(
+    launcher_text, "require_predecessor_arity d1 preseal 2", fixed = TRUE
+  )
+  expect_match(
+    launcher_text, "require_predecessor_arity d0f prepare 2", fixed = TRUE
+  )
+  expect_match(
+    launcher_text, "--d0f-adjudication-root", fixed = TRUE
+  )
+})
+
 test_that("launcher freezes thread and process safety", {
   for (name in c(
     "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",

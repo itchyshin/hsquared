@@ -372,9 +372,11 @@ intervals. Base R generates each design's indices with
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
-Both recomputers consume the same primary and SHA-256 sidecar. D0F is
-diagnostic and never enters D1/D2 sizing, D3/D4 recovery, or a capability
-claim.
+Both recomputers consume the same primary and SHA-256 sidecar. D0F estimates
+remain diagnostic and never enter D1/D2 sizing, D3/D4 recovery, or a capability
+claim. Its exact successful adjudication receipt is nevertheless a mandatory
+sequencing checkpoint: D1 cannot be prepared or presealed until fresh D0F is
+fully recomputed, reviewed, and adjudicated `PASS` with decision `COMPLETE`.
 
 The 24-by-8 allocation preserves the 576-fit budget while increasing the
 between-panel degrees of freedom from 7 to 23 per design. It retains
@@ -426,6 +428,18 @@ the schema, or changing the presealed R tool bytes must make the parity gate
 red. This cross-version amendment was frozen before any official D0F/D1 seed.
 
 #### Stage D1 — fresh interior ladder
+
+**Fresh-D0F checkpoint.** Before D1 preparation, the launcher and R driver must
+receive the canonical fresh-D0F root. They verify its
+`stage_adjudication_receipt.tsv` primary and sidecar, exact ordered
+`v07-genomic-recovery-v3-adjudication-1` schema, `stage = d0f`,
+`verdict = PASS`, `stage_decision = COMPLETE`, parity maxima no larger than
+`1e-10`, provenance digests, and canonical post-run review paths. The D1 root
+and D0F root must be distinct and nonnested. D1's preseal binds both the
+canonical D0F root and receipt SHA-256. The retired blocked D0F root named above
+is explicitly forbidden, and a missing, partial, unhashed, failed, incomplete,
+unadjudicated, noncanonical, nested, or mismatched receipt stops before D1
+manifest preparation. No D0F estimate enters the D1 analysis.
 
 Use \(r_G=0.5\), 48 fresh pilot seeds per cell, and the full factorial design:
 
@@ -686,7 +700,8 @@ Every stage uses this acyclic create-once evidence chain:
    write `stage_preseal.tsv` last. The preseal binds those existing primaries
    and sidecars, exact implementation commits/tool hashes, both route names,
    packet/truth schema versions, the canonical stage root, and the exact D0
-   receipt. It contains no future corpus or result hash.
+   receipt. D1 additionally binds the canonical successful fresh-D0F root and
+   adjudication-receipt SHA-256. It contains no future D1 corpus or result hash.
 2. Generate official attempts and packets only after the preseal is accepted.
    Every attempt binds `preseal_sha256`. Before generation, the stage root may
    contain only the enumerated preseal inputs and their sidecars; attempts,
@@ -746,7 +761,7 @@ substitute another canonical root/hash pair.
 The frozen schema identifiers are:
 
 ```text
-preseal  v07-genomic-recovery-v3-stage-preseal-1
+preseal  v07-genomic-recovery-v3-stage-preseal-2
 packet   v07-genomic-recovery-v3-packet-1
 truth    v07-genomic-recovery-v3-truth-1
 ```
@@ -763,6 +778,8 @@ environment_manifest_sha256
 d0_output_root
 d0_adjudication_receipt_sha256
 d0_diagnostics_sha256
+d0f_adjudication_root
+d0f_adjudication_receipt_sha256
 historical_seed_lock_sha256
 d0f_fixed_panel_manifest_sha256
 d0f_bootstrap_indices_sha256
@@ -805,8 +822,10 @@ helper); `julia_replay_sha256` binds
 loaded from, and therefore fixed by, the exact clean `julia_replay_commit`; it
 does not reuse the R D0-tool key.
 
-D1 records `NA` for the two D0F-only manifest hashes. The official and replay
-routes are respectively `ordinary_auto_genomic` and `julia_profile_replay`.
+D0F records `NA` for the two D1-only adjudication bindings. D1 records `NA` for
+the two D0F-only manifest hashes and must record a non-`NA` canonical fresh-D0F
+root and receipt digest. The official and replay routes are respectively
+`ordinary_auto_genomic` and `julia_profile_replay`.
 Every Julia replay row binds and verifies the actual source R attempt,
 manifest, preseal, corpus lock, replay driver, and replay commit using the
 ordered fields `source_r_attempt_sha256`, `source_r_max_abs_difference`,
@@ -917,9 +936,11 @@ red under every mutation.
 ## 7. Compute sequence
 
 1. Run D0 locally and independently in R and Julia; commit only the compact
-   replay summary and hashes. Run and adjudicate D0F separately as mechanism
-   evidence.
-2. On Totoro, verify the deployed commits and environment, then run one D1 fit
+   replay summary and hashes. Run and adjudicate fresh D0F separately as
+   mechanism evidence. Do not prepare D1 unless the exact D0F receipt is
+   `PASS`/`COMPLETE`.
+2. On Totoro, bind that successful D0F root and receipt into D1 preparation and
+   preseal, verify the deployed commits and environment, then run one D1 fit
    at each `n` with `OPENBLAS_NUM_THREADS=1` and one Julia thread.
 3. Run a 16-worker smoke and inspect the first completed attempt plus packet.
 4. Set production workers to
@@ -941,6 +962,7 @@ manifest may be committed.
 | evidence | decision |
 | --- | --- |
 | D0 diagnostic fit is weak or surprising | report it; do not change or stop D1 |
+| fresh D0F has no exact `PASS`/`COMPLETE` receipt | stop before D1 prepare/preseal; never substitute the blocked root |
 | D0 R and Julia disagree | stop and localise the first differing eigenvalue or formula |
 | no D1 cell eligible for a marker ratio | record that ratio unsupported; no D2/D3 |
 | D2 edge fails at one eligible \(n\) | keep it failed; continue ascending through larger D1-eligible values, one immutable batch each |

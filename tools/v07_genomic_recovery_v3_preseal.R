@@ -259,6 +259,7 @@ v3p_stage_preseal_keys <- c(
   "schema_version", "stage", "doc49_sha256", "cell_table_sha256",
   "manifest_sha256", "environment_manifest_sha256", "d0_output_root",
   "d0_adjudication_receipt_sha256", "d0_diagnostics_sha256",
+  "d0f_adjudication_root", "d0f_adjudication_receipt_sha256",
   "historical_seed_lock_sha256",
   "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256",
   "fisher_receipt_sha256", "noether_receipt_sha256",
@@ -314,6 +315,21 @@ v3p_review_columns <- c(
   "julia_candidate_commit"
 )
 v3p_reviewers <- c("fisher", "noether", "hopper", "grace", "rose")
+v3p_d0f_blocked_root <-
+  "/home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0f-official-0a9d882-1a538212"
+v3p_d0f_adjudication_schema <- "v07-genomic-recovery-v3-adjudication-1"
+v3p_d0f_adjudication_columns <- c(
+  "schema_version", "stage", "verdict", "stage_decision",
+  "attempt_max_diff", "summary_max_diff",
+  "preseal_sha256", "corpus_lock_sha256", "manifest_sha256",
+  "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
+  "r_driver_sha256", "r_recomputer_sha256", "julia_replay_sha256",
+  "base_r_inventory_sha256", "julia_replay_inventory_sha256",
+  "r_summary_sha256", "julia_summary_sha256",
+  unlist(lapply(v3p_reviewers, function(x) {
+    c(paste0(x, "_review_path"), paste0(x, "_review_sha256"))
+  }), use.names = FALSE)
+)
 
 v3p_canonical_path <- function(path, label, directory = FALSE) {
   if (
@@ -389,6 +405,72 @@ v3p_validate_frozen_d0_artifacts <- function(
     diagnostics_path, diagnostics_hash, "official D0 base-R diagnostics"
   )
   list(root = root, diagnostics_path = diagnostics_path)
+}
+
+v3p_validate_successful_d0f_adjudication <- function(
+  root, expected_hash = NULL, d1_root = NULL
+) {
+  root <- v3p_canonical_path(root, "fresh D0F adjudication root", TRUE)
+  if (identical(root, v3p_d0f_blocked_root)) {
+    v3p_abort("blocked unadjudicated D0F root cannot admit D1")
+  }
+  if (!is.null(d1_root)) {
+    v3p_roots_nonnested(
+      root, d1_root, "fresh D0F adjudication root", "D1 stage root"
+    )
+  }
+  path <- file.path(root, "stage_adjudication_receipt.tsv")
+  if (is.null(expected_hash)) {
+    if (!file.exists(path) || isTRUE(file.info(path)$isdir)) {
+      v3p_abort("fresh D0F adjudication receipt primary is missing")
+    }
+    expected_hash <- v07d_sha256(path)
+  }
+  if (!v3p_hex64(expected_hash)) {
+    v3p_abort("fresh D0F adjudication receipt hash is invalid")
+  }
+  v3p_verify_pair(path, expected_hash, "fresh D0F adjudication receipt")
+  receipt <- v07d_read_tsv(
+    path, v3p_d0f_adjudication_columns, verify = FALSE
+  )
+  if (
+    nrow(receipt) != 1L ||
+      receipt$schema_version[[1L]] != v3p_d0f_adjudication_schema ||
+      receipt$stage[[1L]] != "d0f" || receipt$verdict[[1L]] != "PASS" ||
+      receipt$stage_decision[[1L]] != "COMPLETE"
+  ) {
+    v3p_abort("D0F receipt is not one adjudicated PASS/COMPLETE d0f row")
+  }
+  attempt_diff <- suppressWarnings(as.numeric(receipt$attempt_max_diff[[1L]]))
+  summary_diff <- suppressWarnings(as.numeric(receipt$summary_max_diff[[1L]]))
+  if (
+    !is.finite(attempt_diff) || attempt_diff < 0 || attempt_diff > 1e-10 ||
+      !is.finite(summary_diff) || summary_diff < 0 || summary_diff > 1e-10
+  ) {
+    v3p_abort("D0F adjudication parity maximum exceeds 1e-10")
+  }
+  hash_columns <- grep("_sha256$", names(receipt), value = TRUE)
+  commit_columns <- grep("_commit$", names(receipt), value = TRUE)
+  if (
+    any(!vapply(unlist(receipt[hash_columns], use.names = FALSE),
+      v3p_hex64, logical(1L))) ||
+      any(!vapply(unlist(receipt[commit_columns], use.names = FALSE),
+        v3p_hex40, logical(1L)))
+  ) {
+    v3p_abort("D0F adjudication receipt provenance is invalid")
+  }
+  expected_review_paths <- file.path(
+    "postrun_receipts", paste0(v3p_reviewers, ".tsv")
+  )
+  if (!identical(
+    unname(as.character(unlist(
+      receipt[paste0(v3p_reviewers, "_review_path")], use.names = FALSE
+    ))),
+    expected_review_paths
+  )) {
+    v3p_abort("D0F adjudication receipt review paths are invalid")
+  }
+  list(root = root, receipt_path = path, receipt_sha256 = expected_hash)
 }
 
 v3p_git_clean <- function(root) {
@@ -551,20 +633,25 @@ v3p_validate_stage_preseal <- function(
   d0f_only <- c(
     "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256"
   )
+  d1_only <- c(
+    "d0f_adjudication_root", "d0f_adjudication_receipt_sha256"
+  )
   stage <- raw_value[["stage"]]
-  allowed_na <- if (identical(stage, "d1")) d0f_only else character()
+  allowed_na <- if (identical(stage, "d1")) d0f_only else d1_only
   if (
     any(is.na(raw_value[setdiff(names(raw_value), allowed_na)])) ||
       any(!is.na(raw_value) & !nzchar(raw_value)) ||
       (identical(stage, "d1") &&
-        !all(is.na(raw_value[allowed_na]) | raw_value[allowed_na] == "NA"))
+        !all(is.na(raw_value[d0f_only]) | raw_value[d0f_only] == "NA")) ||
+      (identical(stage, "d0f") &&
+        !all(is.na(raw_value[d1_only]) | raw_value[d1_only] == "NA"))
   ) {
     v3p_abort("recovery-v3 stage preseal key membership or value drift")
   }
   raw_value[is.na(raw_value)] <- "NA"
   value <- raw_value
   if (
-    value[["schema_version"]] != "v07-genomic-recovery-v3-stage-preseal-1" ||
+    value[["schema_version"]] != "v07-genomic-recovery-v3-stage-preseal-2" ||
       !value[["stage"]] %in% c("d0f", "d1") ||
       value[["official_route"]] != "ordinary_auto_genomic" ||
       value[["replay_route"]] != "julia_profile_replay" ||
@@ -609,7 +696,10 @@ v3p_validate_stage_preseal <- function(
       ))) ||
       (value[["stage"]] == "d1" && any(value[c(
         "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256"
-      )] != "NA"))
+      )] != "NA")) ||
+      (value[["stage"]] == "d1" &&
+        !v3p_hex64(value[["d0f_adjudication_receipt_sha256"]])) ||
+      (value[["stage"]] == "d0f" && any(value[d1_only] != "NA"))
   ) {
     v3p_abort("recovery-v3 stage preseal commit or digest binding is invalid")
   }
@@ -620,6 +710,13 @@ v3p_validate_stage_preseal <- function(
   )
   d0 <- d0_artifacts$root
   v3p_roots_nonnested(root, d0, "stage output root", "official D0 replay root")
+  if (value[["stage"]] == "d1") {
+    v3p_validate_successful_d0f_adjudication(
+      value[["d0f_adjudication_root"]],
+      value[["d0f_adjudication_receipt_sha256"]],
+      root
+    )
+  }
   v3p_verify_preseal_tree(root, value[["stage"]], include_preseal)
 
   paths <- c(

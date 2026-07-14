@@ -45,8 +45,11 @@ Before a retry phenotype is generated, both repaired twins must be committed,
 five fresh hash-bound Fisher/Noether/Hopper/Grace/Rose receipts must pass, and a
 new root and preseal must be minted. The 24-by-8 allocation, fixed panels,
 estimand, ridge, model, summaries, tolerances, and stopping rules are unchanged.
-D1 remains paused until the fresh D0F corpus is independently recomputed and
-adjudicated.
+Fisher's first exact review found that D1 sequencing was only documented, so
+that review set was invalidated. Stage-preseal schema 2 now requires D1 to bind
+the exact receipt of a canonical external fresh-D0F `PASS`/`COMPLETE`
+adjudication; the known blocked root and nested roots are rejected. Five fresh
+exact-commit reviews remain required.
 
 No recovery, activation, capability promotion, G10, release, or
 `public_covered_count` change follows from this checkpoint. The ordinary route

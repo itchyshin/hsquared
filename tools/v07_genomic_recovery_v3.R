@@ -43,7 +43,7 @@ v3d_load_preseal <- function() {
 
 v3d_load_preseal()
 
-v3d_schema <- "v07-genomic-recovery-v3-stage-preseal-1"
+v3d_schema <- "v07-genomic-recovery-v3-stage-preseal-2"
 v3d_packet_schema <- "v07-genomic-recovery-v3-packet-1"
 v3d_truth_schema <- "v07-genomic-recovery-v3-truth-1"
 v3d_route <- "ordinary_auto_genomic"
@@ -229,7 +229,7 @@ v3d_write_review <- function(
 
 v3d_prepare_stage <- function(
   output_root, stage, driver_root, r_root, julia_root, receipt_root,
-  max_workers
+  max_workers, d0f_adjudication_root = NULL
 ) {
   v3d_assert_execution_context()
   stage <- v3d_stage(stage)
@@ -238,6 +238,15 @@ v3d_prepare_stage <- function(
     c(driver_root, r_root, julia_root, v3d_d0_corpus_root),
     normalizePath, character(1L), winslash = "/", mustWork = TRUE
   )
+  if (stage == "d1") {
+    if (is.null(d0f_adjudication_root)) {
+      v3d_abort("D1 prepare requires --d0f-adjudication-root")
+    }
+    d0f <- v3p_validate_successful_d0f_adjudication(d0f_adjudication_root)
+    roots <- c(roots, d0f$root)
+  } else if (!is.null(d0f_adjudication_root)) {
+    v3d_abort("D0F prepare does not accept --d0f-adjudication-root")
+  }
   v3d_new_root(output_root, roots)
   receipt_root <- normalizePath(receipt_root, winslash = "/", mustWork = TRUE)
   doc <- file.path(r_root, "docs", "design", "49-v07-genomic-recovery-v3-sample-size-ladder.md")
@@ -302,7 +311,8 @@ v3d_context <- function(driver_root, r_root, julia_root) {
 }
 
 v3d_preseal_values <- function(
-  output_root, stage, context, r_auto_route_commit, julia_candidate_commit
+  output_root, stage, context, r_auto_route_commit, julia_candidate_commit,
+  d0f_adjudication_root = NULL
 ) {
   stage <- v3d_stage(stage)
   r_driver_commit <- v3p_git_head(context$r_driver_root)
@@ -323,6 +333,19 @@ v3d_preseal_values <- function(
     v3d_truth_schema, "markers", "vanraden1", "sample", "K_lambda",
     "0.01", "1e-07", "1e-08", "true"
   )
+  if (stage == "d1") {
+    if (is.null(d0f_adjudication_root)) {
+      v3d_abort("D1 preseal requires --d0f-adjudication-root")
+    }
+    d0f <- v3p_validate_successful_d0f_adjudication(
+      d0f_adjudication_root, d1_root = output_root
+    )
+    values[c(
+      "d0f_adjudication_root", "d0f_adjudication_receipt_sha256"
+    )] <- c(d0f$root, d0f$receipt_sha256)
+  } else if (!is.null(d0f_adjudication_root)) {
+    v3d_abort("D0F preseal does not accept --d0f-adjudication-root")
+  }
   path_keys <- c(
     doc49_sha256 = "doc49.md", cell_table_sha256 = "cell_table.tsv",
     manifest_sha256 = paste0(stage, "_manifest.tsv"),
@@ -372,14 +395,16 @@ v3d_preseal_values <- function(
 
 v3d_write_preseal <- function(
   output_root, stage, driver_root, r_root, julia_root,
-  r_auto_route_commit, julia_candidate_commit
+  r_auto_route_commit, julia_candidate_commit,
+  d0f_adjudication_root = NULL
 ) {
   v3d_assert_execution_context()
   stage <- v3d_stage(stage)
   output_root <- v3p_canonical_path(output_root, "stage output root", TRUE)
   context <- v3d_context(driver_root, r_root, julia_root)
   preseal <- v3d_preseal_values(
-    output_root, stage, context, r_auto_route_commit, julia_candidate_commit
+    output_root, stage, context, r_auto_route_commit, julia_candidate_commit,
+    d0f_adjudication_root
   )
   v3p_validate_stage_preseal(preseal, context, include_preseal = FALSE)
   v3p_write_once(output_root, "stage_preseal.tsv", preseal)
@@ -1273,13 +1298,15 @@ v3d_main <- function(args = commandArgs(trailingOnly = TRUE)) {
     v3d_prepare_stage(
       output_root, stage, driver_root, r_root, julia_root,
       v3d_required(options, "receipt-root"),
-      v3d_required(options, "max-workers")
+      v3d_required(options, "max-workers"),
+      options[["d0f-adjudication-root"]]
     )
   } else if (mode == "write-preseal") {
     v3d_write_preseal(
       output_root, stage, driver_root, r_root, julia_root,
       v3d_required(options, "r-auto-route-commit"),
-      v3d_required(options, "julia-candidate-commit")
+      v3d_required(options, "julia-candidate-commit"),
+      options[["d0f-adjudication-root"]]
     )
   } else if (mode == "run-one") {
     v3d_run_one(

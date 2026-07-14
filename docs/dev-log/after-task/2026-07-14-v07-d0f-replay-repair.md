@@ -10,7 +10,9 @@ without changing the scientific design.
 
 Retired the exact spent phenotype and bootstrap seed spaces, assigned new
 disjoint retry bases, repaired the cross-twin fixed-panel validation contract,
-and recorded the failed root and hash ledger as unadjudicated evidence.
+recorded the failed root and hash ledger as unadjudicated evidence, and made D1
+preparation/preseal fail closed unless it binds an exact external fresh-D0F
+`PASS`/`COMPLETE` adjudication receipt.
 
 ## 3a. Decisions and Rejected Alternatives
 
@@ -27,8 +29,9 @@ replay tool plus its sidecar and evidence notes.
 
 ## 5. Checks Run
 
-The R seed-lock and preseal selftests pass. Both focused R test files pass
-warning-free. The Julia replay selftest and full `Pkg.test()` pass. The Julia
+The R seed-lock, driver, and preseal selftests pass. The focused R seed-lock,
+launcher, and preseal test files pass warning-free. The Julia replay selftest
+and full `Pkg.test()` pass. The Julia
 tool sidecar and both worktree diff checks pass. A built-package
 `R CMD check --no-manual` passes with status `OK`, including package tests.
 Exact final commits and remote CI are still pending at this report stage.
@@ -38,7 +41,8 @@ Exact final commits and remote CI are still pending at this report stage.
 Controls turn red for a retired-seed collision, a duplicate proposed seed, the
 known historical collision `2027142001`, an out-of-range bootstrap base,
 duplicate/missing phenotype rank, changed fixed-panel precision, and a changed
-rank-8 panel fingerprint.
+rank-8 panel fingerprint. D1 also turns red for a non-COMPLETE predecessor,
+wrong receipt hash, nested root, or the known blocked D0F root.
 
 ## 7a. Issue Ledger
 
@@ -48,6 +52,7 @@ rank-8 panel fingerprint.
 | Earlier seed audit expanded 3x8x24 instead of 3x24x8 | Replaced with the exact consumed grid and mutation-tested denominators. |
 | Old preseal cannot admit repaired bytes | Preserve the old root unadjudicated and preregister a fresh retry. |
 | Old bootstrap seeds were not fitted | Retire them anyway because they generated the observed provisional summary. |
+| D1 sequencing was documented but not enforced | Stage-preseal schema 2 requires a canonical external D0F PASS/COMPLETE receipt and exact receipt hash before D1 preparation/preseal. |
 
 ## 8. Consistency Audit
 
@@ -78,7 +83,8 @@ widening the repair.
 
 ## 10. Known Residuals
 
-The repaired commits still require five new preseal reviews and exact Totoro
+Fisher's first exact review found the prose-only D1 sequencing gap, invalidating
+that review set. The repaired commits still require five new preseal reviews and exact Totoro
 deployment. Fresh D0F, independent recomputation, adjudication, D1, conditional
 D2-D4, final Rose review, and G10 remain outstanding.
 
@@ -87,7 +93,7 @@ D2-D4, final Rose review, and G10 remain outstanding.
 Preflight tooling is part of the experiment. A green stochastic run is not
 evidence until every presealed independent replay and admission gate can pass;
 seed-space audits must enumerate the scientific axes, not merely the expected
-row count.
+row count, and stage dependencies must be executable gates rather than prose.
 
 ## 12. Cross-Product Coverage
 

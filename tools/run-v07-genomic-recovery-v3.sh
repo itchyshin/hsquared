@@ -8,8 +8,10 @@ Usage:
   run-v07-genomic-recovery-v3.sh guard-selftest
   run-v07-genomic-recovery-v3.sh write-review R_ROOT PATH REVIEWER CLEAN|BLOCKED DOC49_SHA R_DRIVER_COMMIT R_RECOMPUTER_COMMIT JULIA_REPLAY_COMMIT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT
 
-  run-v07-genomic-recovery-v3.sh prepare OUT d0f|d1 R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS
-  run-v07-genomic-recovery-v3.sh preseal OUT d0f|d1 R_ROOT JULIA_ROOT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT
+  run-v07-genomic-recovery-v3.sh prepare OUT d0f R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS
+  run-v07-genomic-recovery-v3.sh prepare OUT d1 R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS D0F_ADJUDICATION_ROOT
+  run-v07-genomic-recovery-v3.sh preseal OUT d0f R_ROOT JULIA_ROOT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT
+  run-v07-genomic-recovery-v3.sh preseal OUT d1 R_ROOT JULIA_ROOT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT D0F_ADJUDICATION_ROOT
   run-v07-genomic-recovery-v3.sh smoke-n-ladder OUT d0f|d1 R_ROOT JULIA_ROOT [WORKERS]
   run-v07-genomic-recovery-v3.sh smoke-16 OUT d0f|d1 R_ROOT JULIA_ROOT [WORKERS]
   run-v07-genomic-recovery-v3.sh verify-official OUT d0f|d1 R_ROOT JULIA_ROOT
@@ -38,6 +40,17 @@ die() {
 
 require_stage() {
   [[ "$1" == d0f || "$1" == d1 ]] || die "stage must be d0f or d1"
+}
+
+require_predecessor_arity() {
+  local stage=$1
+  local phase=$2
+  local argc=$3
+  if [[ "$stage" == d1 ]]; then
+    (( argc == 3 )) || die "D1 $phase requires D0F_ADJUDICATION_ROOT"
+  else
+    (( argc == 2 )) || die "D0F $phase accepts no predecessor root"
+  fi
 }
 
 require_workers() {
@@ -143,6 +156,14 @@ if [[ "$mode" == guard-selftest ]]; then
     die "presealed worker-cap negative control failed"
   ( require_smoke_missing_count 15 ) >/dev/null 2>&1 && \
     die "smoke-16 count negative control failed"
+  require_predecessor_arity d0f prepare 2
+  require_predecessor_arity d0f preseal 2
+  ( require_predecessor_arity d1 prepare 2 ) >/dev/null 2>&1 && \
+    die "D1 prepare predecessor negative control failed"
+  ( require_predecessor_arity d1 preseal 2 ) >/dev/null 2>&1 && \
+    die "D1 preseal predecessor negative control failed"
+  require_predecessor_arity d1 prepare 3
+  require_predecessor_arity d1 preseal 3
 
   pair_root=$(mktemp -d "${TMPDIR:-/tmp}/v3-launcher-pairs.XXXXXX")
   trap 'rm -rf "$pair_root"' EXIT
@@ -378,19 +399,23 @@ RSCRIPT
 
 case "$mode" in
   prepare)
-    [[ $# -eq 2 ]] || { usage >&2; exit 64; }
+    require_predecessor_arity "$stage" prepare "$#"
     receipt_root=$1
     max_workers=$2
     require_workers "$max_workers"
+    predecessor=()
+    [[ "$stage" == d1 ]] && predecessor=(--d0f-adjudication-root="$3")
     exec Rscript --vanilla "$driver" --mode=prepare-stage \
       "${driver_common[@]}" --receipt-root="$receipt_root" \
-      --max-workers="$max_workers"
+      --max-workers="$max_workers" "${predecessor[@]}"
     ;;
   preseal)
-    [[ $# -eq 2 ]] || { usage >&2; exit 64; }
+    require_predecessor_arity "$stage" preseal "$#"
+    predecessor=()
+    [[ "$stage" == d1 ]] && predecessor=(--d0f-adjudication-root="$3")
     exec Rscript --vanilla "$driver" --mode=write-preseal \
       "${driver_common[@]}" --r-auto-route-commit="$1" \
-      --julia-candidate-commit="$2"
+      --julia-candidate-commit="$2" "${predecessor[@]}"
     ;;
   smoke-n-ladder)
     [[ $# -le 1 ]] || { usage >&2; exit 64; }

@@ -9,6 +9,28 @@ source(normalizePath(preseal_tool, mustWork = TRUE), local = TRUE)
 
 v3p_test_hash <- function(letter = "a") paste(rep(letter, 64L), collapse = "")
 
+v3p_test_d0f_adjudication_receipt <- function(
+  verdict = "PASS", stage_decision = "COMPLETE",
+  schema_version = v3p_d0f_adjudication_schema, stage = "d0f"
+) {
+  values <- setNames(
+    rep(v3p_test_hash("a"), length(v3p_d0f_adjudication_columns)),
+    v3p_d0f_adjudication_columns
+  )
+  values[c(
+    "schema_version", "stage", "verdict", "stage_decision",
+    "attempt_max_diff", "summary_max_diff"
+  )] <- c(schema_version, stage, verdict, stage_decision, "0", "0")
+  values[c(
+    "r_driver_commit", "r_recomputer_commit", "julia_replay_commit"
+  )] <- paste(rep("b", 40L), collapse = "")
+  values[paste0(v3p_reviewers, "_review_path")] <- file.path(
+    "postrun_receipts", paste0(v3p_reviewers, ".tsv")
+  )
+  out <- as.data.frame(as.list(values), stringsAsFactors = FALSE)
+  out[v3p_d0f_adjudication_columns]
+}
+
 v3p_test_d0_manifest <- function() {
   rows <- lapply(seq_len(nrow(v07d_cells)), function(i) {
     cell <- v07d_cells[i, ]
@@ -281,13 +303,18 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   dir.create(base)
   base <- normalizePath(base, winslash = "/", mustWork = TRUE)
   d0_root <- file.path(base, "d0")
+  d0f_adjudication_root <- file.path(base, "d0f-adjudicated")
   stage_root <- if (nested) file.path(d0_root, "stage") else file.path(base, "stage")
   git_root <- file.path(base, "deployed")
   dir.create(file.path(d0_root, "receipt"), recursive = TRUE)
   dir.create(file.path(d0_root, "r"), recursive = TRUE)
+  dir.create(d0f_adjudication_root)
   dir.create(file.path(stage_root, "receipts"), recursive = TRUE)
   dir.create(git_root)
   d0_root <- normalizePath(d0_root, winslash = "/", mustWork = TRUE)
+  d0f_adjudication_root <- normalizePath(
+    d0f_adjudication_root, winslash = "/", mustWork = TRUE
+  )
   stage_root <- normalizePath(stage_root, winslash = "/", mustWork = TRUE)
   git_root <- normalizePath(git_root, winslash = "/", mustWork = TRUE)
 
@@ -298,6 +325,12 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   )
   d0_diagnostics_hash <- v3p_test_pair(
     d0_diagnostics, "synthetic D0 diagnostics\n"
+  )
+  d0f_adjudication_path <- file.path(
+    d0f_adjudication_root, "stage_adjudication_receipt.tsv"
+  )
+  d0f_adjudication_hash <- v3p_test_pair(
+    d0f_adjudication_path, v3p_test_d0f_adjudication_receipt()
   )
 
   tool_names <- c(
@@ -369,7 +402,7 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
     "boundary_epsilon", "boundary_kkt_tolerance",
     "output_subtrees_absent_before_preseal"
   )] <- c(
-    "v07-genomic-recovery-v3-stage-preseal-1", "d1", d0_root, stage_root,
+    "v07-genomic-recovery-v3-stage-preseal-2", "d1", d0_root, stage_root,
     "ordinary_auto_genomic", "julia_profile_replay",
     "v07-genomic-recovery-v3-packet-1", "v07-genomic-recovery-v3-truth-1",
     "markers", "vanraden1", "sample", "K_lambda", "0.01", "1e-07",
@@ -378,11 +411,13 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   values[c(
     "doc49_sha256", "cell_table_sha256", "manifest_sha256",
     "environment_manifest_sha256", "d0_adjudication_receipt_sha256",
-    "d0_diagnostics_sha256", "historical_seed_lock_sha256"
+    "d0_diagnostics_sha256", "d0f_adjudication_receipt_sha256",
+    "historical_seed_lock_sha256"
   )] <- c(
     doc_hash, cell_hash, manifest_hash, environment_hash, d0_receipt_hash,
-    d0_diagnostics_hash, lock_hash
+    d0_diagnostics_hash, d0f_adjudication_hash, lock_hash
   )
+  values[["d0f_adjudication_root"]] <- d0f_adjudication_root
   values[paste0(v3p_reviewers, "_receipt_sha256")] <- review_hashes
   values[c(
     "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
@@ -411,6 +446,8 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   )
   list(
     base = base, stage_root = stage_root, d0_root = d0_root,
+    d0f_adjudication_root = d0f_adjudication_root,
+    d0f_adjudication_path = d0f_adjudication_path,
     git_root = git_root, preseal = preseal, context = context,
     tool_paths = tool_paths
   )
@@ -1077,13 +1114,17 @@ test_that("environment, lowercase booleans, and create-once gates fail closed", 
 test_that("stage preseal verifies the exact existing tree and provenance", {
   fixture <- v3p_test_preseal_fixture()
   on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
-  expect_length(v3p_stage_preseal_keys, 39L)
+  expect_length(v3p_stage_preseal_keys, 41L)
   diagnostics_at <- match(
     "d0_diagnostics_sha256", v3p_stage_preseal_keys
   )
   expect_identical(
     v3p_stage_preseal_keys[c(diagnostics_at - 1L, diagnostics_at)],
     c("d0_adjudication_receipt_sha256", "d0_diagnostics_sha256")
+  )
+  expect_identical(
+    v3p_stage_preseal_keys[c(diagnostics_at + 1L, diagnostics_at + 2L)],
+    c("d0f_adjudication_root", "d0f_adjudication_receipt_sha256")
   )
   expect_identical(
     v3p_review_columns,
@@ -1096,6 +1137,116 @@ test_that("stage preseal verifies the exact existing tree and provenance", {
   expect_silent(v3p_test_validate_stage(
     fixture$preseal, fixture$context
   ))
+})
+
+test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
+  valid <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(valid$base, recursive = TRUE), add = TRUE)
+  expected_hash <- v07d_sha256(valid$d0f_adjudication_path)
+  expect_silent(v3p_validate_successful_d0f_adjudication(
+    valid$d0f_adjudication_root, expected_hash, valid$stage_root
+  ))
+  expect_silent(v3p_test_validate_stage(
+    valid$preseal, valid$context, include_preseal = FALSE
+  ))
+
+  missing_primary <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(missing_primary$base, recursive = TRUE), add = TRUE)
+  unlink(missing_primary$d0f_adjudication_path)
+  expect_error(
+    v3p_validate_successful_d0f_adjudication(
+      missing_primary$d0f_adjudication_root, v3p_test_hash("a")
+    ),
+    "canonical plain path|primary is missing"
+  )
+
+  missing_sidecar <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(missing_sidecar$base, recursive = TRUE), add = TRUE)
+  unlink(paste0(missing_sidecar$d0f_adjudication_path, ".sha256"))
+  expect_error(
+    v3p_validate_successful_d0f_adjudication(
+      missing_sidecar$d0f_adjudication_root,
+      v07d_sha256(missing_sidecar$d0f_adjudication_path)
+    ),
+    "sidecar"
+  )
+
+  wrong_hash <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(wrong_hash$base, recursive = TRUE), add = TRUE)
+  expect_error(
+    v3p_validate_successful_d0f_adjudication(
+      wrong_hash$d0f_adjudication_root, v3p_test_hash("0")
+    ),
+    "hash mismatch|SHA-256"
+  )
+
+  blocked <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(blocked$base, recursive = TRUE), add = TRUE)
+  old_blocked_root <- v3p_d0f_blocked_root
+  assign("v3p_d0f_blocked_root", blocked$d0f_adjudication_root,
+    envir = environment(v3p_validate_successful_d0f_adjudication)
+  )
+  on.exit(assign("v3p_d0f_blocked_root", old_blocked_root,
+    envir = environment(v3p_validate_successful_d0f_adjudication)
+  ), add = TRUE)
+  expect_error(
+    v3p_validate_successful_d0f_adjudication(
+      blocked$d0f_adjudication_root,
+      v07d_sha256(blocked$d0f_adjudication_path)
+    ),
+    "blocked unadjudicated D0F root"
+  )
+  blocked_alias <- file.path(
+    dirname(blocked$d0f_adjudication_root), "stage", "..", "d0f-adjudicated"
+  )
+  expect_error(
+    v3p_validate_successful_d0f_adjudication(
+      blocked_alias, v07d_sha256(blocked$d0f_adjudication_path)
+    ),
+    "canonical plain path|textual path is not canonical"
+  )
+
+  nested_root <- file.path(valid$stage_root, "nested-d0f")
+  dir.create(nested_root)
+  nested_path <- file.path(nested_root, "stage_adjudication_receipt.tsv")
+  nested_hash <- v3p_test_pair(
+    nested_path, v3p_test_d0f_adjudication_receipt()
+  )
+  expect_error(
+    v3p_validate_successful_d0f_adjudication(
+      normalizePath(nested_root, winslash = "/", mustWork = TRUE),
+      nested_hash, valid$stage_root
+    ),
+    "distinct and nonnested"
+  )
+})
+
+test_that("D1 rejects non-PASS, non-COMPLETE, and unadjudicated D0F receipts", {
+  cases <- list(
+    non_pass = list(verdict = "BLOCKED"),
+    non_complete = list(stage_decision = "D0F_FIT_BLOCKER"),
+    unadjudicated = list(
+      schema_version = "v07-genomic-recovery-v3-adjudication-draft"
+    ),
+    wrong_stage = list(stage = "d1")
+  )
+  for (name in names(cases)) {
+    fixture <- v3p_test_preseal_fixture(write_preseal = FALSE)
+    on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
+    unlink(c(
+      fixture$d0f_adjudication_path,
+      paste0(fixture$d0f_adjudication_path, ".sha256")
+    ))
+    receipt <- do.call(v3p_test_d0f_adjudication_receipt, cases[[name]])
+    hash <- v3p_test_pair(fixture$d0f_adjudication_path, receipt)
+    expect_error(
+      v3p_validate_successful_d0f_adjudication(
+        fixture$d0f_adjudication_root, hash
+      ),
+      "not one adjudicated PASS/COMPLETE d0f row",
+      info = name
+    )
+  }
 })
 
 test_that("stage preseal hard-freezes D0 and both candidate commits", {
