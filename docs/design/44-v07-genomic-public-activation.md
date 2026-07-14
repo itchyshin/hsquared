@@ -374,6 +374,13 @@ unavailable until they carry the identical component and relationship-scale
 provenance and receive a separate interval-calibration gate. Raw engine
 uncertainty fields may remain internal; this arc does not validate intervals.
 
+Implementation ownership is explicit: Julia computes the genomic fit and the
+frozen construction provenance; the R bridge retrieves those as parallel
+bridge values and attaches them to the public R fit object. The generic Julia
+`result_payload()` is intentionally unchanged. Public completeness is judged
+at the R fit-object boundary, where both the numerical result and provenance
+must be present and mutually consistent.
+
 ## 7. Verification gates
 
 ### G1 — pure-R grammar and validation
@@ -544,7 +551,9 @@ it. Passing does not itself authorize a release or count flip.
 ## 9. Live-repository basis and research provenance
 
 The frozen contract was reconciled against live `hsquared` `main` on
-2026-07-12:
+2026-07-12. The inventory below is a historical orientation snapshot, not the
+current implementation status; subsequent candidate-branch work closed several
+of the gaps it records:
 
 - parsing and current validation: `R/model-spec.R`,
   `hs_parse_relinv_primary_call()`, `hs_validate_genomic_markers()`, and
@@ -560,13 +569,14 @@ The frozen contract was reconciled against live `hsquared` `main` on
   `docs/design/validation-debt-register.md`, and
   `vignettes/articles/genomic-prediction.Rmd`.
 
-The live scout found that marker fitting already enters
-`hs_fit_julia_genomic_payload()` through
+At that orientation point, the live scout found that marker fitting already
+entered `hs_fit_julia_genomic_payload()` through
 `genomic_relationship_matrix()` then `genomic_relationship_inverse()`, the
 payload hard-codes `ridge = 0.01`, supplied `Ginv` misleadingly carries that
 unused ridge, the default route rejects genomic terms as opt-in, and genomic
 `heritability()` currently returns only `term = "genomic"` plus an estimate.
-Those are implementation gaps, not evidence that this contract is active.
+Those were implementation gaps at the frozen orientation point, not current
+claims and not evidence that this contract is publicly active.
 
 NotebookLM queries over the curated HSquared and quantitative-genetics
 notebooks informed the terminology and comparator cautions. They are

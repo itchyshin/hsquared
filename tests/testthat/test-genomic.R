@@ -1,7 +1,7 @@
 # v0.7 genomic GREML activation: a single genomic random effect from either a
 # supplied precision or the frozen sample-p VanRaden-1 marker construction.
-# Gaussian REML remains an explicit Julia target after the activation pilot
-# stopped; the default fit path must reject it.
+# The held candidate auto-routes only the frozen Gaussian REML form; recovery-v3,
+# final review, and G10 still decide whether that default route may activate.
 
 hs_test_ginv <- function(ids) {
   n <- length(ids)
@@ -52,7 +52,7 @@ test_that("a formula must contain exactly one primary effect", {
   )
 })
 
-test_that("genomic() requires a Ginv argument", {
+test_that("genomic() requires exactly one relationship input", {
   ids <- paste0("g", 1:2)
   dat <- data.frame(y = c(1, 2), id = ids)
   expect_error(
@@ -689,6 +689,31 @@ test_that("genomic ratio keeps term compatibility and fences uncertainty", {
   expect_equal(out$term, "genomic")
   expect_equal(out$component, "genomic_variance_ratio")
   expect_equal(out$relationship_scale, "K_lambda")
+  fit$spec$method <- "REML"
+  fit$spec$family <- list(family = "gaussian")
+  fit$result$converged <- TRUE
+  fit_output <- paste(capture.output(print(fit)), collapse = "\n")
+  expect_match(
+    fit_output,
+    "genomic variance-component ratio: 0.4",
+    fixed = TRUE
+  )
+  expect_match(
+    fit_output,
+    "declared relationship scale: K_lambda",
+    fixed = TRUE
+  )
+  summary_output <- paste(capture.output(print(summary(fit))), collapse = "\n")
+  expect_match(
+    summary_output,
+    "genomic variance-component ratio: 0.4",
+    fixed = TRUE
+  )
+  expect_match(
+    summary_output,
+    "declared relationship scale: K_lambda",
+    fixed = TRUE
+  )
   expect_error(
     heritability_interval(fit),
     "not available for genomic fits",

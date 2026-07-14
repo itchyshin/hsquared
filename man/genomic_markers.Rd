@@ -84,9 +84,10 @@ marker-effect, GWAS, and QTL/eQTL models. Called directly they are inert (they
 return \code{NULL}); they take meaning only inside an \code{\link[=hsquared]{hsquared()}} formula.
 On this held candidate branch, \code{genomic()} routes the narrow Gaussian REML
 random-intercept model through the ordinary no-control \code{\link[=hsquared]{hsquared()}} call;
-explicit \verb{engine = "julia", target = "genomic"} remains supported. Recovery-v2
-and Rose/G10 are outstanding, so this is not public activation. \code{single_step()}
-remains opt-in and experimental.
+explicit \verb{engine = "julia", target = "genomic"} remains supported.
+Recovery-v3 adjudication and the final Rose/G10 gates are outstanding, so
+this is not public activation. \code{single_step()} remains opt-in and
+experimental.
 The reported genomic coefficient is \code{sigma_g2 / (sigma_g2 + sigma_e2)} on
 the declared relationship scale, not generally an average marginal
 phenotypic-variance fraction or pedigree/population heritability.

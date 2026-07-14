@@ -7,9 +7,10 @@
 #' return `NULL`); they take meaning only inside an [hsquared()] formula.
 #' On this held candidate branch, `genomic()` routes the narrow Gaussian REML
 #' random-intercept model through the ordinary no-control [hsquared()] call;
-#' explicit `engine = "julia", target = "genomic"` remains supported. Recovery-v2
-#' and Rose/G10 are outstanding, so this is not public activation. `single_step()`
-#' remains opt-in and experimental.
+#' explicit `engine = "julia", target = "genomic"` remains supported.
+#' Recovery-v3 adjudication and the final Rose/G10 gates are outstanding, so
+#' this is not public activation. `single_step()` remains opt-in and
+#' experimental.
 #' The reported genomic coefficient is `sigma_g2 / (sigma_g2 + sigma_e2)` on
 #' the declared relationship scale, not generally an average marginal
 #' phenotypic-variance fraction or pedigree/population heritability.
