@@ -410,7 +410,7 @@ v3p_validate_frozen_d0_artifacts <- function(
 }
 
 v3p_validate_successful_d0f_adjudication <- function(
-  root, expected_hash = NULL, d1_root = NULL, validate_tree = TRUE
+  root, expected_hash = NULL, d1_root = NULL
 ) {
   root <- v3p_canonical_path(root, "fresh D0F adjudication root", TRUE)
   if (identical(root, v3p_d0f_blocked_root)) {
@@ -472,7 +472,7 @@ v3p_validate_successful_d0f_adjudication <- function(
   )) {
     v3p_abort("D0F adjudication receipt review paths are invalid")
   }
-  if (isTRUE(validate_tree)) v3p_validate_d0f_final_tree(root)
+  v3p_validate_d0f_final_tree(root)
   list(root = root, receipt_path = path, receipt_sha256 = expected_hash)
 }
 
