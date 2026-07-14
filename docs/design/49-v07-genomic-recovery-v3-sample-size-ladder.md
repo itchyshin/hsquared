@@ -22,7 +22,8 @@
 Status: **D0 COMPLETE; ORIGINAL D0F CORPUS LOCKED BUT UNADJUDICATED; FRESH D0F
 RETRY NOT YET PRESEALED.** The first D0F run completed 576 official R attempts,
 but the exact presealed Julia replay tool stopped deterministically before
-writing any replay row. That root is an immutable replay-infrastructure blocker,
+writing any replay row. That root is a hash-locked, retired
+replay-infrastructure blocker,
 not D0F scientific evidence. The retry defined below must receive new hash-bound
 pre-seal plan receipts from Fisher, Noether, Grace, Rose, and Hopper, be
 committed, and be bound into a new stage preseal and new canonical root before
@@ -327,7 +328,8 @@ and Julia replay commit
 `c8b4d2ceb4c01f807efa610002763fc1f5416c35a666427975a7f7972a3b0826`.
 The replay produced zero rows, so no D0F adjudication receipt can be minted.
 Neither its 576 phenotype estimates nor any repaired post-hoc replay may enter
-the retry summary. The root remains read-only forensic evidence.
+the retry summary. The filesystem remains writable; admission relies on the
+recorded exact hashes, and the root is logically frozen and never reused.
 
 The only admitted replacement is a prospective fresh D0F retry: unchanged
 fixed panels, 24-by-8 allocation, estimand, model, ridge, summaries, tolerances,
@@ -439,7 +441,15 @@ and D0F root must be distinct and nonnested. D1's preseal binds both the
 canonical D0F root and receipt SHA-256. The retired blocked D0F root named above
 is explicitly forbidden, and a missing, partial, unhashed, failed, incomplete,
 unadjudicated, noncanonical, nested, or mismatched receipt stops before D1
-manifest preparation. No D0F estimate enters the D1 analysis.
+manifest preparation. The receipt pair is not sufficient by itself: the
+operational independent R adjudicator must reconstruct the expected receipt
+from the exact D0F preseal, corpus, attempts, packets, independent
+recomputations, Julia replays, summaries, and five post-run reviews, and the
+whole final tree must validate. Immediately before every D1 launcher fan-out
+this full validation runs once; workers then verify the exact preseal-bound
+receipt pair/hash, avoiding a 96-way metadata storm. A direct worker invocation
+without that inherited exact-hash attestation runs the full validation itself.
+No D0F estimate enters the D1 analysis.
 
 Use \(r_G=0.5\), 48 fresh pilot seeds per cell, and the full factorial design:
 

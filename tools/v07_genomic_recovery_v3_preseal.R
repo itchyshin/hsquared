@@ -30,6 +30,8 @@ v3p_script_path <- function() {
   v3p_abort("cannot locate the recovery-v3 pre-seal tool")
 }
 
+v3p_loaded_path <- v3p_script_path()
+
 v3p_source_seed_lock <- function(path, envir) {
   path <- normalizePath(path, winslash = "/", mustWork = TRUE)
   expressions <- parse(path, keep.source = TRUE)
@@ -408,7 +410,7 @@ v3p_validate_frozen_d0_artifacts <- function(
 }
 
 v3p_validate_successful_d0f_adjudication <- function(
-  root, expected_hash = NULL, d1_root = NULL
+  root, expected_hash = NULL, d1_root = NULL, validate_tree = TRUE
 ) {
   root <- v3p_canonical_path(root, "fresh D0F adjudication root", TRUE)
   if (identical(root, v3p_d0f_blocked_root)) {
@@ -470,7 +472,20 @@ v3p_validate_successful_d0f_adjudication <- function(
   )) {
     v3p_abort("D0F adjudication receipt review paths are invalid")
   }
+  if (isTRUE(validate_tree)) v3p_validate_d0f_final_tree(root)
   list(root = root, receipt_path = path, receipt_sha256 = expected_hash)
+}
+
+v3p_validate_d0f_final_tree <- function(root) {
+  target <- environment(v3p_validate_d0f_final_tree)
+  if (!exists("v3r_validate_final", envir = target, inherits = FALSE)) {
+    sys.source(
+      file.path(dirname(v3p_loaded_path), "v07_genomic_recovery_v3_recompute.R"),
+      envir = target
+    )
+  }
+  get("v3r_validate_final", envir = target, inherits = FALSE)(root, "d0f")
+  invisible(TRUE)
 }
 
 v3p_git_clean <- function(root) {
@@ -732,7 +747,13 @@ v3p_validate_stage_preseal <- function(
     file.path(root, "cell_table.tsv"), v3p_cell_table_columns, verify = FALSE
   )
   v3p_validate_cell_table(cell_table)
-  v07s_read_lock(file.path(root, "historical_seed_lock.tsv"))
+  seed_lock_path <- file.path(root, "historical_seed_lock.tsv")
+  seed_lock <- v07s_read_lock(seed_lock_path)
+  proposed_seeds <- v07s_expand_v3()
+  v07s_validate_spaces(seed_lock, proposed_seeds)
+  if (value[["stage"]] == "d0f") {
+    v3p_validate_bootstrap_seed_space(seed_lock_path, proposed_seeds)
+  }
   environment <- v07d_read_tsv(
     file.path(root, "environment_manifest.tsv"), c("key", "value"),
     verify = FALSE

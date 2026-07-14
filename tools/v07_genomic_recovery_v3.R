@@ -238,6 +238,15 @@ v3d_prepare_stage <- function(
     c(driver_root, r_root, julia_root, v3d_d0_corpus_root),
     normalizePath, character(1L), winslash = "/", mustWork = TRUE
   )
+  doc <- file.path(r_root, "docs", "design", "49-v07-genomic-recovery-v3-sample-size-ladder.md")
+  cell <- file.path(r_root, "docs", "design", "v07_genomic_recovery_v3_cell_table.tsv")
+  seed_lock <- file.path(r_root, "docs", "design", "historical_seed_lock.tsv")
+  if (!all(file.exists(c(doc, cell, seed_lock)))) v3d_abort("deployed design inputs are absent")
+  proposed_seeds <- v07s_expand_v3()
+  v07s_validate_spaces(v07s_read_lock(seed_lock), proposed_seeds)
+  if (stage == "d0f") {
+    v3p_validate_bootstrap_seed_space(seed_lock, proposed_seeds)
+  }
   if (stage == "d1") {
     if (is.null(d0f_adjudication_root)) {
       v3d_abort("D1 prepare requires --d0f-adjudication-root")
@@ -249,10 +258,6 @@ v3d_prepare_stage <- function(
   }
   v3d_new_root(output_root, roots)
   receipt_root <- normalizePath(receipt_root, winslash = "/", mustWork = TRUE)
-  doc <- file.path(r_root, "docs", "design", "49-v07-genomic-recovery-v3-sample-size-ladder.md")
-  cell <- file.path(r_root, "docs", "design", "v07_genomic_recovery_v3_cell_table.tsv")
-  seed_lock <- file.path(r_root, "docs", "design", "historical_seed_lock.tsv")
-  if (!all(file.exists(c(doc, cell, seed_lock)))) v3d_abort("deployed design inputs are absent")
   dir.create(output_root)
   on_error <- TRUE
   on.exit(if (on_error) unlink(output_root, recursive = TRUE, force = TRUE), add = TRUE)
@@ -496,6 +501,15 @@ v3d_validate_bound_stage <- function(
     value[["d0_output_root"]], value[["d0_adjudication_receipt_sha256"]],
     value[["d0_diagnostics_sha256"]]
   )
+  if (stage == "d1") {
+    attested <- Sys.getenv("V3D_D0F_PREDECESSOR_VALIDATED_SHA256", "")
+    expected <- value[["d0f_adjudication_receipt_sha256"]]
+    v3p_validate_successful_d0f_adjudication(
+      value[["d0f_adjudication_root"]],
+      expected, output_root,
+      validate_tree = !identical(attested, expected)
+    )
+  }
   list(preseal = preseal, context = context)
 }
 
@@ -1111,10 +1125,11 @@ v3d_phase_state <- function(output_root, stage, manifest, require_complete = FAL
 v3d_run_one <- function(
   output_root, stage, group, seed, driver_root, r_root, julia_root,
   fit_fun = v3d_fit_call, construction_fun = v3d_engine_construction,
-  fixed_panel_fun = v3d_read_fixed_markers, rss_fun = v3d_peak_rss_mb
+  fixed_panel_fun = v3d_read_fixed_markers, rss_fun = v3d_peak_rss_mb,
+  bound_fun = v3d_validate_bound_stage
 ) {
   stage <- v3d_stage(stage)
-  bound <- v3d_validate_bound_stage(
+  bound <- bound_fun(
     output_root, stage, driver_root, r_root, julia_root
   )
   manifest <- v3d_manifest(output_root, stage)

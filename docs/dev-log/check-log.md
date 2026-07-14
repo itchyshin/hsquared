@@ -7590,7 +7590,7 @@ release".
   Julia agrees within `3.33e-16` and all three say `PRECISION_BLOCKER`.
 - Five cells exceed the frozen 2,000-fit ceiling; maximum required N is 16,325.
 - A logical `FALSE` versus serialized `false` comparison withheld the sealed
-  adjudication receipt. The offset-7101 root remains immutable; no confirmation
+  adjudication receipt. The offset-7101 root remains hash-locked and retired; no confirmation
   manifest exists and offsets 7101:7148 are retired.
 - Repair checks: focused recovery-v2 tests 134/134; full R suite 0 failures and
   0 warnings; forced non-lazy pkgdown build and stale-render scan clean;
@@ -7639,7 +7639,7 @@ release".
 - The first official D0F root completed 576/576 converged R fits and 576/576
   base-R recomputations, but the presealed Julia fixed-panel validator failed
   before writing any replay row because its `only()` filter omitted phenotype
-  rank. The root is immutable and unadjudicated, not recovery evidence.
+  rank. The root is hash-locked, retired, and unadjudicated, not recovery evidence.
 - Repaired the validator to require exact ranks `1:8` and common panel
   fingerprints before a canonical rank-1 projection. Positive and three
   mutation-red controls pass; Julia selftest and full `Pkg.test()` are green.

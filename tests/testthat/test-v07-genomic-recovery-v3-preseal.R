@@ -268,6 +268,9 @@ v3p_test_validate_stage <- function(...) {
     "v3p_validate_frozen_d0_artifacts", envir = env, inherits = FALSE
   )
   old_live <- get("v3p_validate_environment_live", envir = env, inherits = FALSE)
+  old_d0f_final <- get(
+    "v3p_validate_d0f_final_tree", envir = env, inherits = FALSE
+  )
   assign(
     "v3p_validate_frozen_d0_artifacts",
     function(root, receipt_hash, diagnostics_hash) {
@@ -291,10 +294,17 @@ v3p_test_validate_stage <- function(...) {
     function(x) v3p_validate_environment(x),
     envir = env
   )
+  assign(
+    "v3p_validate_d0f_final_tree", function(root) invisible(TRUE),
+    envir = env
+  )
   on.exit(assign(
     "v3p_validate_frozen_d0_artifacts", old_d0, envir = env
   ), add = TRUE)
   on.exit(assign("v3p_validate_environment_live", old_live, envir = env), add = TRUE)
+  on.exit(assign(
+    "v3p_validate_d0f_final_tree", old_d0f_final, envir = env
+  ), add = TRUE)
   v3p_validate_stage_preseal(...)
 }
 
@@ -1143,6 +1153,10 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
   valid <- v3p_test_preseal_fixture(write_preseal = FALSE)
   on.exit(unlink(valid$base, recursive = TRUE), add = TRUE)
   expected_hash <- v07d_sha256(valid$d0f_adjudication_path)
+  env <- environment(v3p_validate_successful_d0f_adjudication)
+  old_final <- get("v3p_validate_d0f_final_tree", envir = env, inherits = FALSE)
+  assign("v3p_validate_d0f_final_tree", function(root) invisible(TRUE), envir = env)
+  on.exit(assign("v3p_validate_d0f_final_tree", old_final, envir = env), add = TRUE)
   expect_silent(v3p_validate_successful_d0f_adjudication(
     valid$d0f_adjudication_root, expected_hash, valid$stage_root
   ))
@@ -1218,6 +1232,39 @@ test_that("D1 preseal requires one exact successful fresh-D0F adjudication", {
       nested_hash, valid$stage_root
     ),
     "distinct and nonnested"
+  )
+})
+
+test_that("a forged receipt-only D0F root cannot admit D1", {
+  forged <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(forged$base, recursive = TRUE), add = TRUE)
+  expect_error(
+    v3p_validate_d0f_final_tree(forged$d0f_adjudication_root),
+    "missing|file-set|tree|preseal"
+  )
+})
+
+test_that("live preseal validation executes exact seed-space admission", {
+  env <- environment(v07s_read_lock)
+  old_lock <- get("v07s_expected_lock", envir = env, inherits = FALSE)
+  collision <- old_lock[1L, , drop = FALSE]
+  collision$contract_id <- "synthetic_live_collision"
+  collision$source_docs <- "test"
+  collision$formula_kind <- "exact"
+  collision$seed_base <- as.character(v07s_expand_v3()$seed[[1L]])
+  collision$cell_indices <- "0"
+  collision$offset_start <- "0"
+  collision$offset_end <- "0"
+  collision$disposition <- "spent"
+  assign("v07s_expected_lock", rbind(old_lock, collision), envir = env)
+  on.exit(assign("v07s_expected_lock", old_lock, envir = env), add = TRUE)
+  fixture <- v3p_test_preseal_fixture(write_preseal = FALSE)
+  on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
+  expect_error(
+    v3p_test_validate_stage(
+      fixture$preseal, fixture$context, include_preseal = FALSE
+    ),
+    "overlap|collision|intersects"
   )
 })
 

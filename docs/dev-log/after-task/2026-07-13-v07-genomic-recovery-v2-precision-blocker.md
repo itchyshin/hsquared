@@ -26,7 +26,7 @@ endpoint.
 - Recorded the three-summary diagnostic `PRECISION_BLOCKER` and stopped the
   campaign; did not truncate required denominators, drop five difficult cells,
   relax margins, or launch partial confirmation.
-- Preserved the immutable offset-7101 root byte-for-byte; did not monkey-patch
+- Preserved the hash-locked, retired offset-7101 root byte-for-byte; did not monkey-patch
   the sealed process or mint a post-hoc adjudication receipt with unbound code.
 - Did not rerun another 432 pilot fits solely to manufacture a receipt. The
   independent summaries already show that the frozen stopping rule bars
@@ -124,7 +124,7 @@ it was recorded rather than bulk-rewriting unrelated or hash-bound files.
 
 ## 10. Known Residuals
 
-- The immutable offset-7101 pilot has no accepted adjudication receipt and cannot support
+- The hash-locked, retired offset-7101 pilot has no accepted adjudication receipt and cannot support
   confirmation or activation.
 - A future recovery design must address the estimator variance/precision burden
   before using offsets 7201:7248; simply widening the compute cap is not an

@@ -280,6 +280,29 @@ test_that("worker target checks ignore another worker's legitimate race window",
   expect_match(run_body, "v3d_target_state")
 })
 
+test_that("a missing D0F predecessor stops D1 before RNG or fitting", {
+  predecessor <- tempfile("v3d-missing-predecessor-")
+  dir.create(predecessor)
+  predecessor <- normalizePath(predecessor, mustWork = TRUE)
+  unlink(predecessor, recursive = TRUE)
+  touched_fit <- FALSE
+  set.seed(771L)
+  before <- .Random.seed
+  expect_error(
+    v3d_run_one(
+      tempfile("v3d-never-created-"), "d1", "SYNTHETIC_ONLY", 123L,
+      tempdir(), tempdir(), tempdir(),
+      fit_fun = function(...) { touched_fit <<- TRUE; stats::runif(1L) },
+      bound_fun = function(...) {
+        v3p_validate_successful_d0f_adjudication(predecessor)
+      }
+    ),
+    "canonical plain path|missing"
+  )
+  expect_false(touched_fit)
+  expect_identical(.Random.seed, before)
+})
+
 test_that("target state distinguishes regular pairs from directories and partials", {
   root <- tempfile("v3d-target-"); dir.create(root)
   root <- normalizePath(root, mustWork = TRUE)

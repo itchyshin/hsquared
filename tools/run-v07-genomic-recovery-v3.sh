@@ -232,6 +232,21 @@ julia_bin=$(select_julia)
 export PATH="$(dirname "$julia_bin"):$PATH"
 manifest="$out/${stage}_manifest.tsv"
 
+validate_d0f_predecessor_once() {
+  [[ "$stage" == d1 ]] || return 0
+  local predecessor_root predecessor_sha
+  predecessor_root=$(awk -F '\t' '$1 == "d0f_adjudication_root" { print $2 }' \
+    "$out/stage_preseal.tsv")
+  predecessor_sha=$(awk -F '\t' '$1 == "d0f_adjudication_receipt_sha256" { print $2 }' \
+    "$out/stage_preseal.tsv")
+  [[ -d "$predecessor_root" && "$predecessor_sha" =~ ^[0-9a-f]{64}$ ]] || \
+    die "D1 predecessor binding is invalid"
+  env -u V3D_D0F_PREDECESSOR_VALIDATED_SHA256 \
+    Rscript --vanilla "$recomputer" --mode=validate-final \
+      --output-root="$predecessor_root" --stage=d0f
+  export V3D_D0F_PREDECESSOR_VALIDATED_SHA256="$predecessor_sha"
+}
+
 [[ -f "$driver" && -f "$recomputer" && -f "$julia_replay" ]] || \
   die "one or more deployed recovery-v3 tools are missing"
 
@@ -422,6 +437,7 @@ case "$mode" in
     workers=${1:-1}
     require_workers "$workers"
     require_preseal_worker_cap "$workers"
+    validate_d0f_predecessor_once
     manifest_n_ladder | run_official_pairs "$workers"
     Rscript --vanilla "$driver" --mode=verify-phase "${driver_common[@]}"
     ;;
@@ -430,6 +446,7 @@ case "$mode" in
     workers=${1:-16}
     require_workers "$workers"
     require_preseal_worker_cap "$workers"
+    validate_d0f_predecessor_once
     smoke_rows=()
     while IFS= read -r row; do
       smoke_rows[${#smoke_rows[@]}]=$row
@@ -453,6 +470,7 @@ case "$mode" in
     require_preseal_worker_cap "$workers"
     recommended=$(recommend_workers)
     (( workers <= recommended )) || die "workers=$workers exceeds smoke/RAM recommendation=$recommended"
+    validate_d0f_predecessor_once
     manifest_pairs | run_official_pairs "$workers"
     Rscript --vanilla "$driver" --mode=verify-phase "${driver_common[@]}"
     ;;
@@ -466,6 +484,7 @@ case "$mode" in
     require_preseal_worker_cap "$1"
     recommended=$(recommend_workers)
     (( "$1" <= recommended )) || die "workers=$1 exceeds smoke/RAM recommendation=$recommended"
+    validate_d0f_predecessor_once
     manifest_missing_recompute_pairs base_r_recompute | run_base_r_pairs "$1"
     ;;
   summarize-r)
@@ -479,6 +498,7 @@ case "$mode" in
     require_preseal_worker_cap "$1"
     recommended=$(recommend_workers)
     (( "$1" <= recommended )) || die "workers=$1 exceeds smoke/RAM recommendation=$recommended"
+    validate_d0f_predecessor_once
     manifest_missing_recompute_pairs julia_replay | run_julia_pairs "$1"
     ;;
   verify-replay)
