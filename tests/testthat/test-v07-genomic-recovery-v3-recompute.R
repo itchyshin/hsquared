@@ -879,6 +879,10 @@ test_that("synthetic finalization creates once and validates the exact tree", {
 })
 
 test_that("phase transitions fail closed before summaries, reviews, and receipt", {
+  local_mocked_bindings(
+    v3r_assert_execution_context = function(...) invisible(TRUE),
+    .package = NULL
+  )
   fixture <- v3r_test_packet_fixture()
   on.exit(unlink(fixture$root, recursive = TRUE), add = TRUE)
   state <- list(root = fixture$root, stage = "d1", manifest = fixture$row)
@@ -904,6 +908,10 @@ test_that("phase transitions fail closed before summaries, reviews, and receipt"
 })
 
 test_that("CLI modes and launcher-facing options are stable", {
+  local_mocked_bindings(
+    v3r_assert_execution_context = function(...) invisible(TRUE),
+    .package = NULL
+  )
   expect_message(v3r_main(c("--mode=selftest")), "selftest: PASS")
   expect_error(
     v3r_main(c("selftest", "--mode=selftest")),

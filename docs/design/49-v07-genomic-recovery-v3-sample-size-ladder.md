@@ -390,11 +390,15 @@ All three design rows carry the corpus-wide D0F status. Under
 fields are `NA`, while the complete attempt, classification, runtime, and RSS
 fields remain populated.
 
-Before official D0F, a deterministic canonical base-R three-row summary fixture
-must be hash-pinned and read by Julia. Both implementations compare every
-ordered D0F summary field, using exact equality for categorical, Boolean, and
-integer fields and `1e-10` for numeric fields. Mutating any one field or the
-fixture hash must make the parity gate red.
+Before official D0F, Julia must generate and read the deterministic canonical
+base-R three-row summary fixture from the exact presealed R tool bytes. Both
+implementations compare every ordered D0F summary field, using exact equality
+for categorical, Boolean, and integer fields and `1e-10` for numeric fields.
+The raw fixture SHA-256 is descriptive rather than an admission gate: R 4.5 and
+4.6 can serialize last-bit quantile differences while every typed comparison
+remains far inside `1e-10`. Mutating any field beyond its typed rule, changing
+the schema, or changing the presealed R tool bytes must make the parity gate
+red. This cross-version amendment was frozen before any official D0F/D1 seed.
 
 #### Stage D1 — fresh interior ladder
 

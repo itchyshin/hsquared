@@ -81,6 +81,7 @@ differ only while all numerical comparisons stay within `1e-10`.
 | Interrupted recomputation could not resume | Complete pairs skip; missing pairs emit; partial/nonregular pairs stop. |
 | Test reporter could exit zero while saving `_problems` | Every run now inspects `_problems` and uses executable negative controls. |
 | Cross-language raw K/Q hashes differed | Frozen native-hash provenance plus `1e-10` numerical parity. |
+| R 4.5/4.6 generated parity TSV hashes differed | Localized to last-bit quantiles; kept exact tool/schema binding and typed `1e-10` parity. |
 
 ## 8. Consistency Audit
 
