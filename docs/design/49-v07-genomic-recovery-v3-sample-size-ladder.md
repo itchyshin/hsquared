@@ -22,7 +22,7 @@
 Status: **PREREGISTRATION DRAFT — NO V3 SEED IS ADMITTED.** This document must
 receive hash-bound pre-seal plan receipts from Fisher, Noether, Grace, and Rose,
 plus Hopper for the exact held bridge commit, be committed, and be bound into a
-new campaign seal before any recovery-v3 phenotype is generated. It does not
+new stage preseal before any recovery-v3 phenotype is generated. It does not
 reopen, rewrite, or admit the retired recovery-v2 offsets.
 
 ## 1. Why recovery-v3 exists
@@ -115,7 +115,8 @@ Secondary aims:
   marker ratio for which a fresh three-ratio recovery confirmation is
   statistically feasible within 2,000 replicates per cell;
 - estimate phenotype sampling variation conditional on preregistered fixed
-  kernels separately from variation across newly drawn marker panels; and
+  kernels separately from variation across the preregistered D0 panels,
+  treated as draws from the frozen HWE/no-LD mechanism; and
 - quantify runtime and peak RSS before any confirmation manifest is created.
 
 This study does not aim to prove robustness to LD, population structure,
@@ -132,7 +133,11 @@ draw
 M_{ij}\sim\operatorname{Binomial}(2,\pi_j).
 \]
 
-Remove realised monomorphic columns without redrawing. From the retained panel,
+Remove realised monomorphic columns without redrawing. The design factor
+`marker_ratio = m/n` is the nominal pre-removal ratio. Every packet separately
+records `retained_m` and `retained_marker_ratio = retained_m/n`; monomorphic
+removal never silently redefines the design factor. Every retained column is
+polymorphic and `1 <= retained_m <= m`; violation blocks packet admission. From the retained panel,
 construct
 
 \[
@@ -271,28 +276,107 @@ conditional on ridge 0.01, including its residual-subspace point mass at the
 ridge floor, and does not generalise to another ridge or an unregularised
 kernel.
 
+Every D0F/D1 stage preseal must verify and bind the finalized D0 replay receipt,
+not merely copy an unchecked digest:
+
+```text
+d0_output_root = /home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0-official-cdb33dc-4c5e54de
+d0_adjudication_receipt_sha256 = 190b6546fab8caeec24683c4f7bee8063ada671c220852c9372e5db194b2886a
+d0_diagnostics_relative_path = r/d0_packet_diagnostics_base_r.tsv
+d0_diagnostics_sha256 = 7c1cbc165df90e844bd4fdc7fc6ffb6dcbb8343c0d5ca9e7a588e4ca6d48c370
+```
+
+The receipt primary and SHA-256 sidecar must both verify at that canonical
+plain path before either stage can be presealed. D0F fixed-panel selection may
+consume only the exact diagnostics relative path and hash above; callers cannot
+select another pair inside the D0 root.
+
 #### Stage D0F — fixed-kernel phenotype replication
 
-This mandatory mechanism-only arm uses the eight smallest manifest seeds from
+This mandatory mechanism-only arm uses the 24 smallest manifest seeds from
 each of the three original \(r_G=0.5\) v2 cells: `(120,600)`, `(300,150)`, and
 `(300,1000)`. Their marker, kernel, precision, and ID hashes are written to a
 create-once fixed-panel manifest and verified against the D0 corpus before any
-phenotype draw. For each of the 24 fixed kernels, generate 24 independent fresh
-phenotypes at \(r_G=0.5\), giving 576 fits. Marker panels are never redrawn in
+phenotype draw. For each of the 72 fixed kernels, generate eight independent
+fresh phenotypes at \(r_G=0.5\), giving 576 fits. Marker panels are never redrawn in
 this arm.
 
 For panel \(k\) and phenotype replicate \(j\), store \(\hat r_{kj}\). Within
 each of the three designs report
 
 \[
-V_{within}=8^{-1}\sum_k s_k^2,\qquad
-V_{between}=\operatorname{Var}_k(\bar r_k)-V_{within}/24,
+\bar r_k=8^{-1}\sum_j \hat r_{kj},\qquad
+s_k^2=7^{-1}\sum_j(\hat r_{kj}-\bar r_k)^2,
+\]
+
+\[
+\bar{\bar r}=24^{-1}\sum_k\bar r_k,\qquad
+\operatorname{Var}_k(\bar r_k)=
+23^{-1}\sum_k(\bar r_k-\bar{\bar r})^2,
+\]
+
+\[
+V_{within}=24^{-1}\sum_k s_k^2,\qquad
+V_{between}=\operatorname{Var}_k(\bar r_k)-V_{within}/8,
 \]
 
 without truncating a negative finite-sample \(V_{between}\). A deterministic
-two-level bootstrap resamples panels and then phenotypes within panel, using a
-sealed index manifest, and reports percentile intervals. D0F is diagnostic and
-never enters D1/D2 sizing, D3/D4 recovery, or a capability claim.
+10,000-replicate two-level bootstrap per design resamples panels and then
+phenotypes within panel, using a presealed index manifest, and reports percentile
+intervals. Base R generates each design's indices with
+`RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
+`2031000000 + design_index`. The create-once manifest is normalized to one row
+per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
+`panel_slot`, `panel_rank`, followed by `phenotype_01` through
+`phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
+Both recomputers consume the same primary and SHA-256 sidecar. D0F is
+diagnostic and never enters D1/D2 sizing, D3/D4 recovery, or a capability
+claim.
+
+The 24-by-8 allocation preserves the 576-fit budget while increasing the
+between-panel degrees of freedom from 7 to 23 per design. It retains
+`24 * (8 - 1) = 168` within-panel residual degrees of freedom per design,
+compared with 184 under the rejected 8-by-24 allocation. Ten thousand
+bootstrap replicates stabilize deterministic Monte Carlo quantiles but do not
+create additional panel information. If any of the 576 fits is unsuccessful,
+all attempted seeds remain in the denominator, the variance decomposition and
+bootstrap intervals are recorded as unavailable, `d0f_status` is
+`D0F_FIT_BLOCKER`, and `fit_blocker` is true; successful subsets are never
+analysed as though complete. A complete 576-fit corpus records
+`d0f_status = COMPLETE` and `fit_blocker = false`. These fields occur immediately after
+`convergence_rate` in the ordered D0F summary schema.
+Both \(u\) and \(\varepsilon\) are redrawn independently for every phenotype
+replicate while \(K_\lambda\) remains fixed within panel. R and Julia report
+Hyndman--Fan type-7 2.5% and 97.5% percentile quantiles. For each design they
+also report `MCSE_mean_ratio = sd_k(bar_r_k) / sqrt(24)` and cluster-level
+boundary-proportion MCSEs `sd_k(p_k) / sqrt(24)`, where \(p_k\) is the panel's
+eight-replicate lower- or upper-boundary proportion.
+
+The ordered D0F summary schema is:
+
+```text
+stage design_id design_index n m n_panels phenotypes_per_panel
+n_expected n_attempted n_converged n_interior n_interior_rescued
+n_boundary_lower n_boundary_upper n_unresolved n_error failure_classes
+convergence_rate d0f_status fit_blocker bootstrap_sha256
+variance_within variance_within_bootstrap_lower variance_within_bootstrap_upper
+variance_between variance_between_bootstrap_lower variance_between_bootstrap_upper
+mean_ratio mcse_mean_ratio empirical_sd_ratio
+boundary_lower_proportion boundary_upper_proportion
+mcse_boundary_lower mcse_boundary_upper
+median_runtime_seconds p95_runtime_seconds median_peak_rss_mb p95_peak_rss_mb
+```
+
+All three design rows carry the corpus-wide D0F status. Under
+`D0F_FIT_BLOCKER`, decomposition, bootstrap, mean-ratio, and boundary-proportion
+fields are `NA`, while the complete attempt, classification, runtime, and RSS
+fields remain populated.
+
+Before official D0F, a deterministic canonical base-R three-row summary fixture
+must be hash-pinned and read by Julia. Both implementations compare every
+ordered D0F summary field, using exact equality for categorical, Boolean, and
+integer fields and `1e-10` for numeric fields. Mutating any one field or the
+fixture hash must make the parity gate red.
 
 #### Stage D1 — fresh interior ladder
 
@@ -313,6 +397,20 @@ Each fit additionally records projected-spectrum CV, effective rank,
 `SE_info(0.2)`, `SE_info(0.5)`, `SE_info(0.8)`, boundary status, fitted total
 variance, runtime, and peak RSS. D1 contains 576 attempted fits.
 
+For each of the 12 D1 cells, both recomputers report RMS `SE_info(0.5)`,
+empirical ratio SD over the identical finite-success subset, their ratio
+\(C_c\), predicted lower/upper Normal boundary probabilities averaged over all
+admitted packets, and observed boundary proportions. Their across-cell
+association is descriptive; it is neither an admission gate nor a hypothesis
+test.
+
+In the ordered D1 summary schema, immediately after
+`empirical_sd_over_rms_se_info` (the reported \(C_c\)), add
+`predicted_boundary_lower`, `predicted_boundary_upper`,
+`observed_boundary_lower`, `observed_boundary_upper`,
+`mcse_boundary_lower`, and `mcse_boundary_upper`, before the existing spectral
+mean fields.
+
 #### Stage D2 — fresh edge pilots
 
 For each marker ratio, order all D1-eligible \(n\) values ascending. D2 tests
@@ -328,6 +426,11 @@ eligible. A cell already present in the ascending traversal is run once and
 shared by exact hash; it never receives a second batch. This mandatory broad
 lane ensures that D1/D2 either supply all nine original fresh pilots or record
 exactly why the broad lane cannot proceed.
+
+A mandatory original-cell broad batch may exist before the ascending ladder
+reaches that cell, but it cannot influence selection until every earlier
+eligible candidate has been adjudicated. It is run once and shared by exact
+hash.
 
 #### Stage D3 — selected exact-triplet confirmation
 
@@ -348,7 +451,7 @@ receive independent confirmation on still-fresh seeds.
 
 #### Stage D4 — original nine-cell broad confirmation
 
-D4 is separately sealed from D3 and is the only v3 stage that can discharge
+D4 is separately presealed from D3 and is the only v3 stage that can discharge
 doc-44 G5. Its manifest can exist only if D1 and the mandatory D2 broad lane
 produce eligible fresh pilots for all nine original cells. It then confirms all
 nine exact doc-44 cells with independent fresh seeds and the unchanged
@@ -417,6 +520,64 @@ empirical SD to RMS `SE_info`. Runtime/RSS percentiles are descriptive; any
 bootstrap interval is explicitly labelled deterministic percentile bootstrap.
 No failed or endpoint fit is deleted.
 
+For D1 and D2 boundary summaries, all 48 attempts remain in the denominator:
+
+\[
+\hat p_L=n_L/48,\qquad \hat p_U=n_U/48,\qquad
+MCSE(\hat p)=\sqrt{\hat p(1-\hat p)/48}.
+\]
+
+Unresolved and error attempts remain in that denominator and are reported in
+their own failure classes.
+
+The D1 summary contract is identical in the independent R and Julia
+recomputers. For each target, `required_n_raw` is the integer ceiling of the
+preregistered precision calculation. `required_n` is the largest of the three
+target-specific ceilings, clamped to at least 200, and is repeated on all three
+target rows for that cell. Evidence admission precedes cell classification:
+any corpus, route, fingerprint, invariant, or cross-language mismatch produces
+the stage-level status `RECOMPUTATION_BLOCKER` and no scientific cell status is
+minted. For an admitted corpus, cell status uses this precedence:
+
+```text
+STOP_LOW_PILOT_CONVERGENCE  fewer than 46 of 48 successful finite fits
+PRECISION_BLOCKER           required_n exceeds 2000
+FUTILITY_STOP               any target interval lies wholly beyond its margin
+ELIGIBLE                    every preceding condition is false
+```
+
+Each cell also retains separate Boolean reason fields for low convergence,
+nonfinite summary inputs, precision blocking, and futility; the primary status
+does not erase secondary reasons. Nonfinite summary inputs after at least 46
+successful finite fits are an invariant failure and therefore a stage-level
+`RECOMPUTATION_BLOCKER`, not an ordinary low-convergence result.
+The ordered D1 summary schema places `low_convergence`, `summary_nonfinite`,
+`precision_blocked`, and `futility_stopped` immediately after `required_n`,
+before the existing target- and cell-decision fields.
+
+Resolved boundary counts include successful fits only. `n_unresolved` counts
+unsuccessful `boundary_unresolved` attempts, and `n_error` counts every other
+unsuccessful attempt; these counts plus the resolved counts must equal all 48
+attempts. Persisted scientific runtime and RSS summaries use all official R
+attempts; Julia direct-replay runtime/RSS are route diagnostics and never
+replace official performance fields. Spectral means use all
+admitted packets. RMS `SE_info` and the empirical ratio standard deviation use
+the same finite-success subset. `failure_classes` is a lexically sorted,
+all-attempt `class=count` representation, including `none=48` when appropriate.
+Any R/Julia disagreement in these fields is a recomputation blocker, regardless
+of the otherwise implied cell status.
+
+An unsuccessful attempt has `status = fit_error`, `converged = false`, and a
+non-`none` `error_class`. Scientific and numerical components, total variance,
+iterations, objective, and gradient are canonical `NA`. An ordinary fit error
+also has canonical `NA` boundary status/reason/epsilon/profile/derivatives. A
+`boundary_unresolved` error instead carries its nonempty reason and exact
+boundary epsilon; profile log likelihood and both endpoint derivatives are
+either all finite or all `NA`, never partial. Independent replay compares these
+unresolved evidence fields exactly within the frozen numerical tolerance; a
+matching failure label alone is insufficient. Runtime/RSS and admitted
+construction/spectral fields remain finite for every attempted packet.
+
 ## 4. Fresh seed contract and immutable outputs
 
 Before choosing any v3 seed, generate and commit
@@ -429,7 +590,14 @@ within v3. The new recovery stages use
 seed = 2028000000 + 10000 * cell_index + seed_offset
 ```
 
-with a canonical cell table committed before sealing. Offsets are:
+with a canonical cell table committed before presealing. Offsets are:
+
+`docs/design/v07_genomic_recovery_v3_cell_table.tsv` is the sole source of
+cell IDs and indices for the state machine, seed-space verifier, manifest
+writer, and both recomputers. Every consumer verifies its exact schema, row
+order, content, and SHA-256 sidecar. Independently regenerated cell IDs are not
+admitted. `marker_ratio_code` and exact `(n,m)` are identity fields; decimal
+`marker_ratio` is descriptive and compared at `1e-12`.
 
 - D1 pilot: `101:148`;
 - D2 edge pilot for `n=120`: `1001:1048`;
@@ -442,18 +610,158 @@ with a canonical cell table committed before sealing. Offsets are:
 The cell index includes `n`, `m`, and `r_G`, so no seed is shared across cells
 or stages. D0F phenotype seeds use the disjoint formula
 `2029000000 + 100000 * design_index + 1000 * panel_rank + phenotype_rank`, with
-`panel_rank = 1:8` and `phenotype_rank = 1:24`. All values remain below R's
+`panel_rank = 1:24` and `phenotype_rank = 1:8`. All values remain below R's
 32-bit integer maximum. All exact historical seeds are excluded. Numeric
 offsets may recur only under the new base after `historical_seed_lock.tsv`
 proves zero exact-seed intersection. No failed seed is replaced. A synthetic
 collision mutation and the previously detected collision `2027142001` must make
 the historical-lock verifier red.
 
-The v3 seal, manifests, attempts, packet locks, corpus locks, summaries, and
-adjudication receipts inherit recovery-v2's create-once and fail-closed rules.
+D0F bootstrap-index seeds are not phenotype seeds and are never fitted, but
+they are separately frozen at `2031000000 + design_index`, one per design.
+They must be unique across designs and disjoint from every D0, D0F, D1, D2,
+D3, and D4 data-generating seed.
+
+Every stage uses this acyclic create-once evidence chain:
+
+1. Write and verify the design copy, committed 36-cell table,
+   historical-seed lock, stage manifest, environment manifest, reviewer
+   receipts, and the D0F fixed-panel/bootstrap manifests when applicable. Then
+   write `stage_preseal.tsv` last. The preseal binds those existing primaries
+   and sidecars, exact implementation commits/tool hashes, both route names,
+   packet/truth schema versions, the canonical stage root, and the exact D0
+   receipt. It contains no future corpus or result hash.
+2. Generate official attempts and packets only after the preseal is accepted.
+   Every attempt binds `preseal_sha256`. Before generation, the stage root may
+   contain only the enumerated preseal inputs and their sidecars; attempts,
+   packets, recomputations, summaries, corpus locks, and adjudication receipts
+   must be absent.
+3. After the exact manifest denominator is complete, write
+   `stage_corpus_lock.tsv`. It binds the preseal, manifest, every official
+   attempt, and every packet primary. Exact-tree validation rejects additional,
+   missing, partial, nested, symlinked, empty-directory, or special-file
+   members.
+4. Independent base-R and Julia recomputations bind both `preseal_sha256` and
+   `corpus_lock_sha256`. Only after their exact output trees and summaries agree
+   may the formal adjudicator write `stage_adjudication_receipt.tsv`, which
+   binds the official corpus, both recomputation corpora, summaries, stage
+   decision, and post-run review verdicts.
+
+No file may bind the hash of a future file that transitively contains its own
+hash. In particular, a preseal never contains `corpus_lock_sha256`; this avoids
+the impossible cycle preseal -> attempt -> corpus lock -> preseal contents.
 Every primary has a SHA-256 sidecar. Both independent recomputers must reproduce
 construction, spectral diagnostics, counts, performance measures, sizing, and
 stage decisions to `1e-10` before the next manifest can exist.
+
+The canonical stage-root primaries are `doc49.md`, `cell_table.tsv`,
+`historical_seed_lock.tsv`, `<stage>_manifest.tsv`, and
+`environment_manifest.tsv`; D0F additionally has
+`d0f_fixed_panel_manifest.tsv` and `d0f_bootstrap_indices.tsv`. The only
+preseal receipt directory is `receipts/`, containing exactly `fisher.tsv`,
+`noether.tsv`, `hopper.tsv`, `grace.tsv`, and `rose.tsv`. Every primary has an
+adjacent `.sha256` sidecar. The final preseal primary is `stage_preseal.tsv`.
+Tools are verified at explicit canonical deployed paths outside the stage root.
+No aliases or alternate filenames are admitted.
+
+Every reviewer receipt has exactly these ordered columns:
+
+```text
+reviewer verdict doc49_sha256 r_driver_commit r_recomputer_commit
+julia_replay_commit r_auto_route_commit julia_candidate_commit
+```
+
+Thus a plan receipt cannot review only the harness while leaving either fitted
+candidate implementation unbound. The R auto-route commit must be an ancestor
+of the deployed R driver/recomputer commit, and the Julia candidate commit must
+be an ancestor of the deployed Julia replay commit. Each deployed tool's bytes
+must equal its exact Git blob at the declared commit and its sidecar; existence
+of a commit object alone is insufficient. Both deployed repositories must have
+empty `git status --porcelain` output when a preseal is minted.
+
+Environment admission compares the manifest with live state: normalized
+hostname, R and Julia versions, R RNG/normal/sample kinds, process thread
+variables, Julia's live BLAS and Julia thread counts, and the worker cap. A
+synthetic manifest containing merely plausible strings is not evidence. Every
+required primary must be a nonempty regular file before its sidecar can pass.
+The exact D0 root and receipt hash printed above are constants; callers cannot
+substitute another canonical root/hash pair.
+
+The frozen schema identifiers are:
+
+```text
+preseal  v07-genomic-recovery-v3-stage-preseal-1
+packet   v07-genomic-recovery-v3-packet-1
+truth    v07-genomic-recovery-v3-truth-1
+```
+
+`stage_preseal.tsv` contains exactly these keys in this order:
+
+```text
+schema_version
+stage
+doc49_sha256
+cell_table_sha256
+manifest_sha256
+environment_manifest_sha256
+d0_output_root
+d0_adjudication_receipt_sha256
+d0_diagnostics_sha256
+historical_seed_lock_sha256
+d0f_fixed_panel_manifest_sha256
+d0f_bootstrap_indices_sha256
+fisher_receipt_sha256
+noether_receipt_sha256
+hopper_receipt_sha256
+grace_receipt_sha256
+rose_receipt_sha256
+r_driver_commit
+r_recomputer_commit
+julia_replay_commit
+r_auto_route_commit
+julia_candidate_commit
+r_driver_sha256
+r_recomputer_sha256
+julia_replay_sha256
+d0_recomputer_sha256
+output_root
+official_route
+replay_route
+packet_schema_version
+truth_schema_version
+relationship_source
+relationship_method
+allele_frequency_source
+relationship_scale
+ridge
+boundary_epsilon
+boundary_kkt_tolerance
+output_subtrees_absent_before_preseal
+```
+
+D1 records `NA` for the two D0F-only manifest hashes. The official and replay
+routes are respectively `ordinary_auto_genomic` and `julia_profile_replay`.
+Every Julia replay row binds and verifies the actual source R attempt,
+manifest, preseal, corpus lock, replay driver, and replay commit using the
+ordered fields `source_r_attempt_sha256`, `source_r_max_abs_difference`,
+`replay_julia_commit`, `replay_driver_sha256`, `manifest_sha256`,
+`preseal_sha256`, and `corpus_lock_sha256`.
+
+The post-run tree is also canonical. Official rows live at
+`attempts/<stage>/<group>/<seed>.tsv`; packets live at
+`packets/<stage>/<group>/<seed>/`, with `<group>` equal to `design_id` for D0F
+and `cell_id` otherwise. The official corpus lock is the root-level
+`stage_corpus_lock.tsv`. Base-R verification rows live at
+`base_r_recompute/<stage>/<group>/<seed>.tsv`; Julia direct-replay rows live at
+`julia_replay/<stage>/<group>/<seed>.tsv`. Their root-level summaries are
+`<stage>_summary_r.tsv` and `<stage>_summary_julia.tsv`. The final root-level
+`stage_adjudication_receipt.tsv` binds the preseal, official corpus lock, exact
+inventories of both recomputation subtrees, both summaries, and the stage
+decision. Every TSV has an adjacent `.sha256` sidecar. Phase-specific exact-tree
+validation rejects any alternate name, extra file, directory, symlink, FIFO,
+socket, device, or empty directory. The corpus lock binds only immutable
+official attempts and packets; recomputation outputs are created afterwards
+and are bound by the adjudication receipt, preserving the acyclic dependency.
 
 ## 5. Admission, selection, and stopping rules
 
@@ -503,7 +811,7 @@ can satisfy doc-44's original broad G5 gate.
 
 Mandatory stops:
 
-- a D0 replay disagreement stops before v3 sealing;
+- a D0 replay disagreement stops before v3 presealing;
 - a one-fit or 16-worker smoke with empty, nonfinite, malformed, or mismatched
   output stops scale-up;
 - pilot convergence below 46/48 stops that cell;
@@ -517,7 +825,7 @@ Mandatory stops:
 
 ## 6. Tests of the tests
 
-Before a v3 seal is admitted, deliberate mutations must make at least one gate
+Before a v3 preseal is admitted, deliberate mutations must make at least one gate
 red for each of:
 
 - an eigenvalue, spectral CV, effective rank, or `SE_info`;
@@ -546,7 +854,7 @@ red under every mutation.
 3. Run a 16-worker smoke and inspect the first completed attempt plus packet.
 4. Set production workers to
    `min(96, floor(0.7 * available_RAM / smoke_peak_RSS))`.
-5. Run D1, seal and independently adjudicate it, then mint D2 only from its
+5. Run D1, corpus-lock and independently adjudicate it, then mint D2 only from its
    receipt.
 6. Run and adjudicate each deterministic D2 batch; mint D3 only for selected
    exact triplets, and D4 only if all original pilots are eligible.
@@ -583,7 +891,7 @@ manifest may be committed.
 | 3 | Estimand / target | complete | Sections 2 and 3E |
 | 4 | Methods literature cited | complete | Section 3 introduction and 3M |
 | 5 | Performance measures with formulas | complete | Section 3P |
-| 6 | Software / packages / versions | pending seal | Section 4 requires an environment-bound seal |
+| 6 | Software / packages / versions | pending preseal | Section 4 requires an environment-bound preseal |
 | 7 | Code for DGP available | pending implementation | v3 driver required before admission |
 | 8 | Code for performance measures | pending implementation | independent R and Julia recomputers required |
 | 9 | Worked-example case study | complete for held route identity, not public availability or robustness | doc 44 G2–G4 fixture chain |

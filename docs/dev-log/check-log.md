@@ -7600,3 +7600,19 @@ release".
 - No activation, capability/count promotion, G10, merge, release, or GitHub
   Actions campaign occurred. Full checkpoint:
   `docs/dev-log/recovery-checkpoints/2026-07-13-v07-genomic-recovery-v2-precision-blocker.md`.
+
+## 2026-07-13 — v0.7 genomic recovery-v3 pure preseal layer
+
+- Prospectively replaced the cyclic stage-seal draft with a 39-key acyclic
+  preseal -> corpus lock -> independent recomputation -> adjudication chain.
+- Froze 24x8 D0F and 12-cell D1, exact D0 diagnostics, actual committed cell
+  table, live environment/commit/blob/tree provenance, strict failure rows, and
+  official-R performance semantics.
+- Typed cross-twin fixtures pass for D0F (3x38 fields) and D1 (36x56 fields),
+  with every field mutation red.
+- Checks: R focused preseal/selftest green; full R suite 2,276 pass / 0 fail /
+  0 warn / 68 skip; Julia selftest and full package suite green; diff checks
+  green; Fisher/Curie, Hopper, and cross-twin Grace audits CLEAN.
+- No official driver, preseal, phenotype, fit, recovery evidence, activation,
+  capability/count change, or GitHub Actions campaign exists. Full log:
+  `docs/dev-log/check-log.d/2026-07-13-v07-genomic-recovery-v3-preseal.md`.

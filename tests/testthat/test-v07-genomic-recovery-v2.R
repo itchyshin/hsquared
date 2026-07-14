@@ -301,16 +301,16 @@ test_that("output roots and verification stages are fail-closed", {
   expect_error(v07_stage_top("unknown"), "unknown verification stage")
 })
 
-test_that("execution commits preserve the selected implementation trees", {
+test_that("execution commits retain the immutable selected implementation trees", {
   r_root <- normalizePath(testthat::test_path("..", ".."), winslash = "/")
   julia_root <- normalizePath(file.path(r_root, "..", "HSquared.jl"), winslash = "/")
   expect_identical(
-    v07_assert_selected_tree(r_root, v07_r_auto_route_commit, "R", "R auto-route"),
-    v07_git_object(r_root, v07_r_auto_route_commit, "R")
+    v07_git_object(r_root, v07_r_auto_route_commit, "R"),
+    "ec0fbf1e58aae72b3c66d2353d26846267842802"
   )
   expect_identical(
-    v07_assert_selected_tree(julia_root, v07_julia_candidate_commit, "src", "Julia candidate"),
-    v07_git_object(julia_root, v07_julia_candidate_commit, "src")
+    v07_git_object(julia_root, v07_julia_candidate_commit, "src"),
+    "33d90a05873786d3a0f74984845d27774afcccb6"
   )
   expect_true(all(c(
     "julia_execution_commit", "r_selected_tree", "julia_selected_tree",

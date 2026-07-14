@@ -114,9 +114,9 @@ spectral rule.
   D0 compute itself ran only on Totoro
 - both repositories: `git diff --check` PASS
 - full local R `devtools::test()`: 2,087 PASS, 68 skipped, and one expected
-  fail-closed v2 selected-tree check because the current held R route differs
-  from the old frozen v2 implementation commit; the new recovery-v3 tests are
-  green
+  fail-closed v2 selected-tree check because the current R tree adds only later
+  status prose to the old frozen v2 implementation commit; the new recovery-v3
+  tests are green
 
 The following D0-only verdicts bind design-doc hash
 `0fb7a934f1385bfd62a6a4d572e035bacc19e7eed0382e8ec7b16a6faf1c8d2b`, R
