@@ -7616,3 +7616,20 @@ release".
 - No official driver, preseal, phenotype, fit, recovery evidence, activation,
   capability/count change, or GitHub Actions campaign exists. Full log:
   `docs/dev-log/check-log.d/2026-07-13-v07-genomic-recovery-v3-preseal.md`.
+
+## 2026-07-13 — v0.7 genomic recovery-v3 operational harness
+
+- Added the sole ordinary-auto-genomic R fitter, independent base-R
+  recomputation/adjudication, and a resumable Totoro/live-DRAC launcher.
+- Added exact phase/tree/provenance admission and executable negative controls
+  for compute context, worker caps, smoke denominator, partial outputs, and
+  child-process failures.
+- A live Noether probe caught cross-language last-bit K/Q hash differences;
+  D0F/D1 now keep exact marker/ID identity, exact Julia-native K/Q replay,
+  descriptive base-R native hashes, and frozen `1e-10` numerical parity.
+- Focused and full R checks, Julia replay/full-suite checks, diff checks, and
+  Hopper/Grace/Noether independent reviews are green; Rose's final pre-seed
+  audit is CLEAN after the direct-entry guard repair.
+- No official seed, recovery evidence, activation, capability/count change, or
+  GitHub Actions campaign exists. Full log:
+  `docs/dev-log/check-log.d/2026-07-13-v07-genomic-recovery-v3-operational-harness.md`.

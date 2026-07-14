@@ -205,6 +205,24 @@ The two kernels must agree elementwise to `1e-10`. Define the deterministic
 > rule only for D0 packets that do not serialize K/Q; it changes no numerical,
 > recovery, or activation threshold.
 
+The same native-hash rule applies prospectively to D0F and D1. Their official
+packet and attempt `kernel_hash` and `precision_hash` fields are Julia-native
+construction fingerprints: Julia must reproduce them exactly. Base R must
+reproduce `marker_hash` and `id_hash` exactly, independently reconstruct
+
+\[
+p,\;W,\;k,\;G,\;K_\lambda,\;Q_\lambda,
+\]
+
+and pass the frozen `1e-10` inverse, kernel-replay, spectral, attempt, and
+summary comparisons. Each base-R recomputation row additionally records
+`base_r_kernel_hash` and `base_r_precision_hash` as descriptive provenance.
+Those native hashes must be valid and sidecar-bound but need not equal the
+Julia-native hashes: last-bit differences from otherwise valid R/Julia linear
+algebra are admitted only when every numerical gate remains within `1e-10`.
+Marker or ID hash differences remain fatal. This amendment was frozen before
+the first official D0F/D1 seed was consumed.
+
 \[
 C_{ij}=\begin{cases}
 1/\sqrt{j(j+1)}, & i\le j,\\
@@ -739,6 +757,16 @@ boundary_kkt_tolerance
 output_subtrees_absent_before_preseal
 ```
 
+The tool keys are language-specific and unambiguous. `r_driver_sha256` binds
+`tools/v07_genomic_recovery_v3.R`; `r_recomputer_sha256` binds the operational
+independent `tools/v07_genomic_recovery_v3_recompute.R` (not the pure preseal
+helper); `julia_replay_sha256` binds
+`sim/phase2_v07_genomic_recovery_v3_stage_replay.jl`; and the single
+`d0_recomputer_sha256` key binds the R
+`tools/v07_genomic_recovery_v3_d0_recompute.R`. The Julia spectral helper is
+loaded from, and therefore fixed by, the exact clean `julia_replay_commit`; it
+does not reuse the R D0-tool key.
+
 D1 records `NA` for the two D0F-only manifest hashes. The official and replay
 routes are respectively `ordinary_auto_genomic` and `julia_profile_replay`.
 Every Julia replay row binds and verifies the actual source R attempt,
@@ -746,6 +774,10 @@ manifest, preseal, corpus lock, replay driver, and replay commit using the
 ordered fields `source_r_attempt_sha256`, `source_r_max_abs_difference`,
 `replay_julia_commit`, `replay_driver_sha256`, `manifest_sha256`,
 `preseal_sha256`, and `corpus_lock_sha256`.
+The common `driver_commit` result field is route-specific: official
+`ordinary_auto_genomic` attempts carry `r_driver_commit`, while
+`julia_profile_replay` rows carry `julia_replay_commit`. Admission must reject
+either route carrying the other route's driver commit.
 
 The post-run tree is also canonical. Official rows live at
 `attempts/<stage>/<group>/<seed>.tsv`; packets live at

@@ -1439,13 +1439,19 @@ v3p_validate_results <- function(
   commits <- c(
     "r_implementation_commit", "julia_implementation_commit", "driver_commit"
   )
+  expected_driver_commit <- switch(
+    expected_route,
+    ordinary_auto_genomic = binding[["r_driver_commit"]],
+    julia_profile_replay = binding[["julia_replay_commit"]],
+    v3p_abort("unsupported expected attempt route")
+  )
   if (
     any(!vapply(unlist(attempts[commits]), v3p_hex40, logical(1L))) ||
       any(attempts$preseal_sha256 != binding[["preseal_sha256"]]) ||
       any(attempts$r_implementation_commit != binding[["r_auto_route_commit"]]) ||
       any(attempts$julia_implementation_commit !=
         binding[["julia_candidate_commit"]]) ||
-      any(attempts$driver_commit != binding[["r_driver_commit"]])
+      any(attempts$driver_commit != expected_driver_commit)
   ) {
     v3p_abort("%s attempt provenance binding is invalid", label)
   }

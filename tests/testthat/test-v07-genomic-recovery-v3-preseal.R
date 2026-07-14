@@ -206,6 +206,7 @@ v3p_test_binding <- function() {
 v3p_test_julia_replay <- function(attempts) {
   binding <- v3p_test_binding()
   attempts$route <- "julia_profile_replay"
+  attempts$driver_commit <- binding$julia_replay_commit
   out <- cbind(
     attempts[setdiff(names(attempts), "preseal_sha256")],
     source_r_attempt_sha256 = v3p_test_hash("a"),
@@ -712,6 +713,14 @@ test_that("attempt and Julia replay provenance bindings reject every forgery", {
       info = paste("attempt provenance mutation", field)
     )
   }
+  ordinary_wrong_driver <- fixture$attempts
+  ordinary_wrong_driver$driver_commit[[1L]] <- binding$julia_replay_commit
+  expect_error(
+    v3p_admit_d1_attempts(
+      ordinary_wrong_driver, fixture$manifest, binding
+    ),
+    "provenance binding is invalid"
+  )
 
   replay <- v3p_test_julia_replay(fixture$attempts)
   source_hashes <- rep(v3p_test_hash("a"), nrow(replay))
@@ -741,6 +750,14 @@ test_that("attempt and Julia replay provenance bindings reject every forgery", {
       changed_difference, fixture$manifest, "d1", binding, source_hashes
     ),
     "provenance or source parity binding is invalid"
+  )
+  replay_wrong_driver <- replay
+  replay_wrong_driver$driver_commit[[1L]] <- binding$r_driver_commit
+  expect_error(
+    v3p_admit_julia_replay(
+      replay_wrong_driver, fixture$manifest, "d1", binding, source_hashes
+    ),
+    "provenance binding is invalid"
   )
 })
 
