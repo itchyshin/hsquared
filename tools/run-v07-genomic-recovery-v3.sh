@@ -241,10 +241,8 @@ validate_d0f_predecessor_once() {
     "$out/stage_preseal.tsv")
   [[ -d "$predecessor_root" && "$predecessor_sha" =~ ^[0-9a-f]{64}$ ]] || \
     die "D1 predecessor binding is invalid"
-  env -u V3D_D0F_PREDECESSOR_VALIDATED_SHA256 \
-    Rscript --vanilla "$recomputer" --mode=validate-final \
-      --output-root="$predecessor_root" --stage=d0f
-  export V3D_D0F_PREDECESSOR_VALIDATED_SHA256="$predecessor_sha"
+  Rscript --vanilla "$recomputer" --mode=validate-final \
+    --output-root="$predecessor_root" --stage=d0f
 }
 
 [[ -f "$driver" && -f "$recomputer" && -f "$julia_replay" ]] || \

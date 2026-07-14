@@ -446,9 +446,10 @@ operational independent R adjudicator must reconstruct the expected receipt
 from the exact D0F preseal, corpus, attempts, packets, independent
 recomputations, Julia replays, summaries, and five post-run reviews, and the
 whole final tree must validate. Immediately before every D1 launcher fan-out
-this full validation runs once; workers then verify the exact preseal-bound
-receipt pair/hash, avoiding a 96-way metadata storm. A direct worker invocation
-without that inherited exact-hash attestation runs the full validation itself.
+this full validation runs as a centralized early-stop preflight, and every
+worker revalidates the exact final tree before consuming its seed. This is
+intentionally I/O-heavy but leaves no caller-spoofable attestation shortcut;
+runtime must be measured at smoke scale before production concurrency is set.
 No D0F estimate enters the D1 analysis.
 
 Use \(r_G=0.5\), 48 fresh pilot seeds per cell, and the full factorial design:

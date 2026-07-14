@@ -9,7 +9,7 @@ default R route, change a capability row, or change
 `public_covered_count = 5`.
 
 No fresh v3 phenotype or recovery seed was generated. The replay read only the
-retired immutable recovery-v2 offset-7101 corpus.
+retired, hash-locked recovery-v2 offset-7101 corpus.
 
 ## Exact execution state
 

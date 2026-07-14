@@ -7,7 +7,8 @@
 > a maximum required denominator of 16,325. The sealed adjudicator nevertheless
 > stopped before minting a receipt because an in-memory logical `FALSE` was
 > compared lexically with its own TSV spelling `false`. No confirmation
-> manifest exists. The root remains immutable diagnostic output and offsets
+> manifest exists. The root remains hash-locked, logically frozen, retired
+> diagnostic output and offsets
 > 7101:7148 are retired. This amendment normalizes only the logical summary
 > field, mutation-tests the serialization boundary, and reserves 7201:7248 for
 > a separately admitted future pilot. The current arc stops at its

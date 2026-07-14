@@ -54,7 +54,7 @@ wrong receipt hash, nested root, or the known blocked D0F root.
 | Old preseal cannot admit repaired bytes | Preserve the old root unadjudicated and preregister a fresh retry. |
 | Old bootstrap seeds were not fitted | Retire them anyway because they generated the observed provisional summary. |
 | D1 sequencing was documented but not enforced | Stage-preseal schema 2 requires a canonical external D0F PASS/COMPLETE receipt and exact receipt hash before D1 preparation/preseal. |
-| A forged receipt-only root passed the first schema-2 repair | D1 now invokes the operational exact final-tree validator; receipt-only roots fail. The launcher validates once before fan-out, and unattested direct workers validate fully. |
+| A forged receipt-only root passed the first schema-2 repair | D1 now invokes the operational exact final-tree validator; receipt-only roots fail. The launcher preflights centrally and every worker validates fully. |
 | Live admission did not execute the seed-space helper | Prepare and preseal now run exact historical/proposed disjointness, plus the D0F bootstrap-space gate. |
 | The retired root was called physically immutable/read-only | Corrected to hash-locked, logically frozen, and never reused; its filesystem permissions remain writable. |
 

@@ -55,9 +55,9 @@ test_that("launcher makes fresh-D0F adjudication a D1-only predecessor", {
     launcher_text, "--d0f-adjudication-root", fixed = TRUE
   )
   expect_match(launcher_text, "validate_d0f_predecessor_once", fixed = TRUE)
-  expect_match(
-    launcher_text, "V3D_D0F_PREDECESSOR_VALIDATED_SHA256", fixed = TRUE
-  )
+  expect_false(grepl(
+    "V3D_D0F_PREDECESSOR_VALIDATED_SHA256", launcher_text, fixed = TRUE
+  ))
   expect_match(launcher_text, "--mode=validate-final", fixed = TRUE)
 })
 

@@ -502,12 +502,9 @@ v3d_validate_bound_stage <- function(
     value[["d0_diagnostics_sha256"]]
   )
   if (stage == "d1") {
-    attested <- Sys.getenv("V3D_D0F_PREDECESSOR_VALIDATED_SHA256", "")
-    expected <- value[["d0f_adjudication_receipt_sha256"]]
     v3p_validate_successful_d0f_adjudication(
       value[["d0f_adjudication_root"]],
-      expected, output_root,
-      validate_tree = !identical(attested, expected)
+      value[["d0f_adjudication_receipt_sha256"]], output_root
     )
   }
   list(preseal = preseal, context = context)
