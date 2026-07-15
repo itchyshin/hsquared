@@ -307,7 +307,8 @@ v3r_validate_preseal_postrun <- function(root, stage) {
   assign("v3p_verify_preseal_tree", function(...) invisible(TRUE), envir = env)
   on.exit(assign("v3p_verify_preseal_tree", original, envir = env), add = TRUE)
   v3p_validate_stage_preseal(
-    preseal$table, v3r_expected_tool_context(), include_preseal = TRUE
+    preseal$table, v3r_expected_tool_context(), include_preseal = TRUE,
+    bootstrap_materialized = identical(stage, "d0f")
   )
   preseal
 }
@@ -1114,7 +1115,7 @@ v3r_expected_summary <- function(state, attempts) {
     )
     v3p_d0f_summary(
       state$manifest, attempts, bootstrap,
-      state$preseal$value[["d0f_bootstrap_indices_sha256"]], state$binding
+      v07d_sha256(bootstrap_path), state$binding
     )
   } else {
     v3p_d1_summary(state$manifest, attempts, state$binding)
@@ -1358,7 +1359,12 @@ v3r_adjudicate_tables <- function(state, evidence) {
 
 v3r_verify_final_tree <- function(state, include_receipt = TRUE) {
   root <- state$root
-  primaries <- file.path(root, v3p_preseal_names(state$stage, TRUE))
+  primaries <- file.path(
+    root,
+    v3p_preseal_names(
+      state$stage, TRUE, bootstrap_materialized = identical(state$stage, "d0f")
+    )
+  )
   primaries <- c(
     primaries, file.path(root, "stage_corpus_lock.tsv"),
     vapply(seq_len(nrow(state$manifest)), function(i) {

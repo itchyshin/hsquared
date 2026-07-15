@@ -178,6 +178,41 @@ test_that("successful fit provenance matches every construction and preseal fiel
   )
 })
 
+test_that("declared endpoint representation is preserved within component tolerance", {
+  lower_declared <- 1e-7
+  lower_component <- 9.9999999999999982e-08
+  expect_identical(
+    v3d_declared_numerical_ratio(
+      lower_declared, lower_component, 1 - lower_component
+    ),
+    lower_declared
+  )
+  upper_declared <- 1 - 1e-7
+  upper_component <- 0.99999989999999994
+  expect_identical(
+    v3d_declared_numerical_ratio(
+      upper_declared, upper_component, 1 - upper_component
+    ),
+    upper_declared
+  )
+  expect_error(
+    v3d_declared_numerical_ratio(
+      lower_declared, lower_declared + 2e-12, 1 - (lower_declared + 2e-12)
+    ),
+    "differs from its components"
+  )
+  expect_error(
+    v3d_declared_numerical_ratio(
+      upper_declared, upper_declared - 1e-8, 1 - (upper_declared - 1e-8)
+    ),
+    "differs from its components"
+  )
+  expect_error(
+    v3d_declared_numerical_ratio(NA_real_, lower_component, 1 - lower_component),
+    "nonfinite"
+  )
+})
+
 test_that("synthetic D0F success extracts the fixed-panel fit end to end", {
   M <- outer(seq_len(8L), seq_len(12L), function(i, j) (i + 2 * j) %% 3)
   ids <- sprintf("g%06d", seq_len(nrow(M)))
@@ -228,6 +263,20 @@ test_that("synthetic D0F success extracts the fixed-panel fit end to end", {
   expect_equal(result$attempt$scientific_ratio, 0.5)
   expect_identical(result$attempt$gradient_norm, 1e-10)
   expect_identical(names(result$attempt), v3p_d0f_attempt_columns)
+  malformed_resolved_fit <- function(M, dat) {
+    out <- fit_fun(M, dat)
+    out$result$genomic_boundary$numerical_ratio <- 0.5 + 2e-12
+    out
+  }
+  expect_error(
+    v3d_fit_one(
+      row, "d0f", v3d_test_preseal(), r_root, julia_root,
+      fit_fun = malformed_resolved_fit, construction_fun = construction_fun,
+      fixed_panel_fun = fixed_panel, rss_fun = function() 100, vc_fun = vc_fun
+    ),
+    "differs from its components",
+    class = "v3d_contract_error"
+  )
   for (gradient_norm in list(NULL, NA_real_, NaN, Inf, c(0, 1))) {
     bad_fit <- function(M, dat) {
       list(result = list(

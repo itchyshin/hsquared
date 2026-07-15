@@ -528,7 +528,7 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
     "boundary_kkt_tolerance",
     "output_subtrees_absent_before_preseal"
   )] <- c(
-    "v07-genomic-recovery-v3-stage-preseal-2",
+    "v07-genomic-recovery-v3-stage-preseal-3",
     "d1",
     d0_root,
     stage_root,
@@ -683,7 +683,7 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
   seeds <- v3p_validate_bootstrap_seed_space()
-  expect_identical(seeds, as.integer(2037000001:2037000003))
+  expect_identical(seeds, as.integer(2039000001:2039000003))
   expect_identical(anyDuplicated(seeds), 0L)
   expect_length(
     intersect(
@@ -703,6 +703,13 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
     intersect(
       seeds,
       v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry2_bootstrap_base)
+    ),
+    0L
+  )
+  expect_length(
+    intersect(
+      seeds,
+      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry3_bootstrap_base)
     ),
     0L
   )
@@ -836,6 +843,54 @@ test_that("attempt admission fails closed on membership, truth, and booleans", {
   expect_error(
     v3p_admit_d1_attempts(too_many_markers, d1$manifest, binding),
     "retained marker"
+  )
+})
+
+test_that("attempt admission preserves declared endpoints and rejects component drift", {
+  fixture <- v3p_test_d0f()
+  binding <- v3p_test_binding()
+  lower <- fixture$attempts
+  lower_component <- 9.9999999999999982e-08
+  lower$boundary_status[[1L]] <- "boundary_lower"
+  lower$boundary_reason[[1L]] <- "boundary_lower"
+  lower$scientific_sigma_g2[[1L]] <- 0
+  lower$scientific_sigma_e2[[1L]] <- 1
+  lower$scientific_ratio[[1L]] <- 0
+  lower$numerical_sigma_g2[[1L]] <- lower_component
+  lower$numerical_sigma_e2[[1L]] <- 1 - lower_component
+  lower$numerical_ratio[[1L]] <- 1e-7
+  lower$lower_derivative_per_observation[[1L]] <- 0
+  lower$upper_derivative_per_observation[[1L]] <- -1
+  expect_silent(v3p_admit_d0f_attempts(lower, fixture$manifest, binding))
+
+  upper <- fixture$attempts
+  upper_declared <- 1 - 1e-7
+  upper_component <- 0.99999989999999994
+  upper$boundary_status[[1L]] <- "boundary_upper"
+  upper$boundary_reason[[1L]] <- "boundary_upper"
+  upper$scientific_sigma_g2[[1L]] <- 1
+  upper$scientific_sigma_e2[[1L]] <- 0
+  upper$scientific_ratio[[1L]] <- 1
+  upper$numerical_sigma_g2[[1L]] <- upper_component
+  upper$numerical_sigma_e2[[1L]] <- 1 - upper_component
+  upper$numerical_ratio[[1L]] <- upper_declared
+  upper$lower_derivative_per_observation[[1L]] <- 1
+  upper$upper_derivative_per_observation[[1L]] <- 0
+  expect_silent(v3p_admit_d0f_attempts(upper, fixture$manifest, binding))
+
+  just_outside <- lower
+  just_outside$numerical_sigma_g2[[1L]] <- 1e-7 + 2e-12
+  just_outside$numerical_sigma_e2[[1L]] <- 1 - (1e-7 + 2e-12)
+  expect_error(
+    v3p_admit_d0f_attempts(just_outside, fixture$manifest, binding),
+    "malformed scientific"
+  )
+  substantive <- upper
+  substantive$numerical_sigma_g2[[1L]] <- upper_declared - 1e-8
+  substantive$numerical_sigma_e2[[1L]] <- 1 - (upper_declared - 1e-8)
+  expect_error(
+    v3p_admit_d0f_attempts(substantive, fixture$manifest, binding),
+    "malformed scientific"
   )
 })
 
@@ -1269,19 +1324,19 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   expect_identical(names(parity$summary), v3p_d0f_summary_columns)
   expect_identical(
     v3p_test_tsv_hash(parity$manifest),
-    "aeccb237d364c7e4e20b317a8f443dff9a7572d12084fcf6ec11f7ad9acd705a"
+    "81f1f9547b2f190f8b54df1a44120967a5a71de5efcdfe7cc356d94fb8af69ec"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$attempts),
-    "0e692f1d525e54d39f00b0a5ac25ed520ec642cf74129b19389536dffd4ec6da"
+    "f584604239cc6f11eb9ab002afa61be98dac8493715b4f741ac9ebde5787cbc6"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$bootstrap),
-    "e5649184fcee3749203207deb82f20de9fba7183e6a029396ee385c2656975ef"
+    "0bd4293d14c76df136432ad098df6145cffa67c53ea0649091b1aafe648eb5e9"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$summary),
-    "a05f1d40ab55f9dfc4d7b69fbe5a0ebcccb16f6ba49071e0b48ed379d171a607"
+    "f8af5c3312c9883e82109d49496e4054cc718ecdbfcddd0a136dfa6635a49b07"
   )
   expect_true(is.character(parity$summary$d0f_status))
   expect_true(is.logical(parity$summary$fit_blocker))
@@ -1415,7 +1470,7 @@ test_that("environment, lowercase booleans, and create-once gates fail closed", 
 test_that("stage preseal verifies the exact existing tree and provenance", {
   fixture <- v3p_test_preseal_fixture()
   on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
-  expect_length(v3p_stage_preseal_keys, 41L)
+  expect_length(v3p_stage_preseal_keys, 42L)
   diagnostics_at <- match(
     "d0_diagnostics_sha256",
     v3p_stage_preseal_keys
@@ -1444,6 +1499,33 @@ test_that("stage preseal verifies the exact existing tree and provenance", {
   expect_silent(v3p_test_validate_stage(
     fixture$preseal,
     fixture$context
+  ))
+})
+
+test_that("D0F preseal tree excludes bootstrap until post-seal materialization", {
+  root <- tempfile("v3p-bootstrap-order-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  dir.create(file.path(root, "receipts"))
+  for (name in v3p_preseal_names("d0f", include_preseal = TRUE)) {
+    v3p_test_pair(file.path(root, name), data.frame(x = 1))
+  }
+  expect_silent(v3p_verify_preseal_tree(
+    root, "d0f", include_preseal = TRUE, bootstrap_materialized = FALSE
+  ))
+  v3p_test_pair(
+    file.path(root, "d0f_bootstrap_indices.tsv"),
+    data.frame(x = 1)
+  )
+  expect_error(
+    v3p_verify_preseal_tree(
+      root, "d0f", include_preseal = TRUE, bootstrap_materialized = FALSE
+    ),
+    "additional"
+  )
+  expect_silent(v3p_verify_preseal_tree(
+    root, "d0f", include_preseal = TRUE, bootstrap_materialized = TRUE
   ))
 })
 

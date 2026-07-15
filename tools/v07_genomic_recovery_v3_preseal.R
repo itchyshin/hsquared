@@ -263,7 +263,8 @@ v3p_stage_preseal_keys <- c(
   "d0_adjudication_receipt_sha256", "d0_diagnostics_sha256",
   "d0f_adjudication_root", "d0f_adjudication_receipt_sha256",
   "historical_seed_lock_sha256",
-  "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256",
+  "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_seed_base",
+  "d0f_bootstrap_indices_absent_before_preseal",
   "fisher_receipt_sha256", "noether_receipt_sha256",
   "hopper_receipt_sha256", "grace_receipt_sha256", "rose_receipt_sha256",
   "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
@@ -579,24 +580,31 @@ v3p_verify_tool_at_commit <- function(root, path, commit, expected_hash, label) 
   invisible(path)
 }
 
-v3p_preseal_names <- function(stage, include_preseal = TRUE) {
+v3p_preseal_names <- function(
+  stage, include_preseal = TRUE, bootstrap_materialized = FALSE
+) {
   common <- c(
     "doc49.md", "cell_table.tsv", "historical_seed_lock.tsv",
     paste0(stage, "_manifest.tsv"), "environment_manifest.tsv",
     file.path("receipts", paste0(v3p_reviewers, ".tsv"))
   )
   if (stage == "d0f") {
-    common <- c(
-      common, "d0f_fixed_panel_manifest.tsv", "d0f_bootstrap_indices.tsv"
-    )
+    common <- c(common, "d0f_fixed_panel_manifest.tsv")
+    if (bootstrap_materialized) {
+      common <- c(common, "d0f_bootstrap_indices.tsv")
+    }
   }
   if (include_preseal) common <- c(common, "stage_preseal.tsv")
   common
 }
 
-v3p_verify_preseal_tree <- function(root, stage, include_preseal) {
+v3p_verify_preseal_tree <- function(
+  root, stage, include_preseal, bootstrap_materialized = FALSE
+) {
   root <- v3p_canonical_path(root, "stage output root", TRUE)
-  primaries <- v3p_preseal_names(stage, include_preseal)
+  primaries <- v3p_preseal_names(
+    stage, include_preseal, bootstrap_materialized
+  )
   expected_files <- sort(c(primaries, paste0(primaries, ".sha256")))
   expected <- sort(c("receipts", expected_files))
   actual <- sort(list.files(
@@ -637,7 +645,8 @@ v3p_validate_review <- function(path, expected_hash, reviewer, values) {
 }
 
 v3p_validate_stage_preseal <- function(
-  x, context, include_preseal = TRUE, bootstrap_reps = 10000L
+  x, context, include_preseal = TRUE, bootstrap_reps = 10000L,
+  bootstrap_materialized = FALSE
 ) {
   v3p_require_schema(x, c("key", "value"), "recovery-v3 stage preseal")
   if (!identical(as.character(x$key), v3p_stage_preseal_keys)) {
@@ -646,7 +655,8 @@ v3p_validate_stage_preseal <- function(
   raw_value <- as.character(x$value)
   names(raw_value) <- x$key
   d0f_only <- c(
-    "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256"
+    "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_seed_base",
+    "d0f_bootstrap_indices_absent_before_preseal"
   )
   d1_only <- c(
     "d0f_adjudication_root", "d0f_adjudication_receipt_sha256"
@@ -666,7 +676,7 @@ v3p_validate_stage_preseal <- function(
   raw_value[is.na(raw_value)] <- "NA"
   value <- raw_value
   if (
-    value[["schema_version"]] != "v07-genomic-recovery-v3-stage-preseal-2" ||
+    value[["schema_version"]] != "v07-genomic-recovery-v3-stage-preseal-3" ||
       !value[["stage"]] %in% c("d0f", "d1") ||
       value[["official_route"]] != "ordinary_auto_genomic" ||
       value[["replay_route"]] != "julia_profile_replay" ||
@@ -687,6 +697,19 @@ v3p_validate_stage_preseal <- function(
     "output_subtrees_absent_before_preseal"
   )
   if (!absent) v3p_abort("output subtrees were not absent before presealing")
+  if (value[["stage"]] == "d0f") {
+    bootstrap_absent <- v3p_bool(
+      value[["d0f_bootstrap_indices_absent_before_preseal"]],
+      "d0f_bootstrap_indices_absent_before_preseal"
+    )
+    if (
+      value[["d0f_bootstrap_seed_base"]] !=
+        format(v07s_d0f_retry_bootstrap_base, scientific = FALSE) ||
+        !bootstrap_absent
+    ) {
+      v3p_abort("D0F bootstrap preseal contract drift")
+    }
+  }
   commits <- c(
     "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
     "r_auto_route_commit", "julia_candidate_commit"
@@ -702,16 +725,9 @@ v3p_validate_stage_preseal <- function(
   if (
     any(!vapply(value[commits], v3p_hex40, logical(1L))) ||
       any(!vapply(value[hashes], v3p_hex64, logical(1L))) ||
-      (value[["stage"]] == "d0f" && any(!vapply(
-        value[c(
-          "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256"
-        )],
-        v3p_hex64,
-        logical(1L)
-      ))) ||
-      (value[["stage"]] == "d1" && any(value[c(
-        "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256"
-      )] != "NA")) ||
+      (value[["stage"]] == "d0f" &&
+        !v3p_hex64(value[["d0f_fixed_panel_manifest_sha256"]])) ||
+      (value[["stage"]] == "d1" && any(value[d0f_only] != "NA")) ||
       (value[["stage"]] == "d1" &&
         !v3p_hex64(value[["d0f_adjudication_receipt_sha256"]])) ||
       (value[["stage"]] == "d0f" && any(value[d1_only] != "NA"))
@@ -732,7 +748,9 @@ v3p_validate_stage_preseal <- function(
       root
     )
   }
-  v3p_verify_preseal_tree(root, value[["stage"]], include_preseal)
+  v3p_verify_preseal_tree(
+    root, value[["stage"]], include_preseal, bootstrap_materialized
+  )
 
   paths <- c(
     doc49_sha256 = "doc49.md", cell_table_sha256 = "cell_table.tsv",
@@ -771,10 +789,6 @@ v3p_validate_stage_preseal <- function(
       fixed_path, value[["d0f_fixed_panel_manifest_sha256"]],
       "D0F fixed-panel manifest"
     )
-    v3p_verify_pair(
-      bootstrap_path, value[["d0f_bootstrap_indices_sha256"]],
-      "D0F bootstrap manifest"
-    )
     fixed <- v07d_read_tsv(
       fixed_path, v3p_d0f_fixed_columns, verify = FALSE
     )
@@ -794,10 +808,20 @@ v3p_validate_stage_preseal <- function(
       manifest_path, v3p_d0f_phenotype_columns, verify = FALSE
     )
     v3p_validate_d0f_phenotype_manifest(manifest, fixed)
-    bootstrap <- v07d_read_tsv(
-      bootstrap_path, v3p_d0f_bootstrap_columns, verify = FALSE
-    )
-    v3p_validate_d0f_bootstrap(bootstrap, bootstrap_reps)
+    if (bootstrap_materialized) {
+      v3p_verify_pair(
+        bootstrap_path, v07d_sha256(bootstrap_path),
+        "D0F bootstrap manifest"
+      )
+      bootstrap <- v07d_read_tsv(
+        bootstrap_path, v3p_d0f_bootstrap_columns, verify = FALSE
+      )
+      v3p_validate_d0f_bootstrap(bootstrap, bootstrap_reps)
+    } else if (
+      file.exists(bootstrap_path) || file.exists(paste0(bootstrap_path, ".sha256"))
+    ) {
+      v3p_abort("D0F bootstrap manifest exists before preseal")
+    }
   } else {
     manifest <- v07d_read_tsv(
       manifest_path, v3p_d1_columns, verify = FALSE
@@ -1343,6 +1367,7 @@ v3p_result_columns <- c(
 )
 v3p_boundary_epsilon <- 1e-7
 v3p_boundary_kkt_tolerance <- 1e-8
+v3p_component_ratio_tolerance <- 1e-12
 
 v3p_d0f_attempt_columns <- c(v3p_d0f_phenotype_columns, v3p_result_columns)
 v3p_d1_attempt_columns <- c(
@@ -1487,6 +1512,8 @@ v3p_validate_results <- function(
   for (field in numeric) attempts[[field]] <- v3p_num(attempts[[field]], field, FALSE)
   boundary_status <- as.character(attempts$boundary_status)
   boundary_reason <- as.character(attempts$boundary_reason)
+  numerical_total <- attempts$numerical_sigma_g2 + attempts$numerical_sigma_e2
+  component_ratio <- attempts$numerical_sigma_g2 / numerical_total
   lower <- success & !is.na(boundary_status) & boundary_status == "boundary_lower"
   upper <- success & !is.na(boundary_status) & boundary_status == "boundary_upper"
   interior <- success & !is.na(boundary_status) &
@@ -1500,8 +1527,12 @@ v3p_validate_results <- function(
       any(success & !is.finite(attempts$scientific_sigma_e2)) ||
       any(success & !is.finite(attempts$scientific_ratio)) ||
       any(success & !is.finite(attempts$fitted_total_variance)) ||
+      any(success & !is.finite(attempts$numerical_sigma_g2)) ||
+      any(success & !is.finite(attempts$numerical_sigma_e2)) ||
+      any(success & !is.finite(attempts$numerical_ratio)) ||
       any(success & !is.finite(attempts$gradient_norm)) ||
-      any(success & attempts$fitted_total_variance < 0) ||
+      any(success & attempts$fitted_total_variance <= 0) ||
+      any(success & (!is.finite(numerical_total) | numerical_total <= 0)) ||
       any(success & abs(
         attempts$scientific_sigma_g2 + attempts$scientific_sigma_e2 -
           attempts$fitted_total_variance
@@ -1510,6 +1541,12 @@ v3p_validate_results <- function(
         attempts$scientific_sigma_g2 /
           attempts$fitted_total_variance - attempts$scientific_ratio
       ) > 1e-10) ||
+      any(success & abs(
+        numerical_total - attempts$fitted_total_variance
+      ) > v3p_component_ratio_tolerance) ||
+      any(success & abs(
+        attempts$numerical_ratio - component_ratio
+      ) > v3p_component_ratio_tolerance) ||
       any(success & !boundary_status %in% c(
         "boundary_lower", "boundary_upper", "interior", "interior_rescued"
       )) ||

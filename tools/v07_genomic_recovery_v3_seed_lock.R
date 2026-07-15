@@ -78,11 +78,13 @@ v07s_expected_lock[] <- lapply(v07s_expected_lock, as.character)
 v07s_d0f_retired_phenotype_base <- 2029000000
 v07s_d0f_retired_retry_phenotype_base <- 2032000000
 v07s_d0f_retired_retry2_phenotype_base <- 2034000000
-v07s_d0f_retry_phenotype_base <- 2036000000
+v07s_d0f_retired_retry3_phenotype_base <- 2036000000
+v07s_d0f_retry_phenotype_base <- 2038000000
 v07s_d0f_retired_bootstrap_base <- 2031000000
 v07s_d0f_retired_retry_bootstrap_base <- 2033000000
 v07s_d0f_retired_retry2_bootstrap_base <- 2035000000
-v07s_d0f_retry_bootstrap_base <- 2037000000
+v07s_d0f_retired_retry3_bootstrap_base <- 2037000000
+v07s_d0f_retry_bootstrap_base <- 2039000000
 
 v07s_loaded_source_path <- local({
   file_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
@@ -335,6 +337,10 @@ v07s_expand_retired_d0f <- function() {
     v07s_d0f_seed_grid(
       v07s_d0f_retired_retry2_phenotype_base,
       "D0F_RETRY2_RETIRED"
+    ),
+    v07s_d0f_seed_grid(
+      v07s_d0f_retired_retry3_phenotype_base,
+      "D0F_RETRY3_RETIRED"
     )
   )
 }
@@ -410,6 +416,13 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
         v07s_d0f_retired_retry2_bootstrap_base
       ),
       stringsAsFactors = FALSE
+    ),
+    data.frame(
+      contract_id = "doc49_d0f_retry3_endpoint_blocker_bootstrap",
+      seed = v07s_d0f_bootstrap_seeds(
+        v07s_d0f_retired_retry3_bootstrap_base
+      ),
+      stringsAsFactors = FALSE
     )
   )
   historical <- rbind(historical, retired)
@@ -466,10 +479,13 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
   stage_counts <- table(valid$proposed$stage)
   stopifnot(
     2027142001 %in% valid$historical$seed,
-    nrow(valid$retired_d0f) == 1728L,
+    nrow(valid$retired_d0f) == 2304L,
     identical(
       unique(valid$retired_d0f$stage),
-      c("D0F_RETIRED", "D0F_RETRY1_RETIRED", "D0F_RETRY2_RETIRED")
+      c(
+        "D0F_RETIRED", "D0F_RETRY1_RETIRED", "D0F_RETRY2_RETIRED",
+        "D0F_RETRY3_RETIRED"
+      )
     ),
     all(
       v07s_d0f_bootstrap_seeds(
@@ -480,6 +496,12 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
     all(
       v07s_d0f_bootstrap_seeds(
         v07s_d0f_retired_retry2_bootstrap_base
+      ) %in%
+        valid$historical$seed
+    ),
+    all(
+      v07s_d0f_bootstrap_seeds(
+        v07s_d0f_retired_retry3_bootstrap_base
       ) %in%
         valid$historical$seed
     ),

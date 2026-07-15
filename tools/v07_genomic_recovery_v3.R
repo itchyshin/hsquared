@@ -49,10 +49,11 @@ v3d_load_preseal <- function() {
 
 v3d_load_preseal()
 
-v3d_schema <- "v07-genomic-recovery-v3-stage-preseal-2"
+v3d_schema <- "v07-genomic-recovery-v3-stage-preseal-3"
 v3d_packet_schema <- "v07-genomic-recovery-v3-packet-1"
 v3d_truth_schema <- "v07-genomic-recovery-v3-truth-1"
 v3d_route <- "ordinary_auto_genomic"
+v3d_component_ratio_tolerance <- 1e-12
 v3d_d0_corpus_root <-
   "/home/snakagaw/hsq_work/v07-genomic-recovery-v2-offset7101"
 v3d_truth_provenance_columns <- c(
@@ -66,6 +67,28 @@ v3d_packet_primaries <- c(
   "packet_files_lock.tsv"
 )
 v3d_corpus_columns <- c("relative_path", "sha256")
+
+v3d_declared_numerical_ratio <- function(declared, sigma_g2, sigma_e2) {
+  values <- suppressWarnings(as.numeric(c(declared, sigma_g2, sigma_e2)))
+  if (length(values) != 3L || any(!is.finite(values))) {
+    v3d_contract_abort("numerical ratio declaration or components are nonfinite")
+  }
+  total <- values[[2L]] + values[[3L]]
+  if (!is.finite(total) || total <= 0) {
+    v3d_contract_abort("numerical variance-component total is not positive finite")
+  }
+  component_ratio <- values[[2L]] / total
+  if (
+    values[[1L]] < 0 || values[[1L]] > 1 ||
+      abs(values[[1L]] - component_ratio) > v3d_component_ratio_tolerance
+  ) {
+    v3d_contract_abort(
+      "engine-declared numerical ratio differs from its components beyond %.17g",
+      v3d_component_ratio_tolerance
+    )
+  }
+  values[[1L]]
+}
 
 v3d_option_map <- function(args) {
   out <- list()
@@ -290,10 +313,6 @@ v3d_prepare_stage <- function(
     fixed <- v3p_d0f_fixed_panels(corpus$manifest, diagnostics)
     manifest <- v3p_d0f_phenotype_manifest(fixed)
     v3p_write_once(output_root, "d0f_fixed_panel_manifest.tsv", fixed)
-    v3p_write_once(
-      output_root, "d0f_bootstrap_indices.tsv",
-      v3p_d0f_bootstrap_manifest(10000L)
-    )
   }
   v3p_write_once(output_root, paste0(stage, "_manifest.tsv"), manifest)
   RNGkind("Mersenne-Twister", "Inversion", "Rejection")
@@ -373,11 +392,13 @@ v3d_preseal_values <- function(
     "7c1cbc165df90e844bd4fdc7fc6ffb6dcbb8343c0d5ca9e7a588e4ca6d48c370"
   )
   if (stage == "d0f") {
-    values[c(
-      "d0f_fixed_panel_manifest_sha256", "d0f_bootstrap_indices_sha256"
-    )] <- vapply(file.path(output_root, c(
-      "d0f_fixed_panel_manifest.tsv", "d0f_bootstrap_indices.tsv"
-    )), v07d_sha256, character(1L))
+    values[["d0f_fixed_panel_manifest_sha256"]] <- v07d_sha256(
+      file.path(output_root, "d0f_fixed_panel_manifest.tsv")
+    )
+    values[["d0f_bootstrap_seed_base"]] <- format(
+      v07s_d0f_retry_bootstrap_base, scientific = FALSE
+    )
+    values[["d0f_bootstrap_indices_absent_before_preseal"]] <- "true"
   }
   values[paste0(v3p_reviewers, "_receipt_sha256")] <- vapply(
     file.path(output_root, "receipts", paste0(v3p_reviewers, ".tsv")),
@@ -444,7 +465,8 @@ v3d_read_preseal <- function(output_root, stage) {
 }
 
 v3d_validate_bound_stage <- function(
-  output_root, stage, driver_root, r_root, julia_root
+  output_root, stage, driver_root, r_root, julia_root,
+  bootstrap_materialized = TRUE
 ) {
   v3d_assert_execution_context()
   output_root <- v3p_canonical_path(output_root, "stage output root", TRUE)
@@ -452,6 +474,10 @@ v3d_validate_bound_stage <- function(
   preseal <- v3d_read_preseal(output_root, stage)
   value <- preseal$value
   context <- v3d_context(driver_root, r_root, julia_root)
+  v3p_validate_stage_preseal(
+    preseal$table, context, include_preseal = TRUE,
+    bootstrap_materialized = stage == "d0f" && bootstrap_materialized
+  )
   roots <- c(r = normalizePath(r_root, winslash = "/", mustWork = TRUE),
              julia = normalizePath(julia_root, winslash = "/", mustWork = TRUE))
   for (root in roots) v3p_git_clean(root)
@@ -514,6 +540,28 @@ v3d_validate_bound_stage <- function(
     )
   }
   list(preseal = preseal, context = context)
+}
+
+v3d_materialize_bootstrap <- function(
+  output_root, stage, driver_root, r_root, julia_root
+) {
+  v3d_assert_execution_context()
+  stage <- v3d_stage(stage)
+  if (stage != "d0f") v3d_abort("bootstrap materialization is D0F-only")
+  v3d_validate_bound_stage(
+    output_root, stage, driver_root, r_root, julia_root,
+    bootstrap_materialized = FALSE
+  )
+  path <- file.path(output_root, "d0f_bootstrap_indices.tsv")
+  if (file.exists(path) || file.exists(paste0(path, ".sha256"))) {
+    v3d_abort("D0F bootstrap manifest already exists")
+  }
+  v3p_write_once(output_root, basename(path), v3p_d0f_bootstrap_manifest(10000L))
+  v3d_validate_bound_stage(
+    output_root, stage, driver_root, r_root, julia_root,
+    bootstrap_materialized = TRUE
+  )
+  invisible(path)
 }
 
 v3d_manifest <- function(output_root, stage) {
@@ -944,10 +992,16 @@ v3d_fit_one <- function(
     preseal_sha256 = preseal[["preseal_sha256"]]
   ))
   fit_error <- NULL
-  tryCatch({
-    fit <- fit_fun(M, dat)
+  fit <- tryCatch(
+    fit_fun(M, dat),
+    error = function(error) {
+      fit_error <<- error
+      NULL
+    }
+  )
+  if (is.null(fit_error)) {
     boundary <- fit$result$genomic_boundary
-    if (is.null(boundary)) v3d_abort("missing_boundary_status")
+    if (is.null(boundary)) v3d_contract_abort("missing boundary payload")
     result$boundary_status <- as.character(boundary$status)
     result$boundary_reason <- as.character(boundary$reason)
     result$boundary_epsilon <- as.numeric(boundary$boundary_epsilon)
@@ -957,49 +1011,66 @@ v3d_fit_one <- function(
     result$upper_derivative_per_observation <-
       as.numeric(boundary$upper_derivative_per_observation)
     if (identical(result$boundary_status, "boundary_unresolved")) {
-      v3d_abort("boundary_unresolved")
+      fit_error <- simpleError("boundary_unresolved")
+    } else {
+      if (length(result$boundary_status) != 1L ||
+          !result$boundary_status %in% c(
+            "boundary_lower", "boundary_upper", "interior", "interior_rescued"
+          )) {
+        v3d_contract_abort("unknown resolved boundary status")
+      }
+      if (!isTRUE(fit$result$converged)) {
+        fit_error <- simpleError("fit_result_not_converged")
+      } else tryCatch({
+        profile_ratio <- as.numeric(boundary$profile_ratio)
+        vc <- vc_fun(fit)
+        ng <- vc$estimate[vc$component == "genomic"]
+        ne <- vc$estimate[vc$component == "residual"]
+        if (length(ng) != 1L || length(ne) != 1L) {
+          v3d_contract_abort("resolved variance-component schema is malformed")
+        }
+        total <- as.numeric(ng + ne)
+        if (length(profile_ratio) != 1L || !is.finite(profile_ratio) ||
+            length(total) != 1L || !is.finite(total) || total <= 0 ||
+            profile_ratio < 0 || profile_ratio > 1) {
+          v3d_contract_abort("resolved scientific profile is malformed")
+        }
+        fit_prov <- fit$result$relationship_provenance
+        v3d_validate_fit_provenance(fit_prov, provenance, preseal)
+        result$status <- "success"; result$error_class <- "none"
+        result$converged <- TRUE
+        result$scientific_sigma_g2 <- profile_ratio * total
+        result$scientific_sigma_e2 <- (1 - profile_ratio) * total
+        result$scientific_ratio <- profile_ratio
+        result$fitted_total_variance <- total
+        result$numerical_sigma_g2 <- as.numeric(ng)
+        result$numerical_sigma_e2 <- as.numeric(ne)
+        result$numerical_ratio <- v3d_declared_numerical_ratio(
+          boundary$numerical_ratio,
+          result$numerical_sigma_g2,
+          result$numerical_sigma_e2
+        )
+        result$iterations <- v3d_or(fit$result$diagnostics$iterations, NA_real_)
+        result$objective <- if (is.null(fit$result$loglik)) NA_real_ else
+          -as.numeric(fit$result$loglik)
+        gradient_norm <- suppressWarnings(as.numeric(
+          fit$result$diagnostics$gradient_norm
+        ))
+        if (length(gradient_norm) != 1L || !is.finite(gradient_norm)) {
+          v3d_contract_abort(
+            "successful genomic fit is missing a finite AI score norm"
+          )
+        }
+        result$gradient_norm <- gradient_norm
+      }, error = function(error) {
+        if (inherits(error, "v3d_contract_error")) stop(error)
+        v3d_contract_abort(
+          "resolved fit payload failed contract validation: %s",
+          conditionMessage(error)
+        )
+      })
     }
-    if (!result$boundary_status %in% c(
-      "boundary_lower", "boundary_upper", "interior", "interior_rescued"
-    )) v3d_abort("unknown_boundary_status")
-    if (!isTRUE(fit$result$converged)) v3d_abort("fit_result_not_converged")
-    profile_ratio <- as.numeric(boundary$profile_ratio)
-    vc <- vc_fun(fit)
-    ng <- vc$estimate[vc$component == "genomic"]
-    ne <- vc$estimate[vc$component == "residual"]
-    if (length(ng) != 1L || length(ne) != 1L) v3d_abort("variance_component_schema")
-    total <- as.numeric(ng + ne)
-    if (!is.finite(profile_ratio) || !is.finite(total) || total <= 0 ||
-        profile_ratio < 0 || profile_ratio > 1) {
-      v3d_abort("invalid_scientific_profile")
-    }
-    fit_prov <- fit$result$relationship_provenance
-    v3d_validate_fit_provenance(fit_prov, provenance, preseal)
-    result$status <- "success"; result$error_class <- "none"
-    result$converged <- TRUE
-    result$scientific_sigma_g2 <- profile_ratio * total
-    result$scientific_sigma_e2 <- (1 - profile_ratio) * total
-    result$scientific_ratio <- profile_ratio
-    result$fitted_total_variance <- total
-    result$numerical_sigma_g2 <- as.numeric(ng)
-    result$numerical_sigma_e2 <- as.numeric(ne)
-    result$numerical_ratio <- as.numeric(boundary$numerical_ratio)
-    result$iterations <- v3d_or(fit$result$diagnostics$iterations, NA_real_)
-    result$objective <- if (is.null(fit$result$loglik)) NA_real_ else
-      -as.numeric(fit$result$loglik)
-    gradient_norm <- suppressWarnings(as.numeric(
-      fit$result$diagnostics$gradient_norm
-    ))
-    if (length(gradient_norm) != 1L || !is.finite(gradient_norm)) {
-      v3d_contract_abort(
-        "successful genomic fit is missing a finite AI score norm"
-      )
-    }
-    result$gradient_norm <- gradient_norm
-  }, error = function(error) {
-    if (inherits(error, "v3d_contract_error")) stop(error)
-    fit_error <<- error
-  })
+  }
   if (!is.null(fit_error)) {
     result$status <- "fit_error"; result$converged <- FALSE
     result$error_class <- v3d_error_class(fit_error)
@@ -1084,7 +1155,9 @@ v3d_validate_attempt <- function(attempt, manifest, stage, binding) {
 }
 
 v3d_phase_state <- function(output_root, stage, manifest, require_complete = FALSE) {
-  base_names <- v3p_preseal_names(stage, TRUE)
+  base_names <- v3p_preseal_names(
+    stage, TRUE, bootstrap_materialized = identical(stage, "d0f")
+  )
   expected_files <- c(base_names, paste0(base_names, ".sha256"))
   lock <- file.path(output_root, "stage_corpus_lock.tsv")
   lock_present <- c(
@@ -1334,6 +1407,10 @@ v3d_main <- function(args = commandArgs(trailingOnly = TRUE)) {
       v3d_required(options, "r-auto-route-commit"),
       v3d_required(options, "julia-candidate-commit"),
       options[["d0f-adjudication-root"]]
+    )
+  } else if (mode == "materialize-bootstrap") {
+    v3d_materialize_bootstrap(
+      output_root, stage, driver_root, r_root, julia_root
     )
   } else if (mode == "run-one") {
     v3d_run_one(
