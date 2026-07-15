@@ -63,6 +63,73 @@ history, dedicated numerical validators, one-to-three selected D3 triplets,
 exactly three original D4 triplets, and acyclic official-attempt versus
 post-lock recomputation schemas.
 
+### Prospective Retry-5 endpoint-representation amendment
+
+This amendment is frozen before Retry-5 implementation and before any Retry-5
+random draw or evidence root exists. It does not reopen, repair, resume, subset,
+pool, or adjudicate Retry 4. The Retry-4 root, its preseal, its 576 official
+attempts, its 576 base-R recomputations, its 455 replay rows, and phenotype /
+bootstrap bases `2036000000` / `2037000000` remain immutable diagnostic state.
+
+Retry 5 changes only the replay representation and validation contract:
+
+1. `genomic_boundary$numerical_ratio` in R and
+   `boundary.numerical_ratio` in Julia are the authoritative numerical-ratio
+   declarations. A resolved replay must preserve that field directly. At a
+   lower or upper endpoint it must still equal exactly `1e-7` or `1 - 1e-7`;
+   endpoint identity is not tolerance-relaxed.
+2. The numerical variance components remain separate fields. Replay derives
+   `component_ratio = numerical_sigma_g2 /
+   (numerical_sigma_g2 + numerical_sigma_e2)` only for consistency checking.
+   The frozen check is absolute-only:
+   `abs(numerical_ratio - component_ratio) <= 1e-12`, with relative tolerance
+   zero. This is distinct from, and narrower than, the unchanged `1e-10`
+   official-route-versus-replay parity tolerance.
+3. Lower- and upper-endpoint one-ULP differences are admitted by the component
+   check while the declared endpoint stays bit-exact. A `2e-12` disagreement
+   is the just-outside-tolerance red control and a `1e-8` disagreement is the
+   substantive red control. Missing, nonfinite, out-of-range, or inconsistent
+   declarations also remain red.
+4. Once the engine has returned a resolved result, any representation, payload,
+   or replay-validation exception is an infrastructure contract error. It must
+   propagate nonzero before a replay primary or sidecar is written and must not
+   be serialized as scientific `fit_error`. Genuine engine failures and
+   `boundary_unresolved` results retain the existing fail-closed scientific
+   attempt contract.
+5. R driver validation, R preseal admission, and Julia replay validation must
+   enforce the same declaration/component predicate. No output column, estimator,
+   estimand, ridge, boundary epsilon, KKT threshold, recovery margin, denominator,
+   or downstream decision rule changes.
+
+The diagnostic-only mechanism preflight is fixed to the following 16 retired
+Retry-4 packets, selected before implementation from the locked official
+attempt inventory:
+
+```text
+boundary: 2036103006 2036103008 2036107005 2036108001 2036109002
+          2036113007 2036114005 2036115002 2036119001 2036119002
+          2036119004 2036120002 2036123007
+interior: 2036101001 2036201001 2036301001
+```
+
+The preflight reads those exact locked attempts and packets, writes nothing
+inside the retired root, reports mechanism parity only, and cannot tune the
+tolerance or enter a recovery summary. Its pass condition is: all 13 declared
+endpoints preserved exactly; all 16 component checks at or below `1e-12`; all
+16 official-versus-replay differences at or below `1e-10`; both one-ULP
+controls green; the `2e-12`, `1e-8`, and contract-error-classification
+mutations red; and no retired-root byte changed.
+
+Retry-4 bases are newly classified in the seed verifier as retired. Retry 5
+reserves disjoint phenotype base `2038000000` and bootstrap-index base
+`2039000000`. Reservation is not seed expenditure: no RNG may use either base
+and no Retry-5 root may be created until the matched tools and mutations pass,
+the fixed diagnostic preflight passes, Hopper/Noether/Fisher/Grace/Rose exact-
+head receipts are clean, the remote twins are clean and hash-matched, and the
+new stage preseal is complete. A formal Retry-5 D0F `PASS/COMPLETE` admits D1
+only; D1 then governs ordered D2 admission, terminal D2 history governs D3/D4,
+and the original Rose and non-delegable G10 activation gates remain unchanged.
+
 ## 1. Why recovery-v3 exists
 
 Recovery-v2 completed 432/432 converged end-to-end fits but correctly stopped at
