@@ -81,12 +81,16 @@ v07s_d0f_retired_retry2_phenotype_base <- 2034000000
 v07s_d0f_retired_retry3_phenotype_base <- 2036000000
 v07s_d0f_retired_retry4_phenotype_base <- 2038000000
 v07s_d0f_retired_retry5_phenotype_base <- 2040000000
+# Historical aliases reproduce the immutable Retry-6 manifests in validators
+# and synthetic fixtures. They do not place these seeds in the proposed table.
+v07s_d0f_retry_phenotype_base <- v07s_d0f_retired_retry5_phenotype_base
 v07s_d0f_retired_bootstrap_base <- 2031000000
 v07s_d0f_retired_retry_bootstrap_base <- 2033000000
 v07s_d0f_retired_retry2_bootstrap_base <- 2035000000
 v07s_d0f_retired_retry3_bootstrap_base <- 2037000000
 v07s_d0f_retired_retry4_bootstrap_base <- 2039000000
 v07s_d0f_retired_retry5_bootstrap_base <- 2041000000
+v07s_d0f_retry_bootstrap_base <- v07s_d0f_retired_retry5_bootstrap_base
 
 v07s_loaded_source_path <- local({
   file_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)

@@ -2458,7 +2458,10 @@ v3p_admit_postrun <- function(...) {
 v3p_selftest <- function() {
   d1 <- v3p_d1_manifest()
   stopifnot(nrow(d1) == 576L, !anyDuplicated(d1$seed))
-  stopifnot(length(v3p_validate_bootstrap_seed_space()) == 3L)
+  stopifnot(inherits(
+    try(v3p_validate_bootstrap_seed_space(), silent = TRUE),
+    "try-error"
+  ))
   boot <- v3p_d0f_bootstrap_manifest(3L)
   stopifnot(nrow(boot) == 216L)
   changed <- boot

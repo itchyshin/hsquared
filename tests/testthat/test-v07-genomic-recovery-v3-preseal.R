@@ -638,7 +638,7 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   )
 }
 
-test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
+test_that("D0F reproduces exact retired Retry-6 panels and phenotype seeds", {
   fixture <- v3p_test_d0f()
   expect_equal(nrow(fixture$fixed), 72L)
   expect_equal(nrow(fixture$manifest), 576L)
@@ -660,9 +660,12 @@ test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
     )
   )
   expect_true(all(fixture$manifest$seed > v07s_d0f_retry_phenotype_base))
-  expect_length(
-    intersect(fixture$manifest$seed, v07s_expand_retired_d0f()$seed),
-    0L
+  expect_setequal(
+    fixture$manifest$seed,
+    v07s_d0f_seed_grid(
+      v07s_d0f_retired_retry5_phenotype_base,
+      "D0F_RETRY5_RETIRED"
+    )$seed
   )
   expect_length(intersect(fixture$manifest$seed, fixture$d0$seed), 0L)
 
@@ -699,7 +702,7 @@ test_that("D0F selects exact fixed panels and maps all phenotype seeds", {
   )
 })
 
-test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
+test_that("retired Retry-6 bootstrap reproduces but cannot reopen", {
   set.seed(617L)
   before_seed <- .Random.seed
   before_kind <- RNGkind()
@@ -709,48 +712,15 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
   expect_equal(nrow(bootstrap), 288L)
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
-  seeds <- v3p_validate_bootstrap_seed_space()
+  seeds <- v3p_d0f_bootstrap_seed(v3p_d0f_designs$design_index)
   expect_identical(seeds, as.integer(2041000001:2041000003))
   expect_identical(anyDuplicated(seeds), 0L)
-  expect_length(
-    intersect(
-      seeds,
-      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)
-    ),
-    0L
+  expect_identical(
+    seeds,
+    v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry5_bootstrap_base)
   )
-  expect_length(
-    intersect(
-      seeds,
-      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry_bootstrap_base)
-    ),
-    0L
-  )
-  expect_length(
-    intersect(
-      seeds,
-      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry2_bootstrap_base)
-    ),
-    0L
-  )
-  expect_length(
-    intersect(
-      seeds,
-      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry3_bootstrap_base)
-    ),
-    0L
-  )
-  expect_length(
-    intersect(
-      seeds,
-      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry4_bootstrap_base)
-    ),
-    0L
-  )
-  proposed <- v07s_expand_v3()
-  proposed$seed[[1L]] <- seeds[[1L]]
   expect_error(
-    v3p_validate_bootstrap_seed_space(proposed = proposed),
+    v3p_validate_bootstrap_seed_space(),
     "overlaps a historical or v3 fitted seed"
   )
 

@@ -53,13 +53,13 @@ The Retry-4 scientific plan below remains the frozen pre-run record (pre-run
 SHA-256
 `0bbad8420812865d599d30af85ccf0d2fd039eada4c4914542f54dee8a9d54f0`).
 Its exact old bytes remain in the retired root and checkpoint. The active seed,
-bootstrap-order, and preseal-schema passages in this living design document are
-superseded by the prospective Retry-6 amendment and are synchronized below.
+bootstrap-order, and preseal-schema passages in this living design document were
+superseded by the prospective Retry-6 amendment and are now historical below.
 Retry 4 does not reopen, rewrite, pool, or admit any blocked D0F corpus or the
 retired recovery-v2 offsets. Retry 5 attempted the preregistered
-endpoint-representation repair and is retired below; Retry 6 requires the
-additional preregistered runtime-tree repair, fresh exact-head reviews and
-preseal, and disjoint seeds.
+endpoint-representation repair and is retired below. Retry 6 executed the
+additional preregistered runtime-tree repair and is itself retired by the
+post-run amendment below.
 
 No D0F retry is adjudicated and therefore none can admit D1. The
 downstream D2-D4 evidence protocol in this document was prospectively amended
@@ -224,6 +224,38 @@ records that the Retry-6 bootstrap manifest is absent. After that preseal only,
 the three bootstrap seeds are `2041000001:2041000003`. The first Retry-6
 phenotype remains later still. A formal Retry-6 D0F `PASS/COMPLETE` admits D1
 only; every later gate remains unchanged.
+
+### Retry-6 terminal post-run adjudicator-route amendment
+
+Retry 6 passed every pre-RNG gate and completed 576 official fits, 576
+independent base-R recomputations, and 576 exact Julia replays. All three
+create-once D0F summaries are `COMPLETE` and agree: the maximum attempt-level
+difference is `3.1832314562052488e-12`, the maximum summary difference is
+`7.1054273576010019e-15`, and the boundary inventory is 567 interior, eight
+lower, one upper, and zero unresolved.
+
+The first canonical post-run receipt writer stopped before writing a receipt.
+`v3r_adjudicate_tables()` correctly admitted Julia rows under
+`julia_profile_replay`, but `v3r_expected_summary()` reconstructed the Julia
+summary through D0F/D1 helpers that defaulted back to
+`ordinary_auto_genomic`. Correct Julia rows were therefore re-rejected as
+malformed scientific output under the wrong route. Exact clause diagnostics
+found zero malformed official, base-R, or Julia rows. No post-run review
+receipt or adjudication receipt exists, so D1 and D2 never opened.
+
+Retry 6 is permanently
+`UNADJUDICATED_POSTRUN_ADJUDICATOR_ROUTE_BLOCKER`. Its 9,248-file Totoro root
+and the complete phenotype/bootstrap spaces at bases `2040000000` and
+`2041000000` are immutable and retired, including unused members. There is no
+successor D0F seed allocation. The full checkpoint is
+`docs/dev-log/recovery-checkpoints/2026-07-15-v07-d0f-retry6-postrun-adjudicator-route-blocker.md`.
+
+The seed-free prospective repair at R commits `b8096e5` and `562b93e` threads
+the declared route through both D0F and D1 summary reconstruction, keeps the
+ordinary-R default, explicitly binds Julia replay, and moves every Retry-6
+phenotype/bootstrap seed into the executable historical lock. It changes no
+estimator, estimand, ridge, tolerance, threshold, denominator, schema, or
+fitted output, and it cannot repair or adjudicate Retry 6.
 
 ## 1. Why recovery-v3 exists
 
@@ -551,13 +583,12 @@ the boundary solver's finite AI score norm. The exact Julia replay stopped
 before row 1, so no replay or adjudication output exists. Its phenotype base
 `2034000000` and bootstrap base `2035000000` are retired.
 
-The only admitted continuation is prospective Retry 6: unchanged fixed panels,
+Retry 6 was the only admitted continuation under the unchanged fixed panels,
 24-by-8 allocation, estimand, model, ridge, summaries, tolerances, and stopping
-rules; the repaired endpoint-representation and post-preseal tree-validation
-contracts; batch-safe R and Julia recomputation; five new exact reviewer
-receipts; a new root and preseal; and 576 new phenotypes from the disjoint seed
-space below. There is no pooling, paired reuse, seed replacement, threshold
-change, or selection based on any blocked corpus or summary.
+rules. It is now retired at the terminal post-run route blocker above. No new
+D0F continuation or successor seed space is admitted. There is no pooling,
+paired reuse, seed replacement, threshold change, or selection based on any
+blocked corpus or summary.
 
 After the new preseal is written and before any smoke or official phenotype is
 generated, the deployed Julia 1.10 tool must pass:
@@ -1049,8 +1080,9 @@ adds them to the retired space as `D0F_RETRY1_RETIRED`. The blocked retry-3
 root used the same rank formula with base `2034000000`; the verifier adds it as
 `D0F_RETRY2_RETIRED`. Retry 4 used base `2036000000`; the verifier adds it as
 `D0F_RETRY3_RETIRED`. Retry 5 used base `2038000000`; the verifier retires the
-complete reserved grid as `D0F_RETRY4_RETIRED`. Retry 6 reserves base
-`2040000000` and is labelled `D0F_RETRY` in the seed-space audit. The
+complete reserved grid as `D0F_RETRY4_RETIRED`. Retry 6 used base
+`2040000000`; the verifier retires the complete reserved grid as
+`D0F_RETRY5_RETIRED`. No proposed D0F retry stage exists. The
 operational manifest stage remains `d0f` so the unchanged scientific schema is
 reused. All values remain below R's 32-bit integer maximum. All exact historical
 and retired seeds are excluded. Numeric offsets may recur only under a new base
@@ -1066,8 +1098,8 @@ seeds `2035000000 + design_index` are nevertheless spent and retired because
 they generated observed bootstrap manifests. Retry 4's three seeds
 `2037000000 + design_index` are also spent and retired. Retry 5's complete
 reserved bootstrap space at `2039000000 + design_index` is retired after its
-manifest was generated. Retry 6 reserves `2041000000 + design_index`, one per
-design. All six sets must be unique and
+manifest was generated. Retry 6 generated and then retired
+`2041000000 + design_index`, one per design. All six sets must be unique and
 in range; the current retry set must be disjoint from every historical,
 retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating seed.
 
