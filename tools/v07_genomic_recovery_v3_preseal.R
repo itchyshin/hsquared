@@ -598,21 +598,37 @@ v3p_preseal_names <- function(
   common
 }
 
-v3p_runtime_top_names <- function(stage) {
-  c(
-    "attempts", "packets", "base_r_recompute", "julia_replay",
-    "postrun_receipts", "stage_corpus_lock.tsv",
-    "stage_corpus_lock.tsv.sha256", paste0(stage, "_summary_r.tsv"),
-    paste0(stage, "_summary_r.tsv.sha256"),
-    paste0(stage, "_summary_julia.tsv"),
-    paste0(stage, "_summary_julia.tsv.sha256"),
-    "stage_adjudication_receipt.tsv",
-    "stage_adjudication_receipt.tsv.sha256"
+v3p_runtime_top_names <- function(stage, phase) {
+  phases <- c(
+    "official", "locked", "base_r", "r_summary", "julia",
+    "julia_summary", "review", "final"
   )
+  phase <- match.arg(phase, phases)
+  by_phase <- list(
+    official = c("attempts", "packets"),
+    locked = c("stage_corpus_lock.tsv", "stage_corpus_lock.tsv.sha256"),
+    base_r = "base_r_recompute",
+    r_summary = c(
+      paste0(stage, "_summary_r.tsv"),
+      paste0(stage, "_summary_r.tsv.sha256")
+    ),
+    julia = "julia_replay",
+    julia_summary = c(
+      paste0(stage, "_summary_julia.tsv"),
+      paste0(stage, "_summary_julia.tsv.sha256")
+    ),
+    review = "postrun_receipts",
+    final = c(
+      "stage_adjudication_receipt.tsv",
+      "stage_adjudication_receipt.tsv.sha256"
+    )
+  )
+  unname(unlist(by_phase[seq_len(match(phase, phases))], use.names = FALSE))
 }
 
 v3p_verify_preseal_projection <- function(
-  root, stage, include_preseal, bootstrap_materialized = FALSE
+  root, stage, include_preseal, bootstrap_materialized = FALSE,
+  runtime_phase = "official"
 ) {
   root <- v3p_canonical_path(root, "stage output root", TRUE)
   primaries <- v3p_preseal_names(
@@ -642,7 +658,7 @@ v3p_verify_preseal_projection <- function(
   }
 
   expected_top <- unique(sub("/.*$", "", expected_files))
-  runtime_top <- v3p_runtime_top_names(stage)
+  runtime_top <- v3p_runtime_top_names(stage, runtime_phase)
   actual_top <- list.files(
     root, recursive = FALSE, all.files = TRUE, include.dirs = TRUE,
     no.. = TRUE
@@ -692,7 +708,7 @@ v3p_verify_preseal_tree <- function(
     v3p_abort("preseal input tree has missing, additional, nested, or special members")
   }
   v3p_verify_preseal_projection(
-    root, stage, include_preseal, bootstrap_materialized
+    root, stage, include_preseal, bootstrap_materialized, "official"
   )
   invisible(TRUE)
 }
@@ -717,7 +733,8 @@ v3p_validate_review <- function(path, expected_hash, reviewer, values) {
 
 v3p_validate_stage_preseal <- function(
   x, context, include_preseal = TRUE, bootstrap_reps = 10000L,
-  bootstrap_materialized = FALSE, tree_scope = c("pristine", "runtime")
+  bootstrap_materialized = FALSE, tree_scope = c("pristine", "runtime"),
+  runtime_phase = "official"
 ) {
   tree_scope <- match.arg(tree_scope)
   v3p_require_schema(x, c("key", "value"), "recovery-v3 stage preseal")
@@ -826,7 +843,8 @@ v3p_validate_stage_preseal <- function(
     )
   } else {
     v3p_verify_preseal_projection(
-      root, value[["stage"]], include_preseal, bootstrap_materialized
+      root, value[["stage"]], include_preseal, bootstrap_materialized,
+      runtime_phase
     )
   }
 

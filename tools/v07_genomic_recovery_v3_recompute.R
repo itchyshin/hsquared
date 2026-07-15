@@ -292,7 +292,7 @@ v3r_preseal_values <- function(path) {
   list(table = x, value = value, sha256 = v07d_sha256(path))
 }
 
-v3r_validate_preseal_postrun <- function(root, stage) {
+v3r_validate_preseal_postrun <- function(root, stage, runtime_phase) {
   path <- file.path(root, "stage_preseal.tsv")
   preseal <- v3r_preseal_values(path)
   if (preseal$value[["stage"]] != stage || preseal$value[["output_root"]] != root) {
@@ -300,7 +300,8 @@ v3r_validate_preseal_postrun <- function(root, stage) {
   }
   v3p_validate_stage_preseal(
     preseal$table, v3r_expected_tool_context(), include_preseal = TRUE,
-    bootstrap_materialized = identical(stage, "d0f"), tree_scope = "runtime"
+    bootstrap_materialized = identical(stage, "d0f"), tree_scope = "runtime",
+    runtime_phase = runtime_phase
   )
   preseal
 }
@@ -426,11 +427,13 @@ v3r_verify_corpus <- function(root, stage, manifest) {
   list(table = lock, path = path, sha256 = v07d_sha256(path))
 }
 
-v3r_read_stage <- function(root, stage, validate_deployment = TRUE) {
+v3r_read_stage <- function(
+  root, stage, validate_deployment = TRUE, runtime_phase = "base_r"
+) {
   root <- v3r_canonical_dir(root, "stage output root")
   stage <- v3r_stage(stage)
   preseal <- if (validate_deployment) {
-    v3r_validate_preseal_postrun(root, stage)
+    v3r_validate_preseal_postrun(root, stage, runtime_phase)
   } else {
     v3r_preseal_values(file.path(root, "stage_preseal.tsv"))
   }
@@ -737,7 +740,7 @@ v3r_recompute_row <- function(root, stage, row, preseal, preseal_sha256) {
 }
 
 v3r_recompute_one <- function(root, stage, group, seed) {
-  state <- v3r_read_stage(root, stage)
+  state <- v3r_read_stage(root, stage, runtime_phase = "base_r")
   seed <- suppressWarnings(as.numeric(seed))
   if (!is.finite(seed) || seed != floor(seed)) v3r_abort("seed must be an integer")
   row <- v3r_find_row(state$manifest, stage, group, seed)
@@ -897,7 +900,7 @@ v3r_validate_batch_plan_missing <- function(state, plan) {
 }
 
 v3r_write_batch_plan <- function(root, stage, path, batch_size) {
-  state <- v3r_read_stage(root, stage)
+  state <- v3r_read_stage(root, stage, runtime_phase = "base_r")
   path <- v3r_external_batch_path(path, state$root, must_exist = FALSE)
   if (file.exists(path) || file.exists(paste0(path, ".sha256"))) {
     v3r_abort("external batch-plan primary/sidecar already exists")
@@ -912,7 +915,7 @@ v3r_write_batch_plan <- function(root, stage, path, batch_size) {
 }
 
 v3r_validate_batch_plan <- function(root, stage, path) {
-  state <- v3r_read_stage(root, stage)
+  state <- v3r_read_stage(root, stage, runtime_phase = "base_r")
   plan <- v3r_read_batch_plan(state, path)
   v3r_validate_batch_plan_missing(state, plan)
   message(sprintf(
@@ -925,7 +928,7 @@ v3r_validate_batch_plan <- function(root, stage, path) {
 v3r_authenticate_batch_plan <- function(
   root, stage, path, stage_reader = v3r_read_stage
 ) {
-  state <- stage_reader(root, stage)
+  state <- stage_reader(root, stage, runtime_phase = "base_r")
   plan <- v3r_read_batch_plan(state, path)
   planned <- attr(plan, "manifest_indices")
   missing <- v3r_missing_manifest_indices(state)
@@ -967,7 +970,7 @@ v3r_recompute_batch <- function(
 ) {
   # Expensive preseal/manifest/full-corpus validation happens once per batch.
   # Each row is then reauthenticated against the retained corpus-lock map.
-  state <- stage_reader(root, stage)
+  state <- stage_reader(root, stage, runtime_phase = "base_r")
   plan <- v3r_read_batch_plan(state, path)
   if (length(batch_id) != 1L || is.na(batch_id) ||
       !grepl("^b[0-9]{4,}$", batch_id)) {
@@ -1119,7 +1122,7 @@ v3r_summary_columns <- function(stage) {
 }
 
 v3r_summarize <- function(root, stage) {
-  state <- v3r_read_stage(root, stage)
+  state <- v3r_read_stage(root, stage, runtime_phase = "r_summary")
   rows <- v3r_read_rows(state, "base_r")
   attempts <- v3r_admit_rows(state, "base_r", rows$table)
   summary <- v3r_expected_summary(state, attempts)
@@ -1201,7 +1204,7 @@ v3r_review_row <- function(
 v3r_write_postrun_review <- function(
   root, stage, reviewer, verdict, receipt = NULL, reviewed_at_utc
 ) {
-  state <- v3r_read_stage(root, stage)
+  state <- v3r_read_stage(root, stage, runtime_phase = "review")
   evidence <- v3r_evidence(state)
   adjudication <- v3r_adjudicate_tables(state, evidence)
   reviewer <- tolower(reviewer)
@@ -1429,7 +1432,7 @@ v3r_review_paths <- function(root) {
 }
 
 v3r_expected_final <- function(root, stage) {
-  state <- v3r_read_stage(root, stage)
+  state <- v3r_read_stage(root, stage, runtime_phase = "final")
   evidence <- v3r_evidence(state)
   adjudication <- v3r_adjudicate_tables(state, evidence)
   summary <- adjudication$summary

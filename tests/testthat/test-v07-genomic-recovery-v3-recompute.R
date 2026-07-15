@@ -1000,7 +1000,7 @@ test_that("one batch validates the full corpus once and complete prefixes resume
   on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
   v3r_test_write_batch_plan(fixture, v3r_build_batch_plan(fixture$state, 2L))
   reads <- 0L
-  state_reader <- function(root, stage) {
+  state_reader <- function(root, stage, ...) {
     reads <<- reads + 1L
     expect_identical(root, fixture$root)
     expect_identical(stage, "d1")

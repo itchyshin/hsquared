@@ -4,11 +4,18 @@ preseal_tool <- testthat::test_path(
   "tools",
   "v07_genomic_recovery_v3_preseal.R"
 )
+driver_tool <- testthat::test_path(
+  "..",
+  "..",
+  "tools",
+  "v07_genomic_recovery_v3.R"
+)
 testthat::skip_if_not(
-  file.exists(preseal_tool),
-  "repository-only recovery-v3 pre-seal tool is unavailable"
+  file.exists(preseal_tool) && file.exists(driver_tool),
+  "repository-only recovery-v3 tools are unavailable"
 )
 source(normalizePath(preseal_tool, mustWork = TRUE), local = TRUE)
+source(normalizePath(driver_tool, mustWork = TRUE), local = TRUE)
 
 v3p_test_hash <- function(letter = "a") paste(rep(letter, 64L), collapse = "")
 
@@ -305,7 +312,7 @@ v3p_test_git <- function(root, ...) {
   out
 }
 
-v3p_test_validate_stage <- function(...) {
+v3p_test_with_stage_stubs <- function(callback) {
   env <- environment(v3p_validate_stage_preseal)
   old_d0 <- get(
     "v3p_validate_frozen_d0_artifacts",
@@ -375,7 +382,27 @@ v3p_test_validate_stage <- function(...) {
     ),
     add = TRUE
   )
-  v3p_validate_stage_preseal(...)
+  callback()
+}
+
+v3p_test_validate_stage <- function(...) {
+  args <- list(...)
+  v3p_test_with_stage_stubs(function() {
+    do.call(v3p_validate_stage_preseal, args)
+  })
+}
+
+v3p_test_validate_bound_stage <- function(fixture, runtime_phase = "official") {
+  env <- environment(v3d_validate_bound_stage)
+  old_guard <- get("v3d_assert_execution_context", envir = env, inherits = FALSE)
+  assign("v3d_assert_execution_context", function(...) invisible(TRUE), envir = env)
+  on.exit(assign("v3d_assert_execution_context", old_guard, envir = env), add = TRUE)
+  v3p_test_with_stage_stubs(function() {
+    v3d_validate_bound_stage(
+      fixture$stage_root, "d1", fixture$git_root, fixture$git_root,
+      fixture$git_root, runtime_phase = runtime_phase
+    )
+  })
 }
 
 v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
@@ -426,7 +453,7 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
 
   tool_names <- c(
     r_driver = "tools/v07_genomic_recovery_v3.R",
-    r_recomputer = "tools/v07_genomic_recovery_v3_preseal.R",
+    r_recomputer = "tools/v07_genomic_recovery_v3_recompute.R",
     julia_replay = "sim/phase2_v07_genomic_recovery_v3_stage_replay.jl",
     d0_recomputer = "tools/v07_genomic_recovery_v3_d0_recompute.R"
   )
@@ -1553,6 +1580,47 @@ test_that("runtime projection admits prior fan-out without weakening bindings", 
     ),
     "SHA-256 mismatch"
   )
+})
+
+test_that("production bound-stage validation admits one complete publication", {
+  fixture <- v3p_test_preseal_fixture()
+  on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
+
+  expect_silent(v3p_test_validate_bound_stage(fixture))
+  row <- v3p_d1_manifest()[1L, , drop = FALSE]
+  attempt <- v3d_attempt_path(fixture$stage_root, "d1", row)
+  dir.create(dirname(attempt), recursive = TRUE)
+  v3p_test_pair(attempt, data.frame(status = "success"))
+  packet <- v3d_packet_dir(fixture$stage_root, "d1", row)
+  dir.create(packet, recursive = TRUE)
+  for (name in v3d_packet_primaries) {
+    v3p_test_pair(file.path(packet, name), data.frame(value = name))
+  }
+
+  # This is the exact production admission call made before a second worker
+  # selects a seed. A complete prior publication must not be mistaken for
+  # pristine-tree drift.
+  expect_silent(v3p_test_validate_bound_stage(fixture))
+
+  future_members <- c(
+    "base_r_recompute", "julia_replay", "postrun_receipts",
+    "d1_summary_r.tsv", "d1_summary_julia.tsv",
+    "stage_adjudication_receipt.tsv"
+  )
+  for (member in future_members) {
+    path <- file.path(fixture$stage_root, member)
+    if (grepl("\\.tsv$", member)) {
+      writeLines("premature", path)
+    } else {
+      dir.create(path)
+    }
+    expect_error(
+      v3p_test_validate_bound_stage(fixture),
+      "unknown top-level member",
+      info = member
+    )
+    unlink(path, recursive = TRUE)
+  }
 })
 
 test_that("runtime projection rejects a symlinked fan-out namespace", {

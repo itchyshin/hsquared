@@ -466,7 +466,8 @@ v3d_read_preseal <- function(output_root, stage) {
 
 v3d_validate_bound_stage <- function(
   output_root, stage, driver_root, r_root, julia_root,
-  bootstrap_materialized = TRUE, tree_scope = c("runtime", "pristine")
+  bootstrap_materialized = TRUE, tree_scope = c("runtime", "pristine"),
+  runtime_phase = "official"
 ) {
   v3d_assert_execution_context()
   tree_scope <- match.arg(tree_scope)
@@ -478,7 +479,7 @@ v3d_validate_bound_stage <- function(
   v3p_validate_stage_preseal(
     preseal$table, context, include_preseal = TRUE,
     bootstrap_materialized = stage == "d0f" && bootstrap_materialized,
-    tree_scope = tree_scope
+    tree_scope = tree_scope, runtime_phase = runtime_phase
   )
   roots <- c(r = normalizePath(r_root, winslash = "/", mustWork = TRUE),
              julia = normalizePath(julia_root, winslash = "/", mustWork = TRUE))
@@ -1313,7 +1314,10 @@ v3d_verify_phase <- function(
   output_root, stage, driver_root, r_root, julia_root
 ) {
   v3d_assert_no_stale_claims(output_root)
-  v3d_validate_bound_stage(output_root, stage, driver_root, r_root, julia_root)
+  v3d_validate_bound_stage(
+    output_root, stage, driver_root, r_root, julia_root,
+    runtime_phase = "locked"
+  )
   manifest <- v3d_manifest(output_root, stage)
   state <- v3d_phase_state(output_root, stage, manifest)
   if (state$locked) {
