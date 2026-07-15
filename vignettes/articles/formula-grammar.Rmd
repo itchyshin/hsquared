@@ -106,8 +106,11 @@ held ordinary-route candidate on this branch; explicit `target = "genomic"`
 remains supported. `single_step()` and SNP-BLUP remain opt-in experimental
 targets. The genomic row stays `partial`: recovery-v3 is the redesigned
 experiment, but its first three D0F corpora are unadjudicated infrastructure
-blockers with retired seeds. Retry 4 is repaired but not presealed or run;
-activation still requires admitted recovery, Rose, and G10.
+blockers with retired seeds. Retry 4 completed 576 official fits and 576
+independent base-R recomputations, but exact Julia replay stopped after 455
+rows on a one-ULP endpoint-representation contract defect. Its root and seeds
+are retired and unadjudicated; D1/D2 never opened. Activation still requires a
+fresh prospective repair and Retry 5, Rose, and G10.
 
 ## Multivariate and factor-analytic grammar
 

@@ -220,8 +220,11 @@ manifest exists, and offsets 7101:7148 are retired. Recovery-v3 then produced
 three 576-fit D0F corpora whose exact replay stopped before row 1 for
 fixed-panel cardinality, concrete-`Cmd` typing, and missing successful-gradient
 contract failures. All three roots and seed spaces are retired and
-unadjudicated. Retry 4 is repaired with disjoint seeds but is not presealed or
-run. Rose/G10 remain open, and
+unadjudicated. Retry 4 completed 576 official fits and 576 independent base-R
+recomputations, but exact Julia replay stopped after 455 rows on a one-ULP
+endpoint-representation contract defect. Its root and seeds are retired and
+unadjudicated; D1/D2 never opened. Fresh prospective repair, Retry 5, and
+Rose/G10 remain open, and
 `public_covered_count` remains 5. The study used independent HWE/no-LD markers and provides no robustness
 evidence for LD, population structure, imputation, base-frequency
 misspecification, real panels, or production genotype data.

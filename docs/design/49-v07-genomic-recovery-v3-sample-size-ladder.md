@@ -19,9 +19,9 @@
 > rewritten as activation.
 > ```
 
-Status: **D0 COMPLETE; THREE D0F CORPORA LOCKED BUT UNADJUDICATED; FOURTH
-PROSPECTIVE D0F RETRY REPAIRED BUT NOT PRESEALED; NO RETRY-4 PHENOTYPE AND NO
-D1 OR D2 SEED CONSUMED.** The first D0F run completed 576
+Status: **D0 COMPLETE; FOUR D0F CORPORA LOCKED BUT UNADJUDICATED; RETRY 4
+STOPPED ON A REPLAY ENDPOINT-REPRESENTATION CONTRACT BLOCKER; NO D1 OR D2 SEED
+CONSUMED.** The first D0F run completed 576
 official R attempts,
 but the exact presealed Julia replay tool stopped deterministically before
 writing any replay row. That root is a hash-locked, retired
@@ -36,8 +36,25 @@ replay-infrastructure blocker. Retry 3 completed another 576 official fits and
 576 base-R recomputations, but every successful R attempt stored
 `gradient_norm=NA`; the exact Julia replay rejected the first row and wrote no
 replay output. That third root and its phenotype/bootstrap seeds are retired.
+Retry 4 then completed 576 official fits and 576 independent base-R
+recomputations. Base-R summaries marked all three designs `COMPLETE`, but these
+outputs remain diagnostic only. Exact Julia replay stopped after 455 admitted
+rows because five of 13 official boundary rows have a one-ULP difference
+between the component-derived ratio and the engine-declared endpoint, while
+the replay validator required bit-exact equality. Four strided batches stopped
+at their first encountered affected rows, leaving 121 rows without replay
+output. No Julia summary or adjudication receipt exists. The root and all
+retry-4 phenotype/bootstrap seeds are permanently retired. The detailed
+checkpoint is
+`docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-retry4-boundary-parity-blocker.md`.
+
+The prospective contract below remains preserved verbatim as the frozen
+pre-run record (pre-run SHA-256
+`0bbad8420812865d599d30af85ccf0d2fd039eada4c4914542f54dee8a9d54f0`).
 Retry 4 does not reopen, rewrite, pool, or admit any blocked D0F corpus or the
-retired recovery-v2 offsets.
+retired recovery-v2 offsets. Any Retry 5 requires a newly preregistered
+endpoint-representation repair, fresh exact-head reviews and preseal, and
+disjoint seeds.
 
 No D0F retry is adjudicated and therefore none can admit D1. The
 downstream D2-D4 evidence protocol in this document was prospectively amended

@@ -79,8 +79,11 @@ ordinary no-control call on this held candidate branch. The explicit
 `engine = "julia", target = "genomic"` path remains supported. This is not
 activation on main. Recovery-v3 is the redesigned experiment, but its first
 three D0F corpora are unadjudicated infrastructure blockers with retired seeds.
-Retry 4 is repaired but not presealed or run; activation still requires
-admitted recovery, Rose, and G10. `markers = M` means
+Retry 4 completed 576 official fits and 576 independent base-R recomputations,
+but exact Julia replay stopped after 455 rows on a one-ULP endpoint-
+representation contract defect. Its root and seeds are retired and
+unadjudicated; D1/D2 never opened. Activation still requires a fresh
+prospective repair and Retry 5, Rose, and G10. `markers = M` means
 sample-frequency, unweighted VanRaden method
 1 with `K_lambda = G + 0.01I`; supplied `Ginv` is fitted unchanged and its
 construction method, allele-frequency base, ridge, and denominator remain

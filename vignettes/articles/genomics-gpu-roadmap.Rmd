@@ -42,9 +42,12 @@ The basic genomic GREML effect above is the implemented held candidate form on
 this branch. The ordinary no-control call and explicit `target = "genomic"`
 compatibility route are both available, but this is not activation on main.
 Recovery-v3 is the redesigned experiment, but its first three D0F corpora are
-unadjudicated infrastructure blockers with retired seeds. Retry 4 is repaired
-but not presealed or run; activation still requires admitted recovery, Rose,
-and G10. A raw `markers = M` matrix is supported;
+unadjudicated infrastructure blockers with retired seeds. Retry 4 completed
+576 official fits and 576 independent base-R recomputations, but exact Julia
+replay stopped after 455 rows on a one-ULP endpoint-representation contract
+defect. Its root and seeds are retired and unadjudicated; D1/D2 never opened.
+Activation still requires a fresh prospective repair and Retry 5, Rose, and
+G10. A raw `markers = M` matrix is supported;
 the SNP-BLUP `target = "snp_blup"` path remains explicitly opt-in.
 
 ```{r, eval = FALSE}

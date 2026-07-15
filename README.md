@@ -79,9 +79,12 @@ This fits by default: the R side builds the `y`, `X`, sparse `Z`, and normalized
 pedigree payload, the `HSquared.jl` engine builds `Ainv`, estimates the variance
 components by REML, and returns an `hsquared_fit` object. A narrow genomic
 GREML model has an implemented but held ordinary no-control route candidate on
-this branch; it is not activated on main or released. Recovery-v2 closed at a
-negative precision endpoint; fresh recovery-v3 retry-4 adjudication, Rose, and
-G10 remain open. SNP-BLUP, single-step, the multivariate Gaussian animal model, and
+this branch; it is not activated on main or released. Recovery-v3 retry 4
+completed 576 official fits and 576 independent base-R recomputations, but
+exact Julia replay stopped fail-closed after 455 rows on a one-ULP
+boundary-ratio representation defect. The root and its seeds are retired and
+unadjudicated; D1/D2 never opened. A fresh prospective boundary-parity repair,
+Retry 5, Rose, and G10 remain open. SNP-BLUP, single-step, the multivariate Gaussian animal model, and
 non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no heritability)
 models fit through the opt-in, experimental `engine = "julia"` path;
 factor-analytic models remain planned.

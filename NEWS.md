@@ -27,9 +27,14 @@
   Julia replay stopped before row 1 for fixed-panel cardinality,
   concrete-`Cmd` typing, and missing successful-gradient contract failures.
   All three roots and observed phenotype/bootstrap seeds are permanently
-  unadjudicated and retired. Retry 4 has disjoint seeds and committed
-  finite-gradient, batch-safe tooling but is not presealed or run. Fresh
-  admitted retry-4 recovery, Rose, and G10 remain open; the route is not
+  unadjudicated and retired. Retry 4 then completed 576/576 official fits and
+  576/576 independent base-R recomputations. Exact Julia replay stopped
+  fail-closed after 455 rows because the validator rederived a boundary ratio
+  and demanded exact endpoint equality; five of 13 boundary packets have a
+  one-ULP representation difference. The root and all observed seeds are
+  retired and unadjudicated, 121 later replay rows were unattempted, and D1/D2
+  never opened. Fresh prospective boundary-parity repair, Retry 5, Rose, and G10
+  remain open; the route is not
   activated on main, released, or a production genotype pipeline. The HWE/no-LD
   design gives no robustness evidence for LD, population structure, imputation,
   base-frequency misspecification, real panels, or production data. The R row

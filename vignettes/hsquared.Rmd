@@ -107,9 +107,11 @@ receipt. All three summaries say `PRECISION_BLOCKER`, five cells exceed the
 retired. Recovery-v3 subsequently produced three separate 576-fit D0F corpora,
 all permanently unadjudicated after exact replay stopped before row 1 for
 fixed-panel cardinality, concrete-`Cmd` typing, and missing successful-gradient
-contract failures. Their phenotype/bootstrap seeds are retired. Retry 4 is
-repaired with disjoint seeds but is not presealed or run. This is diagnostic
-rather than accepted recovery evidence; the route remains
+contract failures. Their phenotype/bootstrap seeds are retired. Retry 4
+completed 576 official fits and 576 independent base-R recomputations, but
+exact Julia replay stopped after 455 rows on a one-ULP endpoint-representation
+contract defect. Its root and seeds are retired and unadjudicated; D1/D2 never
+opened. This is diagnostic rather than accepted recovery evidence; the route remains
 partial/held and is not activated on main or released. `public_covered_count`
 remains 5. The holdout used independent
 HWE/no-LD markers. It provides no robustness

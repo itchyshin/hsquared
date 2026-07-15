@@ -12,8 +12,11 @@
 #' explicit experimental Julia `target = "genomic"` remains supported. This is
 #' not public activation. Recovery-v3 is the redesigned experiment, but its
 #' first three D0F corpora are unadjudicated infrastructure blockers with
-#' retired seeds. Retry 4 is repaired but not presealed or run; activation still
-#' requires admitted recovery, Rose, and G10.
+#' retired seeds. Retry 4 completed 576 official fits and 576 base-R
+#' recomputations, but exact Julia replay stopped fail-closed after 455 rows on
+#' a one-ULP boundary-ratio representation defect. Its root and seeds are
+#' retired and unadjudicated; D1/D2 never opened. Activation still requires a
+#' fresh prospective repair and Retry 5, Rose, and G10.
 #' Marker construction uses sample allele frequencies, unweighted VanRaden
 #' method 1, and ridge `0.01`.
 #' `heritability()` labels its coefficient-scale result

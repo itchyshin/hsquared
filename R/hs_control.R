@@ -98,9 +98,12 @@
 #'   remains a banked 5.99x runtime failure. The revised offset-6001 candidate
 #'   passed its fresh holdout (240/240 valid, 40 wins, 0 losses, maximum p95
 #'   ratio 1.370), clearing only the performance gate. Three recovery-v3 D0F
-#'   corpora are permanently unadjudicated infrastructure blockers; retry 4 has
-#'   fresh seeds and repaired tooling but is not presealed or run. Admitted
-#'   retry-4 recovery, Rose, and G10 remain open; the ordinary route is not
+#'   corpora are permanently unadjudicated infrastructure blockers. Retry 4
+#'   completed 576 official fits and 576 base-R recomputations, but exact Julia
+#'   replay stopped fail-closed after 455 rows on a one-ULP boundary-ratio
+#'   representation defect. Its root and seeds are retired and unadjudicated;
+#'   D1/D2 never opened. Fresh prospective repair and Retry 5, Rose, and G10
+#'   remain open; the ordinary route is not
 #'   activated on main or released.
 #'   `target = "single_step"` remains an experimental, opt-in path for
 #'   `single_step(1 | id, Hinv = Hinv)` (a supplied single-step relationship
