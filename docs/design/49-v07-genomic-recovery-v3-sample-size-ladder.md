@@ -20,8 +20,9 @@
 > ```
 
 Status: **D0 COMPLETE; FOUR D0F CORPORA LOCKED BUT UNADJUDICATED; RETRY 4
-STOPPED ON A REPLAY ENDPOINT-REPRESENTATION CONTRACT BLOCKER; NO D1 OR D2 SEED
-CONSUMED.** The first D0F run completed 576
+STOPPED ON A REPLAY ENDPOINT-REPRESENTATION CONTRACT BLOCKER; RETRY 5 STOPPED
+AFTER ONE OFFICIAL D0F FIT ON A POST-PRESEAL TREE-VALIDATION BLOCKER; NO D1 OR D2
+SEED CONSUMED.** The first D0F run completed 576
 official R attempts,
 but the exact presealed Julia replay tool stopped deterministically before
 writing any replay row. That root is a hash-locked, retired
@@ -53,11 +54,12 @@ SHA-256
 `0bbad8420812865d599d30af85ccf0d2fd039eada4c4914542f54dee8a9d54f0`).
 Its exact old bytes remain in the retired root and checkpoint. The active seed,
 bootstrap-order, and preseal-schema passages in this living design document are
-superseded by the prospective Retry-5 amendment and are synchronized below.
+superseded by the prospective Retry-6 amendment and are synchronized below.
 Retry 4 does not reopen, rewrite, pool, or admit any blocked D0F corpus or the
-retired recovery-v2 offsets. Any Retry 5 requires a newly preregistered
-endpoint-representation repair, fresh exact-head reviews and preseal, and
-disjoint seeds.
+retired recovery-v2 offsets. Retry 5 attempted the preregistered
+endpoint-representation repair and is retired below; Retry 6 requires the
+additional preregistered runtime-tree repair, fresh exact-head reviews and
+preseal, and disjoint seeds.
 
 No D0F retry is adjudicated and therefore none can admit D1. The
 downstream D2-D4 evidence protocol in this document was prospectively amended
@@ -123,12 +125,13 @@ endpoints preserved exactly; all 16 component checks at or below `1e-12`; all
 controls green; the `2e-12`, `1e-8`, and contract-error-classification
 mutations red; and no retired-root byte changed.
 
-Retry-4 bases are newly classified in the seed verifier as retired. Retry 5
-reserves disjoint phenotype base `2038000000` and bootstrap-index base
-`2039000000`. Reservation is not seed expenditure: no RNG may use either base
-until the matched tools and mutations pass, the fixed diagnostic preflight
-passes, Hopper/Noether/Fisher/Grace/Rose exact-head receipts are clean, the
-remote twins are clean and hash-matched, and the new stage preseal is complete.
+Retry-4 bases were newly classified in the seed verifier as retired. Retry 5
+reserved disjoint phenotype base `2038000000` and bootstrap-index base
+`2039000000`. Before that run, reservation was not seed expenditure: no RNG
+could use either base until the matched tools and mutations passed, the fixed
+diagnostic preflight passed, Hopper/Noether/Fisher/Grace/Rose exact-head
+receipts were clean, the remote twins were clean and hash-matched, and the new
+stage preseal was complete. Both Retry-5 spaces are now retired below.
 
 The stage-preseal contract is prospectively bumped from
 `v07-genomic-recovery-v3-stage-preseal-2` to
@@ -144,9 +147,66 @@ reproduce that manifest from the presealed base and reject absence, mutation,
 or alternate bytes. Phenotype generation remains later still; the first
 phenotype seed is not used during staging, preseal, or bootstrap materialization.
 
-A formal Retry-5 D0F `PASS/COMPLETE` admits D1 only; D1 then governs ordered D2
-admission, terminal D2 history governs D3/D4, and the original Rose and non-
-delegable G10 activation gates remain unchanged.
+The planned Retry-5 D0F `PASS/COMPLETE` gate would have admitted D1 only. It was
+never reached and is superseded below; no downstream gate opened.
+
+### Prospective Retry-6 post-preseal tree-validation amendment
+
+Retry 5 is permanently **UNADJUDICATED — POST-PRESEAL TREE-VALIDATION
+BLOCKER**. Its root
+`/home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0f-retry-r5-fcfde69-06941997`
+has preseal SHA-256
+`e79666c27c3f99d00e0cfdd5c753eb8dd10d4a4b0c98544062e40363e25e3998`
+and bootstrap-manifest SHA-256
+`9341b92e024066bed7429de31b6f3d57b69abe4c0bae80fe796fcc00d6cd0641`.
+The first n-ladder fit, seed `2038101001`, completed and published a valid
+successful attempt with SHA-256
+`2843fb6bf4fb09c97091756473f4f5caecffdd43c1eb695fcc97d25b1cb538d0`.
+Before the second fit could generate a phenotype,
+`v3d_validate_bound_stage()` reapplied the pristine preseal-tree predicate and
+rejected the legitimate first `attempts/` and `packets/` members as additional
+input. No Retry-5 summary, corpus lock, Julia replay, or adjudication receipt
+exists. The root is immutable diagnostic evidence and cannot be resumed,
+repaired, subsetted, pooled, or adjudicated. The complete Retry-5 phenotype and
+bootstrap spaces at bases `2038000000` and `2039000000` are retired, including
+unused members; no failed or blocked seed is replaced within a reserved space.
+The root was frozen read-only after the failed smoke: 38 files, nine
+directories, no links or special members, and sorted file-content digest
+`f97d1c15600307238eef794c80bfc3644715421ee93f0812527f951727cc1b02` before
+and after the permission change.
+
+This amendment is frozen before Retry-6 implementation, random draw, bootstrap
+materialization, or evidence-root creation. Retry 6 changes only the runtime
+tree-validation contract:
+
+1. Prepare, preseal, and pre-bootstrap validation retain the exact pristine-tree
+   predicate. Bootstrap materialization remains create-once and is admitted
+   only after a valid preseal.
+2. Once compute begins, bound-stage validation authenticates every immutable
+   preseal primary and sidecar while allowing only the enumerated runtime
+   namespaces and root-level outputs for the current phase. It rejects an
+   unknown top-level member, a preseal mutation, a missing pair, a symlink, or a
+   special file. It does not rescan a concurrently mutable fan-out subtree as if
+   that subtree were still a pristine input root.
+3. Existing quiescent phase validators remain authoritative for complete
+   `attempts/`, `packets/`, corpus-lock, recomputation, summary, review, and
+   adjudication inventories. They continue to reject missing, additional,
+   partial, nested, relocated, symlinked, empty-directory, or special members.
+4. A regression must publish one synthetic complete attempt/packet pair, admit
+   a second bound-stage worker, and keep mutations red for an extra root member
+   and altered immutable preseal bytes. No estimator, estimand, endpoint rule,
+   tolerance, allocation, denominator, recovery margin, or downstream decision
+   rule changes.
+
+Retry 6 reserves disjoint phenotype base `2040000000` and bootstrap-index base
+`2041000000`. Neither base may be used until the amendment and implementation
+are committed, the mutation suite and exact-head reviews are clean, both twins
+are deployed from clean hash-matched checkouts, the diagnostic Retry-4
+mechanism preflight passes unchanged, CI is green, and a new schema-3 preseal
+records that the Retry-6 bootstrap manifest is absent. After that preseal only,
+the three bootstrap seeds are `2041000001:2041000003`. The first Retry-6
+phenotype remains later still. A formal Retry-6 D0F `PASS/COMPLETE` admits D1
+only; every later gate remains unchanged.
 
 ## 1. Why recovery-v3 exists
 
@@ -474,13 +534,13 @@ the boundary solver's finite AI score norm. The exact Julia replay stopped
 before row 1, so no replay or adjudication output exists. Its phenotype base
 `2034000000` and bootstrap base `2035000000` are retired.
 
-The only admitted continuation is prospective retry 4: unchanged fixed panels,
+The only admitted continuation is prospective Retry 6: unchanged fixed panels,
 24-by-8 allocation, estimand, model, ridge, summaries, tolerances, and stopping
-rules; the repaired finite-gradient bridge/admission contract; batch-safe R and
-Julia recomputation; five new exact reviewer receipts; a new root and preseal;
-and 576 new phenotypes from the disjoint seed space below. There is no pooling,
-paired reuse, seed replacement, threshold change, or selection based on any
-blocked corpus or summary.
+rules; the repaired endpoint-representation and post-preseal tree-validation
+contracts; batch-safe R and Julia recomputation; five new exact reviewer
+receipts; a new root and preseal; and 576 new phenotypes from the disjoint seed
+space below. There is no pooling, paired reuse, seed replacement, threshold
+change, or selection based on any blocked corpus or summary.
 
 After the new preseal is written and before any smoke or official phenotype is
 generated, the deployed Julia 1.10 tool must pass:
@@ -527,7 +587,7 @@ phenotypes within panel, using a post-preseal create-once index manifest whose
 seed base and prior absence are presealed, and reports percentile intervals.
 Base R generates each design's indices with
 `RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
-`2039000000 + design_index`. The create-once manifest is normalized to one row
+`2041000000 + design_index`. The create-once manifest is normalized to one row
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
@@ -971,12 +1031,14 @@ retry's 576 seeds use the same rank formula with base `2032000000`; the verifier
 adds them to the retired space as `D0F_RETRY1_RETIRED`. The blocked retry-3
 root used the same rank formula with base `2034000000`; the verifier adds it as
 `D0F_RETRY2_RETIRED`. Retry 4 used base `2036000000`; the verifier adds it as
-`D0F_RETRY3_RETIRED`. Retry 5 reserves base `2038000000` and is labelled
-`D0F_RETRY` in the seed-space audit. The operational manifest stage
-remains `d0f` so the unchanged scientific schema is reused. All values remain
-below R's 32-bit integer maximum. All exact historical and retired seeds are
-excluded. Numeric offsets may recur only under a new base after the verifier
-proves exact zero intersection. No failed or blocked seed is replaced.
+`D0F_RETRY3_RETIRED`. Retry 5 used base `2038000000`; the verifier retires the
+complete reserved grid as `D0F_RETRY4_RETIRED`. Retry 6 reserves base
+`2040000000` and is labelled `D0F_RETRY` in the seed-space audit. The
+operational manifest stage remains `d0f` so the unchanged scientific schema is
+reused. All values remain below R's 32-bit integer maximum. All exact historical
+and retired seeds are excluded. Numeric offsets may recur only under a new base
+after the verifier proves exact zero intersection. No failed or blocked seed is
+replaced.
 Mutations introducing a retired-D0F seed, the previously detected collision
 `2027142001`, or a duplicate must make the historical-lock verifier red.
 
@@ -985,8 +1047,10 @@ original blocked run's three seeds `2031000000 + design_index`, the blocked
 first retry's three seeds `2033000000 + design_index`, and retry-3's three
 seeds `2035000000 + design_index` are nevertheless spent and retired because
 they generated observed bootstrap manifests. Retry 4's three seeds
-`2037000000 + design_index` are also spent and retired. Retry 5 reserves
-`2039000000 + design_index`, one per design. All five sets must be unique and
+`2037000000 + design_index` are also spent and retired. Retry 5's complete
+reserved bootstrap space at `2039000000 + design_index` is retired after its
+manifest was generated. Retry 6 reserves `2041000000 + design_index`, one per
+design. All six sets must be unique and
 in range; the current retry set must be disjoint from every historical,
 retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating seed.
 
@@ -1000,7 +1064,7 @@ Every stage uses this acyclic create-once evidence chain:
    packet/truth schema versions, the canonical stage root, and the exact D0
    receipt. D1 additionally binds the canonical successful fresh-D0F root and
    adjudication-receipt SHA-256. For D0F it binds bootstrap seed base
-   `2039000000` and records that the bootstrap manifest was absent. It contains
+   `2041000000` and records that the bootstrap manifest was absent. It contains
    no future bootstrap, D1 corpus, or result hash.
 2. For D0F only, after the preseal is accepted, materialize the deterministic
    bootstrap manifest once from the presealed base and verify its primary and
