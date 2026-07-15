@@ -31,6 +31,8 @@ untouched.
 - Seed-lock focused tests: 60/60 pass.
 - Driver, adjudicator, admission, preseal, and seed-lock selftests: pass.
 - Recomputer sidecar and `git diff --check`: pass.
+- Cross-twin `handoff_gate.sh`: exit 1 only for declared H2-2 drafts,
+  quarantined scaffold, and pre-existing legacy branches; active heads pushed.
 - Exact-head CI and final package checks are recorded at closeout.
 
 ## 6. Tests of the Tests
