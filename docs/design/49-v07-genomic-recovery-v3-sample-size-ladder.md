@@ -123,12 +123,27 @@ mutations red; and no retired-root byte changed.
 Retry-4 bases are newly classified in the seed verifier as retired. Retry 5
 reserves disjoint phenotype base `2038000000` and bootstrap-index base
 `2039000000`. Reservation is not seed expenditure: no RNG may use either base
-and no Retry-5 root may be created until the matched tools and mutations pass,
-the fixed diagnostic preflight passes, Hopper/Noether/Fisher/Grace/Rose exact-
-head receipts are clean, the remote twins are clean and hash-matched, and the
-new stage preseal is complete. A formal Retry-5 D0F `PASS/COMPLETE` admits D1
-only; D1 then governs ordered D2 admission, terminal D2 history governs D3/D4,
-and the original Rose and non-delegable G10 activation gates remain unchanged.
+until the matched tools and mutations pass, the fixed diagnostic preflight
+passes, Hopper/Noether/Fisher/Grace/Rose exact-head receipts are clean, the
+remote twins are clean and hash-matched, and the new stage preseal is complete.
+
+The stage-preseal contract is prospectively bumped from
+`v07-genomic-recovery-v3-stage-preseal-2` to
+`v07-genomic-recovery-v3-stage-preseal-3` to remove a circularity in the old
+workflow. A clean staging root may be created before preseal, but its D0F
+bootstrap manifest must be absent. The preseal binds bootstrap base
+`2039000000`, records `d0f_bootstrap_indices_absent_before_preseal = true`, and
+does not bind a pre-generated bootstrap hash. Only after that preseal validates
+may a dedicated create-once post-preseal step set the frozen R RNG kind, use the
+three seeds `2039000001:2039000003`, materialize and validate the canonical
+bootstrap manifest, and add its checksum sidecar. All later bound-stage checks
+reproduce that manifest from the presealed base and reject absence, mutation,
+or alternate bytes. Phenotype generation remains later still; the first
+phenotype seed is not used during staging, preseal, or bootstrap materialization.
+
+A formal Retry-5 D0F `PASS/COMPLETE` admits D1 only; D1 then governs ordered D2
+admission, terminal D2 history governs D3/D4, and the original Rose and non-
+delegable G10 activation gates remain unchanged.
 
 ## 1. Why recovery-v3 exists
 
