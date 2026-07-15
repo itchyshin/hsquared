@@ -80,13 +80,13 @@ v07s_d0f_retired_retry_phenotype_base <- 2032000000
 v07s_d0f_retired_retry2_phenotype_base <- 2034000000
 v07s_d0f_retired_retry3_phenotype_base <- 2036000000
 v07s_d0f_retired_retry4_phenotype_base <- 2038000000
-v07s_d0f_retry_phenotype_base <- 2040000000
+v07s_d0f_retired_retry5_phenotype_base <- 2040000000
 v07s_d0f_retired_bootstrap_base <- 2031000000
 v07s_d0f_retired_retry_bootstrap_base <- 2033000000
 v07s_d0f_retired_retry2_bootstrap_base <- 2035000000
 v07s_d0f_retired_retry3_bootstrap_base <- 2037000000
 v07s_d0f_retired_retry4_bootstrap_base <- 2039000000
-v07s_d0f_retry_bootstrap_base <- 2041000000
+v07s_d0f_retired_retry5_bootstrap_base <- 2041000000
 
 v07s_loaded_source_path <- local({
   file_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
@@ -347,6 +347,10 @@ v07s_expand_retired_d0f <- function() {
     v07s_d0f_seed_grid(
       v07s_d0f_retired_retry4_phenotype_base,
       "D0F_RETRY4_RETIRED"
+    ),
+    v07s_d0f_seed_grid(
+      v07s_d0f_retired_retry5_phenotype_base,
+      "D0F_RETRY5_RETIRED"
     )
   )
 }
@@ -389,10 +393,8 @@ v07s_expand_v3 <- function() {
     10000 * standard$cell_index +
     standard$seed_offset
 
-  d0f <- v07s_d0f_seed_grid(v07s_d0f_retry_phenotype_base, "D0F_RETRY")
-  out <- rbind(standard, d0f)
-  rownames(out) <- NULL
-  out
+  rownames(standard) <- NULL
+  standard
 }
 
 v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
@@ -436,6 +438,13 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
         v07s_d0f_retired_retry4_bootstrap_base
       ),
       stringsAsFactors = FALSE
+    ),
+    data.frame(
+      contract_id = "doc49_d0f_retry5_adjudicator_route_blocker_bootstrap",
+      seed = v07s_d0f_bootstrap_seeds(
+        v07s_d0f_retired_retry5_bootstrap_base
+      ),
+      stringsAsFactors = FALSE
     )
   )
   historical <- rbind(historical, retired)
@@ -457,7 +466,6 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
   }
   stage_counts <- table(proposed$stage)
   expected_stage_counts <- c(
-    D0F_RETRY = 576L,
     D1 = 576L,
     D2 = 1152L,
     D3 = 72000L,
@@ -492,12 +500,13 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
   stage_counts <- table(valid$proposed$stage)
   stopifnot(
     2027142001 %in% valid$historical$seed,
-    nrow(valid$retired_d0f) == 2880L,
+    nrow(valid$retired_d0f) == 3456L,
     identical(
       unique(valid$retired_d0f$stage),
       c(
         "D0F_RETIRED", "D0F_RETRY1_RETIRED", "D0F_RETRY2_RETIRED",
-        "D0F_RETRY3_RETIRED", "D0F_RETRY4_RETIRED"
+        "D0F_RETRY3_RETIRED", "D0F_RETRY4_RETIRED",
+        "D0F_RETRY5_RETIRED"
       )
     ),
     all(
@@ -524,10 +533,16 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
       ) %in%
         valid$historical$seed
     ),
+    all(
+      v07s_d0f_bootstrap_seeds(
+        v07s_d0f_retired_retry5_bootstrap_base
+      ) %in%
+        valid$historical$seed
+    ),
     length(intersect(valid$retired_d0f$seed, valid$proposed$seed)) == 0L,
-    nrow(valid$proposed) == 92304L,
-    identical(names(stage_counts), c("D0F_RETRY", "D1", "D2", "D3", "D4")),
-    identical(as.integer(stage_counts), c(576L, 576L, 1152L, 72000L, 18000L))
+    nrow(valid$proposed) == 91728L,
+    identical(names(stage_counts), c("D1", "D2", "D3", "D4")),
+    identical(as.integer(stage_counts), c(576L, 1152L, 72000L, 18000L))
   )
   collision <- valid$proposed
   collision$seed[[1L]] <- 2027142001
