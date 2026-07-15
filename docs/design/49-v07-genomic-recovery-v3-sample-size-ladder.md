@@ -1181,8 +1181,11 @@ when it:
 
 1. validates the manifest, preseal, full official corpus, and corpus-lock
    digest map once before the first output;
-2. proves the requested rows are unique manifest members in canonical order,
-   belong to the requested root/stage, and have no existing or partial target;
+2. proves the requested rows are unique manifest members in canonical order
+   and belong to the requested root/stage; before any new write, existing
+   targets are admissible only as a checksum-valid complete prefix that is
+   freshly recomputed and compared, all remaining targets must be absent, and
+   any partial or non-prefix target fails;
 3. immediately before each row, rehashes that official attempt and all five
    packet primaries plus sidecars against the retained corpus-lock map;
 4. retains the per-row D0F source validator and all numerical checks;
@@ -1285,8 +1288,9 @@ red for each of:
 - logical TSV values and both valid Boolean inversions; and
 - one changed summary value in each of the driver-R, independent base-R, and
   Julia recomputations;
-- duplicate, unknown, existing-target, wrong-root, or noncanonical batch
-  membership before the first write;
+- duplicate, unknown, wrong-root, or noncanonical batch membership, a
+  non-prefix existing target, or any existing target when resume is disabled,
+  before the first write;
 - a locked source primary or sidecar changed after batch preparation; and
 - reversed batch order, child failure, and complete-prefix versus partial-pair
   crash behaviour.
