@@ -53,6 +53,11 @@ v3r_packet_primaries <- c(
 )
 v3r_corpus_columns <- c("relative_path", "sha256")
 v3r_packet_lock_columns <- c("file", "sha256")
+v3r_batch_schema <- "v07-genomic-recovery-v3-base-r-batch-plan-1"
+v3r_batch_columns <- c(
+  "schema_version", "output_root", "stage", "corpus_lock_sha256",
+  "batch_id", "batch_rank", "group", "seed"
+)
 v3r_truth_provenance_columns <- c(
   "packet_schema_version", "truth_schema_version", "scale_denominator",
   "relationship_source", "relationship_method", "allele_frequency_source",
@@ -760,6 +765,271 @@ v3r_recompute_one <- function(root, stage, group, seed) {
   invisible(value)
 }
 
+v3r_manifest_keys <- function(manifest, stage) {
+  data.frame(
+    group = as.character(manifest[[if (stage == "d0f") "design_id" else "cell_id"]]),
+    seed = vapply(seq_len(nrow(manifest)), function(i) {
+      v3r_seed(manifest[i, , drop = FALSE])
+    }, character(1L)), stringsAsFactors = FALSE
+  )
+}
+
+v3r_pair_state <- function(path) {
+  sidecar <- paste0(path, ".sha256")
+  link_exists <- function(candidate) {
+    target <- Sys.readlink(candidate)
+    !is.na(target) && nzchar(target)
+  }
+  primary_exists <- file.exists(path) || link_exists(path)
+  sidecar_exists <- file.exists(sidecar) || link_exists(sidecar)
+  if (!primary_exists && !sidecar_exists) return("missing")
+  if (!primary_exists || !sidecar_exists) {
+    v3r_abort("partial primary/sidecar output pair: %s", path)
+  }
+  info <- file.info(c(path, sidecar))
+  if (anyNA(info$isdir) || any(info$isdir) || any(vapply(
+    c(path, sidecar), v07d_has_symlink_component, logical(1L)
+  ))) {
+    v3r_abort("nonregular or symlinked output pair: %s", path)
+  }
+  v3r_verify_pair(path)
+  "complete"
+}
+
+v3r_missing_manifest_indices <- function(state) {
+  which(vapply(seq_len(nrow(state$manifest)), function(i) {
+    row <- state$manifest[i, , drop = FALSE]
+    identical(v3r_pair_state(
+      v3r_recompute_path(state$root, state$stage, row)
+    ), "missing")
+  }, logical(1L)))
+}
+
+v3r_build_batch_plan <- function(state, batch_size, indices = NULL) {
+  batch_size <- suppressWarnings(as.numeric(batch_size))
+  if (length(batch_size) != 1L || !is.finite(batch_size) ||
+      batch_size != floor(batch_size) || batch_size < 1L) {
+    v3r_abort("batch size must be a positive integer")
+  }
+  if (is.null(indices)) indices <- v3r_missing_manifest_indices(state)
+  indices <- suppressWarnings(as.integer(indices))
+  if (anyNA(indices) || any(indices < 1L) ||
+      any(indices > nrow(state$manifest)) || anyDuplicated(indices)) {
+    v3r_abort("batch-plan indices must be unique manifest members")
+  }
+  indices <- sort(indices)
+  if (!length(indices)) v3r_abort("no missing base-R recomputations to plan")
+  keys <- v3r_manifest_keys(state$manifest[indices, , drop = FALSE], state$stage)
+  batch_id <- sprintf("b%04d", ceiling(seq_along(indices) / batch_size))
+  data.frame(
+    schema_version = v3r_batch_schema, output_root = state$root,
+    stage = state$stage, corpus_lock_sha256 = state$corpus$sha256,
+    batch_id = batch_id,
+    batch_rank = as.integer(ave(seq_along(indices), batch_id, FUN = seq_along)),
+    group = keys$group, seed = keys$seed, stringsAsFactors = FALSE
+  )[v3r_batch_columns]
+}
+
+v3r_external_batch_path <- function(path, root, must_exist = TRUE) {
+  path <- v3r_canonical_file(path, "external batch plan", must_exist)
+  if (identical(path, root) || startsWith(path, paste0(root, "/"))) {
+    v3r_abort("batch plan must remain outside the evidence root")
+  }
+  path
+}
+
+v3r_read_batch_plan <- function(state, path) {
+  path <- v3r_external_batch_path(path, state$root)
+  digest_before <- v3r_verify_pair(path)
+  plan <- v3r_read_tsv(path, v3r_batch_columns)
+  digest_after <- v3r_verify_pair(path)
+  if (!identical(digest_before, digest_after)) {
+    v3r_abort("batch-plan bytes changed while being authenticated")
+  }
+  if (!nrow(plan)) v3r_abort("batch plan must contain at least one row")
+  fixed <- list(
+    schema_version = v3r_batch_schema, output_root = state$root,
+    stage = state$stage, corpus_lock_sha256 = state$corpus$sha256
+  )
+  for (field in names(fixed)) {
+    if (anyNA(plan[[field]]) ||
+        !all(as.character(plan[[field]]) == fixed[[field]])) {
+      v3r_abort("batch plan %s binding drift", field)
+    }
+  }
+  if (anyNA(plan$batch_id) ||
+      any(!grepl("^b[0-9]{4,}$", plan$batch_id)) ||
+      anyNA(plan$group) || any(!nzchar(plan$group))) {
+    v3r_abort("batch plan identifiers are not canonical")
+  }
+  ranks <- suppressWarnings(as.numeric(plan$batch_rank))
+  seeds <- suppressWarnings(as.numeric(plan$seed))
+  if (any(!is.finite(ranks)) || any(ranks != floor(ranks)) || any(ranks < 1L) ||
+      any(!is.finite(seeds)) || any(seeds != floor(seeds))) {
+    v3r_abort("batch plan ranks/seeds must be finite integers")
+  }
+  keys <- v3r_manifest_keys(state$manifest, state$stage)
+  manifest_key <- paste(keys$group, keys$seed, sep = "\r")
+  plan_key <- paste(as.character(plan$group), sprintf("%.0f", seeds), sep = "\r")
+  indices <- match(plan_key, manifest_key)
+  if (anyNA(indices)) v3r_abort("batch plan contains an unknown manifest member")
+  if (anyDuplicated(plan_key)) {
+    v3r_abort("batch plan contains a duplicate manifest member")
+  }
+  if (!identical(indices, sort(indices))) {
+    v3r_abort("batch plan members are not in canonical manifest order")
+  }
+  batches <- unique(as.character(plan$batch_id))
+  if (!identical(batches, sort(batches))) {
+    v3r_abort("batch identifiers are not in canonical order")
+  }
+  for (batch in batches) {
+    hits <- which(plan$batch_id == batch)
+    if (!identical(as.integer(ranks[hits]), seq_along(hits))) {
+      v3r_abort("batch ranks are not consecutive from one")
+    }
+  }
+  attr(plan, "manifest_indices") <- indices
+  plan
+}
+
+v3r_validate_batch_plan_missing <- function(state, plan) {
+  observed <- attr(plan, "manifest_indices")
+  if (is.null(observed)) v3r_abort("batch plan has not been authenticated")
+  expected <- v3r_missing_manifest_indices(state)
+  if (!identical(as.integer(observed), as.integer(expected))) {
+    v3r_abort("batch-plan union differs from the missing manifest denominator")
+  }
+  invisible(TRUE)
+}
+
+v3r_write_batch_plan <- function(root, stage, path, batch_size) {
+  state <- v3r_read_stage(root, stage)
+  path <- v3r_external_batch_path(path, state$root, must_exist = FALSE)
+  if (file.exists(path) || file.exists(paste0(path, ".sha256"))) {
+    v3r_abort("external batch-plan primary/sidecar already exists")
+  }
+  plan <- v3r_build_batch_plan(state, batch_size)
+  v3r_write_once(path, plan, temporary_parent = dirname(path))
+  message(sprintf(
+    "wrote base-R batch plan rows=%d batches=%d sha256=%s",
+    nrow(plan), length(unique(plan$batch_id)), v07d_sha256(path)
+  ))
+  invisible(plan)
+}
+
+v3r_validate_batch_plan <- function(root, stage, path) {
+  state <- v3r_read_stage(root, stage)
+  plan <- v3r_read_batch_plan(state, path)
+  v3r_validate_batch_plan_missing(state, plan)
+  message(sprintf(
+    "validated base-R batch-plan union rows=%d batches=%d",
+    nrow(plan), length(unique(plan$batch_id))
+  ))
+  invisible(plan)
+}
+
+v3r_authenticate_batch_plan <- function(
+  root, stage, path, stage_reader = v3r_read_stage
+) {
+  state <- stage_reader(root, stage)
+  plan <- v3r_read_batch_plan(state, path)
+  planned <- attr(plan, "manifest_indices")
+  missing <- v3r_missing_manifest_indices(state)
+  if (length(setdiff(missing, planned))) {
+    v3r_abort("resumed batch plan does not cover every currently missing row")
+  }
+  message(sprintf(
+    "authenticated resumable base-R batch plan rows=%d remaining=%d batches=%d",
+    nrow(plan), length(missing), length(unique(plan$batch_id))
+  ))
+  invisible(plan)
+}
+
+v3r_locked_digest <- function(state, path) {
+  relative <- substring(path, nchar(state$root) + 2L)
+  hits <- which(as.character(state$corpus$table$relative_path) == relative)
+  if (length(hits) != 1L) {
+    v3r_abort(
+      "row input is not exactly one authenticated corpus-lock member: %s", path
+    )
+  }
+  expected <- as.character(state$corpus$table$sha256[[hits]])
+  if (!v3p_hex64(expected)) v3r_abort("corpus-lock digest is not canonical")
+  expected
+}
+
+v3r_reverify_row_inputs <- function(state, row) {
+  paths <- c(
+    v3r_attempt_path(state$root, state$stage, row),
+    file.path(v3r_packet_dir(state$root, state$stage, row), v3r_packet_primaries)
+  )
+  for (path in paths) v3r_verify_pair(path, v3r_locked_digest(state, path))
+  invisible(TRUE)
+}
+
+v3r_recompute_batch <- function(
+  root, stage, path, batch_id, stage_reader = v3r_read_stage,
+  row_recomputer = v3r_recompute_row, writer = v3r_write_once
+) {
+  # Expensive preseal/manifest/full-corpus validation happens once per batch.
+  # Each row is then reauthenticated against the retained corpus-lock map.
+  state <- stage_reader(root, stage)
+  plan <- v3r_read_batch_plan(state, path)
+  if (length(batch_id) != 1L || is.na(batch_id) ||
+      !grepl("^b[0-9]{4,}$", batch_id)) {
+    v3r_abort("batch-id is not canonical")
+  }
+  hits <- which(as.character(plan$batch_id) == batch_id)
+  if (!length(hits)) v3r_abort("batch-id is not present in the batch plan")
+  indices <- attr(plan, "manifest_indices")[hits]
+  rows <- state$manifest[indices, , drop = FALSE]
+  targets <- vapply(seq_len(nrow(rows)), function(i) {
+    v3r_recompute_path(state$root, state$stage, rows[i, , drop = FALSE])
+  }, character(1L))
+  # Validate every target before the first write. Complete prefixes are skipped;
+  # partial pairs abort the whole batch before it can extend that prefix.
+  target_state <- vapply(targets, v3r_pair_state, character(1L))
+  complete <- which(target_state == "complete")
+  if (length(complete) &&
+      !identical(unname(complete), seq_along(complete))) {
+    v3r_abort("existing base-R outputs are not a complete resumable prefix")
+  }
+  for (i in complete) {
+    row <- rows[i, , drop = FALSE]
+    v3r_reverify_row_inputs(state, row)
+    expected <- row_recomputer(
+      state$root, state$stage, row, state$preseal$value, state$preseal$sha256
+    )
+    observed <- rawToChar(readBin(
+      targets[[i]], what = "raw", n = file.info(targets[[i]])$size
+    ))
+    if (!identical(observed, v07d_tsv_text(expected))) {
+      v3r_abort("resumable base-R output differs from fresh recomputation")
+    }
+  }
+  missing <- which(target_state == "missing")
+  for (i in missing) {
+    row <- rows[i, , drop = FALSE]
+    v3r_reverify_row_inputs(state, row)
+    value <- row_recomputer(
+      state$root, state$stage, row, state$preseal$value, state$preseal$sha256
+    )
+    dir.create(dirname(targets[[i]]), recursive = TRUE, showWarnings = FALSE)
+    v3r_canonical_dir(dirname(targets[[i]]), "base-R recomputation parent")
+    writer(targets[[i]], value, temporary_parent = dirname(state$root))
+    message(sprintf(
+      "wrote base-R %s recomputation batch=%s group=%s seed=%s sha256=%s",
+      state$stage, batch_id, v3r_group(row, state$stage), v3r_seed(row),
+      v07d_sha256(targets[[i]])
+    ))
+  }
+  invisible(list(
+    batch_id = batch_id, planned = nrow(rows), written = length(missing),
+    already_complete = nrow(rows) - length(missing)
+  ))
+}
+
 v3r_recompute_paths <- function(state, kind = c("base_r", "julia")) {
   kind <- match.arg(kind)
   vapply(seq_len(nrow(state$manifest)), function(i) {
@@ -1285,6 +1555,28 @@ v3r_main <- function(
       root, stage, group, seed
     ))
   }
+  if (mode == "write-batch-plan") {
+    return(v3r_write_batch_plan(
+      root, stage, v3r_required(args, "batch-plan"),
+      v3r_required(args, "batch-size")
+    ))
+  }
+  if (mode == "validate-batch-plan") {
+    return(v3r_validate_batch_plan(
+      root, stage, v3r_required(args, "batch-plan")
+    ))
+  }
+  if (mode == "authenticate-batch-plan") {
+    return(v3r_authenticate_batch_plan(
+      root, stage, v3r_required(args, "batch-plan")
+    ))
+  }
+  if (mode == "recompute-batch") {
+    return(v3r_recompute_batch(
+      root, stage, v3r_required(args, "batch-plan"),
+      v3r_required(args, "batch-id")
+    ))
+  }
   if (mode == "summarize") return(v3r_summarize(root, stage))
   if (mode == "write-postrun-review") {
     return(v3r_write_postrun_review(
@@ -1300,7 +1592,11 @@ v3r_main <- function(
     return(v3r_validate_final(root, stage))
   }
   v3r_abort(
-    "mode must be selftest, recompute-one, summarize, write-postrun-review, adjudicate, or validate-final"
+    paste(
+      "mode must be selftest, recompute-one, write-batch-plan,",
+      "validate-batch-plan, authenticate-batch-plan, recompute-batch, summarize,",
+      "write-postrun-review, adjudicate, or validate-final"
+    )
   )
 }
 

@@ -29,7 +29,8 @@ Usage:
   run-v07-genomic-recovery-v3.sh adjudicate OUT d0f|d1 R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh validate-final OUT d0f|d1 R_ROOT JULIA_ROOT
 
-Official fitting and replay use one process per manifest row. Simulations never
+Official fitting uses one process per manifest row. Independent recomputation
+and replay use one authenticated external batch per worker. Simulations never
 run on GitHub Actions. Totoro production fan-out is capped at 96 workers and
 must not exceed the smoke-derived RAM recommendation.
 EOF
@@ -387,6 +388,107 @@ run_julia_pairs() {
   ' sh
 }
 
+external_batch_root() {
+  local root
+  root=${V3_BATCH_ROOT:-"$(dirname "$out")/.v07-recovery-v3-batches-$(basename "$out")"}
+  [[ ! -L "$root" ]] || die "external batch root must not be a symlink: $root"
+  mkdir -p "$root"
+  [[ -d "$root" && ! -L "$root" ]] || die "external batch root is invalid: $root"
+  (cd "$root" && pwd -P)
+}
+
+prepare_base_r_batch_plan() {
+  local workers=$1
+  local missing=$2
+  local root plan batch_size
+  root=$(external_batch_root)
+  plan="$root/base-r-$stage.tsv"
+  if [[ ! -e "$plan" && ! -e "$plan.sha256" && ! -L "$plan" && ! -L "$plan.sha256" ]]; then
+    (( missing > 0 )) || die "cannot create a base-R batch plan with no missing rows"
+    batch_size=$(( (missing + workers - 1) / workers ))
+    Rscript --vanilla "$recomputer" --mode=write-batch-plan \
+      --output-root="$out" --stage="$stage" --batch-plan="$plan" \
+      --batch-size="$batch_size"
+    Rscript --vanilla "$recomputer" --mode=validate-batch-plan \
+      --output-root="$out" --stage="$stage" --batch-plan="$plan"
+  elif [[ -f "$plan" && -f "$plan.sha256" && ! -L "$plan" && ! -L "$plan.sha256" ]]; then
+    Rscript --vanilla "$recomputer" --mode=authenticate-batch-plan \
+      --output-root="$out" --stage="$stage" --batch-plan="$plan"
+  else
+    die "external base-R batch plan is partial or nonregular: $plan"
+  fi
+  printf '%s\n' "$plan"
+}
+
+run_base_r_batches() {
+  local workers=$1
+  local plan=$2
+  export V3_OUT="$out" V3_STAGE="$stage" V3_RECOMPUTER="$recomputer"
+  export V3_BATCH_PLAN="$plan"
+  awk -F '\t' '
+    NR == 1 {
+      for (i = 1; i <= NF; i++) if ($i == "batch_id") batch_col = i
+      if (!batch_col) exit 65
+      next
+    }
+    !seen[$batch_col]++ { print $batch_col }
+  ' "$plan" | xargs -r -P "$workers" -n 1 sh -c '
+    exec Rscript --vanilla "$V3_RECOMPUTER" --mode=recompute-batch \
+      --output-root="$V3_OUT" --stage="$V3_STAGE" \
+      --batch-plan="$V3_BATCH_PLAN" --batch-id="$1"
+  ' sh
+}
+
+validate_julia_batch_inventory() {
+  local dir=$1
+  local count entries index expected
+  [[ -d "$dir" && ! -L "$dir" ]] || die "external Julia batch directory is invalid: $dir"
+  if find "$dir" -mindepth 1 -maxdepth 1 -type l -print -quit | grep -q .; then
+    die "external Julia batch directory contains a symlink"
+  fi
+  count=$(find "$dir" -mindepth 1 -maxdepth 1 -type f -name "$stage-batch-*-of-*.tsv" | wc -l | tr -d ' ')
+  (( count >= 1 && count <= 96 )) || die "external Julia batch count is invalid"
+  entries=$(find "$dir" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')
+  (( entries == 2 * count )) || die "external Julia batch inventory has missing or extra members"
+  for ((index = 1; index <= count; index++)); do
+    expected=$(printf '%s/%s-batch-%03d-of-%03d.tsv' "$dir" "$stage" "$index" "$count")
+    [[ -f "$expected" && -f "$expected.sha256" && ! -L "$expected" && ! -L "$expected.sha256" ]] || \
+      die "external Julia batch inventory is incomplete: $expected"
+  done
+}
+
+prepare_julia_batch_dir() {
+  local workers=$1
+  local root dir
+  root=$(external_batch_root)
+  dir="$root/julia-$stage"
+  if [[ ! -e "$dir" && ! -L "$dir" ]]; then
+    mkdir "$dir"
+    "$julia_bin" --project="$julia_root" --startup-file=no "$julia_replay" \
+      --mode=write-batch-manifests --out-dir="$out" --stage="$stage" \
+      --batch-dir="$dir" --batch-count="$workers" 1>&2
+  fi
+  validate_julia_batch_inventory "$dir"
+  printf '%s\n' "$dir"
+}
+
+run_julia_batches() {
+  local workers=$1
+  local dir=$2
+  local count index
+  count=$(find "$dir" -mindepth 1 -maxdepth 1 -type f -name "$stage-batch-*-of-*.tsv" | wc -l | tr -d ' ')
+  export V3_OUT="$out" V3_STAGE="$stage" V3_JULIA_ROOT="$julia_root"
+  export V3_JULIA_REPLAY="$julia_replay" V3_JULIA_BIN="$julia_bin"
+  for ((index = 1; index <= count; index++)); do
+    printf '%s/%s-batch-%03d-of-%03d.tsv\0' "$dir" "$stage" "$index" "$count"
+  done | xargs -0 -r -P "$workers" -n 1 sh -c '
+    exec "$V3_JULIA_BIN" --project="$V3_JULIA_ROOT" --startup-file=no \
+      "$V3_JULIA_REPLAY" --mode=replay-batch --out-dir="$V3_OUT" \
+      --stage="$V3_STAGE" --batch-manifest="$1" \
+      --resume-complete-prefix=true
+  ' sh
+}
+
 recommend_workers() {
   Rscript --vanilla - "$out" "$stage" <<'RSCRIPT'
 args <- commandArgs(trailingOnly = TRUE)
@@ -515,7 +617,10 @@ case "$mode" in
     recommended=$(recommend_workers)
     (( "$1" <= recommended )) || die "workers=$1 exceeds smoke/RAM recommendation=$recommended"
     validate_d0f_predecessor_once
-    manifest_missing_recompute_pairs base_r_recompute | run_base_r_pairs "$1"
+    missing=$(manifest_missing_recompute_pairs base_r_recompute | wc -l | tr -d ' ')
+    (( missing > 0 )) || exit 0
+    batch_plan=$(prepare_base_r_batch_plan "$1" "$missing")
+    run_base_r_batches "$1" "$batch_plan"
     ;;
   summarize-r)
     [[ $# -eq 0 ]] || { usage >&2; exit 64; }
@@ -529,7 +634,10 @@ case "$mode" in
     recommended=$(recommend_workers)
     (( "$1" <= recommended )) || die "workers=$1 exceeds smoke/RAM recommendation=$recommended"
     validate_d0f_predecessor_once
-    manifest_missing_recompute_pairs julia_replay | run_julia_pairs "$1"
+    missing=$(manifest_missing_recompute_pairs julia_replay | wc -l | tr -d ' ')
+    (( missing > 0 )) || exit 0
+    batch_dir=$(prepare_julia_batch_dir "$1")
+    run_julia_batches "$1" "$batch_dir"
     ;;
   verify-replay)
     [[ $# -eq 0 ]] || { usage >&2; exit 64; }

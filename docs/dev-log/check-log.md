@@ -7670,3 +7670,25 @@ release".
 - No recovery, activation, capability/count change, or D1/D2 seed exists.
   Full checkpoint:
   `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-retry2-infrastructure-blocker.md`.
+
+## 2026-07-14 — v0.7 D0F retry-3 gradient blocker and retry-4 repair
+
+- Retry 3 completed 576 official fits and 576 base-R recomputations but wrote
+  zero Julia replay rows because every successful R attempt stored
+  `gradient_norm=NA`; the sealed root and its `2034000000` / `2035000000`
+  seed spaces are retired and unadjudicated.
+- The prospective repair surfaces the boundary AI score norm through the R
+  bridge, fails successful nonfinite diagnostics before publication and again
+  at admission, and reserves disjoint retry-4 bases `2036000000` /
+  `2037000000`.
+- Base-R recomputation and Julia replay now use deterministic external batches
+  with one full corpus validation per batch, retained digest maps, per-row
+  attempt-plus-packet reauthentication, create-once writes, and strict
+  complete-prefix resume validation.
+- Focused R mutation gates, downstream-contract tests, live R-to-Julia genomic
+  tests, tool sidecars, launcher syntax/selftest, and diff checks pass. A clean
+  built-package `R CMD check --no-manual` is `Status: OK`. Julia replay
+  selftests, full `Pkg.test()`, Documenter build, and preamble cap pass.
+- No retry-4 seed, recovery evidence, D1/D2 seed, activation, capability/count
+  change, release, or GitHub Actions campaign exists. Full report:
+  `docs/dev-log/after-task/2026-07-14-v07-d0f-retry3-gradient-batch-repair.md`.

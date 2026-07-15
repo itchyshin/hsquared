@@ -230,6 +230,7 @@ test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]
   )
   expect_true(fit$result$converged)
   expect_identical(fit$result$genomic_boundary$status, "boundary_lower")
+  expect_true(is.finite(fit$result$diagnostics$gradient_norm))
   expect_identical(heritability(fit)$estimate, 0)
   expect_identical(heritability(fit)$numerical_estimate, 1e-7)
   expect_null(fit$result[["breeding_values"]])
@@ -949,6 +950,21 @@ test_that("default marker, explicit alias, and exact supplied-Q routes agree [li
     fit$result$relationship_provenance$precision_fingerprint,
     fit_q$result$relationship_provenance$precision_fingerprint
   )
+})
+
+test_that("genomic AI diagnostics require one finite score norm", {
+  observed <- hsquared:::hs_normalize_genomic_ai_diagnostics(list(
+    ai_score_norm = 1e-9
+  ))
+  expect_identical(observed$gradient_norm, 1e-9)
+  for (value in list(NULL, NA_real_, NaN, Inf, c(0, 1))) {
+    expect_error(
+      hsquared:::hs_normalize_genomic_ai_diagnostics(list(
+        ai_score_norm = value
+      )),
+      "missing or non-finite"
+    )
+  }
 })
 
 test_that("frozen activation fixture matches base R and both public routes [live]", {

@@ -411,7 +411,7 @@ without truncating a negative finite-sample \(V_{between}\). A deterministic
 phenotypes within panel, using a presealed index manifest, and reports percentile
 intervals. Base R generates each design's indices with
 `RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
-`2035000000 + design_index`. The create-once manifest is normalized to one row
+`2037000000 + design_index`. The create-once manifest is normalized to one row
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
@@ -852,24 +852,25 @@ source-safe verifier expands that true 3-by-24-by-8 grid as `D0F_RETIRED` and
 adds it to the spent historical space; the prior erroneous 3-by-8-by-24 audit
 expansion is not the record of seeds actually consumed. The blocked first
 retry's 576 seeds use the same rank formula with base `2032000000`; the verifier
-adds them to the retired space as `D0F_RETRY1_RETIRED`. The third prospective
-retry uses base `2034000000` and is labelled `D0F_RETRY` in the seed-space
-audit. The operational manifest stage remains `d0f` so the unchanged
-scientific schema is reused. All values remain below R's 32-bit integer maximum.
-All exact historical and retired seeds are excluded. Numeric offsets may recur
-only under a new base after the verifier proves exact zero intersection. No
-failed or blocked seed is replaced. Mutations introducing a retired-D0F seed,
-the previously detected collision `2027142001`, or a duplicate must make the
-historical-lock verifier red.
+adds them to the retired space as `D0F_RETRY1_RETIRED`. The blocked retry-3
+root used the same rank formula with base `2034000000`; the verifier adds it as
+`D0F_RETRY2_RETIRED`. The fourth prospective retry uses base `2036000000` and
+is labelled `D0F_RETRY` in the seed-space audit. The operational manifest stage
+remains `d0f` so the unchanged scientific schema is reused. All values remain
+below R's 32-bit integer maximum. All exact historical and retired seeds are
+excluded. Numeric offsets may recur only under a new base after the verifier
+proves exact zero intersection. No failed or blocked seed is replaced.
+Mutations introducing a retired-D0F seed, the previously detected collision
+`2027142001`, or a duplicate must make the historical-lock verifier red.
 
 D0F bootstrap-index seeds are not phenotype seeds and are never fitted. The
-original blocked run's three seeds `2031000000 + design_index` and the blocked
-first retry's three seeds `2033000000 + design_index` are nevertheless spent
-and retired because they generated observed bootstrap manifests. The third
-retry uses `2035000000 + design_index`, one per design. All three sets must be
-unique and in range; the current retry set must be disjoint from every
-historical, retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating
-seed.
+original blocked run's three seeds `2031000000 + design_index`, the blocked
+first retry's three seeds `2033000000 + design_index`, and retry-3's three
+seeds `2035000000 + design_index` are nevertheless spent and retired because
+they generated observed bootstrap manifests. The fourth retry uses
+`2037000000 + design_index`, one per design. All four sets must be unique and
+in range; the current retry set must be disjoint from every historical,
+retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating seed.
 
 Every stage uses this acyclic create-once evidence chain:
 
@@ -1154,6 +1155,48 @@ socket, device, or empty directory. The corpus lock binds only immutable
 official attempts and packets; recomputation outputs are created afterwards
 and are bound by the adjudication receipt, preserving the acyclic dependency.
 
+### Prospective retry-4 diagnostic and batching amendment
+
+Retry-3 completed all 576 official fits and 576 base-R recomputations but is
+permanently unadjudicated. Its sealed official rows stored
+`gradient_norm=NA` because the R bridge discarded the already-computed
+`ai_diagnostics.ai_score_norm`; the exact Julia replay rejected the first
+source row before writing any replay output. The root, its phenotype seeds at
+base `2034000000`, and its bootstrap-index seeds at base `2035000000` are
+diagnostic-only and retired. This was a bridge/tool contract failure, not a
+solver or recovery result.
+
+For retry-4, a successful ordinary R-route fit must carry the exact finite AI
+score norm from the boundary solver as `diagnostics$gradient_norm`. Missing,
+length-not-one, `NA`, `NaN`, or infinite values are infrastructure contract
+errors and stop before packet or attempt publication. Independent attempt
+admission separately requires a finite successful value. Failed attempts keep
+canonical `NA`. Julia's existing finite check and the `1e-10` exact-route
+comparison remain unchanged; the gradient is not declared route-specific and
+is not excluded from adjudication.
+
+R recomputation and Julia replay may process a prevalidated batch to avoid
+rescanning the full locked corpus once per seed. A batch is admissible only
+when it:
+
+1. validates the manifest, preseal, full official corpus, and corpus-lock
+   digest map once before the first output;
+2. proves the requested rows are unique manifest members in canonical order,
+   belong to the requested root/stage, and have no existing or partial target;
+3. immediately before each row, rehashes that official attempt and all five
+   packet primaries plus sidecars against the retained corpus-lock map;
+4. retains the per-row D0F source validator and all numerical checks;
+5. writes the unchanged per-seed primary/sidecar pair create-once; and
+6. uses scheduling manifests outside the evidence root and at most one batch
+   per worker.
+
+A process failure propagates nonzero. Fully published prefixes remain
+resumable; a crash between a primary and sidecar remains a fail-closed partial
+pair and is not called automatically resumable. The final whole-tree,
+three-route parity, summary, and adjudication gates are unchanged. Runtime and
+RSS remain route diagnostics and are excluded only where the existing
+scientific parity contract already says so.
+
 ## 5. Admission, selection, and stopping rules
 
 For each pilot cell and target, retain the recovery-v2 one-sided 95% upper SD
@@ -1203,6 +1246,8 @@ can satisfy doc-44's original broad G5 gate.
 Mandatory stops:
 
 - a D0 replay disagreement stops before v3 presealing;
+- a missing or nonfinite successful AI score norm stops before any attempt or
+  packet is published;
 - a one-fit or 16-worker smoke with empty, nonfinite, malformed, or mismatched
   output stops scale-up;
 - pilot convergence below 46/48 stops that cell;
@@ -1221,6 +1266,7 @@ red for each of:
 
 - an eigenvalue, spectral CV, effective rank, or `SE_info`;
 - an estimate, truth, fitted total variance, or boundary status;
+- a missing, nonfinite, or changed successful AI score norm in either route;
 - `n`, `m`, marker ratio, cell index, cell label, seed, or stage membership;
 - ridge, relationship method/scale, marker hash, kernel hash, precision hash,
   or ID order;
@@ -1238,7 +1284,12 @@ red for each of:
 - `corpus_lock_sha256` inserted into an official-attempt row;
 - logical TSV values and both valid Boolean inversions; and
 - one changed summary value in each of the driver-R, independent base-R, and
-  Julia recomputations.
+  Julia recomputations;
+- duplicate, unknown, existing-target, wrong-root, or noncanonical batch
+  membership before the first write;
+- a locked source primary or sidecar changed after batch preparation; and
+- reversed batch order, child failure, and complete-prefix versus partial-pair
+  crash behaviour.
 
 The verifier must first be shown green on a synthetic valid fixture and then
 red under every mutation.

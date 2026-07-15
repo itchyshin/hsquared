@@ -683,7 +683,7 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
   seeds <- v3p_validate_bootstrap_seed_space()
-  expect_identical(seeds, as.integer(2035000001:2035000003))
+  expect_identical(seeds, as.integer(2037000001:2037000003))
   expect_identical(anyDuplicated(seeds), 0L)
   expect_length(
     intersect(
@@ -696,6 +696,13 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
     intersect(
       seeds,
       v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry_bootstrap_base)
+    ),
+    0L
+  )
+  expect_length(
+    intersect(
+      seeds,
+      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry2_bootstrap_base)
     ),
     0L
   )
@@ -814,6 +821,14 @@ test_that("attempt admission fails closed on membership, truth, and booleans", {
     v3p_admit_d0f_attempts(wrong_route, d0f$manifest, binding),
     "malformed scientific"
   )
+  for (value in c(NA_real_, NaN, Inf)) {
+    bad_gradient <- d0f$attempts
+    bad_gradient$gradient_norm[[1L]] <- value
+    expect_error(
+      v3p_admit_d0f_attempts(bad_gradient, d0f$manifest, binding),
+      "malformed scientific"
+    )
+  }
 
   d1 <- v3p_test_d1()
   too_many_markers <- d1$attempts
@@ -1254,19 +1269,19 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   expect_identical(names(parity$summary), v3p_d0f_summary_columns)
   expect_identical(
     v3p_test_tsv_hash(parity$manifest),
-    "abde0582fddcb9a16d3f7ed51fe94c1e70569bd6e7ff31b89857f0dec48b339e"
+    "aeccb237d364c7e4e20b317a8f443dff9a7572d12084fcf6ec11f7ad9acd705a"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$attempts),
-    "2ded1580297ef3c9030f58d5d9432856bef3e7164bdae241bf5a93b70e179d16"
+    "0e692f1d525e54d39f00b0a5ac25ed520ec642cf74129b19389536dffd4ec6da"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$bootstrap),
-    "ff85a98bf160967f9699d01c53ed927c874d65c1f386780c3e62f43ef08cdef0"
+    "e5649184fcee3749203207deb82f20de9fba7183e6a029396ee385c2656975ef"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$summary),
-    "41eecb9f9d698244a31ded852accb881689aa24b0a0da324b321a82be6964c29"
+    "a05f1d40ab55f9dfc4d7b69fbe5a0ebcccb16f6ba49071e0b48ed379d171a607"
   )
   expect_true(is.character(parity$summary$d0f_status))
   expect_true(is.logical(parity$summary$fit_blocker))

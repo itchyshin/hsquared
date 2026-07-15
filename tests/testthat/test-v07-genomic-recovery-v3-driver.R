@@ -226,7 +226,33 @@ test_that("synthetic D0F success extracts the fixed-panel fit end to end", {
   expect_identical(result$attempt$status, "success")
   expect_true(result$attempt$converged)
   expect_equal(result$attempt$scientific_ratio, 0.5)
+  expect_identical(result$attempt$gradient_norm, 1e-10)
   expect_identical(names(result$attempt), v3p_d0f_attempt_columns)
+  for (gradient_norm in list(NULL, NA_real_, NaN, Inf, c(0, 1))) {
+    bad_fit <- function(M, dat) {
+      list(result = list(
+        genomic_boundary = list(
+          status = "interior", reason = "ai_interior",
+          boundary_epsilon = 1e-7, profile_loglik = -1,
+          lower_derivative_per_observation = 1,
+          upper_derivative_per_observation = -1,
+          profile_ratio = 0.5, numerical_ratio = 0.5
+        ),
+        converged = TRUE, relationship_provenance = construction$provenance,
+        diagnostics = list(iterations = 3, gradient_norm = gradient_norm),
+        loglik = -1
+      ))
+    }
+    expect_error(
+      v3d_fit_one(
+        row, "d0f", v3d_test_preseal(), r_root, julia_root,
+        fit_fun = bad_fit, construction_fun = construction_fun,
+        fixed_panel_fun = fixed_panel, rss_fun = function() 100,
+        vc_fun = vc_fun
+      ),
+      "finite AI score norm"
+    )
+  }
   mutated <- row; mutated$kernel_hash <- strrep("f", 64L)
   expect_error(v3d_fit_one(
     mutated, "d0f", v3d_test_preseal(), r_root, julia_root,

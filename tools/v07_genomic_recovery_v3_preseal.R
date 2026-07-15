@@ -1500,6 +1500,7 @@ v3p_validate_results <- function(
       any(success & !is.finite(attempts$scientific_sigma_e2)) ||
       any(success & !is.finite(attempts$scientific_ratio)) ||
       any(success & !is.finite(attempts$fitted_total_variance)) ||
+      any(success & !is.finite(attempts$gradient_norm)) ||
       any(success & attempts$fitted_total_variance < 0) ||
       any(success & abs(
         attempts$scientific_sigma_g2 + attempts$scientific_sigma_e2 -

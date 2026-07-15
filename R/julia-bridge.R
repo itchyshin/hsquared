@@ -2517,6 +2517,14 @@ hs_fit_julia_genomic_payload <- function(
   } else {
     NULL
   }
+  raw_ai_diagnostics <- if (boundary_eligible) {
+    JuliaCall::julia_eval(paste0(
+      "Dict(String(k) => getfield(hsq_boundary_result.ai_diagnostics, k) ",
+      "for k in keys(hsq_boundary_result.ai_diagnostics))"
+    ))
+  } else {
+    NULL
+  }
   result <- hs_normalize_julia_result(raw, payload)
   result$variance_components$component[
     result$variance_components$component == "animal"
@@ -2549,6 +2557,10 @@ hs_fit_julia_genomic_payload <- function(
         result$heritability$estimate <- boundary$profile_ratio
       }
     }
+    if (!is.null(raw_ai_diagnostics)) {
+      ai_diagnostics <- hs_normalize_genomic_ai_diagnostics(raw_ai_diagnostics)
+      result$diagnostics$gradient_norm <- ai_diagnostics$gradient_norm
+    }
     # Genomic ratio uncertainty is not yet scale-labelled or separately
     # calibrated. Keep the engine's raw capability out of the public R result
     # until that contract is validated.
@@ -2580,6 +2592,20 @@ hs_fit_julia_genomic_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+}
+
+hs_normalize_genomic_ai_diagnostics <- function(raw) {
+  raw <- hs_drop_julia_classes(raw)
+  if (is.data.frame(raw)) raw <- as.list(raw)
+  value <- if (is.list(raw)) raw[["ai_score_norm"]] else NULL
+  value <- suppressWarnings(as.numeric(value))
+  if (length(value) != 1L || !is.finite(value)) {
+    stop(
+      "Internal bridge error: genomic AI score norm is missing or non-finite.",
+      call. = FALSE
+    )
+  }
+  list(gradient_norm = value)
 }
 
 hs_normalize_genomic_boundary <- function(raw) {

@@ -922,3 +922,245 @@ test_that("CLI modes and launcher-facing options are stable", {
     "--group is required"
   )
 })
+
+v3r_test_batch_state <- function(n = 4L) {
+  root <- tempfile("v3r-batch-root-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  manifest <- data.frame(
+    cell_id = sprintf("tiny_d1_%02d", seq_len(n)),
+    seed = 2029900000 + seq_len(n), stringsAsFactors = FALSE
+  )
+  paths <- character()
+  for (i in seq_len(n)) {
+    row <- manifest[i, , drop = FALSE]
+    attempt <- v3r_attempt_path(root, "d1", row)
+    packet <- v3r_packet_dir(root, "d1", row)
+    v3r_test_write(attempt, data.frame(value = i))
+    paths <- c(paths, attempt)
+    for (name in v3r_packet_primaries) {
+      path <- file.path(packet, name)
+      v3r_test_write(path, data.frame(value = paste(i, name)))
+      paths <- c(paths, path)
+    }
+  }
+  corpus <- data.frame(
+    relative_path = substring(paths, nchar(root) + 2L),
+    sha256 = vapply(paths, v07d_sha256, character(1L)),
+    stringsAsFactors = FALSE
+  )
+  state <- list(
+    root = root, stage = "d1", manifest = manifest,
+    preseal = list(value = v3r_test_preseal(), sha256 = v3r_test_hash("f")),
+    corpus = list(table = corpus, sha256 = v3r_test_hash("a"))
+  )
+  plan_path <- file.path(
+    dirname(root), paste0(basename(root), "-external-batch-plan.tsv")
+  )
+  list(root = root, state = state, plan_path = plan_path)
+}
+
+v3r_test_write_batch_plan <- function(fixture, plan) {
+  v3r_test_write(fixture$plan_path, plan)
+  invisible(fixture$plan_path)
+}
+
+v3r_test_batch_recomputer <- function(root, stage, row, preseal, preseal_sha256) {
+  data.frame(
+    group = v3r_group(row, stage), seed = v3r_seed(row),
+    scientific_value = as.numeric(row$seed) / 10, stringsAsFactors = FALSE
+  )
+}
+
+v3r_test_batch_cleanup <- function(fixture) {
+  unlink(c(
+    fixture$root, fixture$plan_path, paste0(fixture$plan_path, ".sha256")
+  ), recursive = TRUE)
+}
+
+test_that("batch planning canonicalizes order and covers the missing denominator once", {
+  fixture <- v3r_test_batch_state()
+  on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
+  forward <- v3r_build_batch_plan(fixture$state, 2L)
+  reverse <- v3r_build_batch_plan(fixture$state, 2L, rev(seq_len(4L)))
+  expect_identical(forward, reverse)
+  expect_identical(forward$batch_id, c("b0001", "b0001", "b0002", "b0002"))
+  expect_identical(forward$batch_rank, c(1L, 2L, 1L, 2L))
+  v3r_test_write_batch_plan(fixture, forward)
+  authenticated <- v3r_read_batch_plan(fixture$state, fixture$plan_path)
+  expect_silent(v3r_validate_batch_plan_missing(fixture$state, authenticated))
+  expect_identical(
+    sort(attr(authenticated, "manifest_indices")),
+    seq_len(nrow(fixture$state$manifest))
+  )
+})
+
+test_that("one batch validates the full corpus once and complete prefixes resume", {
+  fixture <- v3r_test_batch_state()
+  on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
+  v3r_test_write_batch_plan(fixture, v3r_build_batch_plan(fixture$state, 2L))
+  reads <- 0L
+  state_reader <- function(root, stage) {
+    reads <<- reads + 1L
+    expect_identical(root, fixture$root)
+    expect_identical(stage, "d1")
+    fixture$state
+  }
+  first <- v3r_recompute_batch(
+    fixture$root, "d1", fixture$plan_path, "b0001",
+    stage_reader = state_reader, row_recomputer = v3r_test_batch_recomputer
+  )
+  expect_identical(reads, 1L)
+  expect_identical(first$written, 2L)
+  expect_identical(first$already_complete, 0L)
+  values <- lapply(seq_len(2L), function(i) {
+    row <- fixture$state$manifest[i, , drop = FALSE]
+    v3r_read_tsv(
+      v3r_recompute_path(fixture$root, "d1", row),
+      c("group", "seed", "scientific_value")
+    )
+  })
+  second <- v3r_recompute_batch(
+    fixture$root, "d1", fixture$plan_path, "b0001",
+    stage_reader = state_reader, row_recomputer = v3r_test_batch_recomputer
+  )
+  expect_identical(reads, 2L)
+  expect_identical(second$written, 0L)
+  expect_identical(second$already_complete, 2L)
+  repeated <- lapply(seq_len(2L), function(i) {
+    row <- fixture$state$manifest[i, , drop = FALSE]
+    v3r_read_tsv(
+      v3r_recompute_path(fixture$root, "d1", row),
+      c("group", "seed", "scientific_value")
+    )
+  })
+  expect_identical(values, repeated)
+})
+
+test_that("row inputs are reauthenticated after plan preparation", {
+  fixture <- v3r_test_batch_state(2L)
+  on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
+  v3r_test_write_batch_plan(fixture, v3r_build_batch_plan(fixture$state, 2L))
+  affected <- fixture$state$manifest[1L, , drop = FALSE]
+  v3r_test_rewrite(
+    v3r_attempt_path(fixture$root, "d1", affected),
+    data.frame(value = "mutated-after-plan")
+  )
+  expect_error(
+    v3r_recompute_batch(
+      fixture$root, "d1", fixture$plan_path, "b0001",
+      stage_reader = function(...) fixture$state,
+      row_recomputer = v3r_test_batch_recomputer
+    ),
+    "frozen SHA-256 mismatch|digest mismatch|expected"
+  )
+  expect_false(file.exists(v3r_recompute_path(fixture$root, "d1", affected)))
+})
+
+test_that("batch plans reject duplicates unknown rows wrong roots and stale targets", {
+  fixture <- v3r_test_batch_state(3L)
+  on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
+  original <- v3r_build_batch_plan(fixture$state, 2L)
+
+  duplicate <- original
+  duplicate[2L, c("group", "seed")] <- duplicate[1L, c("group", "seed")]
+  v3r_test_write_batch_plan(fixture, duplicate)
+  expect_error(v3r_read_batch_plan(fixture$state, fixture$plan_path), "duplicate")
+
+  unlink(c(fixture$plan_path, paste0(fixture$plan_path, ".sha256")))
+  unknown <- original
+  unknown$group[[1L]] <- "not_a_manifest_member"
+  v3r_test_write_batch_plan(fixture, unknown)
+  expect_error(v3r_read_batch_plan(fixture$state, fixture$plan_path), "unknown")
+
+  unlink(c(fixture$plan_path, paste0(fixture$plan_path, ".sha256")))
+  wrong_root <- original
+  wrong_root$output_root <- paste0(fixture$root, "-other")
+  v3r_test_write_batch_plan(fixture, wrong_root)
+  expect_error(v3r_read_batch_plan(fixture$state, fixture$plan_path), "output_root")
+
+  unlink(c(fixture$plan_path, paste0(fixture$plan_path, ".sha256")))
+  v3r_test_write_batch_plan(fixture, original)
+  first <- fixture$state$manifest[1L, , drop = FALSE]
+  v3r_test_write(
+    v3r_recompute_path(fixture$root, "d1", first),
+    v3r_test_batch_recomputer(
+      fixture$root, "d1", first,
+      fixture$state$preseal$value, fixture$state$preseal$sha256
+    )
+  )
+  authenticated <- v3r_read_batch_plan(fixture$state, fixture$plan_path)
+  expect_error(
+    v3r_validate_batch_plan_missing(fixture$state, authenticated),
+    "missing manifest denominator"
+  )
+  expect_message(
+    v3r_authenticate_batch_plan(
+      fixture$root, "d1", fixture$plan_path,
+      stage_reader = function(...) fixture$state
+    ),
+    "authenticated resumable base-R batch plan"
+  )
+
+  incomplete <- original[1:2, , drop = FALSE]
+  unlink(c(fixture$plan_path, paste0(fixture$plan_path, ".sha256")))
+  v3r_test_write_batch_plan(fixture, incomplete)
+  expect_error(
+    v3r_authenticate_batch_plan(
+      fixture$root, "d1", fixture$plan_path,
+      stage_reader = function(...) fixture$state
+    ),
+    "does not cover every currently missing row"
+  )
+  expect_error(
+    v3r_external_batch_path(
+      file.path(fixture$root, "batch-plan.tsv"), fixture$root,
+      must_exist = FALSE
+    ),
+    "outside the evidence root"
+  )
+})
+
+test_that("partial batch targets fail before any new row is written", {
+  fixture <- v3r_test_batch_state(2L)
+  on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
+  v3r_test_write_batch_plan(fixture, v3r_build_batch_plan(fixture$state, 2L))
+  first <- fixture$state$manifest[1L, , drop = FALSE]
+  second <- fixture$state$manifest[2L, , drop = FALSE]
+  first_target <- v3r_recompute_path(fixture$root, "d1", first)
+  dir.create(dirname(first_target), recursive = TRUE)
+  writeLines("orphan-primary", first_target)
+  expect_error(
+    v3r_recompute_batch(
+      fixture$root, "d1", fixture$plan_path, "b0001",
+      stage_reader = function(...) fixture$state,
+      row_recomputer = v3r_test_batch_recomputer
+    ),
+    "partial primary/sidecar"
+  )
+  expect_false(file.exists(v3r_recompute_path(fixture$root, "d1", second)))
+})
+
+test_that("non-prefix complete batch targets fail before writes", {
+  fixture <- v3r_test_batch_state(2L)
+  on.exit(v3r_test_batch_cleanup(fixture), add = TRUE)
+  v3r_test_write_batch_plan(fixture, v3r_build_batch_plan(fixture$state, 2L))
+  first <- fixture$state$manifest[1L, , drop = FALSE]
+  second <- fixture$state$manifest[2L, , drop = FALSE]
+  v3r_test_write(
+    v3r_recompute_path(fixture$root, "d1", second),
+    v3r_test_batch_recomputer(
+      fixture$root, "d1", second,
+      fixture$state$preseal$value, fixture$state$preseal$sha256
+    )
+  )
+  expect_error(
+    v3r_recompute_batch(
+      fixture$root, "d1", fixture$plan_path, "b0001",
+      stage_reader = function(...) fixture$state,
+      row_recomputer = v3r_test_batch_recomputer
+    ),
+    "not a complete resumable prefix"
+  )
+  expect_false(file.exists(v3r_recompute_path(fixture$root, "d1", first)))
+})

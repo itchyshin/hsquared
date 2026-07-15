@@ -140,6 +140,13 @@ test_that("launcher freezes thread and process safety", {
   }
   expect_match(launcher_text, "workers must be 1..96", fixed = TRUE)
   expect_match(launcher_text, "xargs -r -P", fixed = TRUE)
+  expect_match(launcher_text, "--mode=write-batch-plan", fixed = TRUE)
+  expect_match(launcher_text, "--mode=authenticate-batch-plan", fixed = TRUE)
+  expect_match(launcher_text, "--mode=recompute-batch", fixed = TRUE)
+  expect_match(launcher_text, "--mode=write-batch-manifests", fixed = TRUE)
+  expect_match(launcher_text, "--mode=replay-batch", fixed = TRUE)
+  expect_match(launcher_text, ".v07-recovery-v3-batches-", fixed = TRUE)
+  expect_match(launcher_text, "external Julia batch inventory", fixed = TRUE)
   expect_false(grepl("mclapply", launcher_text, fixed = TRUE))
   expect_match(launcher_text, "0.7 * available_mb / max(rss)", fixed = TRUE)
   expect_match(launcher_text, "preseal_cap", fixed = TRUE)

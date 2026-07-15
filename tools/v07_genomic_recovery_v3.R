@@ -7,6 +7,12 @@
 
 v3d_abort <- function(...) stop(sprintf(...), call. = FALSE)
 
+v3d_contract_abort <- function(...) {
+  condition <- simpleError(sprintf(...))
+  class(condition) <- c("v3d_contract_error", class(condition))
+  stop(condition)
+}
+
 v3d_or <- function(value, default) {
   if (is.null(value) || !length(value)) default else value
 }
@@ -981,8 +987,17 @@ v3d_fit_one <- function(
     result$iterations <- v3d_or(fit$result$diagnostics$iterations, NA_real_)
     result$objective <- if (is.null(fit$result$loglik)) NA_real_ else
       -as.numeric(fit$result$loglik)
-    result$gradient_norm <- v3d_or(fit$result$diagnostics$gradient_norm, NA_real_)
+    gradient_norm <- suppressWarnings(as.numeric(
+      fit$result$diagnostics$gradient_norm
+    ))
+    if (length(gradient_norm) != 1L || !is.finite(gradient_norm)) {
+      v3d_contract_abort(
+        "successful genomic fit is missing a finite AI score norm"
+      )
+    }
+    result$gradient_norm <- gradient_norm
   }, error = function(error) {
+    if (inherits(error, "v3d_contract_error")) stop(error)
     fit_error <<- error
   })
   if (!is.null(fit_error)) {
