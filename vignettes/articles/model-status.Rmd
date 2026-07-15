@@ -216,7 +216,12 @@ recovery evidence, and offsets 7001:7048 are retired. The offset-7101 pilot
 completed 432/432 successful converged fits, but its sealed adjudicator stopped
 on a logical serialization defect before minting a receipt. All three summaries
 say `PRECISION_BLOCKER`, five cells exceed the 2,000-fit cap, no confirmation
-manifest exists, and offsets 7101:7148 are retired. Rose/G10 remain open, and
+manifest exists, and offsets 7101:7148 are retired. Recovery-v3 then produced
+three 576-fit D0F corpora whose exact replay stopped before row 1 for
+fixed-panel cardinality, concrete-`Cmd` typing, and missing successful-gradient
+contract failures. All three roots and seed spaces are retired and
+unadjudicated. Retry 4 is repaired with disjoint seeds but is not presealed or
+run. Rose/G10 remain open, and
 `public_covered_count` remains 5. The study used independent HWE/no-LD markers and provides no robustness
 evidence for LD, population structure, imputation, base-frequency
 misspecification, real panels, or production genotype data.

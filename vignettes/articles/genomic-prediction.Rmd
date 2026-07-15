@@ -37,7 +37,11 @@ unavailable; it produced no recovery summary or recovery evidence, and offsets
 converged fits but produced no accepted adjudication receipt because of a
 logical serialization defect. Its three summaries say `PRECISION_BLOCKER`, five
 cells exceed the 2,000-fit cap, no confirmation manifest exists, and offsets
-7101:7148 are retired. Rose/G10 remain open, so
+7101:7148 are retired. Recovery-v3 then produced three 576-fit D0F corpora whose
+exact replay stopped before row 1 for fixed-panel cardinality, concrete-`Cmd`
+typing, and missing successful-gradient contract failures. All three roots and
+seed spaces are retired and unadjudicated. Retry 4 is repaired with disjoint
+seeds but is not presealed or run. Rose/G10 remain open, so
 this is not activation on main. Other genomic paths below keep
 their own explicit targets. All require local Julia,
 `JuliaCall`, and a sibling `HSquared.jl` checkout.
@@ -121,7 +125,8 @@ separate fresh offset-6001 holdout. The offset-7001 infrastructure attempt
 failed before fitting because the bridge package was unavailable; it produced
 no recovery summary or recovery evidence, and offsets 7001:7048 are retired.
 The offset-7101 pilot stopped at the preregistered precision boundary described
-above, and production-scale genomic validation
+above. Three later recovery-v3 D0F corpora are unadjudicated infrastructure
+blockers; retry 4 is repaired but not presealed or run. Production-scale genomic validation
 is not complete.
 
 ## Marker-built G
@@ -342,13 +347,15 @@ Covered in the R lane:
 Still planned:
 
 - production relationship-matrix construction and scaling/blending controls;
-- a newly preregistered recovery campaign, Rose audit, and G10; the fresh
+- retry-4 recovery, Rose audit, and G10; the fresh
   performance holdout has passed, but the
   offset-7001 infrastructure attempt failed before fitting because the bridge
   package was unavailable, produced no recovery summary or recovery evidence,
   and retired offsets 7001:7048; the offset-7101 pilot then completed all 432
   fits but stopped at a precision blocker, produced no accepted adjudication
-  receipt or confirmation manifest, and retired offsets 7101:7148;
+  receipt or confirmation manifest, and retired offsets 7101:7148; three
+  recovery-v3 D0F corpora then stopped before exact replay row 1 for separate
+  infrastructure contracts, while retry 4 is repaired but not presealed;
 - robustness studies for LD, population structure, imputation, base-frequency
   misspecification, real panels, and production genotype data; the sealed
   holdout used only independent HWE/no-LD markers;

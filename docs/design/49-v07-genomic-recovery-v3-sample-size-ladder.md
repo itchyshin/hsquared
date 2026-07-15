@@ -19,9 +19,9 @@
 > rewritten as activation.
 > ```
 
-Status: **D0 COMPLETE; TWO D0F CORPORA LOCKED BUT UNADJUDICATED; THIRD
-PROSPECTIVE D0F RETRY PREPARED BUT NOT PRESEALED; NO NEW PHENOTYPE AND NO D1 OR
-D2 SEED CONSUMED.** The first D0F run completed 576
+Status: **D0 COMPLETE; THREE D0F CORPORA LOCKED BUT UNADJUDICATED; FOURTH
+PROSPECTIVE D0F RETRY REPAIRED BUT NOT PRESEALED; NO RETRY-4 PHENOTYPE AND NO
+D1 OR D2 SEED CONSUMED.** The first D0F run completed 576
 official R attempts,
 but the exact presealed Julia replay tool stopped deterministically before
 writing any replay row. That root is a hash-locked, retired
@@ -32,8 +32,12 @@ preseal, and new canonical root before its first phenotype was generated. All
 Julia replay tool then failed before writing any replay row because a Git root
 returned as `SubString` promoted a `Cmd` argument vector to
 `Vector{AbstractString}`. That second root is also retired as a
-replay-infrastructure blocker. The third retry does not reopen, rewrite, pool,
-or admit either blocked D0F corpus or the retired recovery-v2 offsets.
+replay-infrastructure blocker. Retry 3 completed another 576 official fits and
+576 base-R recomputations, but every successful R attempt stored
+`gradient_norm=NA`; the exact Julia replay rejected the first row and wrote no
+replay output. That third root and its phenotype/bootstrap seeds are retired.
+Retry 4 does not reopen, rewrite, pool, or admit any blocked D0F corpus or the
+retired recovery-v2 offsets.
 
 No D0F retry is adjudicated and therefore none can admit D1. The
 downstream D2-D4 evidence protocol in this document was prospectively amended
@@ -357,15 +361,24 @@ and Julia replay commit
 The exact failure was `MethodError: no method matching
 Cmd(::Vector{AbstractString})` in `_git_blob_sha256`; replay produced zero
 rows. The base-R summary is diagnostic infrastructure output only and cannot
-be adjudicated or used to tune the third retry.
+be adjudicated or used to tune any later retry.
 
-The only admitted continuation is a prospective third D0F retry: unchanged
-fixed panels, 24-by-8 allocation, estimand, model, ridge, summaries, tolerances,
-and stopping rules; a repaired replay tool with an exact `SubString`-root
-regression and live Julia 1.10 preflight; five new exact reviewer receipts; a
-new root and preseal; and 576 new phenotypes from the disjoint seed space below.
-There is no pooling, paired reuse, seed replacement, threshold change, or
-selection based on either blocked corpus or summary.
+The retry-3 root
+`/home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0f-retry-r3-b68d5e0-99a513e8`
+is permanently **UNADJUDICATED — BRIDGE_DIAGNOSTIC_CONTRACT_BLOCKER**. It
+completed all 576 official fits and 576 base-R recomputations, but every
+successful attempt stored `gradient_norm=NA` because the R bridge discarded
+the boundary solver's finite AI score norm. The exact Julia replay stopped
+before row 1, so no replay or adjudication output exists. Its phenotype base
+`2034000000` and bootstrap base `2035000000` are retired.
+
+The only admitted continuation is prospective retry 4: unchanged fixed panels,
+24-by-8 allocation, estimand, model, ridge, summaries, tolerances, and stopping
+rules; the repaired finite-gradient bridge/admission contract; batch-safe R and
+Julia recomputation; five new exact reviewer receipts; a new root and preseal;
+and 576 new phenotypes from the disjoint seed space below. There is no pooling,
+paired reuse, seed replacement, threshold change, or selection based on any
+blocked corpus or summary.
 
 After the new preseal is written and before any smoke or official phenotype is
 generated, the deployed Julia 1.10 tool must pass:
