@@ -48,9 +48,12 @@ retry-4 phenotype/bootstrap seeds are permanently retired. The detailed
 checkpoint is
 `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-retry4-boundary-parity-blocker.md`.
 
-The prospective contract below remains preserved verbatim as the frozen
-pre-run record (pre-run SHA-256
+The Retry-4 scientific plan below remains the frozen pre-run record (pre-run
+SHA-256
 `0bbad8420812865d599d30af85ccf0d2fd039eada4c4914542f54dee8a9d54f0`).
+Its exact old bytes remain in the retired root and checkpoint. The active seed,
+bootstrap-order, and preseal-schema passages in this living design document are
+superseded by the prospective Retry-5 amendment and are synchronized below.
 Retry 4 does not reopen, rewrite, pool, or admit any blocked D0F corpus or the
 retired recovery-v2 offsets. Any Retry 5 requires a newly preregistered
 endpoint-representation repair, fresh exact-head reviews and preseal, and
@@ -520,10 +523,11 @@ V_{between}=\operatorname{Var}_k(\bar r_k)-V_{within}/8,
 
 without truncating a negative finite-sample \(V_{between}\). A deterministic
 10,000-replicate two-level bootstrap per design resamples panels and then
-phenotypes within panel, using a presealed index manifest, and reports percentile
-intervals. Base R generates each design's indices with
+phenotypes within panel, using a post-preseal create-once index manifest whose
+seed base and prior absence are presealed, and reports percentile intervals.
+Base R generates each design's indices with
 `RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
-`2037000000 + design_index`. The create-once manifest is normalized to one row
+`2039000000 + design_index`. The create-once manifest is normalized to one row
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
@@ -966,8 +970,9 @@ expansion is not the record of seeds actually consumed. The blocked first
 retry's 576 seeds use the same rank formula with base `2032000000`; the verifier
 adds them to the retired space as `D0F_RETRY1_RETIRED`. The blocked retry-3
 root used the same rank formula with base `2034000000`; the verifier adds it as
-`D0F_RETRY2_RETIRED`. The fourth prospective retry uses base `2036000000` and
-is labelled `D0F_RETRY` in the seed-space audit. The operational manifest stage
+`D0F_RETRY2_RETIRED`. Retry 4 used base `2036000000`; the verifier adds it as
+`D0F_RETRY3_RETIRED`. Retry 5 reserves base `2038000000` and is labelled
+`D0F_RETRY` in the seed-space audit. The operational manifest stage
 remains `d0f` so the unchanged scientific schema is reused. All values remain
 below R's 32-bit integer maximum. All exact historical and retired seeds are
 excluded. Numeric offsets may recur only under a new base after the verifier
@@ -979,8 +984,9 @@ D0F bootstrap-index seeds are not phenotype seeds and are never fitted. The
 original blocked run's three seeds `2031000000 + design_index`, the blocked
 first retry's three seeds `2033000000 + design_index`, and retry-3's three
 seeds `2035000000 + design_index` are nevertheless spent and retired because
-they generated observed bootstrap manifests. The fourth retry uses
-`2037000000 + design_index`, one per design. All four sets must be unique and
+they generated observed bootstrap manifests. Retry 4's three seeds
+`2037000000 + design_index` are also spent and retired. Retry 5 reserves
+`2039000000 + design_index`, one per design. All five sets must be unique and
 in range; the current retry set must be disjoint from every historical,
 retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating seed.
 
@@ -988,17 +994,21 @@ Every stage uses this acyclic create-once evidence chain:
 
 1. Write and verify the design copy, committed 36-cell table,
    historical-seed lock, stage manifest, environment manifest, reviewer
-   receipts, and the D0F fixed-panel/bootstrap manifests when applicable. Then
+   receipts, and the D0F fixed-panel manifest when applicable. Then
    write `stage_preseal.tsv` last. The preseal binds those existing primaries
    and sidecars, exact implementation commits/tool hashes, both route names,
    packet/truth schema versions, the canonical stage root, and the exact D0
    receipt. D1 additionally binds the canonical successful fresh-D0F root and
-   adjudication-receipt SHA-256. It contains no future D1 corpus or result hash.
-2. Generate official attempts and packets only after the preseal is accepted.
+   adjudication-receipt SHA-256. For D0F it binds bootstrap seed base
+   `2039000000` and records that the bootstrap manifest was absent. It contains
+   no future bootstrap, D1 corpus, or result hash.
+2. For D0F only, after the preseal is accepted, materialize the deterministic
+   bootstrap manifest once from the presealed base and verify its primary and
+   sidecar. Then generate official attempts and packets.
    Every attempt binds `preseal_sha256`. Before generation, the stage root may
-   contain only the enumerated preseal inputs and their sidecars; attempts,
-   packets, recomputations, summaries, corpus locks, and adjudication receipts
-   must be absent.
+   contain only the enumerated preseal inputs, the post-preseal D0F bootstrap
+   pair when applicable, and their sidecars; attempts, packets, recomputations,
+   summaries, corpus locks, and adjudication receipts must be absent.
 3. After the exact manifest denominator is complete, write
    `stage_corpus_lock.tsv`. It binds the preseal, manifest, every official
    attempt, and every packet primary. Exact-tree validation rejects additional,
@@ -1172,7 +1182,7 @@ substitute another canonical root/hash pair.
 The frozen schema identifiers are:
 
 ```text
-preseal  v07-genomic-recovery-v3-stage-preseal-2
+preseal  v07-genomic-recovery-v3-stage-preseal-3
 packet   v07-genomic-recovery-v3-packet-1
 truth    v07-genomic-recovery-v3-truth-1
 ```
@@ -1193,7 +1203,8 @@ d0f_adjudication_root
 d0f_adjudication_receipt_sha256
 historical_seed_lock_sha256
 d0f_fixed_panel_manifest_sha256
-d0f_bootstrap_indices_sha256
+d0f_bootstrap_seed_base
+d0f_bootstrap_indices_absent_before_preseal
 fisher_receipt_sha256
 noether_receipt_sha256
 hopper_receipt_sha256
@@ -1238,8 +1249,8 @@ D2-D4 do not reuse those D0F/D1 validator keys. They use the dedicated
 downstream preseal and the two downstream numerical validators frozen above.
 
 D0F records `NA` for the two D1-only adjudication bindings. D1 records `NA` for
-the two D0F-only manifest hashes and must record a non-`NA` canonical fresh-D0F
-root and receipt digest. The official and replay routes are respectively
+the three D0F-only fixed-panel/bootstrap fields and must record a non-`NA`
+canonical fresh-D0F root and receipt digest. The official and replay routes are respectively
 `ordinary_auto_genomic` and `julia_profile_replay`.
 Every Julia replay row binds and verifies the actual source R attempt,
 manifest, preseal, corpus lock, replay driver, and replay commit using the
