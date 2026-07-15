@@ -181,6 +181,75 @@ v3r_test_refresh_packet_lock <- function(fixture) {
   v3r_test_rewrite(file.path(fixture$packet, "packet_files_lock.tsv"), lock)
 }
 
+test_that("expected summaries forward Julia replay route admission", {
+  root <- tempfile("v3r-route-aware-summary-")
+  dir.create(root)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  binding <- list(
+    preseal_sha256 = v3r_test_hash("e"),
+    manifest_sha256 = v3r_test_hash("f"),
+    corpus_lock_sha256 = v3r_test_hash("a"),
+    r_auto_route_commit = v3r_test_hash("a", 40L),
+    julia_candidate_commit = v3r_test_hash("b", 40L),
+    r_driver_commit = v3r_test_hash("c", 40L),
+    julia_replay_commit = v3r_test_hash("d", 40L),
+    julia_replay_sha256 = v3r_test_hash("b")
+  )
+  parity <- v3p_d0f_summary_parity_fixture(binding)
+  v3r_test_write(
+    file.path(root, "d0f_bootstrap_indices.tsv"), parity$bootstrap
+  )
+  state <- list(
+    root = root, stage = "d0f", manifest = parity$manifest,
+    binding = binding
+  )
+  julia <- parity$attempts
+  julia$route <- "julia_profile_replay"
+  julia$driver_commit <- binding$julia_replay_commit
+  expect_error(
+    v3r_expected_summary(state, julia),
+    "malformed scientific output"
+  )
+  observed <- v3r_expected_summary(
+    state, julia, expected_route = "julia_profile_replay"
+  )
+  expect_identical(observed, parity$summary)
+  wrong_driver <- julia
+  wrong_driver$driver_commit <- binding$r_driver_commit
+  expect_error(
+    v3r_expected_summary(
+      state, wrong_driver, expected_route = "julia_profile_replay"
+    ),
+    "attempt provenance binding is invalid"
+  )
+
+  d1 <- v3p_d1_summary_parity_fixture(binding)
+  d1_state <- list(
+    root = root, stage = "d1", manifest = d1$manifest,
+    binding = binding
+  )
+  d1_julia <- d1$attempts
+  d1_julia$route <- "julia_profile_replay"
+  d1_julia$driver_commit <- binding$julia_replay_commit
+  expect_error(
+    v3r_expected_summary(d1_state, d1_julia),
+    "malformed scientific output"
+  )
+  d1_observed <- v3r_expected_summary(
+    d1_state, d1_julia, expected_route = "julia_profile_replay"
+  )
+  expect_identical(d1_observed, d1$summary)
+  d1_wrong_driver <- d1_julia
+  d1_wrong_driver$driver_commit <- binding$r_driver_commit
+  expect_error(
+    v3r_expected_summary(
+      d1_state, d1_wrong_driver, expected_route = "julia_profile_replay"
+    ),
+    "attempt provenance binding is invalid"
+  )
+})
+
 test_that("base R reconstructs p, W, k, G, K, Q, hashes, and attempt fields", {
   fixture <- v3r_test_packet_fixture()
   on.exit(unlink(fixture$root, recursive = TRUE), add = TRUE)

@@ -1342,6 +1342,59 @@ test_that("D0F decomposition preserves negative between-panel variance", {
   )
 })
 
+test_that("D0F and D1 summaries re-admit the declared execution route", {
+  binding <- v3p_test_binding()
+
+  d0f <- v3p_test_d0f()
+  d0f_julia <- d0f$attempts
+  d0f_julia$route <- "julia_profile_replay"
+  d0f_julia$driver_commit <- binding$julia_replay_commit
+  bootstrap <- v3p_d0f_bootstrap_manifest(3L)
+  expect_error(
+    v3p_d0f_summary(
+      d0f$manifest, d0f_julia, bootstrap, v3p_test_hash("f"), binding
+    ),
+    "malformed scientific output"
+  )
+  d0f_summary <- v3p_d0f_summary(
+    d0f$manifest, d0f_julia, bootstrap, v3p_test_hash("f"), binding,
+    expected_route = "julia_profile_replay"
+  )
+  expect_true(all(d0f_summary$d0f_status == "COMPLETE"))
+  d0f_wrong_driver <- d0f_julia
+  d0f_wrong_driver$driver_commit <- binding$r_driver_commit
+  expect_error(
+    v3p_d0f_summary(
+      d0f$manifest, d0f_wrong_driver, bootstrap, v3p_test_hash("f"),
+      binding, expected_route = "julia_profile_replay"
+    ),
+    "attempt provenance binding is invalid"
+  )
+
+  d1 <- v3p_test_d1()
+  d1_julia <- d1$attempts
+  d1_julia$route <- "julia_profile_replay"
+  d1_julia$driver_commit <- binding$julia_replay_commit
+  expect_error(
+    v3p_d1_summary(d1$manifest, d1_julia, binding),
+    "malformed scientific output"
+  )
+  d1_summary <- v3p_d1_summary(
+    d1$manifest, d1_julia, binding,
+    expected_route = "julia_profile_replay"
+  )
+  expect_true(all(d1_summary$cell_status == "ELIGIBLE"))
+  d1_wrong_driver <- d1_julia
+  d1_wrong_driver$driver_commit <- binding$r_driver_commit
+  expect_error(
+    v3p_d1_summary(
+      d1$manifest, d1_wrong_driver, binding,
+      expected_route = "julia_profile_replay"
+    ),
+    "attempt provenance binding is invalid"
+  )
+})
+
 test_that("shared D0F summary parity fixture pins all typed fields", {
   parity <- v3p_d0f_summary_parity_fixture(v3p_test_binding())
   expect_identical(

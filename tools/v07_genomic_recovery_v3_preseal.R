@@ -1986,9 +1986,13 @@ v3p_d1_summary_columns <- c(
   "mean_spectral_cv", "mean_effective_rank", "failure_classes"
 )
 
-v3p_d1_summary <- function(manifest, attempts, binding) {
+v3p_d1_summary <- function(
+  manifest, attempts, binding, expected_route = "ordinary_auto_genomic"
+) {
   manifest <- v3p_validate_d1_manifest(manifest)
-  attempts <- v3p_admit_d1_attempts(attempts, manifest, binding)
+  attempts <- v3p_admit_d1_attempts(
+    attempts, manifest, binding, expected_route = expected_route
+  )
   rows <- lapply(unique(manifest$cell_id), function(cell_id) {
     m <- manifest[manifest$cell_id == cell_id, , drop = FALSE]
     x <- attempts[attempts$cell_id == cell_id, , drop = FALSE]
@@ -2190,9 +2194,12 @@ v3p_d0f_boot_components <- function(x, bootstrap_rows) {
 }
 
 v3p_d0f_summary <- function(
-  manifest, attempts, bootstrap, bootstrap_sha256, binding
+  manifest, attempts, bootstrap, bootstrap_sha256, binding,
+  expected_route = "ordinary_auto_genomic"
 ) {
-  attempts <- v3p_admit_d0f_attempts(attempts, manifest, binding)
+  attempts <- v3p_admit_d0f_attempts(
+    attempts, manifest, binding, expected_route = expected_route
+  )
   bootstrap <- v3p_validate_d0f_bootstrap(
     bootstrap,
     reps = nrow(bootstrap) / (3L * 24L)

@@ -1102,7 +1102,9 @@ v3r_admit_rows <- function(state, kind, rows) {
   )
 }
 
-v3r_expected_summary <- function(state, attempts) {
+v3r_expected_summary <- function(
+  state, attempts, expected_route = "ordinary_auto_genomic"
+) {
   if (state$stage == "d0f") {
     bootstrap_path <- file.path(state$root, "d0f_bootstrap_indices.tsv")
     bootstrap <- v3r_read_tsv(
@@ -1110,10 +1112,14 @@ v3r_expected_summary <- function(state, attempts) {
     )
     v3p_d0f_summary(
       state$manifest, attempts, bootstrap,
-      v07d_sha256(bootstrap_path), state$binding
+      v07d_sha256(bootstrap_path), state$binding,
+      expected_route = expected_route
     )
   } else {
-    v3p_d1_summary(state$manifest, attempts, state$binding)
+    v3p_d1_summary(
+      state$manifest, attempts, state$binding,
+      expected_route = expected_route
+    )
   }
 }
 
@@ -1336,7 +1342,9 @@ v3r_adjudicate_tables <- function(state, evidence) {
   # the official R performance fields, exactly as required by doc 49.
   julia_attempts$runtime_seconds <- official_admitted$runtime_seconds
   julia_attempts$peak_rss_mb <- official_admitted$peak_rss_mb
-  julia <- v3r_expected_summary(state, julia_attempts)
+  julia <- v3r_expected_summary(
+    state, julia_attempts, expected_route = "julia_profile_replay"
+  )
   summary_max_diff <- max(
     v3r_compare_summary_triplet(driver, base, julia, state$stage),
     v3r_compare_summary_triplet(
