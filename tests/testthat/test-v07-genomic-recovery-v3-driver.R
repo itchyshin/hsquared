@@ -107,6 +107,16 @@ test_that("the preseal binds the operational independent recomputer", {
   expect_false(grepl("preseal", basename(context$r_recomputer_path), fixed = TRUE))
 })
 
+test_that("runtime validation and bootstrap materialization use distinct tree scopes", {
+  expect_identical(
+    eval(formals(v3d_validate_bound_stage)$tree_scope),
+    c("runtime", "pristine")
+  )
+  materialize <- paste(deparse(body(v3d_materialize_bootstrap)), collapse = "\n")
+  hits <- gregexpr('tree_scope = "pristine"', materialize, fixed = TRUE)[[1L]]
+  expect_equal(sum(hits > 0L), 2L)
+})
+
 test_that("review receipts are canonical create-once pairs", {
   root <- tempfile("v3d-review-"); dir.create(root)
   root <- normalizePath(root, mustWork = TRUE)

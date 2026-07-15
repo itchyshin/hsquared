@@ -683,7 +683,7 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
   seeds <- v3p_validate_bootstrap_seed_space()
-  expect_identical(seeds, as.integer(2039000001:2039000003))
+  expect_identical(seeds, as.integer(2041000001:2041000003))
   expect_identical(anyDuplicated(seeds), 0L)
   expect_length(
     intersect(
@@ -710,6 +710,13 @@ test_that("D0F bootstrap is exact, two-level, and restores RNG state", {
     intersect(
       seeds,
       v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry3_bootstrap_base)
+    ),
+    0L
+  )
+  expect_length(
+    intersect(
+      seeds,
+      v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry4_bootstrap_base)
     ),
     0L
   )
@@ -1324,19 +1331,19 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   expect_identical(names(parity$summary), v3p_d0f_summary_columns)
   expect_identical(
     v3p_test_tsv_hash(parity$manifest),
-    "81f1f9547b2f190f8b54df1a44120967a5a71de5efcdfe7cc356d94fb8af69ec"
+    "953bca93488ebf24b97ad9da1acdb8c4ce0758b8eb4123b39124c996a4d8ff0f"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$attempts),
-    "f584604239cc6f11eb9ab002afa61be98dac8493715b4f741ac9ebde5787cbc6"
+    "99eb906070c6792637ced94ad05a65a6e86061b33d7d3d81cdcaca870ec1cf6a"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$bootstrap),
-    "0bd4293d14c76df136432ad098df6145cffa67c53ea0649091b1aafe648eb5e9"
+    "1b2dd8d0d6fc52997c99d5a8945ce4fd1e0f2042ca7ea69a44d0cfd5d8002fb3"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$summary),
-    "f8af5c3312c9883e82109d49496e4054cc718ecdbfcddd0a136dfa6635a49b07"
+    "a4d11eb1ee039a95493ad00e41d3e056b14d7ef13ee8d30476368f4f3b34f454"
   )
   expect_true(is.character(parity$summary$d0f_status))
   expect_true(is.logical(parity$summary$fit_blocker))
@@ -1500,6 +1507,67 @@ test_that("stage preseal verifies the exact existing tree and provenance", {
     fixture$preseal,
     fixture$context
   ))
+})
+
+test_that("runtime projection admits prior fan-out without weakening bindings", {
+  fixture <- v3p_test_preseal_fixture()
+  on.exit(unlink(fixture$base, recursive = TRUE), add = TRUE)
+  dir.create(
+    file.path(fixture$stage_root, "attempts", "d1", "cell-a"),
+    recursive = TRUE
+  )
+  dir.create(
+    file.path(fixture$stage_root, "packets", "d1", "cell-b", "seed-b"),
+    recursive = TRUE
+  )
+  writeLines(
+    "another worker's partial publication",
+    file.path(fixture$stage_root, "packets", "d1", "cell-b", "seed-b", "truth.tsv")
+  )
+
+  set.seed(611L)
+  before <- .Random.seed
+  expect_silent(v3p_test_validate_stage(
+    fixture$preseal, fixture$context, tree_scope = "runtime"
+  ))
+  expect_identical(.Random.seed, before)
+  expect_error(
+    v3p_test_validate_stage(fixture$preseal, fixture$context),
+    "additional"
+  )
+
+  rogue <- file.path(fixture$stage_root, "rogue.txt")
+  writeLines("rogue", rogue)
+  expect_error(
+    v3p_test_validate_stage(
+      fixture$preseal, fixture$context, tree_scope = "runtime"
+    ),
+    "unknown top-level member"
+  )
+  unlink(rogue)
+
+  writeLines("mutated", file.path(fixture$stage_root, "doc49.md"))
+  expect_error(
+    v3p_test_validate_stage(
+      fixture$preseal, fixture$context, tree_scope = "runtime"
+    ),
+    "SHA-256 mismatch"
+  )
+})
+
+test_that("runtime projection rejects a symlinked fan-out namespace", {
+  skip_on_os("windows")
+  fixture <- v3p_test_preseal_fixture()
+  outside <- tempfile("v3p-runtime-outside-")
+  dir.create(outside)
+  on.exit(unlink(c(fixture$base, outside), recursive = TRUE), add = TRUE)
+  expect_true(file.symlink(outside, file.path(fixture$stage_root, "attempts")))
+  expect_error(
+    v3p_test_validate_stage(
+      fixture$preseal, fixture$context, tree_scope = "runtime"
+    ),
+    "symlinked namespace"
+  )
 })
 
 test_that("D0F preseal tree excludes bootstrap until post-seal materialization", {

@@ -298,17 +298,9 @@ v3r_validate_preseal_postrun <- function(root, stage) {
   if (preseal$value[["stage"]] != stage || preseal$value[["output_root"]] != root) {
     v3r_abort("stage preseal stage/root drift")
   }
-  # The pre-seal validator is deliberately exact-tree aware. During post-run
-  # validation only that one prospective tree predicate is replaced; every
-  # hash, live environment, commit, clean checkout, ancestry, implementation
-  # surface, and deployed-tool check still runs unchanged.
-  env <- environment(v3p_validate_stage_preseal)
-  original <- get("v3p_verify_preseal_tree", envir = env, inherits = FALSE)
-  assign("v3p_verify_preseal_tree", function(...) invisible(TRUE), envir = env)
-  on.exit(assign("v3p_verify_preseal_tree", original, envir = env), add = TRUE)
   v3p_validate_stage_preseal(
     preseal$table, v3r_expected_tool_context(), include_preseal = TRUE,
-    bootstrap_materialized = identical(stage, "d0f")
+    bootstrap_materialized = identical(stage, "d0f"), tree_scope = "runtime"
   )
   preseal
 }

@@ -598,6 +598,83 @@ v3p_preseal_names <- function(
   common
 }
 
+v3p_runtime_top_names <- function(stage) {
+  c(
+    "attempts", "packets", "base_r_recompute", "julia_replay",
+    "postrun_receipts", "stage_corpus_lock.tsv",
+    "stage_corpus_lock.tsv.sha256", paste0(stage, "_summary_r.tsv"),
+    paste0(stage, "_summary_r.tsv.sha256"),
+    paste0(stage, "_summary_julia.tsv"),
+    paste0(stage, "_summary_julia.tsv.sha256"),
+    "stage_adjudication_receipt.tsv",
+    "stage_adjudication_receipt.tsv.sha256"
+  )
+}
+
+v3p_verify_preseal_projection <- function(
+  root, stage, include_preseal, bootstrap_materialized = FALSE
+) {
+  root <- v3p_canonical_path(root, "stage output root", TRUE)
+  primaries <- v3p_preseal_names(
+    stage, include_preseal, bootstrap_materialized
+  )
+  expected_files <- sort(c(primaries, paste0(primaries, ".sha256")))
+  files <- file.path(root, expected_files)
+  if (!all(v07d_is_regular_file(files))) {
+    v3p_abort("preseal input projection contains a missing or non-regular file")
+  }
+  if (any(vapply(files, v07d_has_symlink_component, logical(1L)))) {
+    v3p_abort("preseal input projection contains a symlinked file")
+  }
+  primary_paths <- file.path(root, primaries)
+  size <- file.info(primary_paths)$size
+  if (anyNA(size) || any(size <= 0)) {
+    v3p_abort("preseal input projection contains an empty required primary")
+  }
+
+  receipt_expected <- sort(expected_files[startsWith(expected_files, "receipts/")])
+  receipt_actual <- sort(list.files(
+    file.path(root, "receipts"), recursive = TRUE, all.files = TRUE,
+    include.dirs = TRUE, no.. = TRUE
+  ))
+  if (!identical(receipt_actual, sub("^receipts/", "", receipt_expected))) {
+    v3p_abort("preseal receipt projection has missing or additional members")
+  }
+
+  expected_top <- unique(sub("/.*$", "", expected_files))
+  runtime_top <- v3p_runtime_top_names(stage)
+  actual_top <- list.files(
+    root, recursive = FALSE, all.files = TRUE, include.dirs = TRUE,
+    no.. = TRUE
+  )
+  if (length(setdiff(actual_top, c(expected_top, runtime_top)))) {
+    v3p_abort("runtime root has an unknown top-level member")
+  }
+  runtime_dirs <- intersect(
+    actual_top,
+    c("attempts", "packets", "base_r_recompute", "julia_replay", "postrun_receipts")
+  )
+  runtime_dir_paths <- file.path(root, runtime_dirs)
+  if (
+    length(runtime_dirs) &&
+      any(!dir.exists(runtime_dir_paths) |
+        nzchar(Sys.readlink(runtime_dir_paths)) |
+        vapply(runtime_dir_paths, v07d_has_symlink_component, logical(1L)))
+  ) {
+    v3p_abort("runtime root contains a non-directory or symlinked namespace")
+  }
+  runtime_files <- intersect(actual_top, setdiff(runtime_top, runtime_dirs))
+  runtime_file_paths <- file.path(root, runtime_files)
+  if (
+    length(runtime_files) &&
+      any(!vapply(runtime_file_paths, v07d_is_regular_file, logical(1L)) |
+        vapply(runtime_file_paths, v07d_has_symlink_component, logical(1L)))
+  ) {
+    v3p_abort("runtime root contains a non-regular or symlinked output")
+  }
+  invisible(TRUE)
+}
+
 v3p_verify_preseal_tree <- function(
   root, stage, include_preseal, bootstrap_materialized = FALSE
 ) {
@@ -614,15 +691,9 @@ v3p_verify_preseal_tree <- function(
   if (!identical(actual, expected)) {
     v3p_abort("preseal input tree has missing, additional, nested, or special members")
   }
-  files <- file.path(root, expected_files)
-  if (!all(v07d_is_regular_file(files))) {
-    v3p_abort("preseal input tree contains a non-regular file")
-  }
-  primaries <- file.path(root, primaries)
-  size <- file.info(primaries)$size
-  if (anyNA(size) || any(size <= 0)) {
-    v3p_abort("preseal input tree contains an empty required primary")
-  }
+  v3p_verify_preseal_projection(
+    root, stage, include_preseal, bootstrap_materialized
+  )
   invisible(TRUE)
 }
 
@@ -646,8 +717,9 @@ v3p_validate_review <- function(path, expected_hash, reviewer, values) {
 
 v3p_validate_stage_preseal <- function(
   x, context, include_preseal = TRUE, bootstrap_reps = 10000L,
-  bootstrap_materialized = FALSE
+  bootstrap_materialized = FALSE, tree_scope = c("pristine", "runtime")
 ) {
+  tree_scope <- match.arg(tree_scope)
   v3p_require_schema(x, c("key", "value"), "recovery-v3 stage preseal")
   if (!identical(as.character(x$key), v3p_stage_preseal_keys)) {
     v3p_abort("recovery-v3 stage preseal key membership or value drift")
@@ -748,9 +820,15 @@ v3p_validate_stage_preseal <- function(
       root
     )
   }
-  v3p_verify_preseal_tree(
-    root, value[["stage"]], include_preseal, bootstrap_materialized
-  )
+  if (tree_scope == "pristine") {
+    v3p_verify_preseal_tree(
+      root, value[["stage"]], include_preseal, bootstrap_materialized
+    )
+  } else {
+    v3p_verify_preseal_projection(
+      root, value[["stage"]], include_preseal, bootstrap_materialized
+    )
+  }
 
   paths <- c(
     doc49_sha256 = "doc49.md", cell_table_sha256 = "cell_table.tsv",

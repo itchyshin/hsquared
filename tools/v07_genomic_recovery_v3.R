@@ -466,9 +466,10 @@ v3d_read_preseal <- function(output_root, stage) {
 
 v3d_validate_bound_stage <- function(
   output_root, stage, driver_root, r_root, julia_root,
-  bootstrap_materialized = TRUE
+  bootstrap_materialized = TRUE, tree_scope = c("runtime", "pristine")
 ) {
   v3d_assert_execution_context()
+  tree_scope <- match.arg(tree_scope)
   output_root <- v3p_canonical_path(output_root, "stage output root", TRUE)
   stage <- v3d_stage(stage)
   preseal <- v3d_read_preseal(output_root, stage)
@@ -476,7 +477,8 @@ v3d_validate_bound_stage <- function(
   context <- v3d_context(driver_root, r_root, julia_root)
   v3p_validate_stage_preseal(
     preseal$table, context, include_preseal = TRUE,
-    bootstrap_materialized = stage == "d0f" && bootstrap_materialized
+    bootstrap_materialized = stage == "d0f" && bootstrap_materialized,
+    tree_scope = tree_scope
   )
   roots <- c(r = normalizePath(r_root, winslash = "/", mustWork = TRUE),
              julia = normalizePath(julia_root, winslash = "/", mustWork = TRUE))
@@ -550,7 +552,7 @@ v3d_materialize_bootstrap <- function(
   if (stage != "d0f") v3d_abort("bootstrap materialization is D0F-only")
   v3d_validate_bound_stage(
     output_root, stage, driver_root, r_root, julia_root,
-    bootstrap_materialized = FALSE
+    bootstrap_materialized = FALSE, tree_scope = "pristine"
   )
   path <- file.path(output_root, "d0f_bootstrap_indices.tsv")
   if (file.exists(path) || file.exists(paste0(path, ".sha256"))) {
@@ -559,7 +561,7 @@ v3d_materialize_bootstrap <- function(
   v3p_write_once(output_root, basename(path), v3p_d0f_bootstrap_manifest(10000L))
   v3d_validate_bound_stage(
     output_root, stage, driver_root, r_root, julia_root,
-    bootstrap_materialized = TRUE
+    bootstrap_materialized = TRUE, tree_scope = "pristine"
   )
   invisible(path)
 }
