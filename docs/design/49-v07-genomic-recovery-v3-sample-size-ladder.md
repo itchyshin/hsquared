@@ -188,8 +188,12 @@ NOT PROVEN**. Later typed mutations or review evidence cannot cure that
 chronology; they belong only to a fresh prospective retry. Full audit:
 `docs/dev-log/recovery-checkpoints/2026-07-15-v07-d0f-retry5-post-preseal-tree-blocker.md`.
 
-This amendment is frozen before Retry-6 implementation, random draw, bootstrap
-materialization, or evidence-root creation. Retry 6 changes only the runtime
+This amendment was committed after the initial Julia Retry-6 repair
+`d1914951`, but before the R Retry-6 repair `8dea0ad`, fresh exact-head
+Retry-6 reviews, the ordered clean deployment, preseal, bootstrap
+materialization, random draw, or evidence-root creation. The earlier Julia
+repair used no Retry-6 data and did not alter the frozen estimand, panels,
+thresholds, seed spaces, or stopping rules. Retry 6 changes only the runtime
 tree-validation contract:
 
 1. Prepare, preseal, and pre-bootstrap validation retain the exact pristine-tree
