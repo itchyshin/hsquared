@@ -159,7 +159,7 @@ has preseal SHA-256
 `e79666c27c3f99d00e0cfdd5c753eb8dd10d4a4b0c98544062e40363e25e3998`
 and bootstrap-manifest SHA-256
 `9341b92e024066bed7429de31b6f3d57b69abe4c0bae80fe796fcc00d6cd0641`.
-The first n-ladder fit, seed `2038101001`, completed and published a valid
+The first official D0F fit, seed `2038101001`, completed and published a valid
 successful attempt with SHA-256
 `2843fb6bf4fb09c97091756473f4f5caecffdd43c1eb695fcc97d25b1cb538d0`.
 Before the second fit could generate a phenotype,
@@ -174,6 +174,19 @@ The root was frozen read-only after the failed smoke: 38 files, nine
 directories, no links or special members, and sorted file-content digest
 `f97d1c15600307238eef794c80bfc3644715421ee93f0812527f951727cc1b02` before
 and after the permission change.
+
+A post-run exact-head chronology audit adds a separate admission finding. The
+five hash-bound CLEAN verdict files, exact-head CI, clean deploy, and preseal
+preceded the draw, but deployed Julia head `06941997` did not implement the
+required typed infrastructure-error gate: its generic mutation helper accepted
+any exception, and its do-block argument order let labelled mutations pass on
+an unrelated `MethodError`. The standalone Julia replay selftest was not part
+of exact-head CI. No durable stdout/check receipt proves that the fixed
+16-packet diagnostic ran, and the reviewer receipt schema does not prove the
+required two-batch execution. Retry 5 is therefore also **ADMISSION CONTRACT
+NOT PROVEN**. Later typed mutations or review evidence cannot cure that
+chronology; they belong only to a fresh prospective retry. Full audit:
+`docs/dev-log/recovery-checkpoints/2026-07-15-v07-d0f-retry5-post-preseal-tree-blocker.md`.
 
 This amendment is frozen before Retry-6 implementation, random draw, bootstrap
 materialization, or evidence-root creation. Retry 6 changes only the runtime

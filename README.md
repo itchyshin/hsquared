@@ -83,8 +83,11 @@ this branch; it is not activated on main or released. Recovery-v3 retry 4
 completed 576 official fits and 576 independent base-R recomputations, but
 exact Julia replay stopped fail-closed after 455 rows on a one-ULP
 boundary-ratio representation defect. The root and its seeds are retired and
-unadjudicated; D1/D2 never opened. A fresh prospective boundary-parity repair,
-Retry 5, Rose, and G10 remain open. SNP-BLUP, single-step, the multivariate Gaussian animal model, and
+unadjudicated; D1/D2 never opened. Retry 5 then produced one successful official
+fit before post-preseal tree validation stopped ahead of the second phenotype.
+Its immutable root and complete seed spaces are retired, and a strict post-run
+audit found its admission proof not contract-clean. Prospective Retry 6, Rose,
+and G10 remain open. SNP-BLUP, single-step, the multivariate Gaussian animal model, and
 non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no heritability)
 models fit through the opt-in, experimental `engine = "julia"` path;
 factor-analytic models remain planned.

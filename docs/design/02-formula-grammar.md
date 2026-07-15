@@ -82,8 +82,11 @@ three D0F corpora are unadjudicated infrastructure blockers with retired seeds.
 Retry 4 completed 576 official fits and 576 independent base-R recomputations,
 but exact Julia replay stopped after 455 rows on a one-ULP endpoint-
 representation contract defect. Its root and seeds are retired and
-unadjudicated; D1/D2 never opened. Activation still requires a fresh
-prospective repair and Retry 5, Rose, and G10. `markers = M` means
+unadjudicated; D1/D2 never opened. Retry 5 stopped after one successful official
+fit on a post-preseal runtime-tree blocker; its immutable root and complete seed
+spaces are retired, and its admission proof is not contract-clean. Activation
+still requires the separate prospective Retry-6 repair, durable admission
+evidence, Rose, and G10. `markers = M` means
 sample-frequency, unweighted VanRaden method
 1 with `K_lambda = G + 0.01I`; supplied `Ginv` is fitted unchanged and its
 construction method, allele-frequency base, ridge, and denominator remain

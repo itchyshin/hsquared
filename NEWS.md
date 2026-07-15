@@ -33,8 +33,12 @@
   and demanded exact endpoint equality; five of 13 boundary packets have a
   one-ULP representation difference. The root and all observed seeds are
   retired and unadjudicated, 121 later replay rows were unattempted, and D1/D2
-  never opened. Fresh prospective boundary-parity repair, Retry 5, Rose, and G10
-  remain open; the route is not
+  never opened. Retry 5 then stopped after one successful official fit when
+  post-preseal validation treated legitimate runtime outputs as pristine-tree
+  drift. Its immutable root and complete seed spaces are retired; a strict
+  post-run audit also found the typed Julia mutation gate absent and durable
+  16-packet/two-batch proof incomplete at the draw. Prospective Retry 6, Rose,
+  and G10 remain open; the route is not
   activated on main, released, or a production genotype pipeline. The HWE/no-LD
   design gives no robustness evidence for LD, population structure, imputation,
   base-frequency misspecification, real panels, or production data. The R row
