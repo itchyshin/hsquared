@@ -45,8 +45,13 @@ v3r_load_contract <- function() {
 
 v3r_load_contract()
 
-v3r_schema <- "v07-genomic-recovery-v3-adjudication-1"
-v3r_review_schema <- "v07-genomic-recovery-v3-postrun-review-1"
+v3r_schema <- "v07-genomic-recovery-v3-adjudication-2"
+v3r_review_schema <- "v07-genomic-recovery-v3-postrun-review-2"
+v3r_route_lineage_schema <- "v07-genomic-recovery-v3-route-lineage-1"
+v3r_route_lineage_columns <- c(
+  "schema_version", "stage", "evidence_kind", "route", "group_kind",
+  "group_id", "source_attempt_count", "source_inventory_sha256"
+)
 v3r_packet_primaries <- c(
   "markers.tsv", "ids.tsv", "phenotype.tsv", "truth.tsv",
   "packet_files_lock.tsv"
@@ -75,7 +80,7 @@ v3r_review_columns <- c(
   "preseal_sha256",
   "corpus_lock_sha256", "manifest_sha256", "base_r_inventory_sha256",
   "julia_replay_inventory_sha256", "r_summary_sha256",
-  "julia_summary_sha256", "r_driver_commit", "r_recomputer_commit",
+  "julia_summary_sha256", "route_lineage_sha256", "r_driver_commit", "r_recomputer_commit",
   "julia_replay_commit", "reviewed_at_utc"
 )
 v3r_receipt_columns <- c(
@@ -85,7 +90,8 @@ v3r_receipt_columns <- c(
   "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
   "r_driver_sha256", "r_recomputer_sha256", "julia_replay_sha256",
   "base_r_inventory_sha256", "julia_replay_inventory_sha256",
-  "r_summary_sha256", "julia_summary_sha256",
+  "r_summary_sha256", "julia_summary_sha256", "route_lineage_sha256",
+  "adjudication_key_sha256",
   unlist(lapply(v3p_reviewers, function(x) {
     c(paste0(x, "_review_path"), paste0(x, "_review_sha256"))
   }), use.names = FALSE)
@@ -189,7 +195,7 @@ v3r_verify_pair <- function(path, expected = NULL) {
   invisible(digest)
 }
 
-v3r_read_tsv <- function(path, columns, verify = TRUE) {
+v3r_read_tsv <- function(path, columns, verify = TRUE, all_character = FALSE) {
   if (verify) v3r_verify_pair(path)
   bytes <- readBin(path, what = "raw", n = file.info(path)$size)
   if (!length(bytes) || tail(bytes, 1L) != as.raw(10L) ||
@@ -198,7 +204,8 @@ v3r_read_tsv <- function(path, columns, verify = TRUE) {
   }
   value <- utils::read.delim(
     path, sep = "\t", quote = "", comment.char = "", check.names = FALSE,
-    stringsAsFactors = FALSE, na.strings = c("NA", "NaN")
+    stringsAsFactors = FALSE, na.strings = c("NA", "NaN"),
+    colClasses = if (all_character) "character" else NA
   )
   v3p_require_schema(value, columns, basename(path))
   value
@@ -282,7 +289,7 @@ v3r_expected_tool_context <- function() {
 }
 
 v3r_preseal_values <- function(path) {
-  x <- v3r_read_tsv(path, c("key", "value"))
+  x <- v3r_read_tsv(path, c("key", "value"), all_character = TRUE)
   if (!identical(as.character(x$key), v3p_stage_preseal_keys)) {
     v3r_abort("stage preseal key membership or order drift")
   }
@@ -403,7 +410,7 @@ v3r_verify_exact_tree <- function(root, expected_primaries, label) {
 
 v3r_verify_corpus <- function(root, stage, manifest) {
   path <- file.path(root, "stage_corpus_lock.tsv")
-  lock <- v3r_read_tsv(path, v3r_corpus_columns)
+  lock <- v3r_read_tsv(path, v3r_corpus_columns, all_character = TRUE)
   expected_paths <- v3r_expected_official_paths(root, stage, manifest)
   expected <- v3r_inventory(root, expected_paths)
   if (
@@ -477,7 +484,7 @@ v3r_packet_files <- function(packet) {
   for (name in v3r_packet_primaries) v3r_verify_pair(file.path(packet, name))
   lock <- v3r_read_tsv(
     file.path(packet, "packet_files_lock.tsv"), v3r_packet_lock_columns,
-    verify = FALSE
+    verify = FALSE, all_character = TRUE
   )
   if (!identical(as.character(lock$file), v3r_packet_primaries[1:4])) {
     v3r_abort("packet inner lock membership/order drift")
@@ -1081,6 +1088,116 @@ v3r_read_rows <- function(state, kind = c("official", "base_r", "julia")) {
   list(table = out, paths = paths)
 }
 
+v3r_route_for_kind <- function(kind) {
+  if (identical(kind, "julia")) {
+    "julia_profile_replay"
+  } else if (kind %in% c("official", "base_r")) {
+    "ordinary_auto_genomic"
+  } else {
+    v3r_abort("unknown admitted evidence kind: %s", kind)
+  }
+}
+
+v3r_evidence_class <- function(kind) {
+  c(paste0("v3r_", kind, "_evidence"), "v3r_admitted_evidence")
+}
+
+v3r_new_admitted_evidence <- function(rows, kind, stage) {
+  route <- v3r_route_for_kind(kind)
+  stage <- v3r_stage(stage)
+  if (!is.data.frame(rows) || !nrow(rows) || !"route" %in% names(rows)) {
+    v3r_abort("admitted evidence requires a nonempty routed data frame")
+  }
+  observed <- unique(as.character(rows$route))
+  if (length(observed) != 1L || !identical(observed, route)) {
+    v3r_abort("admitted evidence route does not match its route-specific kind")
+  }
+  group_field <- if (identical(stage, "d0f")) "design_id" else "cell_id"
+  if (!group_field %in% names(rows)) {
+    v3r_abort("admitted evidence lacks its summary grouping field")
+  }
+  envelope <- new.env(parent = emptyenv())
+  envelope$rows <- rows
+  envelope$kind <- kind
+  envelope$route <- route
+  envelope$stage <- stage
+  envelope$group_field <- group_field
+  envelope$row_sha256 <- v3r_hash_text(v07d_tsv_text(rows))
+  class(envelope) <- v3r_evidence_class(kind)
+  lockEnvironment(envelope, bindings = TRUE)
+  envelope
+}
+
+v3r_validate_evidence_envelope <- function(value, expected_kind, state = NULL) {
+  fields <- c(
+    "rows", "kind", "route", "stage", "group_field", "row_sha256"
+  )
+  if (!is.environment(value) || !environmentIsLocked(value) ||
+      !identical(class(value), v3r_evidence_class(expected_kind)) ||
+      !all(vapply(fields, bindingIsLocked, logical(1L), env = value)) ||
+      !identical(value$kind, expected_kind)) {
+    v3r_abort("admitted evidence class/kind binding was forged or mutated")
+  }
+  if (!identical(value$stage, v3r_stage(value$stage)) ||
+      !is.null(state) && !identical(value$stage, state$stage)) {
+    v3r_abort("admitted evidence stage does not match summary stage")
+  }
+  route <- v3r_route_for_kind(expected_kind)
+  expected_group <- if (identical(value$stage, "d0f")) {
+    "design_id"
+  } else {
+    "cell_id"
+  }
+  if (!identical(value$route, route) ||
+      !identical(value$group_field, expected_group) ||
+      !is.data.frame(value$rows) || !nrow(value$rows) ||
+      !"route" %in% names(value$rows) ||
+      any(as.character(value$rows$route) != route) ||
+      !expected_group %in% names(value$rows) ||
+      !identical(
+        value$row_sha256,
+        v3r_hash_text(v07d_tsv_text(value$rows))
+      )) {
+    v3r_abort("admitted evidence route binding was forged or mutated")
+  }
+  value$rows
+}
+
+v3r_evidence_rows <- function(value, state = NULL) {
+  UseMethod("v3r_evidence_rows")
+}
+
+v3r_evidence_rows.v3r_official_evidence <- function(value, state = NULL) {
+  v3r_validate_evidence_envelope(value, "official", state)
+}
+
+v3r_evidence_rows.v3r_base_r_evidence <- function(value, state = NULL) {
+  v3r_validate_evidence_envelope(value, "base_r", state)
+}
+
+v3r_evidence_rows.v3r_julia_evidence <- function(value, state = NULL) {
+  v3r_validate_evidence_envelope(value, "julia", state)
+}
+
+v3r_evidence_rows.default <- function(value, state = NULL) {
+  if (!inherits(value, "v3r_admitted_evidence")) {
+    v3r_abort("summary reconstruction requires admitted evidence, not raw rows")
+  }
+  v3r_abort("admitted evidence class/kind binding was forged or mutated")
+}
+
+v3r_project_julia_performance <- function(julia, official) {
+  julia_rows <- v3r_evidence_rows(julia)
+  official_rows <- v3r_evidence_rows(official)
+  keys <- c("stage", if (identical(julia$stage, "d0f")) "design_id" else "cell_id", "seed")
+  if (!identical(julia_rows[keys], official_rows[keys])) {
+    v3r_abort("Julia performance projection key order differs from official evidence")
+  }
+  julia_rows$runtime_seconds <- official_rows$runtime_seconds
+  julia_rows$peak_rss_mb <- official_rows$peak_rss_mb
+  v3r_new_admitted_evidence(julia_rows, "julia", julia$stage)
+}
+
 v3r_admit_rows <- function(state, kind, rows) {
   source_hash <- vapply(
     vapply(seq_len(nrow(state$manifest)), function(i) {
@@ -1090,37 +1207,64 @@ v3r_admit_rows <- function(state, kind, rows) {
     }, character(1L)),
     v07d_sha256, character(1L)
   )
-  if (kind == "julia") {
-    return(v3p_admit_julia_replay(
+  admitted <- if (kind == "julia") {
+    v3p_admit_julia_replay(
       rows, state$manifest, state$stage, state$binding, source_hash
-    ))
+    )
+  } else {
+    switch(
+      state$stage,
+      d0f = v3p_admit_d0f_attempts(rows, state$manifest, state$binding),
+      d1 = v3p_admit_d1_attempts(rows, state$manifest, state$binding)
+    )
   }
-  switch(
-    state$stage,
-    d0f = v3p_admit_d0f_attempts(rows, state$manifest, state$binding),
-    d1 = v3p_admit_d1_attempts(rows, state$manifest, state$binding)
-  )
+  v3r_new_admitted_evidence(admitted, kind, state$stage)
 }
 
-v3r_expected_summary <- function(
-  state, attempts, expected_route = "ordinary_auto_genomic"
-) {
+v3r_expected_summary <- function(state, admitted) {
+  UseMethod("v3r_expected_summary", admitted)
+}
+
+v3r_expected_summary_route <- function(state, admitted, julia = FALSE) {
+  attempts <- v3r_evidence_rows(admitted, state)
   if (state$stage == "d0f") {
     bootstrap_path <- file.path(state$root, "d0f_bootstrap_indices.tsv")
     bootstrap <- v3r_read_tsv(
       bootstrap_path, v3p_d0f_bootstrap_columns
     )
-    v3p_d0f_summary(
+    summary <- if (julia) {
+      v3p_d0f_julia_summary
+    } else {
+      v3p_d0f_summary
+    }
+    summary(
       state$manifest, attempts, bootstrap,
-      v07d_sha256(bootstrap_path), state$binding,
-      expected_route = expected_route
+      v07d_sha256(bootstrap_path), state$binding
     )
   } else {
-    v3p_d1_summary(
-      state$manifest, attempts, state$binding,
-      expected_route = expected_route
-    )
+    summary <- if (julia) {
+      v3p_d1_julia_summary
+    } else {
+      v3p_d1_summary
+    }
+    summary(state$manifest, attempts, state$binding)
   }
+}
+
+v3r_expected_summary.v3r_official_evidence <- function(state, admitted) {
+  v3r_expected_summary_route(state, admitted, julia = FALSE)
+}
+
+v3r_expected_summary.v3r_base_r_evidence <- function(state, admitted) {
+  v3r_expected_summary_route(state, admitted, julia = FALSE)
+}
+
+v3r_expected_summary.v3r_julia_evidence <- function(state, admitted) {
+  v3r_expected_summary_route(state, admitted, julia = TRUE)
+}
+
+v3r_expected_summary.default <- function(state, admitted) {
+  v3r_evidence_rows(admitted, state)
 }
 
 v3r_summary_columns <- function(stage) {
@@ -1141,6 +1285,70 @@ v3r_summarize <- function(root, stage) {
   invisible(summary)
 }
 
+v3r_lineage_path <- function(root) file.path(root, "stage_route_lineage.tsv")
+
+v3r_lineage_rows <- function(admitted, inventory_sha256) {
+  rows <- v3r_evidence_rows(admitted)
+  field <- admitted$group_field
+  groups <- unique(as.character(rows[[field]]))
+  counts <- table(factor(as.character(rows[[field]]), levels = groups))
+  data.frame(
+    schema_version = v3r_route_lineage_schema,
+    stage = admitted$stage,
+    evidence_kind = admitted$kind,
+    route = admitted$route,
+    group_kind = field,
+    group_id = groups,
+    source_attempt_count = as.integer(counts),
+    source_inventory_sha256 = inventory_sha256,
+    stringsAsFactors = FALSE
+  )[v3r_route_lineage_columns]
+}
+
+v3r_expected_route_lineage <- function(state, evidence, adjudication) {
+  admitted <- adjudication$admitted
+  out <- do.call(rbind, list(
+    v3r_lineage_rows(admitted$official, state$corpus$sha256),
+    v3r_lineage_rows(admitted$base_r, evidence$base_r_inventory_sha256),
+    v3r_lineage_rows(admitted$julia, evidence$julia_replay_inventory_sha256)
+  ))
+  rownames(out) <- NULL
+  expected_kinds <- c("official", "base_r", "julia")
+  expected_groups <- if (identical(state$stage, "d0f")) 3L else 12L
+  kind_factor <- factor(out$evidence_kind, levels = expected_kinds)
+  kind_counts <- table(kind_factor)
+  weighted <- tapply(out$source_attempt_count, kind_factor, sum)
+  if (any(as.integer(kind_counts) != expected_groups) ||
+      any(as.integer(weighted) != nrow(state$manifest)) ||
+      anyDuplicated(out[c("evidence_kind", "group_id")])) {
+    v3r_abort("weighted route-lineage conservation failed")
+  }
+  out
+}
+
+v3r_validate_route_lineage <- function(state, evidence, adjudication) {
+  observed <- evidence$route_lineage
+  expected <- v3r_expected_route_lineage(state, evidence, adjudication)
+  if (!v3r_same_text_table(observed, expected)) {
+    v3r_abort("route-lineage artifact differs from admitted evidence")
+  }
+  invisible(expected)
+}
+
+v3r_write_route_lineage <- function(root, stage) {
+  state <- v3r_read_stage(root, stage, runtime_phase = "lineage")
+  evidence <- v3r_evidence(state, include_lineage = FALSE)
+  adjudication <- v3r_adjudicate_tables(state, evidence)
+  lineage <- v3r_expected_route_lineage(state, evidence, adjudication)
+  path <- v3r_lineage_path(state$root)
+  v3r_write_once(path, lineage, temporary_parent = dirname(state$root))
+  message(sprintf(
+    "wrote %s route lineage rows=%d sha256=%s",
+    stage, nrow(lineage), v07d_sha256(path)
+  ))
+  invisible(lineage)
+}
+
 v3r_stage_decision <- function(summary, stage) {
   if (stage == "d0f") {
     status <- unique(as.character(summary$d0f_status))
@@ -1153,7 +1361,7 @@ v3r_stage_decision <- function(summary, stage) {
   paste(paste(names(counts), as.integer(counts), sep = "="), collapse = ";")
 }
 
-v3r_evidence <- function(state) {
+v3r_evidence <- function(state, include_lineage = TRUE) {
   base <- v3r_read_rows(state, "base_r")
   julia <- v3r_read_rows(state, "julia")
   r_summary_path <- file.path(state$root, paste0(state$stage, "_summary_r.tsv"))
@@ -1161,7 +1369,7 @@ v3r_evidence <- function(state) {
   columns <- v3r_summary_columns(state$stage)
   r_summary <- v3r_read_tsv(r_summary_path, columns)
   j_summary <- v3r_read_tsv(j_summary_path, columns)
-  list(
+  out <- list(
     base = base, julia = julia, r_summary = r_summary,
     j_summary = j_summary,
     base_r_inventory_sha256 = v3r_inventory_sha256(
@@ -1173,6 +1381,14 @@ v3r_evidence <- function(state) {
     r_summary_sha256 = v07d_sha256(r_summary_path),
     julia_summary_sha256 = v07d_sha256(j_summary_path)
   )
+  if (include_lineage) {
+    path <- v3r_lineage_path(state$root)
+    out$route_lineage <- v3r_read_tsv(
+      path, v3r_route_lineage_columns, all_character = TRUE
+    )
+    out$route_lineage_sha256 <- v07d_sha256(path)
+  }
+  out
 }
 
 v3r_review_path <- function(root, reviewer) {
@@ -1200,6 +1416,7 @@ v3r_review_row <- function(
     julia_replay_inventory_sha256 = evidence$julia_replay_inventory_sha256,
     r_summary_sha256 = evidence$r_summary_sha256,
     julia_summary_sha256 = evidence$julia_summary_sha256,
+    route_lineage_sha256 = evidence$route_lineage_sha256,
     r_driver_commit = state$preseal$value[["r_driver_commit"]],
     r_recomputer_commit = state$preseal$value[["r_recomputer_commit"]],
     julia_replay_commit = state$preseal$value[["julia_replay_commit"]],
@@ -1213,6 +1430,7 @@ v3r_write_postrun_review <- function(
   state <- v3r_read_stage(root, stage, runtime_phase = "review")
   evidence <- v3r_evidence(state)
   adjudication <- v3r_adjudicate_tables(state, evidence)
+  v3r_validate_route_lineage(state, evidence, adjudication)
   reviewer <- tolower(reviewer)
   expected_path <- v3r_review_path(state$root, reviewer)
   if (!is.null(receipt)) {
@@ -1242,7 +1460,7 @@ v3r_validate_review <- function(
   if (!identical(path, v3r_review_path(state$root, reviewer))) {
     v3r_abort("%s post-run receipt is relocated", reviewer)
   }
-  row <- v3r_read_tsv(path, v3r_review_columns)
+  row <- v3r_read_tsv(path, v3r_review_columns, all_character = TRUE)
   expected <- v3r_review_row(
     state, evidence, reviewer, as.character(row$verdict),
     stage_decision, as.character(row$reviewed_at_utc)
@@ -1325,26 +1543,27 @@ v3r_adjudicate_tables <- function(state, evidence) {
     "driver_commit", "preseal_sha256", "runtime_seconds", "peak_rss_mb"
   )
   compare <- setdiff(v3r_attempt_columns(state$stage), distinct)
+  official_rows <- v3r_evidence_rows(official_admitted, state)
+  base_rows <- v3r_evidence_rows(base_admitted, state)
+  julia_rows <- v3r_evidence_rows(julia_admitted, state)
   numeric_attempt <- compare[vapply(
-    official_admitted[compare], is.numeric, logical(1L)
+    official_rows[compare], is.numeric, logical(1L)
   )]
   attempt_max_diff <- max(
-    v3r_numeric_max_diff(official_admitted, base_admitted, numeric_attempt),
-    v3r_numeric_max_diff(official_admitted, julia_admitted, numeric_attempt)
+    v3r_numeric_max_diff(official_rows, base_rows, numeric_attempt),
+    v3r_numeric_max_diff(official_rows, julia_rows, numeric_attempt)
   )
   if (!is.finite(attempt_max_diff) || attempt_max_diff > 1e-10) {
     v3r_abort("attempt parity maximum difference exceeds 1e-10")
   }
   driver <- v3r_expected_summary(state, official_admitted)
   base <- v3r_expected_summary(state, base_admitted)
-  julia_attempts <- julia_admitted
   # Julia replay runtime/RSS are route diagnostics. Scientific summaries use
   # the official R performance fields, exactly as required by doc 49.
-  julia_attempts$runtime_seconds <- official_admitted$runtime_seconds
-  julia_attempts$peak_rss_mb <- official_admitted$peak_rss_mb
-  julia <- v3r_expected_summary(
-    state, julia_attempts, expected_route = "julia_profile_replay"
+  julia_scientific <- v3r_project_julia_performance(
+    julia_admitted, official_admitted
   )
+  julia <- v3r_expected_summary(state, julia_scientific)
   summary_max_diff <- max(
     v3r_compare_summary_triplet(driver, base, julia, state$stage),
     v3r_compare_summary_triplet(
@@ -1356,7 +1575,11 @@ v3r_adjudicate_tables <- function(state, evidence) {
   }
   list(
     summary = driver, attempt_max_diff = attempt_max_diff,
-    summary_max_diff = summary_max_diff
+    summary_max_diff = summary_max_diff,
+    admitted = list(
+      official = official_admitted, base_r = base_admitted,
+      julia = julia_scientific
+    )
   )
 }
 
@@ -1383,6 +1606,7 @@ v3r_verify_final_tree <- function(state, include_receipt = TRUE) {
     v3r_recompute_paths(state, "julia"),
     file.path(root, paste0(state$stage, "_summary_r.tsv")),
     file.path(root, paste0(state$stage, "_summary_julia.tsv")),
+    v3r_lineage_path(root),
     vapply(v3p_reviewers, function(reviewer) {
       v3r_review_path(root, reviewer)
     }, character(1L)),
@@ -1395,6 +1619,16 @@ v3r_verify_final_tree <- function(state, include_receipt = TRUE) {
   v07d_verify_tree_membership(root, expected, "final stage tree")
   for (path in primaries) v3r_verify_pair(path)
   invisible(TRUE)
+}
+
+v3r_adjudication_key <- function(receipt_without_key) {
+  if ("adjudication_key_sha256" %in% names(receipt_without_key)) {
+    receipt_without_key <- receipt_without_key[
+      setdiff(names(receipt_without_key), "adjudication_key_sha256")
+    ]
+  }
+  receipt_without_key[] <- lapply(receipt_without_key, as.character)
+  v3r_hash_text(v07d_tsv_text(receipt_without_key))
 }
 
 v3r_receipt_row <- function(
@@ -1427,7 +1661,15 @@ v3r_receipt_row <- function(
     julia_replay_inventory_sha256 = evidence$julia_replay_inventory_sha256,
     r_summary_sha256 = evidence$r_summary_sha256,
     julia_summary_sha256 = evidence$julia_summary_sha256,
+    route_lineage_sha256 = evidence$route_lineage_sha256,
     review_values
+  )
+  key_source <- as.data.frame(as.list(row), stringsAsFactors = FALSE)
+  adjudication_key_sha256 <- v3r_adjudication_key(key_source)
+  row <- c(
+    row[seq_len(match("route_lineage_sha256", names(row)))],
+    adjudication_key_sha256 = adjudication_key_sha256,
+    row[-seq_len(match("route_lineage_sha256", names(row)))]
   )
   out <- as.data.frame(as.list(row), stringsAsFactors = FALSE)
   out[v3r_receipt_columns]
@@ -1443,6 +1685,7 @@ v3r_expected_final <- function(root, stage) {
   state <- v3r_read_stage(root, stage, runtime_phase = "final")
   evidence <- v3r_evidence(state)
   adjudication <- v3r_adjudicate_tables(state, evidence)
+  v3r_validate_route_lineage(state, evidence, adjudication)
   summary <- adjudication$summary
   review_paths <- v3r_review_paths(state$root)
   decision <- v3r_stage_decision(summary, state$stage)
@@ -1460,14 +1703,63 @@ v3r_expected_final <- function(root, stage) {
   )
 }
 
+v3r_ensure_exact_adjudication_receipt <- function(
+  path, receipt, temporary_parent
+) {
+  sidecar <- paste0(path, ".sha256")
+  primary_exists <- file.exists(path)
+  sidecar_exists <- file.exists(sidecar)
+  if (xor(primary_exists, sidecar_exists)) {
+    v3r_abort("adjudication receipt primary/sidecar is orphaned")
+  }
+  if (!primary_exists) {
+    v3r_write_once(path, receipt, temporary_parent = temporary_parent)
+    return("created")
+  }
+  observed <- v3r_read_tsv(path, v3r_receipt_columns, all_character = TRUE)
+  v3r_validate_receipt_row(observed, receipt)
+  v3r_validate_exact_receipt_pair_bytes(path, receipt)
+  "existing"
+}
+
+v3r_validate_exact_receipt_pair_bytes <- function(path, expected) {
+  primary_expected <- charToRaw(enc2utf8(v07d_tsv_text(expected)))
+  primary_observed <- readBin(
+    path, what = "raw", n = file.info(path)$size
+  )
+  if (!identical(primary_observed, primary_expected)) {
+    v3r_abort("adjudication receipt primary is not byte-identical")
+  }
+  digest <- v07d_sha256_raw(primary_expected)
+  sidecar_path <- paste0(path, ".sha256")
+  sidecar_expected <- charToRaw(sprintf(
+    "%s  %s\n", digest, basename(path)
+  ))
+  sidecar_observed <- readBin(
+    sidecar_path, what = "raw", n = file.info(sidecar_path)$size
+  )
+  if (!identical(sidecar_observed, sidecar_expected)) {
+    v3r_abort("adjudication receipt sidecar is not byte-identical")
+  }
+  invisible(TRUE)
+}
+
 v3r_adjudicate <- function(root, stage) {
   final <- v3r_expected_final(root, stage)
   path <- file.path(final$state$root, "stage_adjudication_receipt.tsv")
-  v3r_verify_final_tree(final$state, include_receipt = FALSE)
-  v3r_write_once(path, final$receipt)
+  existing <- file.exists(path) && file.exists(paste0(path, ".sha256"))
+  if (existing) {
+    v3r_verify_final_tree(final$state, include_receipt = TRUE)
+  } else if (!file.exists(path) && !file.exists(paste0(path, ".sha256"))) {
+    v3r_verify_final_tree(final$state, include_receipt = FALSE)
+  }
+  status <- v3r_ensure_exact_adjudication_receipt(
+    path, final$receipt, dirname(final$state$root)
+  )
   v3r_verify_final_tree(final$state, include_receipt = TRUE)
   message(sprintf(
-    "wrote %s adjudication receipt decision=%s sha256=%s",
+    "%s %s adjudication receipt decision=%s sha256=%s",
+    if (identical(status, "created")) "wrote" else "verified existing",
     stage, final$receipt$stage_decision, v07d_sha256(path)
   ))
   invisible(final$receipt)
@@ -1487,6 +1779,13 @@ v3r_validate_receipt_row <- function(observed, expected) {
   ) {
     v3r_abort("adjudication receipt parity maximum exceeds 1e-10")
   }
+  if (!v3p_hex64(observed$adjudication_key_sha256[[1L]]) ||
+      !identical(
+        observed$adjudication_key_sha256[[1L]],
+        v3r_adjudication_key(observed)
+      )) {
+    v3r_abort("adjudication receipt key is invalid")
+  }
   if (!v3r_same_text_table(observed, expected)) {
     v3r_abort("adjudication receipt differs from the current exact evidence")
   }
@@ -1496,10 +1795,13 @@ v3r_validate_receipt_row <- function(observed, expected) {
 v3r_validate_final <- function(root, stage) {
   root <- v3r_canonical_dir(root, "stage output root")
   receipt_path <- file.path(root, "stage_adjudication_receipt.tsv")
-  observed <- v3r_read_tsv(receipt_path, v3r_receipt_columns)
+  observed <- v3r_read_tsv(
+    receipt_path, v3r_receipt_columns, all_character = TRUE
+  )
   if (nrow(observed) != 1L) v3r_abort("adjudication receipt must have one row")
   final <- v3r_expected_final(root, stage)
   v3r_validate_receipt_row(observed, final$receipt)
+  v3r_validate_exact_receipt_pair_bytes(receipt_path, final$receipt)
   v3r_verify_final_tree(final$state)
   message(sprintf(
     "validated %s final receipt decision=%s sha256=%s",
@@ -1587,6 +1889,9 @@ v3r_main <- function(
     ))
   }
   if (mode == "summarize") return(v3r_summarize(root, stage))
+  if (mode == "write-route-lineage") {
+    return(v3r_write_route_lineage(root, stage))
+  }
   if (mode == "write-postrun-review") {
     return(v3r_write_postrun_review(
       root, stage, v3r_required(args, "reviewer"),
@@ -1604,7 +1909,7 @@ v3r_main <- function(
     paste(
       "mode must be selftest, recompute-one, write-batch-plan,",
       "validate-batch-plan, authenticate-batch-plan, recompute-batch, summarize,",
-      "write-postrun-review, adjudicate, or validate-final"
+      "write-route-lineage, write-postrun-review, adjudicate, or validate-final"
     )
   )
 }

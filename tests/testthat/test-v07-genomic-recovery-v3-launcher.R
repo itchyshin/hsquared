@@ -16,10 +16,10 @@ launcher_test_path <- function(name) {
   file.path(normalizePath(tempdir(), winslash = "/"), name)
 }
 
-launcher_run <- function(args) {
+launcher_run <- function(args, env = character()) {
   suppressWarnings(system2(
     "bash", c(shQuote(launcher_path), vapply(args, shQuote, character(1L))),
-    stdout = TRUE, stderr = TRUE
+    stdout = TRUE, stderr = TRUE, env = env
   ))
 }
 
@@ -30,10 +30,10 @@ test_that("recovery-v3 launcher is executable shell with the full phase surface"
     0L
   )
   for (mode in c(
-    "selftest", "guard-selftest", "write-review", "prepare-adaptive", "prepare", "preseal", "smoke-n-ladder",
+    "selftest", "synthetic-lifecycle", "guard-selftest", "write-review", "prepare-adaptive", "prepare", "preseal", "smoke-n-ladder",
     "smoke-16", "verify-official", "recommend-workers", "run-official",
     "lock-corpus", "recompute-base-r", "summarize-r", "replay-julia",
-    "verify-replay", "summarize-julia", "write-postrun-review",
+    "verify-replay", "summarize-julia", "write-route-lineage", "write-postrun-review",
     "adjudicate", "validate-final"
   )) {
     expect_match(launcher_text, mode, fixed = TRUE)
@@ -47,6 +47,43 @@ test_that("launcher compute guard is executable and fail-closed", {
   )
   expect_identical(attr(output, "status"), NULL)
   expect_match(paste(output, collapse = "\n"), "guard selftest: PASS", fixed = TRUE)
+})
+
+test_that("deployed synthetic launcher rejects bypass and nonsibling twins", {
+  admitted_env <- c(
+    "CI=false", "GITHUB_ACTIONS=false", "SLURM_CLUSTER_NAME=fir",
+    "SLURM_JOB_ID=707"
+  )
+  bypass <- launcher_run(
+    c("synthetic-lifecycle", launcher_test_path("unused"),
+      launcher_repo, dirname(launcher_repo)),
+    c(admitted_env, "HSQUARED_RETRY7_SYNTHETIC_LOCAL=true")
+  )
+  expect_true(!is.null(attr(bypass, "status")))
+  expect_match(
+    paste(bypass, collapse = "\n"),
+    "deployed synthetic lifecycle cannot bypass the compute guard",
+    fixed = TRUE
+  )
+
+  base <- launcher_test_path("v3 synthetic launcher twins")
+  unlink(base, recursive = TRUE)
+  on.exit(unlink(base, recursive = TRUE), add = TRUE)
+  r_root <- file.path(base, "hsquared")
+  wrong_julia <- file.path(base, "not-HSquared.jl")
+  dir.create(r_root, recursive = TRUE)
+  dir.create(wrong_julia)
+  nonsibling <- launcher_run(
+    c("synthetic-lifecycle", file.path(base, "workspace"),
+      r_root, wrong_julia),
+    admitted_env
+  )
+  expect_true(!is.null(attr(nonsibling, "status")))
+  expect_match(
+    paste(nonsibling, collapse = "\n"),
+    "synthetic lifecycle requires sibling deployed twins",
+    fixed = TRUE
+  )
 })
 
 test_that("launcher makes fresh-D0F adjudication a D1-only predecessor", {

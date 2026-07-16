@@ -5,8 +5,9 @@ usage() {
   cat <<'EOF'
 Usage:
   run-v07-genomic-recovery-v3.sh selftest R_ROOT JULIA_ROOT
+  run-v07-genomic-recovery-v3.sh synthetic-lifecycle WORKSPACE R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh guard-selftest
-  run-v07-genomic-recovery-v3.sh write-review R_ROOT PATH REVIEWER CLEAN|BLOCKED DOC49_SHA R_DRIVER_COMMIT R_RECOMPUTER_COMMIT JULIA_REPLAY_COMMIT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT
+  run-v07-genomic-recovery-v3.sh write-review R_ROOT PATH REVIEWER CLEAN|BLOCKED DOC49_SHA R_DRIVER_COMMIT R_RECOMPUTER_COMMIT JULIA_REPLAY_COMMIT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT R_DRIVER_SHA R_RECOMPUTER_SHA JULIA_REPLAY_SHA
   run-v07-genomic-recovery-v3.sh prepare-adaptive OUT d2|d3|d4 R_ROOT D1_FINAL_ROOT
 
   run-v07-genomic-recovery-v3.sh prepare OUT d0f R_ROOT JULIA_ROOT RECEIPT_ROOT MAX_WORKERS
@@ -26,6 +27,7 @@ Usage:
   run-v07-genomic-recovery-v3.sh replay-julia OUT d0f|d1 R_ROOT JULIA_ROOT WORKERS
   run-v07-genomic-recovery-v3.sh verify-replay OUT d0f|d1 R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh summarize-julia OUT d0f|d1 R_ROOT JULIA_ROOT
+  run-v07-genomic-recovery-v3.sh write-route-lineage OUT d0f|d1 R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh write-postrun-review OUT d0f|d1 R_ROOT JULIA_ROOT REVIEWER CLEAN|BLOCKED REVIEWED_AT_UTC
   run-v07-genomic-recovery-v3.sh adjudicate OUT d0f|d1 R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh validate-final OUT d0f|d1 R_ROOT JULIA_ROOT
@@ -222,14 +224,35 @@ if [[ "$mode" == selftest ]]; then
   exit 0
 fi
 
+if [[ "$mode" == synthetic-lifecycle ]]; then
+  [[ $# -eq 3 ]] || { usage >&2; exit 64; }
+  workspace=$1
+  r_root=$2
+  julia_root=$3
+  assert_compute_context
+  [[ "${HSQUARED_RETRY7_SYNTHETIC_LOCAL:-false}" != true ]] || \
+    die "deployed synthetic lifecycle cannot bypass the compute guard"
+  [[ -d "$r_root" && -d "$julia_root" ]] || \
+    die "synthetic lifecycle requires deployed R and Julia roots"
+  expected_julia=$(cd "$r_root/.." && pwd -P)/HSquared.jl
+  actual_julia=$(cd "$julia_root" && pwd -P)
+  [[ "$actual_julia" == "$expected_julia" ]] || \
+    die "synthetic lifecycle requires sibling deployed twins"
+  exec Rscript --vanilla \
+    "$r_root/tools/v07_genomic_recovery_v3_synthetic_lifecycle.R" \
+    --workspace="$workspace"
+fi
+
 if [[ "$mode" == write-review ]]; then
-  [[ $# -eq 10 ]] || { usage >&2; exit 64; }
+  [[ $# -eq 13 ]] || { usage >&2; exit 64; }
   r_root=$1
   exec Rscript --vanilla "$r_root/tools/v07_genomic_recovery_v3.R" \
     --mode=write-review --path="$2" --reviewer="$3" --verdict="$4" \
     --doc49-sha256="$5" --r-driver-commit="$6" \
     --r-recomputer-commit="$7" --julia-replay-commit="$8" \
-    --r-auto-route-commit="$9" --julia-candidate-commit="${10}"
+    --r-auto-route-commit="$9" --julia-candidate-commit="${10}" \
+    --r-driver-sha256="${11}" --r-recomputer-sha256="${12}" \
+    --julia-replay-sha256="${13}"
 fi
 
 if [[ "$mode" == prepare-adaptive ]]; then
@@ -654,6 +677,11 @@ case "$mode" in
     [[ $# -eq 0 ]] || { usage >&2; exit 64; }
     exec "$julia_bin" --project="$julia_root" --startup-file=no "$julia_replay" \
       --mode=summarize --out-dir="$out" --stage="$stage"
+    ;;
+  write-route-lineage)
+    [[ $# -eq 0 ]] || { usage >&2; exit 64; }
+    exec Rscript --vanilla "$recomputer" --mode=write-route-lineage \
+      --output-root="$out" --stage="$stage"
     ;;
   write-postrun-review)
     [[ $# -eq 3 ]] || { usage >&2; exit 64; }

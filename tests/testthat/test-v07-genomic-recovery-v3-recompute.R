@@ -181,7 +181,7 @@ v3r_test_refresh_packet_lock <- function(fixture) {
   v3r_test_rewrite(file.path(fixture$packet, "packet_files_lock.tsv"), lock)
 }
 
-test_that("expected summaries forward Julia replay route admission", {
+test_that("Retry-6 route rebind is red before summary reconstruction", {
   root <- tempfile("v3r-route-aware-summary-")
   dir.create(root)
   on.exit(unlink(root, recursive = TRUE), add = TRUE)
@@ -207,20 +207,33 @@ test_that("expected summaries forward Julia replay route admission", {
   julia <- parity$attempts
   julia$route <- "julia_profile_replay"
   julia$driver_commit <- binding$julia_replay_commit
+  legacy_rebound <- julia
+  legacy_rebound$route <- "ordinary_auto_genomic"
+  legacy_rebound$driver_commit <- binding$r_driver_commit
+  expect_identical(
+    v3p_d0f_summary(
+      parity$manifest, legacy_rebound, parity$bootstrap,
+      v07d_sha256(file.path(root, "d0f_bootstrap_indices.tsv")), binding
+    ),
+    parity$summary
+  )
+  expect_error(
+    v3r_new_admitted_evidence(legacy_rebound, "julia", "d0f"),
+    "route does not match"
+  )
   expect_error(
     v3r_expected_summary(state, julia),
-    "malformed scientific output"
+    "requires admitted evidence"
   )
-  observed <- v3r_expected_summary(
-    state, julia, expected_route = "julia_profile_replay"
-  )
+  admitted <- v3r_new_admitted_evidence(julia, "julia", "d0f")
+  observed <- v3r_expected_summary(state, admitted)
   expect_identical(observed, parity$summary)
   wrong_driver <- julia
   wrong_driver$driver_commit <- binding$r_driver_commit
   expect_error(
-    v3r_expected_summary(
-      state, wrong_driver, expected_route = "julia_profile_replay"
-    ),
+    v3r_expected_summary(state, v3r_new_admitted_evidence(
+      wrong_driver, "julia", "d0f"
+    )),
     "attempt provenance binding is invalid"
   )
 
@@ -234,20 +247,95 @@ test_that("expected summaries forward Julia replay route admission", {
   d1_julia$driver_commit <- binding$julia_replay_commit
   expect_error(
     v3r_expected_summary(d1_state, d1_julia),
-    "malformed scientific output"
+    "requires admitted evidence"
   )
-  d1_observed <- v3r_expected_summary(
-    d1_state, d1_julia, expected_route = "julia_profile_replay"
-  )
+  d1_admitted <- v3r_new_admitted_evidence(d1_julia, "julia", "d1")
+  d1_observed <- v3r_expected_summary(d1_state, d1_admitted)
   expect_identical(d1_observed, d1$summary)
   d1_wrong_driver <- d1_julia
   d1_wrong_driver$driver_commit <- binding$r_driver_commit
   expect_error(
-    v3r_expected_summary(
-      d1_state, d1_wrong_driver, expected_route = "julia_profile_replay"
-    ),
+    v3r_expected_summary(d1_state, v3r_new_admitted_evidence(
+      d1_wrong_driver, "julia", "d1"
+    )),
     "attempt provenance binding is invalid"
   )
+})
+
+test_that("weighted route lineage conserves full D0F and D1 evidence", {
+  h64 <- function(x) v3r_test_hash(x)
+  h40 <- function(x) v3r_test_hash(x, 40L)
+  binding <- list(
+    preseal_sha256 = h64("e"), manifest_sha256 = h64("f"),
+    corpus_lock_sha256 = h64("a"), r_auto_route_commit = h40("a"),
+    julia_candidate_commit = h40("b"), r_driver_commit = h40("c"),
+    julia_replay_commit = h40("d"), julia_replay_sha256 = h64("b")
+  )
+  for (stage in c("d0f", "d1")) {
+    parity <- if (stage == "d0f") {
+      v3p_d0f_summary_parity_fixture(binding)
+    } else {
+      v3p_d1_summary_parity_fixture(binding)
+    }
+    ordinary <- parity$attempts
+    julia <- ordinary
+    julia$route <- "julia_profile_replay"
+    julia$driver_commit <- binding$julia_replay_commit
+    admitted <- list(
+      official = v3r_new_admitted_evidence(ordinary, "official", stage),
+      base_r = v3r_new_admitted_evidence(ordinary, "base_r", stage),
+      julia = v3r_new_admitted_evidence(julia, "julia", stage)
+    )
+    state <- list(
+      stage = stage, manifest = parity$manifest,
+      corpus = list(sha256 = h64("c"))
+    )
+    evidence <- list(
+      base_r_inventory_sha256 = h64("d"),
+      julia_replay_inventory_sha256 = h64("e")
+    )
+    adjudication <- list(admitted = admitted)
+    lineage <- v3r_expected_route_lineage(state, evidence, adjudication)
+    expected_rows <- if (stage == "d0f") 9L else 36L
+    expect_equal(nrow(lineage), expected_rows)
+    expect_equal(
+      as.integer(tapply(
+        lineage$source_attempt_count, lineage$evidence_kind, sum
+      )),
+      rep(576L, 3L)
+    )
+    evidence$route_lineage <- lineage
+    expect_no_error(v3r_validate_route_lineage(
+      state, evidence, adjudication
+    ))
+    evidence$route_lineage$source_attempt_count[[1L]] <-
+      evidence$route_lineage$source_attempt_count[[1L]] - 1L
+    expect_error(
+      v3r_validate_route_lineage(state, evidence, adjudication),
+      "differs from admitted evidence"
+    )
+  }
+})
+
+test_that("admitted evidence rejects forged route identity", {
+  binding <- list(
+    preseal_sha256 = v3r_test_hash("e"),
+    manifest_sha256 = v3r_test_hash("f"),
+    corpus_lock_sha256 = v3r_test_hash("a"),
+    r_auto_route_commit = v3r_test_hash("a", 40L),
+    julia_candidate_commit = v3r_test_hash("b", 40L),
+    r_driver_commit = v3r_test_hash("c", 40L),
+    julia_replay_commit = v3r_test_hash("d", 40L),
+    julia_replay_sha256 = v3r_test_hash("b")
+  )
+  parity <- v3p_d1_summary_parity_fixture(binding)
+  expect_error(
+    v3r_new_admitted_evidence(parity$attempts, "julia", "d1"),
+    "route does not match"
+  )
+  admitted <- v3r_new_admitted_evidence(parity$attempts, "official", "d1")
+  class(admitted) <- v3r_evidence_class("julia")
+  expect_error(v3r_evidence_rows(admitted), "class/kind binding")
 })
 
 test_that("base R reconstructs p, W, k, G, K, Q, hashes, and attempt fields", {
@@ -721,7 +809,8 @@ v3r_test_review_fixture <- function() {
     base_r_inventory_sha256 = v3r_test_hash("c"),
     julia_replay_inventory_sha256 = v3r_test_hash("d"),
     r_summary_sha256 = v3r_test_hash("e"),
-    julia_summary_sha256 = v3r_test_hash("f")
+    julia_summary_sha256 = v3r_test_hash("f"),
+    route_lineage_sha256 = v3r_test_hash("a")
   )
   list(root = root, state = state, evidence = evidence)
 }
@@ -804,6 +893,18 @@ test_that("final receipt binds all tool, commit, inventory, summary, and review 
   expect_identical(receipt$attempt_max_diff, "0")
   expect_identical(receipt$summary_max_diff, "0")
   expect_silent(v3r_validate_receipt_row(receipt, receipt))
+  key_mutation <- receipt
+  key_mutation$adjudication_key_sha256 <- v3r_test_hash("f")
+  expect_error(
+    v3r_validate_receipt_row(key_mutation, key_mutation),
+    "key is invalid"
+  )
+  binding_mutation <- receipt
+  binding_mutation$route_lineage_sha256 <- v3r_test_hash("b")
+  expect_error(
+    v3r_validate_receipt_row(binding_mutation, binding_mutation),
+    "key is invalid"
+  )
   attempt_mutation <- receipt
   attempt_mutation$attempt_max_diff <- "1.1e-10"
   expect_error(
@@ -815,6 +916,53 @@ test_that("final receipt binds all tool, commit, inventory, summary, and review 
   expect_error(
     v3r_validate_receipt_row(summary_mutation, receipt),
     "maximum exceeds"
+  )
+
+  exact_root <- tempfile("v3r-exact-receipt-")
+  dir.create(exact_root)
+  exact_root <- normalizePath(exact_root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(exact_root, recursive = TRUE), add = TRUE)
+  exact_path <- file.path(exact_root, "stage_adjudication_receipt.tsv")
+  expect_identical(
+    v3r_ensure_exact_adjudication_receipt(exact_path, receipt, exact_root),
+    "created"
+  )
+  exact_bytes <- readBin(exact_path, "raw", file.info(exact_path)$size)
+  exact_sidecar <- readBin(
+    paste0(exact_path, ".sha256"), "raw",
+    file.info(paste0(exact_path, ".sha256"))$size
+  )
+  expect_identical(
+    v3r_ensure_exact_adjudication_receipt(exact_path, receipt, exact_root),
+    "existing"
+  )
+  expect_identical(
+    readBin(exact_path, "raw", file.info(exact_path)$size), exact_bytes
+  )
+  expect_identical(
+    readBin(
+      paste0(exact_path, ".sha256"), "raw",
+      file.info(paste0(exact_path, ".sha256"))$size
+    ),
+    exact_sidecar
+  )
+  conflicting <- receipt
+  conflicting$route_lineage_sha256 <- v3r_test_hash("b")
+  conflicting$adjudication_key_sha256 <- v3r_adjudication_key(conflicting)
+  expect_error(
+    v3r_ensure_exact_adjudication_receipt(
+      exact_path, conflicting, exact_root
+    ),
+    "differs from the current exact evidence"
+  )
+  orphan_path <- file.path(exact_root, "orphan.tsv")
+  v3r_test_write(orphan_path, receipt)
+  unlink(paste0(orphan_path, ".sha256"))
+  expect_error(
+    v3r_ensure_exact_adjudication_receipt(
+      orphan_path, receipt, exact_root
+    ),
+    "orphaned"
   )
 })
 
@@ -875,6 +1023,7 @@ test_that("synthetic finalization creates once and validates the exact tree", {
     v3r_julia_path(root, "d1", fixture$row),
     file.path(root, "d1_summary_r.tsv"),
     file.path(root, "d1_summary_julia.tsv"),
+    file.path(root, "stage_route_lineage.tsv"),
     vapply(v3p_reviewers, function(reviewer) {
       v3r_review_path(root, reviewer)
     }, character(1L))
@@ -909,6 +1058,7 @@ test_that("synthetic finalization creates once and validates the exact tree", {
   receipt <- as.data.frame(
     as.list(receipt_values), stringsAsFactors = FALSE
   )[v3r_receipt_columns]
+  receipt$adjudication_key_sha256 <- v3r_adjudication_key(receipt)
 
   target <- environment(v3r_adjudicate)
   original_expected_final <- get(
@@ -942,10 +1092,11 @@ test_that("synthetic finalization creates once and validates the exact tree", {
     "validated d1 final receipt"
   )
   expect_true(v3r_same_text_table(validated, receipt))
-  expect_error(
-    v3r_write_once(receipt_path, receipt),
-    "create-once output primary/sidecar already exists"
+  expect_message(
+    retried <- v3r_adjudicate(root, "d1"),
+    "verified existing d1 adjudication receipt"
   )
+  expect_true(v3r_same_text_table(retried, receipt))
   expect_identical(v07d_sha256(receipt_path), first_hash)
   expect_silent(v3r_verify_final_tree(state, include_receipt = TRUE))
 })

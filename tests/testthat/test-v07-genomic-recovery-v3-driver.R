@@ -124,7 +124,8 @@ test_that("review receipts are canonical create-once pairs", {
   path <- file.path(root, "fisher.tsv")
   args <- list(
     path, "fisher", "CLEAN", strrep("a", 64L), strrep("a", 40L),
-    strrep("b", 40L), strrep("c", 40L), strrep("d", 40L), strrep("e", 40L)
+    strrep("b", 40L), strrep("c", 40L), strrep("d", 40L), strrep("e", 40L),
+    strrep("a", 64L), strrep("b", 64L), strrep("c", 64L)
   )
   expect_silent(do.call(v3d_write_review, args))
   expect_silent(v07d_verify_pair(path))

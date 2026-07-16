@@ -77,6 +77,33 @@ v3ct_evidence_source <- function(stage, manifest, summary, tag = stage) {
     file.path(root, paste0(stage, "_summary_julia.tsv")),
     summary
   )
+  route_lineage_sha <- if (stage == "d1") {
+    groups <- unique(as.character(manifest$cell_id))
+    counts <- as.integer(table(factor(manifest$cell_id, levels = groups)))
+    lineage <- do.call(rbind, lapply(
+      c("official", "base_r", "julia"),
+      function(kind) data.frame(
+        schema_version = v3c_route_lineage_schema,
+        stage = "d1",
+        evidence_kind = kind,
+        route = if (kind == "julia") {
+          "julia_profile_replay"
+        } else {
+          "ordinary_auto_genomic"
+        },
+        group_kind = "cell_id",
+        group_id = groups,
+        source_attempt_count = counts,
+        source_inventory_sha256 = v3ct_h64(c(
+          official = "a", base_r = "b", julia = "c"
+        )[[kind]]),
+        stringsAsFactors = FALSE
+      )
+    ))
+    v3ct_write_pair(file.path(root, "stage_route_lineage.tsv"), lineage)
+  } else {
+    NA_character_
+  }
   preseal <- data.frame(
     key = c(
       "stage",
@@ -100,7 +127,11 @@ v3ct_evidence_source <- function(stage, manifest, summary, tag = stage) {
   )
   preseal_sha <- v3ct_write_pair(file.path(root, "stage_preseal.tsv"), preseal)
   receipt <- data.frame(
-    schema_version = "v07-genomic-recovery-v3-adjudication-1",
+    schema_version = if (stage == "d1") {
+      v3c_pilot_receipt_schema
+    } else {
+      "v07-genomic-recovery-v3-adjudication-1"
+    },
     stage = stage,
     verdict = "PASS",
     stage_decision = v3c_stage_decision_pilot(summary),
@@ -115,6 +146,10 @@ v3ct_evidence_source <- function(stage, manifest, summary, tag = stage) {
     julia_replay_commit = "f7ff83855c4b4d14aad39516f37b7c1b5994b7ae",
     stringsAsFactors = FALSE
   )
+  if (stage == "d1") {
+    receipt$route_lineage_sha256 <- route_lineage_sha
+    receipt$adjudication_key_sha256 <- v3ct_h64("a")
+  }
   v3ct_write_pair(file.path(root, "stage_adjudication_receipt.tsv"), receipt)
   list(
     root = root,

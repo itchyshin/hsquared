@@ -525,6 +525,9 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
       julia_replay_commit = commit,
       r_auto_route_commit = commit,
       julia_candidate_commit = commit,
+      r_driver_sha256 = v07d_sha256(tool_paths[["r_driver"]]),
+      r_recomputer_sha256 = v07d_sha256(tool_paths[["r_recomputer"]]),
+      julia_replay_sha256 = v07d_sha256(tool_paths[["julia_replay"]]),
       stringsAsFactors = FALSE
     )[v3p_review_columns]
     review_hashes[[reviewer]] <- v3p_test_pair(
@@ -638,7 +641,7 @@ v3p_test_preseal_fixture <- function(write_preseal = TRUE, nested = FALSE) {
   )
 }
 
-test_that("D0F reproduces exact retired Retry-6 panels and phenotype seeds", {
+test_that("Retry-7 D0F reuses frozen panels with newly reserved phenotype seeds", {
   fixture <- v3p_test_d0f()
   expect_equal(nrow(fixture$fixed), 72L)
   expect_equal(nrow(fixture$manifest), 576L)
@@ -663,8 +666,8 @@ test_that("D0F reproduces exact retired Retry-6 panels and phenotype seeds", {
   expect_setequal(
     fixture$manifest$seed,
     v07s_d0f_seed_grid(
-      v07s_d0f_retired_retry5_phenotype_base,
-      "D0F_RETRY5_RETIRED"
+      v07s_d0f_retry_phenotype_base,
+      "D0F_RETRY7"
     )$seed
   )
   expect_length(intersect(fixture$manifest$seed, fixture$d0$seed), 0L)
@@ -702,7 +705,7 @@ test_that("D0F reproduces exact retired Retry-6 panels and phenotype seeds", {
   )
 })
 
-test_that("retired Retry-6 bootstrap reproduces but cannot reopen", {
+test_that("Retry-7 bootstrap reservation is deterministic and disjoint", {
   set.seed(617L)
   before_seed <- .Random.seed
   before_kind <- RNGkind()
@@ -713,16 +716,13 @@ test_that("retired Retry-6 bootstrap reproduces but cannot reopen", {
   expect_identical(names(bootstrap), v3p_d0f_bootstrap_columns)
   expect_silent(v3p_validate_d0f_bootstrap(bootstrap, 4L))
   seeds <- v3p_d0f_bootstrap_seed(v3p_d0f_designs$design_index)
-  expect_identical(seeds, as.integer(2041000001:2041000003))
+  expect_identical(seeds, as.integer(2043000001:2043000003))
   expect_identical(anyDuplicated(seeds), 0L)
   expect_identical(
     seeds,
-    v07s_d0f_bootstrap_seeds(v07s_d0f_retired_retry5_bootstrap_base)
+    v07s_d0f_bootstrap_seeds(v07s_d0f_retry_bootstrap_base)
   )
-  expect_error(
-    v3p_validate_bootstrap_seed_space(),
-    "overlaps a historical or v3 fitted seed"
-  )
+  expect_silent(v3p_validate_bootstrap_seed_space())
 
   panel <- bootstrap
   panel$panel_rank[[1L]] <- if (panel$panel_rank[[1L]] == 24L) 23L else 24L
@@ -1326,17 +1326,16 @@ test_that("D0F and D1 summaries re-admit the declared execution route", {
     ),
     "malformed scientific output"
   )
-  d0f_summary <- v3p_d0f_summary(
-    d0f$manifest, d0f_julia, bootstrap, v3p_test_hash("f"), binding,
-    expected_route = "julia_profile_replay"
+  d0f_summary <- v3p_d0f_julia_summary(
+    d0f$manifest, d0f_julia, bootstrap, v3p_test_hash("f"), binding
   )
   expect_true(all(d0f_summary$d0f_status == "COMPLETE"))
   d0f_wrong_driver <- d0f_julia
   d0f_wrong_driver$driver_commit <- binding$r_driver_commit
   expect_error(
-    v3p_d0f_summary(
+    v3p_d0f_julia_summary(
       d0f$manifest, d0f_wrong_driver, bootstrap, v3p_test_hash("f"),
-      binding, expected_route = "julia_profile_replay"
+      binding
     ),
     "attempt provenance binding is invalid"
   )
@@ -1349,18 +1348,12 @@ test_that("D0F and D1 summaries re-admit the declared execution route", {
     v3p_d1_summary(d1$manifest, d1_julia, binding),
     "malformed scientific output"
   )
-  d1_summary <- v3p_d1_summary(
-    d1$manifest, d1_julia, binding,
-    expected_route = "julia_profile_replay"
-  )
+  d1_summary <- v3p_d1_julia_summary(d1$manifest, d1_julia, binding)
   expect_true(all(d1_summary$cell_status == "ELIGIBLE"))
   d1_wrong_driver <- d1_julia
   d1_wrong_driver$driver_commit <- binding$r_driver_commit
   expect_error(
-    v3p_d1_summary(
-      d1$manifest, d1_wrong_driver, binding,
-      expected_route = "julia_profile_replay"
-    ),
+    v3p_d1_julia_summary(d1$manifest, d1_wrong_driver, binding),
     "attempt provenance binding is invalid"
   )
 })
@@ -1381,19 +1374,19 @@ test_that("shared D0F summary parity fixture pins all typed fields", {
   expect_identical(names(parity$summary), v3p_d0f_summary_columns)
   expect_identical(
     v3p_test_tsv_hash(parity$manifest),
-    "953bca93488ebf24b97ad9da1acdb8c4ce0758b8eb4123b39124c996a4d8ff0f"
+    "33cd66b551e100163247ecf76b4c2ccc56eeb4e9f15eb70bee284fecdec7a292"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$attempts),
-    "99eb906070c6792637ced94ad05a65a6e86061b33d7d3d81cdcaca870ec1cf6a"
+    "5e14a9229641d3352ba3e19ee41fe3942ac8ba8c252cda331d3c0c58222e6ad6"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$bootstrap),
-    "1b2dd8d0d6fc52997c99d5a8945ce4fd1e0f2042ca7ea69a44d0cfd5d8002fb3"
+    "ca36ab28d928788c81b52ff713bfb9d424dfc0b2997c9b445d12839be2a92be4"
   )
   expect_identical(
     v3p_test_tsv_hash(parity$summary),
-    "a4d11eb1ee039a95493ad00e41d3e056b14d7ef13ee8d30476368f4f3b34f454"
+    "2f67e85d8ca808c4f721cff401d4ddb815b0756e9134e5f759c1fd38fa076203"
   )
   expect_true(is.character(parity$summary$d0f_status))
   expect_true(is.logical(parity$summary$fit_blocker))
@@ -1550,7 +1543,10 @@ test_that("stage preseal verifies the exact existing tree and provenance", {
       "r_recomputer_commit",
       "julia_replay_commit",
       "r_auto_route_commit",
-      "julia_candidate_commit"
+      "julia_candidate_commit",
+      "r_driver_sha256",
+      "r_recomputer_sha256",
+      "julia_replay_sha256"
     )
   )
   expect_silent(v3p_test_validate_stage(
@@ -2067,6 +2063,20 @@ test_that("stage preseal binds deployed bytes to the exact Git commit", {
   fixture$preseal$value[
     fixture$preseal$key == "r_driver_sha256"
   ] <- changed_hash
+  for (reviewer in v3p_reviewers) {
+    review_path <- file.path(
+      fixture$stage_root, "receipts", paste0(reviewer, ".tsv")
+    )
+    review <- v07d_read_tsv(
+      review_path, v3p_review_columns, verify = FALSE
+    )
+    unlink(c(review_path, paste0(review_path, ".sha256")))
+    review$r_driver_sha256[[1L]] <- changed_hash
+    review_hash <- v3p_test_pair(review_path, review)
+    fixture$preseal$value[
+      fixture$preseal$key == paste0(reviewer, "_receipt_sha256")
+    ] <- review_hash
+  }
   relative <- "tools/v07_genomic_recovery_v3.R"
   v3p_test_git(
     fixture$git_root,

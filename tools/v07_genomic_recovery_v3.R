@@ -225,7 +225,8 @@ v3d_copy_pair <- function(source, destination) {
 v3d_write_review <- function(
   path, reviewer, verdict, doc49_sha256, r_driver_commit,
   r_recomputer_commit, julia_replay_commit, r_auto_route_commit,
-  julia_candidate_commit
+  julia_candidate_commit, r_driver_sha256, r_recomputer_sha256,
+  julia_replay_sha256
 ) {
   reviewer <- tolower(reviewer)
   verdict <- toupper(verdict)
@@ -234,12 +235,16 @@ v3d_write_review <- function(
   if (file.exists(path) || file.exists(paste0(path, ".sha256"))) {
     v3d_abort("review primary or sidecar already exists")
   }
-  hashes <- doc49_sha256
+  hashes <- c(
+    doc49_sha256, r_driver_sha256, r_recomputer_sha256,
+    julia_replay_sha256
+  )
   commits <- c(
     r_driver_commit, r_recomputer_commit, julia_replay_commit,
     r_auto_route_commit, julia_candidate_commit
   )
-  if (!v3p_hex64(hashes) || any(!vapply(commits, v3p_hex40, logical(1L)))) {
+  if (any(!vapply(hashes, v3p_hex64, logical(1L))) ||
+      any(!vapply(commits, v3p_hex40, logical(1L)))) {
     v3d_abort("review contains an invalid digest or commit")
   }
   row <- data.frame(
@@ -249,6 +254,9 @@ v3d_write_review <- function(
     julia_replay_commit = julia_replay_commit,
     r_auto_route_commit = r_auto_route_commit,
     julia_candidate_commit = julia_candidate_commit,
+    r_driver_sha256 = r_driver_sha256,
+    r_recomputer_sha256 = r_recomputer_sha256,
+    julia_replay_sha256 = julia_replay_sha256,
     stringsAsFactors = FALSE
   )[v3p_review_columns]
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
@@ -1358,14 +1366,16 @@ v3d_selftest <- function() {
     review, "fisher", "CLEAN", paste(rep("a", 64L), collapse = ""),
     paste(rep("a", 40L), collapse = ""), paste(rep("b", 40L), collapse = ""),
     paste(rep("c", 40L), collapse = ""), paste(rep("d", 40L), collapse = ""),
-    paste(rep("e", 40L), collapse = "")
+    paste(rep("e", 40L), collapse = ""), paste(rep("a", 64L), collapse = ""),
+    paste(rep("b", 64L), collapse = ""), paste(rep("c", 64L), collapse = "")
   )
   v07d_verify_pair(review)
   stopifnot(inherits(try(v3d_write_review(
     review, "fisher", "CLEAN", paste(rep("a", 64L), collapse = ""),
     paste(rep("a", 40L), collapse = ""), paste(rep("b", 40L), collapse = ""),
     paste(rep("c", 40L), collapse = ""), paste(rep("d", 40L), collapse = ""),
-    paste(rep("e", 40L), collapse = "")
+    paste(rep("e", 40L), collapse = ""), paste(rep("a", 64L), collapse = ""),
+    paste(rep("b", 64L), collapse = ""), paste(rep("c", 64L), collapse = "")
   ), silent = TRUE), "try-error"))
   r_root <- dirname(dirname(v3d_loaded_path))
   context <- v3d_context(
@@ -1392,7 +1402,10 @@ v3d_main <- function(args = commandArgs(trailingOnly = TRUE)) {
       v3d_required(options, "r-recomputer-commit"),
       v3d_required(options, "julia-replay-commit"),
       v3d_required(options, "r-auto-route-commit"),
-      v3d_required(options, "julia-candidate-commit")
+      v3d_required(options, "julia-candidate-commit"),
+      v3d_required(options, "r-driver-sha256"),
+      v3d_required(options, "r-recomputer-sha256"),
+      v3d_required(options, "julia-replay-sha256")
     ))
   }
   output_root <- v3d_required(options, "output-root")

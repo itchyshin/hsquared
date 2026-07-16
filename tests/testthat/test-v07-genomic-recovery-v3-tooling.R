@@ -31,6 +31,8 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
   expect_equal(nrow(spaces$historical), 42067L)
   expect_equal(nrow(spaces$proposed), 91728L)
   expect_equal(nrow(spaces$retired_d0f), 3456L)
+  expect_equal(nrow(spaces$retry_d0f), 576L)
+  expect_identical(spaces$retry_bootstrap, as.integer(2043000001:2043000003))
   expect_identical(
     unique(spaces$retired_d0f$stage),
     c(
@@ -101,12 +103,22 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     )
   )
   expect_false("D0F_RETRY" %in% spaces$proposed$stage)
+  expect_identical(unique(spaces$retry_d0f$stage), "D0F_RETRY7")
+  expect_identical(
+    spaces$retry_d0f,
+    v07s_d0f_seed_grid(v07s_d0f_retry_phenotype_base, "D0F_RETRY7")
+  )
+  expect_length(intersect(spaces$historical$seed, spaces$retry_d0f$seed), 0L)
+  expect_length(intersect(spaces$proposed$seed, spaces$retry_d0f$seed), 0L)
+  expect_length(intersect(spaces$historical$seed, spaces$retry_bootstrap), 0L)
+  expect_length(intersect(spaces$proposed$seed, spaces$retry_bootstrap), 0L)
+  expect_length(intersect(spaces$retry_d0f$seed, spaces$retry_bootstrap), 0L)
 
   collision <- spaces$proposed
   collision$seed[[1L]] <- 2027142001
   expect_error(
     v07s_validate_spaces(lock, collision),
-    "v3 seed intersects historical lock: 2027142001"
+    "v3 or Retry-7 seed intersects historical lock: 2027142001"
   )
 
   duplicate <- spaces$proposed
@@ -117,14 +129,14 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
   retired_collision$seed[[1L]] <- spaces$retired_d0f$seed[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
   )
   retired_bootstrap_collision <- spaces$proposed
   retired_bootstrap_collision$seed[[1L]] <-
     v07s_d0f_bootstrap_seeds(v07s_d0f_retired_bootstrap_base)[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_bootstrap_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
   )
   retired_retry_bootstrap_collision <- spaces$proposed
   retired_retry_bootstrap_collision$seed[[1L]] <-
@@ -133,7 +145,7 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     )[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_retry_bootstrap_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
   )
   retired_retry2_bootstrap_collision <- spaces$proposed
   retired_retry2_bootstrap_collision$seed[[1L]] <-
@@ -142,7 +154,7 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     )[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_retry2_bootstrap_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
   )
   retired_retry3_bootstrap_collision <- spaces$proposed
   retired_retry3_bootstrap_collision$seed[[1L]] <-
@@ -151,7 +163,7 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     )[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_retry3_bootstrap_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
   )
   retired_retry4_bootstrap_collision <- spaces$proposed
   retired_retry4_bootstrap_collision$seed[[1L]] <-
@@ -160,7 +172,7 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     )[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_retry4_bootstrap_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
   )
   retired_retry5_bootstrap_collision <- spaces$proposed
   retired_retry5_bootstrap_collision$seed[[1L]] <-
@@ -169,7 +181,19 @@ test_that("recovery-v3 exact seed spaces are exhaustive and disjoint", {
     )[[1L]]
   expect_error(
     v07s_validate_spaces(lock, retired_retry5_bootstrap_collision),
-    "v3 seed intersects historical lock"
+    "v3 or Retry-7 seed intersects historical lock"
+  )
+  active_retry_collision <- spaces$proposed
+  active_retry_collision$seed[[1L]] <- spaces$retry_d0f$seed[[1L]]
+  expect_error(
+    v07s_validate_spaces(lock, active_retry_collision),
+    "v3 and Retry-7 spaces contain an exact seed collision"
+  )
+  active_bootstrap_collision <- spaces$proposed
+  active_bootstrap_collision$seed[[1L]] <- spaces$retry_bootstrap[[1L]]
+  expect_error(
+    v07s_validate_spaces(lock, active_bootstrap_collision),
+    "v3 and Retry-7 spaces contain an exact seed collision"
   )
   wrong_stage <- spaces$proposed
   wrong_stage$stage[[1L]] <- "D0F"

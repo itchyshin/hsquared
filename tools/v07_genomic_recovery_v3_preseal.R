@@ -315,12 +315,13 @@ v3p_validate_cell_table <- function(x) {
 v3p_review_columns <- c(
   "reviewer", "verdict", "doc49_sha256", "r_driver_commit",
   "r_recomputer_commit", "julia_replay_commit", "r_auto_route_commit",
-  "julia_candidate_commit"
+  "julia_candidate_commit", "r_driver_sha256", "r_recomputer_sha256",
+  "julia_replay_sha256"
 )
 v3p_reviewers <- c("fisher", "noether", "hopper", "grace", "rose")
 v3p_d0f_blocked_root <-
   "/home/snakagaw/hsq_work/v07-genomic-recovery-v3-d0f-official-0a9d882-1a538212"
-v3p_d0f_adjudication_schema <- "v07-genomic-recovery-v3-adjudication-1"
+v3p_d0f_adjudication_schema <- "v07-genomic-recovery-v3-adjudication-2"
 v3p_d0f_adjudication_columns <- c(
   "schema_version", "stage", "verdict", "stage_decision",
   "attempt_max_diff", "summary_max_diff",
@@ -328,7 +329,8 @@ v3p_d0f_adjudication_columns <- c(
   "r_driver_commit", "r_recomputer_commit", "julia_replay_commit",
   "r_driver_sha256", "r_recomputer_sha256", "julia_replay_sha256",
   "base_r_inventory_sha256", "julia_replay_inventory_sha256",
-  "r_summary_sha256", "julia_summary_sha256",
+  "r_summary_sha256", "julia_summary_sha256", "route_lineage_sha256",
+  "adjudication_key_sha256",
   unlist(lapply(v3p_reviewers, function(x) {
     c(paste0(x, "_review_path"), paste0(x, "_review_sha256"))
   }), use.names = FALSE)
@@ -601,7 +603,7 @@ v3p_preseal_names <- function(
 v3p_runtime_top_names <- function(stage, phase) {
   phases <- c(
     "official", "locked", "base_r", "r_summary", "julia",
-    "julia_summary", "review", "final"
+    "julia_summary", "lineage", "review", "final"
   )
   phase <- match.arg(phase, phases)
   by_phase <- list(
@@ -616,6 +618,9 @@ v3p_runtime_top_names <- function(stage, phase) {
     julia_summary = c(
       paste0(stage, "_summary_julia.tsv"),
       paste0(stage, "_summary_julia.tsv.sha256")
+    ),
+    lineage = c(
+      "stage_route_lineage.tsv", "stage_route_lineage.tsv.sha256"
     ),
     review = "postrun_receipts",
     final = c(
@@ -724,7 +729,10 @@ v3p_validate_review <- function(path, expected_hash, reviewer, values) {
       x$r_recomputer_commit[[1L]] != values[["r_recomputer_commit"]] ||
       x$julia_replay_commit[[1L]] != values[["julia_replay_commit"]] ||
       x$r_auto_route_commit[[1L]] != values[["r_auto_route_commit"]] ||
-      x$julia_candidate_commit[[1L]] != values[["julia_candidate_commit"]]
+      x$julia_candidate_commit[[1L]] != values[["julia_candidate_commit"]] ||
+      x$r_driver_sha256[[1L]] != values[["r_driver_sha256"]] ||
+      x$r_recomputer_sha256[[1L]] != values[["r_recomputer_sha256"]] ||
+      x$julia_replay_sha256[[1L]] != values[["julia_replay_sha256"]]
   ) {
     v3p_abort("%s review receipt does not bind the exact preseal plan", reviewer)
   }
@@ -1566,7 +1574,7 @@ v3p_validate_unsuccessful_results <- function(attempts, success, label) {
 
 v3p_validate_results <- function(
   attempts, manifest, manifest_columns, label,
-  binding, expected_route = "ordinary_auto_genomic"
+  binding, expected_route
 ) {
   binding <- v3p_validate_attempt_binding(binding)
   shared <- manifest_columns
@@ -1712,8 +1720,8 @@ v3p_validate_results <- function(
   attempts
 }
 
-v3p_admit_d0f_attempts <- function(
-  attempts, manifest, binding, expected_route = "ordinary_auto_genomic"
+v3p_admit_d0f_attempts_route <- function(
+  attempts, manifest, binding, expected_route
 ) {
   manifest <- v3p_validate_d0f_phenotype_manifest(
     manifest,
@@ -1738,8 +1746,8 @@ v3p_admit_d0f_attempts <- function(
   )
 }
 
-v3p_admit_d1_attempts <- function(
-  attempts, manifest, binding, expected_route = "ordinary_auto_genomic"
+v3p_admit_d1_attempts_route <- function(
+  attempts, manifest, binding, expected_route
 ) {
   manifest <- v3p_validate_d1_manifest(manifest)
   v3p_require_schema(attempts, v3p_d1_attempt_columns, "D1 attempts")
@@ -1760,6 +1768,18 @@ v3p_admit_d1_attempts <- function(
   }
   v3p_validate_results(
     attempts, manifest, v3p_d1_columns, "D1", binding, expected_route
+  )
+}
+
+v3p_admit_d0f_attempts <- function(attempts, manifest, binding) {
+  v3p_admit_d0f_attempts_route(
+    attempts, manifest, binding, "ordinary_auto_genomic"
+  )
+}
+
+v3p_admit_d1_attempts <- function(attempts, manifest, binding) {
+  v3p_admit_d1_attempts_route(
+    attempts, manifest, binding, "ordinary_auto_genomic"
   )
 }
 
@@ -1802,11 +1822,11 @@ v3p_admit_julia_replay <- function(
   projected <- replay[base_columns]
   switch(
     stage,
-    d0f = v3p_admit_d0f_attempts(
-      projected, manifest, binding, expected_route = "julia_profile_replay"
+    d0f = v3p_admit_d0f_attempts_route(
+      projected, manifest, binding, "julia_profile_replay"
     ),
-    d1 = v3p_admit_d1_attempts(
-      projected, manifest, binding, expected_route = "julia_profile_replay"
+    d1 = v3p_admit_d1_attempts_route(
+      projected, manifest, binding, "julia_profile_replay"
     )
   )
 }
@@ -1986,12 +2006,12 @@ v3p_d1_summary_columns <- c(
   "mean_spectral_cv", "mean_effective_rank", "failure_classes"
 )
 
-v3p_d1_summary <- function(
-  manifest, attempts, binding, expected_route = "ordinary_auto_genomic"
+v3p_d1_summary_route <- function(
+  manifest, attempts, binding, expected_route
 ) {
   manifest <- v3p_validate_d1_manifest(manifest)
-  attempts <- v3p_admit_d1_attempts(
-    attempts, manifest, binding, expected_route = expected_route
+  attempts <- v3p_admit_d1_attempts_route(
+    attempts, manifest, binding, expected_route
   )
   rows <- lapply(unique(manifest$cell_id), function(cell_id) {
     m <- manifest[manifest$cell_id == cell_id, , drop = FALSE]
@@ -2146,6 +2166,18 @@ v3p_d1_summary <- function(
   out
 }
 
+v3p_d1_summary <- function(manifest, attempts, binding) {
+  v3p_d1_summary_route(
+    manifest, attempts, binding, "ordinary_auto_genomic"
+  )
+}
+
+v3p_d1_julia_summary <- function(manifest, attempts, binding) {
+  v3p_d1_summary_route(
+    manifest, attempts, binding, "julia_profile_replay"
+  )
+}
+
 v3p_d0f_summary_columns <- c(
   "stage", "design_id", "design_index", "n", "m", "n_panels",
   "phenotypes_per_panel", "n_expected", "n_attempted", "n_converged",
@@ -2193,12 +2225,12 @@ v3p_d0f_boot_components <- function(x, bootstrap_rows) {
   c(v_within = within, v_between = between)
 }
 
-v3p_d0f_summary <- function(
+v3p_d0f_summary_route <- function(
   manifest, attempts, bootstrap, bootstrap_sha256, binding,
-  expected_route = "ordinary_auto_genomic"
+  expected_route
 ) {
-  attempts <- v3p_admit_d0f_attempts(
-    attempts, manifest, binding, expected_route = expected_route
+  attempts <- v3p_admit_d0f_attempts_route(
+    attempts, manifest, binding, expected_route
   )
   bootstrap <- v3p_validate_d0f_bootstrap(
     bootstrap,
@@ -2308,6 +2340,24 @@ v3p_d0f_summary <- function(
   out <- out[v3p_d0f_summary_columns]
   out$fit_blocker <- v3p_bool(out$fit_blocker, "fit_blocker")
   out
+}
+
+v3p_d0f_summary <- function(
+  manifest, attempts, bootstrap, bootstrap_sha256, binding
+) {
+  v3p_d0f_summary_route(
+    manifest, attempts, bootstrap, bootstrap_sha256, binding,
+    "ordinary_auto_genomic"
+  )
+}
+
+v3p_d0f_julia_summary <- function(
+  manifest, attempts, bootstrap, bootstrap_sha256, binding
+) {
+  v3p_d0f_summary_route(
+    manifest, attempts, bootstrap, bootstrap_sha256, binding,
+    "julia_profile_replay"
+  )
 }
 
 v3p_d0f_summary_parity_fixture <- function(binding) {

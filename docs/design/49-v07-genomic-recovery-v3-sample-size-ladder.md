@@ -19,10 +19,9 @@
 > rewritten as activation.
 > ```
 
-Status: **D0 COMPLETE; FOUR D0F CORPORA LOCKED BUT UNADJUDICATED; RETRY 4
-STOPPED ON A REPLAY ENDPOINT-REPRESENTATION CONTRACT BLOCKER; RETRY 5 STOPPED
-AFTER ONE OFFICIAL D0F FIT ON A POST-PRESEAL TREE-VALIDATION BLOCKER; NO D1 OR D2
-SEED CONSUMED.** The first D0F run completed 576
+Status: **D0 COMPLETE; D0F RETRIES 1-6 PERMANENTLY RETIRED AND
+UNADJUDICATED; RESEARCH-INFORMED RETRY 7 AUTHORIZED AND RESERVED BUT NO RETRY-7
+RNG INVOKED; NO D1 OR D2 SEED CONSUMED.** The first D0F run completed 576
 official R attempts,
 but the exact presealed Julia replay tool stopped deterministically before
 writing any replay row. That root is a hash-locked, retired
@@ -54,7 +53,7 @@ SHA-256
 `0bbad8420812865d599d30af85ccf0d2fd039eada4c4914542f54dee8a9d54f0`).
 Its exact old bytes remain in the retired root and checkpoint. The active seed,
 bootstrap-order, and preseal-schema passages in this living design document were
-superseded by the prospective Retry-6 amendment and are now historical below.
+superseded by the prospective Retry-7 amendment and are now historical below.
 Retry 4 does not reopen, rewrite, pool, or admit any blocked D0F corpus or the
 retired recovery-v2 offsets. Retry 5 attempted the preregistered
 endpoint-representation repair and is retired below. Retry 6 executed the
@@ -246,8 +245,9 @@ receipt or adjudication receipt exists, so D1 and D2 never opened.
 Retry 6 is permanently
 `UNADJUDICATED_POSTRUN_ADJUDICATOR_ROUTE_BLOCKER`. Its 9,248-file Totoro root
 and the complete phenotype/bootstrap spaces at bases `2040000000` and
-`2041000000` are immutable and retired, including unused members. There is no
-successor D0F seed allocation. The full checkpoint is
+`2041000000` are immutable and retired, including unused members. At that
+terminal checkpoint there was no successor D0F seed allocation; the
+prospective Retry-7 amendment below supersedes only that stop decision. The full checkpoint is
 `docs/dev-log/recovery-checkpoints/2026-07-15-v07-d0f-retry6-postrun-adjudicator-route-blocker.md`.
 
 The seed-free prospective repair at R commits `b8096e5` and `562b93e` threads
@@ -256,6 +256,68 @@ ordinary-R default, explicitly binds Julia replay, and moves every Retry-6
 phenotype/bootstrap seed into the executable historical lock. It changes no
 estimator, estimand, ridge, tolerance, threshold, denominator, schema, or
 fitted output, and it cannot repair or adjudicate Retry 6.
+
+### Prospective Retry-7 research-informed adjudicator amendment
+
+Retry 7 is authorized by the committed research-first decision at Julia commit
+`0e76c98`; the supporting provenance research is Julia commit `6092ba72`. That
+research is design triage, not public validation evidence. This amendment is
+prospective: it is written before any Retry-7 bootstrap or phenotype seed is
+invoked and cannot reopen, repair, pool, subset, or adjudicate any Retry-1--6
+root.
+
+Retry 7 changes only the post-run evidence-admission and receipt architecture:
+
+1. R admits official, base-R, and Julia evidence through separate locked
+   internal envelopes. Smart constructors seal exact class, kind, stage,
+   summary group, route, and canonical row bytes. Summary reconstruction uses
+   class dispatch and accepts neither a raw data frame nor a caller-supplied or
+   defaulted route.
+2. The tracked Julia D0F/D1 replay mirrors route identity with internal
+   `EvidenceRow{R}` types. The serialized route remains canonical because TSV
+   erases parametric types. No `src/HSquared.jl`, formula grammar, result
+   payload, public engine contract, or R user API changes.
+3. Before any post-run review, create `stage_route_lineage.tsv`. Its ordered
+   columns bind stage, evidence kind, route, summary-group type and ID,
+   source-attempt count, and authenticated source-inventory SHA-256. D0F has
+   official/base-R/Julia by three designs, 192 sources per row; D1 has those
+   three evidence kinds by 12 cells, 48 sources per row. Each evidence kind
+   must conserve exactly 576 sources.
+4. Every post-run review and adjudication receipt binds the lineage SHA-256.
+   The receipt also carries a deterministic `adjudication_key_sha256` over the
+   stage, route lineage, preseal, corpus, manifest, inventories, summaries,
+   five reviews, exact tool commits, and exact tool bytes.
+5. Generic create-once writing remains strict. Receipt-specific retry may
+   create an absent primary/sidecar pair atomically or recognize a complete,
+   currently valid pair only when both primary and sidecar are byte-identical
+   to the canonical expected bytes. Orphaned, stale, conflicting,
+   parse-equivalent-but-byte-different, or different pairs fail closed.
+
+The cheapest route-rebind regression, full 576-row synthetic D0F-to-D1
+lifecycle, mutation matrix, and first architecture reviews are green before
+reservation. The canonical local rehearsal adjudicated synthetic D0F
+`PASS/COMPLETE` and synthetic D1 `PASS/ELIGIBLE=12`, including five CLEAN
+reviews, exact receipt retry, and `validate-final` for each stage. It uses
+precomputed synthetic recomputation/replay evidence and an explicit deployment
+projection seam; therefore it does not replace the mandatory clean Totoro
+launcher rehearsal, exact-head reviews, preseal, or chronology audit.
+
+Retry 7 prospectively reserves phenotype base `2042000000` and bootstrap-index
+base `2043000000`. Reservation is not seed expenditure. The source-safe lock
+must prove the 576 phenotype seeds and three bootstrap seeds are mutually
+disjoint from every historical and retired seed and from D1--D4 before either
+base may reach an RNG. After all exact-head checks and reviews, clean Totoro
+deployment, remote lifecycle rehearsal, and preseal pass, only the three
+bootstrap seeds `2043000001:2043000003` may materialize the create-once
+bootstrap manifest. Julia zero-seed preflight and an independent chronology
+audit must then pass before the first phenotype seed.
+
+Retry 7 is a D0F-only activation gate. A clean scientific negative is a valid
+terminal result. A clean `PASS/COMPLETE` makes D1 eligible but does not execute
+it. Any post-run plumbing failure freezes the root and the complete two
+reserved spaces, writes no manual receipt, and forbids Retry 8 until a newly
+approved adjudicator architecture exists. `public_covered_count` remains 5;
+default-route activation, G10, merge, and release remain out of scope.
 
 ## 1. Why recovery-v3 exists
 
@@ -635,7 +697,7 @@ phenotypes within panel, using a post-preseal create-once index manifest whose
 seed base and prior absence are presealed, and reports percentile intervals.
 Base R generates each design's indices with
 `RNGkind("Mersenne-Twister", "Inversion", "Rejection")` and seed
-`2041000000 + design_index`. The create-once manifest is normalized to one row
+`2043000000 + design_index`. The create-once manifest is normalized to one row
 per bootstrap panel slot: `design_id`, `design_index`, `bootstrap_rep`,
 `panel_slot`, `panel_rank`, followed by `phenotype_01` through
 `phenotype_08`. It therefore contains exactly `3 * 10000 * 24 = 720000` rows.
@@ -1082,7 +1144,9 @@ root used the same rank formula with base `2034000000`; the verifier adds it as
 `D0F_RETRY3_RETIRED`. Retry 5 used base `2038000000`; the verifier retires the
 complete reserved grid as `D0F_RETRY4_RETIRED`. Retry 6 used base
 `2040000000`; the verifier retires the complete reserved grid as
-`D0F_RETRY5_RETIRED`. No proposed D0F retry stage exists. The
+`D0F_RETRY5_RETIRED`. Retry 7 prospectively reserves the same rank formula
+under base `2042000000`, classified as `D0F_RETRY7`; expanding and validating
+that grid is not RNG use. The
 operational manifest stage remains `d0f` so the unchanged scientific schema is
 reused. All values remain below R's 32-bit integer maximum. All exact historical
 and retired seeds are excluded. Numeric offsets may recur only under a new base
@@ -1099,8 +1163,9 @@ they generated observed bootstrap manifests. Retry 4's three seeds
 `2037000000 + design_index` are also spent and retired. Retry 5's complete
 reserved bootstrap space at `2039000000 + design_index` is retired after its
 manifest was generated. Retry 6 generated and then retired
-`2041000000 + design_index`, one per design. All six sets must be unique and
-in range; the current retry set must be disjoint from every historical,
+`2041000000 + design_index`, one per design. Retry 7 prospectively reserves
+`2043000000 + design_index`. All seven sets must be unique and in range; the
+current retry set must be disjoint from every historical,
 retired D0F, blocked D0F retry, D1, D2, D3, and D4 data-generating seed.
 
 Every stage uses this acyclic create-once evidence chain:
@@ -1113,7 +1178,7 @@ Every stage uses this acyclic create-once evidence chain:
    packet/truth schema versions, the canonical stage root, and the exact D0
    receipt. D1 additionally binds the canonical successful fresh-D0F root and
    adjudication-receipt SHA-256. For D0F it binds bootstrap seed base
-   `2041000000` and records that the bootstrap manifest was absent. It contains
+   `2043000000` and records that the bootstrap manifest was absent. It contains
    no future bootstrap, D1 corpus, or result hash.
 2. For D0F only, after the preseal is accepted, materialize the deterministic
    bootstrap manifest once from the presealed base and verify its primary and

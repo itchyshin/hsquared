@@ -7704,3 +7704,14 @@ release".
 - Root and seeds are retired and unadjudicated; D1/D2 never opened; activation
   and count remain held. Detail:
   `docs/dev-log/check-log.d/2026-07-14-v07-d0f-retry4-endpoint-representation-blocker.md`.
+
+## 2026-07-16 — Retry-7 architecture and seed-contract checkpoint
+
+- Route-safe admission, weighted lineage, exact receipt retry, adjudication v2,
+  and the 576-row D0F-to-D1 synthetic lifecycle are green under mutation tests
+  and three independent architecture reviews.
+- Retry-7 phenotype/bootstrap bases `2042000000` / `2043000000` are reserved,
+  disjoint, and unspent. Full `devtools::test()` passed with documented skips.
+- No preseal, official RNG, fit, activation, count change, merge, or release
+  occurred. Full report:
+  `docs/dev-log/after-task/2026-07-16-retry7-architecture-seed-contract-checkpoint.md`.

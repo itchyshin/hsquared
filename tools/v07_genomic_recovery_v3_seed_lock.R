@@ -81,16 +81,16 @@ v07s_d0f_retired_retry2_phenotype_base <- 2034000000
 v07s_d0f_retired_retry3_phenotype_base <- 2036000000
 v07s_d0f_retired_retry4_phenotype_base <- 2038000000
 v07s_d0f_retired_retry5_phenotype_base <- 2040000000
-# Historical aliases reproduce the immutable Retry-6 manifests in validators
-# and synthetic fixtures. They do not place these seeds in the proposed table.
-v07s_d0f_retry_phenotype_base <- v07s_d0f_retired_retry5_phenotype_base
+# Retry 7 is reserved prospectively. Merely evaluating these constants or
+# expanding their grids is not RNG use.
+v07s_d0f_retry_phenotype_base <- 2042000000
 v07s_d0f_retired_bootstrap_base <- 2031000000
 v07s_d0f_retired_retry_bootstrap_base <- 2033000000
 v07s_d0f_retired_retry2_bootstrap_base <- 2035000000
 v07s_d0f_retired_retry3_bootstrap_base <- 2037000000
 v07s_d0f_retired_retry4_bootstrap_base <- 2039000000
 v07s_d0f_retired_retry5_bootstrap_base <- 2041000000
-v07s_d0f_retry_bootstrap_base <- v07s_d0f_retired_retry5_bootstrap_base
+v07s_d0f_retry_bootstrap_base <- 2043000000
 
 v07s_loaded_source_path <- local({
   file_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
@@ -401,7 +401,15 @@ v07s_expand_v3 <- function() {
   standard
 }
 
-v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
+v07s_validate_spaces <- function(
+  lock, proposed = v07s_expand_v3(),
+  d0f_retry = v07s_d0f_seed_grid(
+    v07s_d0f_retry_phenotype_base, "D0F_RETRY7"
+  ),
+  d0f_retry_bootstrap = v07s_d0f_bootstrap_seeds(
+    v07s_d0f_retry_bootstrap_base
+  )
+) {
   historical <- v07s_expand_historical(lock)
   retired_d0f <- v07s_expand_retired_d0f()
   retired <- rbind(
@@ -484,17 +492,39 @@ v07s_validate_spaces <- function(lock, proposed = v07s_expand_v3()) {
   if (anyDuplicated(proposed$seed)) {
     v07s_abort("v3 stages contain an exact seed collision")
   }
-  overlap <- intersect(historical$seed, proposed$seed)
-  if (length(overlap)) {
-    v07s_abort("v3 seed intersects historical lock: %.0f", overlap[[1L]])
+  expected_retry <- v07s_d0f_seed_grid(
+    v07s_d0f_retry_phenotype_base, "D0F_RETRY7"
+  )
+  expected_bootstrap <- v07s_d0f_bootstrap_seeds(
+    v07s_d0f_retry_bootstrap_base
+  )
+  if (!identical(d0f_retry, expected_retry)) {
+    v07s_abort("Retry-7 D0F phenotype reservation drift")
   }
-  if (2027142001 %in% proposed$seed) {
+  if (!identical(as.integer(d0f_retry_bootstrap), expected_bootstrap)) {
+    v07s_abort("Retry-7 D0F bootstrap reservation drift")
+  }
+  prospective <- c(
+    proposed$seed, d0f_retry$seed, as.double(d0f_retry_bootstrap)
+  )
+  if (anyDuplicated(prospective)) {
+    v07s_abort("v3 and Retry-7 spaces contain an exact seed collision")
+  }
+  overlap <- intersect(historical$seed, prospective)
+  if (length(overlap)) {
+    v07s_abort(
+      "v3 or Retry-7 seed intersects historical lock: %.0f", overlap[[1L]]
+    )
+  }
+  if (2027142001 %in% prospective) {
     v07s_abort("known historical collision 2027142001 was admitted")
   }
   invisible(list(
     historical = historical,
     proposed = proposed,
-    retired_d0f = retired_d0f
+    retired_d0f = retired_d0f,
+    retry_d0f = d0f_retry,
+    retry_bootstrap = as.integer(d0f_retry_bootstrap)
   ))
 }
 
@@ -543,7 +573,24 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
       ) %in%
         valid$historical$seed
     ),
+    nrow(valid$retry_d0f) == 576L,
+    identical(unique(valid$retry_d0f$stage), "D0F_RETRY7"),
+    identical(
+      valid$retry_d0f,
+      v07s_d0f_seed_grid(
+        v07s_d0f_retry_phenotype_base, "D0F_RETRY7"
+      )
+    ),
+    identical(
+      valid$retry_bootstrap,
+      v07s_d0f_bootstrap_seeds(v07s_d0f_retry_bootstrap_base)
+    ),
     length(intersect(valid$retired_d0f$seed, valid$proposed$seed)) == 0L,
+    length(intersect(valid$historical$seed, valid$retry_d0f$seed)) == 0L,
+    length(intersect(valid$proposed$seed, valid$retry_d0f$seed)) == 0L,
+    length(intersect(valid$historical$seed, valid$retry_bootstrap)) == 0L,
+    length(intersect(valid$proposed$seed, valid$retry_bootstrap)) == 0L,
+    length(intersect(valid$retry_d0f$seed, valid$retry_bootstrap)) == 0L,
     nrow(valid$proposed) == 91728L,
     identical(names(stage_counts), c("D1", "D2", "D3", "D4")),
     identical(as.integer(stage_counts), c(576L, 1152L, 72000L, 18000L))
@@ -567,8 +614,12 @@ v07s_selftest <- function(lock_path = v07s_default_lock()) {
     "try-error"
   ))
   message(sprintf(
-    "recovery-v3 seed lock selftest: PASS (%d historical; %d possible v3 seeds)",
+    paste(
+      "recovery-v3 seed lock selftest: PASS",
+      "(%d historical; %d Retry-7 reserved; %d possible v3 seeds)"
+    ),
     nrow(valid$historical),
+    nrow(valid$retry_d0f) + length(valid$retry_bootstrap),
     nrow(valid$proposed)
   ))
   invisible(valid)
@@ -585,8 +636,12 @@ v07s_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   valid <- v07s_validate_spaces(v07s_read_lock(lock_path))
   message(sprintf(
-    "recovery-v3 seed lock: PASS (%d historical; %d possible v3 seeds)",
+    paste(
+      "recovery-v3 seed lock: PASS",
+      "(%d historical; %d Retry-7 reserved; %d possible v3 seeds)"
+    ),
     nrow(valid$historical),
+    nrow(valid$retry_d0f) + length(valid$retry_bootstrap),
     nrow(valid$proposed)
   ))
   invisible(valid)

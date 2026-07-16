@@ -233,12 +233,17 @@ v3a_read_d1_final <- function(root) {
   receipt <- utils::read.delim(
     receipt_path, sep = "\t", check.names = FALSE, stringsAsFactors = FALSE
   )
-  needed <- c("schema_version", "stage", "verdict", "stage_decision", "r_summary_sha256")
+  needed <- c(
+    "schema_version", "stage", "verdict", "stage_decision",
+    "r_summary_sha256", "route_lineage_sha256", "adjudication_key_sha256"
+  )
   if (nrow(receipt) != 1L || !all(needed %in% names(receipt)) ||
-      receipt$schema_version != "v07-genomic-recovery-v3-adjudication-1" ||
+      receipt$schema_version != "v07-genomic-recovery-v3-adjudication-2" ||
       receipt$stage != "d1" || receipt$verdict != "PASS" ||
       !nzchar(receipt$stage_decision) ||
-      !identical(receipt$r_summary_sha256, summary_sha)) {
+      !identical(receipt$r_summary_sha256, summary_sha) ||
+      !v3a_contract$v3p_hex64(receipt$route_lineage_sha256) ||
+      !v3a_contract$v3p_hex64(receipt$adjudication_key_sha256)) {
     v3a_abort("D1 receipt does not bind the canonical PASS summary")
   }
   summary <- utils::read.delim(

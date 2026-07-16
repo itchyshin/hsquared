@@ -42,9 +42,12 @@ v3a_test_fixture <- function(root) {
   summary_path <- file.path(root, "d1_summary_r.tsv")
   summary_hash <- v3a_write_once(root, basename(summary_path), rows)
   receipt <- data.frame(
-    schema_version = "v07-genomic-recovery-v3-adjudication-1",
+    schema_version = "v07-genomic-recovery-v3-adjudication-2",
     stage = "d1", verdict = "PASS", stage_decision = "ELIGIBLE=12",
-    r_summary_sha256 = summary_hash, stringsAsFactors = FALSE
+    r_summary_sha256 = summary_hash,
+    route_lineage_sha256 = paste(rep("a", 64L), collapse = ""),
+    adjudication_key_sha256 = paste(rep("b", 64L), collapse = ""),
+    stringsAsFactors = FALSE
   )
   receipt_path <- file.path(root, "stage_adjudication_receipt.tsv")
   v3a_write_once(root, basename(receipt_path), receipt)

@@ -276,6 +276,12 @@ v3c_downstream_preseal_keys <- c(
 
 v3c_downstream_receipt_schema <-
   "v07-genomic-recovery-v3-downstream-adjudication-1"
+v3c_pilot_receipt_schema <- "v07-genomic-recovery-v3-adjudication-2"
+v3c_route_lineage_schema <- "v07-genomic-recovery-v3-route-lineage-1"
+v3c_route_lineage_columns <- c(
+  "schema_version", "stage", "evidence_kind", "route", "group_kind",
+  "group_id", "source_attempt_count", "source_inventory_sha256"
+)
 v3c_downstream_receipt_columns <- c(
   "schema_version",
   "stage",
@@ -2530,6 +2536,37 @@ v3c_stage_decision_pilot <- function(summary) {
   paste(paste(names(counts), as.integer(counts), sep = "="), collapse = ";")
 }
 
+v3c_validate_d1_route_lineage <- function(lineage, manifest) {
+  v3c_require_schema(lineage, v3c_route_lineage_columns, "D1 route lineage")
+  kinds <- c("official", "base_r", "julia")
+  routes <- c(
+    official = "ordinary_auto_genomic",
+    base_r = "ordinary_auto_genomic",
+    julia = "julia_profile_replay"
+  )
+  counts <- table(factor(lineage$evidence_kind, levels = kinds))
+  weighted <- tapply(
+    as.integer(lineage$source_attempt_count),
+    factor(lineage$evidence_kind, levels = kinds),
+    sum
+  )
+  if (
+    nrow(lineage) != 36L ||
+      any(lineage$schema_version != v3c_route_lineage_schema) ||
+      any(lineage$stage != "d1") ||
+      any(lineage$group_kind != "cell_id") ||
+      any(!lineage$evidence_kind %in% kinds) ||
+      any(as.character(lineage$route) != unname(routes[lineage$evidence_kind])) ||
+      any(as.integer(counts) != 12L) ||
+      any(as.integer(weighted) != nrow(manifest)) ||
+      anyDuplicated(lineage[c("evidence_kind", "group_id")]) ||
+      any(!vapply(lineage$source_inventory_sha256, v3c_hex64, logical(1L)))
+  ) {
+    v3c_abort("D1 route-lineage conservation or provenance binding failed")
+  }
+  invisible(TRUE)
+}
+
 v3c_read_evidence_root_core <- function(source, stage, independent) {
   if (!stage %in% c("d1", "d2")) {
     v3c_abort("pilot evidence stage must be d1 or d2")
@@ -2566,6 +2603,15 @@ v3c_read_evidence_root_core <- function(source, stage, independent) {
     if (stage == "d2" && independent) v3c_downstream_receipt_columns else NULL,
     paste(toupper(stage), "adjudication receipt")
   )
+  route_lineage <- if (stage == "d1") {
+    v3c_read_tsv_pair(
+      file.path(root, "stage_route_lineage.tsv"),
+      v3c_route_lineage_columns,
+      "D1 route lineage"
+    )
+  } else {
+    NULL
+  }
   r_validator_sha <- v3c_verify_pair(source$r_validator, "R validator")
   julia_validator_sha <- v3c_verify_pair(
     source$julia_validator,
@@ -2667,8 +2713,14 @@ v3c_read_evidence_root_core <- function(source, stage, independent) {
       "r_recomputer_sha256",
       "julia_replay_sha256",
       "r_recomputer_commit",
-      "julia_replay_commit"
+      "julia_replay_commit",
+      if (stage == "d1") c(
+        "route_lineage_sha256", "adjudication_key_sha256"
+      ) else character()
     )
+  }
+  if (stage == "d1") {
+    v3c_validate_d1_route_lineage(route_lineage$table, manifest$table)
   }
   if (stage == "d2" && independent) {
     v3c_validate_downstream_receipt(rr, stage)
@@ -2738,6 +2790,11 @@ v3c_read_evidence_root_core <- function(source, stage, independent) {
       rr$r_summary_sha256[[1L]] != r_summary$sha256 ||
       rr$julia_summary_sha256[[1L]] != julia_summary$sha256 ||
       !validator_receipt_ok ||
+      (stage == "d1" && (
+        rr$schema_version[[1L]] != v3c_pilot_receipt_schema ||
+          rr$route_lineage_sha256[[1L]] != route_lineage$sha256 ||
+          !v3c_hex64(rr$adjudication_key_sha256[[1L]])
+      )) ||
       (stage == "d1" &&
         any(as.character(rr[1L, names(frozen_commits)]) != frozen_commits))
   ) {
