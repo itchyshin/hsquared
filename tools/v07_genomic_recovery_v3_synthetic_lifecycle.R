@@ -628,19 +628,94 @@ v3s_timeout_program <- function() {
   program
 }
 
+v3s_worker_configuration <- function(
+  timeout_seconds = v3s_worker_timeout_seconds(),
+  timeout_program = v3s_timeout_program()
+) {
+  if (
+    !is.numeric(timeout_seconds) ||
+      length(timeout_seconds) != 1L ||
+      is.na(timeout_seconds) ||
+      timeout_seconds < 1L ||
+      timeout_seconds > 3600L
+  ) {
+    v3s_abort("synthetic worker timeout must be a whole number in 1..3600")
+  }
+  if (
+    !is.character(timeout_program) ||
+      length(timeout_program) != 1L ||
+      !nzchar(timeout_program) ||
+      !file.exists(timeout_program)
+  ) {
+    v3s_abort("synthetic worker timeout program must be an existing executable")
+  }
+  list(
+    timeout_seconds = as.integer(timeout_seconds),
+    timeout_program = normalizePath(
+      timeout_program,
+      winslash = "/",
+      mustWork = TRUE
+    ),
+    signal = "TERM",
+    kill_after = "15s"
+  )
+}
+
+v3s_write_run_receipt <- function(workspace, deployment, configuration) {
+  path <- file.path(workspace, "synthetic_run_receipt.tsv")
+  receipt <- data.frame(
+    key = c(
+      "schema_version",
+      "r_root",
+      "r_head",
+      "julia_root",
+      "julia_head",
+      "timeout_program",
+      "timeout_seconds",
+      "timeout_signal",
+      "timeout_kill_after",
+      "wrapper_arguments"
+    ),
+    value = c(
+      "v07-genomic-recovery-v3-synthetic-run-1",
+      deployment$r_root,
+      v3s_git_head(deployment$r_root),
+      deployment$julia_root,
+      v3s_git_head(deployment$julia_root),
+      configuration$timeout_program,
+      as.character(configuration$timeout_seconds),
+      configuration$signal,
+      configuration$kill_after,
+      paste(
+        "--signal=TERM",
+        "--kill-after=15s",
+        configuration$timeout_seconds,
+        file.path(R.home("bin"), "Rscript"),
+        sep = " "
+      )
+    ),
+    stringsAsFactors = FALSE
+  )
+  v3s_write(path, receipt, workspace)
+  message(sprintf(
+    "wrote synthetic run receipt sha256=%s",
+    v07d_sha256(path)
+  ))
+  invisible(path)
+}
+
 v3s_run_worker <- function(
   root,
   stage,
   action,
   extra = character(),
   runner = system2,
-  timeout_seconds = v3s_worker_timeout_seconds(),
-  timeout_program = v3s_timeout_program()
+  configuration = v3s_worker_configuration()
 ) {
   command <- c(
-    "--signal=TERM",
-    "--kill-after=15s",
-    as.character(timeout_seconds),
+    paste0("--signal=", configuration$signal),
+    paste0("--kill-after=", configuration$kill_after),
+    as.character(configuration$timeout_seconds),
     file.path(R.home("bin"), "Rscript"),
     "--vanilla",
     shQuote(v3s_tool_path),
@@ -651,7 +726,7 @@ v3s_run_worker <- function(
     extra
   )
   output <- runner(
-    timeout_program,
+    configuration$timeout_program,
     command,
     stdout = TRUE,
     stderr = TRUE
@@ -661,7 +736,7 @@ v3s_run_worker <- function(
     timeout_note <- if (identical(status, 124L)) {
       sprintf(
         "worker exceeded %d-second bound; no later worker was launched",
-        timeout_seconds
+        configuration$timeout_seconds
       )
     } else {
       "worker failed; no later worker was launched"
@@ -679,7 +754,18 @@ v3s_run_worker <- function(
   invisible(output)
 }
 
-v3s_complete_lifecycle <- function(root, stage, worker = v3s_run_worker) {
+v3s_complete_lifecycle <- function(
+  root,
+  stage,
+  worker = v3s_run_worker,
+  configuration = v3s_worker_configuration()
+) {
+  worker <- local({
+    worker_fn <- worker
+    function(root, stage, action, extra = character()) {
+      worker_fn(root, stage, action, extra, configuration = configuration)
+    }
+  })
   worker(root, stage, "summarize-r")
   worker(root, stage, "summarize-julia")
   worker(root, stage, "lineage")
@@ -797,8 +883,12 @@ v3s_worker_selftest <- function() {
         "d0f",
         "summarize-r",
         runner = runner,
-        timeout_seconds = 7L,
-        timeout_program = "timeout"
+        configuration = list(
+          timeout_seconds = 7L,
+          timeout_program = "timeout",
+          signal = "TERM",
+          kill_after = "15s"
+        )
       )
       NULL
     },
@@ -819,7 +909,13 @@ v3s_worker_selftest <- function() {
     grepl("no later worker was launched", conditionMessage(error), fixed = TRUE)
   )
   actions <- character()
-  stop_worker <- function(root, stage, action, extra = character()) {
+  stop_worker <- function(
+    root,
+    stage,
+    action,
+    extra = character(),
+    configuration
+  ) {
     actions <<- c(actions, action)
     v3s_abort("deliberate bounded-worker stop")
   }
@@ -834,15 +930,55 @@ v3s_worker_selftest <- function() {
     inherits(error, "error"),
     identical(actions, "summarize-r")
   )
+  workspace <- tempfile("v3-synthetic-receipt-")
+  dir.create(workspace)
+  on.exit(unlink(workspace, recursive = TRUE), add = TRUE)
+  receipt_path <- v3s_write_run_receipt(
+    workspace,
+    list(
+      r_root = v3s_r_root,
+      julia_root = normalizePath(
+        file.path(v3s_r_root, "..", "HSquared.jl"),
+        winslash = "/",
+        mustWork = TRUE
+      )
+    ),
+    list(
+      timeout_seconds = 7L,
+      timeout_program = "timeout",
+      signal = "TERM",
+      kill_after = "15s"
+    )
+  )
+  receipt <- utils::read.delim(
+    receipt_path,
+    sep = "\t",
+    header = TRUE,
+    quote = "",
+    stringsAsFactors = FALSE,
+    check.names = FALSE
+  )
+  values <- stats::setNames(receipt$value, receipt$key)
+  stopifnot(
+    identical(values[["timeout_seconds"]], "7"),
+    identical(values[["timeout_program"]], "timeout"),
+    identical(
+      values[["wrapper_arguments"]],
+      paste(
+        "--signal=TERM",
+        "--kill-after=15s",
+        "7",
+        file.path(R.home("bin"), "Rscript"),
+        sep = " "
+      )
+    ),
+    file.exists(paste0(receipt_path, ".sha256"))
+  )
   message("synthetic worker selftest: PASS")
   invisible(TRUE)
 }
 
 v3s_orchestrate <- function(args) {
-  v3s_validate_deployment(
-    v3s_r_root,
-    file.path(v3s_r_root, "..", "HSquared.jl")
-  )
   workspace <- v3s_option(args, "workspace")
   if (is.null(workspace)) {
     workspace <- tempfile("v3-retry7-synthetic-")
@@ -852,11 +988,21 @@ v3s_orchestrate <- function(args) {
   if (length(list.files(workspace, all.files = TRUE, no.. = TRUE))) {
     v3s_abort("synthetic workspace must be empty: %s", workspace)
   }
+  deployment <- v3s_validate_deployment(
+    v3s_r_root,
+    file.path(v3s_r_root, "..", "HSquared.jl")
+  )
+  configuration <- v3s_worker_configuration()
+  v3s_write_run_receipt(workspace, deployment, configuration)
   d0f_root <- file.path(workspace, "d0f")
   d1_root <- file.path(workspace, "d1")
   d0f_materialized <- v3s_materialize_root(d0f_root, "d0f")
   stopifnot(nrow(d0f_materialized$state$manifest) == 576L)
-  d0f <- v3s_complete_lifecycle(d0f_root, "d0f")
+  d0f <- v3s_complete_lifecycle(
+    d0f_root,
+    "d0f",
+    configuration = configuration
+  )
   if (
     !identical(d0f$receipt$verdict, "PASS") ||
       !identical(d0f$receipt$stage_decision, "COMPLETE")
@@ -873,7 +1019,11 @@ v3s_orchestrate <- function(args) {
   )
   d1_materialized <- v3s_materialize_root(d1_root, "d1", d0f)
   stopifnot(nrow(d1_materialized$state$manifest) == 576L)
-  d1 <- v3s_complete_lifecycle(d1_root, "d1")
+  d1 <- v3s_complete_lifecycle(
+    d1_root,
+    "d1",
+    configuration = configuration
+  )
   if (
     !identical(d1$receipt$verdict, "PASS") ||
       !identical(d1$receipt$stage_decision, "ELIGIBLE=12")

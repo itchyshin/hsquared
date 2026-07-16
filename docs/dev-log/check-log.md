@@ -7738,3 +7738,13 @@ release".
   worker configuration receipt. No official preseal or official RNG occurred.
   Full checkpoint:
   `docs/dev-log/recovery-checkpoints/2026-07-16-retry7-s7-remote-evidence-blocker.md`.
+
+## 2026-07-16 — Retry-7 S7 durable-run-receipt local gate
+
+- The synthetic lifecycle now binds its deployed heads and bounded-worker
+  configuration in a create-once, sidecar-protected run receipt before either
+  D0F or D1 is materialized.
+- Focused/full R tests and Julia package/docs/preamble gates pass. This source
+  change resets exact-head CI and reviews; no official preseal or RNG occurred.
+  Full local record:
+  `docs/dev-log/check-log.d/2026-07-16-retry7-s7-durable-run-receipt-local.md`.
