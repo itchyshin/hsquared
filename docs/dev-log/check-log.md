@@ -7748,3 +7748,14 @@ release".
   change resets exact-head CI and reviews; no official preseal or RNG occurred.
   Full local record:
   `docs/dev-log/check-log.d/2026-07-16-retry7-s7-durable-run-receipt-local.md`.
+
+## 2026-07-16 — Retry-7 repaired-sidecar canonical preseal
+
+- The recovery-v3 driver sidecar was corrected and all exact-head evidence was
+  restarted on R `01ad843` / Julia `97681439`. Full R and Julia suites, exact
+  CI, a clean Totoro synthetic D0F-to-D1 lifecycle, dirty deployment control,
+  fresh two-batch reviews, and an enforced Sol adjudication are recorded.
+- A fresh canonical D0F root is now presealed. The audit confirms that RNG was
+  unchanged and bootstrap indices, attempts, recomputations, corpus, and
+  adjudication output remain absent. This is not official execution evidence.
+  Details: `docs/dev-log/check-log.d/2026-07-16-retry7-01ad843-canonical-preseal.md`.
