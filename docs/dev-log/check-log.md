@@ -7728,3 +7728,13 @@ release".
   count change, merge, or release occurred; synthetic internal preseal files
   remain harness-only. Full local record:
   `docs/dev-log/check-log.d/2026-07-16-retry7-s7-bounded-recovery-local.md`.
+
+## 2026-07-16 — Retry-7 S7 remote-evidence blocker
+
+- A fresh Totoro synthetic D0F-to-D1 lifecycle, clean-deployment control, and
+  dirty-deployment rejection control all passed without official RNG.
+- S7 is nevertheless not cleared: the review chain was reset after a protected
+  filename exposure, and the retained lifecycle log lacks a durable bounded-
+  worker configuration receipt. No official preseal or official RNG occurred.
+  Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-16-retry7-s7-remote-evidence-blocker.md`.
