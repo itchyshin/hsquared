@@ -2,8 +2,10 @@
 
 Scope: recovery of the incomplete clean-deployment synthetic rehearsal. This
 changes only the synthetic harness operational envelope; it does not invoke
-official phenotype or bootstrap RNG, fitting, preseal, adjudication, D1-D4, or
-activation.
+official phenotype or bootstrap RNG, fitting, official preseal, official
+adjudication, D1-D4, or activation. The synthetic harness deliberately writes
+synthetic `stage_preseal.tsv` inputs as part of its internal contract test;
+those files are not an official preseal.
 
 ## Recovery change
 
@@ -43,5 +45,6 @@ evidence, not demonstrated evidence of a worker deadlock.
 The new source head invalidates old exact-head CI and review receipts. Fresh
 CI, narrow review batches, a clean and intentionally dirty Totoro deployment
 control, and a fresh bounded full D0F-to-D1 lifecycle remain required before
-S7 can clear. The official seed bases `2042000000` and `2043000000` remain
-reserved and unspent.
+S7 can clear. Official preseal and official adjudication remain separately
+fenced. The official seed bases `2042000000` and `2043000000` remain reserved
+and unspent.

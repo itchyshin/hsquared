@@ -7724,6 +7724,7 @@ release".
 - New R worker tests, full R suite, fresh build, forced-Suggests check, Julia
   package/docs/preamble checks, sidecar verification, and diff check pass.
 - This source change invalidates prior exact-head CI and review receipts. No
-  official RNG, preseal, adjudication, D1-D4, activation, count change, merge,
-  or release occurred. Full local record:
+  official RNG, official preseal, official adjudication, D1-D4, activation,
+  count change, merge, or release occurred; synthetic internal preseal files
+  remain harness-only. Full local record:
   `docs/dev-log/check-log.d/2026-07-16-retry7-s7-bounded-recovery-local.md`.
