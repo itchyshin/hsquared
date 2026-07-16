@@ -7715,3 +7715,15 @@ release".
 - No preseal, official RNG, fit, activation, count change, merge, or release
   occurred. Full report:
   `docs/dev-log/after-task/2026-07-16-retry7-architecture-seed-contract-checkpoint.md`.
+
+## 2026-07-16 — Retry-7 S7 bounded-worker recovery local gate
+
+- Added a bounded, observable synthetic-worker envelope and clean-deployment
+  entry check after the incomplete Totoro rehearsal. The old interrupted run
+  is not evidence of a demonstrated deadlock.
+- New R worker tests, full R suite, fresh build, forced-Suggests check, Julia
+  package/docs/preamble checks, sidecar verification, and diff check pass.
+- This source change invalidates prior exact-head CI and review receipts. No
+  official RNG, preseal, adjudication, D1-D4, activation, count change, merge,
+  or release occurred. Full local record:
+  `docs/dev-log/check-log.d/2026-07-16-retry7-s7-bounded-recovery-local.md`.

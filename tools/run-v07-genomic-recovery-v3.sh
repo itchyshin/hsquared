@@ -6,6 +6,7 @@ usage() {
 Usage:
   run-v07-genomic-recovery-v3.sh selftest R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh synthetic-lifecycle WORKSPACE R_ROOT JULIA_ROOT
+  run-v07-genomic-recovery-v3.sh deployment-check R_ROOT JULIA_ROOT
   run-v07-genomic-recovery-v3.sh guard-selftest
   run-v07-genomic-recovery-v3.sh write-review R_ROOT PATH REVIEWER CLEAN|BLOCKED DOC49_SHA R_DRIVER_COMMIT R_RECOMPUTER_COMMIT JULIA_REPLAY_COMMIT R_AUTO_ROUTE_COMMIT JULIA_CANDIDATE_COMMIT R_DRIVER_SHA R_RECOMPUTER_SHA JULIA_REPLAY_SHA
   run-v07-genomic-recovery-v3.sh prepare-adaptive OUT d2|d3|d4 R_ROOT D1_FINAL_ROOT
@@ -241,6 +242,22 @@ if [[ "$mode" == synthetic-lifecycle ]]; then
   exec Rscript --vanilla \
     "$r_root/tools/v07_genomic_recovery_v3_synthetic_lifecycle.R" \
     --workspace="$workspace"
+fi
+
+if [[ "$mode" == deployment-check ]]; then
+  [[ $# -eq 2 ]] || { usage >&2; exit 64; }
+  r_root=$1
+  julia_root=$2
+  assert_compute_context
+  [[ -d "$r_root" && -d "$julia_root" ]] || \
+    die "synthetic lifecycle requires deployed R and Julia roots"
+  expected_julia=$(cd "$r_root/.." && pwd -P)/HSquared.jl
+  actual_julia=$(cd "$julia_root" && pwd -P)
+  [[ "$actual_julia" == "$expected_julia" ]] || \
+    die "synthetic lifecycle requires sibling deployed twins"
+  exec Rscript --vanilla \
+    "$r_root/tools/v07_genomic_recovery_v3_synthetic_lifecycle.R" \
+    --mode=deployment-check --r-root="$r_root" --julia-root="$julia_root"
 fi
 
 if [[ "$mode" == write-review ]]; then

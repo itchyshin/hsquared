@@ -1,5 +1,8 @@
 launcher_path <- testthat::test_path(
-  "..", "..", "tools", "run-v07-genomic-recovery-v3.sh"
+  "..",
+  "..",
+  "tools",
+  "run-v07-genomic-recovery-v3.sh"
 )
 testthat::skip_if_not(
   file.exists(launcher_path),
@@ -9,7 +12,9 @@ launcher_path <- normalizePath(launcher_path, winslash = "/", mustWork = TRUE)
 
 launcher_text <- paste(readLines(launcher_path, warn = FALSE), collapse = "\n")
 launcher_repo <- normalizePath(
-  testthat::test_path("..", ".."), winslash = "/", mustWork = TRUE
+  testthat::test_path("..", ".."),
+  winslash = "/",
+  mustWork = TRUE
 )
 
 launcher_test_path <- function(name) {
@@ -18,23 +23,49 @@ launcher_test_path <- function(name) {
 
 launcher_run <- function(args, env = character()) {
   suppressWarnings(system2(
-    "bash", c(shQuote(launcher_path), vapply(args, shQuote, character(1L))),
-    stdout = TRUE, stderr = TRUE, env = env
+    "bash",
+    c(shQuote(launcher_path), vapply(args, shQuote, character(1L))),
+    stdout = TRUE,
+    stderr = TRUE,
+    env = env
   ))
 }
 
 test_that("recovery-v3 launcher is executable shell with the full phase surface", {
   expect_true(file.access(launcher_path, 1L) == 0L)
   expect_identical(
-    system2("bash", c("-n", shQuote(launcher_path)), stdout = FALSE, stderr = FALSE),
+    system2(
+      "bash",
+      c("-n", shQuote(launcher_path)),
+      stdout = FALSE,
+      stderr = FALSE
+    ),
     0L
   )
   for (mode in c(
-    "selftest", "synthetic-lifecycle", "guard-selftest", "write-review", "prepare-adaptive", "prepare", "preseal", "smoke-n-ladder",
-    "smoke-16", "verify-official", "recommend-workers", "run-official",
-    "lock-corpus", "recompute-base-r", "summarize-r", "replay-julia",
-    "verify-replay", "summarize-julia", "write-route-lineage", "write-postrun-review",
-    "adjudicate", "validate-final"
+    "selftest",
+    "synthetic-lifecycle",
+    "guard-selftest",
+    "write-review",
+    "prepare-adaptive",
+    "prepare",
+    "preseal",
+    "smoke-n-ladder",
+    "deployment-check",
+    "smoke-16",
+    "verify-official",
+    "recommend-workers",
+    "run-official",
+    "lock-corpus",
+    "recompute-base-r",
+    "summarize-r",
+    "replay-julia",
+    "verify-replay",
+    "summarize-julia",
+    "write-route-lineage",
+    "write-postrun-review",
+    "adjudicate",
+    "validate-final"
   )) {
     expect_match(launcher_text, mode, fixed = TRUE)
   }
@@ -42,21 +73,33 @@ test_that("recovery-v3 launcher is executable shell with the full phase surface"
 
 test_that("launcher compute guard is executable and fail-closed", {
   output <- system2(
-    "bash", c(shQuote(launcher_path), "guard-selftest"),
-    stdout = TRUE, stderr = TRUE
+    "bash",
+    c(shQuote(launcher_path), "guard-selftest"),
+    stdout = TRUE,
+    stderr = TRUE
   )
   expect_identical(attr(output, "status"), NULL)
-  expect_match(paste(output, collapse = "\n"), "guard selftest: PASS", fixed = TRUE)
+  expect_match(
+    paste(output, collapse = "\n"),
+    "guard selftest: PASS",
+    fixed = TRUE
+  )
 })
 
 test_that("deployed synthetic launcher rejects bypass and nonsibling twins", {
   admitted_env <- c(
-    "CI=false", "GITHUB_ACTIONS=false", "SLURM_CLUSTER_NAME=fir",
+    "CI=false",
+    "GITHUB_ACTIONS=false",
+    "SLURM_CLUSTER_NAME=fir",
     "SLURM_JOB_ID=707"
   )
   bypass <- launcher_run(
-    c("synthetic-lifecycle", launcher_test_path("unused"),
-      launcher_repo, dirname(launcher_repo)),
+    c(
+      "synthetic-lifecycle",
+      launcher_test_path("unused"),
+      launcher_repo,
+      dirname(launcher_repo)
+    ),
     c(admitted_env, "HSQUARED_RETRY7_SYNTHETIC_LOCAL=true")
   )
   expect_true(!is.null(attr(bypass, "status")))
@@ -74,8 +117,7 @@ test_that("deployed synthetic launcher rejects bypass and nonsibling twins", {
   dir.create(r_root, recursive = TRUE)
   dir.create(wrong_julia)
   nonsibling <- launcher_run(
-    c("synthetic-lifecycle", file.path(base, "workspace"),
-      r_root, wrong_julia),
+    c("synthetic-lifecycle", file.path(base, "workspace"), r_root, wrong_julia),
     admitted_env
   )
   expect_true(!is.null(attr(nonsibling, "status")))
@@ -86,28 +128,81 @@ test_that("deployed synthetic launcher rejects bypass and nonsibling twins", {
   )
 })
 
+test_that("deployed synthetic launcher exposes bounded worker and clean-tree checks", {
+  lifecycle_path <- testthat::test_path(
+    "..",
+    "..",
+    "tools",
+    "v07_genomic_recovery_v3_synthetic_lifecycle.R"
+  )
+  lifecycle_text <- paste(
+    readLines(lifecycle_path, warn = FALSE),
+    collapse = "\n"
+  )
+  expect_match(
+    launcher_text,
+    "deployment-check R_ROOT JULIA_ROOT",
+    fixed = TRUE
+  )
+  expect_match(
+    lifecycle_text,
+    "HSQUARED_RETRY7_SYNTHETIC_WORKER_TIMEOUT_SECONDS",
+    fixed = TRUE
+  )
+  expect_match(lifecycle_text, "--kill-after=15s", fixed = TRUE)
+  expect_match(lifecycle_text, "v3p_git_clean(r_root)", fixed = TRUE)
+  expect_match(lifecycle_text, "v3p_git_clean(julia_root)", fixed = TRUE)
+
+  output <- system2(
+    file.path(R.home("bin"), "Rscript"),
+    c("--vanilla", shQuote(lifecycle_path), "--mode=worker-selftest"),
+    stdout = TRUE,
+    stderr = TRUE
+  )
+  expect_identical(attr(output, "status"), NULL)
+  expect_match(
+    paste(output, collapse = "\n"),
+    "synthetic worker selftest: PASS",
+    fixed = TRUE
+  )
+})
+
 test_that("launcher makes fresh-D0F adjudication a D1-only predecessor", {
   expect_match(
-    launcher_text, "D1 $phase requires D0F_ADJUDICATION_ROOT", fixed = TRUE
+    launcher_text,
+    "D1 $phase requires D0F_ADJUDICATION_ROOT",
+    fixed = TRUE
   )
   expect_match(
-    launcher_text, "D0F $phase accepts no predecessor root", fixed = TRUE
+    launcher_text,
+    "D0F $phase accepts no predecessor root",
+    fixed = TRUE
   )
   expect_match(
-    launcher_text, "require_predecessor_arity d1 prepare 2", fixed = TRUE
+    launcher_text,
+    "require_predecessor_arity d1 prepare 2",
+    fixed = TRUE
   )
   expect_match(
-    launcher_text, "require_predecessor_arity d1 preseal 2", fixed = TRUE
+    launcher_text,
+    "require_predecessor_arity d1 preseal 2",
+    fixed = TRUE
   )
   expect_match(
-    launcher_text, "require_predecessor_arity d0f prepare 2", fixed = TRUE
+    launcher_text,
+    "require_predecessor_arity d0f prepare 2",
+    fixed = TRUE
   )
   expect_match(
-    launcher_text, "--d0f-adjudication-root", fixed = TRUE
+    launcher_text,
+    "--d0f-adjudication-root",
+    fixed = TRUE
   )
   expect_match(launcher_text, "validate_d0f_predecessor_once", fixed = TRUE)
   expect_false(grepl(
-    "V3D_D0F_PREDECESSOR_VALIDATED_SHA256", launcher_text, fixed = TRUE
+    "V3D_D0F_PREDECESSOR_VALIDATED_SHA256",
+    launcher_text,
+    fixed = TRUE
   ))
   expect_match(launcher_text, "--mode=validate-final", fixed = TRUE)
 })
@@ -115,7 +210,11 @@ test_that("launcher makes fresh-D0F adjudication a D1-only predecessor", {
 test_that("launcher exposes canonical D1-to-D2 planning without claiming numerics", {
   expect_match(launcher_text, "prepare-adaptive OUT d2|d3|d4", fixed = TRUE)
   expect_match(launcher_text, "require_adaptive_stage", fixed = TRUE)
-  expect_match(launcher_text, "v07_genomic_recovery_v3_admission.R", fixed = TRUE)
+  expect_match(
+    launcher_text,
+    "v07_genomic_recovery_v3_admission.R",
+    fixed = TRUE
+  )
   expect_match(launcher_text, "--d1-root", fixed = TRUE)
   expect_false(grepl("--d1-decisions", launcher_text, fixed = TRUE))
   expect_false(grepl("--d2-decisions", launcher_text, fixed = TRUE))
@@ -143,7 +242,11 @@ test_that("adaptive launcher executes fail-closed path and arity guards", {
   nested <- file.path(d1, "attempts")
   dir.create(nested)
   nested_run <- launcher_run(c(
-    "prepare-adaptive", nested, "d2", launcher_repo, d1
+    "prepare-adaptive",
+    nested,
+    "d2",
+    launcher_repo,
+    d1
   ))
   expect_true(!is.null(attr(nested_run, "status")))
   expect_match(paste(nested_run, collapse = "\n"), "distinct and nonnested")
@@ -152,7 +255,11 @@ test_that("adaptive launcher executes fail-closed path and arity guards", {
   dir.create(nonempty)
   writeLines("unexpected", file.path(nonempty, "member"))
   nonempty_run <- launcher_run(c(
-    "prepare-adaptive", nonempty, "d2", launcher_repo, d1
+    "prepare-adaptive",
+    nonempty,
+    "d2",
+    launcher_repo,
+    d1
   ))
   expect_true(!is.null(attr(nonempty_run, "status")))
   expect_match(paste(nonempty_run, collapse = "\n"), "must be empty")
@@ -162,7 +269,11 @@ test_that("adaptive launcher executes fail-closed path and arity guards", {
   dir.create(target)
   testthat::skip_if_not(file.symlink(target, alias), "symlinks unavailable")
   alias_run <- launcher_run(c(
-    "prepare-adaptive", alias, "d2", launcher_repo, d1
+    "prepare-adaptive",
+    alias,
+    "d2",
+    launcher_repo,
+    d1
   ))
   expect_true(!is.null(attr(alias_run, "status")))
   expect_match(paste(alias_run, collapse = "\n"), "existing real directory")
@@ -170,8 +281,12 @@ test_that("adaptive launcher executes fail-closed path and arity guards", {
 
 test_that("launcher freezes thread and process safety", {
   for (name in c(
-    "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",
-    "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS", "JULIA_NUM_THREADS"
+    "OPENBLAS_NUM_THREADS",
+    "OMP_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "JULIA_NUM_THREADS"
   )) {
     expect_match(launcher_text, paste0("export ", name, "=1"), fixed = TRUE)
   }
@@ -190,13 +305,33 @@ test_that("launcher freezes thread and process safety", {
 })
 
 test_that("launcher requires both smoke denominator and n-ladder coverage", {
-  expect_match(launcher_text, "fewer than 16 completed smoke attempts", fixed = TRUE)
-  expect_match(launcher_text, "smoke attempts do not cover every preregistered n", fixed = TRUE)
+  expect_match(
+    launcher_text,
+    "fewer than 16 completed smoke attempts",
+    fixed = TRUE
+  )
+  expect_match(
+    launcher_text,
+    "smoke attempts do not cover every preregistered n",
+    fixed = TRUE
+  )
   expect_match(launcher_text, "manifest_missing_pairs", fixed = TRUE)
   expect_match(launcher_text, "manifest_missing_recompute_pairs", fixed = TRUE)
-  expect_match(launcher_text, "smoke-16 requires exactly 16 previously missing rows", fixed = TRUE)
-  expect_match(launcher_text, "workers=$workers exceeds smoke/RAM recommendation", fixed = TRUE)
-  expect_match(launcher_text, "workers=$1 exceeds smoke/RAM recommendation", fixed = TRUE)
+  expect_match(
+    launcher_text,
+    "smoke-16 requires exactly 16 previously missing rows",
+    fixed = TRUE
+  )
+  expect_match(
+    launcher_text,
+    "workers=$workers exceeds smoke/RAM recommendation",
+    fixed = TRUE
+  )
+  expect_match(
+    launcher_text,
+    "workers=$1 exceeds smoke/RAM recommendation",
+    fixed = TRUE
+  )
 })
 
 test_that("launcher keeps official, base-R, and Julia stages distinct", {

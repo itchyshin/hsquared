@@ -22,48 +22,66 @@ v3s_abort <- function(...) stop(sprintf(...), call. = FALSE)
 v3s_option <- function(args, key, default = NULL) {
   prefix <- paste0("--", key, "=")
   hits <- args[startsWith(args, prefix)]
-  if (length(hits) > 1L) v3s_abort("option --%s occurs more than once", key)
-  if (!length(hits)) return(default)
+  if (length(hits) > 1L) {
+    v3s_abort("option --%s occurs more than once", key)
+  }
+  if (!length(hits)) {
+    return(default)
+  }
   sub(prefix, "", hits[[1L]], fixed = TRUE)
 }
 
 v3s_required <- function(args, key) {
   value <- v3s_option(args, key)
-  if (is.null(value) || !nzchar(value)) v3s_abort("--%s is required", key)
+  if (is.null(value) || !nzchar(value)) {
+    v3s_abort("--%s is required", key)
+  }
   value
 }
 
 v3s_script_path <- function() {
   args <- commandArgs(FALSE)
   file_arg <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
-  if (length(file_arg) != 1L) v3s_abort("cannot locate synthetic lifecycle tool")
+  if (length(file_arg) != 1L) {
+    v3s_abort("cannot locate synthetic lifecycle tool")
+  }
   normalizePath(
     gsub("~+~", " ", file_arg, fixed = TRUE),
-    winslash = "/", mustWork = TRUE
+    winslash = "/",
+    mustWork = TRUE
   )
 }
 
 v3s_tool_path <- v3s_script_path()
 v3s_r_root <- normalizePath(
-  file.path(dirname(v3s_tool_path), ".."), winslash = "/", mustWork = TRUE
+  file.path(dirname(v3s_tool_path), ".."),
+  winslash = "/",
+  mustWork = TRUE
 )
 v3s_core_path <- file.path(
-  v3s_r_root, "tools", "v07_genomic_recovery_v3_recompute.R"
+  v3s_r_root,
+  "tools",
+  "v07_genomic_recovery_v3_recompute.R"
 )
 sys.source(v3s_core_path, envir = .GlobalEnv)
 
 v3s_tool_hashes <- function() {
   julia_root <- normalizePath(
     file.path(v3s_r_root, "..", "HSquared.jl"),
-    winslash = "/", mustWork = TRUE
+    winslash = "/",
+    mustWork = TRUE
   )
   paths <- c(
     r_driver_sha256 = file.path(
-      v3s_r_root, "tools", "v07_genomic_recovery_v3.R"
+      v3s_r_root,
+      "tools",
+      "v07_genomic_recovery_v3.R"
     ),
     r_recomputer_sha256 = v3s_core_path,
     julia_replay_sha256 = file.path(
-      julia_root, "sim", "phase2_v07_genomic_recovery_v3_stage_replay.jl"
+      julia_root,
+      "sim",
+      "phase2_v07_genomic_recovery_v3_stage_replay.jl"
     )
   )
   vapply(paths, v07d_sha256, character(1L))
@@ -73,7 +91,9 @@ if (!requireNamespace("openssl", quietly = TRUE)) {
   v3s_abort("the opt-in synthetic lifecycle requires the openssl R package")
 }
 v07d_sha256_raw <- function(bytes) {
-  if (!is.raw(bytes)) v3s_abort("SHA-256 preimage must be raw")
+  if (!is.raw(bytes)) {
+    v3s_abort("SHA-256 preimage must be raw")
+  }
   unclass(as.character(openssl::sha256(bytes)))
 }
 v07d_sha256 <- function(path) {
@@ -102,11 +122,13 @@ v3s_d0f_phenotype_base <- 1110000000L
 v3s_d0f_bootstrap_base <- 1120000000L
 assign("v3_seed_base", v3s_d1_seed_base, envir = .GlobalEnv)
 assign(
-  "v07s_d0f_retry_phenotype_base", v3s_d0f_phenotype_base,
+  "v07s_d0f_retry_phenotype_base",
+  v3s_d0f_phenotype_base,
   envir = .GlobalEnv
 )
 assign(
-  "v07s_d0f_retry_bootstrap_base", v3s_d0f_bootstrap_base,
+  "v07s_d0f_retry_bootstrap_base",
+  v3s_d0f_bootstrap_base,
   envir = .GlobalEnv
 )
 
@@ -116,8 +138,10 @@ v3s_enable_projection_seam <- function() {
     function(root, stage, runtime_phase) {
       root <- v3r_canonical_dir(root, "synthetic stage output root")
       preseal <- v3r_preseal_values(file.path(root, "stage_preseal.tsv"))
-      if (!identical(preseal$value[["stage"]], stage) ||
-          !identical(preseal$value[["output_root"]], root)) {
+      if (
+        !identical(preseal$value[["stage"]], stage) ||
+          !identical(preseal$value[["output_root"]], root)
+      ) {
         v3r_abort("synthetic stage preseal stage/root drift")
       }
       if (identical(stage, "d1")) {
@@ -143,11 +167,16 @@ v3s_hex <- function(text, n = 64L) {
 
 v3s_git_head <- function(root) {
   out <- system2(
-    Sys.which("git"), c("-C", shQuote(root), "rev-parse", "HEAD"),
-    stdout = TRUE, stderr = TRUE
+    Sys.which("git"),
+    c("-C", shQuote(root), "rev-parse", "HEAD"),
+    stdout = TRUE,
+    stderr = TRUE
   )
-  if (!is.null(attr(out, "status")) || length(out) != 1L ||
-      !grepl("^[0-9a-f]{40}$", out)) {
+  if (
+    !is.null(attr(out, "status")) ||
+      length(out) != 1L ||
+      !grepl("^[0-9a-f]{40}$", out)
+  ) {
     v3s_abort("cannot read git HEAD for %s", root)
   }
   out[[1L]]
@@ -227,13 +256,16 @@ v3s_write_preseal_inputs <- function(root, stage, fixture) {
     root
   )
   v3s_write(
-    file.path(root, paste0(stage, "_manifest.tsv")), fixture$manifest, root
+    file.path(root, paste0(stage, "_manifest.tsv")),
+    fixture$manifest,
+    root
   )
   for (reviewer in v3p_reviewers) {
     v3s_write(
       file.path(root, "receipts", paste0(reviewer, ".tsv")),
       data.frame(
-        reviewer = reviewer, verdict = "SYNTHETIC_INPUT",
+        reviewer = reviewer,
+        verdict = "SYNTHETIC_INPUT",
         stringsAsFactors = FALSE
       ),
       root
@@ -249,31 +281,56 @@ v3s_write_preseal_inputs <- function(root, stage, fixture) {
 v3s_preseal_row <- function(root, stage, d0f = NULL) {
   julia_root <- normalizePath(
     file.path(v3s_r_root, "..", "HSquared.jl"),
-    winslash = "/", mustWork = TRUE
+    winslash = "/",
+    mustWork = TRUE
   )
   context <- v3r_expected_tool_context()
   context$r_recomputer_path <- normalizePath(
-    v3s_core_path, winslash = "/", mustWork = TRUE
+    v3s_core_path,
+    winslash = "/",
+    mustWork = TRUE
   )
   tool_hashes <- v3s_tool_hashes()
-  values <- setNames(rep("NA", length(v3p_stage_preseal_keys)),
+  values <- setNames(
+    rep("NA", length(v3p_stage_preseal_keys)),
     v3p_stage_preseal_keys
   )
   values[c(
-    "schema_version", "stage", "output_root", "official_route",
-    "replay_route", "packet_schema_version", "truth_schema_version",
-    "relationship_source", "relationship_method", "allele_frequency_source",
-    "relationship_scale", "ridge", "boundary_epsilon",
-    "boundary_kkt_tolerance", "output_subtrees_absent_before_preseal"
+    "schema_version",
+    "stage",
+    "output_root",
+    "official_route",
+    "replay_route",
+    "packet_schema_version",
+    "truth_schema_version",
+    "relationship_source",
+    "relationship_method",
+    "allele_frequency_source",
+    "relationship_scale",
+    "ridge",
+    "boundary_epsilon",
+    "boundary_kkt_tolerance",
+    "output_subtrees_absent_before_preseal"
   )] <- c(
-    "v07-genomic-recovery-v3-stage-preseal-3", stage, root,
-    "ordinary_auto_genomic", "julia_profile_replay",
+    "v07-genomic-recovery-v3-stage-preseal-3",
+    stage,
+    root,
+    "ordinary_auto_genomic",
+    "julia_profile_replay",
     "v07-genomic-recovery-v3-packet-1",
-    "v07-genomic-recovery-v3-truth-1", "markers", "vanraden1", "sample",
-    "K_lambda", "0.01", "1e-07", "1e-08", "true"
+    "v07-genomic-recovery-v3-truth-1",
+    "markers",
+    "vanraden1",
+    "sample",
+    "K_lambda",
+    "0.01",
+    "1e-07",
+    "1e-08",
+    "true"
   )
   paths <- c(
-    doc49_sha256 = "doc49.md", cell_table_sha256 = "cell_table.tsv",
+    doc49_sha256 = "doc49.md",
+    cell_table_sha256 = "cell_table.tsv",
     manifest_sha256 = paste0(stage, "_manifest.tsv"),
     environment_manifest_sha256 = "environment_manifest.tsv",
     historical_seed_lock_sha256 = "historical_seed_lock.tsv"
@@ -287,7 +344,9 @@ v3s_preseal_row <- function(root, stage, d0f = NULL) {
     )
   }
   values[c(
-    "r_driver_commit", "r_recomputer_commit", "r_auto_route_commit"
+    "r_driver_commit",
+    "r_recomputer_commit",
+    "r_auto_route_commit"
   )] <- v3s_git_head(v3s_r_root)
   values[c("julia_replay_commit", "julia_candidate_commit")] <-
     v3s_git_head(julia_root)
@@ -301,16 +360,21 @@ v3s_preseal_row <- function(root, stage, d0f = NULL) {
       file.path(root, "d0f_fixed_panel_manifest.tsv")
     )
     values[["d0f_bootstrap_seed_base"]] <- format(
-      v3s_d0f_bootstrap_base, scientific = FALSE
+      v3s_d0f_bootstrap_base,
+      scientific = FALSE
     )
     values[["d0f_bootstrap_indices_absent_before_preseal"]] <- "true"
   } else {
-    if (is.null(d0f)) v3s_abort("D1 preseal requires exact synthetic D0F")
+    if (is.null(d0f)) {
+      v3s_abort("D1 preseal requires exact synthetic D0F")
+    }
     values[["d0f_adjudication_root"]] <- d0f$root
     values[["d0f_adjudication_receipt_sha256"]] <- d0f$receipt_sha256
   }
   data.frame(
-    key = names(values), value = unname(values), stringsAsFactors = FALSE
+    key = names(values),
+    value = unname(values),
+    stringsAsFactors = FALSE
   )
 }
 
@@ -320,24 +384,32 @@ v3s_write_official_evidence <- function(root, stage, fixture, binding) {
   } else {
     v3p_d1_summary_parity_fixture(binding)
   }
-  if (!v3r_same_text_table(fixture$manifest, v3r_read_tsv(
-    file.path(root, paste0(stage, "_manifest.tsv")),
-    v3r_manifest_columns(stage)
-  ))) {
+  if (
+    !v3r_same_text_table(
+      fixture$manifest,
+      v3r_read_tsv(
+        file.path(root, paste0(stage, "_manifest.tsv")),
+        v3r_manifest_columns(stage)
+      )
+    )
+  ) {
     v3s_abort("synthetic manifest changed after presealing")
   }
   for (i in seq_len(nrow(fixture$manifest))) {
     row <- fixture$manifest[i, , drop = FALSE]
     v3s_write(
       v3r_attempt_path(root, stage, row),
-      fixture$attempts[i, , drop = FALSE], root
+      fixture$attempts[i, , drop = FALSE],
+      root
     )
     packet <- v3r_packet_dir(root, stage, row)
     for (name in v3r_packet_primaries) {
       v3s_write(
         file.path(packet, name),
         data.frame(
-          member = name, synthetic = TRUE, stringsAsFactors = FALSE
+          member = name,
+          synthetic = TRUE,
+          stringsAsFactors = FALSE
         ),
         root
       )
@@ -357,14 +429,25 @@ v3s_write_recomputations <- function(state, attempts) {
     base$base_r_kernel_hash <- native[[1L]]
     base$base_r_precision_hash <- native[[2L]]
     base <- base[c(v3r_attempt_columns(state$stage), v3r_native_hash_columns)]
-    v3s_write(v3r_recompute_path(
-      state$root, state$stage, row
-    ), base, state$root)
+    v3s_write(
+      v3r_recompute_path(
+        state$root,
+        state$stage,
+        row
+      ),
+      base,
+      state$root
+    )
 
     official_path <- v3r_attempt_path(state$root, state$stage, row)
-    julia <- attempts[i, setdiff(
-      v3r_attempt_columns(state$stage), "preseal_sha256"
-    ), drop = FALSE]
+    julia <- attempts[
+      i,
+      setdiff(
+        v3r_attempt_columns(state$stage),
+        "preseal_sha256"
+      ),
+      drop = FALSE
+    ]
     julia$route <- "julia_profile_replay"
     julia$driver_commit <- state$binding$julia_replay_commit
     julia$source_r_attempt_sha256 <- v07d_sha256(official_path)
@@ -378,9 +461,15 @@ v3s_write_recomputations <- function(state, attempts) {
       setdiff(v3r_attempt_columns(state$stage), "preseal_sha256"),
       v3p_replay_binding_columns
     )]
-    v3s_write(v3r_julia_path(
-      state$root, state$stage, row
-    ), julia, state$root)
+    v3s_write(
+      v3r_julia_path(
+        state$root,
+        state$stage,
+        row
+      ),
+      julia,
+      state$root
+    )
   }
   invisible(TRUE)
 }
@@ -407,13 +496,20 @@ v3s_materialize_root <- function(root, stage, d0f = NULL) {
   fixture <- v3s_write_official_evidence(root, stage, fixture, binding)
   if (identical(stage, "d0f")) {
     v3s_write(
-      file.path(root, "d0f_bootstrap_indices.tsv"), fixture$bootstrap, root
+      file.path(root, "d0f_bootstrap_indices.tsv"),
+      fixture$bootstrap,
+      root
     )
   }
   manifest <- fixture$manifest
-  corpus <- v3r_inventory(root, v3r_expected_official_paths(
-    root, stage, manifest
-  ))
+  corpus <- v3r_inventory(
+    root,
+    v3r_expected_official_paths(
+      root,
+      stage,
+      manifest
+    )
+  )
   v3s_write(file.path(root, "stage_corpus_lock.tsv"), corpus, root)
   state <- v3r_read_stage(root, stage, validate_deployment = FALSE)
   fixture <- if (identical(stage, "d0f")) {
@@ -428,12 +524,17 @@ v3s_materialize_root <- function(root, stage, d0f = NULL) {
 v3s_worker <- function(args) {
   action <- v3s_required(args, "action")
   root <- normalizePath(
-    v3s_required(args, "output-root"), winslash = "/", mustWork = TRUE
+    v3s_required(args, "output-root"),
+    winslash = "/",
+    mustWork = TRUE
   )
   stage <- v3r_stage(v3s_required(args, "stage"))
-  execution_guard <- if (identical(
-    Sys.getenv("HSQUARED_RETRY7_SYNTHETIC_LOCAL"), "true"
-  )) {
+  execution_guard <- if (
+    identical(
+      Sys.getenv("HSQUARED_RETRY7_SYNTHETIC_LOCAL"),
+      "true"
+    )
+  ) {
     function() invisible(TRUE)
   } else {
     v3r_assert_execution_context
@@ -442,7 +543,8 @@ v3s_worker <- function(args) {
   execution_guard()
   if (identical(action, "summarize-r")) {
     return(v3r_main(
-      c("--mode=summarize", common), execution_guard = execution_guard
+      c("--mode=summarize", common),
+      execution_guard = execution_guard
     ))
   }
   if (identical(action, "summarize-julia")) {
@@ -454,7 +556,9 @@ v3s_worker <- function(args) {
     v3r_write_once(path, summary, temporary_parent = dirname(root))
     message(sprintf(
       "wrote synthetic Julia %s summary rows=%d sha256=%s",
-      stage, nrow(summary), v07d_sha256(path)
+      stage,
+      nrow(summary),
+      v07d_sha256(path)
     ))
     return(invisible(summary))
   }
@@ -467,105 +571,282 @@ v3s_worker <- function(args) {
   if (identical(action, "review")) {
     reviewer <- v3s_required(args, "reviewer")
     reviewed_at <- v3s_required(args, "reviewed-at-utc")
-    return(v3r_main(c(
-      "--mode=write-postrun-review", common,
-      paste0("--reviewer=", reviewer), "--verdict=CLEAN",
-      paste0("--reviewed-at-utc=", reviewed_at)
-    ), execution_guard = execution_guard))
+    return(v3r_main(
+      c(
+        "--mode=write-postrun-review",
+        common,
+        paste0("--reviewer=", reviewer),
+        "--verdict=CLEAN",
+        paste0("--reviewed-at-utc=", reviewed_at)
+      ),
+      execution_guard = execution_guard
+    ))
   }
   if (identical(action, "adjudicate")) {
-    return(v3r_main(c(
-      "--mode=adjudicate", common
-    ), execution_guard = execution_guard))
+    return(v3r_main(
+      c(
+        "--mode=adjudicate",
+        common
+      ),
+      execution_guard = execution_guard
+    ))
   }
   if (identical(action, "validate-final")) {
-    return(v3r_main(c(
-      "--mode=validate-final", common
-    ), execution_guard = execution_guard))
+    return(v3r_main(
+      c(
+        "--mode=validate-final",
+        common
+      ),
+      execution_guard = execution_guard
+    ))
   }
   v3s_abort("unknown worker action: %s", action)
 }
 
-v3s_run_worker <- function(root, stage, action, extra = character()) {
+v3s_worker_timeout_seconds <- function(
+  value = Sys.getenv("HSQUARED_RETRY7_SYNTHETIC_WORKER_TIMEOUT_SECONDS", "900")
+) {
+  if (!grepl("^[1-9][0-9]*$", value)) {
+    v3s_abort(
+      "HSQUARED_RETRY7_SYNTHETIC_WORKER_TIMEOUT_SECONDS must be a positive whole number"
+    )
+  }
+  seconds <- as.integer(value)
+  if (is.na(seconds) || seconds > 3600L) {
+    v3s_abort(
+      "HSQUARED_RETRY7_SYNTHETIC_WORKER_TIMEOUT_SECONDS must be at most 3600"
+    )
+  }
+  seconds
+}
+
+v3s_timeout_program <- function() {
+  program <- Sys.which("timeout")
+  if (!nzchar(program)) {
+    v3s_abort("synthetic lifecycle requires GNU timeout for bounded workers")
+  }
+  program
+}
+
+v3s_run_worker <- function(
+  root,
+  stage,
+  action,
+  extra = character(),
+  runner = system2,
+  timeout_seconds = v3s_worker_timeout_seconds(),
+  timeout_program = v3s_timeout_program()
+) {
   command <- c(
-    "--vanilla", shQuote(v3s_tool_path), "--mode=worker",
+    "--signal=TERM",
+    "--kill-after=15s",
+    as.character(timeout_seconds),
+    file.path(R.home("bin"), "Rscript"),
+    "--vanilla",
+    shQuote(v3s_tool_path),
+    "--mode=worker",
     paste0("--action=", action),
     shQuote(paste0("--output-root=", root)),
-    paste0("--stage=", stage), extra
+    paste0("--stage=", stage),
+    extra
   )
-  output <- system2(
-    file.path(R.home("bin"), "Rscript"), command,
-    stdout = TRUE, stderr = TRUE
+  output <- runner(
+    timeout_program,
+    command,
+    stdout = TRUE,
+    stderr = TRUE
   )
   status <- attr(output, "status")
   if (!is.null(status) && status != 0L) {
+    timeout_note <- if (identical(status, 124L)) {
+      sprintf(
+        "worker exceeded %d-second bound; no later worker was launched",
+        timeout_seconds
+      )
+    } else {
+      "worker failed; no later worker was launched"
+    }
     v3s_abort(
-      "synthetic worker failed action=%s stage=%s status=%d\n%s",
-      action, stage, status, paste(output, collapse = "\n")
+      "synthetic worker failed action=%s stage=%s status=%d (%s)\n%s",
+      action,
+      stage,
+      status,
+      timeout_note,
+      paste(output, collapse = "\n")
     )
   }
   message(paste(output, collapse = "\n"))
   invisible(output)
 }
 
-v3s_complete_lifecycle <- function(root, stage) {
-  v3s_run_worker(root, stage, "summarize-r")
-  v3s_run_worker(root, stage, "summarize-julia")
-  v3s_run_worker(root, stage, "lineage")
+v3s_complete_lifecycle <- function(root, stage, worker = v3s_run_worker) {
+  worker(root, stage, "summarize-r")
+  worker(root, stage, "summarize-julia")
+  worker(root, stage, "lineage")
   for (i in seq_along(v3p_reviewers)) {
     reviewer <- v3p_reviewers[[i]]
-    v3s_run_worker(
-      root, stage, "review",
+    worker(
+      root,
+      stage,
+      "review",
       c(
         paste0("--reviewer=", reviewer),
         sprintf("--reviewed-at-utc=2026-07-16T12:00:%02dZ", i)
       )
     )
   }
-  v3s_run_worker(root, stage, "adjudicate")
+  worker(root, stage, "adjudicate")
   receipt_path <- file.path(root, "stage_adjudication_receipt.tsv")
   first_primary <- readBin(receipt_path, "raw", file.info(receipt_path)$size)
   first_sidecar <- readBin(
-    paste0(receipt_path, ".sha256"), "raw",
+    paste0(receipt_path, ".sha256"),
+    "raw",
     file.info(paste0(receipt_path, ".sha256"))$size
   )
-  v3s_run_worker(root, stage, "adjudicate")
-  if (!identical(
-    first_primary,
-    readBin(receipt_path, "raw", file.info(receipt_path)$size)
-  ) || !identical(
-    first_sidecar,
-    readBin(
-      paste0(receipt_path, ".sha256"), "raw",
-      file.info(paste0(receipt_path, ".sha256"))$size
-    )
-  )) {
+  worker(root, stage, "adjudicate")
+  if (
+    !identical(
+      first_primary,
+      readBin(receipt_path, "raw", file.info(receipt_path)$size)
+    ) ||
+      !identical(
+        first_sidecar,
+        readBin(
+          paste0(receipt_path, ".sha256"),
+          "raw",
+          file.info(paste0(receipt_path, ".sha256"))$size
+        )
+      )
+  ) {
     v3s_abort("identical adjudication retry changed receipt bytes")
   }
-  v3s_run_worker(root, stage, "validate-final")
+  worker(root, stage, "validate-final")
   receipt <- v3r_read_tsv(
-    receipt_path, v3r_receipt_columns, all_character = TRUE
+    receipt_path,
+    v3r_receipt_columns,
+    all_character = TRUE
   )
   preseal <- v3r_preseal_values(file.path(root, "stage_preseal.tsv"))
   tool_hashes <- v3s_tool_hashes()
   for (field in names(tool_hashes)) {
-    if (!identical(preseal$value[[field]], tool_hashes[[field]]) ||
-        !identical(receipt[[field]][[1L]], tool_hashes[[field]])) {
+    if (
+      !identical(preseal$value[[field]], tool_hashes[[field]]) ||
+        !identical(receipt[[field]][[1L]], tool_hashes[[field]])
+    ) {
       v3s_abort(
         "synthetic lifecycle %s does not bind actual %s bytes",
-        stage, field
+        stage,
+        field
       )
     }
   }
   list(
-    root = root, receipt = receipt,
+    root = root,
+    receipt = receipt,
     receipt_sha256 = v07d_sha256(receipt_path)
   )
 }
 
+v3s_validate_deployment <- function(r_root, julia_root) {
+  r_root <- normalizePath(r_root, winslash = "/", mustWork = TRUE)
+  julia_root <- normalizePath(julia_root, winslash = "/", mustWork = TRUE)
+  expected_julia <- normalizePath(
+    file.path(r_root, "..", "HSquared.jl"),
+    winslash = "/",
+    mustWork = TRUE
+  )
+  if (!identical(julia_root, expected_julia)) {
+    v3s_abort("synthetic lifecycle requires sibling deployed twins")
+  }
+  v3p_git_clean(r_root)
+  v3p_git_clean(julia_root)
+  message(sprintf(
+    "synthetic deployment check: PASS r_root=%s julia_root=%s",
+    r_root,
+    julia_root
+  ))
+  invisible(list(r_root = r_root, julia_root = julia_root))
+}
+
+v3s_worker_selftest <- function() {
+  stopifnot(identical(v3s_worker_timeout_seconds("1"), 1L))
+  for (value in c("0", "1.5", "3601", "not-a-number")) {
+    error <- tryCatch(
+      {
+        v3s_worker_timeout_seconds(value)
+        NULL
+      },
+      error = identity
+    )
+    stopifnot(inherits(error, "error"))
+  }
+  call <- NULL
+  runner <- function(command, args, stdout, stderr) {
+    call <<- list(
+      command = command,
+      args = args,
+      stdout = stdout,
+      stderr = stderr
+    )
+    structure("bounded worker", status = 124L)
+  }
+  error <- tryCatch(
+    {
+      v3s_run_worker(
+        "/tmp/synthetic",
+        "d0f",
+        "summarize-r",
+        runner = runner,
+        timeout_seconds = 7L,
+        timeout_program = "timeout"
+      )
+      NULL
+    },
+    error = identity
+  )
+  stopifnot(
+    inherits(error, "error"),
+    identical(call$command, "timeout"),
+    identical(
+      call$args[1:4],
+      c(
+        "--signal=TERM",
+        "--kill-after=15s",
+        "7",
+        file.path(R.home("bin"), "Rscript")
+      )
+    ),
+    grepl("no later worker was launched", conditionMessage(error), fixed = TRUE)
+  )
+  actions <- character()
+  stop_worker <- function(root, stage, action, extra = character()) {
+    actions <<- c(actions, action)
+    v3s_abort("deliberate bounded-worker stop")
+  }
+  error <- tryCatch(
+    {
+      v3s_complete_lifecycle("/tmp/synthetic", "d0f", worker = stop_worker)
+      NULL
+    },
+    error = identity
+  )
+  stopifnot(
+    inherits(error, "error"),
+    identical(actions, "summarize-r")
+  )
+  message("synthetic worker selftest: PASS")
+  invisible(TRUE)
+}
+
 v3s_orchestrate <- function(args) {
+  v3s_validate_deployment(
+    v3s_r_root,
+    file.path(v3s_r_root, "..", "HSquared.jl")
+  )
   workspace <- v3s_option(args, "workspace")
-  if (is.null(workspace)) workspace <- tempfile("v3-retry7-synthetic-")
+  if (is.null(workspace)) {
+    workspace <- tempfile("v3-retry7-synthetic-")
+  }
   dir.create(workspace, recursive = TRUE, showWarnings = FALSE)
   workspace <- normalizePath(workspace, winslash = "/", mustWork = TRUE)
   if (length(list.files(workspace, all.files = TRUE, no.. = TRUE))) {
@@ -576,21 +857,27 @@ v3s_orchestrate <- function(args) {
   d0f_materialized <- v3s_materialize_root(d0f_root, "d0f")
   stopifnot(nrow(d0f_materialized$state$manifest) == 576L)
   d0f <- v3s_complete_lifecycle(d0f_root, "d0f")
-  if (!identical(d0f$receipt$verdict, "PASS") ||
-      !identical(d0f$receipt$stage_decision, "COMPLETE")) {
+  if (
+    !identical(d0f$receipt$verdict, "PASS") ||
+      !identical(d0f$receipt$stage_decision, "COMPLETE")
+  ) {
     v3s_abort("synthetic D0F did not adjudicate PASS/COMPLETE")
   }
 
   dir.create(d1_root, recursive = TRUE, showWarnings = FALSE)
   d1_root <- normalizePath(d1_root, winslash = "/", mustWork = TRUE)
   v3p_validate_successful_d0f_adjudication(
-    d0f$root, d0f$receipt_sha256, d1_root
+    d0f$root,
+    d0f$receipt_sha256,
+    d1_root
   )
   d1_materialized <- v3s_materialize_root(d1_root, "d1", d0f)
   stopifnot(nrow(d1_materialized$state$manifest) == 576L)
   d1 <- v3s_complete_lifecycle(d1_root, "d1")
-  if (!identical(d1$receipt$verdict, "PASS") ||
-      !identical(d1$receipt$stage_decision, "ELIGIBLE=12")) {
+  if (
+    !identical(d1$receipt$verdict, "PASS") ||
+      !identical(d1$receipt$stage_decision, "ELIGIBLE=12")
+  ) {
     v3s_abort("synthetic D1 did not adjudicate PASS/ELIGIBLE=12")
   }
   message(sprintf(
@@ -601,16 +888,35 @@ v3s_orchestrate <- function(args) {
       "d1_receipt_sha256=%s",
       sep = "\n"
     ),
-    workspace, d0f$receipt_sha256, d1$receipt_sha256
+    workspace,
+    d0f$receipt_sha256,
+    d1$receipt_sha256
   ))
   invisible(list(workspace = workspace, d0f = d0f, d1 = d1))
 }
 
 v3s_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   mode <- v3s_option(args, "mode", "orchestrate")
-  if (identical(mode, "worker")) return(v3s_worker(args))
-  if (identical(mode, "orchestrate")) return(v3s_orchestrate(args))
-  v3s_abort("mode must be orchestrate or worker")
+  if (identical(mode, "worker")) {
+    return(v3s_worker(args))
+  }
+  if (identical(mode, "orchestrate")) {
+    return(v3s_orchestrate(args))
+  }
+  if (identical(mode, "deployment-check")) {
+    return(v3s_validate_deployment(
+      v3s_required(args, "r-root"),
+      v3s_required(args, "julia-root")
+    ))
+  }
+  if (identical(mode, "worker-selftest")) {
+    return(v3s_worker_selftest())
+  }
+  v3s_abort(
+    "mode must be worker, orchestrate, deployment-check, or worker-selftest"
+  )
 }
 
-if (sys.nframe() == 0L) v3s_main()
+if (sys.nframe() == 0L) {
+  v3s_main()
+}
