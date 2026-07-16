@@ -2,6 +2,12 @@
 
 ## State
 
+**Supersession (2026-07-16):** the attempted canonical writer exposed a stale
+`v07_genomic_recovery_v3.R.sha256` sidecar. Commit `01ad843` repairs that byte
+binding. This is a tool-byte change, so every prior exact-head S7 and Sol
+clearance is invalidated; rerun the exact-head local/CI/rehearsal/review chain
+before any new preseal decision. No preseal was written.
+
 The exact-head S7 synthetic packet is complete and pushed in R commit
 `a8a9ecba00f87630b4de446f32af7859f6273da4`; its code source remains
 `f77acc072c6d917fb86855fb49dfd8f222c3d7ce`, with Julia
