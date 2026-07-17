@@ -1384,3 +1384,429 @@ test_that("non-prefix complete batch targets fail before writes", {
   )
   expect_false(file.exists(v3r_recompute_path(fixture$root, "d1", first)))
 })
+
+# ---------------------------------------------------------------------------
+# Retry-7 regression tail: the D0F operational adjudicator at full 576
+# cardinality across every boundary-classification arm and both summary
+# routes. Prior to this block no test exercised v3p_d0f_summary_route's
+# non-interior arms (interior_rescued / boundary_lower / boundary_upper /
+# unresolved / error), nor v3r_expected_summary_route at D0F. These tests only
+# exercise fixes that already exist in the sealed tools; they add no behaviour.
+#
+# Source-verified invariants that shape the fixtures below:
+#   * The D0F manifest and its fixed panels are FULLY order-pinned
+#     (v3p_validate_d0f_fixed_panels requires canonical design/panel order;
+#     v3p_validate_d0f_phenotype_manifest requires panel-major, phenotype-minor
+#     1..8 order). A permuted manifest is therefore inadmissible, so tally
+#     "permutation invariance" is tested as position-invariance across two
+#     admissible canonical layouts (arms at head vs tail), not a row shuffle.
+#   * Unsuccessful rows must satisfy v3p_validate_unsuccessful_results exactly:
+#     required-NA scientific/optimizer fields, and either a boundary_unresolved
+#     arm (non-empty reason, boundary_epsilon == v3p_boundary_epsilon, all-NA or
+#     all-finite evidence) or an error arm (boundary_status NA, all boundary
+#     evidence NA).
+
+v3r_test_route_binding <- function() {
+  list(
+    preseal_sha256 = v3r_test_hash("e"),
+    manifest_sha256 = v3r_test_hash("f"),
+    corpus_lock_sha256 = v3r_test_hash("a"),
+    r_auto_route_commit = v3r_test_hash("a", 40L),
+    julia_candidate_commit = v3r_test_hash("b", 40L),
+    r_driver_commit = v3r_test_hash("c", 40L),
+    julia_replay_commit = v3r_test_hash("d", 40L),
+    julia_replay_sha256 = v3r_test_hash("b")
+  )
+}
+
+v3r_test_as_julia <- function(attempts, binding) {
+  attempts$route <- "julia_profile_replay"
+  attempts$driver_commit <- binding$julia_replay_commit
+  attempts
+}
+
+# Clone the parity fixture's admitted attempts, then overwrite the boundary /
+# convergence / scientific fields per design (192 rows each) to populate every
+# classification arm, and re-admit so v3p_validate_results re-checks the result.
+# all_converged = TRUE  -> 150 interior / 12 rescued / 15 lower / 15 upper.
+# all_converged = FALSE -> 130 interior / 12 rescued / 15 lower / 15 upper
+#                          + 10 boundary_unresolved + 10 error (172 converged).
+v3r_test_d0f_mixed_fixture <- function(
+  binding, all_converged = TRUE, layout = c("tail", "head")
+) {
+  layout <- match.arg(layout)
+  base <- v3p_d0f_summary_parity_fixture(binding)
+  manifest <- base$manifest
+  a <- base$attempts
+  eps <- v3p_boundary_epsilon
+  fail_fields <- c(
+    "scientific_sigma_g2", "scientific_sigma_e2", "scientific_ratio",
+    "fitted_total_variance", "numerical_sigma_g2", "numerical_sigma_e2",
+    "numerical_ratio", "iterations", "objective", "gradient_norm",
+    "profile_loglik", "lower_derivative_per_observation",
+    "upper_derivative_per_observation", "boundary_epsilon"
+  )
+  set_rescued <- function(a, r) {
+    a$boundary_status[r] <- "interior_rescued"
+    a$boundary_reason[r] <- "profile_interior"
+    a
+  }
+  set_lower <- function(a, r) {
+    a$boundary_status[r] <- "boundary_lower"
+    a$boundary_reason[r] <- "boundary_lower"
+    a$scientific_ratio[r] <- 0
+    a$scientific_sigma_g2[r] <- 0
+    a$scientific_sigma_e2[r] <- a$fitted_total_variance[r]
+    a$numerical_ratio[r] <- eps
+    a$numerical_sigma_g2[r] <- eps * a$fitted_total_variance[r]
+    a$numerical_sigma_e2[r] <-
+      a$fitted_total_variance[r] - eps * a$fitted_total_variance[r]
+    a$lower_derivative_per_observation[r] <- -1
+    a
+  }
+  set_upper <- function(a, r) {
+    a$boundary_status[r] <- "boundary_upper"
+    a$boundary_reason[r] <- "boundary_upper"
+    a$scientific_ratio[r] <- 1
+    a$scientific_sigma_g2[r] <- a$fitted_total_variance[r]
+    a$scientific_sigma_e2[r] <- 0
+    a$numerical_ratio[r] <- 1 - eps
+    a$numerical_sigma_g2[r] <- a$fitted_total_variance[r] * (1 - eps)
+    a$numerical_sigma_e2[r] <- a$fitted_total_variance[r] * eps
+    a$upper_derivative_per_observation[r] <- 1
+    a
+  }
+  set_error <- function(a, r) {
+    a$status[r] <- "fit_error"
+    a$error_class[r] <- "optimizer_error"
+    a$converged[r] <- FALSE
+    for (f in fail_fields) a[[f]][r] <- NA
+    a$boundary_status[r] <- NA
+    a$boundary_reason[r] <- NA
+    a
+  }
+  set_unresolved <- function(a, r) {
+    a$status[r] <- "fit_error"
+    a$error_class[r] <- "boundary_unresolved_error"
+    a$converged[r] <- FALSE
+    for (f in fail_fields) a[[f]][r] <- NA
+    a$boundary_status[r] <- "boundary_unresolved"
+    a$boundary_reason[r] <- "profile_flat"
+    a$boundary_epsilon[r] <- eps
+    a
+  }
+  for (design_id in v3p_d0f_designs$design_id) {
+    idx <- which(a$design_id == design_id)
+    if (identical(layout, "head")) idx <- rev(idx)
+    if (all_converged) {
+      a <- set_rescued(a, idx[151:162])
+      a <- set_lower(a, idx[163:177])
+      a <- set_upper(a, idx[178:192])
+    } else {
+      a <- set_rescued(a, idx[131:142])
+      a <- set_lower(a, idx[143:157])
+      a <- set_upper(a, idx[158:172])
+      a <- set_unresolved(a, idx[173:182])
+      a <- set_error(a, idx[183:192])
+    }
+  }
+  attempts <- v3p_admit_d0f_attempts(a, manifest, binding)
+  list(manifest = manifest, attempts = attempts, bootstrap = base$bootstrap)
+}
+
+v3r_test_d0f_bootstrap_sha <- function(root, bootstrap) {
+  path <- file.path(root, "d0f_bootstrap_indices.tsv")
+  v3r_test_write(path, bootstrap)
+  list(path = path, sha256 = v07d_sha256(path))
+}
+
+test_that("D0F summary conserves 576 across boundary classes and both routes", {
+  binding <- v3r_test_route_binding()
+  mixed <- v3r_test_d0f_mixed_fixture(binding)
+  root <- tempfile("v3r-d0f-multiroute-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  boot <- v3r_test_d0f_bootstrap_sha(root, mixed$bootstrap)
+
+  summary <- v3p_d0f_summary(
+    mixed$manifest, mixed$attempts, mixed$bootstrap, boot$sha256, binding
+  )
+  expect_equal(nrow(summary), 3L)
+  class_cols <- c(
+    "n_interior", "n_interior_rescued", "n_boundary_lower",
+    "n_boundary_upper", "n_unresolved", "n_error"
+  )
+  expect_true(all(rowSums(summary[class_cols]) == summary$n_attempted))
+  expect_true(all(summary$n_attempted == 192L))
+  expect_equal(sum(summary$n_attempted), 576L)
+  expect_true(all(summary$n_interior == 150L))
+  expect_true(all(summary$n_interior_rescued == 12L))
+  expect_true(all(summary$n_boundary_lower == 15L))
+  expect_true(all(summary$n_boundary_upper == 15L))
+  expect_true(all(summary$n_unresolved == 0L))
+  expect_true(all(summary$n_error == 0L))
+  expect_true(all(summary$d0f_status == "COMPLETE"))
+
+  julia_attempts <- v3r_test_as_julia(mixed$attempts, binding)
+  julia_summary <- v3p_d0f_julia_summary(
+    mixed$manifest, julia_attempts, mixed$bootstrap, boot$sha256, binding
+  )
+  expect_silent(v3p_adjudicate_summaries(summary, summary, julia_summary, "d0f"))
+  mutated <- julia_summary
+  mutated$n_boundary_lower[[1L]] <- mutated$n_boundary_lower[[1L]] + 1L
+  expect_error(
+    v3p_adjudicate_summaries(summary, summary, mutated, "d0f"),
+    "summary mismatch"
+  )
+})
+
+test_that("D0F partial failure keeps the denominator and blocks the stage", {
+  binding <- v3r_test_route_binding()
+  mixed <- v3r_test_d0f_mixed_fixture(binding, all_converged = FALSE)
+  root <- tempfile("v3r-d0f-blocker-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  boot <- v3r_test_d0f_bootstrap_sha(root, mixed$bootstrap)
+
+  summary <- v3p_d0f_summary(
+    mixed$manifest, mixed$attempts, mixed$bootstrap, boot$sha256, binding
+  )
+  class_cols <- c(
+    "n_interior", "n_interior_rescued", "n_boundary_lower",
+    "n_boundary_upper", "n_unresolved", "n_error"
+  )
+  expect_true(all(rowSums(summary[class_cols]) == summary$n_attempted))
+  expect_equal(sum(summary$n_attempted), 576L)
+  expect_identical(v3r_stage_decision(summary, "d0f"), "D0F_FIT_BLOCKER")
+  expect_true(all(v3p_bool(summary$fit_blocker, "fit_blocker")))
+  expect_gt(sum(summary$n_unresolved + summary$n_error), 0)
+  expect_true(all(summary$n_converged == 172L))
+  expect_true(all(is.na(summary$variance_within)))
+  expect_true(all(is.na(summary$variance_within_bootstrap_lower)))
+  expect_true(all(is.na(summary$mean_ratio)))
+  expect_error(
+    v3p_admit_d0f_attempts(mixed$attempts[-1L, ], mixed$manifest, binding),
+    "manifest denominator"
+  )
+})
+
+test_that("isolated-root expected D0F summary dispatches by route", {
+  binding <- v3r_test_route_binding()
+  mixed <- v3r_test_d0f_mixed_fixture(binding)
+  root <- tempfile("v3r-d0f-expected-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  boot <- v3r_test_d0f_bootstrap_sha(root, mixed$bootstrap)
+  state <- list(
+    root = root, stage = "d0f", manifest = mixed$manifest, binding = binding
+  )
+
+  official <- v3r_new_admitted_evidence(mixed$attempts, "official", "d0f")
+  expect_identical(
+    v3r_expected_summary(state, official),
+    v3p_d0f_summary(
+      mixed$manifest, mixed$attempts, mixed$bootstrap, boot$sha256, binding
+    )
+  )
+
+  julia_attempts <- v3r_test_as_julia(mixed$attempts, binding)
+  julia <- v3r_new_admitted_evidence(julia_attempts, "julia", "d0f")
+  expect_identical(
+    v3r_expected_summary(state, julia),
+    v3p_d0f_julia_summary(
+      mixed$manifest, julia_attempts, mixed$bootstrap, boot$sha256, binding
+    )
+  )
+})
+
+test_that("D0F boundary tallies are position- and route-invariant with 576 lineage", {
+  binding <- v3r_test_route_binding()
+  tail_fixture <- v3r_test_d0f_mixed_fixture(binding, layout = "tail")
+  head_fixture <- v3r_test_d0f_mixed_fixture(binding, layout = "head")
+  root <- tempfile("v3r-d0f-tally-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  boot <- v3r_test_d0f_bootstrap_sha(root, tail_fixture$bootstrap)
+
+  tail_summary <- v3p_d0f_summary(
+    tail_fixture$manifest, tail_fixture$attempts, tail_fixture$bootstrap,
+    boot$sha256, binding
+  )
+  head_summary <- v3p_d0f_summary(
+    head_fixture$manifest, head_fixture$attempts, head_fixture$bootstrap,
+    boot$sha256, binding
+  )
+  tally_cols <- c(
+    "n_converged", "n_interior", "n_interior_rescued", "n_boundary_lower",
+    "n_boundary_upper", "n_unresolved", "n_error", "n_attempted"
+  )
+  # Tallies are pure per-design count aggregates: invariant to whether the
+  # boundary arms sit at the head or tail of each canonically-ordered design.
+  expect_identical(head_summary[tally_cols], tail_summary[tally_cols])
+  # The two layouts are genuinely distinct fixtures (per-panel variance moves).
+  expect_false(isTRUE(all.equal(
+    head_summary$variance_within, tail_summary$variance_within
+  )))
+
+  julia_attempts <- v3r_test_as_julia(tail_fixture$attempts, binding)
+  julia_summary <- v3p_d0f_julia_summary(
+    tail_fixture$manifest, julia_attempts, tail_fixture$bootstrap,
+    boot$sha256, binding
+  )
+  expect_identical(julia_summary[tally_cols], tail_summary[tally_cols])
+
+  ordinary <- tail_fixture$attempts
+  admitted <- list(
+    official = v3r_new_admitted_evidence(ordinary, "official", "d0f"),
+    base_r = v3r_new_admitted_evidence(ordinary, "base_r", "d0f"),
+    julia = v3r_new_admitted_evidence(julia_attempts, "julia", "d0f")
+  )
+  lineage_state <- list(
+    stage = "d0f", manifest = tail_fixture$manifest,
+    corpus = list(sha256 = v3r_test_hash("c"))
+  )
+  evidence <- list(
+    base_r_inventory_sha256 = v3r_test_hash("d"),
+    julia_replay_inventory_sha256 = v3r_test_hash("e")
+  )
+  lineage <- v3r_expected_route_lineage(
+    lineage_state, evidence, list(admitted = admitted)
+  )
+  expect_equal(nrow(lineage), 9L)
+  expect_equal(
+    as.integer(tapply(
+      lineage$source_attempt_count, lineage$evidence_kind, sum
+    )),
+    rep(576L, 3L)
+  )
+})
+
+test_that("D0F summary booleans serialize lowercase and survive write/read/adjudicate", {
+  binding <- v3r_test_route_binding()
+  mixed <- v3r_test_d0f_mixed_fixture(binding)
+  root <- tempfile("v3r-d0f-boolean-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  boot <- v3r_test_d0f_bootstrap_sha(root, mixed$bootstrap)
+
+  summary <- v3p_d0f_summary(
+    mixed$manifest, mixed$attempts, mixed$bootstrap, boot$sha256, binding
+  )
+  expect_false(any(v3p_bool(summary$fit_blocker, "fit_blocker")))
+
+  summary_path <- file.path(root, "d0f_summary_r.tsv")
+  v3r_write_once(summary_path, summary)
+  txt <- readChar(summary_path, file.info(summary_path)$size, useBytes = TRUE)
+  expect_true(grepl("\\tfalse", txt))
+  expect_false(grepl("\\tFALSE|\\tTRUE", txt))
+
+  reread <- v3r_read_tsv(summary_path, v3p_d0f_summary_columns)
+  expect_identical(class(reread$fit_blocker), "character")
+  # In-memory driver (logical) as the LEFT/driver arg is exactly the ordering
+  # the operational adjudicator uses (v3r_adjudicate_tables passes the in-memory
+  # driver first and the disk-read summaries second). Logical FALSE and on-disk
+  # "false" compare EQUAL here, which is the campaign-relevant path.
+  expect_silent(v3p_adjudicate_summaries(summary, reread, reread, "d0f"))
+
+  # ARG-ORDER characterization (latent asymmetry, deliberately NOT fixed --
+  # editing the sealed tool would invalidate the campaign root). v3p_compare_
+  # tables detects logical fields from the LEFT arg only (preseal.R ~2479), so a
+  # disk-read (all-character) table as the LEFT/driver arg treats fit_blocker as
+  # character and "false" != as.character(FALSE) ("FALSE"). This ordering never
+  # occurs in v3r_adjudicate_tables, so the campaign path is unaffected; the
+  # test locks the current behaviour.
+  expect_error(
+    v3p_compare_tables(
+      reread, summary, v3p_d0f_summary_columns, c("stage", "design_id")
+    ),
+    "summary mismatch in fit_blocker"
+  )
+})
+
+test_that("exact adjudication receipt from a D0F fit-blocker summary is created once", {
+  binding <- v3r_test_route_binding()
+  mixed <- v3r_test_d0f_mixed_fixture(binding, all_converged = FALSE)
+  root <- tempfile("v3r-d0f-receipt-")
+  dir.create(root)
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(root, recursive = TRUE), add = TRUE)
+  boot <- v3r_test_d0f_bootstrap_sha(root, mixed$bootstrap)
+  summary <- v3p_d0f_summary(
+    mixed$manifest, mixed$attempts, mixed$bootstrap, boot$sha256, binding
+  )
+
+  state <- list(
+    root = root, stage = "d0f",
+    preseal = list(sha256 = v3r_test_hash("a"), value = v3r_test_preseal()),
+    corpus = list(sha256 = v3r_test_hash("b"))
+  )
+  evidence <- list(
+    base_r_inventory_sha256 = v3r_test_hash("c"),
+    julia_replay_inventory_sha256 = v3r_test_hash("d"),
+    r_summary_sha256 = v3r_test_hash("e"),
+    julia_summary_sha256 = v3r_test_hash("f"),
+    route_lineage_sha256 = v3r_test_hash("a")
+  )
+  reviews <- setNames(lapply(seq_along(v3p_reviewers), function(i) {
+    reviewer <- v3p_reviewers[[i]]
+    list(
+      path = file.path(root, paste0(reviewer, ".tsv")),
+      sha256 = v3r_test_hash(as.character(i + 1L))
+    )
+  }), v3p_reviewers)
+  receipt <- v3r_receipt_row(state, evidence, reviews, summary, 0, 0)
+  expect_identical(names(receipt), v3r_receipt_columns)
+  expect_identical(receipt$stage, "d0f")
+  expect_identical(receipt$stage_decision, "D0F_FIT_BLOCKER")
+
+  exact_root <- tempfile("v3r-d0f-exact-")
+  dir.create(exact_root)
+  exact_root <- normalizePath(exact_root, winslash = "/", mustWork = TRUE)
+  on.exit(unlink(exact_root, recursive = TRUE), add = TRUE)
+  exact_path <- file.path(exact_root, "stage_adjudication_receipt.tsv")
+  expect_identical(
+    v3r_ensure_exact_adjudication_receipt(exact_path, receipt, exact_root),
+    "created"
+  )
+  exact_bytes <- readBin(exact_path, "raw", file.info(exact_path)$size)
+  exact_sidecar <- readBin(
+    paste0(exact_path, ".sha256"), "raw",
+    file.info(paste0(exact_path, ".sha256"))$size
+  )
+  expect_identical(
+    v3r_ensure_exact_adjudication_receipt(exact_path, receipt, exact_root),
+    "existing"
+  )
+  expect_identical(
+    readBin(exact_path, "raw", file.info(exact_path)$size), exact_bytes
+  )
+  expect_identical(
+    readBin(
+      paste0(exact_path, ".sha256"), "raw",
+      file.info(paste0(exact_path, ".sha256"))$size
+    ),
+    exact_sidecar
+  )
+})
+
+test_that("admitted evidence rejects a forged route identity at D0F", {
+  binding <- v3r_test_route_binding()
+  mixed <- v3r_test_d0f_mixed_fixture(binding)
+  expect_error(
+    v3r_new_admitted_evidence(mixed$attempts, "julia", "d0f"),
+    "route does not match"
+  )
+  julia_attempts <- v3r_test_as_julia(mixed$attempts, binding)
+  expect_error(
+    v3r_new_admitted_evidence(julia_attempts, "official", "d0f"),
+    "route does not match"
+  )
+  admitted <- v3r_new_admitted_evidence(mixed$attempts, "official", "d0f")
+  class(admitted) <- v3r_evidence_class("julia")
+  expect_error(v3r_evidence_rows(admitted), "class/kind binding")
+})
