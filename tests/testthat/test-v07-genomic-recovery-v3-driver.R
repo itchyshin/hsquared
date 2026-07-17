@@ -127,6 +127,15 @@ test_that("candidate surface checks permit an absent stable Git path", {
   ))
 })
 
+test_that("bound-stage validation retains the declared optional Julia surface", {
+  validation <- paste(deparse(body(v3d_validate_bound_stage)), collapse = "\n")
+  expect_false(grepl(
+    "julia_surfaces <- julia_surfaces[file.exists(julia_surfaces)]",
+    validation, fixed = TRUE
+  ))
+  expect_match(validation, "Manifest.toml", fixed = TRUE)
+})
+
 test_that("review receipts are canonical create-once pairs", {
   root <- tempfile("v3d-review-"); dir.create(root)
   root <- normalizePath(root, mustWork = TRUE)

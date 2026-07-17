@@ -990,13 +990,14 @@ v3p_validate_stage_preseal <- function(
   r_surfaces <- file.path(
     roots[["r_driver"]], c("R", "DESCRIPTION", "NAMESPACE")
   )
+  if (!all(file.exists(r_surfaces))) {
+    v3p_abort("R candidate implementation surfaces are absent")
+  }
   julia_surfaces <- file.path(
     roots[["julia_replay"]], c("src", "ext", "Project.toml", "Manifest.toml")
   )
-  r_surfaces <- r_surfaces[file.exists(r_surfaces)]
-  julia_surfaces <- julia_surfaces[file.exists(julia_surfaces)]
-  if (!length(r_surfaces) || !length(julia_surfaces)) {
-    v3p_abort("candidate implementation surfaces are absent")
+  if (!all(file.exists(julia_surfaces[seq_len(3L)]))) {
+    v3p_abort("Julia candidate implementation surfaces are absent")
   }
   v3p_git_unchanged(
     roots[["r_driver"]], value[["r_auto_route_commit"]],
