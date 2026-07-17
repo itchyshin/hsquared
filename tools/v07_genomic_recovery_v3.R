@@ -1161,7 +1161,7 @@ v3d_validate_attempt <- function(attempt, manifest, stage, binding) {
   manifest_columns <- if (stage == "d0f") v3p_d0f_phenotype_columns else v3p_d1_columns
   v3p_validate_results(
     attempt, manifest, manifest_columns,
-    sprintf("%s single attempt", toupper(stage)), binding
+    sprintf("%s single attempt", toupper(stage)), binding, v3d_route
   )
 }
 
