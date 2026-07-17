@@ -117,6 +117,16 @@ test_that("runtime validation and bootstrap materialization use distinct tree sc
   expect_equal(sum(hits > 0L), 2L)
 })
 
+test_that("candidate surface checks permit an absent stable Git path", {
+  r_root <- normalizePath(testthat::test_path("..", ".."), mustWork = TRUE)
+  julia_root <- normalizePath(file.path(r_root, "..", "HSquared.jl"), mustWork = TRUE)
+  head <- v3p_git_head(julia_root)
+  expect_silent(v3p_git_unchanged(
+    julia_root, head, head, file.path(julia_root, "Manifest.toml"),
+    "Julia candidate implementation"
+  ))
+})
+
 test_that("review receipts are canonical create-once pairs", {
   root <- tempfile("v3d-review-"); dir.create(root)
   root <- normalizePath(root, mustWork = TRUE)

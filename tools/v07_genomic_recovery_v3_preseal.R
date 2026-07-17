@@ -526,7 +526,19 @@ v3p_git_unchanged <- function(root, from, to, paths, label) {
   root <- v3p_canonical_path(root, paste(label, "git root"), TRUE)
   prefix <- paste0(root, "/")
   paths <- vapply(paths, function(path) {
-    path <- v3p_canonical_path(path, paste(label, "surface"), file.info(path)$isdir)
+    info <- file.info(path)
+    if (is.na(info$isdir)) {
+      parent <- v3p_canonical_path(
+        dirname(path), paste(label, "surface parent"), TRUE
+      )
+      leaf <- basename(path)
+      if (leaf %in% c("", ".", "..")) {
+        v3p_abort("%s surface has an unsafe missing path", label)
+      }
+      path <- file.path(parent, leaf)
+    } else {
+      path <- v3p_canonical_path(path, paste(label, "surface"), info$isdir)
+    }
     if (!startsWith(path, prefix)) {
       v3p_abort("%s surface is outside its deployed git root", label)
     }
