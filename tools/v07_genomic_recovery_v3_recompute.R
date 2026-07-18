@@ -275,7 +275,11 @@ v3r_expected_tool_context <- function() {
   julia_root <- normalizePath(file.path(r_root, "..", "HSquared.jl"), winslash = "/")
   list(
     r_driver_path = file.path(r_root, "tools", "v07_genomic_recovery_v3.R"),
-    r_recomputer_path = script,
+    # Resolve by name from r_root (matching r_driver_path/d0_recomputer_path); v3r_script_path() falls
+    # back to commandArgs("--file=") = the DRIVER under D1's inline predecessor re-validation, which would
+    # mis-bind the recomputer identity onto the driver. r_root is correct in both the standalone and the
+    # inline path (driver and recomputer share the tools/ dir), so derive the recomputer path by name.
+    r_recomputer_path = file.path(r_root, "tools", "v07_genomic_recovery_v3_recompute.R"),
     julia_replay_path = file.path(
       julia_root, "sim", "phase2_v07_genomic_recovery_v3_stage_replay.jl"
     ),
