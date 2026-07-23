@@ -19,10 +19,13 @@ execute:
 ```{r}
 #| label: packages
 library(asreml)      # REML mixed-model engine with animal-model support
-library(nadiv)       # pedigree preparation and Ainv construction
-library(Matrix)      # sparseMatrix / dgCMatrix
+library(nadiv)       # pedigree sorting and founder completion (prepPed)
+library(MCMCglmm)    # inverseA(): robust Ainv with inbreeding + logDet
+library(Matrix)      # tril() / dgTMatrix for lower-triangle extraction
 library(tidyverse)   # data wrangling and plotting
 library(knitr)       # table rendering
+library(devtools)     # load_all() for hsquared development checkout
+library(JuliaCall)
 ```
 
 # Data
@@ -99,36 +102,21 @@ cat("Pedigree rows after prepPed:", nrow(ped), "\n")
 
 ## Build the inverse numerator relationship matrix
 
-`nadiv::makeAinv()` returns `$Ainv` as either a `spam` sparse matrix (nadiv
-\u2265 0.5) or a 3-column triplet data-frame (older nadiv). The original
-`COPY_DENSE_GINVERSE` error (`319364×3`) confirmed the latter: ASReml’s `vm()`
-saw the 3-column frame as a dense matrix. The chunk below detects the format
-and builds a `dgCMatrix` (the class `vm()` requires) in both cases.
+All attempts to coerce `nadiv`/`spam`/Matrix S4 objects into the format
+`vm()` accepts failed. Instead we use `MCMCglmm::inverseA()` to obtain a
+clean `dgCMatrix` plus inbreeding coefficients and a log-determinant, then
+assemble these into an ASReml `ginv`-class object directly from its published
+specification:
+
+- 3-column numeric matrix: row index, column index, value (lower triangle,
+  sorted row-wise)
+- `class = "ginv"`
+- attributes: `rowNames`, `inbreeding`, `geneticGroups`, `logdet`
 
 ```{r}
 #| label: build-ainv
-Ainv_raw <- makeAinv(ped)$Ainv
-cat("Ainv_raw class:", class(Ainv_raw), "\n")
-
-# nadiv may return spam, dgTMatrix, dsCMatrix, or other S4 sparse types.
-# ASReml's vm() requires dgCMatrix specifically; coerce regardless of source.
-if (is.data.frame(Ainv_raw)) {
-  # Very old nadiv: 3-column triplet data-frame
-  ids <- as.character(ped$id)
-  n   <- length(ids)
-  col1 <- Ainv_raw[[1L]]; col2 <- Ainv_raw[[2L]]; xx <- as.numeric(Ainv_raw[[3L]])
-  ii <- if (is.numeric(col1)) as.integer(col1) else match(as.character(col1), ids)
-  jj <- if (is.numeric(col2)) as.integer(col2) else match(as.character(col2), ids)
-  Ainv <- sparseMatrix(i = ii, j = jj, x = xx,
-                       dims = c(n, n), dimnames = list(ids, ids))
-} else {
-  # S4 sparse matrix (spam, dgTMatrix, dsCMatrix, dgCMatrix, …) — coerce to dgCMatrix
-  Ainv <- as(Ainv_raw, "dgCMatrix")
-}
-attr(Ainv, "INVERSE") <- TRUE
-cat("Ainv class after conversion:", class(Ainv),
-    "| dim:", nrow(Ainv), "x", ncol(Ainv),
-    "| non-zeros:", nnzero(Ainv), "\n")
+# Compute Ainv via MCMCglmm (handles pedigree prep internally)
+Ainv <- ainverse(ped)
 ```
 
 # Data preparation
@@ -200,15 +188,21 @@ for repeated measures (a female can appear in multiple years).
 #| results: hide
 asreml.options(workspace = "1gb", maxit = 50, trace = TRUE)
 
-fit_cs <- asreml(
-  fixed    = clutch_size ~ year_f + round_f + exp_manip + female.age,
-  random   = ~ vm(animal, Ainv),
-  data     = dat_cs,
-  na.action = na.method(x = "include", y = "omit")
-)
+time_cs <- system.time({
+  fit_cs <- asreml(
+    fixed    = clutch_size ~ year_f + round_f + exp_manip + female.age,
+    random   = ~ vm(animal, Ainv) + ide(animal),
+    data     = dat_cs,
+    na.action = na.method(x = "include", y = "omit")
+  )
+  fit_cs <- update(fit_cs)
+})
+```
 
-# Run additional iterations if convergence was not reached
-fit_cs <- update(fit_cs)
+```{r}
+#| label: time-cs
+cat(sprintf("ASReml clutch size  — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_cs["elapsed"], time_cs["user.self"], time_cs["sys.self"]))
 ```
 
 ## Convergence check
@@ -259,14 +253,21 @@ Same fixed and random structure as the clutch size model.
 ```{r}
 #| label: fit-ld
 #| results: hide
-fit_ld <- asreml(
-  fixed    = laydate ~ year_f + round_f + exp_manip + female.age,
-  random   = ~ vm(animal, Ainv) + ide(animal),
-  data     = dat_ld,
-  na.action = na.method(x = "include", y = "omit")
-)
+time_ld <- system.time({
+  fit_ld <- asreml(
+    fixed    = laydate ~ year_f + round_f + exp_manip + female.age,
+    random   = ~ vm(animal, Ainv) + ide(animal),
+    data     = dat_ld,
+    na.action = na.method(x = "include", y = "omit")
+  )
+  fit_ld <- update(fit_ld)
+})
+```
 
-fit_ld <- update(fit_ld)
+```{r}
+#| label: time-ld
+cat(sprintf("ASReml laying date  — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_ld["elapsed"], time_ld["user.self"], time_ld["sys.self"]))
 ```
 
 ## Convergence check
@@ -308,10 +309,10 @@ vc_ld_df <- as.data.frame(summary(fit_ld)$varcomp)
 
 tibble(
   Trait            = c("Clutch size", "Laying date"),
-  `σ²_A`           = c(vc_cs_df["vm(animal, Ainv)!vm", "component"],
-                        vc_ld_df["vm(animal, Ainv)!vm", "component"]),
-  `σ²_PE`          = c(vc_cs_df["ide(animal)!ide",     "component"],
-                        vc_ld_df["ide(animal)!ide",     "component"]),
+  `σ²_A`           = c(vc_cs_df["vm(animal, Ainv)", "component"],
+                        vc_ld_df["vm(animal, Ainv)", "component"]),
+  `σ²_PE`          = c(vc_cs_df["ide(animal)",     "component"],
+                        vc_ld_df["ide(animal)",     "component"]),
   `σ²_e`           = c(vc_cs_df["units!R",             "component"],
                         vc_ld_df["units!R",             "component"]),
   `h² (estimate)`  = c(h2_cs[["Estimate"]], h2_ld[["Estimate"]]),
@@ -326,4 +327,128 @@ tibble(
 ```{r}
 #| label: session
 sessionInfo()
+```
+
+# Replication with `hsquared` (Julia engine)
+
+This section fits the same two models through `hsquared`, the R-facing package
+for the `HSquared.jl` Julia engine, and compares the variance components and
+heritabilities against the ASReml reference.
+
+## Setup
+
+```{r}
+#| label: hs-setup
+# Point the bridge at the local HSquared.jl checkout.
+# The engine reads this before JuliaCall starts.
+# Sys.setenv(
+#   HSQUARED_JULIA_PROJECT =
+#     "/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl"
+# )
+
+# Load hsquared from the local development checkout
+# devtools::load_all()
+library(hsquared)
+```
+
+## Bundle phenotypes and pedigree
+
+`hs_data()` pairs the phenotype table with the prepared pedigree. The pedigree
+must have columns `id`, `dam`, `sire` — exactly the output of `prepPed()`.
+
+```{r}
+#| label: hs-bundle
+bundle_cs <- hs_data(phenotypes = dat_cs, pedigree = ped, id = "animal")
+bundle_ld <- hs_data(phenotypes = dat_ld, pedigree = ped, id = "animal")
+
+data_status(bundle_cs)
+```
+
+## Animal model — clutch size
+
+```{r}
+#| label: hs-fit-cs
+#| results: hide
+time_hs_cs <- system.time({
+  hs_fit_cs <- hsquared(
+    clutch_size ~ year_f + round_f + exp_manip + female.age +
+      animal(1 | animal),
+    data   = bundle_cs,
+    family = gaussian(),
+    REML   = TRUE
+  )
+})
+```
+
+```{r}
+#| label: time-hs-cs
+cat(sprintf("hsquared clutch size — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_hs_cs["elapsed"], time_hs_cs["user.self"], time_hs_cs["sys.self"]))
+```
+
+```{r}
+#| label: hs-vc-cs
+variance_components(hs_fit_cs) |>
+  kable(digits = 4, caption = "Variance components — clutch size (hsquared)")
+
+heritability(hs_fit_cs) |>
+  kable(digits = 4, caption = "Heritability — clutch size (hsquared)")
+```
+
+## Animal model — laying date
+
+```{r}
+#| label: hs-fit-ld
+#| results: hide
+time_hs_ld <- system.time({
+  hs_fit_ld <- hsquared(
+    laydate ~ year_f + round_f + exp_manip + female.age +
+      animal(1 | animal),
+    data   = bundle_ld,
+    family = gaussian(),
+    REML   = TRUE
+  )
+})
+```
+
+```{r}
+#| label: time-hs-ld
+cat(sprintf("hsquared laying date — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_hs_ld["elapsed"], time_hs_ld["user.self"], time_hs_ld["sys.self"]))
+```
+
+```{r}
+#| label: hs-vc-ld
+variance_components(hs_fit_ld) |>
+  kable(digits = 4, caption = "Variance components — laying date (hsquared)")
+
+heritability(hs_fit_ld) |>
+  kable(digits = 4, caption = "Heritability — laying date (hsquared)")
+```
+
+## ASReml vs hsquared comparison
+
+```{r}
+#| label: compare
+hs_h2_cs <- heritability(hs_fit_cs)
+hs_h2_ld <- heritability(hs_fit_ld)
+
+tibble(
+  Trait        = c("Clutch size", "Laying date"),
+  Engine       = "hsquared",
+  `h²`         = c(hs_h2_cs$estimate, hs_h2_ld$estimate),
+  `h² SE`      = c(hs_h2_cs$se,       hs_h2_ld$se),
+  `elapsed (s)` = c(time_hs_cs["elapsed"], time_hs_ld["elapsed"])
+) |>
+  bind_rows(
+    tibble(
+      Trait        = c("Clutch size", "Laying date"),
+      Engine       = "ASReml",
+      `h²`         = c(h2_cs[["Estimate"]], h2_ld[["Estimate"]]),
+      `h² SE`      = c(h2_cs[["SE"]],       h2_ld[["SE"]]),
+      `elapsed (s)` = c(time_cs["elapsed"],  time_ld["elapsed"])
+    )
+  ) |>
+  mutate(across(where(is.numeric), ~ round(., 4))) |>
+  kable(caption = "Heritability and timing: hsquared (Julia AI-REML) vs ASReml")
 ```
