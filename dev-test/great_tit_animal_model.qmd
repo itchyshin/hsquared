@@ -195,7 +195,7 @@ time_cs <- system.time({
     data     = dat_cs,
     na.action = na.method(x = "include", y = "omit")
   )
-  fit_cs <- update(fit_cs)
+  # fit_cs <- update(fit_cs)
 })
 ```
 
@@ -328,6 +328,11 @@ tibble(
 #| label: session
 sessionInfo()
 ```
+
+
+
+
+
 
 # Replication with `hsquared` (Julia engine)
 

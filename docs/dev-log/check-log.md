@@ -3,6 +3,24 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-24 (development benchmark pedigree generator)
+
+- Fixed `dev-test/test.R` so dam sampling indexes the eligible-parent vector.
+  This avoids base R's length-one numeric `sample()` special case, which could
+  sample from `1:x` and accidentally select the already chosen sire.
+- R-side contract check: evaluated the corrected generator at `n = 200, 500,
+  1000, 2000`, asserted no row had the same known sire and dam, and passed each
+  generated dataset through `model_spec()`; all four sizes passed.
+- End-to-end command:
+  `HSQUARED_JULIA_PROJECT='/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl' Rscript --vanilla dev-test/test.R`.
+  Result: exit 0; fits completed for all four sizes (10.0, 0.2, 4.0, and 28.6
+  seconds; first timing includes Julia startup).
+- Test of the test: the original generator, under the script's seed and
+  sequential sizes, reproduced one same-parent row at `n = 500`; the corrected
+  generator produced zero and its explicit invariant stayed green.
+- `air` was unavailable. No package implementation, API, capability status,
+  validation status, or public claim changed.
+
 ## 2026-07-13 (v0.7 sealed genomic boundary holdout — negative endpoint)
 
 - Frozen Julia candidate: core `ecc058f380be71058c9cfde373c345ab7a2f6aba`,
