@@ -3,6 +3,22 @@
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
+## 2026-07-24 (simple animal-data simulator)
+
+- Added `dev-test/simulate-animal-data.R` with
+  `simulate_animal_data(N, h2)`, returning exactly `ped` and `data` components.
+  The generating scale is `Va = h2`, `Ve = 1 - h2`, so total phenotypic
+  variance is one; realized finite-sample variance need not equal its target.
+- Focused command:
+  `Rscript --vanilla -e 'source("dev-test/simulate-animal-data.R"); ...'`.
+  Result: `simulate-animal-data checks: PASS` (exit 0). It checked names and
+  row counts, the `id`/`y` no-predictor phenotype schema, pedigree/data ID
+  alignment, distinct known parents, both boundary values `h2 = 0/1`, and
+  rejection of `N < 3` and `h2` outside `[0, 1]`.
+- `git diff --check` passed. `air` is unavailable on this host.
+- No package implementation, public API, capability status, validation status,
+  or public claim changed.
+
 ## 2026-07-24 (development benchmark pedigree generator)
 
 - Fixed `dev-test/test.R` so dam sampling indexes the eligible-parent vector.

@@ -27,11 +27,11 @@ for (n in c(200, 500, 1000, 2000)) {
 }
 
 library(asreml)
-for (n in c(200, 500, 1000, 2000, 10000)) {
+for (n in c(200, 500, 1000, 2000)) {
   s <- sim_animal(n)
   Ainv <- ainverse(s$ped)
   t <- system.time(
-      fit <- asreml(y ~ 1,
+      fitasreml <- asreml(y ~ 1,
           random = ~ vm(id, Ainv),
           data = s$dat, trace = FALSE
       )
