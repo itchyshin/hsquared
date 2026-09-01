@@ -21,6 +21,11 @@ review surface, not evidence by itself.
 
 Current blocker reports:
 
+- `2026-09-01-blupf90-tool-unavailability.md` closes fog ticket **F5** for arc
+  **A10**: BLUPF90-family scaffold is wired and smoke-checked, but
+  `renumf90`/`airemlf90`/`blupf90` remain **MISSING** on campaign laptop
+  hardware (2026-09-01). Totoro probe is the next step before any parity claim.
+  Blocker evidence only; `V4-MV-REML` stays partial.
 - `2026-06-21-multivariate-tool-availability.md` records that this local host
   lacks ASReml/BLUPF90-family/DMU/WOMBAT executables and R packages needed for a
   second independent same-estimand multivariate REML comparator beyond the
