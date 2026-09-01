@@ -13,6 +13,15 @@
 #' variational REML) models also fit through opt-in, experimental engine paths;
 #' factor-analytic models remain planned.
 #'
+#' @section Current limitations:
+#' This package is **experimental**; the first CRAN release targets 0.5.0,
+#' not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
+#' and HSquared.jl; use [hs_control()] with `engine = "validate"` to check the
+#' model contract without fitting. Report point estimates only for rows marked
+#' `covered` in [validation_status()]; uncertainty intervals are experimental
+#' and not coverage-calibrated. See `vignette("model-status", package =
+#' "hsquared")` and `vignette("validation-evidence", package = "hsquared")`.
+#'
 #' @keywords internal
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated

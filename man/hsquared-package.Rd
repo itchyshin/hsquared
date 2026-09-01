@@ -19,6 +19,16 @@ multivariate Gaussian, and non-Gaussian (\code{poisson}/\code{binomial}, Laplace
 variational REML) models also fit through opt-in, experimental engine paths;
 factor-analytic models remain planned.
 }
+\section{Current limitations}{
+
+This package is \strong{experimental}; the first CRAN release targets 0.5.0,
+not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
+and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
+model contract without fitting. Report point estimates only for rows marked
+\code{covered} in \code{\link[=validation_status]{validation_status()}}; uncertainty intervals are experimental
+and not coverage-calibrated. See \code{vignette("model-status", package = "hsquared")} and \code{vignette("validation-evidence", package = "hsquared")}.
+}
+
 \seealso{
 Useful links:
 \itemize{
