@@ -1,0 +1,15 @@
+# STUB — Tier 1 optional bridge parity (A16 phase 1).
+# Not wired for PR CI. See bridge-ci-tier0.NOTES.md and h2-b4-bridge-plan.md § A16.
+name: bridge-parity (Tier 1 stub)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bridge-parity-stub:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Tier 1 bridge parity is not enabled."
+          echo "Tier 0 runs in R-CMD-check; see .github/workflows/bridge-ci-tier0.NOTES.md"

@@ -93,6 +93,19 @@ test_that("bridge dashboard rows carry claim_boundary and link schema_ids to tes
   }
 })
 
+test_that("Tier 0 parity smoke rows stay Julia-free with covered test_status", {
+  parity <- bridge_read_dashboard_tsv("bridge-parity-smoke-status.tsv")
+  tier0_ids <- c(
+    "smoke_payload_v2_emitter",
+    "smoke_bridge_payload_v01",
+    "smoke_gryphon_r_reference"
+  )
+  rows <- parity[parity$smoke_id %in% tier0_ids, , drop = FALSE]
+  expect_equal(nrow(rows), length(tier0_ids))
+  expect_true(all(rows$julia_path == "none"))
+  expect_true(all(rows$test_status == "covered"))
+})
+
 test_that("bridge dashboard validator passes on the committed ledgers", {
   repo_root <- normalizePath(file.path(testthat::test_path(), "..", ".."), mustWork = TRUE)
   validator <- file.path(repo_root, "tools", "validate-bridge-dashboard.py")

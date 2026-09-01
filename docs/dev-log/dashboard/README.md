@@ -22,6 +22,16 @@ ledger handshake is RATIFIED (Julia #5/#6 ↔ R #5).
 python3 tools/validate-bridge-dashboard.py
 ```
 
+## Tier 0 CI (A16 — no live Julia)
+
+Fixture-first bridge contracts run in default `R-CMD-check`. See
+`bridge-ci-tier0.md` and `.github/workflows/bridge-ci-tier0.NOTES.md`
+(plan: `~/local-scratch/h2-b4-bridge-plan.md` § A16 Tier 0).
+
+```r
+devtools::test(filter = "bridge-ci-tier0-contracts")
+```
+
 ## Contract tests
 
 ```r
