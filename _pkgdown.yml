@@ -1,5 +1,23 @@
 url: https://itchyshin.github.io/hsquared/
 destination: pkgdown-site
+
+# D-41: prominent site-wide EXPERIMENTAL callout on the home sidebar (channel 3).
+home:
+  sidebar:
+    structure: [experimental, links, license, community, citation, authors, dev]
+    components:
+      experimental:
+        title: Status
+        text: >-
+          **Experimental — use at your own risk.** Version tracks covered
+          capability, not surface area. Interval coverage is not certified.
+          Read [Can I fit and report this?](articles/current-limits.html)
+          and [Validation evidence](articles/validation-evidence.html)
+          before reporting results.
+
+redirects:
+  - ["ROADMAP.html", "articles/current-limits.html"]
+
 template:
   bootstrap: 5
   bslib:
@@ -14,34 +32,47 @@ template:
 
 navbar:
   structure:
-    left: [intro, articles, reference, news]
+    left: [intro, model_guides, status, comparators, developer, reference, news]
     right: [search, github]
   components:
-    articles:
-      text: Articles
+    intro:
+      text: Get started
       menu:
-        - text: Getting started
+        - text: Getting started with hsquared
           href: articles/hsquared.html
-        - text: Fitting models
-          href: articles/fitting-models.html
+        - text: Can I fit and report this?
+          href: articles/current-limits.html
+        - text: Function map and cheat sheet
+          href: articles/function-map-cheatsheet.html
         - text: Worked example (gryphon)
           href: articles/gryphon-worked-example.html
+    model_guides:
+      text: Model guides
+      menu:
+        - text: Fitting models
+          href: articles/fitting-models.html
         - text: Visualizing models
           href: articles/visualizing-models.html
-        - text: Genomic prediction
-          href: articles/genomic-prediction.html
-        - text: QTL, GWAS, and eQTL status
-          href: articles/qtl-gwas-eqtl-status.html
         - text: Multivariate Gaussian animal models
           href: articles/multivariate.html
+        - text: Genomic prediction
+          href: articles/genomic-prediction.html
         - text: Reading G matrices
           href: articles/g-matrix-interpretation.html
-        - text: Inheritance systems roadmap
-          href: articles/inheritance-systems.html
+    status:
+      text: Status
+      menu:
+        - text: Can I fit and report this?
+          href: articles/current-limits.html
         - text: Model status
           href: articles/model-status.html
         - text: Validation evidence
           href: articles/validation-evidence.html
+        - text: QTL, GWAS, and eQTL status
+          href: articles/qtl-gwas-eqtl-status.html
+    comparators:
+      text: Comparators
+      menu:
         - text: "Benchmark: sommer & pedigreemm"
           href: articles/benchmark-comparators.html
         - text: "Two-effect model: sommer comparator"
@@ -50,8 +81,13 @@ navbar:
           href: articles/multi-effect-comparator.html
         - text: "Random regression (k = 2): sommer comparator"
           href: articles/rr-comparator.html
+    developer:
+      text: Developer
+      menu:
         - text: Formula grammar roadmap
           href: articles/formula-grammar.html
+        - text: Inheritance systems roadmap
+          href: articles/inheritance-systems.html
         - text: Genomics and GPU roadmap
           href: articles/genomics-gpu-roadmap.html
 
@@ -121,22 +157,53 @@ reference:
       - hsquared-package
 
 articles:
-  - title: Start here
+  - title: Get started
+    desc: >
+      Start with the overview, then read current limits before fitting or
+      reporting.
     contents:
       - hsquared
-      - articles/fitting-models
+      - articles/current-limits
+      - articles/function-map-cheatsheet
       - articles/gryphon-worked-example
+
+  - title: Model guides
+    desc: >
+      Fitting, visualization, and interpretation guides. Multivariate, genomic,
+      and G-matrix routes are opt-in experimental unless validation_status()
+      marks them covered.
+    contents:
+      - articles/fitting-models
       - articles/visualizing-models
-      - articles/genomic-prediction
-      - articles/qtl-gwas-eqtl-status
       - articles/multivariate
+      - articles/genomic-prediction
       - articles/g-matrix-interpretation
-      - articles/inheritance-systems
+
+  - title: Status
+    desc: >
+      Capability limits, validation evidence, and model-family status. Read these
+      before reporting point estimates or intervals.
+    contents:
+      - articles/current-limits
       - articles/model-status
       - articles/validation-evidence
+      - articles/qtl-gwas-eqtl-status
+
+  - title: Comparators
+    desc: >
+      External comparator evidence against sommer and pedigreemm. Comparator
+      agreement does not certify interval coverage.
+    contents:
       - articles/benchmark-comparators
       - articles/two-effect-comparator
       - articles/multi-effect-comparator
       - articles/rr-comparator
+
+  - title: Developer
+    desc: >
+      Formula grammar, inheritance systems, and genomics roadmaps. Planned
+      capability — not covered for fitting or reporting today.
+    contents:
       - articles/formula-grammar
+      - articles/inheritance-systems
       - articles/genomics-gpu-roadmap

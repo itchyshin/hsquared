@@ -1,0 +1,18 @@
+---
+title: "Can I fit and report this?"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Can I fit and report this?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+**Stub — full limits page lands in A17 phase B.**
+
+Read `validation_status()` for live capability rows. Until the generated route
+summary is wired here, use [Model status](model-status.html) and
+[Validation evidence](validation-evidence.html).

@@ -1,0 +1,17 @@
+---
+title: "Function map and cheat sheet"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Function map and cheat sheet}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+**Stub — full function map lands in A17 P1.**
+
+Start with [Getting started with hsquared](hsquared.html), then
+[Can I fit and report this?](current-limits.html) and `?validation_status`.
