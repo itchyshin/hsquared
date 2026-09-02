@@ -44,6 +44,67 @@ test_that("maternal_genetic() dams must be in the pedigree", {
   )
 })
 
+hs_expect_maternal_parser_next_call <- function(err) {
+  expect_true(grepl("column of `data`", err, fixed = TRUE))
+  expect_true(grepl("mothers of the records", err, fixed = TRUE))
+  expect_true(grepl("animal pedigree", err, fixed = TRUE))
+  expect_true(grepl(
+    "does not take dams from the pedigree table",
+    err,
+    fixed = TRUE
+  ))
+  expect_true(grepl("Closest working call", err, fixed = TRUE))
+  expect_true(grepl("target = \"direct_maternal\"", err, fixed = TRUE))
+  expect_true(grepl("target = \"two_effect\"", err, fixed = TRUE))
+  expect_true(grepl("Willham triple", err, fixed = TRUE))
+  expect_true(grepl("not a scalar h2", err, fixed = TRUE))
+  expect_true(grepl("neither is auto-routed", err, fixed = TRUE))
+  expect_lt(
+    regexpr("direct_maternal", err, fixed = TRUE)[[1L]],
+    regexpr("two_effect", err, fixed = TRUE)[[1L]]
+  )
+}
+
+test_that("extra pedigree= on maternal_genetic() pastes the covered next call", {
+  ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"))
+  err <- tryCatch(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) +
+        maternal_genetic(1 | dam, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl("takes no extra arguments", err, fixed = TRUE))
+  expect_true(grepl("pedigree=", err, fixed = TRUE))
+  expect_false(grepl("was not found in `data`", err, fixed = TRUE))
+  hs_expect_maternal_parser_next_call(err)
+})
+
+test_that("missing dam column on maternal_genetic() pastes the covered next call", {
+  ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"))
+  err <- tryCatch(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`maternal_genetic()` grouping variable `dam` was not found in `data`",
+    err,
+    fixed = TRUE
+  ))
+  expect_false(grepl("takes no extra arguments", err, fixed = TRUE))
+  hs_expect_maternal_parser_next_call(err)
+})
+
 test_that("maternal_genetic() must be intercept-only", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
   dat <- data.frame(y = c(1, 2), id = c("a", "b"), mum = c("a", "b"))

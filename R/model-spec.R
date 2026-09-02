@@ -2596,6 +2596,21 @@ hs_parse_common_env_call <- function(call, data) {
   )
 }
 
+# Data requirement plus covered-first next path for maternal_genetic()
+# parser stops that fire before the default-path abort. Reuses
+# hs_maternal_genetic_default_path_message() so order cannot drift:
+# covered direct_maternal first, experimental two_effect second.
+# Does not auto-route. Does not take dams from the pedigree table.
+hs_maternal_genetic_parser_guidance <- function() {
+  paste0(
+    "The grouping column (usually `dam`) must be a column of `data`: ",
+    "mothers of the records, with IDs already in the animal pedigree. ",
+    "The parser does not take dams from the pedigree table and does not ",
+    "accept `pedigree=` on `maternal_genetic()`.\n\n",
+    hs_maternal_genetic_default_path_message()
+  )
+}
+
 # Parse `maternal_genetic(1 | dam)` as the maternal genetic effect of the opt-in
 # two-effect model: a random intercept expressed through the dam, carrying the
 # SAME pedigree relationship as the direct animal effect (A2 = pedigree A). The
@@ -2645,9 +2660,11 @@ hs_parse_maternal_genetic_call <- function(call, data, animal_spec) {
 
   named_args <- args[arg_names != ""]
   if (length(named_args) > 0L) {
-    stop(
-      "`maternal_genetic()` takes no extra arguments in the v0.1 two-effect ",
-      "model (the dam relationships come from the animal() pedigree).",
+    hs_abort_unsupported_syntax(
+      "`maternal_genetic()` takes no extra arguments. ",
+      "Dam relationships come from the `animal()` pedigree, not a second ",
+      "`pedigree=` argument.\n\n",
+      hs_maternal_genetic_parser_guidance(),
       call. = FALSE
     )
   }
@@ -2657,7 +2674,8 @@ hs_parse_maternal_genetic_call <- function(call, data, animal_spec) {
     stop(
       "`maternal_genetic()` grouping variable `",
       group,
-      "` was not found in `data`.",
+      "` was not found in `data`.\n\n",
+      hs_maternal_genetic_parser_guidance(),
       call. = FALSE
     )
   }
