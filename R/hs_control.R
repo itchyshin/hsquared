@@ -27,10 +27,14 @@
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
-#'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"genomic"`,
+#'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"multi_effect"`,
+#'   `"direct_maternal"`, `"random_regression"`, `"genomic"`,
 #'   `"single_step"`, `"single_step_construct"`, `"metafounder"`,
-#'   `"metafounder_single_step"`, `"snp_blup"`, `"multivariate"`, and
-#'   `"nongaussian"`, described below. `marginal` applies only to
+#'   `"metafounder_single_step"`, `"snp_blup"`, `"relmat"`, `"precision"`,
+#'   `"multivariate"`, and `"nongaussian"`, described below. Covered opt-in
+#'   routes (validation scale; not the default path) include `"two_effect"`
+#'   (`common_env()`), `"direct_maternal"`, `"multi_effect"`, and
+#'   `"random_regression"` at `k = 2`. `marginal` applies only to
 #'   `target = "nongaussian"`.
 #'   With `engine = "julia"` and no `target`, the bridge defaults to
 #'   `target = "fit_animal_model"`: it surfaces the Julia-owned
@@ -78,7 +82,27 @@
 #'   relationship) -- and surfaces the Julia-owned
 #'   `HSquared.fit_two_effect_reml()` REML-only optimizer (three-component
 #'   `initial` with `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and not
-#'   the default.
+#'   the default. The `common_env()` leg is covered at validation scale; the
+#'   `maternal_genetic()` leg on this same target stays experimental. The
+#'   covered correlated sibling is `target = "direct_maternal"`.
+#'   `target = "multi_effect"` is an opt-in path for
+#'   `animal(1 | id, pedigree = ped)` plus one or more bare `(1 | group)` IID
+#'   intercepts. It is covered at validation scale (the independent
+#'   generalization of two-effect; not the default path). Random slopes and
+#'   correlated `(x || group)` terms remain rejected. The animal-block ratio is
+#'   narrow-sense h2; other blocks are variance-explained proportions, not
+#'   heritabilities.
+#'   `target = "direct_maternal"` is an opt-in path for
+#'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`. It estimates
+#'   the correlated 2x2 direct-maternal genetic covariance and is covered at
+#'   validation scale (not the default path). `heritability()` returns the
+#'   labelled Willham triple (direct h2_d, maternal m2, total h2_T, r_am), never
+#'   a bare scalar.
+#'   `target = "random_regression"` is an opt-in reaction-norm path for
+#'   `animal(rr(covariate, order = k) | id, pedigree = ped)`. It is covered at
+#'   `k = 2` (linear reaction norm). `rr_heritability()` returns h2(t) as a
+#'   curve; `heritability()` errors on this result and names
+#'   `rr_heritability()`. `k >= 3` stays experimental.
 #'   `target = "genomic"` is the explicit experimental narrow Gaussian REML
 #'   genomic route. It accepts
 #'   `genomic(1 | id, markers = M)`, using sample allele frequencies,
@@ -119,6 +143,11 @@
 #'   supplied-variance solve (`HSquared.fit_snp_blup()`), or omit them to have
 #'   `hsquared()` **estimate** `sigma_g2`/`sigma_e2` by REML from the markers
 #'   (`HSquared.fit_snp_blup_reml()`). Not the default.
+#'   `target = "relmat"` is an experimental, opt-in path for
+#'   `relmat(1 | id, K = K)` (a supplied dense relationship matrix; the parser
+#'   marshals the inverse). `target = "precision"` is the same experimental path
+#'   for `precision(1 | id, Q = Q)` (a supplied precision/inverse). Neither is
+#'   covered or the default; the supplied matrix is provenance, not an estimate.
 #'   `target = "multivariate"` names the experimental multivariate Gaussian
 #'   animal model. Naming it is optional: a `cbind()` Gaussian response with an
 #'   `animal()` term auto-routes to this target on the default path, and under
