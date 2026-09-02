@@ -1766,7 +1766,11 @@ hs_fit_julia_multivariate_payload <- function(
   }
 
   hs_julia_setup(project)
-  JuliaCall::julia_assign("hsq_Y", payload$Y)
+  # JuliaCall 0.17.6 / R 4.6 delivers R NA_real_ as Julia Missing, not NaN.
+  # Convert here so the engine receives the documented NaN missing-trait
+  # sentinel (it also accepts Missing, but isnan-based round-trips through
+  # julia_eval segfault inside Rcpp precious-preserve on Missing arrays).
+  JuliaCall::julia_assign("hsq_Y", hs_y_matrix_for_julia(payload$Y))
   JuliaCall::julia_assign("hsq_X", payload$X)
   hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
@@ -3358,6 +3362,19 @@ hs_parent_for_julia <- function(x) {
   x <- as.character(x)
   x[is.na(x)] <- "0"
   x
+}
+
+# R-side NA -> Julia NaN sentinel for multivariate Y.
+# Keeps the R payload's NA cells intact; only the Julia assign copy is rewritten.
+# Needed because JuliaCall 0.17.6 marshals NA_real_ to Missing, not NaN.
+hs_y_matrix_for_julia <- function(Y) {
+  if (!is.matrix(Y)) {
+    stop("`Y` must be a matrix.", call. = FALSE)
+  }
+  out <- Y
+  storage.mode(out) <- "double"
+  out[is.na(out)] <- NaN
+  out
 }
 
 hs_validate_initial_variances <- function(initial) {

@@ -409,7 +409,36 @@ test_that("non-converged multivariate fits do not expose logLik or AIC", {
   expect_error(AIC(fit), "did not converge", fixed = TRUE)
 })
 
-test_that("JuliaCall sends multivariate response NA cells as NaN", {
+test_that("R multivariate payload keeps NA; assign copy becomes NaN", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf1", "calf2"),
+    sire = c(NA, NA, "sire", "sire"),
+    dam = c(NA, NA, "dam", "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3, 4),
+    y2 = c(1.5, NA, 3.5, 4.5),
+    id = ped$id
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  expect_equal(sum(is.na(payload$Y)), 1L)
+  expect_true(is.na(payload$Y[2L, 2L]) && !is.nan(payload$Y[2L, 2L]))
+
+  Yj <- hsquared:::hs_y_matrix_for_julia(payload$Y)
+  expect_equal(sum(is.nan(Yj)), 1L)
+  expect_true(is.nan(Yj[2L, 2L]))
+})
+
+test_that("bridge marshals multivariate response NA cells as Julia NaN", {
+  # Live: assign the NaN copy, then count via julia_command + Int eval.
+  # Do NOT julia_eval(sum(isnan.(...))) on a raw-NA assign: JuliaCall 0.17.6
+  # delivers Missing, and that eval path segfaults in Rcpp precious-preserve.
   hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -433,13 +462,14 @@ test_that("JuliaCall sends multivariate response NA cells as NaN", {
     REML = TRUE
   )
   payload <- hsquared:::hs_build_bridge_payload(spec)
-  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
-  JuliaCall::julia_assign("hsq_Y_roundtrip", payload$Y)
+  Yj <- hsquared:::hs_y_matrix_for_julia(payload$Y)
 
-  expect_equal(
-    JuliaCall::julia_eval("sum(isnan.(hsq_Y_roundtrip))"),
-    1L
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  JuliaCall::julia_assign("hsq_Y_roundtrip", Yj)
+  JuliaCall::julia_command(
+    "hsq_nan_count = Int(sum(isnan.(hsq_Y_roundtrip)))"
   )
+  expect_equal(JuliaCall::julia_eval("hsq_nan_count"), 1L)
 })
 
 test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
