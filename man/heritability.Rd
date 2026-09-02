@@ -43,4 +43,10 @@ Reaction-norm fence for the opt-in random-regression model
 over the covariate, not a scalar, so \code{heritability()} \strong{errors} on such a
 fit and names the implemented accessor. Use \code{\link[=rr_heritability]{rr_heritability()}} for the
 \code{h2(t)} curve.
+
+A non-converged fit still returns the engine number so you can inspect it,
+but \strong{warns}: that number is not an estimate. A near-zero value from a
+failed fit is not evidence that heritability is zero. Use
+\code{\link[=fit_diagnostics]{fit_diagnostics()}} before reading any number. \code{logLik()} already refuses
+a non-converged fit; \code{heritability()} keeps the value and shouts instead.
 }

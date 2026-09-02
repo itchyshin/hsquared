@@ -68,7 +68,12 @@ fit <- hsquared(
 )
 ```
 
-Once the engine is registered, the same call as the validate block fits:
+Once the engine is registered, the same call as the validate block
+*attempts* a fit. **n = 4 may not converge.** If `fit_diagnostics()`
+says `converged` is FALSE, do not read `heritability()` as a result —
+a near-zero value is not h² = 0. `heritability()` warns when the fit
+failed. The successful first path on this page is the validate block
+above.
 
 ```{r golden-fit, eval = FALSE}
 fit <- hsquared(
@@ -76,7 +81,8 @@ fit <- hsquared(
   data = dat
 )
 
-heritability(fit)
+fit_diagnostics(fit)
+heritability(fit)          # warns if the fit did not converge
 variance_components(fit)
 breeding_values(fit)
 ```

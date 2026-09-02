@@ -674,3 +674,73 @@ test_that("print.hsquared_fit shows target, formula, and heritability peek", {
   expect_match(out, "formula: y ~ animal", fixed = TRUE)
   expect_match(out, "heritability: animal=0.4", fixed = TRUE)
 })
+
+test_that("heritability() and print() warn when the fit did not converge", {
+  failed <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:4),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(1e-16, 1.2)
+      ),
+      heritability = data.frame(term = "animal", estimate = 9.48e-17),
+      diagnostics = list(
+        optimizer_status = "not_converged",
+        iterations = 27L
+      ),
+      converged = FALSE
+    )
+  )
+
+  expect_warning(
+    h2 <- heritability(failed),
+    "This `hsquared_fit` object did not converge. The heritability number is not an estimate — do not report it.",
+    fixed = TRUE
+  )
+  expect_warning(
+    heritability(failed),
+    "failed-fit artefact, not evidence that heritability is zero",
+    fixed = TRUE
+  )
+  expect_equal(h2$estimate, 9.48e-17)
+
+  expect_warning(
+    printed <- paste(utils::capture.output(print(failed)), collapse = "\n"),
+    "This `hsquared_fit` object did not converge. The heritability number is not an estimate — do not report it.",
+    fixed = TRUE
+  )
+  expect_match(printed, "converged: FALSE", fixed = TRUE)
+  expect_match(
+    printed,
+    "heritability: not reportable (fit did not converge)",
+    fixed = TRUE
+  )
+  expect_false(grepl("9.48", printed, fixed = TRUE))
+})
+
+test_that("heritability() and print() stay quiet on a converged interior fit", {
+  ok <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:4),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.4, 0.6)
+      ),
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      diagnostics = list(optimizer_status = "converged"),
+      converged = TRUE
+    )
+  )
+  expect_silent(heritability(ok))
+  expect_silent(invisible(utils::capture.output(print(ok))))
+})

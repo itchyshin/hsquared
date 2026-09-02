@@ -58,8 +58,15 @@ called — without fitting anything.
 ## Fitting — requires the Julia engine
 
 With a local Julia, `JuliaCall`, and an `HSquared.jl` checkout (see
-[Engine setup](#engine-setup)), the same call fits. This block needs the
-engine; it is not a silent fallback.
+[Engine setup](#engine-setup)), the same call *attempts* a fit. This block
+needs the engine; it is not a silent fallback.
+
+**n = 4 is still a syntax demo.** This tiny pedigree often fails to
+converge. You may see `converged: FALSE` and a near-zero heritability.
+That is not h² = 0, and it is not a number for a paper. Check
+`fit_diagnostics(fit)` first. `heritability()` warns when the fit did
+not converge. The successful first path on this page is
+`engine = "validate"` above.
 
 ```r
 fit <- hsquared(
@@ -67,7 +74,8 @@ fit <- hsquared(
   data = dat
 )
 
-heritability(fit)
+fit_diagnostics(fit)
+heritability(fit)          # warns if the fit did not converge
 variance_components(fit)
 breeding_values(fit)
 ```

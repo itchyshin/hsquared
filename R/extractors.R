@@ -59,6 +59,12 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' fit and names the implemented accessor. Use [rr_heritability()] for the
 #' `h2(t)` curve.
 #'
+#' A non-converged fit still returns the engine number so you can inspect it,
+#' but **warns**: that number is not an estimate. A near-zero value from a
+#' failed fit is not evidence that heritability is zero. Use
+#' [fit_diagnostics()] before reading any number. `logLik()` already refuses
+#' a non-converged fit; `heritability()` keeps the value and shouts instead.
+#'
 #' @inheritParams variance_components
 #'
 #' @return Heritability results for `hsquared_fit` objects.
@@ -78,6 +84,7 @@ heritability.default <- function(object, ...) {
 
 #' @export
 heritability.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object)
   # Willham fence for the direct-maternal correlated model: heritability() on
   # a direct_maternal fit returns the LABELLED TRIPLE — direct h2_d, maternal
   # m2, and Willham total h2_T — plus r_am, as a labelled data frame.

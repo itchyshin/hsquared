@@ -82,6 +82,41 @@ hs_fit_result <- function(object, name, label) {
   value
 }
 
+hs_fit_not_converged <- function(object) {
+  if (identical(object$result$converged, FALSE)) {
+    return(TRUE)
+  }
+  identical(object$result$diagnostics$optimizer_status, "not_converged")
+}
+
+# Students copy README, get h2 ~ 0 from a failed n = 4 fit, and believe it.
+# logLik() refuses a non-converged fit; heritability() and print() must
+# warn at the same bar so a near-zero value is never a silent "result".
+hs_warn_if_unusable_fit <- function(object, what = "heritability") {
+  if (!hs_fit_not_converged(object)) {
+    return(invisible(FALSE))
+  }
+  boundary <- isTRUE(hs_fit_boundary_flag(object))
+  extra <- if (boundary) {
+    paste0(
+      " A variance component is also at or near a boundary, so a ",
+      "near-zero value is a failed-fit artefact, not evidence that ",
+      "heritability is zero."
+    )
+  } else {
+    " A near-zero value is not evidence that heritability is zero."
+  }
+  warning(
+    "This `hsquared_fit` object did not converge. The ",
+    what,
+    " number is not an estimate — do not report it.",
+    extra,
+    " Inspect `fit_diagnostics(fit)` before reading any number.",
+    call. = FALSE
+  )
+  invisible(TRUE)
+}
+
 hs_print_fit_peek <- function(x) {
   h2 <- x$result$heritability
   if (is.null(h2)) {
@@ -126,7 +161,12 @@ print.hsquared_fit <- function(x, ...) {
   if (!is.null(converged)) {
     cat("  converged: ", isTRUE(converged), "\n", sep = "")
   }
-  hs_print_fit_peek(x)
+  if (hs_fit_not_converged(x)) {
+    cat("  heritability: not reportable (fit did not converge)\n")
+    hs_warn_if_unusable_fit(x)
+  } else {
+    hs_print_fit_peek(x)
+  }
   boundary <- x$result$genomic_boundary
   if (!is.null(boundary)) {
     cat("  genomic boundary status: ", boundary$status, "\n", sep = "")
