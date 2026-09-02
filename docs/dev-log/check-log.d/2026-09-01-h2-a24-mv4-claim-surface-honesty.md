@@ -117,3 +117,28 @@ carry a package-wide reformat. The lines this slice adds are air-clean.
   documented.
 - **A25** — MV-5 disposition; **A26** — R↔engine element-wise parity at the promotion
   fixture; **A27** — Darwin sign on the recovered covariance; **A29** — Rose pre-flip audit.
+
+---
+
+## Addendum — the help-page sweep (`14f5a7b`)
+
+A grep sweep after the first commit found the same understatement on **R help pages
+and in three error messages**, which the vignette-level pass had not reached. Committed
+separately as `14f5a7b`.
+
+| File | Change |
+|---|---|
+| `R/model-spec.R` | `hs_stop_animal_covariance_arg()` told the user to add `engine_control = list(target = "multivariate")` — a **directive** to do something no longer needed; now points at the `cbind()` form on the default path. Also the `cbind()` scope error's "opt-in multivariate path" |
+| `R/hs_control.R` | `?hs_control`'s `target` documentation: `"multivariate"` is still a valid spelling, but naming it is optional; the target is default-routed while the capability stays `partial` |
+| `R/evolvability.R` | topic description, `@param`, and the G-geometry error |
+| `R/extractors.R` | multivariate extractor topic, factor-G reserved-names topic, `covariance_standard_errors()` error, `covariance_structure_lrt()` description/`@param`/error, response-scale block message and topic |
+| `R/formula-status.R` | the long-format-`cov` roadmap behaviour string |
+| `man/*.Rd` (6) | regenerated |
+
+**"Opt-in" was kept where it is still true.** `genetic_structure = "diagonal"` is an
+opt-in engine control — on the default path as anywhere else — and the
+diagonal-vs-unstructured LRT text still says so.
+
+**Re-run after the addendum:** `air format` (5 edited files only), `devtools::document()`
+OK, `devtools::test()` **FAIL 0 / WARN 0 / SKIP 70 / PASS 2336**, `devtools::check()`
+**Status: OK — 0 errors, 0 warnings, 0 notes** (3m 17s).
