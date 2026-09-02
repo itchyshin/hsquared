@@ -245,9 +245,15 @@ misspecification, real panels, or production genotype data.
   missing trait cells may be `NA`. Dense validation-scale only; R-lane evidence
   includes cold-start recovery, one full-unstructured `sommer` REML comparator,
   a published Mrode supplied-covariance BLUP/MME anchor, and a `MCMCglmm`
-  Bayesian agreement probe. Covered promotion still needs recovery-gate
-  acceptance or broadening plus a second independent same-estimand comparator
-  beyond `sommer`; `MCMCglmm` is not REML parity.
+  Bayesian agreement probe. The Mrode anchor is **supplied-covariance** — it
+  checks fixed effects and BLUPs given known `G0`/`R0`, not the estimated
+  covariances — and **no published textbook anchor for estimated multivariate
+  `G0`/`R0` exists**, so that part of the evidence is comparator- and
+  recovery-based rather than textbook-anchored. R↔engine element-wise parity is
+  verified **locally** at pre-declared tolerances, **not in CI** (the CI runner
+  has no Julia, so those checks skip). Covered promotion still needs
+  recovery-gate acceptance or broadening plus a second independent
+  same-estimand comparator beyond `sommer`; `MCMCglmm` is not REML parity.
 
 ## Current limits
 
