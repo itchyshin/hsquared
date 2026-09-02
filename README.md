@@ -18,7 +18,8 @@ computation.
 > and an `HSquared.jl` checkout** — R alone parses and validates a model but
 > does not fit it. The Julia twin's General registration
 > ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969)) is
-> pending AutoMerge; do not assume `Pkg.add("HSquared")` works yet. What you
+> deferred pending collaborator review; do not use `Pkg.add("HSquared")` by
+> name. What you
 > may report is listed on
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
 > — not in `validation_status()`. Report point estimates only for **covered**
