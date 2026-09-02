@@ -146,6 +146,11 @@ test_that("multivariate cbind auto-routes on the default path and stays cbind-on
     )
     expect_false(grepl("requires the opt-in", err_julia, fixed = TRUE))
   }
+  expect_no_warning(suppressMessages(hsquared(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    control = hs_control(engine = "validate")
+  )))
   expect_error(
     hsquared(
       y1 ~ animal(1 | id, pedigree = ped),
@@ -161,6 +166,23 @@ test_that("multivariate cbind auto-routes on the default path and stays cbind-on
   expect_equal(
     hsquared:::hs_validate_julia_target("multivariate"),
     "multivariate"
+  )
+})
+
+test_that("default-path cbind() warns once that multivariate is experimental", {
+  hsquared:::hs_reset_session_flags()
+  withr::defer(hsquared:::hs_reset_session_flags())
+  expect_warning(
+    hsquared:::hs_warn_cbind_experimental_once(),
+    "This cbind() model fitted, but it is experimental (partial).",
+    fixed = TRUE
+  )
+  expect_no_warning(hsquared:::hs_warn_cbind_experimental_once())
+  hsquared:::hs_reset_session_flags()
+  expect_warning(
+    hsquared:::hs_warn_cbind_experimental_once(),
+    "Do not report these numbers from hsquared alone.",
+    fixed = TRUE
   )
 })
 

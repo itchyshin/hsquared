@@ -595,9 +595,21 @@ test_that("rr() argument naming and the RR heritability accessor are pinned", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "experimental and opt-in",
+    "Closest working call",
     fixed = TRUE
   )
+  err <- tryCatch(
+    hsquared::hsquared(
+      weight ~ animal(rr(age, order = 2) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl("`rr(...)` is not on the default path", err, fixed = TRUE))
+  expect_true(grepl("target = \"random_regression\"", err, fixed = TRUE))
+  expect_true(grepl("k = 2", err, fixed = TRUE))
 
   # Rejected spelling: `k =` is refused, and the error names the implemented
   # spelling rather than only the unsupported one.

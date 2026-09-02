@@ -59,6 +59,29 @@ test_that("maternal_genetic() must be intercept-only", {
   )
 })
 
+test_that("the default engine = \"fit\" rejects a maternal_genetic() formula", {
+  ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
+  dat <- data.frame(y = c(1, 2), id = c("a", "b"), mum = c("a", "b"))
+  err <- tryCatch(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | mum),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`maternal_genetic()` is not on the default path",
+    err,
+    fixed = TRUE
+  ))
+  expect_true(grepl("Closest working call", err, fixed = TRUE))
+  expect_true(grepl("target = \"two_effect\"", err, fixed = TRUE))
+  expect_true(grepl("target = \"direct_maternal\"", err, fixed = TRUE))
+  expect_true(grepl("Willham triple", err, fixed = TRUE))
+  expect_true(grepl("not a scalar h2", err, fixed = TRUE))
+})
+
 test_that("a maternal_genetic() formula needs the two_effect target", {
   ped <- data.frame(id = c("a", "b"), sire = c(NA, NA), dam = c(NA, NA))
   dat <- data.frame(y = c(1, 2), id = c("a", "b"), mum = c("a", "b"))

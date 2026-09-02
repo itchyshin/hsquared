@@ -64,6 +64,7 @@ hsquared <- function(
   if (missing(data)) {
     stop("`data` is required.", call. = FALSE)
   }
+  data_name <- hs_deparse_user_expr(substitute(data))
   if (!inherits(control, "hs_control")) {
     stop("`control` must be created by `hs_control()`.", call. = FALSE)
   }
@@ -100,13 +101,10 @@ hsquared <- function(
     # guarantees an animal-only, single-effect, random-intercept multivariate
     # response, so clauses (4)-(7) of the frozen dispatch key hold here.
     if (identical(spec$random$animal$design, "random_regression")) {
-      hs_abort_unsupported_syntax(
-        "The random-regression (reaction-norm) animal model is experimental ",
-        "and opt-in; the default `engine = \"fit\"` path fits the ",
-        "random-intercept Gaussian animal model only. Use `control = ",
-        "hs_control(engine = \"julia\", engine_control = list(target = ",
-        "\"random_regression\"))`.",
-        call. = FALSE
+      hs_abort_opt_in_next_call(
+        "random_regression",
+        formula,
+        data_name
       )
     }
     if (!isTRUE(REML)) {
@@ -119,12 +117,21 @@ hsquared <- function(
     }
     opt_in_effect <- setdiff(names(spec$random), "animal")
     if (length(opt_in_effect) > 0L) {
+      effect_type <- opt_in_effect[[1L]]
+      # Pat UX: the natural second-effect formulas print a pasteable next
+      # call. Other opt-in primaries keep the existing knob-name abort.
+      if (
+        effect_type %in%
+          c("common_env", "permanent", "maternal_genetic")
+      ) {
+        hs_abort_opt_in_next_call(effect_type, formula, data_name)
+      }
       # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
       # name them honestly rather than printing the internal slot name.
-      model_label <- if (identical(opt_in_effect[[1L]], "iid_effects")) {
+      model_label <- if (identical(effect_type, "iid_effects")) {
         "bare `(1 | group)` i.i.d. random-effect (multi-effect)"
       } else {
-        paste0("`", opt_in_effect[[1L]], "`")
+        paste0("`", effect_type, "`")
       }
       hs_abort_unsupported_syntax(
         "The ",
@@ -133,7 +140,7 @@ hsquared <- function(
         "path fits the single-effect Gaussian animal model only. Use ",
         "`control = hs_control(engine = \"julia\", engine_control = list(",
         "target = \"",
-        hs_second_effect_target(opt_in_effect[[1L]]),
+        hs_second_effect_target(effect_type),
         "\"))`.",
         call. = FALSE
       )
@@ -159,6 +166,7 @@ hsquared <- function(
       )
     }
     if (isTRUE(spec$response$multivariate)) {
+      hs_warn_cbind_experimental_once()
       return(hs_fit_julia_multivariate_payload(
         payload,
         project = project,
@@ -284,7 +292,9 @@ hsquared <- function(
           },
           ". The `",
           target,
-          "` target fits the single additive-genetic effect only.",
+          "` target fits the single additive-genetic effect only.\n\n",
+          "Closest working call:\n\n",
+          hs_format_next_call(formula, data_name, allowed[[1L]]),
           call. = FALSE
         )
       }

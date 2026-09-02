@@ -96,9 +96,30 @@ test_that("the default engine = \"fit\" rejects a common_env() formula", {
       data = dat,
       family = stats::gaussian()
     ),
-    "experimental and opt-in",
+    "Closest working call",
     fixed = TRUE
   )
+  err <- tryCatch(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`common_env()` is not on the default path",
+    err,
+    fixed = TRUE
+  ))
+  expect_true(grepl("target = \"two_effect\"", err, fixed = TRUE))
+  expect_true(grepl(
+    "y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter)",
+    err,
+    fixed = TRUE
+  ))
+  expect_true(grepl("data = dat", err, fixed = TRUE))
+  expect_true(grepl("covered for point estimates only", err, fixed = TRUE))
 })
 
 test_that("target = \"two_effect\" requires a common_env() term", {
