@@ -255,10 +255,10 @@ tier = 3
 data_origin = "synthetic"
 estimator_mode = "estimated-VC"
 quantities = ["sigma_a2", "sigma_e2", "h2"]
-tolerance = "FROZEN predeclaration; owner threshold sign-off required"
-claim_boundary = "FROZEN NOT RUN; q=25,000; requires maintainer compute-go."
+tolerance = "FROZEN predeclaration (33ab68f6), bounds: A1 mean rel.err vs truth <= 0.05 both components; A2 NON_GRACEFUL = 0; A3 CAP_EXHAUSTED <= 4/48; Leg X mean |reldiff| vs exact fit_ai_reml <= 0.05"
+claim_boundary = "RUN AND PASSED 2026-09-01, q=25,000, 48 seeds, Julia 1.10.10 on Totoro. Leg A 48/48 converged, A1 0.0016/0.0007, A2 0/48, A3 0/48; Leg X 0.0090/0.0052. Recovery-to-truth for the FROZEN GATE FIXTURE AT THAT ONE SCALE ONLY. A non-pre-declared Julia 1.12.6 arm also passes but gives A1 sigma_a2 0.0142, so the honest margin across the two realizations measured is ~3.5x, NOT ~30x. Engine ledger row: V1-MATFREE-REML (HSquared.jl validation_status(), status partial; capability-status experimental). Promotes nothing: public_covered_count stays 5, G10 S3 UNSIGNED, S6 at-scale comparator and S7 R bridge OPEN. NO R SURFACE — fit_matrix_free_reml is not wired to the bridge."
 r_surface = ""
-julia_surface = "sim/f6_matfree_recovery.jl"
+julia_surface = "sim/phase_s5_matfree_tail_recovery_gate.jl"
 ci_policy = "opt-in"
 darwin_review = "pending"
 
