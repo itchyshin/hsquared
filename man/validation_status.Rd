@@ -45,8 +45,8 @@ report.
 }
 
 \section{Capability identifiers versus labels}{
-\code{capability} is a \strong{stable identifier}. Dated evidence records — comparator
-runs under \verb{docs/dev-log/comparator-runs/} and check-log entries — cite these
+\code{capability} is a \strong{stable identifier}. Dated evidence records -- comparator
+runs under \verb{docs/dev-log/comparator-runs/} and check-log entries -- cite these
 strings verbatim to name the row they report against, so an identifier is not
 rewritten once evidence points at it. Look rows up by \code{capability}.
 

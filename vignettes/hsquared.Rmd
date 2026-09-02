@@ -70,8 +70,8 @@ fit <- hsquared(
 
 Once the engine is registered, the same call as the validate block
 *attempts* a fit. **n = 4 may not converge.** If `fit_diagnostics()`
-says `converged` is FALSE, do not read `heritability()` as a result —
-a near-zero value is not h² = 0. `heritability()` warns when the fit
+says `converged` is FALSE, do not read `heritability()` as a result --
+a near-zero value is not h^2 = 0. `heritability()` warns when the fit
 failed. The successful first path on this page is the validate block
 above.
 
@@ -90,7 +90,9 @@ breeding_values(fit)
 Without the engine, that default call errors with install guidance rather than
 silently degrading. Until then, `engine = "validate"` is the successful path.
 
-ML is not implemented — `REML = FALSE` is rejected on the fit path.
+ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE`
+(the default). That is the same rule for the default fit and for
+`engine = "validate"`.
 
 ## After this works
 

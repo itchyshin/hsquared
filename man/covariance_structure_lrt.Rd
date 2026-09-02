@@ -28,12 +28,12 @@ data}: a \code{constrained} genetic structure (currently \code{genetic_structure
 \code{df = n_genetic_params(full) - n_genetic_params(constrained)}.
 
 For diagonal-vs-unstructured the null (off-diagonal genetic covariances = 0)
-is interior, so the χ² reference is exact (\code{boundary = FALSE}). Structures
+is interior, so the chi^2 reference is exact (\code{boundary = FALSE}). Structures
 whose null lies on a rank/PSD boundary (low-rank / factor-analytic) would need
-a χ²-mixture correction and are gated out of the R bridge for now.
+a chi^2-mixture correction and are gated out of the R bridge for now.
 
 It mirrors the engine row \code{V4-MV-REML} (\code{partial}): asymptotic, REML-only,
 dense validation-scale, with the multivariate recovery calibration not yet
-passed — a reported test, not a validated one. Both fits must be on the same
+passed -- a reported test, not a validated one. Both fits must be on the same
 response, fixed effects, and pedigree.
 }
