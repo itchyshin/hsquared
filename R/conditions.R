@@ -149,3 +149,57 @@ hs_abort_opt_in_next_call <- function(
     "\nSee: current-limits article, formula_status()."
   )
 }
+
+# One rule for the public hsquared() door: ML is not a live path.
+# REML = TRUE is the nearest working call. Internal spec builders and
+# model_spec() may still construct an ML-labelled spec; engine = "julia"
+# keeps its supplied-variance exemptions in R/hsquared.R.
+hs_abort_reml_false <- function() {
+  hs_abort_unsupported_syntax(
+    "ML estimation (`REML = FALSE`) is not implemented.\n\n",
+    "Closest working call: `REML = TRUE` (the default). ",
+    "The live path estimates variance components by REML ",
+    "(average-information REML).\n\n",
+    "See: current-limits article, formula_status()."
+  )
+}
+
+hs_public_hsquared_control <- function() {
+  calls <- sys.calls()
+  frames <- sys.frames()
+  n <- min(length(calls), length(frames))
+  if (n < 1L) {
+    return(NULL)
+  }
+  for (i in seq_len(n)) {
+    fn <- calls[[i]][[1L]]
+    if (!identical(fn, quote(hsquared))) {
+      next
+    }
+    env <- frames[[i]]
+    if (!exists("control", envir = env, inherits = FALSE)) {
+      next
+    }
+    cand <- get("control", envir = env, inherits = FALSE)
+    if (inherits(cand, "hs_control")) {
+      return(cand)
+    }
+  }
+  NULL
+}
+
+hs_abort_reml_false_on_public_path <- function(REML) {
+  if (isTRUE(REML)) {
+    return(invisible(FALSE))
+  }
+  control <- hs_public_hsquared_control()
+  if (is.null(control)) {
+    return(invisible(FALSE))
+  }
+  if (
+    identical(control$engine, "validate") || identical(control$engine, "fit")
+  ) {
+    hs_abort_reml_false()
+  }
+  invisible(FALSE)
+}

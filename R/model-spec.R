@@ -751,6 +751,9 @@ hs_validate_model_inputs <- function(
   if (!is.logical(REML) || length(REML) != 1L || is.na(REML)) {
     stop("`REML` must be `TRUE` or `FALSE`.", call. = FALSE)
   }
+  # Public hsquared() validate and default fit share one REML = TRUE rule.
+  # Internal builders and model_spec() are not that door.
+  hs_abort_reml_false_on_public_path(REML)
 
   invisible(TRUE)
 }
