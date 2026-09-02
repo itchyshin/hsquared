@@ -1,4 +1,11 @@
-# hsquared (development version)
+# hsquared 0.5.0
+
+This is an **experimental** numbered release (D-41). It is **not** a CRAN
+submission. Experimental banners, lifecycle badges, `.onAttach`, pkgdown
+callout, and DESCRIPTION wording stay on. `public_covered_count` stays
+**5**. No covered flip. Multivariate stays `partial`. First public
+*number* is 0.5.0; first public CRAN tarball is a later owner step after
+Julia 0.5.0 is in General.
 
 ## New features
 
