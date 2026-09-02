@@ -131,8 +131,8 @@ heritability.hsquared_fit <- function(object, ...) {
   # Reaction-norm fence: h2 is a trajectory h2(t), not a scalar, on the opt-in
   # random-regression target, so `heritability()` has no scalar answer to give.
   # Name the implemented accessor rather than falling through to the generic
-  # "planned v0.1 contract" miss, which reads as "not implemented" on a route
-  # that is covered at validation scale.
+  # missing-field miss, which used to read as "planned v0.1 contract" / "not
+  # implemented" on a route that is covered at validation scale.
   if (hs_fit_is_random_regression(object)) {
     stop(
       "`heritability()` is not defined for the opt-in random-regression ",
@@ -1913,10 +1913,13 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 
 #' Block unsupported likelihood-inference helpers
 #'
-#' These methods intentionally fail with explicit scope messages. v0.1 reports
-#' point estimates, likelihood summaries for converged fits, and diagnostics,
-#' but validated standard errors, confidence intervals, profile likelihoods, and
-#' likelihood-ratio tests are deferred until they have validation evidence.
+#' These methods intentionally fail with explicit scope messages. Validated
+#' `confint()` / `vcov()` / `profile()` / `anova()` surfaces are not
+#' implemented. Experimental interval extractors
+#' ([heritability_interval()], [variance_component_standard_errors()]) exist
+#' when the engine returned those fields; they are not coverage-calibrated.
+#' Point estimates remain [variance_components()], [heritability()], and
+#' [fit_diagnostics()].
 #'
 #' @param object An `hsquared_fit` object.
 #' @param fitted An `hsquared_fit` object for [stats::profile()].
@@ -1927,13 +1930,57 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 #' @name inference_blocks
 NULL
 
+hs_interval_sibling_hint <- function(object) {
+  if (hs_fit_is_genomic(object)) {
+    return(paste0(
+      "`heritability_interval()` is not available for genomic fits ",
+      "(no scale-labelled, calibrated interval). ",
+      "`variance_component_standard_errors()` is experimental and only ",
+      "present when the engine returned it."
+    ))
+  }
+  if (hs_fit_is_random_regression(object)) {
+    return(paste0(
+      "On random-regression fits use `rr_heritability()` for the h2(t) ",
+      "trajectory; there is no scalar `heritability_interval()`."
+    ))
+  }
+  has_hi <- !is.null(object$result$heritability_interval)
+  has_se <- !is.null(object$result$variance_component_se)
+  if (has_hi && has_se) {
+    return(paste0(
+      "Use the experimental `heritability_interval()` and ",
+      "`variance_component_standard_errors()` extractors ",
+      "(not coverage-calibrated)."
+    ))
+  }
+  if (has_hi) {
+    return(paste0(
+      "Use the experimental `heritability_interval()` extractor ",
+      "(not coverage-calibrated)."
+    ))
+  }
+  if (has_se) {
+    return(paste0(
+      "Use the experimental `variance_component_standard_errors()` extractor ",
+      "(not coverage-calibrated)."
+    ))
+  }
+  paste0(
+    "Experimental `heritability_interval()` and ",
+    "`variance_component_standard_errors()` exist when the engine returned ",
+    "those fields; they are not coverage-calibrated."
+  )
+}
+
 #' @rdname inference_blocks
 #' @export
 confint.hsquared_fit <- function(object, parm, level = 0.95, ...) {
   stop(
-    "Validated confidence intervals for variance components, h2, and other ",
-    "`hsquared_fit` quantities are planned, not implemented. v0.1 reports ",
-    "point estimates only; use `variance_components()`, `heritability()`, and ",
+    "Validated confidence intervals for `hsquared_fit` quantities are not ",
+    "implemented. ",
+    hs_interval_sibling_hint(object),
+    " Point estimates remain `variance_components()`, `heritability()`, and ",
     "`fit_diagnostics()`.",
     call. = FALSE
   )
@@ -1943,9 +1990,9 @@ confint.hsquared_fit <- function(object, parm, level = 0.95, ...) {
 #' @export
 vcov.hsquared_fit <- function(object, ...) {
   stop(
-    "A validated estimator variance-covariance matrix / standard-error surface ",
-    "is planned, not implemented for `hsquared_fit` objects. v0.1 reports ",
-    "point estimates only.",
+    "A validated estimator variance-covariance matrix is not implemented ",
+    "for `hsquared_fit` objects. ",
+    hs_interval_sibling_hint(object),
     call. = FALSE
   )
 }
@@ -1991,7 +2038,7 @@ nobs.hsquared_fit <- function(object, ...) {
 # (a multi-trait matrix) and emits no single-vector predictions. The response-
 # scale `predict()`/`fitted()`/`residuals()` contract is univariate-only in
 # v0.1, so these block on that target with a target-named scope message rather
-# than the generic "planned v0.1 contract" miss from `hs_fit_result()`.
+# than the generic missing-field miss from `hs_fit_result()`.
 hs_fit_is_multivariate <- function(object) {
   identical(object$spec$target, "multivariate") || !is.null(object$payload$Y)
 }

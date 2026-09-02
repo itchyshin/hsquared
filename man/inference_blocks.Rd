@@ -29,8 +29,11 @@
 These functions always error.
 }
 \description{
-These methods intentionally fail with explicit scope messages. v0.1 reports
-point estimates, likelihood summaries for converged fits, and diagnostics,
-but validated standard errors, confidence intervals, profile likelihoods, and
-likelihood-ratio tests are deferred until they have validation evidence.
+These methods intentionally fail with explicit scope messages. Validated
+\code{confint()} / \code{vcov()} / \code{profile()} / \code{anova()} surfaces are not
+implemented. Experimental interval extractors
+(\code{\link[=heritability_interval]{heritability_interval()}}, \code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}}) exist
+when the engine returned those fields; they are not coverage-calibrated.
+Point estimates remain \code{\link[=variance_components]{variance_components()}}, \code{\link[=heritability]{heritability()}}, and
+\code{\link[=fit_diagnostics]{fit_diagnostics()}}.
 }

@@ -29,6 +29,38 @@ hs_new_fit <- function(
   )
 }
 
+hs_fit_target_label <- function(object) {
+  target <- object$spec$target
+  if (is.null(target) || !nzchar(as.character(target)[[1L]])) {
+    return("default animal")
+  }
+  as.character(target)[[1L]]
+}
+
+hs_fit_formula_label <- function(object) {
+  if (inherits(object$spec$formula, "formula")) {
+    return(paste(deparse(object$spec$formula), collapse = " "))
+  }
+  if (is.language(object$call) && length(object$call) >= 2L) {
+    return(paste(deparse(object$call[[2L]]), collapse = " "))
+  }
+  NULL
+}
+
+hs_fit_result_sibling <- function(name) {
+  switch(
+    name,
+    qtl_table = ,
+    gwas_table = ,
+    eqtl_table = ,
+    lod_scores = paste0(
+      " Use `gwas(fit, markers)` for a marker scan, then `gwas_table(scan)` ",
+      "or `lod_scores(scan)` on the returned `hs_gwas` object."
+    ),
+    ""
+  )
+}
+
 hs_fit_result <- function(object, name, label) {
   if (!inherits(object, "hsquared_fit")) {
     stop("`object` must be an `hsquared_fit` object.", call. = FALSE)
@@ -37,15 +69,43 @@ hs_fit_result <- function(object, name, label) {
   value <- object$result[[name]]
   if (is.null(value)) {
     stop(
-      "This `hsquared_fit` object does not contain ",
+      "This `hsquared_fit` object (target = \"",
+      hs_fit_target_label(object),
+      "\") does not contain ",
       label,
-      ". The extractor is part of the planned v0.1 contract, but the current ",
-      "result payload did not provide this field.",
+      ". The current result payload did not provide this field.",
+      hs_fit_result_sibling(name),
       call. = FALSE
     )
   }
 
   value
+}
+
+hs_print_fit_peek <- function(x) {
+  h2 <- x$result$heritability
+  if (is.null(h2)) {
+    return(invisible(x))
+  }
+  if (is.data.frame(h2) && "estimate" %in% names(h2)) {
+    labels <- if ("term" %in% names(h2)) {
+      h2$term
+    } else if ("component" %in% names(h2)) {
+      h2$component
+    } else {
+      seq_len(nrow(h2))
+    }
+    peek <- paste0(
+      labels,
+      "=",
+      format(signif(as.numeric(h2$estimate), 4)),
+      collapse = ", "
+    )
+    cat("  heritability: ", peek, "\n", sep = "")
+  } else if (is.numeric(h2) && length(h2) == 1L) {
+    cat("  heritability: ", format(signif(as.numeric(h2), 4)), "\n", sep = "")
+  }
+  invisible(x)
 }
 
 #' @export
@@ -55,18 +115,34 @@ print.hsquared_fit <- function(x, ...) {
   converged <- x$result$converged
 
   cat("<hsquared_fit>\n")
+  formula_txt <- hs_fit_formula_label(x)
+  if (!is.null(formula_txt)) {
+    cat("  formula: ", formula_txt, "\n", sep = "")
+  }
+  cat("  target: ", hs_fit_target_label(x), "\n", sep = "")
   cat("  engine: ", x$engine %||% "unknown", "\n", sep = "")
   cat("  family: ", family, "\n", sep = "")
   cat("  method: ", method, "\n", sep = "")
   if (!is.null(converged)) {
     cat("  converged: ", isTRUE(converged), "\n", sep = "")
   }
+  hs_print_fit_peek(x)
   boundary <- x$result$genomic_boundary
   if (!is.null(boundary)) {
     cat("  genomic boundary status: ", boundary$status, "\n", sep = "")
     if (boundary$status %in% c("boundary_lower", "boundary_upper")) {
-      cat("  genomic ratio (scientific endpoint): ", boundary$profile_ratio, "\n", sep = "")
-      cat("  genomic ratio (numerical MME): ", boundary$numerical_ratio, "\n", sep = "")
+      cat(
+        "  genomic ratio (scientific endpoint): ",
+        boundary$profile_ratio,
+        "\n",
+        sep = ""
+      )
+      cat(
+        "  genomic ratio (numerical MME): ",
+        boundary$numerical_ratio,
+        "\n",
+        sep = ""
+      )
     }
   }
   invisible(x)
@@ -108,12 +184,25 @@ print.summary_hsquared_fit <- function(x, ...) {
     cat("  converged: ", isTRUE(x$converged), "\n", sep = "")
   }
   if (!is.null(x$genomic_boundary)) {
-    cat("  genomic boundary status: ", x$genomic_boundary$status, "\n", sep = "")
+    cat(
+      "  genomic boundary status: ",
+      x$genomic_boundary$status,
+      "\n",
+      sep = ""
+    )
     if (x$genomic_boundary$status %in% c("boundary_lower", "boundary_upper")) {
-      cat("  genomic ratio (scientific endpoint): ",
-          x$genomic_boundary$profile_ratio, "\n", sep = "")
-      cat("  genomic ratio (numerical MME): ",
-          x$genomic_boundary$numerical_ratio, "\n", sep = "")
+      cat(
+        "  genomic ratio (scientific endpoint): ",
+        x$genomic_boundary$profile_ratio,
+        "\n",
+        sep = ""
+      )
+      cat(
+        "  genomic ratio (numerical MME): ",
+        x$genomic_boundary$numerical_ratio,
+        "\n",
+        sep = ""
+      )
     }
   }
   if (isTRUE(x$at_boundary)) {

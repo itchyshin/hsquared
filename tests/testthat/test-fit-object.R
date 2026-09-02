@@ -336,13 +336,23 @@ test_that("unsupported inference helpers fail with explicit scope", {
 
   expect_error(
     stats::confint(fit),
-    "confidence intervals.*planned, not implemented",
-    perl = TRUE
+    "Validated confidence intervals for `hsquared_fit` quantities are not implemented",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::confint(fit),
+    "heritability_interval()",
+    fixed = TRUE
   )
   expect_error(
     stats::vcov(fit),
-    "standard-error surface.*planned, not implemented",
-    perl = TRUE
+    "variance-covariance matrix is not implemented",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::vcov(fit),
+    "heritability_interval()",
+    fixed = TRUE
   )
   expect_error(
     stats::profile(fit),
@@ -381,6 +391,11 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     qtl_table(fit),
     "does not contain QTL table",
+    fixed = TRUE
+  )
+  expect_error(
+    qtl_table(fit),
+    "gwas(fit, markers)",
     fixed = TRUE
   )
   expect_error(
@@ -547,4 +562,115 @@ test_that("hsquared_fit residuals check fitted length", {
     "same length",
     fixed = TRUE
   )
+})
+
+test_that("hs_fit_result names the fit target and does not say planned v0.1 contract", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "two_effect"
+    ),
+    payload = list(y = 1:2),
+    result = list(converged = TRUE)
+  )
+  msg <- conditionMessage(
+    tryCatch(variance_components(fit), error = function(e) e)
+  )
+  expect_match(msg, 'target = "two_effect"', fixed = TRUE)
+  expect_match(msg, "does not contain variance components", fixed = TRUE)
+  expect_false(grepl("planned v0.1 contract", msg, fixed = TRUE))
+})
+
+test_that("confint and vcov name live experimental interval extractors when present", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:3),
+    result = list(
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      heritability_interval = data.frame(
+        estimate = 0.4,
+        lower = 0.1,
+        upper = 0.7,
+        level = 0.95,
+        method = "delta"
+      ),
+      variance_component_se = data.frame(component = "animal", se = 0.1),
+      converged = TRUE
+    )
+  )
+  expect_error(
+    stats::confint(fit),
+    "Use the experimental `heritability_interval()`",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::confint(fit),
+    "variance_component_standard_errors()",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::confint(fit),
+    "not coverage-calibrated",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::vcov(fit),
+    "heritability_interval()",
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "planned v0.1 contract",
+    conditionMessage(tryCatch(stats::confint(fit), error = function(e) e)),
+    fixed = TRUE
+  ))
+})
+
+test_that("confint does not offer heritability_interval() on genomic fits", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "genomic"
+    ),
+    payload = list(y = 1:3),
+    result = list(converged = TRUE)
+  )
+  msg <- conditionMessage(
+    tryCatch(stats::confint(fit), error = function(e) e)
+  )
+  expect_match(msg, "not available for genomic", fixed = TRUE)
+  expect_false(grepl(
+    "Use the experimental `heritability_interval()`",
+    msg,
+    fixed = TRUE
+  ))
+})
+
+test_that("print.hsquared_fit shows target, formula, and heritability peek", {
+  fit <- hsquared:::hs_new_fit(
+    call = quote(hsquared(y ~ animal(1 | id, pedigree = ped), data = dat)),
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.4, 0.6)
+      ),
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      converged = TRUE
+    )
+  )
+  out <- paste(utils::capture.output(print(fit)), collapse = "\n")
+  expect_match(out, "target: ai_reml", fixed = TRUE)
+  expect_match(out, "formula: y ~ animal", fixed = TRUE)
+  expect_match(out, "heritability: animal=0.4", fixed = TRUE)
 })
