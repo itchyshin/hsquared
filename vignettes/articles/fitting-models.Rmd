@@ -11,6 +11,12 @@ vignette: >
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
+<p class="hs-banner" role="note"><strong>Default path vs opt-in targets.</strong>
+<code>engine = "fit"</code> is the v0.1 univariate Gaussian REML path. Other models below use
+<code>engine = "julia"</code> with an explicit <code>target</code> (experimental / opt-in), except
+multivariate <code>cbind()</code>, which routes on the default call but keeps the experimental
+label. See <a href="current-limits.html">Can I fit and report this?</a>.</p>
+
 This article shows the models `hsquared` can fit. Fitting is computed in the
 sibling `HSquared.jl` engine, so every example needs a local Julia, the
 `JuliaCall` package, and an `HSquared.jl` checkout. Register the checkout with
@@ -22,6 +28,18 @@ not run when this page is built (the build host has no Julia).
 All fits are by REML. ML is not implemented. `REML = FALSE` is rejected; use
 `REML = TRUE` (the default). That is the same rule for the default fit and for
 `engine = "validate"`.
+
+```{r twin-bridge, echo = FALSE, results = "asis", eval = TRUE}
+cat(sprintf(
+  '<p><img src="../reference/figures/twin-bridge.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Two-column diagram of the R to Julia twin bridge. Formula language stays in R; y, X, Z CSC, pedigree indices, and target metadata cross the bridge; solvers stay in Julia; result_payload returns variance components, heritability, and breeding values. Default engine equals fit for v0.1; other targets are opt-in experimental."
+))
+```
+
+<p class="hs-caption"><em>What crosses the bridge vs what stays lane-local. Default
+<code>engine = "fit"</code> is the v0.1 path; opt-in targets need
+<code>engine = "julia"</code> and an explicit <code>target</code>. This figure does not imply
+production bridge coverage for every model.</em></p>
 
 ## The default: a univariate Gaussian animal model
 

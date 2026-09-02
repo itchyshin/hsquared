@@ -6,6 +6,9 @@ title: "Benchmark: hsquared vs sommer and pedigreemm"
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
+<p class="hs-banner" role="note"><strong>Evidence behind the covered v0.1 fit.</strong>
+Agreement tables document known-truth / external-comparator evidence. They do not promote adjacent experimental rows or interval maturity.</p>
+
 This article is a **documented, reproducible benchmark**: it places the v0.1 Gaussian
 animal-model fit next to two established external REML fitters — [`sommer`](https://CRAN.R-project.org/package=sommer)
 and [`pedigreemm`](https://CRAN.R-project.org/package=pedigreemm) — on a standard dataset, and

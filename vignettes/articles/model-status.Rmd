@@ -7,6 +7,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<p class="hs-banner" role="note"><strong>Status ledger, not a green checklist.</strong>
+What you may report is on <a href="current-limits.html">Can I fit and report this?</a>.
+Covered-at-validation-scale rows remain experimental packaging.</p>
+
 This page separates what exists from what is planned.
 
 ## Exists now

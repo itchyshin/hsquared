@@ -11,6 +11,10 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
+<p class="hs-banner" role="note"><strong>Default univariate path · syntax demo.</strong>
+n = 4 below is not a number for a paper. Covered-vs-partial reporting lives on
+<a href="current-limits.html">Can I fit and report this?</a>.</p>
+
 ```{r golden-data}
 library(hsquared)
 
