@@ -64,12 +64,6 @@ navbar:
           href: articles/model-status.html
         - text: Validation evidence
           href: articles/validation-evidence.html
-        - text: Genomic prediction
-          href: articles/genomic-prediction.html
-        - text: Reading G matrices
-          href: articles/g-matrix-interpretation.html
-        - text: QTL, GWAS, and eQTL status
-          href: articles/qtl-gwas-eqtl-status.html
     comparators:
       text: Comparators
       menu:
@@ -90,22 +84,29 @@ navbar:
           href: articles/inheritance-systems.html
         - text: Genomics and GPU roadmap
           href: articles/genomics-gpu-roadmap.html
+        - text: "---------"
+        - text: Genomic prediction
+          href: articles/genomic-prediction.html
+        - text: Reading G matrices
+          href: articles/g-matrix-interpretation.html
+        - text: QTL, GWAS, and eQTL status
+          href: articles/qtl-gwas-eqtl-status.html
 
 reference:
   - title: Start here
-    desc: Current parser entry points and planned fitting controls.
+    desc: >
+      Live verbs for the default job: one Gaussian trait, one animal term,
+      REML. Read current limits before reporting.
     contents:
-      - hs_data
-      - data_status
       - hsquared
+      - hs_data
       - hs_control
-      - backend_info
+      - animal
+      - model_spec
       - formula_status
       - validation_status
-      - model_spec
-      - animal
-      - genomic_markers
-      - qg_effect_markers
+      - data_status
+      - backend_info
   - title: Core extractors
     desc: >
       What you read off a fitted univariate Gaussian animal model — the covered
@@ -121,20 +122,6 @@ reference:
       - ranef
       - fit_diagnostics
       - response_scale_methods
-  - title: Uncertainty (experimental)
-    desc: >
-      Asymptotic/delta-method standard errors, intervals, and tests, surfaced when
-      the engine provides them. **Not coverage-calibrated** — no route carries an
-      interval-reporting permission. `confint()` and `vcov()` are deliberately
-      absent rather than shipped uncalibrated.
-    contents:
-      - heritability_interval
-      - variance_component_standard_errors
-      - covariance_standard_errors
-      - covariance_structure_lrt
-      - repeatability_interval
-      - common_env_proportion_interval
-      - inference_blocks
   - title: Repeatability and independent extra effects
     desc: >
       Outputs of the opt-in `repeatability`, `two_effect`, and `multi_effect`
@@ -162,24 +149,6 @@ reference:
       - partner_variance
       - direct_maternal_covariance
       - random_regression_extractors
-  - title: Multivariate and G matrices
-    desc: >
-      Outputs of the opt-in `multivariate`, `metafounder`, and factor-analytic
-      targets. Experimental: REML-only, animal-model-only, dense/validation-scale.
-    contents:
-      - multivariate_extractors
-      - gamma_matrix
-      - metafounder_groups
-      - metafounder_effects
-      - factor_g_extractors
-      - g_matrix_geometry
-  - title: Genomic and marker outputs
-    desc: >
-      Outputs of the opt-in genomic, single-step, and SNP-BLUP targets. Experimental;
-      QTL/eQTL scan outputs are reserved names, not fitted results.
-    contents:
-      - marker_extractors
-      - gwas
   - title: Visualization
     desc: >
       Figures carry a machine-readable `hsquared_meta` honest-status attribute.
@@ -189,6 +158,45 @@ reference:
       - plot.hsquared_fit
       - theme_hsquared
       - hs_recovery_forest
+  - title: Uncertainty (experimental)
+    desc: >
+      Asymptotic/delta-method standard errors, intervals, and tests, surfaced when
+      the engine provides them. **Not coverage-calibrated** — no route carries an
+      interval-reporting permission. `confint()` and `vcov()` are deliberately
+      absent rather than shipped uncalibrated.
+    contents:
+      - heritability_interval
+      - variance_component_standard_errors
+      - covariance_standard_errors
+      - covariance_structure_lrt
+      - repeatability_interval
+      - common_env_proportion_interval
+      - inference_blocks
+  - title: Multivariate (experimental)
+    desc: >
+      Outputs of the opt-in `multivariate` and `metafounder` targets.
+      Experimental: REML-only, animal-model-only, dense/validation-scale.
+    contents:
+      - multivariate_extractors
+      - gamma_matrix
+      - metafounder_groups
+      - g_matrix_geometry
+  - title: Reserved syntax
+    desc: >
+      Formula markers the parser recognises so it can name the planned or
+      opt-in path. They are not a finished genomic, QTL, or inheritance system.
+    contents:
+      - genomic_markers
+      - qg_effect_markers
+  - title: Reserved extractors
+    desc: >
+      Names reserved so help pages exist. Most currently error. `gwas()` is an
+      experimental post-fit scan, not a formula-level QTL workflow.
+    contents:
+      - metafounder_effects
+      - factor_g_extractors
+      - marker_extractors
+      - gwas
   - title: Package
     contents:
       - hsquared-package
@@ -208,7 +216,7 @@ articles:
     desc: >
       Fitting and visualization for the animal-model path. Multivariate is
       opt-in experimental. Genomic prediction and G-matrix pages live under
-      Status until those routes are covered.
+      Developer until those routes are covered.
     contents:
       - articles/fitting-models
       - articles/visualizing-models
@@ -217,15 +225,11 @@ articles:
   - title: Status
     desc: >
       Capability limits, validation evidence, and model-family status. Read these
-      before reporting point estimates or intervals. Genomic and G-matrix
-      pages sit here until those routes are covered.
+      before reporting point estimates or intervals.
     contents:
       - articles/current-limits
       - articles/model-status
       - articles/validation-evidence
-      - articles/genomic-prediction
-      - articles/g-matrix-interpretation
-      - articles/qtl-gwas-eqtl-status
 
   - title: Comparators
     desc: >
@@ -239,9 +243,13 @@ articles:
 
   - title: Developer
     desc: >
-      Formula grammar, inheritance systems, and genomics roadmaps. Planned
-      capability — not covered for fitting or reporting today.
+      Formula grammar, inheritance systems, and genomics roadmaps, plus
+      specialist genomic / G-matrix / QTL status pages. Planned or experimental
+      capability — not the default reporting path.
     contents:
       - articles/formula-grammar
       - articles/inheritance-systems
       - articles/genomics-gpu-roadmap
+      - articles/genomic-prediction
+      - articles/g-matrix-interpretation
+      - articles/qtl-gwas-eqtl-status
