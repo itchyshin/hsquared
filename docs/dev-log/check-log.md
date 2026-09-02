@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-09-02 (A27 Darwin SIGN + Wave B DP-10 C / A25 SUPERSEDE — MV-4 evidence-ink)
+
+- **A27 Darwin SIGN recorded** — see `docs/dev-log/check-log.d/2026-09-02-a27-darwin-sign.md`
+  and `docs/dev-log/a27-darwin-g0-rg-hold.md` (SIGNED). **Not** a covered flip;
+  `public_covered_count` stays **5**. Owner: Shinichi (Darwin); source: chat "go ahead" (Shinichi, 2026-09-02).
+- **DP-10 C honesty + A25 SUPERSEDE applied** — see
+  `docs/dev-log/check-log.d/2026-09-02-mv4-waveB-dp10C-a25.md`. Stub stays
+  `if: false`. Doc 40 SUPERSEDED / do not run. Multivariate row stays `partial`.
+- Docs-only on `cursor/mv4-060-20260902`. No G10. No Totoro/DRAC.
+
+
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 

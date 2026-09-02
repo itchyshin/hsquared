@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-09-02: DP-10 C — recorded-commit A26 parity honesty (0.6)
+
+**DP-10 C (2026-09-02):** Criterion 8’s R↔engine parity conjunct for 0.6 is
+satisfied by locally verified A26 element-wise parity at a named SHA with
+pre-declared tolerances; CI is **not** required for that conjunct. A Julia-free
+R-CMD-check must not be read as A26 parity. Tier-1 enablement remains optional
+owner path **B** and is not authorized by this decision. Named A26 SHAs:
+tolerance predeclaration `0ec917f`; measure `37843d8` (receipt: 44 live PASS /
+0 fail). Owner ink: Shinichi (Darwin); source: chat "go ahead" (Shinichi, 2026-09-02). No covered flip; count stays **5**.
+
+
 ## 2026-06-12: Two Repos, One Identity
 
 `hsquared` is the R package identity and applied-user surface. `HSquared.jl` is

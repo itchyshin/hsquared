@@ -8,6 +8,9 @@
 # generalization of the verified t = 2 study (Cov(vec B) = G0 (x) A, Cov(vec E)
 # = R0 (x) I; cold start from the identity).
 #
+# STATUS 2026-09-02 (A25): SUPERSEDED — do not run for 0.6. Engine full-sib /
+# 3-trait / C8 already banked; doc 40 header SUPERSEDED. Gate env retained for
+# historical integrity only.
 # PRE-DECLARED GATE (doc 40; this file is committed at a SHA BEFORE any run, no
 # post-hoc relaxation, 2026-06-14/06-22 rule): every INTERIOR G0/R0 element
 # satisfies |bias| <= 2*MCSE at the screen seed count, in BOTH truth points.
