@@ -26,11 +26,13 @@ additive-genetic variation, what are the genetic correlations, and what are the
 trait-specific heritabilities?
 
 Two things about this path are true at once, and it is worth separating them
-before anything else. **Reaching it is now the default:** a `cbind()` Gaussian
+before anything else. **Reaching it is the default:** a `cbind()` Gaussian
 response with an `animal()` term routes to the multivariate REML fitter on an
-ordinary `hsquared()` call, with no `engine` or `target` argument. **The claim
-is still `partial` and experimental:** the route being default says nothing
-about how much evidence stands behind the numbers it returns.
+ordinary `hsquared()` call, with no `engine` or `target` argument. **G10
+(2026-09-02) covers the claim at validation scale** for t=2 unstructured
+G0/R0 (`public_covered_count` **6**); the experimental label is retained.
+k≥3 and `genetic_structure = "diagonal"` stay experimental. Default routing
+was reachability; G10 is the promotion.
 
 The validation ledger records cold-start recovery, one full-unstructured
 `sommer` REML comparator, a published supplied-covariance Mrode anchor, and a
@@ -39,11 +41,10 @@ not do: it is a **supplied-covariance** BLUP/MME target, so it checks fixed
 effects and breeding values *given* known `G0` and `R0` — it is not a textbook
 check on the estimated covariances themselves, and no such textbook number
 exists (see "Claim boundary" below). That is still not an ASReml-style
-production multi-trait claim, and the capability is not promoted beyond
-`partial`. Treat it as useful for validation-scale Gaussian examples and as
-something to report beside your own comparator, not as a settled result. The
-examples are not run when this page is built because they require a local
-Julia, `JuliaCall`, and a sibling `HSquared.jl` checkout.
+production multi-trait claim. Report point estimates within the t=2
+unstructured covered scope. The examples are not run when this page is built
+because they require a local Julia, `JuliaCall`, and a sibling `HSquared.jl`
+checkout.
 
 ## Model
 
