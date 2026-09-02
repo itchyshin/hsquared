@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit.</strong>
+Genomic GREML, SNP-BLUP, and single-step stay partial/held. This page is not public activation and does not change <code>public_covered_count</code>.</p>
+
 This article shows the current opt-in genomic prediction surface in `hsquared`.
 It is for users who already have a genomic relationship inverse, a marker
 matrix, or a single-step relationship inverse and want to understand which path

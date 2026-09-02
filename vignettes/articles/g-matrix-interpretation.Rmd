@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in multivariate.</strong>
+Rotation-invariant G and r_g only — loadings are never shown. No interval ribbons on cells unless the payload carries them, and today you should treat this as a point display.</p>
+
 This article is for the applied moment after a multivariate animal model has
 fit: you want to know what the genetic covariance matrix says, what the
 residual matrix says, and where the current evidence boundary is.

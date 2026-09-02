@@ -30,6 +30,15 @@ behind them to report.
 3. **No standard error or interval in this package is coverage-calibrated.** Do
    not report one as if it were.
 
+```{r f3-recovery-ladder, echo = FALSE, results = "asis"}
+cat(sprintf(
+  '<p><img src="../reference/figures/recovery-ladder.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Three-rung validation ladder from planned to partial to covered. A side note marks internal self-agreement as insufficient for covered status."
+))
+```
+
+<p class="hs-banner" role="note"><strong>Covered at validation scale · opt-in · dense · REML-only</strong> still means experimental packaging. It is not 1.0 and not interval-calibrated. The ladder caption is dated to this source tree; the live count is <code>validation_status()</code> and this limits page after any G10 merge — this figure does not flip a row.</p>
+
 ## What the status words mean
 
 `hsquared` uses four words, in descending order of what you may claim. It

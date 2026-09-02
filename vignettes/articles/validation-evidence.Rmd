@@ -25,6 +25,15 @@ the complete user list. Its columns are the capability, its `status`
 (one of *planned*, *partial*, or *covered*, defined just below), and the
 claim boundary attached to each.
 
+```{r f3-recovery-ladder, echo = FALSE, results = "asis"}
+cat(sprintf(
+  '<p><img src="../reference/figures/recovery-ladder.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Three-rung validation ladder from planned to partial to covered. A side note marks internal self-agreement as insufficient for covered status."
+))
+```
+
+<p class="hs-banner" role="note"><strong>Internal self-agreement is not covered.</strong> An R reference matching the engine at supplied variances proves the optimiser is reproducible on the same objective. Known-truth recovery and/or an external same-estimand comparator are what move a row. Genomic / GREML / interval rows stay partial. This figure does not flip a status.</p>
+
 ```{r}
 library(hsquared)
 validation_status()

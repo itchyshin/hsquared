@@ -20,6 +20,12 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
 > before putting a number in a paper.
 
+```{r f1-animal-path, echo = FALSE, fig.alt = "Flowchart of the default univariate animal model: pedigree and phenotype enter the hsquared formula, Julia REML returns variance components, heritability, and breeding values. Genomic and multivariate paths are not shown.", out.width = "100%"}
+knitr::include_graphics("../man/figures/animal-model-path.svg")
+```
+
+<p class="hs-banner" role="note"><strong>Default univariate path shown.</strong> Genomic and QTL routes are not this arrow. Multivariate <code>cbind()</code> is a separate path — read <a href="https://itchyshin.github.io/hsquared/articles/current-limits.html">Can I fit and report this?</a> before reporting it.</p>
+
 `hsquared` is the R interface for a Julia-backed animal model. The first
 working path is one Gaussian trait, one `animal()` term, REML. This page uses
 a four-animal pedigree so the first block runs without Julia. **n = 4 is a

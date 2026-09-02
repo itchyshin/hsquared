@@ -23,6 +23,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>Intervals: asymptotic / experimental · not coverage-calibrated.</strong>
+Figures below are from small <em>illustrative</em> fit objects (no engine at build time). Subtitles and captions must be read as product chrome, not as a live analysis.</p>
+
 `hsquared` ships a small `ggplot2` visualization layer in the style of the
 `brms`/`bayesplot` ecosystem (and consistent with the sister packages `drmTMB`
 and `gllvmTMB`). Every figure is produced by an `autoplot()` method, returns a
@@ -123,10 +126,10 @@ gw <- structure(
 ## Variance components and heritability
 
 `autoplot(fit, "variance")` draws a horizontal forest of the variance components
-and per-trait `h²`, with approximate 95% intervals (`± 1.96 · SE`) when the fit
-carries the experimental standard errors.
+and per-trait `h²`, with experimental asymptotic intervals (`± 1.96 · SE`) when the fit
+carries standard errors. These are **not** coverage-calibrated 95% CIs.
 
-```{r}
+```{r variance-forest, fig.cap = "Illustrative data. Horizontal forest of animal and residual variance and heritability with experimental asymptotic error bars, labelled not coverage-calibrated.", fig.alt = "Horizontal forest plot of animal and residual variances and heritability with experimental asymptotic error bars, labelled not coverage-calibrated."}
 autoplot(fit, "variance")
 ```
 
@@ -134,9 +137,10 @@ autoplot(fit, "variance")
 
 `autoplot(fit, "breeding_values")` draws the sorted estimated breeding values as
 a caterpillar, with `± 1.96 · √PEV` bands when prediction error variances are
-available (faceted by trait for multivariate fits).
+available (faceted by trait for multivariate fits). Caption: MME/PEV at fitted
+variances — not a sampling distribution of h².
 
-```{r}
+```{r ebv-caterpillar, fig.cap = "Illustrative data. Sorted EBVs with PEV bands — prediction-error grain, not a heritability CI.", fig.alt = "Caterpillar plot of ranked estimated breeding values with thin prediction-error bands. Bands are MME/PEV at fitted variances, not a sampling interval for heritability."}
 autoplot(fit, "breeding_values")
 ```
 
@@ -147,7 +151,7 @@ multivariate fit. It is **rotation-invariant** — correlations do not depend on
 the factor rotation — so it is well defined for any multivariate fit; raw factor
 loadings are never plotted (the ratified cross-lane convention).
 
-```{r, fig.width = 5.2, fig.height = 4.4}
+```{r g-matrix, fig.width = 5.2, fig.height = 4.4, fig.cap = "Illustrative data. Experimental / opt-in multivariate genetic-correlation triangle; rotation-invariant, loadings not shown; low-h² cells flagged imprecise.", fig.alt = "Correlation heatmap of three traits with numeric cell labels. Off-diagonal cells involving the low-heritability horn trait are marked imprecise. Experimental opt-in multivariate; not a production multi-trait claim."}
 autoplot(fit_mv, "g_matrix")
 ```
 
@@ -174,7 +178,7 @@ not a validated genome-wide threshold. HSquared.jl PR #134 adds a fixed-panel
 calibration smoke harness on the engine side, but this plot still does not carry
 an activated R significance threshold.
 
-```{r}
+```{r gwas-manhattan, fig.cap = "Illustrative data. Manhattan of nominal Wald p-values; dashed Bonferroni is a reference, not a validated genome-wide threshold.", fig.alt = "Manhattan plot of nominal marker p-values with a Bonferroni reference line. GWAS p-values are not genome-wide calibrated."}
 autoplot(gw)
 ```
 
@@ -185,7 +189,7 @@ autoplot(gw)
 **diagnostic** annotation. As with the Manhattan, the p-values are nominal Wald
 p-values and are not genome-wide calibrated.
 
-```{r, fig.width = 5.2, fig.height = 4.4}
+```{r gwas-qq, fig.width = 5.2, fig.height = 4.4, fig.cap = "Illustrative data. QQ plot of nominal Wald p-values; not genome-wide calibrated.", fig.alt = "QQ plot of observed versus expected minus-log10 nominal p-values with a y-equals-x reference. Not genome-wide calibrated."}
 autoplot(gw, "qq")
 ```
 

@@ -39,3 +39,68 @@
 .navbar .navbar-toggler-icon {
   filter: none;
 }
+
+/* F5 — Experimental banner chrome (Florence 2026-09-02).
+   Amber left border + ink text. Not red panic, not green “go”.
+   Templates: Experimental · opt-in · not the default fit
+              Covered at validation scale · opt-in · dense · REML-only
+              Intervals: asymptotic / experimental · not coverage-calibrated
+              GWAS p-values: nominal · not genome-wide calibrated */
+:root {
+  --hs-ink: #0f2533;
+  --hs-amber: #e69f00;
+  --hs-amber-ink: #92400e;
+  --hs-navy: #0072b2;
+  --hs-banner-bg: #fffbeb;
+}
+
+.hs-banner,
+aside .experimental {
+  border-left: 4px solid var(--hs-amber);
+  background: var(--hs-banner-bg);
+  color: var(--hs-ink);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+aside .experimental {
+  margin-top: 0.5rem;
+}
+
+.hs-banner p,
+aside .experimental p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.hs-banner strong,
+aside .experimental strong {
+  color: var(--hs-amber-ink);
+  font-weight: 650;
+}
+
+.hs-banner-covered-optin {
+  border-left-color: var(--hs-navy);
+  background: #f0f9ff;
+}
+
+.hs-banner-covered-optin strong {
+  color: #075985;
+}
+
+.hs-figure {
+  margin: 1.25rem 0 1.5rem;
+}
+
+.hs-figure img {
+  width: 100%;
+  height: auto;
+  background: #ffffff;
+}
+
+.hs-figure figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
