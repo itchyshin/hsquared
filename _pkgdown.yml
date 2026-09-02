@@ -13,7 +13,8 @@ home:
           covered capability, not surface area. `public_covered_count` stays
           **5**. Interval coverage is not certified. Julia General registration
           ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
-          is pending AutoMerge. Read
+          is deferred pending collaborator review; do not use
+          `Pkg.add("HSquared")` by name. Read
           [Can I fit and report this?](articles/current-limits.html)
           and [Validation evidence](articles/validation-evidence.html)
           before reporting results.
