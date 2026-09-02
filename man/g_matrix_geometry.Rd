@@ -29,7 +29,7 @@ variance_along_gradient(object, direction, normalize = TRUE, ...)
 eigen_G(object, ...)
 }
 \arguments{
-\item{object}{An \code{hsquared_fit} from the opt-in multivariate target.}
+\item{object}{An \code{hsquared_fit} from the multivariate model.}
 
 \item{direction}{A numeric vector of selection gradients, one per trait. It
 is normalised to unit length internally; only its direction matters.}
@@ -50,7 +50,8 @@ A scalar for the directional metrics; a list for \code{eigen_G()}
 }
 \details{
 These extractors summarise the genetic variance-covariance matrix \code{G} of an
-opt-in multivariate \code{hsquared_fit} (\code{target = "multivariate"}) through its
+multivariate \code{hsquared_fit} (a \code{cbind()} response, which fits on the default
+path) through its
 \strong{rotation-invariant} geometry, following Hansen & Houle (2008). They are
 defined on \code{G} itself (not on factor loadings), so they are well defined for
 any multivariate fit — unstructured, diagonal, or (when bridged) low-rank /

@@ -327,7 +327,7 @@ hs_formula_status_behavior <- function() {
       paste(
         "Roadmap syntax for long-format structured covariance; the current",
         "parser rejects trait and `cov` arguments and points users to the",
-        "opt-in `cbind()` multivariate path."
+        "`cbind()` multivariate path, which fits on the default path."
       ),
       4L
     ),

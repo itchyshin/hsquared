@@ -157,8 +157,8 @@ hs_fit_is_genomic <- function(object) {
 #' `r lifecycle::badge("experimental")`
 #'
 #' These extractors return the genetic (`G`) and residual (`R`) covariance or
-#' correlation matrices from opt-in multivariate `hsquared_fit` objects
-#' (`target = "multivariate"`). `G_matrix()` is an applied-workflow alias for
+#' correlation matrices from multivariate `hsquared_fit` objects (a `cbind()`
+#' response, which fits on the default path). `G_matrix()` is an applied-workflow alias for
 #' `genetic_covariance()`, and `R_matrix()` is an alias for
 #' `residual_covariance()`. Use them after checking [fit_diagnostics()] because
 #' likelihood-based summaries are intentionally blocked when a multivariate fit
@@ -472,7 +472,7 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #'
 #' These extractor names are reserved for future factor-analytic G-matrix
 #' results. The current package can report invariant covariance and correlation
-#' matrices from opt-in multivariate fits, but it does not yet expose
+#' matrices from multivariate fits, but it does not yet expose
 #' interpreted loadings, uniqueness/specific variance, or latent breeding
 #' values. Loading columns are rotation-nonunique until a rotation or
 #' constraint policy is validated. Future `hsquared_fit` methods reserve
@@ -1333,7 +1333,7 @@ covariance_standard_errors <- function(object, ...) {
 covariance_standard_errors.default <- function(object, ...) {
   stop(
     "`covariance_standard_errors()` requires an `hsquared_fit` object from the ",
-    "opt-in unstructured multivariate model. The current package only returns ",
+    "unstructured multivariate model. The current package only returns ",
     "these from fitted `hsquared_fit` results.",
     call. = FALSE
   )
@@ -1353,7 +1353,7 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 #' `r lifecycle::badge("experimental")`
 #'
 #' `covariance_structure_lrt(constrained, full)` is an **experimental** nested
-#' likelihood-ratio test comparing two opt-in multivariate fits **on the same
+#' likelihood-ratio test comparing two multivariate fits **on the same
 #' data**: a `constrained` genetic structure (currently `genetic_structure =
 #' "diagonal"`) against the `full` `"unstructured"` fit. The statistic is
 #' `2 * (logLik(full) - logLik(constrained))` on
@@ -1369,8 +1369,8 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 #' passed — a reported test, not a validated one. Both fits must be on the same
 #' response, fixed effects, and pedigree.
 #'
-#' @param constrained,full Two `hsquared_fit` objects from the opt-in
-#'   multivariate target; `full` must nest `constrained` (more genetic
+#' @param constrained,full Two `hsquared_fit` objects from the multivariate
+#'   model; `full` must nest `constrained` (more genetic
 #'   covariance parameters).
 #' @param ... Unused.
 #'
@@ -1383,7 +1383,7 @@ covariance_structure_lrt <- function(constrained, full, ...) {
   ) {
     stop(
       "`constrained` and `full` must both be `hsquared_fit` objects from the ",
-      "opt-in multivariate target.",
+      "multivariate model.",
       call. = FALSE
     )
   }
@@ -2001,7 +2001,7 @@ hs_block_multivariate_response_scale <- function(name) {
     "`",
     name,
     "()` on the response scale is univariate-only in v0.1 and is not defined ",
-    "for the opt-in multivariate target (`target = \"multivariate\"`), which ",
+    "for the multivariate model (a `cbind()` response), which ",
     "fits multiple traits jointly. Use `breeding_values()`, ",
     "`genetic_covariance()`, and `residual_covariance()` for multivariate ",
     "results.",
@@ -2013,7 +2013,7 @@ hs_block_multivariate_response_scale <- function(name) {
 #'
 #' `predict()`, `fitted()`, and `residuals()` are part of the planned v0.1
 #' fitted-object contract for univariate `hsquared_fit` objects. They are
-#' univariate-only: the opt-in multivariate target (`target = "multivariate"`)
+#' univariate-only: the multivariate model (a `cbind()` response)
 #' fits multiple traits jointly and is intentionally out of v0.1 response-scale
 #' scope, so these methods stop with a scope message pointing to
 #' `breeding_values()`, `genetic_covariance()`, and `residual_covariance()`.

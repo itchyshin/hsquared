@@ -7,8 +7,8 @@
 covariance_structure_lrt(constrained, full, ...)
 }
 \arguments{
-\item{constrained, full}{Two \code{hsquared_fit} objects from the opt-in
-multivariate target; \code{full} must nest \code{constrained} (more genetic
+\item{constrained, full}{Two \code{hsquared_fit} objects from the multivariate
+model; \code{full} must nest \code{constrained} (more genetic
 covariance parameters).}
 
 \item{...}{Unused.}
@@ -22,7 +22,7 @@ the \code{constrained} / \code{full} genetic-structure labels.
 }
 \details{
 \code{covariance_structure_lrt(constrained, full)} is an \strong{experimental} nested
-likelihood-ratio test comparing two opt-in multivariate fits \strong{on the same
+likelihood-ratio test comparing two multivariate fits \strong{on the same
 data}: a \code{constrained} genetic structure (currently \code{genetic_structure = "diagonal"}) against the \code{full} \code{"unstructured"} fit. The statistic is
 \code{2 * (logLik(full) - logLik(constrained))} on
 \code{df = n_genetic_params(full) - n_genetic_params(constrained)}.

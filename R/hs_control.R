@@ -119,8 +119,11 @@
 #'   supplied-variance solve (`HSquared.fit_snp_blup()`), or omit them to have
 #'   `hsquared()` **estimate** `sigma_g2`/`sigma_e2` by REML from the markers
 #'   (`HSquared.fit_snp_blup_reml()`). Not the default.
-#'   `target = "multivariate"` is an experimental, opt-in path for the
-#'   multivariate Gaussian animal model. It requires a
+#'   `target = "multivariate"` names the experimental multivariate Gaussian
+#'   animal model. Naming it is optional: a `cbind()` Gaussian response with an
+#'   `animal()` term auto-routes to this target on the default path, and under
+#'   `engine = "julia"` with no `target`. The target is default-routed but the
+#'   capability is still `partial`. It requires a
 #'   `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ped)`,
 #'   surfaces the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
 #'   optimizer, and returns G/R covariance matrices, genetic and residual

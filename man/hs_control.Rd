@@ -128,8 +128,11 @@ supply named \code{sigma_g2} (genomic) and \code{sigma_e2} (residual) for a
 supplied-variance solve (\code{HSquared.fit_snp_blup()}), or omit them to have
 \code{hsquared()} \strong{estimate} \code{sigma_g2}/\code{sigma_e2} by REML from the markers
 (\code{HSquared.fit_snp_blup_reml()}). Not the default.
-\code{target = "multivariate"} is an experimental, opt-in path for the
-multivariate Gaussian animal model. It requires a
+\code{target = "multivariate"} names the experimental multivariate Gaussian
+animal model. Naming it is optional: a \code{cbind()} Gaussian response with an
+\code{animal()} term auto-routes to this target on the default path, and under
+\code{engine = "julia"} with no \code{target}. The target is default-routed but the
+capability is still \code{partial}. It requires a
 \code{cbind(trait1, trait2, ...)} response with \code{animal(1 | id, pedigree = ped)},
 surfaces the Julia-owned \code{HSquared.fit_multivariate_reml()} REML-only
 optimizer, and returns G/R covariance matrices, genetic and residual

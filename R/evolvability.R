@@ -3,7 +3,8 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' These extractors summarise the genetic variance-covariance matrix `G` of an
-#' opt-in multivariate `hsquared_fit` (`target = "multivariate"`) through its
+#' multivariate `hsquared_fit` (a `cbind()` response, which fits on the default
+#' path) through its
 #' **rotation-invariant** geometry, following Hansen & Houle (2008). They are
 #' defined on `G` itself (not on factor loadings), so they are well defined for
 #' any multivariate fit — unstructured, diagonal, or (when bridged) low-rank /
@@ -35,7 +36,7 @@
 #' the same experimental, REML-only, not-coverage-calibrated status as the
 #' multivariate fit itself and report no standard errors.
 #'
-#' @param object An `hsquared_fit` from the opt-in multivariate target.
+#' @param object An `hsquared_fit` from the multivariate model.
 #' @param direction A numeric vector of selection gradients, one per trait. It
 #'   is normalised to unit length internally; only its direction matters.
 #' @param ... Unused.
@@ -58,8 +59,9 @@ hs_fit_genetic_G <- function(object, require_pd = FALSE) {
   G <- object$result$genetic_covariance
   if (is.null(G)) {
     stop(
-      "G-matrix geometry requires an opt-in multivariate fit that reports a ",
-      "`genetic_covariance()` matrix (`target = \"multivariate\"`).",
+      "G-matrix geometry requires a multivariate fit that reports a ",
+      "`genetic_covariance()` matrix -- a `cbind(trait1, trait2, ...)` response ",
+      "with `animal(1 | id, pedigree = ped)`.",
       call. = FALSE
     )
   }

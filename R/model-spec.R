@@ -328,7 +328,7 @@ hs_build_model_spec <- function(
         length(iid_effects) > 0L
     ) {
       hs_abort_unsupported_syntax(
-        "The opt-in multivariate path currently supports only ",
+        "The multivariate path currently supports only ",
         "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
         "Multivariate genomic, single-step, second-effect, and multi-effect ",
         "models are planned, not implemented.",
@@ -1126,9 +1126,10 @@ hs_stop_animal_non_intercept <- function() {
 hs_stop_animal_covariance_arg <- function() {
   hs_abort_unsupported_syntax(
     "`animal()` argument `cov` is planned, not implemented. For the current ",
-    "opt-in multivariate animal model, put traits on the left-hand side as ",
-    "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
-    "`engine_control = list(target = \"multivariate\")`. Structured covariance ",
+    "multivariate animal model, put traits on the left-hand side as ",
+    "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)`; that ",
+    "routes to the multivariate fitter on the default path, with no ",
+    "`engine`/`target` argument. Structured covariance ",
     "grammar such as `cov = us()`, `cov = diag()`, `cov = lowrank(K = 2)`, ",
     "or `cov = fa(K = 2)` is planned, not implemented.",
     call. = FALSE
