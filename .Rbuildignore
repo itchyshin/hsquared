@@ -17,3 +17,6 @@
 ^pkgdown$
 ^sim$
 ^vignettes/articles$
+
+^\.git$
+^cran-comments\.md$

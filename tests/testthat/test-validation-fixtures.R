@@ -32,6 +32,7 @@ test_that("tiny animal validation fixture matches Julia Ainv when available", {
     "JuliaCall, Julia, and local HSquared.jl are required for live Ainv validation."
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   JuliaCall::julia_assign("hsq_val_id", payload$pedigree$id)
   JuliaCall::julia_assign(
@@ -141,6 +142,7 @@ test_that("Henderson MME fixture matches Julia henderson_mme when available", {
     "JuliaCall, Julia, and local HSquared.jl are required for live Henderson MME validation."
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   hsquared:::hs_julia_assign_payload(
     payload,
@@ -237,6 +239,7 @@ test_that("sparse REML likelihood fixture matches Julia dense REML when availabl
     )
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   hsquared:::hs_julia_assign_payload(
     payload,
@@ -395,6 +398,7 @@ test_that("Mrode-style supplied-variance fixture matches Julia when available", 
     )
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   hsquared:::hs_julia_assign_payload(
     payload,
@@ -945,6 +949,7 @@ test_that("the Julia engine recovers the published gryphon estimates via supplie
   )
   Ainv <- solve(A)
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   JuliaCall::julia_assign("gy", y)
   JuliaCall::julia_assign("gX", X)

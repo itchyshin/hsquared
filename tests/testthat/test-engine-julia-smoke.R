@@ -4,7 +4,7 @@
 # test-validation-fixtures.R.
 
 hs_engine_julia_smoke_skip <- function() {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for engine=julia smoke."

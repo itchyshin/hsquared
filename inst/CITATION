@@ -1,0 +1,31 @@
+citHeader("To cite hsquared in publications, please use:")
+
+bibentry(
+  bibtype = "Manual",
+  key = "hsquared",
+  title = "{hsquared}: R Interface for Julia-Backed Quantitative-Genetic Models",
+  author = c(
+    person(
+      "Shinichi", "Nakagawa",
+      comment = c(ORCID = "0000-0002-7765-5182")
+    )
+  ),
+  year = "2026",
+  note = paste(
+    "R package version",
+    if (exists("meta") && !is.null(meta$Version)) meta$Version else "0.1.0.9000",
+    paste0(
+      "; Julia twin HSquared.jl. ",
+      "A single twin DOI (D-23) will replace this note when both packages ",
+      "are tagged 0.5.0 and the Zenodo (or equivalent) deposit exists - ",
+      "no DOI is claimed here yet."
+    )
+  ),
+  url = "https://github.com/itchyshin/hsquared",
+  textVersion = paste(
+    "Nakagawa S (2026).",
+    "hsquared: R Interface for Julia-Backed Quantitative-Genetic Models.",
+    "R package; Julia twin HSquared.jl; twin DOI pending (D-23).",
+    "https://github.com/itchyshin/hsquared"
+  )
+)

@@ -21,6 +21,7 @@ test_that("Mrode9 nadiv Ainv matches Julia pedigree_inverse when available", {
 
   fixture <- hsquared:::hs_mrode9_pedigree_validation_fixture()
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   JuliaCall::julia_assign("hsq_mrode_id", fixture$pedigree$id)
   JuliaCall::julia_assign(
