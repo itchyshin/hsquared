@@ -52,7 +52,8 @@ test_that("bridge dashboard TSV column contracts match the A14 schema", {
     boundary,
     c(
       "boundary_id", "target", "smoke_status", "parity_required",
-      "bridge_status", "status", "evidence_url", "claim_boundary", "next_gate"
+      "bridge_status", "boundary_doc_status", "evidence_url", "claim_boundary",
+      "next_gate"
     )
   )
 
@@ -83,7 +84,7 @@ test_that("bridge dashboard rows carry claim_boundary and link schema_ids to tes
   evidence_files <- unique(c(
     schema$evidence_url,
     parity$evidence_url,
-    boundary$evidence_url[boundary$status == "covered"]
+    boundary$evidence_url[boundary$boundary_doc_status == "documented"]
   ))
   evidence_files <- evidence_files[!grepl("^HSquared\\.jl/", evidence_files)]
   repo_root <- normalizePath(file.path(testthat::test_path(), "..", ".."), mustWork = TRUE)
@@ -91,6 +92,21 @@ test_that("bridge dashboard rows carry claim_boundary and link schema_ids to tes
     path <- file.path(repo_root, ref)
     expect_true(file.exists(path), info = paste("missing evidence:", ref))
   }
+})
+
+test_that("boundary_doc_status vocabulary cannot be read as bridge coverage", {
+  boundary <- bridge_read_dashboard_tsv("bridge-boundary.tsv")
+
+  doc_statuses <- c("documented", "partial", "planned")
+  expect_true(all(boundary$boundary_doc_status %in% doc_statuses))
+  # The two columns must not share the words that mean "covered", or a reader
+  # scanning either one will count a documented boundary as a covered surface.
+  expect_false("covered" %in% boundary$boundary_doc_status)
+  expect_false("documented" %in% boundary$bridge_status)
+
+  no_smoke <- boundary[boundary$smoke_status == "no_smoke", , drop = FALSE]
+  expect_true(nrow(no_smoke) > 0L)
+  expect_false(any(no_smoke$bridge_status == "covered"))
 })
 
 test_that("Tier 0 parity smoke rows stay Julia-free with covered test_status", {

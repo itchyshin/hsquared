@@ -75,9 +75,18 @@ test_that("S2: engine = julia dense fit_animal_model differs from default ai_rem
   expect_true(default_h2 > 0 && default_h2 < 1)
   expect_true(dense_h2 > 0 && dense_h2 < 1)
 
-  # Different optimizers: expect a documented, small VC delta — not bit identity.
-  expect_false(isTRUE(all.equal(default_vc, dense_vc, tolerance = 1e-8)))
-  expect_lt(max(abs(default_vc - dense_vc)), 0.5)
+  # The two paths are different estimators; that is asserted structurally above
+  # (dense_validation_path, target != ai_reml), never by requiring the numbers
+  # to disagree — a sharper future optimizer must not turn this test red.
+  # Bounds carry ~5x headroom over the 2026-09-01 measurement on this fixture
+  # (max relative VC delta 9.9e-4, h2 5.2e-5, logLik 1.3e-8); see the A15
+  # check-log entry and tolerance_rule in bridge-parity-smoke-status.tsv.
+  expect_lt(max(abs(default_vc - dense_vc) / abs(default_vc)), 5e-3)
+  expect_lt(abs(default_h2 - dense_h2), 1e-3)
+  expect_lt(
+    abs(as.numeric(stats::logLik(default_fit)) - as.numeric(stats::logLik(dense_fit))),
+    1e-5
+  )
 })
 
 test_that("S3: engine = julia target = ai_reml matches the default fit path on Mrode fixture", {

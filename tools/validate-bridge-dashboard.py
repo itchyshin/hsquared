@@ -56,7 +56,7 @@ BRIDGE_BOUNDARY_FIELDS = (
     "smoke_status",
     "parity_required",
     "bridge_status",
-    "status",
+    "boundary_doc_status",
     "evidence_url",
     "claim_boundary",
     "next_gate",
@@ -104,8 +104,10 @@ SMOKE_STATUSES = {
     "calibrated_point_parity",
 }
 
-BOUNDARY_ROW_STATUSES = {
-    "covered",
+# Deliberately disjoint from BRIDGE_STATUSES: this column records whether the
+# boundary itself is written down, never whether the capability is covered.
+BOUNDARY_DOC_STATUSES = {
+    "documented",
     "partial",
     "planned",
 }
@@ -267,13 +269,19 @@ def validate_boundary_rows(errors: list[str]) -> None:
             errors.append(f"{row_id}: invalid smoke_status {row.get('smoke_status')!r}")
         if row.get("bridge_status") not in BRIDGE_STATUSES:
             errors.append(f"{row_id}: invalid bridge_status {row.get('bridge_status')!r}")
-        if row.get("status") not in BOUNDARY_ROW_STATUSES:
-            errors.append(f"{row_id}: invalid status {row.get('status')!r}")
-        if row.get("status") == "covered" and not evidence_reference_exists(
+        if row.get("boundary_doc_status") not in BOUNDARY_DOC_STATUSES:
+            errors.append(
+                f"{row_id}: invalid boundary_doc_status {row.get('boundary_doc_status')!r}"
+            )
+        if row.get("boundary_doc_status") == "documented" and not evidence_reference_exists(
             row.get("evidence_url", "")
         ):
             errors.append(
-                f"{row_id}: covered row evidence_url does not resolve to local evidence"
+                f"{row_id}: documented row evidence_url does not resolve to local evidence"
+            )
+        if row.get("smoke_status") == "no_smoke" and row.get("bridge_status") == "covered":
+            errors.append(
+                f"{row_id}: bridge_status covered requires a smoke, but smoke_status is no_smoke"
             )
 
 
