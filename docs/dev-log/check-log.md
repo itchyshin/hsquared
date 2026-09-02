@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-09-02 (G10 R multivariate covered + experimental 0.6.0)
+
+- **G10 AUTHORIZE applied** — see `docs/dev-log/check-log.d/2026-09-02-g10-r-mv-covered-060.md`
+  (commands + outcomes) and `docs/dev-log/check-log.d/2026-09-02-g10-r-multivariate-authorize.md`
+  (ink echo). Owner: Shinichi; source: chat `"G10 - you keep going"` (2026-09-02).
+- Flip: R multivariate `partial → covered (validation-scale)`; `public_covered_count`
+  **5 → 6**; experimental **0.6.0** (label retained). A29 CLEAN followed (not forged).
+- Local: `devtools::test()` FAIL 0 / PASS 2591 (73 live-Julia SKIPs);
+  `pkgdown::check_pkgdown()` no problems. PR #148.
+
 ## 2026-09-02 (A27 Darwin SIGN + Wave B DP-10 C / A25 SUPERSEDE — MV-4 evidence-ink)
 
 - **A27 Darwin SIGN recorded** — see `docs/dev-log/check-log.d/2026-09-02-a27-darwin-sign.md`

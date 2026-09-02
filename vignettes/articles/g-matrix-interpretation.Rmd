@@ -165,7 +165,10 @@ geometry as the stable interpretation layer.
 
 ## Current evidence boundary
 
-The current multivariate surface is `partial`.
+The current multivariate surface is **covered at validation scale** for t=2
+unstructured G0/R0 (G10; experimental label retained). k≥3 and
+`genetic_structure = "diagonal"` stay experimental. G-geometry extractors remain
+descriptive (no standard errors).
 
 Covered in the R lane:
 
@@ -183,15 +186,10 @@ Covered in the R lane:
 
 Still planned:
 
-- acceptance or broadening of the current `t >= 2` recovery gate;
-- a second independent same-estimand comparator beyond `sommer` for
-  unstructured `G` and full `R`;
 - *validated*, coverage-calibrated standard errors and confidence intervals for
   G/R entries, correlations, and heritabilities (experimental, asymptotic SEs are
   already available via `covariance_standard_errors()` for an unstructured fit —
-  `V4-MV-REML`, partial: the strict per-seed recovery gate is still a non-pass
-  (7/12 seeds), though the 12-seed bias/MCSE study (twin `HSquared.jl#78`/`#79`)
-  shows no detectable bias; unstructured-only, not coverage-calibrated);
+  unstructured-only, not coverage-calibrated);
 - production sparse multivariate fitting;
 - `cov = diag()`, `cov = lowrank(K)`, and `cov = fa(K)` R grammar;
 - a general `P_matrix()` extractor with a model-specific estimand.

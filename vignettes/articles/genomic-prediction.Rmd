@@ -303,7 +303,7 @@ eqtl_table(fit_g)   # reserved
 ## Current evidence boundary
 
 The current R genomic and single-step rows remain `partial`; the explicit route
-does not change `public_covered_count` (still 5).
+does not change `public_covered_count` (live count 6; genomic not covered).
 
 Covered in the R lane:
 

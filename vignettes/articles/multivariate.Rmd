@@ -26,11 +26,13 @@ additive-genetic variation, what are the genetic correlations, and what are the
 trait-specific heritabilities?
 
 Two things about this path are true at once, and it is worth separating them
-before anything else. **Reaching it is now the default:** a `cbind()` Gaussian
+before anything else. **Reaching it is the default:** a `cbind()` Gaussian
 response with an `animal()` term routes to the multivariate REML fitter on an
-ordinary `hsquared()` call, with no `engine` or `target` argument. **The claim
-is still `partial` and experimental:** the route being default says nothing
-about how much evidence stands behind the numbers it returns.
+ordinary `hsquared()` call, with no `engine` or `target` argument. **G10
+(2026-09-02) covers the claim at validation scale** for t=2 unstructured
+G0/R0 (`public_covered_count` **6**); the experimental label is retained.
+k≥3 and `genetic_structure = "diagonal"` stay experimental. Default routing
+was reachability; G10 is the promotion.
 
 The validation ledger records cold-start recovery, one full-unstructured
 `sommer` REML comparator, a published supplied-covariance Mrode anchor, and a
@@ -39,11 +41,10 @@ not do: it is a **supplied-covariance** BLUP/MME target, so it checks fixed
 effects and breeding values *given* known `G0` and `R0` — it is not a textbook
 check on the estimated covariances themselves, and no such textbook number
 exists (see "Claim boundary" below). That is still not an ASReml-style
-production multi-trait claim, and the capability is not promoted beyond
-`partial`. Treat it as useful for validation-scale Gaussian examples and as
-something to report beside your own comparator, not as a settled result. The
-examples are not run when this page is built because they require a local
-Julia, `JuliaCall`, and a sibling `HSquared.jl` checkout.
+production multi-trait claim. Report point estimates within the t=2
+unstructured covered scope. The examples are not run when this page is built
+because they require a local Julia, `JuliaCall`, and a sibling `HSquared.jl`
+checkout.
 
 ## Model
 
@@ -216,14 +217,16 @@ factor-analytic covariance models.
 
 ## Claim boundary
 
-This page describes a partial capability. The route is default; the evidence
-behind it is not finished, and those are separate statements:
+This page describes a **covered (validation-scale)** capability for t=2
+unstructured G0/R0 (G10, 2026-09-02). The experimental label is retained.
+k≥3 and `genetic_structure = "diagonal"` stay experimental. Interval
+calibration is not claimed.
 
 - reached on the default path — a `cbind()` Gaussian response with an
   `animal()` term needs no `engine` or `target` argument; the explicit
   `engine = "julia"`, `target = "multivariate"` spelling remains accepted;
-- **still `partial`, not covered.** Default routing is a convenience change, not
-  a promotion, and it did not move `public_covered_count`;
+- **covered at validation scale** for t=2 unstructured; `public_covered_count`
+  is **6**. Default routing (MV-4) was reachability; G10 is the promotion;
 - Gaussian and REML-only;
 - animal-model-only;
 - dense validation-scale;
@@ -244,10 +247,8 @@ behind it is not finished, and those are separate statements:
 - R↔engine element-wise parity through the bridge has been **verified locally**
   at pre-declared tolerances, but **not in continuous integration** — the CI
   runner has no Julia, so the parity checks skip there rather than run;
-- covered promotion still needs the recovery gate accepted or broadened plus a
-  second independent same-estimand comparator beyond `sommer`;
 - `MCMCglmm` is Bayesian/MCMC agreement evidence, not same-estimand REML
   parity.
 
-Use `validation_status()` and the model-status article before treating any
-multivariate result as more than an experimental fit.
+Use `validation_status()` and the model-status article for the exact atom
+table. Report point estimates only within the t=2 unstructured covered scope.

@@ -147,7 +147,7 @@ hs_route_table <- function() {
     ),
     list(
       key = "experimental multivariate REML estimator (opt-in)",
-      expect = "partial",
+      expect = "covered",
       default_route = TRUE,
       title = "Multivariate Gaussian animal model (cbind response)",
       call = paste0(
@@ -158,6 +158,8 @@ hs_route_table <- function() {
       scope = paste(
         "REML-only, animal-model-only, dense/validation-scale. Returns G0/R0",
         "covariance and correlation matrices, per-trait h2, and cross-trait EBVs.",
+        "Covered claim is t = 2 unstructured G0/R0 only (G10, 2026-09-02);",
+        "k>=3 and genetic_structure = \"diagonal\" stay experimental.",
         "The R-lane evidence includes a 100-replicate t = 2 cold-start recovery",
         "study, one reproduced full-unstructured `sommer` comparator leg, a",
         "published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm",
@@ -168,15 +170,15 @@ hs_route_table <- function() {
         "is comparator- and recovery-based, not textbook-anchored. R<->engine",
         "element-wise parity is verified LOCALLY at pre-declared tolerances, NOT",
         "in CI (the CI runner has no Julia, so those checks skip). The engine row",
-        "is covered; this R-public surface is not. Since MV-4 the cbind route is",
-        "selected on the default call: that is reachability, not promotion, and",
-        "public_covered_count did not move."
+        "is covered; this R-public surface is now covered at validation scale;",
+        "public_covered_count is 6. Since MV-4 the cbind route is selected on",
+        "the default call."
       ),
-      point = "partial",
+      point = "yes",
       interval = "no",
       fallback = paste(
-        "Fit each trait with the covered univariate model, and report cross-trait",
-        "covariance only beside an external multi-trait comparator."
+        "For k>=3 or a diagonal genetic structure, treat the fit as experimental.",
+        "For a single-trait question, use the covered univariate model."
       )
     )
   )
@@ -369,8 +371,8 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
   )
 
   for (route in routes) {
-    # `default_route` is reachability, `expect` is the claim. A route can be
-    # default-reachable and still `partial` (the MV-4 cbind auto-route).
+    # `default_route` is reachability, `expect` is the claim. Multivariate
+    # cbind() is default-reachable AND covered at validation scale (G10).
     on_default <- isTRUE(route$default_route) ||
       identical(route$key, default_key)
     lines <- c(lines, hs_render_card(route, on_default))

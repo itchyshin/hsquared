@@ -174,14 +174,14 @@ test_that("default-path cbind() warns once that multivariate is experimental", {
   withr::defer(hsquared:::hs_reset_session_flags())
   expect_warning(
     hsquared:::hs_warn_cbind_experimental_once(),
-    "This cbind() model fitted, but it is experimental (partial).",
+    "This cbind() model fitted; multivariate is covered at validation scale (experimental).",
     fixed = TRUE
   )
   expect_no_warning(hsquared:::hs_warn_cbind_experimental_once())
   hsquared:::hs_reset_session_flags()
   expect_warning(
     hsquared:::hs_warn_cbind_experimental_once(),
-    "Do not report these numbers from hsquared alone.",
+    "Report point estimates for t=2 unstructured G0/R0 only; intervals are not coverage-calibrated.",
     fixed = TRUE
   )
 })
