@@ -22,45 +22,57 @@ computation.
 
 ## Quick start — no Julia required
 
-You can check that your data and model are expressible before installing an
-engine:
+This four-animal pedigree is a syntax demo, not a number for a paper. You can
+check that the model is expressible before installing an engine:
 
 ```r
 library(hsquared)
 
-spec <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
+ped <- data.frame(
+  id   = c("sire", "dam", "off1", "off2"),
+  sire = c(NA, NA, "sire", "sire"),
+  dam  = c(NA, NA, "dam", "dam")
+)
+dat <- data.frame(
+  id     = c("sire", "dam", "off1", "off2"),
+  sex    = c("m", "f", "m", "f"),
+  weight = c(42, 38, 40, 37)
+)
+
+hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
   control = hs_control(engine = "validate")
 )
 
-model_spec(spec)
+model_spec(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
 ```
 
-`model_spec()` shows the parsed fixed-effect design, the sparse animal-effect
-design, the normalized pedigree ordering, and the engine target that *would* be
+`hsquared(..., engine = "validate")` confirms the formula and data.
+`model_spec()` shows the parsed design and the engine target that *would* be
 called — without fitting anything.
 
 ## Fitting — requires the Julia engine
 
 With a local Julia, `JuliaCall`, and an `HSquared.jl` checkout (see
-[Engine setup](#engine-setup)), the default call fits:
+[Engine setup](#engine-setup)), the same call fits. This block needs the
+engine; it is not a silent fallback.
 
 ```r
 fit <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian(),
-  REML = TRUE
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
 )
 
 heritability(fit)
 variance_components(fit)
 breeding_values(fit)
-fit_diagnostics(fit)
 ```
 
-The R side builds `y`, `X`, sparse `Z`, and the normalized pedigree payload; the
+The R side builds the response, design matrices, and normalized pedigree; the
 engine builds `Ainv`, estimates the variance components by average-information
 REML, and returns an `hsquared_fit` object. Without the engine, this call errors
 with install guidance rather than silently degrading.
@@ -151,9 +163,9 @@ local `HSquared.jl` checkout.
    # (a) for the session, or persistently via .Renviron
    Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
 
-   # (b) per call
+   # (b) per call, same ped/dat as the quick start
    fit <- hsquared(
-     y ~ sex + age + animal(1 | id, pedigree = ped),
+     weight ~ sex + animal(1 | id, pedigree = ped),
      data = dat,
      control = hs_control(
        engine_control = list(julia_project = "/path/to/HSquared.jl")

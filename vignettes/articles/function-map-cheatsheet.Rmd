@@ -11,8 +11,25 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-One page for "which function do I call now?". Every example here either runs
-without Julia or is marked as needing the engine.
+```{r golden-data}
+library(hsquared)
+
+# n = 4 is a syntax demo, not a number for a paper.
+ped <- data.frame(
+  id   = c("sire", "dam", "off1", "off2"),
+  sire = c(NA, NA, "sire", "sire"),
+  dam  = c(NA, NA, "dam", "dam")
+)
+dat <- data.frame(
+  id     = c("sire", "dam", "off1", "off2"),
+  sex    = c("m", "f", "m", "f"),
+  weight = c(42, 38, 40, 37)
+)
+```
+
+One page for "which function do I call now?". The preview below uses the same
+tiny pedigree as the README and Getting started. Every later example either
+runs without Julia or is marked as needing the engine.
 
 ## The five steps
 
@@ -29,7 +46,7 @@ fitted object, and therefore Julia.
 
 ## 1. Specify
 
-```{r specify, eval = FALSE}
+```{r specify}
 # bundle phenotypes, pedigree, and any genomic/expression/environment metadata
 bundle <- hs_data(phenotypes = dat, pedigree = ped)
 summary(bundle)
@@ -44,14 +61,17 @@ formula_status()
 
 ## 2. Preview — no Julia needed
 
-```{r preview, eval = FALSE}
-spec <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
+```{r preview}
+hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
   control = hs_control(engine = "validate")
 )
 
-model_spec(spec)   # fixed-effect design, sparse animal Z, pedigree ordering, engine target
+model_spec(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
 ```
 
 This is the cheapest way to find out that a term is a syntax reservation rather
@@ -60,11 +80,10 @@ than an implemented model: it tells you before you go looking for Julia.
 ## 3. Fit — needs the engine
 
 ```{r fit, eval = FALSE}
+# needs Julia + HSquared.jl; not a silent fallback
 fit <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian(),
-  REML = TRUE
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
 )
 ```
 

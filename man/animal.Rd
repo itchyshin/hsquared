@@ -24,10 +24,31 @@ appears inside a model formula.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \details{
-\code{animal()} marks an additive-genetic random effect in an \code{hsquared()}
-formula. The first implemented parser contract accepts
+\code{animal()} is the additive-genetic term in an \code{hsquared()} formula. Write
 \code{animal(1 | id, pedigree = ped)}, or \code{animal(1 | id)} when \code{data} is an
-\code{\link[=hs_data]{hs_data()}} object with a pedigree component. General fitting still waits
-for the production Julia engine bridge, so this function is a syntax marker
-rather than a standalone modelling helper.
+\code{\link[=hs_data]{hs_data()}} object with a pedigree component. Fitting happens in
+\code{\link[=hsquared]{hsquared()}}, not here: calling \code{animal()} on its own is a syntax marker
+and returns \code{NULL}.
+}
+\examples{
+# n = 4 is a syntax demo, not a number for a paper.
+ped <- data.frame(
+  id = c("sire", "dam", "off1", "off2"),
+  sire = c(NA, NA, "sire", "sire"),
+  dam = c(NA, NA, "dam", "dam")
+)
+dat <- data.frame(
+  id = c("sire", "dam", "off1", "off2"),
+  sex = c("m", "f", "m", "f"),
+  weight = c(42, 38, 40, 37)
+)
+hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat,
+  control = hs_control(engine = "validate")
+)
+model_spec(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
 }

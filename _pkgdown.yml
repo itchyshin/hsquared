@@ -55,10 +55,6 @@ navbar:
           href: articles/visualizing-models.html
         - text: Multivariate Gaussian animal models
           href: articles/multivariate.html
-        - text: Genomic prediction
-          href: articles/genomic-prediction.html
-        - text: Reading G matrices
-          href: articles/g-matrix-interpretation.html
     status:
       text: Status
       menu:
@@ -68,6 +64,10 @@ navbar:
           href: articles/model-status.html
         - text: Validation evidence
           href: articles/validation-evidence.html
+        - text: Genomic prediction
+          href: articles/genomic-prediction.html
+        - text: Reading G matrices
+          href: articles/g-matrix-interpretation.html
         - text: QTL, GWAS, and eQTL status
           href: articles/qtl-gwas-eqtl-status.html
     comparators:
@@ -206,24 +206,25 @@ articles:
 
   - title: Model guides
     desc: >
-      Fitting, visualization, and interpretation guides. Multivariate, genomic,
-      and G-matrix routes are opt-in experimental unless validation_status()
-      marks them covered.
+      Fitting and visualization for the animal-model path. Multivariate is
+      opt-in experimental. Genomic prediction and G-matrix pages live under
+      Status until those routes are covered.
     contents:
       - articles/fitting-models
       - articles/visualizing-models
       - articles/multivariate
-      - articles/genomic-prediction
-      - articles/g-matrix-interpretation
 
   - title: Status
     desc: >
       Capability limits, validation evidence, and model-family status. Read these
-      before reporting point estimates or intervals.
+      before reporting point estimates or intervals. Genomic and G-matrix
+      pages sit here until those routes are covered.
     contents:
       - articles/current-limits
       - articles/model-status
       - articles/validation-evidence
+      - articles/genomic-prediction
+      - articles/g-matrix-interpretation
       - articles/qtl-gwas-eqtl-status
 
   - title: Comparators
