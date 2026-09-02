@@ -680,7 +680,7 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
 # the Julia-owned `HSquared.fit_repeatability_reml()` REML-only optimizer through
 # the bridge. The permanent-environment effect shares the animal incidence `Z`
 # (the engine carries an identity relationship for it), so the existing payload
-# is sufficient. Variance components σ²a and σ²pe are only identifiable with
+# is sufficient. Variance components sigma^2_a and sigma^2_pe are only identifiable with
 # repeated records per individual.
 hs_fit_julia_repeatability_payload <- function(
   payload,
@@ -1020,7 +1020,7 @@ hs_fit_julia_direct_maternal_payload <- function(
   # The generic payload from hs_build_bridge_payload will have TWO blocks for a
   # maternal_genetic formula: block1 = animal (pedigree), block2 = maternal
   # (pedigree). We reassemble them as a SINGLE correlated block here, mirroring
-  # the engine's payload-v2 §2 correlated-block schema:
+  # the engine's payload-v2 section 2 correlated-block schema:
   #   type="correlated", Z=Zd (block1), partner_incidence=Zm (block2), pedigree.
   blocks <- payload$random_effects
   if (
@@ -1050,9 +1050,9 @@ hs_fit_julia_direct_maternal_payload <- function(
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_method", payload$method)
 
-  # block1: animal pedigree block — Z = Zd (record->animal)
+  # block1: animal pedigree block -- Z = Zd (record->animal)
   b_animal <- blocks[[1L]]
-  # block2: maternal pedigree block — Z = Zm (record->dam)
+  # block2: maternal pedigree block -- Z = Zm (record->dam)
   b_maternal <- blocks[[2L]]
 
   # Zd: record->animal (direct effect incidence)
@@ -1185,7 +1185,7 @@ hs_normalize_direct_maternal_result <- function(
   # sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i) for a
   # non-inbred base (2*A[i,dam] = 2*(1/2) = 1, so the covariance contributes
   # coefficient 1 to phenotypic variance; Willham 1963, 1972).  sigma_dm is
-  # included because it is a legitimate part of Var(y) — dropping it would
+  # included because it is a legitimate part of Var(y) -- dropping it would
   # misstate the denominator.  h2 is denominator-dependent under maternal
   # effects; see the conditioning_caveat and total_heritability().
   h2_direct <- if (sigma_P > 0) sigma_ad / sigma_P else NA_real_
@@ -1305,7 +1305,7 @@ hs_fit_julia_n_effect_payload <- function(
   JuliaCall::julia_assign("hsq_method", payload$method)
 
   # Assign each block's engine inputs and build a Julia Dict per block, matching
-  # the payload-v2 §2 field table read by `parse_payload_v2`:
+  # the payload-v2 section 2 field table read by `parse_payload_v2`:
   #   pedigree block: type="pedigree", relmat_status="build_in_julia",
   #                   pedigree=(id,sire,dam), ids
   #   iid block:      type="iid",      relmat_status="identity", ids
@@ -1533,7 +1533,7 @@ hs_normalize_two_effect_result <- function(raw, payload) {
 # `re_values` are the ragged per-block BLUP ids/values.
 #
 # Falconer fence: `heritability` is the narrow-sense h2 of the ANIMAL (pedigree)
-# block only — its additive-genetic variance over the TOTAL phenotypic variance
+# block only -- its additive-genetic variance over the TOTAL phenotypic variance
 # (the sum of ALL block variances plus the residual). Every other block's
 # variance ratio (`block_variance / total`) is a variance-explained proportion,
 # NOT a heritability. This normalizes the POINT ESTIMATES; the caller attaches
@@ -1766,7 +1766,11 @@ hs_fit_julia_multivariate_payload <- function(
   }
 
   hs_julia_setup(project)
-  JuliaCall::julia_assign("hsq_Y", payload$Y)
+  # JuliaCall 0.17.6 / R 4.6 delivers R NA_real_ as Julia Missing, not NaN.
+  # Convert here so the engine receives the documented NaN missing-trait
+  # sentinel (it also accepts Missing, but isnan-based round-trips through
+  # julia_eval segfault inside Rcpp precious-preserve on Missing arrays).
+  JuliaCall::julia_assign("hsq_Y", hs_y_matrix_for_julia(payload$Y))
   JuliaCall::julia_assign("hsq_X", payload$X)
   hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
@@ -1814,7 +1818,7 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_mv_raw[\"n_genetic_params\"] = hsq_fit.n_genetic_params;",
     "end;",
     # Experimental covariance standard errors (engine row V4-MV-REML, partial;
-    # :unstructured only — the engine throws for structured / factor-analytic
+    # :unstructured only -- the engine throws for structured / factor-analytic
     # fits, and the observed information can be non-positive-definite at a
     # flat/boundary optimum, hence the try guard).
     "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
@@ -2809,7 +2813,7 @@ hs_fit_julia_single_step_construct_payload <- function(
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    # Guard the genotyped_rows alignment (docs/design/25 §8): the R-computed
+    # Guard the genotyped_rows alignment (docs/design/25 section 8): the R-computed
     # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
     # must preserve that order. Fail loudly rather than fit a misaligned G.
     "collect(String, hsq_ped.ids) == hsq_id ||",
@@ -3360,6 +3364,19 @@ hs_parent_for_julia <- function(x) {
   x
 }
 
+# R-side NA -> Julia NaN sentinel for multivariate Y.
+# Keeps the R payload's NA cells intact; only the Julia assign copy is rewritten.
+# Needed because JuliaCall 0.17.6 marshals NA_real_ to Missing, not NaN.
+hs_y_matrix_for_julia <- function(Y) {
+  if (!is.matrix(Y)) {
+    stop("`Y` must be a matrix.", call. = FALSE)
+  }
+  out <- Y
+  storage.mode(out) <- "double"
+  out[is.na(out)] <- NaN
+  out
+}
+
 hs_validate_initial_variances <- function(initial) {
   if (
     is.null(names(initial)) ||
@@ -3545,9 +3562,10 @@ hs_second_effect_target <- function(type) {
     type,
     permanent = "repeatability",
     common_env = "two_effect",
-    # maternal_genetic default suggestion is two_effect (INDEPENDENT model);
-    # the correlated model (direct_maternal) is the second allowed target,
-    # reached only by explicit opt-in.
+    # Routing map only: two_effect stays the single suggested *name* for
+    # callers that interpolate one target. Default-path user copy must use
+    # hs_maternal_genetic_default_path_message() so the covered
+    # direct_maternal sibling is named. Do not auto-route.
     maternal_genetic = "two_effect",
     iid_effects = "multi_effect",
     metafounder = "metafounder",
@@ -3556,6 +3574,40 @@ hs_second_effect_target <- function(type) {
     relmat = "relmat",
     precision = "precision",
     stop("Unknown random effect type: ", type, call. = FALSE)
+  )
+}
+
+# Default-path copy for maternal_genetic(). Names the covered correlated
+# sibling first, then the experimental independent two_effect path. Does
+# not change routing: neither target is auto-selected on engine = "fit".
+hs_maternal_genetic_default_path_message <- function() {
+  paste0(
+    "`maternal_genetic()` is not on the default path. ",
+    "Two opt-in targets fit this formula; neither is auto-routed.\n\n",
+    "Closest working call (covered correlated 2x2 G / Willham triple, ",
+    "not a scalar h2):\n\n",
+    "  control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"direct_maternal\"))\n\n",
+    "Experimental alternative (independent maternal):\n\n",
+    "  control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"two_effect\"))\n\n",
+    "See formula_status() and the current-limits article."
+  )
+}
+
+hs_abort_maternal_genetic_default_path <- function() {
+  hs_abort_unsupported_syntax(
+    hs_maternal_genetic_default_path_message(),
+    call. = FALSE
+  )
+}
+
+# Extra clause for a wrong-target maternal_genetic() formula on engine = "julia".
+hs_maternal_genetic_allowed_targets_note <- function() {
+  paste0(
+    " `target = \"direct_maternal\"` is covered (correlated 2x2 G / Willham ",
+    "triple, not a scalar h2); `target = \"two_effect\"` is experimental ",
+    "(independent maternal)."
   )
 }
 

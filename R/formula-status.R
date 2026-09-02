@@ -6,39 +6,44 @@
 #' language are parsed today, reserved as syntax markers, or still roadmap-only.
 #' It is a status table, not a model-fitting helper.
 #'
+#' The printed header is derived from the rows being printed, so it cannot
+#' lag the table. Covered-versus-experimental fences live in
+#' `$current_behavior` and are not dumped into the default print.
+#'
 #' @return A data frame of formula grammar records with class
 #'   `"hs_formula_status"`.
 #' @examples
 #' formula_status()
 #' @export
 formula_status <- function() {
-  out <- data.frame(
+  cols <- list(
     term = hs_formula_status_terms(),
     category = hs_formula_status_categories(),
     phase = hs_formula_status_phases(),
     syntax_status = hs_formula_status_syntax(),
     fitting_status = hs_formula_status_fitting(),
-    current_behavior = hs_formula_status_behavior(),
-    stringsAsFactors = FALSE
+    current_behavior = hs_formula_status_behavior()
   )
+  n <- lengths(cols)
+  if (length(unique(n)) != 1L) {
+    stop(
+      "formula_status() helper vectors are different lengths: ",
+      paste(sprintf("%s=%d", names(n), n), collapse = ", "),
+      call. = FALSE
+    )
+  }
+  out <- as.data.frame(cols, stringsAsFactors = FALSE)
   class(out) <- c("hs_formula_status", class(out))
   out
 }
 
 #' @export
 print.hs_formula_status <- function(x, ...) {
-  cat("<hs_formula_status>\n")
-  cat("  parsed today: animal(1 | id, pedigree = ped); ")
-  cat("animal(1 | id) with an hs_data pedigree\n")
-  cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
-  cat("permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in\n")
-  cat(
-    "  planned grammar: rows marked planned/reserved error before fitting\n"
-  )
+  hs_formula_status_print_header(x)
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
   display_cols <- intersect(
-    c("term", "phase", "syntax_status", "fitting_status"),
+    c("term", "syntax_status", "fitting_status"),
     names(out)
   )
   if (length(display_cols) == 0L) {
@@ -49,6 +54,97 @@ print.hs_formula_status <- function(x, ...) {
     row.names = FALSE
   )
   invisible(x)
+}
+
+hs_formula_status_short_term <- function(terms) {
+  vapply(
+    as.character(terms),
+    function(term) {
+      if (startsWith(term, "cbind(")) {
+        return("cbind()")
+      }
+      if (startsWith(term, "animal(rr(")) {
+        return("animal(rr())")
+      }
+      if (grepl("^animal\\(1 \\|", term)) {
+        return("animal()")
+      }
+      if (grepl("^\\(1 \\|", term)) {
+        return("(1 | group)")
+      }
+      if (grepl("^missing = miss_control", term)) {
+        return("miss_control()")
+      }
+      if (startsWith(term, "mi(")) {
+        return("mi()")
+      }
+      head <- sub("\\(.*", "", term)
+      if (nzchar(head) && !identical(head, term)) {
+        return(paste0(head, "()"))
+      }
+      term
+    },
+    character(1L),
+    USE.NAMES = FALSE
+  )
+}
+
+hs_formula_status_cat_list <- function(label, items) {
+  if (!length(items)) {
+    return(invisible())
+  }
+  body <- paste(unique(items), collapse = "; ")
+  prefix <- paste0("  ", label, ": ")
+  if ((nchar(prefix) + nchar(body)) <= 78L) {
+    cat(prefix, body, "\n", sep = "")
+    return(invisible())
+  }
+  cat(prefix, "\n", sep = "")
+  cat(
+    paste(strwrap(body, width = 70L, prefix = "    "), collapse = "\n"),
+    "\n",
+    sep = ""
+  )
+  invisible()
+}
+
+hs_formula_status_print_header <- function(x) {
+  cat("<hs_formula_status>\n")
+  if (all(c("term", "fitting_status") %in% names(x))) {
+    fit <- x$fitting_status
+    default_idx <- grepl("default", fit, fixed = TRUE)
+    opt_idx <- grepl("opt-in", fit, fixed = TRUE)
+    if (any(default_idx)) {
+      hs_formula_status_cat_list(
+        "default",
+        hs_formula_status_short_term(x$term[default_idx])
+      )
+    }
+    if (any(opt_idx)) {
+      hs_formula_status_cat_list(
+        "opt-in",
+        hs_formula_status_short_term(x$term[opt_idx])
+      )
+    }
+  }
+  if ("syntax_status" %in% names(x)) {
+    n_reserved <- sum(x$syntax_status == "reserved", na.rm = TRUE)
+    n_planned <- sum(x$syntax_status == "planned", na.rm = TRUE)
+    if (n_reserved + n_planned > 0L) {
+      cat(
+        "  reserved/planned: ",
+        n_reserved,
+        " reserved, ",
+        n_planned,
+        " planned (error before fitting)\n",
+        sep = ""
+      )
+    }
+  }
+  if ("current_behavior" %in% names(x)) {
+    cat("  fences: $current_behavior\n")
+  }
+  invisible()
 }
 
 hs_formula_status_terms <- function() {
@@ -156,7 +252,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in single-step bundle construction)",
     "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
-    "fitted (opt-in multivariate)",
+    "fitted (default route, experimental multivariate)",
     rep("not available", 6L)
   )
 }
@@ -232,7 +328,8 @@ hs_formula_status_behavior <- function() {
       "normalized Legendre): engine V3-RR-REML covered via pre-declared 48-seed",
       "bias/MCSE gate PASSED + sommer 4.4.5 leg() same-estimand REML comparator",
       "AGREE (<=1.9e-5); live R<->engine parity EXACT (<=1.03e-5); h2(t) <=4.24e-6.",
-      "h2(t) is a CURVE, never scalar (scalar heritability() on this result errors);",
+      "rr_heritability() returns h2(t) as a CURVE, never a scalar; heritability()",
+      "is NOT the RR accessor and errors on this result, naming rr_heritability().",
       "PE-overstatement caveat when no permanent-environment term. POINT-ESTIMATE",
       "only (no interval/CI on the K_g curve). k>=3 experimental; (x|g) raw slopes",
       "rejected; PE term and heterogeneous residual deferred."
@@ -311,9 +408,15 @@ hs_formula_status_behavior <- function() {
     ),
     rep(inert_marker_text, 3L),
     paste(
-      "Experimental multivariate Gaussian animal model; requires a `cbind()`",
-      "response, an `animal()` term, and engine = \"julia\", target =",
-      "\"multivariate\". Missing trait cells are allowed as `NA`. Under",
+      "Experimental multivariate Gaussian animal model; a `cbind()` response",
+      "with an `animal()` term routes to the multivariate fitter on the",
+      "DEFAULT path (no engine/target argument needed; the explicit engine =",
+      "\"julia\", target = \"multivariate\" spelling still works). Default",
+      "routing is not a covered claim: this capability stays partial.",
+      "Covered numeric claim (when flipped) is scoped to k = 2 unstructured G0/R0;",
+      "k >= 3 traits stay parseable-and-fittable-but-experimental;",
+      "genetic_structure = \"diagonal\" stays experimental at 0.6.",
+      "Missing trait cells are allowed as `NA`. Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
       "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
       "required), not a multivariate Gaussian."
@@ -322,7 +425,7 @@ hs_formula_status_behavior <- function() {
       paste(
         "Roadmap syntax for long-format structured covariance; the current",
         "parser rejects trait and `cov` arguments and points users to the",
-        "opt-in `cbind()` multivariate path."
+        "`cbind()` multivariate path, which fits on the default path."
       ),
       4L
     ),

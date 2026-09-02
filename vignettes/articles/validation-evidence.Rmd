@@ -18,10 +18,12 @@ that lives in the repository, and nothing is advertised as working beyond what
 those checks demonstrate. One practical fact up front: the default univariate
 fit needs a local Julia engine (`HSquared.jl` via `JuliaCall`); the pure-R
 reference checks below run without it, and the "What runs where" section gives
-the full split. When in doubt, the live, machine-readable table is
-`validation_status()` — read it, not this prose, as the source of truth. Its
-columns are the capability, its `status` (one of *planned*, *partial*, or
-*covered*, defined just below), and the claim boundary attached to each.
+the full split. When in doubt about *evidence atoms*, the machine-readable table is
+`validation_status()`. What you may report is listed on
+[Can I fit and report this?](current-limits.html) — this table is not
+the complete user list. Its columns are the capability, its `status`
+(one of *planned*, *partial*, or *covered*, defined just below), and the
+claim boundary attached to each.
 
 ```{r}
 library(hsquared)
@@ -248,9 +250,10 @@ evidence is established locally with the engine in place.
 
 What the v0.1 promotion does **not** claim:
 
-- **REML only.** ML estimation is rejected on the fit path (`REML = FALSE`
-  errors). The supplied-variance paths (`henderson_mme`, `snp_blup`) solve at
-  given variances rather than estimating them.
+- **REML only.** ML is not implemented. `REML = FALSE` is rejected; use
+  `REML = TRUE` (the default). That is the same rule for the default fit and
+  for `engine = "validate"`. The supplied-variance paths (`henderson_mme`,
+  `snp_blup`) solve at given variances rather than estimating them.
 - **No validated SEs/CIs.** A *validated*, coverage-calibrated SE/interval — and
   `confint()`/`vcov()` — is deferred. `summary()` and the extractors may surface
   *experimental*, asymptotic REML SEs/intervals (`heritability_interval()`,
@@ -305,7 +308,7 @@ is `partial` or `planned`.
 
 ```{r}
 status <- validation_status()
-status[status$status == "covered", c("capability", "phase", "status")]
+status[status$status == "covered", c("capability_label", "phase", "status")]
 ```
 
 To actually fit the validated model end-to-end — including installing and

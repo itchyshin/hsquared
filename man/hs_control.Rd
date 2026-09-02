@@ -39,10 +39,14 @@ experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
-\code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"genomic"},
+\code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"multi_effect"},
+\code{"direct_maternal"}, \code{"random_regression"}, \code{"genomic"},
 \code{"single_step"}, \code{"single_step_construct"}, \code{"metafounder"},
-\code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"multivariate"}, and
-\code{"nongaussian"}, described below. \code{marginal} applies only to
+\code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"relmat"}, \code{"precision"},
+\code{"multivariate"}, and \code{"nongaussian"}, described below. Covered opt-in
+routes (validation scale; not the default path) include \code{"two_effect"}
+(\code{common_env()}), \code{"direct_maternal"}, \code{"multi_effect"}, and
+\code{"random_regression"} at \code{k = 2}. \code{marginal} applies only to
 \code{target = "nongaussian"}.
 With \code{engine = "julia"} and no \code{target}, the bridge defaults to
 \code{target = "fit_animal_model"}: it surfaces the Julia-owned
@@ -84,12 +88,32 @@ It is REML only, not the default, and the additive and permanent-environment
 variances are identifiable only with repeated records per individual.
 \code{target = "two_effect"} is an experimental, opt-in path for two-effect
 models. It requires \code{animal(1 | id, pedigree = ped)} plus a second random
-effect — \code{common_env(1 | group)} (an IID common-environment effect) or
+effect -- \code{common_env(1 | group)} (an IID common-environment effect) or
 \code{maternal_genetic(1 | dam)} (a maternal genetic effect carrying the pedigree
-relationship) — and surfaces the Julia-owned
+relationship) -- and surfaces the Julia-owned
 \code{HSquared.fit_two_effect_reml()} REML-only optimizer (three-component
 \code{initial} with \code{sigma_a2}/\code{sigma_c2}/\code{sigma_e2}). It is REML only and not
-the default.
+the default. The \code{common_env()} leg is covered at validation scale; the
+\code{maternal_genetic()} leg on this same target stays experimental. The
+covered correlated sibling is \code{target = "direct_maternal"}.
+\code{target = "multi_effect"} is an opt-in path for
+\code{animal(1 | id, pedigree = ped)} plus one or more bare \code{(1 | group)} IID
+intercepts. It is covered at validation scale (the independent
+generalization of two-effect; not the default path). Random slopes and
+correlated \code{(x || group)} terms remain rejected. The animal-block ratio is
+narrow-sense h2; other blocks are variance-explained proportions, not
+heritabilities.
+\code{target = "direct_maternal"} is an opt-in path for
+\code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)}. It estimates
+the correlated 2x2 direct-maternal genetic covariance and is covered at
+validation scale (not the default path). \code{heritability()} returns the
+labelled Willham triple (direct h2_d, maternal m2, total h2_T, r_am), never
+a bare scalar.
+\code{target = "random_regression"} is an opt-in reaction-norm path for
+\code{animal(rr(covariate, order = k) | id, pedigree = ped)}. It is covered at
+\code{k = 2} (linear reaction norm). \code{rr_heritability()} returns h2(t) as a
+curve; \code{heritability()} errors on this result and names
+\code{rr_heritability()}. \code{k >= 3} stays experimental.
 \code{target = "genomic"} is the explicit experimental narrow Gaussian REML
 genomic route. It accepts
 \code{genomic(1 | id, markers = M)}, using sample allele frequencies,
@@ -128,8 +152,16 @@ supply named \code{sigma_g2} (genomic) and \code{sigma_e2} (residual) for a
 supplied-variance solve (\code{HSquared.fit_snp_blup()}), or omit them to have
 \code{hsquared()} \strong{estimate} \code{sigma_g2}/\code{sigma_e2} by REML from the markers
 (\code{HSquared.fit_snp_blup_reml()}). Not the default.
-\code{target = "multivariate"} is an experimental, opt-in path for the
-multivariate Gaussian animal model. It requires a
+\code{target = "relmat"} is an experimental, opt-in path for
+\code{relmat(1 | id, K = K)} (a supplied dense relationship matrix; the parser
+marshals the inverse). \code{target = "precision"} is the same experimental path
+for \code{precision(1 | id, Q = Q)} (a supplied precision/inverse). Neither is
+covered or the default; the supplied matrix is provenance, not an estimate.
+\code{target = "multivariate"} names the experimental multivariate Gaussian
+animal model. Naming it is optional: a \code{cbind()} Gaussian response with an
+\code{animal()} term auto-routes to this target on the default path, and under
+\code{engine = "julia"} with no \code{target}. The target is default-routed but the
+capability is still \code{partial}. It requires a
 \code{cbind(trait1, trait2, ...)} response with \code{animal(1 | id, pedigree = ped)},
 surfaces the Julia-owned \code{HSquared.fit_multivariate_reml()} REML-only
 optimizer, and returns G/R covariance matrices, genetic and residual

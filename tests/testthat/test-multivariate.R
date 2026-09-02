@@ -146,6 +146,11 @@ test_that("multivariate cbind auto-routes on the default path and stays cbind-on
     )
     expect_false(grepl("requires the opt-in", err_julia, fixed = TRUE))
   }
+  expect_no_warning(suppressMessages(hsquared(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    control = hs_control(engine = "validate")
+  )))
   expect_error(
     hsquared(
       y1 ~ animal(1 | id, pedigree = ped),
@@ -161,6 +166,23 @@ test_that("multivariate cbind auto-routes on the default path and stays cbind-on
   expect_equal(
     hsquared:::hs_validate_julia_target("multivariate"),
     "multivariate"
+  )
+})
+
+test_that("default-path cbind() warns once that multivariate is experimental", {
+  hsquared:::hs_reset_session_flags()
+  withr::defer(hsquared:::hs_reset_session_flags())
+  expect_warning(
+    hsquared:::hs_warn_cbind_experimental_once(),
+    "This cbind() model fitted, but it is experimental (partial).",
+    fixed = TRUE
+  )
+  expect_no_warning(hsquared:::hs_warn_cbind_experimental_once())
+  hsquared:::hs_reset_session_flags()
+  expect_warning(
+    hsquared:::hs_warn_cbind_experimental_once(),
+    "Do not report these numbers from hsquared alone.",
+    fixed = TRUE
   )
 })
 
@@ -409,8 +431,37 @@ test_that("non-converged multivariate fits do not expose logLik or AIC", {
   expect_error(AIC(fit), "did not converge", fixed = TRUE)
 })
 
-test_that("JuliaCall sends multivariate response NA cells as NaN", {
-  testthat::skip_on_cran()
+test_that("R multivariate payload keeps NA; assign copy becomes NaN", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf1", "calf2"),
+    sire = c(NA, NA, "sire", "sire"),
+    dam = c(NA, NA, "dam", "dam")
+  )
+  dat <- data.frame(
+    y1 = c(1, 2, 3, 4),
+    y2 = c(1.5, NA, 3.5, 4.5),
+    id = ped$id
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  expect_equal(sum(is.na(payload$Y)), 1L)
+  expect_true(is.na(payload$Y[2L, 2L]) && !is.nan(payload$Y[2L, 2L]))
+
+  Yj <- hsquared:::hs_y_matrix_for_julia(payload$Y)
+  expect_equal(sum(is.nan(Yj)), 1L)
+  expect_true(is.nan(Yj[2L, 2L]))
+})
+
+test_that("bridge marshals multivariate response NA cells as Julia NaN", {
+  # Live: assign the NaN copy, then count via julia_command + Int eval.
+  # Do NOT julia_eval(sum(isnan.(...))) on a raw-NA assign: JuliaCall 0.17.6
+  # delivers Missing, and that eval path segfaults in Rcpp precious-preserve.
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
@@ -433,17 +484,18 @@ test_that("JuliaCall sends multivariate response NA cells as NaN", {
     REML = TRUE
   )
   payload <- hsquared:::hs_build_bridge_payload(spec)
-  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
-  JuliaCall::julia_assign("hsq_Y_roundtrip", payload$Y)
+  Yj <- hsquared:::hs_y_matrix_for_julia(payload$Y)
 
-  expect_equal(
-    JuliaCall::julia_eval("sum(isnan.(hsq_Y_roundtrip))"),
-    1L
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  JuliaCall::julia_assign("hsq_Y_roundtrip", Yj)
+  JuliaCall::julia_command(
+    "hsq_nan_count = Int(sum(isnan.(hsq_Y_roundtrip)))"
   )
+  expect_equal(JuliaCall::julia_eval("hsq_nan_count"), 1L)
 })
 
 test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live multivariate bridge smoke."
@@ -642,8 +694,10 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
 
 test_that("optional sommer comparator matches the Phase 4 diagonal-residual target", {
   testthat::skip_on_cran()
-  testthat::skip_if_not_installed("sommer")
-  testthat::skip_if_not_installed("nadiv")
+  # A26b: on NOT_CRAN / maintainer CI, missing Suggests must fail loudly — not
+  # skip_if_not_installed silently. CRAN still skips via skip_on_cran above.
+  hs_require_suggests("sommer", gate = "MV-1b")
+  hs_require_suggests("nadiv", gate = "MV-1b")
 
   ped <- hs_read_phase4_fixture("pedigree.csv")
   pheno <- hs_read_phase4_fixture("phenotypes.csv")
@@ -731,8 +785,10 @@ test_that("optional sommer comparator matches the Phase 4 FULL-UNSTRUCTURED targ
   # the diagonal check cannot -- promoting the reproducible comparator study
   # (data-raw/multivariate-comparator-study.R) into a CI-gated same-estimand check.
   testthat::skip_on_cran()
-  testthat::skip_if_not_installed("sommer")
-  testthat::skip_if_not_installed("nadiv")
+  # A26b: headline MV-1 comparator — fail loudly when NOT_CRAN and sommer/nadiv
+  # missing; never silent-skip on the maintainer path.
+  hs_require_suggests("sommer", gate = "MV-1")
+  hs_require_suggests("nadiv", gate = "MV-1")
 
   ped <- hs_read_phase4_fixture("pedigree.csv")
   pheno <- hs_read_phase4_fixture("phenotypes.csv")

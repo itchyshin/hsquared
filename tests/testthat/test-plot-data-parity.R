@@ -6,7 +6,7 @@
 # recompute tidy frames -- lives in test-autoplot.R and always runs.)
 
 test_that("genetic_correlation_plot_data engine preparer matches cov2cor + h2 [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
@@ -50,7 +50,7 @@ test_that("genetic_correlation_plot_data engine preparer matches cov2cor + h2 [l
 })
 
 test_that("autoplot consumes a live-marshalled genetic_correlation_plot_data payload [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
@@ -107,7 +107,7 @@ test_that("autoplot consumes a live-marshalled genetic_correlation_plot_data pay
 })
 
 test_that("genetic_pca_plot_data engine preparer matches eigen_G scree [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
@@ -149,7 +149,7 @@ test_that("rr_genetic_variance_plot_data engine preparer matches R hs_rr_varianc
   # The RR parity guard the twin asked to co-own (#93 Q6): R's recompute
   # (hs_rr_variance_values) and the engine preparer must agree on v_g(t) on a
   # seeded K_g / standardized covariate grid.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
@@ -235,7 +235,7 @@ test_that("rr_genetic_variance_plot_data engine preparer matches R hs_rr_varianc
 })
 
 test_that("variance_components_plot_data engine preparer feeds the variance forest [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live plot-data parity test."
@@ -311,7 +311,7 @@ test_that("variance_components_plot_data engine preparer feeds the variance fore
 })
 
 test_that("breeding_values_plot_data engine preparer matches the R recompute [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live plot-data parity."

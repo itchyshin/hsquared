@@ -328,7 +328,7 @@ hs_build_model_spec <- function(
         length(iid_effects) > 0L
     ) {
       hs_abort_unsupported_syntax(
-        "The opt-in multivariate path currently supports only ",
+        "The multivariate path currently supports only ",
         "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
         "Multivariate genomic, single-step, second-effect, and multi-effect ",
         "models are planned, not implemented.",
@@ -751,6 +751,9 @@ hs_validate_model_inputs <- function(
   if (!is.logical(REML) || length(REML) != 1L || is.na(REML)) {
     stop("`REML` must be `TRUE` or `FALSE`.", call. = FALSE)
   }
+  # Public hsquared() validate and default fit share one REML = TRUE rule.
+  # Internal builders and model_spec() are not that door.
+  hs_abort_reml_false_on_public_path(REML)
 
   invisible(TRUE)
 }
@@ -1126,9 +1129,10 @@ hs_stop_animal_non_intercept <- function() {
 hs_stop_animal_covariance_arg <- function() {
   hs_abort_unsupported_syntax(
     "`animal()` argument `cov` is planned, not implemented. For the current ",
-    "opt-in multivariate animal model, put traits on the left-hand side as ",
-    "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)` and use ",
-    "`engine_control = list(target = \"multivariate\")`. Structured covariance ",
+    "multivariate animal model, put traits on the left-hand side as ",
+    "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)`; that ",
+    "routes to the multivariate fitter on the default path, with no ",
+    "`engine`/`target` argument. Structured covariance ",
     "grammar such as `cov = us()`, `cov = diag()`, `cov = lowrank(K = 2)`, ",
     "or `cov = fa(K = 2)` is planned, not implemented.",
     call. = FALSE
@@ -1596,7 +1600,7 @@ hs_single_step_bundle_markers <- function(genotypes, id) {
 # Parse the single-step CONSTRUCTION call `single_step(1 | id, pedigree = ped,
 # markers = M, ...)`. Combines the pedigree path (id/sire/dam -> Ainv, A) with a
 # genotyped-subset marker matrix (-> G among the genotyped animals). The crux is
-# the `genotyped_rows` alignment (docs/design/25 §3): the genotyped ids must be a
+# the `genotyped_rows` alignment (docs/design/25 section 3): the genotyped ids must be a
 # subset of the pedigree ids (NOT the observed ids -- ungenotyped phenotyped
 # animals are the whole point of single-step), and the marker rows are reordered
 # to the genotyped animals' sorted pedigree-row positions so G aligns with the
@@ -2595,6 +2599,21 @@ hs_parse_common_env_call <- function(call, data) {
   )
 }
 
+# Data requirement plus covered-first next path for maternal_genetic()
+# parser stops that fire before the default-path abort. Reuses
+# hs_maternal_genetic_default_path_message() so order cannot drift:
+# covered direct_maternal first, experimental two_effect second.
+# Does not auto-route. Does not take dams from the pedigree table.
+hs_maternal_genetic_parser_guidance <- function() {
+  paste0(
+    "The grouping column (usually `dam`) must be a column of `data`: ",
+    "mothers of the records, with IDs already in the animal pedigree. ",
+    "The parser does not take dams from the pedigree table and does not ",
+    "accept `pedigree=` on `maternal_genetic()`.\n\n",
+    hs_maternal_genetic_default_path_message()
+  )
+}
+
 # Parse `maternal_genetic(1 | dam)` as the maternal genetic effect of the opt-in
 # two-effect model: a random intercept expressed through the dam, carrying the
 # SAME pedigree relationship as the direct animal effect (A2 = pedigree A). The
@@ -2644,9 +2663,11 @@ hs_parse_maternal_genetic_call <- function(call, data, animal_spec) {
 
   named_args <- args[arg_names != ""]
   if (length(named_args) > 0L) {
-    stop(
-      "`maternal_genetic()` takes no extra arguments in the v0.1 two-effect ",
-      "model (the dam relationships come from the animal() pedigree).",
+    hs_abort_unsupported_syntax(
+      "`maternal_genetic()` takes no extra arguments. ",
+      "Dam relationships come from the `animal()` pedigree, not a second ",
+      "`pedigree=` argument.\n\n",
+      hs_maternal_genetic_parser_guidance(),
       call. = FALSE
     )
   }
@@ -2656,7 +2677,8 @@ hs_parse_maternal_genetic_call <- function(call, data, animal_spec) {
     stop(
       "`maternal_genetic()` grouping variable `",
       group,
-      "` was not found in `data`.",
+      "` was not found in `data`.\n\n",
+      hs_maternal_genetic_parser_guidance(),
       call. = FALSE
     )
   }
@@ -2805,14 +2827,74 @@ hs_planned_qg_effect_marker_names <- function() {
   )
 }
 
+# Nearest live path for a reserved marker. common_env() / two_effect paste
+# copy is owned elsewhere; this map does not mention that route.
+hs_planned_marker_nearest_path <- function(marker) {
+  switch(
+    marker,
+    maternal_env = paste0(
+      "The live maternal sibling is `maternal_genetic(1 | dam)` with ",
+      "`target = \"direct_maternal\"` (covered correlated 2x2 G / Willham ",
+      "triple) or `target = \"two_effect\"` (experimental independent maternal)."
+    ),
+    paternal_genetic = paste0(
+      "The live genetic effect is `animal(1 | id, pedigree = ped)`."
+    ),
+    paternal_env = paste0(
+      "The live genetic effect is `animal(1 | id, pedigree = ped)`."
+    ),
+    inbreeding = paste0(
+      "Pedigree inbreeding F is already used internally when building Ainv; ",
+      "`inbreeding()` is a reserved future *effect*, not a missing coefficient."
+    ),
+    dominance = paste0(
+      "The live 'bring your own kernel' path is `relmat(1 | id, K = )` ",
+      "(or `precision(1 | id, Q = )`); that does not implement dominance."
+    ),
+    epistasis = paste0(
+      "The live 'bring your own kernel' path is `relmat(1 | id, K = )` ",
+      "(or `precision(1 | id, Q = )`); that does not implement epistasis."
+    ),
+    group = paste0(
+      "The live grouping path is bare `(1 | group)` with ",
+      "`target = \"multi_effect\"`."
+    ),
+    unknown_parent_group = paste0(
+      "The live grouping path is bare `(1 | group)` with ",
+      "`target = \"multi_effect\"`."
+    ),
+    cytoplasmic = paste0(
+      "The live maternal genetic sibling is `maternal_genetic(1 | dam)`."
+    ),
+    imprinting = paste0(
+      "The live maternal genetic sibling is `maternal_genetic(1 | dam)`."
+    ),
+    markers = paste0(
+      "The live marker path is `genomic(1 | id, markers = )` or ",
+      "`gwas(fit, markers)`."
+    ),
+    marker_scan = paste0(
+      "The live marker path is `genomic(1 | id, markers = )` or ",
+      "`gwas(fit, markers)`."
+    ),
+    qtl_scan = paste0(
+      "The live marker path is `genomic(1 | id, markers = )` or ",
+      "`gwas(fit, markers)`."
+    ),
+    ""
+  )
+}
+
 hs_stop_planned_marker <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   marker <- as.character(expr[[1L]])
+  nearest <- hs_planned_marker_nearest_path(marker)
   hs_abort_unsupported_syntax(
     "`",
     marker,
-    "()` is planned, not implemented. Run `formula_status()` for the live ",
-    "list of which terms parse and which fit.",
+    "()` is planned, not implemented.",
+    if (nzchar(nearest)) paste0(" ", nearest) else "",
+    " Run `formula_status()` for the live list of which terms parse and which fit.",
     call. = FALSE
   )
 }
@@ -2885,7 +2967,7 @@ hs_deparse <- function(expr) {
   paste(deparse(expr, width.cutoff = 500L), collapse = " ")
 }
 
-# A bare grouping/random-effect expression like `(1 | x)` or `x | id` — i.e. a
+# A bare grouping/random-effect expression like `(1 | x)` or `x | id` -- i.e. a
 # top-level `|` call that is not wrapped in a recognized effect function such as
 # `animal()`/`permanent()`. These must be named, not silently absorbed into the
 # fixed-effect design.

@@ -7,54 +7,60 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-`hsquared` is the R-facing package for an open quantitative-genetic modelling
-system. Its partner package, `HSquared.jl`, owns the sparse Julia engine.
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
 
-The first user contract is intentionally simple:
+`hsquared` is the R interface for a Julia-backed animal model. The first
+working path is one Gaussian trait, one `animal()` term, REML. This page uses
+a four-animal pedigree so the first block runs without Julia. **n = 4 is a
+syntax demo, not a number for a paper.**
 
-```{r, eval = FALSE}
-fit <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian(),
-  REML = TRUE
+```{r golden-data}
+library(hsquared)
+
+ped <- data.frame(
+  id   = c("sire", "dam", "off1", "off2"),
+  sire = c(NA, NA, "sire", "sire"),
+  dam  = c(NA, NA, "dam", "dam")
+)
+dat <- data.frame(
+  id     = c("sire", "dam", "off1", "off2"),
+  sex    = c("m", "f", "m", "f"),
+  weight = c(42, 38, 40, 37)
 )
 ```
 
-Current status: v0.1 **fits** this model. `hsquared()` parses and validates the
-formula, marshals the model to the `HSquared.jl` engine, and returns a fitted
-`hsquared_fit` object carrying heritability, variance components, breeding values
-(EBVs/BLUPs), fixed effects, fitted values, residuals, and diagnostics, estimated
-by REML (average-information). Fitting is computed in `HSquared.jl`, so it needs a
-local Julia, the `JuliaCall` R package, and an `HSquared.jl` checkout; without
-them the default call errors with install guidance, and
-`control = hs_control(engine = "validate")` validates the contract without
-fitting. ML is not implemented — `REML = FALSE` is rejected on the fit path. The
-fit is validated by known-truth recovery, the published gryphon REML anchor, and
-agreement with the `sommer` package. `hs_data()` can collect phenotype, pedigree,
-genotype, marker, expression, annotation, and environment inputs into a checked
-container for future integrated workflows.
+## Check the model (no Julia)
 
-The interface rule is: easy, easy, easy. Users are gold. The common animal
-model should be obvious before users reach for genomic, multivariate,
-factor-analytic, non-Gaussian, or unusual-inheritance machinery.
+```{r golden-validate}
+hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat,
+  control = hs_control(engine = "validate")
+)
 
-## Engine setup
+model_spec(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
+```
+
+`hsquared(..., engine = "validate")` confirms the formula and data.
+`model_spec()` shows the parsed design and the engine target that would be
+called. Nothing is fitted.
+
+## Fit (needs the Julia engine)
 
 Installing `hsquared` (`pak::pak("itchyshin/hsquared")`) gives you the R
-interface; it does not install the engine. `HSquared.jl` is a from-source Julia
-checkout, not a package-managed dependency. Install
-[Julia](https://julialang.org/downloads/) and the `JuliaCall` R package, clone
-the engine (`git clone https://github.com/itchyshin/HSquared.jl`), then register
-the checkout in one of two ways:
+interface only. Fitting needs a local [Julia](https://julialang.org/downloads/),
+the `JuliaCall` R package, and an `HSquared.jl` checkout
+(`git clone https://github.com/itchyshin/HSquared.jl`). Register the checkout
+with `Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")`, or per call:
 
-```{r, eval = FALSE}
-# (a) for the session, or persistently via .Renviron
-Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
-
-# (b) per call
+```{r golden-fit-path, eval = FALSE}
 fit <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
+  weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
   control = hs_control(
     engine_control = list(julia_project = "/path/to/HSquared.jl")
@@ -62,66 +68,48 @@ fit <- hsquared(
 )
 ```
 
-Until the engine is registered, `control = hs_control(engine = "validate")`
-parses and validates the model without fitting.
+Once the engine is registered, the same call as the validate block
+*attempts* a fit. **n = 4 may not converge.** If `fit_diagnostics()`
+says `converged` is FALSE, do not read `heritability()` as a result --
+a near-zero value is not h^2 = 0. `heritability()` warns when the fit
+failed. The successful first path on this page is the validate block
+above.
 
-## Current parser contract
+```{r golden-fit, eval = FALSE}
+fit <- hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
 
-The parser currently accepts:
-
-- one `animal()` term;
-- random-intercept syntax: `1 | id`;
-- `pedigree = ped`, or `animal(1 | id)` when `data` is an `hs_data()` bundle
-  with a pedigree component;
-- numeric Gaussian responses.
-
-One narrow experimental genomic GREML route is available through the explicit
-`engine = "julia", target = "genomic"` path:
-
-```r
-y ~ fixed + genomic(1 | id, markers = M)
-y ~ fixed + genomic(1 | id, Ginv = Q)
+fit_diagnostics(fit)
+heritability(fit)          # warns if the fit did not converge
+variance_components(fit)
+breeding_values(fit)
 ```
 
-Marker input uses sample-frequency, unweighted VanRaden method 1 with
-`K_lambda = G + 0.01I`; supplied `Ginv` is used unchanged and its construction
-details remain unknown. `heritability()` labels
+Without the engine, that default call errors with install guidance rather than
+silently degrading. Until then, `engine = "validate"` is the successful path.
 
-`genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`,
+ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE`
+(the default). That is the same rule for the default fit and for
+`engine = "validate"`.
 
-the genomic variance-component ratio on the declared relationship scale. It is
-not generally the fraction of average marginal phenotypic variance and is not
-pedigree-, founder-base-, population-, or universal narrow-sense heritability;
-genomic interval and ratio-SE accessors are unavailable.
-A fail-closed boundary candidate matched an independent base-R oracle on all
-240 sealed holdouts, correcting 30 classifications with no losses. The
-conjunctive activation gate nevertheless failed because `n120_m600_r050` had a
-5.99x candidate/default p95 runtime ratio against the frozen 3x cap. Default
-activation was not added, the nine-cell campaign did not run, and the route
-remains partial/experimental without changing `public_covered_count` (5). The
-240 seeds are spent; a revised candidate requires performance work on discovery
-data, a new preregistration, and a fresh holdout. The holdout used independent
-HWE/no-LD markers. It provides no robustness
-evidence for LD, population structure, imputation, base-frequency
-misspecification, real panels, or production genotype data.
+## After this works
 
-Several other terms fit through an opt-in experimental engine path
-(`engine = "julia"`, not the default). The
-common-environment leg of the two-effect model (`common_env()`) is **covered at
-validation scale**; the remaining opt-in terms each mirror a `partial`
-validation gate: `permanent()`, `maternal_genetic()`, genomic SNP-BLUP,
-`single_step()`, and the supplied-relationship primaries `relmat()`
-and `precision()` (REML-only, experimental, **not** covered — they do not change
-the covered-model count). See the "Fitting models" article for the opt-in calls.
+Read [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
+before putting a number in a paper. Point estimates are reportable only on
+**covered** routes; intervals are experimental and not coverage-calibrated.
 
-The remaining grammar is still important because it defines the roadmap. Terms
-such as `cov = fa(K = 2)`, QTL effects, `paternal_genetic()`, `dominance()`,
-`epistasis()`, selfing, polyploidy, haplodiploidy, and GLLVM-style latent
-genetic axes are planned lanes, not current fitting features.
+The [gryphon worked example](https://itchyshin.github.io/hsquared/articles/gryphon-worked-example.html)
+is a later teaching dataset (supplied relationship, compare to `sommer`), not
+this first example.
+
+`formula_status()` lists which terms parse and which fit. `permanent()`,
+`common_env()`, and `maternal_genetic()` are parsed; they fit only with a named
+`target =`. The default `hsquared()` call names that target and stops. See
+[Fitting models](https://itchyshin.github.io/hsquared/articles/fitting-models.html).
 
 ## Twin-package flow
-
-The intended flow is:
 
 ```text
 R formula + data
@@ -133,5 +121,4 @@ R formula + data
 -> R summaries, extractors, plots, and diagnostics
 ```
 
-R owns the friendly interface. Julia owns speed, sparse computation, and
-experimental engine work.
+R owns the friendly interface. Julia owns the fit.

@@ -1,0 +1,121 @@
+---
+title: "Can I fit and report this?"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Can I fit and report this?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This page answers one question: **can I use `hsquared` for my analysis, and what
+am I allowed to write in the paper?**
+
+`hsquared` is an experimental package. Most of what follows is not about whether
+code runs — nearly all of it runs. It is about which numbers have enough evidence
+behind them to report.
+
+## The three-line version
+
+1. The **univariate Gaussian animal model** — one additive genetic effect, a
+   Gaussian trait, REML — is the covered route. Report its point estimates.
+2. Almost everything else fits through an **opt-in, experimental** engine target.
+   Treat those fits as exploratory, or report them beside a comparator you ran
+   yourself.
+3. **No standard error or interval in this package is coverage-calibrated.** Do
+   not report one as if it were.
+
+## What the status words mean
+
+`hsquared` uses four words, in descending order of what you may claim. It
+deliberately never uses a bare "supported", because that word hides the
+difference between *runs* and *validated*.
+
+| Word | The code | The evidence | What you may report |
+|---|---|---|---|
+| `covered` | Runs | Pre-declared recovery gate passed **and** an external same-estimand comparator agrees | Point estimates, within the stated scope |
+| `partial` | Runs | Bridge-verified and partly evidenced; the chain has a named hole | Exploratory use; report only beside your own comparator |
+| `experimental` | Runs | Labelling, not a status tier — every opt-in route carries it | Nothing on this package's word alone |
+| `planned` | Aborts as planned, not implemented | None | Nothing |
+
+This page is the user-facing list of what you may report.
+`validation_status()` is a developer evidence table of validation atoms;
+it is not a complete list of covered routes. Developers can inspect it
+in their own session:
+
+```{r validation-status-live, eval = FALSE}
+validation_status()
+```
+
+## Do I need Julia?
+
+Yes, for fitting. This matters more here than in most R packages, because the
+default call is the one that needs it.
+
+| What you want | What you need |
+|---|---|
+| Parse and validate a model, inspect the design matrices and pedigree ordering | R only — `hs_control(engine = "validate")` and `model_spec()` |
+| Actually fit and get heritability, variance components, EBVs | A local Julia, the `JuliaCall` package, and an `HSquared.jl` checkout |
+
+Without the engine, `hsquared()` still tells you whether your model is
+expressible, and errors with install guidance if you ask it to fit. See the
+engine setup section of the [README](https://github.com/itchyshin/hsquared#engine-setup).
+
+```{r validate-only, eval = FALSE}
+# no Julia required; same ped/dat as the README
+hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat,
+  control = hs_control(engine = "validate")
+)
+
+model_spec(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
+```
+
+## Route-by-route reporting permissions
+
+```{r capability-ledger-summary, echo = FALSE, results = "asis"}
+cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n")
+```
+
+## Two covered routes without their own status row
+
+`validation_status()` does not yet carry a separate row for two routes that
+`docs/design/capability-status.md` records as covered at validation scale:
+
+- **Random regression / reaction norm, k = 2** —
+  `animal(rr(age, order = 2) | id, pedigree = ped)` via
+  `engine_control = list(target = "random_regression")`. A pre-declared 48-seed
+  recovery gate passed and a `sommer` `leg()` same-estimand comparator agrees on
+  all `K_g` entries and the residual. **k = 2 only.** The residual is homogeneous
+  and there is no permanent-environment term, so `rr_heritability()` can
+  *overstate* h²(t) for repeated-records designs. `K_g` values are not comparable
+  across basis-normalization conventions.
+- **Direct–maternal correlated 2×2 G** —
+  `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` via
+  `engine_control = list(target = "direct_maternal")`. A pre-declared 48-seed gate
+  passed and a `sommer` `covm()` same-estimand comparator agrees. `heritability()`
+  returns the labelled Willham triple — direct h²_d, maternal m², total h²_T, and
+  r_am — never a bare scalar. Direct h² is **not** the total heritability, and a
+  negative r_am is real and expected. Single relationship A only.
+
+Both are opt-in, experimental, REML-only, and dense (n ≲ 1000). They are
+listed here because this page — not `validation_status()` — is what you
+should read before reporting a number. The cards above are generated from
+the evidence table and will not mention them until those rows exist.
+
+## Where to read next
+
+- [Model status](model-status.html) — the same ledger organised by model family.
+- [Validation evidence](validation-evidence.html) — the evidence chain behind each
+  row, atom by atom.
+- [Function map and cheat sheet](function-map-cheatsheet.html) — which function to
+  call at which step.
+- [Formula grammar roadmap](formula-grammar.html) — what the parser reserves for
+  later, and what it refuses today.

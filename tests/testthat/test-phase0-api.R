@@ -116,7 +116,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     status$fitting_status[
       status$term == "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)"
     ],
-    "fitted (opt-in multivariate)"
+    "fitted (default route, experimental multivariate)"
   )
   expect_true(all(
     c(
@@ -157,7 +157,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   )
   expect_match(
     paste(capture.output(print(status)), collapse = "\n"),
-    "planned grammar: rows marked planned/reserved error before fitting",
+    "reserved/planned:",
     fixed = TRUE
   )
   expect_true(any(
@@ -212,6 +212,58 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   ]
   expect_s3_class(subset, "hs_formula_status")
   expect_output(print(subset), "cov = lowrank")
+})
+
+test_that("formula_status helper vectors stay the same length", {
+  n <- lengths(list(
+    term = hsquared:::hs_formula_status_terms(),
+    category = hsquared:::hs_formula_status_categories(),
+    phase = hsquared:::hs_formula_status_phases(),
+    syntax_status = hsquared:::hs_formula_status_syntax(),
+    fitting_status = hsquared:::hs_formula_status_fitting(),
+    current_behavior = hsquared:::hs_formula_status_behavior()
+  ))
+  expect_equal(length(unique(n)), 1L)
+  expect_equal(unname(unique(n)), nrow(formula_status()))
+})
+
+test_that("formula_status print header is derived from the printed rows", {
+  status <- formula_status()
+  printed <- paste(capture.output(print(status)), collapse = "\n")
+
+  expect_match(printed, "default:")
+  expect_match(printed, "animal\\(\\)")
+  expect_match(printed, "cbind\\(\\)")
+  expect_match(printed, "opt-in:")
+  expect_match(printed, "animal\\(rr\\(\\)\\)")
+  expect_match(printed, "single_step\\(\\)")
+  expect_match(printed, "metafounder\\(\\)")
+  expect_match(printed, "relmat\\(\\)")
+  expect_match(printed, "precision\\(\\)")
+  expect_match(printed, "\\(1 \\| group\\)")
+  expect_match(printed, "\\$current_behavior")
+  expect_false(grepl(
+    "permanent/common_env/maternal_genetic/genomic fit opt-in",
+    printed,
+    fixed = TRUE
+  ))
+  expect_false(grepl("parsed today:", printed, fixed = TRUE))
+
+  rr <- status[
+    status$term == "animal(rr(covariate, order = 2) | id, pedigree = ped)",
+  ]
+  class(rr) <- unique(c("hs_formula_status", class(rr)))
+  rr_print <- paste(capture.output(print(rr)), collapse = "\n")
+  expect_match(rr_print, "animal\\(rr\\(\\)\\)")
+  expect_false(grepl("cbind()", rr_print, fixed = TRUE))
+  expect_false(grepl("default:", rr_print, fixed = TRUE))
+
+  planned <- status[status$syntax_status == "planned", ]
+  class(planned) <- unique(c("hs_formula_status", class(planned)))
+  planned_print <- paste(capture.output(print(planned)), collapse = "\n")
+  expect_match(planned_print, "reserved/planned:")
+  expect_false(grepl("default:", planned_print, fixed = TRUE))
+  expect_false(grepl("opt-in:", planned_print, fixed = TRUE))
 })
 
 test_that("validation_status separates evidence from planned validation", {
@@ -281,13 +333,23 @@ test_that("validation_status separates evidence from planned validation", {
     ],
     "partial"
   )
-  expect_equal(
-    status$status[
-      status$capability ==
-        "univariate Gaussian animal-model fit (default path, AI-REML)"
-    ],
-    "covered"
+  default_row <- status[
+    status$capability ==
+      "univariate Gaussian animal-model fit (default path, AI-REML)",
+  ]
+  expect_equal(default_row$status, "covered")
+  expect_match(default_row$claim_boundary, "REML = FALSE", fixed = TRUE)
+  expect_match(default_row$claim_boundary, "default fit", fixed = TRUE)
+  expect_match(
+    default_row$claim_boundary,
+    'engine = "validate"',
+    fixed = TRUE
   )
+  expect_false(grepl(
+    "rejected on the fit path",
+    default_row$claim_boundary,
+    fixed = TRUE
+  ))
   expect_equal(
     status$status[
       status$capability ==
@@ -337,7 +399,7 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "this R public opt-in surface stays partial",
+    "this R public surface stays partial",
     fixed = TRUE
   )
   expect_match(
@@ -347,7 +409,37 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "another independent same-estimand comparator",
+    "Twin C8 broader-DGP confirm is banked",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "14/16 pass",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "MV-5 remains authorization-gated",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "hs_require_suggests",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "scoped to k = 2 unstructured",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "k >= 3 stays parseable-and-fittable-but-experimental",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "\"diagonal\" stays experimental",
     fixed = TRUE
   )
   expect_match(
@@ -366,6 +458,54 @@ test_that("validation_status separates evidence from planned validation", {
   expect_match(
     paste(capture.output(print(status)), collapse = "\n"),
     "supplied-variance Henderson MME fixture"
+  )
+})
+
+test_that("capability ids stay stable and labels carry current wording", {
+  status <- validation_status()
+
+  expect_true("capability_label" %in% names(status))
+  expect_type(status$capability_label, "character")
+  expect_length(status$capability_label, nrow(status))
+  expect_false(anyNA(status$capability_label))
+  expect_false(any(!nzchar(status$capability_label)))
+
+  # Every override must name a live capability id. Without this, renaming an id
+  # would silently strand its alias and the label would revert to the stale
+  # wording with no test failing.
+  overrides <- hs_validation_status_label_overrides()
+  expect_true(all(names(overrides) %in% status$capability))
+
+  # Rows with no override are unaliased: label is the id verbatim.
+  unaliased <- !(status$capability %in% names(overrides))
+  expect_identical(
+    status$capability_label[unaliased],
+    status$capability[unaliased]
+  )
+})
+
+test_that("the multivariate row is looked up by its historical opt-in id", {
+  status <- validation_status()
+
+  # Dated evidence cites this id verbatim - docs/dev-log/comparator-runs/
+  # 2026-06-21-multivariate-tool-availability.md and
+  # 2026-09-01-blupf90-tool-unavailability.md. Lookup by it must keep working.
+  historical_id <- "experimental multivariate REML estimator (opt-in)"
+  row <- status[status$capability == historical_id, ]
+  expect_equal(nrow(row), 1L)
+  expect_equal(row$status, "partial")
+
+  # MV-4 made the route default, so the reader-facing label drops "opt-in"
+  # while the id keeps it.
+  expect_false(grepl("opt-in", row$capability_label, fixed = TRUE))
+  expect_match(row$capability_label, "default route", fixed = TRUE)
+
+  # The printed table shows the label, not the stale id.
+  printed <- paste(capture.output(print(status)), collapse = "\n")
+  expect_match(
+    printed,
+    "multivariate REML estimator (default route)",
+    fixed = TRUE
   )
 })
 

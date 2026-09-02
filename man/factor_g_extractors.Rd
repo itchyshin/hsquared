@@ -27,7 +27,7 @@ These reserved extractors currently error for \code{hsquared_fit} objects.
 \details{
 These extractor names are reserved for future factor-analytic G-matrix
 results. The current package can report invariant covariance and correlation
-matrices from opt-in multivariate fits, but it does not yet expose
+matrices from multivariate fits, but it does not yet expose
 interpreted loadings, uniqueness/specific variance, or latent breeding
 values. Loading columns are rotation-nonunique until a rotation or
 constraint policy is validated. Future \code{hsquared_fit} methods reserve

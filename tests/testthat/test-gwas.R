@@ -333,7 +333,7 @@ test_that("gwas() guards the fit type and the markers shape (no engine needed)",
 })
 
 test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
@@ -454,7 +454,7 @@ test_that("loco gwas() uses ANIMAL-level precisions under a non-square Z", {
   # animal (Z square) the two are identical and a markers/markers_rec swap would
   # pass undetected. A repeated-records fit makes Z NON-square, so the engine's
   # size(Z,2) == size(precision,1) guard fires on the wrong wiring.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
@@ -579,7 +579,7 @@ test_that("gwas(genome_wide = TRUE) is rejected for mixed/loco (validated for si
 })
 
 test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."

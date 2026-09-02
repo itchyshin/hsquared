@@ -169,13 +169,16 @@ not the default, and not production.
   heritabilities. INDEPENDENT effects only — random slopes `(x | g)` and
   correlated `(x || g)` terms are rejected.
 - Random regression (reaction norm), k = 2 —
-  `animal(rr(t, k = 2) | id, pedigree = ped)`, `target = "random_regression"`:
+  `animal(rr(t, order = 2) | id, pedigree = ped)`, `target = "random_regression"`:
   a linear reaction norm returning the 2×2 genetic covariance `K_g`
   (intercept × slope), residual variance, EBVs, and an `h²(t)` trajectory.
   Covered at k = 2 (mirrors the twin `V3-RR-REML`: a 48-seed bias/MCSE gate PASS
   + a `sommer` `leg()` same-estimand comparator AGREE, exact live parity).
-  `heritability()` returns `h²(t)` as a **curve**, never a bare scalar (a scalar
-  call errors). Point estimate only (no interval on the curve); the residual is
+  `rr_heritability()` — **not** `heritability()` — is the reaction-norm
+  heritability accessor: it returns `h²(t)` as a **curve**, never a bare scalar.
+  `heritability()` on a random-regression fit **errors** and names
+  `rr_heritability()`, because a single scalar `h²` is not defined for this
+  model. Point estimate only (no interval on the curve); the residual is
   homogeneous and there is no permanent-environment term, so `h²(t)` can
   overstate for repeated-records designs. k ≥ 3 is experimental.
 - Direct–maternal correlated model (2×2 G) —
@@ -190,10 +193,11 @@ not the default, and not production.
 
 ## Opt-in and experimental (not the default)
 
-These models fit through the same opt-in
-`control = hs_control(engine = "julia", ...)` path but are **not** yet
-comparator/known-truth-validated at the bar above; each mirrors a `partial` gate
-in the `HSquared.jl` twin.
+These models are **not** yet comparator/known-truth-validated at the bar above;
+each mirrors a `partial` gate in the `HSquared.jl` twin. All but one are reached
+through the opt-in `control = hs_control(engine = "julia", ...)` path; the
+multivariate `cbind()` model is the exception and routes by default, which
+changes how you reach it and not what may be claimed from it.
 
 The genomic GREML route also remains explicit:
 `genomic(1 | id, markers = M)` and `genomic(1 | id, Ginv = Q)` require
@@ -235,14 +239,21 @@ misspecification, real panels, or production genotype data.
   omitted it estimates `sigma_g2`/`sigma_e2` by REML from the markers. Mirrors the
   twin `V2-SNPBLUP` gate.
 - Multivariate Gaussian animal model — `cbind(trait1, trait2) ~
-  animal(1 | id, pedigree = ped)`, `target = "multivariate"`. Returns G/R
+  animal(1 | id, pedigree = ped)`, **routed on the default path** (no `target`
+  needed; `target = "multivariate"` still accepted). Returns G/R
   covariance and correlation matrices, per-trait h2, and cross-trait EBVs;
   missing trait cells may be `NA`. Dense validation-scale only; R-lane evidence
   includes cold-start recovery, one full-unstructured `sommer` REML comparator,
   a published Mrode supplied-covariance BLUP/MME anchor, and a `MCMCglmm`
-  Bayesian agreement probe. Covered promotion still needs recovery-gate
-  acceptance or broadening plus a second independent same-estimand comparator
-  beyond `sommer`; `MCMCglmm` is not REML parity.
+  Bayesian agreement probe. The Mrode anchor is **supplied-covariance** — it
+  checks fixed effects and BLUPs given known `G0`/`R0`, not the estimated
+  covariances — and **no published textbook anchor for estimated multivariate
+  `G0`/`R0` exists**, so that part of the evidence is comparator- and
+  recovery-based rather than textbook-anchored. R↔engine element-wise parity is
+  verified **locally** at pre-declared tolerances, **not in CI** (the CI runner
+  has no Julia, so those checks skip). Covered promotion still needs
+  recovery-gate acceptance or broadening plus a second independent
+  same-estimand comparator beyond `sommer`; `MCMCglmm` is not REML parity.
 
 ## Current limits
 
@@ -265,14 +276,17 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
   lme4-style `(... | group)` term is rejected with a pointer to the named effects
   above (it is never silently absorbed into the fixed effects); the opt-in
   `target = "multi_effect"` path is where bare `(1 | g)` intercepts are accepted.
-- **One default response, plus opt-in `cbind()`.** The default path is a single
-  numeric response. Multi-trait `cbind(...)` responses fit only through the
-  experimental `engine = "julia", target = "multivariate"` path.
+- **One numeric response, or a `cbind()` multi-trait response.** A multi-trait
+  `cbind(...)` Gaussian response with an `animal()` term routes to the
+  multivariate fitter on the default path; the explicit
+  `engine = "julia", target = "multivariate"` spelling still works. The route is
+  default, the capability is still experimental (`partial`).
 - **Gaussian identity link only.** Other families are planned, not implemented.
-- **REML only on the fit path.** `REML = FALSE` (ML) is rejected; the
-  supplied-variance paths (`henderson_mme`, and `snp_blup` *when variances are
-  supplied*) solve at given variances rather than estimating them (`snp_blup`
-  with variances omitted estimates them by REML).
+- **REML only.** `REML = FALSE` (ML) is rejected; use `REML = TRUE`
+  (the default). That is the same rule for the default fit and for
+  `engine = "validate"`. The supplied-variance paths (`henderson_mme`, and
+  `snp_blup` *when variances are supplied*) solve at given variances rather
+  than estimating them (`snp_blup` with variances omitted estimates them by REML).
 - **Fixed effects are unrestricted** otherwise: any number of ordinary
   fixed-effect terms (`sex + age + ...`) on the right-hand side is fine.
 
@@ -290,8 +304,8 @@ unsupported form rather than guessing.
   only through explicit `engine = "julia"` targets, never as the default — some
   covered at validation scale, some experimental (see the two opt-in sections
   above).
-- ML estimation on the fit path (`REML = FALSE` is rejected; only REML is
-  implemented).
+- ML estimation (`REML = FALSE` is rejected on the default fit and on
+  `engine = "validate"`; only REML is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a default for
   any model other than the v0.1 univariate Gaussian animal model or the explicit
@@ -319,7 +333,7 @@ unsupported form rather than guessing.
 - Production genomic or single-step workflows; both genomic GREML and
   single-step remain explicit experimental targets.
 - Factor-analytic and structured `cov()` G matrices (the unstructured
-  multivariate G/R path fits opt-in and experimentally; see above).
+  multivariate G/R path fits by default but experimentally; see above).
 - Paternal, dominance, epistasis, custom relationship/precision, QTL-style,
   selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting, and
   GLLVM-style models. (Permanent environment, common environment, and maternal

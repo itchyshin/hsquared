@@ -3,8 +3,47 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' `validation_status()` reports the current validation atoms and planned
-#' comparator lanes for `hsquared`. It is a status table only: it does not run
-#' validation checks, fit models, or promote any capability to working status.
+#' comparator lanes for `hsquared`. It is a **developer evidence table**, not
+#' the user-facing list of what you may report. For that list, read
+#' [Can I fit and report this?](
+#' https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' This function does not run validation checks, fit models, or promote any
+#' capability to working status.
+#'
+#' # This table is not the full list of covered routes
+#'
+#' The rows here are validation *atoms*, grouped by evidence chain rather than
+#' by public modelling route, so the `covered` row count is not the number of
+#' covered routes. Two capabilities that count as publicly covered have no row
+#' of their own yet:
+#'
+#' - the opt-in reaction-norm model, k = 2:
+#'   `animal(rr(x, order = 2) | id, pedigree = ped)` with
+#'   `engine_control = list(target = "random_regression")`;
+#' - the opt-in correlated direct-maternal 2x2 G model:
+#'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` with
+#'   `engine_control = list(target = "direct_maternal")`.
+#'
+#' Both are covered at validation scale, opt-in, REML-only, and dense
+#' (n <= 1000 or so). Their scope and reporting limits are recorded in the
+#' repository capability ledger (`docs/design/capability-status.md`) and, for
+#' readers, in [Can I fit and report this?](
+#' https://itchyshin.github.io/hsquared/articles/current-limits.html). Read
+#' this table together with that enumeration: an absent row is not an absent
+#' capability, and this table alone does not tell you everything you may
+#' report.
+#'
+#' # Capability identifiers versus labels
+#'
+#' `capability` is a **stable identifier**. Dated evidence records -- comparator
+#' runs under `docs/dev-log/comparator-runs/` and check-log entries -- cite these
+#' strings verbatim to name the row they report against, so an identifier is not
+#' rewritten once evidence points at it. Look rows up by `capability`.
+#'
+#' `capability_label` is the **current wording**, and is what reader-facing
+#' surfaces print. The two differ only where an identifier's wording has been
+#' overtaken by a later change; today that is the multivariate row, whose
+#' `cbind()` route became default rather than opt-in.
 #'
 #' @return A data frame of validation status records with class
 #'   `"hs_validation_status"`.
@@ -14,6 +53,7 @@
 validation_status <- function() {
   out <- data.frame(
     capability = hs_validation_status_capabilities(),
+    capability_label = hs_validation_status_labels(),
     phase = hs_validation_status_phases(),
     status = hs_validation_status_status(),
     evidence = hs_validation_status_evidence(),
@@ -28,14 +68,42 @@ validation_status <- function() {
 print.hs_validation_status <- function(x, ...) {
   cat("<hs_validation_status>\n")
   cat("  validation: status table only; checks are run by tests and CI\n")
-  cat("  public claims: only `covered` rows may be advertised as working\n")
+  cat("  public claims: developer evidence table, not the user-facing list\n")
+  cat("  of what you may report; see Can I fit and report this?\n")
+  cat("  this table is not the full list of covered routes -- opt-in\n")
+  cat("  random_regression (k = 2) and direct_maternal are covered with no\n")
+  cat("  row yet; see the current-limits article\n")
+  cat("  shown below: `capability_label` (current wording); look rows up by\n")
+  cat("  the stable `capability` id that dated evidence records cite\n")
   out <- x
   class(out) <- setdiff(class(out), "hs_validation_status")
   print.data.frame(
-    out[c("capability", "phase", "status")],
+    out[c("capability_label", "phase", "status")],
     row.names = FALSE
   )
   invisible(x)
+}
+
+# Capability identifiers are STABLE: dated comparator-run reports and check-log
+# entries cite them verbatim to name the row they report against, so renaming an
+# id would orphan its evidence. When an id's wording is overtaken by a later
+# change, the correction is recorded here as a display alias instead of a
+# rename. See docs/dev-log/decisions.md, "2026-09-02: Capability Ids Are
+# Historical; Labels Carry Current Wording".
+hs_validation_status_label_overrides <- function() {
+  c(
+    # MV-4 made the `cbind()` route default rather than opt-in, but three dated
+    # records (two comparator-run reports, one check-log entry) already cite the
+    # "(opt-in)" id. Reachability changed; the `partial` status did not.
+    "experimental multivariate REML estimator (opt-in)" = "experimental multivariate REML estimator (default route)"
+  )
+}
+
+hs_validation_status_labels <- function() {
+  ids <- hs_validation_status_capabilities()
+  overrides <- hs_validation_status_label_overrides()
+  hit <- match(ids, names(overrides))
+  unname(ifelse(is.na(hit), ids, overrides[hit]))
 }
 
 hs_validation_status_capabilities <- function() {
@@ -79,9 +147,9 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 7L),      # positions 1-7
-    "covered",               # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    rep("partial", 3L),      # positions 9-11
+    rep("partial", 7L), # positions 1-7
+    "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
+    rep("partial", 3L), # positions 9-11
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -212,6 +280,15 @@ hs_validation_status_evidence <- function() {
       "same-estimand REML comparator. A pure-R CI anchor also reproduces the",
       "published Mrode Example 5.1 multiple-trait supplied-G0/R0 BLUP/MME",
       "fixed effects and animal BLUPs from the LUKE/Masuda reproductions.",
+      "NO-ANCHOR DISCLOSURE (Standard-Tier covered-flip gate item 2): Mrode",
+      "Example 5.1 is a SUPPLIED-G0/R0 BLUP/MME anchor - it pins fixed effects",
+      "and animal BLUPs GIVEN known covariances - so it does NOT anchor the",
+      "ESTIMATED G0/R0 that this row's REML claim is about. No published",
+      "textbook anchor for estimated multivariate G0/R0 exists; the",
+      "estimated-covariance evidence is comparator- and recovery-based",
+      "(sommer 4.4.5, blupf90+ 2.60, cold-start recovery), not",
+      "textbook-anchored. Any covered flip carries this disclosure, never an",
+      "implied Mrode anchor (precedent: docs/design/43-genomic-greml-g0.md).",
       "Mirrors the twin V4-MULTIVARIATE / V4-MV-REML gates (partial)."
     ),
     paste(
@@ -342,29 +419,53 @@ hs_validation_status_boundaries <- function() {
       "parity are planned. Not the default, not comparator-validated."
     ),
     paste(
-      "Experimental opt-in path only; Julia-owned dense/validation-scale",
+      "Experimental; Julia-owned dense/validation-scale",
       "multivariate REML estimator that R surfaces; mirrors the twin V4 rows",
-      "(partial). `cbind()` responses with missing trait cells are supported,",
-      "but this is REML-only, animal-model-only, and not the default. The R lane",
+      "(partial). ROUTING: a `cbind()` Gaussian response with an `animal()`",
+      "term auto-routes to this fitter on the DEFAULT path (MV-4); no",
+      "engine/target argument is required, and the explicit `engine =",
+      "\"julia\", target = \"multivariate\"` spelling still works. Default",
+      "routing is NOT a covered claim and did not move public_covered_count.",
+      "`cbind()` responses with missing trait cells are supported,",
+      "but this is REML-only and animal-model-only. The R lane",
       "has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
       "anchor plus a Bayesian MCMCglmm agreement probe. The MCMCglmm leg is",
       "not same-estimand REML parity. The engine `V4-MV-REML` is now covered at",
       "validation scale (one-owner consolidation, HSquared.jl#161) on a",
-      "substitutable gate, but this R public opt-in surface stays partial \u2014 it is",
-      "not the public default and still needs a broader/redeclared recovery gate",
-      "and another",
-      "independent same-estimand comparator (ASReml, BLUPF90/AIREMLF90,",
-      "JWAS/equivalent, or accepted alternative).",
+      "substitutable gate, but this R public surface stays partial \u2014 default",
+      "routing did not promote it. Twin C8 broader-DGP confirm is banked",
+      "(DRAC job 47925486; 16x500; 14/16 pass; fails only rg_090_rec1/",
+      "rg_095_rec1; base_inside clean) as characterization, not an R flip;",
+      "R-lane MV-5 remains authorization-gated (driver committed, not run).",
+      "The engine blupf90+ same-estimand REML comparator is discharged.",
+      "A26 R<->engine element-wise parity is DISCHARGED LOCALLY (run at tip,",
+      "within predeclared tolerances) but is NOT CI-backed: Tier-1 parity CI",
+      "is not yet live (no workflow provisions Julia and the parity legs skip",
+      "on a Julia-free runner), so read it as local evidence, not a",
+      "CI-verified claim. The R flip still owes Darwin, Rose, and G10.",
+      "NO-ANCHOR DISCLOSURE (gate item 2): the published Mrode Example 5.1",
+      "anchor is SUPPLIED-covariance BLUP/MME and does NOT anchor an ESTIMATED",
+      "G0/R0; no published textbook anchor for estimated multivariate G0/R0",
+      "exists. MV-1 sommer",
+      "requires Suggests on NOT_CRAN (hs_require_suggests; CRAN still skips).",
+      "Covered numeric claim (when flipped) is scoped to k = 2 unstructured;",
+      "k >= 3 stays parseable-and-fittable-but-experimental; genetic_structure =",
+      "\"diagonal\" stays experimental at 0.6.",
       "The Julia engine currently inverts Ainv internally, so deep-inbreeding or",
       "high-condition-number pedigrees remain a twin-side hardening item."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
-      "REML only (ML is rejected on the fit path). Genomic, repeatability,",
-      "two-effect, marker-effect, multivariate, and non-Gaussian",
+      "REML only (`REML = FALSE` is rejected on the default fit and on",
+      "`engine = \"validate\"`; use `REML = TRUE`). The covered claim is",
+      "this REML estimator, not ML. Genomic, repeatability,",
+      "two-effect, marker-effect, and non-Gaussian",
       "(poisson/binomial, Laplace or variational REML) fitting are separate",
-      "opt-in experimental targets, not the default. Mirrors the twin-owned",
+      "opt-in experimental targets, not the default. A `cbind()` multivariate",
+      "response also routes on the default path, but it is a separate,",
+      "experimental (partial) row and is NOT part of this covered claim.",
+      "Mirrors the twin-owned",
       "V1-AI-REML gate",
       "(covered); not ASReml multi-trait parity."
     ),

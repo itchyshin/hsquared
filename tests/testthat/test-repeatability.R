@@ -123,9 +123,24 @@ test_that("the default engine = \"fit\" rejects a permanent() formula", {
       data = dat,
       family = stats::gaussian()
     ),
-    "experimental and opt-in",
+    "Closest working call",
     fixed = TRUE
   )
+  err <- tryCatch(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`permanent()` is not on the default path",
+    err,
+    fixed = TRUE
+  ))
+  expect_true(grepl("target = \"repeatability\"", err, fixed = TRUE))
+  expect_true(grepl("That route is experimental", err, fixed = TRUE))
 })
 
 test_that("target = \"repeatability\" requires a permanent() term", {
@@ -218,7 +233,7 @@ test_that("the repeatability initial validator enforces three named components",
 })
 
 test_that("hsquared fits the opt-in repeatability model on repeated records", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live repeatability."

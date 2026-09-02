@@ -189,11 +189,22 @@ test_that("relmat_status is 'build_in_julia' for both blocks", {
 
 # Fabricate a minimal direct_maternal hsquared_fit to test extractor behaviour
 # without a live Julia engine.
-make_dm_fit <- function(r_am = -0.4, converged = TRUE) {
+#
+# Components are the source of truth. Default `r_am` is the defining identity
+# `σ_dm / sqrt(σ²_ad · σ²_am)` so derived-estimand assertions can hold
+# (A21 GAP / C4). Callers may still pass `r_am` as a free knob for plumbing
+# or boundary-warning tests.
+make_dm_fit <- function(r_am = NULL, converged = TRUE) {
+  sigma_ad <- 0.30
+  sigma_am <- 0.15
+  sigma_dm <- -0.10
+  if (is.null(r_am)) {
+    r_am <- sigma_dm / sqrt(sigma_ad * sigma_am)
+  }
   result <- list(
     variance_components = data.frame(
       component = c("direct", "maternal", "covariance", "residual"),
-      estimate  = c(0.30, 0.15, -0.10, 0.55),
+      estimate  = c(sigma_ad, sigma_am, sigma_dm, 0.55),
       stringsAsFactors = FALSE
     ),
     heritability = data.frame(
@@ -331,6 +342,61 @@ test_that("genetic_correlation() on direct_maternal fit returns r_am data frame"
   expect_equal(out$estimate, -0.4)
 })
 
+# A21 GAP: r_am is a covered derived estimand. The gate requires an identity
+# test against the defining function of the components, not a plumbing
+# round-trip. The default fixture now derives r_am from those components.
+test_that("r_am identity: genetic_correlation equals cov / sqrt(var_d * var_m)", {
+  fit <- make_dm_fit()
+  sigma_ad <- 0.30
+  sigma_am <- 0.15
+  sigma_dm <- -0.10
+  expected <- sigma_dm / sqrt(sigma_ad * sigma_am)
+  expect_equal(genetic_correlation(fit)$estimate, expected, tolerance = 1e-12)
+  h <- suppressWarnings(heritability(fit))
+  expect_equal(h$estimate[h$component == "r_am"], expected, tolerance = 1e-12)
+})
+
+# A21 C6: direct_heritability() reads result$heritability; heritability()
+# recomputes h2_direct from variance_components. They must stay identical.
+test_that("direct_heritability() matches heritability() h2_direct", {
+  fit <- make_dm_fit()
+  h <- suppressWarnings(heritability(fit))
+  expect_equal(
+    direct_heritability(fit)$estimate,
+    h$estimate[h$component == "h2_direct"],
+    tolerance = 1e-12
+  )
+})
+
+# A21 C6 fence prose. docs/ is .Rbuildignore'd, so this is source-tree-only
+# (skipped under R CMD check), matching the RR grammar-surface guard.
+test_that("capability-status maternal fences distinguish the two m2 denominators", {
+  path <- file.path(
+    testthat::test_path("..", ".."),
+    "docs",
+    "design",
+    "capability-status.md"
+  )
+  skip_if_not(file.exists(path), "capability-status.md is not in the build tarball")
+  text <- paste(readLines(path, warn = FALSE), collapse = "\n")
+  expect_true(
+    grepl("maternal_proportion()", text, fixed = TRUE),
+    info = "two-effect fence names maternal_proportion()"
+  )
+  expect_true(
+    grepl("no covariance", text, fixed = TRUE),
+    info = "two-effect fence names the no-covariance m2 denominator"
+  )
+  expect_true(
+    grepl("omits the covariance", text, fixed = TRUE),
+    info = "direct-maternal fence names the other m2 denominator"
+  )
+  expect_true(
+    grepl("m2_maternal", text, fixed = TRUE),
+    info = "direct-maternal fence names m2_maternal"
+  )
+})
+
 test_that("genetic_correlation() warns when |r_am| >= 0.99", {
   fit <- make_dm_fit(r_am = 0.999)
   expect_warning(
@@ -439,6 +505,7 @@ skip_if_no_julia_bridge <- function() {
 }
 
 test_that("live R<->engine parity: direct_maternal fit returns converged result", {
+  hs_skip_live_julia()
   skip_if_no_julia_bridge()
 
   ped <- make_dm_ped()
@@ -471,10 +538,21 @@ test_that("live R<->engine parity: direct_maternal fit returns converged result"
   expect_gte(vc$estimate[vc$component == "direct"], 0)
   expect_gte(vc$estimate[vc$component == "maternal"], 0)
 
-  # Genetic correlation in [-1, 1]
+  # Genetic correlation in [-1, 1], and the A21 GAP identity against
+  # the returned components (not a range-only check).
   r_am <- suppressWarnings(genetic_correlation(fit_dm)$estimate)
   expect_gte(r_am, -1)
   expect_lte(r_am, 1)
+  sigma_ad_live <- vc$estimate[vc$component == "direct"]
+  sigma_am_live <- vc$estimate[vc$component == "maternal"]
+  sigma_dm_live <- vc$estimate[vc$component == "covariance"]
+  if (sigma_ad_live > 0 && sigma_am_live > 0) {
+    expect_equal(
+      r_am,
+      sigma_dm_live / sqrt(sigma_ad_live * sigma_am_live),
+      tolerance = 1e-8
+    )
+  }
 
   # direct_heritability in [0, 1]
   h2d <- direct_heritability(fit_dm)$estimate

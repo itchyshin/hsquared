@@ -131,7 +131,7 @@ test_that("the genomic bridge requires an internal payload", {
 })
 
 test_that("the explicit supplied-Ginv route fits [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
@@ -195,7 +195,7 @@ test_that("the explicit supplied-Ginv route fits [live]", {
 })
 
 test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live boundary GREML."
@@ -807,7 +807,7 @@ test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", 
 })
 
 test_that("explicit marker and exact supplied-Q routes agree [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live marker GREML."
@@ -902,7 +902,7 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
 })
 
 test_that("frozen activation fixture matches base R and both public routes [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   project <- hsquared:::hs_default_julia_project()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(project),

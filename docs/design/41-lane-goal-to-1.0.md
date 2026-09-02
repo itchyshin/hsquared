@@ -62,7 +62,9 @@ made concrete for this lane:
 7. **Interval coverage** pre-registered; and for the 1.0 gate, calibrated by a
    coverage simulation — not only point-estimate bias/MCSE.
 8. **R↔engine element-wise parity + Rose clean audit + twin-discipline**
-   (engine-covered ≠ R-public-covered).
+   (engine-covered ≠ R-public-covered). Parity is verified at a recorded
+   commit with pre-declared tolerances; it is not implied by a Julia-free
+   R-CMD-check.
 9. **Definition of Done** (`AGENTS.md`): local checks pass; `check-log`,
    after-task report, and coordination board updated.
 
@@ -114,8 +116,17 @@ estimand contract (in NG-2 sign-off now), the interval-calibration campaign
 (H0 bank → H1/H3 harness), the WOMBAT FA-comparator build, and the MV broadened
 recovery. Each pillar closes with an after-task report + coordination-board row.
 At every §5 boundary the lane pauses with a crisp decision packet for the
-maintainer and continues once cleared. First slice on the spine: **MV-4**
-(`cbind()` auto-routing + Boole freeze) toward 0.6.
+maintainer and continues once cleared.
+
+**First slice on the spine — corrected 2026-09-01.** This line used to read
+"MV-4 (`cbind()` auto-routing + Boole freeze)". Both are already done: the Boole
+grammar freeze (`docs/design/38`) was RATIFIED 2026-07-11, and MV-4 landed in
+PR #132 (`ff89ac7`). Nothing on the 0.6 rung is blocked on writing routing code.
+The remaining 0.6 work is **evidence assembly against the §3 gate** — claim-surface
+reconciliation for the already-landed auto-route, the MV-5 run-or-supersede
+disposition, R↔engine element-wise parity at the promotion fixture, the Darwin
+sign-off on the recovered covariance, a Rose pre-flip audit, and the owner's G10
+flip. Agents assemble; the owner signs.
 
 ## 7. Definition of done for this goal
 

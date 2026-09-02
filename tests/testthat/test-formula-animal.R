@@ -322,7 +322,7 @@ test_that("multi-effect emitter builds a pedigree block plus one iid block per g
 })
 
 test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for a live fit."
@@ -428,6 +428,7 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
   # problems the dense factorization cannot reach. Well-identified fixture (needs enough
   # data; an 8-record K=3 fit is under-identified and the two estimators land on different
   # boundary optima).
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "Julia bridge (Julia + JuliaCall + HSquared.jl project) not available"
@@ -528,6 +529,16 @@ test_that("formula parser rejects planned genomic and QTL syntax honestly", {
     "`markers()` is planned, not implemented.",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + markers(M, model = "random"),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "genomic(1 | id, markers = )",
+    fixed = TRUE
+  )
 
   expect_error(
     hsquared:::hs_build_model_spec(
@@ -537,6 +548,16 @@ test_that("formula parser rejects planned genomic and QTL syntax honestly", {
       REML = TRUE
     ),
     "`marker_scan()` is planned, not implemented.",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped) + marker_scan(M, map = map),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "gwas(fit, markers)",
     fixed = TRUE
   )
 })
@@ -561,6 +582,46 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
       REML = TRUE
     ),
     "`dominance()` is planned, not implemented.",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + dominance(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "relmat(1 | id, K = )",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + maternal_env(1 | dam),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "maternal_genetic(1 | dam)",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + maternal_env(1 | dam),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "direct_maternal",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + paternal_genetic(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "animal(1 | id, pedigree = ped)",
     fixed = TRUE
   )
 
@@ -600,6 +661,16 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
       fixed = TRUE
     )
   }
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + inbreeding(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "already used internally when building Ainv",
+    fixed = TRUE
+  )
 })
 
 test_that("metafounder parses as an opt-in supplied-Gamma primary effect", {

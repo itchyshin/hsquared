@@ -163,3 +163,62 @@ technical Phase 1→6 ladder, fix only the release trigger), and the per-pillar
 registration-runway map (2026-07-11). The API-stability contract that scopes the
 stable-vs-experimental surface for 0.5.0 is proposed in
 `docs/design/35-api-stability-contract.md` (awaiting maintainer ratification).
+
+## 2026-09-02: Capability Ids Are Historical; Labels Carry Current Wording
+
+`validation_status()$capability` is a **stable identifier**, not a description
+that is kept current. Dated evidence records — comparator-run reports under
+`docs/dev-log/comparator-runs/` and `docs/dev-log/check-log.d/` entries — cite
+these strings verbatim to name the row they report against. Once evidence points
+at an id, the id is not rewritten. When its wording is overtaken by a later
+change, the correction is recorded as a **display alias** in
+`hs_validation_status_label_overrides()`, and reader-facing surfaces print the
+new `capability_label` column instead.
+
+**The case that forced the decision.** MV-4 made a `cbind()` Gaussian response
+with an `animal()` term auto-route to the multivariate fitter on the default
+path, so "(opt-in)" in the id
+`"experimental multivariate REML estimator (opt-in)"` stopped being true. Three
+dated records already cite that id verbatim:
+`comparator-runs/2026-06-21-multivariate-tool-availability.md`,
+`comparator-runs/2026-09-01-blupf90-tool-unavailability.md`, and
+`check-log.d/2026-09-01-h2-a24-mv4-claim-surface-honesty.md`. A rename would have
+left those three records naming a row that no longer exists; editing dated
+records to match a later rename would be worse, because it destroys the
+traceability that makes them evidence at all.
+
+**Rejected alternatives.** (i) Rename the id and update the three dated records —
+rejected: dated evidence is append-only. (ii) Rename the id and leave the records
+stale — rejected: it breaks evidence-to-row lookup silently. (iii) Repurpose
+`capability` as the label and add a separate id column — rejected: it breaks
+every existing `status$capability == "..."` lookup, including two in
+`test-phase0-api.R` and the whole route table in
+`tools/write-capability-ledger-summary.R`.
+
+**Precedent, not invention.** `tools/write-capability-ledger-summary.R` already
+splits these two roles: it joins to `validation_status()` on `key` (the id) and
+shows the reader a separate `title`. Its generated include never contained the
+"(opt-in)" string, which is why regenerating it after this change produced no
+diff. The alias applies the same split inside the package.
+
+**Guards.** A test asserts every override names a live capability id, so renaming
+an id cannot silently strand its alias; another asserts the historical id still
+resolves to exactly one row, and that the label drops "opt-in" while the id keeps
+it. Rows without an override have `capability_label` identical to `capability`.
+
+**Not in scope.** This is a vocabulary and display decision only. No status
+changed, no `partial → covered` flip, and `public_covered_count` stays 5.
+
+## 2026-09-02: Block 1 check-log substitution (Option B)
+
+For Block 1 arcs B0–B3, B5–B6, and the Julia pass-3 cluster, the dated
+`docs/dev-log/check-log.d/` shards **are** the after-task record. Writing
+reflective summaries after the fact would manufacture narrative the Definition of
+Done is meant to prevent. Canonical decision text lives on the twin:
+`HSquared.jl/docs/dev-log/decisions/2026-09-02-block1-check-log-substitution.md`
+(A23, ADOPTED). B4 already has a real after-task report. **From A24 onward**,
+standard after-task reports are required again (see
+`docs/dev-log/after-task/2026-09-02-h2-a24-a29-mv-prep-after-task.md`).
+
+Does not authorise covered flips, G10, registry, version bumps, or push.
+`public_covered_count` stays 5.

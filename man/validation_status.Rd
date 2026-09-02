@@ -15,9 +15,47 @@ A data frame of validation status records with class
 }
 \details{
 \code{validation_status()} reports the current validation atoms and planned
-comparator lanes for \code{hsquared}. It is a status table only: it does not run
-validation checks, fit models, or promote any capability to working status.
+comparator lanes for \code{hsquared}. It is a \strong{developer evidence table}, not
+the user-facing list of what you may report. For that list, read
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+This function does not run validation checks, fit models, or promote any
+capability to working status.
 }
+\section{This table is not the full list of covered routes}{
+The rows here are validation \emph{atoms}, grouped by evidence chain rather than
+by public modelling route, so the \code{covered} row count is not the number of
+covered routes. Two capabilities that count as publicly covered have no row
+of their own yet:
+\itemize{
+\item the opt-in reaction-norm model, k = 2:
+\code{animal(rr(x, order = 2) | id, pedigree = ped)} with
+\code{engine_control = list(target = "random_regression")};
+\item the opt-in correlated direct-maternal 2x2 G model:
+\code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)} with
+\code{engine_control = list(target = "direct_maternal")}.
+}
+
+Both are covered at validation scale, opt-in, REML-only, and dense
+(n <= 1000 or so). Their scope and reporting limits are recorded in the
+repository capability ledger (\code{docs/design/capability-status.md}) and, for
+readers, in \href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}. Read
+this table together with that enumeration: an absent row is not an absent
+capability, and this table alone does not tell you everything you may
+report.
+}
+
+\section{Capability identifiers versus labels}{
+\code{capability} is a \strong{stable identifier}. Dated evidence records -- comparator
+runs under \verb{docs/dev-log/comparator-runs/} and check-log entries -- cite these
+strings verbatim to name the row they report against, so an identifier is not
+rewritten once evidence points at it. Look rows up by \code{capability}.
+
+\code{capability_label} is the \strong{current wording}, and is what reader-facing
+surfaces print. The two differ only where an identifier's wording has been
+overtaken by a later change; today that is the multivariate row, whose
+\code{cbind()} route became default rather than opt-in.
+}
+
 \examples{
 validation_status()
 }

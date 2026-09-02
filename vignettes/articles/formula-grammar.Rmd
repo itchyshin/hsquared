@@ -39,9 +39,9 @@ fit <- hsquared(
 
 The R side validates the formula, data, response, pedigree columns, and animal
 IDs, builds the internal bridge payload, and (by default) fits the v0.1
-univariate Gaussian animal model by REML through `HSquared.jl`. This is the v0.1
-contract only; the reserved terms below are parse-only and are not yet general
-fitted animal-model support.
+univariate Gaussian animal model by REML through `HSquared.jl`. Terms below
+that say **parsed** are recognized; only some of those also **fit**, and then
+only on a named `target =`. Reserved names error as planned, not implemented.
 
 ## Standard quantitative-genetic extensions
 
@@ -61,8 +61,11 @@ y ~ sex + age +
   paternal_env(1 | sire)
 ```
 
-Current status: these markers are exported but inert. If they appear in an
-`hsquared()` formula, the parser errors with planned-not-implemented wording.
+Current status: `permanent()`, `common_env()`, and `maternal_genetic()` are
+parsed. They fit only with a named `target =` (repeatability, two-effect, or
+direct–maternal — see Fitting models). The default `hsquared()` call names
+that target and stops. `maternal_env()`, `paternal_genetic()`, and
+`paternal_env()` are reserved and error as planned, not implemented.
 
 ## Inheritance and relationship kernels
 
@@ -108,7 +111,8 @@ default, mirroring a `partial` validation gate).
 
 ## Multivariate and factor-analytic grammar
 
-The first multivariate surface is the opt-in `cbind()` animal-model path:
+The first multivariate surface is the `cbind()` animal-model path, which routes
+on the default call:
 
 ```{r, eval = FALSE}
 cbind(weight, height) ~ sex + animal(1 | id, pedigree = ped)
@@ -138,22 +142,50 @@ Planned covariance meanings:
 - `cov = lowrank(K)`: `G = Lambda Lambda'`.
 - `cov = fa(K)`: `G = Lambda Lambda' + Psi`.
 
-Current status: the opt-in `cbind()` multivariate animal-model path is parsed
-and fitted experimentally. The long-format `animal(trait | id, cov = ...)`
+Current status: the `cbind()` multivariate animal-model path is parsed and
+routed by default, and fitted experimentally — the routing is default, the
+claim is still `partial`. The long-format `animal(trait | id, cov = ...)`
 grammar and residual structured covariance grammar are planned, not parsed or
 fitted.
 
 ## Error rule
 
-Unsupported terms should fail early and plainly. The current expected shape is:
+Unsupported terms fail early. There are two live shapes.
+
+Reserved names such as `markers()`, `dominance()`, or `maternal_env()` stop
+as planned, not implemented, then name the nearest live path:
 
 ```text
-`marker()` is planned, not implemented. The v0.1 parser currently accepts only
-`animal(1 | id, pedigree = ped)`.
+`markers()` is planned, not implemented. The live marker path is
+`genomic(1 | id, markers = )` or `gwas(fit, markers)`. Run
+`formula_status()` for the live list of which terms parse and which fit.
 ```
 
-That error is part of the user interface. It tells users the idea is on the
-roadmap without pretending that the model has been fitted.
+Terms that already parse but are not on the default path -- `common_env()`,
+`permanent()`, `maternal_genetic()`, `rr(...)` -- do not use that planned
+stop. They paste the next `hsquared()` call:
+
+```text
+`common_env()` is not on the default path.
+
+Closest working call:
+
+  hsquared(
+    y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+    data = dat,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "two_effect")
+    )
+  )
+
+That route is covered for point estimates only (validation-scale,
+common-environment leg). Intervals are experimental.
+See: current-limits article, formula_status().
+```
+
+That error is part of the user interface. It names the closest working call
+without pretending the default path already fitted the model.
 
 For a compact table of the same status information from R, use:
 
