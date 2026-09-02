@@ -13,9 +13,10 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     to preview the model contract without fitting. Report point estimates only
     for rows marked covered in validation_status(); uncertainty intervals are
     experimental and not coverage-calibrated. Genomic, single-step, SNP-BLUP,
-    repeatability, two-effect, and multivariate animal models also fit through
-    opt-in, experimental engine paths; factor-analytic and non-Gaussian models
-    are planned.
+    repeatability, and two-effect animal models fit through opt-in,
+    experimental engine paths; multivariate cbind() animal models route on the
+    default call but are likewise experimental and not covered;
+    factor-analytic and non-Gaussian models are planned.
 License: MIT + file LICENSE
 URL: https://itchyshin.github.io/hsquared/,
     https://github.com/itchyshin/hsquared,
