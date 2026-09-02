@@ -18,10 +18,12 @@ that lives in the repository, and nothing is advertised as working beyond what
 those checks demonstrate. One practical fact up front: the default univariate
 fit needs a local Julia engine (`HSquared.jl` via `JuliaCall`); the pure-R
 reference checks below run without it, and the "What runs where" section gives
-the full split. When in doubt, the live, machine-readable table is
-`validation_status()` — read it, not this prose, as the source of truth. Its
-columns are the capability, its `status` (one of *planned*, *partial*, or
-*covered*, defined just below), and the claim boundary attached to each.
+the full split. When in doubt about *evidence atoms*, the machine-readable table is
+`validation_status()`. What you may report is listed on
+[Can I fit and report this?](current-limits.html) — this table is not
+the complete user list. Its columns are the capability, its `status`
+(one of *planned*, *partial*, or *covered*, defined just below), and the
+claim boundary attached to each.
 
 ```{r}
 library(hsquared)

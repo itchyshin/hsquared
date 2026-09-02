@@ -41,7 +41,10 @@ difference between *runs* and *validated*.
 | `experimental` | Runs | Labelling, not a status tier — every opt-in route carries it | Nothing on this package's word alone |
 | `planned` | Aborts as planned, not implemented | None | Nothing |
 
-`validation_status()` is the live source of truth. Run it in your own session:
+This page is the user-facing list of what you may report.
+`validation_status()` is a developer evidence table of validation atoms;
+it is not a complete list of covered routes. Developers can inspect it
+in their own session:
 
 ```{r validation-status-live, eval = FALSE}
 validation_status()
@@ -98,10 +101,10 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
   r_am — never a bare scalar. Direct h² is **not** the total heritability, and a
   negative r_am is real and expected. Single relationship A only.
 
-Both are opt-in, experimental, REML-only, and dense (n ≲ 1000). Until they appear
-in `validation_status()`, `docs/design/capability-status.md` is the authority for
-their scope, and the cards above will not mention them. That gap is a known
-docs-ledger item, not a hidden claim.
+Both are opt-in, experimental, REML-only, and dense (n ≲ 1000). They are
+listed here because this page — not `validation_status()` — is what you
+should read before reporting a number. The cards above are generated from
+the evidence table and will not mention them until those rows exist.
 
 ## Where to read next
 

@@ -21,7 +21,7 @@ without Julia or is marked as needing the engine.
 | **1. Specify** | Is my data in the right shape? Is my model expressible? | `hs_data()`, `data_status()`, `animal()`, `formula_status()` |
 | **2. Preview** | What will the engine actually be sent? | `hs_control(engine = "validate")`, `model_spec()` |
 | **3. Fit** | Estimate the variance components | `hsquared()` |
-| **4. Check** | Did it converge, and may I report it? | `fit_diagnostics()`, `summary()`, `validation_status()`, `backend_info()` |
+| **4. Check** | Did it converge, and may I report it? | `fit_diagnostics()`, `summary()`, [Can I fit and report this?](current-limits.html), `backend_info()` |
 | **5. Extract** | Get the quantities for the paper | `heritability()`, `variance_components()`, `breeding_values()`, `fixef()`, `ranef()` |
 
 Steps 1, 2, and 4's status calls need R only. Step 3 and the extractors need a
@@ -78,7 +78,7 @@ Opt-in experimental targets go through `hs_control(engine = "julia")` with an
 summary(fit)
 fit_diagnostics(fit)   # convergence, iterations, at_boundary flag
 backend_info()         # which engine answered, and its version
-validation_status()    # what the evidence ledger says about your route
+validation_status()    # developer evidence table, not the user list
 ```
 
 Read `at_boundary` before anything else. A variance pinned at zero is a real

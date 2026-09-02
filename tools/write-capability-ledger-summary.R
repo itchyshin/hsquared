@@ -349,9 +349,10 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
     ),
     "",
     paste(
-      "`validation_status()` in the installed package is the live source of truth.",
-      "This summary is generated from it, so a status change here is a status",
-      "change there - the two cannot drift apart silently."
+      "The cards below are generated from `validation_status()`, a developer",
+      "evidence table of validation atoms. They are not a complete list of",
+      "covered routes — two covered routes have no row there yet and are",
+      "listed on this page below the cards."
     ),
     "",
     hs_render_counts(status_tbl),
@@ -378,10 +379,10 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
     "## Before you report",
     "",
     paste0(
-      "1. Run `validation_status()` and confirm your route's row still says what ",
-      "this page says."
+      "1. Confirm this page still lists your route as reportable. Do not treat ",
+      "`validation_status()` as the complete user list."
     ),
-    "2. Report point estimates for `covered` rows only.",
+    "2. Report point estimates for covered routes only.",
     paste0(
       "3. Do not report a standard error or interval as calibrated. None of them ",
       "are, in any release of this package so far."

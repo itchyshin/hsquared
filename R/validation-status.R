@@ -3,8 +3,12 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' `validation_status()` reports the current validation atoms and planned
-#' comparator lanes for `hsquared`. It is a status table only: it does not run
-#' validation checks, fit models, or promote any capability to working status.
+#' comparator lanes for `hsquared`. It is a **developer evidence table**, not
+#' the user-facing list of what you may report. For that list, read
+#' [Can I fit and report this?](
+#' https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' This function does not run validation checks, fit models, or promote any
+#' capability to working status.
 #'
 #' # This table is not the full list of covered routes
 #'
@@ -64,10 +68,11 @@ validation_status <- function() {
 print.hs_validation_status <- function(x, ...) {
   cat("<hs_validation_status>\n")
   cat("  validation: status table only; checks are run by tests and CI\n")
-  cat("  public claims: `covered` rows may be advertised as working, but\n")
+  cat("  public claims: developer evidence table, not the user-facing list\n")
+  cat("  of what you may report; see Can I fit and report this?\n")
   cat("  this table is not the full list of covered routes -- opt-in\n")
   cat("  random_regression (k = 2) and direct_maternal are covered with no\n")
-  cat("  row yet; see ?validation_status\n")
+  cat("  row yet; see the current-limits article\n")
   cat("  shown below: `capability_label` (current wording); look rows up by\n")
   cat("  the stable `capability` id that dated evidence records cite\n")
   out <- x

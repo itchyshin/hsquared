@@ -18,19 +18,20 @@ test_that(".onAttach emits experimental honesty message", {
   expect_match(text, "coverage-calibrated", fixed = TRUE)
 })
 
-# A31: `public_covered_count` is 5, but `validation_status()` has no row for
-# random_regression (k = 2) or direct_maternal. The attach message must not
-# imply that the table alone enumerates every reportable covered route.
-test_that(".onAttach does not imply validation_status() lists every covered route", {
+# Pat UX item 3: attach points first at the limits article, not at
+# validation_status() as the user-facing list. The RR/DM row-gap apology
+# belongs on the article, not in the startup paragraph.
+test_that(".onAttach points at Can I fit and report this?, not validation_status() as the user list", {
   on_attach <- get(".onAttach", envir = asNamespace("hsquared"))
   text <- paste(
     capture_messages(on_attach("hsquared", "hsquared")),
     collapse = " "
   )
 
-  expect_match(text, "not a complete list", fixed = TRUE)
-  expect_match(text, "random_regression", fixed = TRUE)
-  expect_match(text, "direct_maternal", fixed = TRUE)
+  expect_match(text, "Can I fit and report this", fixed = TRUE)
+  expect_match(text, "not", fixed = TRUE)
+  expect_match(text, "validation_status", fixed = TRUE)
+  expect_match(text, "current-limits", fixed = TRUE)
 
   # the old wording made the table the sole authority
   expect_no_match(
@@ -42,7 +43,10 @@ test_that(".onAttach does not imply validation_status() lists every covered rout
   # pointers must resolve: `vignettes/articles` is Rbuildignored, so
   # vignette("model-status") is not installed for users
   expect_no_match(text, "vignette(", fixed = TRUE)
-  expect_match(text, "current-limits", fixed = TRUE)
+
+  # the incomplete-table apology is off the attach message
+  expect_no_match(text, "not a complete list", fixed = TRUE)
+  expect_no_match(text, "random_regression", fixed = TRUE)
 })
 
 test_that("validation_status() print output flags that it is not the full covered list", {
@@ -53,13 +57,15 @@ test_that("validation_status() print output flags that it is not the full covere
   expect_match(text, "direct_maternal", fixed = TRUE)
 })
 
-test_that("DESCRIPTION and README do not make validation_status() the sole authority", {
+test_that("DESCRIPTION and README point at Can I fit and report this?, not validation_status()", {
   desc <- utils::packageDescription("hsquared")$Description
-  expect_match(desc, "not\\s+the\\s+full\\s+list\\s+of\\s+covered\\s+routes")
+  expect_match(desc, "Can I fit and report this")
+  expect_match(desc, "developer evidence table")
   expect_no_match(
     desc,
     "only\\s+for\\s+rows\\s+marked\\s+covered\\s+in\\s+validation_status"
   )
+  expect_no_match(desc, "live source of truth")
 
   readme <- testthat::test_path("..", "..", "README.md")
   skip_if_not(file.exists(readme), "README.md not present in the check copy")
@@ -67,9 +73,9 @@ test_that("DESCRIPTION and README do not make validation_status() the sole autho
   # unwrap the blockquote so the assertion does not depend on line breaks
   flat <- gsub("\\s+", " ", paste(sub("^>\\s?", "", lines), collapse = " "))
 
-  expect_match(flat, "not the full list of covered routes", fixed = TRUE)
-  expect_match(flat, "random_regression", fixed = TRUE)
-  expect_match(flat, "direct_maternal", fixed = TRUE)
+  expect_match(flat, "Can I fit and report this", fixed = TRUE)
+  expect_match(flat, "developer evidence table", fixed = TRUE)
+  expect_no_match(flat, "live source of truth", fixed = TRUE)
   expect_no_match(flat, "only for rows marked `covered` by", fixed = TRUE)
 })
 

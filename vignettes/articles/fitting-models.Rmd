@@ -218,7 +218,9 @@ formula_status()
 validation_status()
 ```
 
-Only rows marked `covered` in `validation_status()` may be relied on as working.
+What you may report is listed on [Can I fit and report this?](current-limits.html),
+not in `validation_status()`. That function is a developer evidence table;
+an absent row is not an absent covered route.
 The four opt-in models listed as covered above (`two_effect` common-env leg,
 `multi_effect`, `random_regression`, `direct_maternal`) are covered at
 validation scale. The remaining opt-in models (`repeatability`, the maternal

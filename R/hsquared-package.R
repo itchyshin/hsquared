@@ -21,16 +21,12 @@
 #' model contract without fitting. Report point estimates only for `covered`
 #' routes; uncertainty intervals are experimental and not coverage-calibrated.
 #'
-#' [validation_status()] is the live status table, but it is not a complete
-#' enumeration of the covered public routes. Two covered capabilities have no
-#' `validation_status()` row yet: the opt-in
-#' `engine_control = list(target = "random_regression")` reaction-norm model
-#' (k = 2) and the opt-in
-#' `engine_control = list(target = "direct_maternal")` correlated 2x2 G model.
-#' Read [validation_status()] together with the covered-route enumeration in
+#' What you may report is listed on
 #' [Can I fit and report this?](
-#' https://itchyshin.github.io/hsquared/articles/current-limits.html), which
-#' lists all five covered capabilities and the reporting scope of each. The
+#' https://itchyshin.github.io/hsquared/articles/current-limits.html)
+#' — not in [validation_status()]. That article lists every covered route
+#' and its reporting scope. `validation_status()` is a developer evidence
+#' table of validation atoms; it is not the user-facing list. The
 #' [model status](https://itchyshin.github.io/hsquared/articles/model-status.html)
 #' and [validation evidence](
 #' https://itchyshin.github.io/hsquared/articles/validation-evidence.html)

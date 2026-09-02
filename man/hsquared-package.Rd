@@ -28,15 +28,11 @@ and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine =
 model contract without fitting. Report point estimates only for \code{covered}
 routes; uncertainty intervals are experimental and not coverage-calibrated.
 
-\code{\link[=validation_status]{validation_status()}} is the live status table, but it is not a complete
-enumeration of the covered public routes. Two covered capabilities have no
-\code{validation_status()} row yet: the opt-in
-\code{engine_control = list(target = "random_regression")} reaction-norm model
-(k = 2) and the opt-in
-\code{engine_control = list(target = "direct_maternal")} correlated 2x2 G model.
-Read \code{\link[=validation_status]{validation_status()}} together with the covered-route enumeration in
-\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}, which
-lists all five covered capabilities and the reporting scope of each. The
+What you may report is listed on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}
+— not in \code{\link[=validation_status]{validation_status()}}. That article lists every covered route
+and its reporting scope. \code{validation_status()} is a developer evidence
+table of validation atoms; it is not the user-facing list. The
 \href{https://itchyshin.github.io/hsquared/articles/model-status.html}{model status}
 and \href{https://itchyshin.github.io/hsquared/articles/validation-evidence.html}{validation evidence}
 articles are published on the package website rather than as installed

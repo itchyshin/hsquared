@@ -10,10 +10,11 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     ped)) by restricted maximum likelihood and returns heritability, variance
     components, breeding values, and standard extractors. Default fitting
     requires a local Julia and HSquared.jl; use hs_control(engine = "validate")
-    to preview the model contract without fitting. Report point estimates only
-    for covered routes; validation_status() lists the covered rows but is not
-    the full list of covered routes, and uncertainty intervals are
-    experimental and not coverage-calibrated. Genomic, single-step, SNP-BLUP,
+    to preview the model contract without fitting. What you may report is
+    listed on the package article 'Can I fit and report this?', not in
+    validation_status(), which is a developer evidence table. Uncertainty
+    intervals are experimental and not coverage-calibrated. Genomic,
+    single-step, SNP-BLUP,
     repeatability, and two-effect animal models fit through opt-in,
     experimental engine paths; multivariate cbind() animal models route on the
     default call but are likewise experimental and not covered;

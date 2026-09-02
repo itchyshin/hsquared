@@ -165,4 +165,5 @@ band locally, and the engine matches the pure-R reference to machine precision.
 
 - [Validation evidence](validation-evidence.html) — what "validated" means, the full evidence
   ladder, and the public-CI-vs-local split.
-- `vignette()` / `?validation_status` — the live source of truth for capability status.
+- [Can I fit and report this?](current-limits.html) — what you may report.
+  `?validation_status` is the developer evidence table, not that list.

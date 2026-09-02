@@ -15,8 +15,11 @@ A data frame of validation status records with class
 }
 \details{
 \code{validation_status()} reports the current validation atoms and planned
-comparator lanes for \code{hsquared}. It is a status table only: it does not run
-validation checks, fit models, or promote any capability to working status.
+comparator lanes for \code{hsquared}. It is a \strong{developer evidence table}, not
+the user-facing list of what you may report. For that list, read
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+This function does not run validation checks, fit models, or promote any
+capability to working status.
 }
 \section{This table is not the full list of covered routes}{
 The rows here are validation \emph{atoms}, grouped by evidence chain rather than

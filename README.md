@@ -15,14 +15,10 @@ computation.
 > **Experimental package.** The version number tracks *covered* capability, not
 > surface area; the first CRAN release targets 0.5.0, not 1.0. **Fitting requires
 > a local Julia and an `HSquared.jl` checkout** — R alone parses and validates a
-> model but does not fit it. Report point estimates only for **covered**
-> routes. `validation_status()` lists the covered rows, but it is not the full
-> list of covered routes — the opt-in `random_regression` (k = 2) and
-> `direct_maternal` targets are covered and have no row there yet. Standard
-> errors and intervals are experimental and **not coverage-calibrated**. Read
+> model but does not fit it. What you may report is listed on
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
-> — which lists every covered route and its reporting scope — before reporting
-> results.
+> — not in `validation_status()`. Report point estimates only for **covered**
+> routes. Standard errors and intervals are experimental and **not coverage-calibrated**.
 
 ## Quick start — no Julia required
 
@@ -71,9 +67,10 @@ with install guidance rather than silently degrading.
 
 ## What is covered, and what is not
 
-`validation_status()` is the live source of truth; the
-[limits page](https://itchyshin.github.io/hsquared/articles/current-limits.html)
-is generated from it.
+What you may report is listed on
+[Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+`validation_status()` is a developer evidence table of validation atoms; it is
+not the user-facing list of covered routes.
 
 **Covered** — pre-declared recovery gate passed *and* an external same-estimand
 comparator agrees. Point estimates are reportable within the stated scope:
@@ -86,9 +83,8 @@ comparator agrees. Point estimates are reportable within the stated scope:
 - the **direct–maternal correlated 2×2 G** model, whose `heritability()` returns
   the labelled Willham triple rather than a bare scalar.
 
-The last two are recorded in `docs/design/capability-status.md` but do not yet
-have their own `validation_status()` row; the limits page says so explicitly and
-states their scope.
+The last two are covered at validation scale and are listed on that limits
+page; they do not yet have their own `validation_status()` row.
 
 Evidence for the default path: known-truth DGP recovery (near-unbiased variance
 components over a replicated study), the published gryphon REML estimate
