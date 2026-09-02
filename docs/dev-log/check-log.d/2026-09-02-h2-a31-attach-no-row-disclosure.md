@@ -88,6 +88,14 @@ The README assertion unwraps the blockquote (`sub("^>\\s?", ...)` + whitespace
 collapse) so it pins the *claim*, not the line breaks — the previous
 line-break-sensitive style in this file would have gone red on a re-wrap.
 
+## Test of the tests
+
+The guard was verified to **fail when the defect returns**, so it cannot pass
+vacuously: restoring the original `.onAttach` body (the sole-authority rule plus
+the `vignette("model-status")` pointer) turned the file **`FAIL 6 / PASS 24`**,
+against `FAIL 0 / PASS 30` at the committed wording. Reverted immediately with
+`git checkout -- R/zzz.R`; working tree clean afterwards.
+
 ## Commands and outcomes
 
 | Command | Result |
