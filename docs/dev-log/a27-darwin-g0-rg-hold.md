@@ -1,31 +1,25 @@
-# A27 Darwin G₀ / r_g sheet — **HOLD** (unsigned staging)
+# A27 Darwin G₀ / r_g sheet — **SIGNED** (2026-09-02)
 
-> **HOLD until owner G0 + Darwin SIGN.**  
-> This is a **staging sheet for post-G0 Darwin SIGN**, not authorization.  
-> Agents do **not** forge Darwin SIGN. Do **not** flip covered.  
+> **SIGNED.** Owner Darwin ink recorded. **Not** a covered flip.  
 > `public_covered_count` stays **5**. R multivariate stays `partial`.  
-> Source scratch: `~/local-scratch/h2-a27-darwin-sign-sheet.md` (2026-09-02).  
-> Staged on branch `cursor/block1-postreg-20260902` after banner merge tips  
-> Julia `a1ed4337` / R `94329765`.
+> Source scratch: `~/local-scratch/h2-a27-darwin-sign-sheet.md` (inked 2026-09-02).  
+> Echoed on `cursor/mv4-060-20260902` from owner authorization source phrase `chat "go ahead" (Shinichi, 2026-09-02)`.  
+> Prior General+TagBot HOLD language is **superseded** (G0 ARMED; registration DEFERRED OK).
 
-**0.6 gate — NOT for experimental 0.5.0 Block 1 claim-flip.**  
-**Not signed.** Whole-sheet choice remains HOLD until owner G0 exists and Darwin inks name+date below.
+**0.6 gate — biology SIGN only.** Does **not** authorize G10 or `partial → covered`.
 
 ```
-Active lenses: Darwin (sheet target). Ada / Rose / Shannon as packet context.
+Active lenses: Darwin (SIGNED). Ada / Rose / Shannon as packet context.
 Spawned subagents: none
-Current lane: R postreg WT (`cursor/block1-postreg-20260902`) — HOLD staging only
+Current lane: cursor/mv4-060-20260902 (R MV-4 WT) — A27 SIGN echo
 ```
 
 ---
 
-## One-line recommended action
+## One-line action
 
-**HOLD.** Biology evidence for “headline = G₀ / r_g” is assembled and
-readable now, but this is a **0.6 spine step (S3)** and the spine
-forbids execution until experimental 0.5.0 exists and a fresh G0 is
-written (S0). Do not ink tonight. After those two land, the proposed
-answers below are ready to SIGN as drafted.
+**SIGNED as recommended.** Headline recovered quantity = **G₀ / r_g**. Items 1–7 SIGN.
+Ranga citation pins KEEP AS DRAFTED. Teaching/field fences retained below.
 
 ---
 
@@ -78,7 +72,7 @@ Tips this poll: R `28a0e7ec9` · Julia `5747df1acf`. Use these paths/SHAs/test n
 | A26 plumbing (same quantity through bridge) | R `tests/testthat/test-multivariate-engine-parity.R` | `6332e35ea` | `Tier B1/B2: the bridge reproduces the serialized k=2 target element-wise` |
 | Capability surfaces (still partial R / covered engine) | R + Julia `docs/design/capability-status.md` | R `2fc250cc3` · J `5f1a742ea9` | R multivariate row `partial`; engine `V4-MV-REML` covered; **count 5** |
 
-**Not SIGN authorization.** Reading this table ≠ Darwin ink. Whole-sheet remains **HOLD** until General+TagBot+fresh G0.
+**Historical note:** the origin evidence table above was assembled before ink. Whole-sheet is now **SIGNED** (see below).
 
 ---
 
@@ -124,50 +118,48 @@ Inventory (do not re-derive): `~/local-scratch/h2-060-evidence-inventory.md`.
 ## SIGN / HOLD / REJECT — tick one box per row
 
 Tick **exactly one** of SIGN / HOLD / REJECT per item.
-(`DECLINE` = REJECT synonym.) HOLD is the correct whole-sheet action until
-0.5.0 is registered (General + TagBot) **and** a fresh G0 exists. After that
-gate, SIGN the proposed answers unless you annotate. **Agents do not tick SIGN.**
+(`DECLINE` = REJECT synonym.) Owner ink below mirrors the scratch sign sheet.
 
 | # | Item | Proposed answer | SIGN | HOLD | REJECT |
 |---|---|---|---|---|---|
-| 1 | Headline recovered quantity = **G₀ / r_g**, not univariate h² alone? | **YES.** Matches design-41 §3.5 and A13 item 5 (framing only). | [ ] | [ ] | [ ] |
-| 2 | Per-trait h² allowed as secondary identity-derived descriptors? | **YES, fenced.** Never the sole public claim for a correlated flip. | [ ] | [ ] | [ ] |
-| 3 | C8 2/16 fails (extreme r_g × 1 record) = scope edge, not Darwin veto? | **YES.** Pre-registered; adding records restores recovery even at r_g = 0.95. | [ ] | [ ] | [ ] |
-| 4 | A26 parity sufficient biological plumbing for “same quantity through the bridge”? | **YES as plumbing.** Still needs this ink + Rose re-audit + owner G10. Not CI-backed (DP-10). | [ ] | [ ] | [ ] |
-| 5 | Teaching / sim vs field fences above? | **HARD YES.** Same spirit as A13 items 4/8. | [ ] | [ ] | [ ] |
-| 6 | Criterion-3 locked citations (Falconer ch. 19 + Lynch & Walsh ch. 21 for r_g; Falconer ch. 8/10 + Lynch & Walsh ch. 4/7 for per-trait h²) acceptable? | **YES — already in both canons.** Confirm or annotate chapter pins from the *same* editions. | [ ] | [ ] | [ ] |
-| 7 | Mrode 5.1 no-anchor disclosure (estimated G₀/R₀ has no textbook pin)? | **ACCEPT.** Darwin is not asked to invent a Mrode estimated-VC number. | [ ] | [ ] | [ ] |
+| 1 | Headline recovered quantity = **G₀ / r_g**, not univariate h² alone? | **YES.** Matches design-41 §3.5 and A13 item 5 (framing only). | [x] | [ ] | [ ] |
+| 2 | Per-trait h² allowed as secondary identity-derived descriptors? | **YES, fenced.** Never the sole public claim for a correlated flip. | [x] | [ ] | [ ] |
+| 3 | C8 2/16 fails (extreme r_g × 1 record) = scope edge, not Darwin veto? | **YES.** Pre-registered; adding records restores recovery even at r_g = 0.95. | [x] | [ ] | [ ] |
+| 4 | A26 parity sufficient biological plumbing for “same quantity through the bridge”? | **YES as plumbing.** Still needs this ink + Rose re-audit + owner G10. Not CI-backed (DP-10). | [x] | [ ] | [ ] |
+| 5 | Teaching / sim vs field fences above? | **HARD YES.** Same spirit as A13 items 4/8. | [x] | [ ] | [ ] |
+| 6 | Criterion-3 locked citations (Falconer ch. 19 + Lynch & Walsh ch. 21 for r_g; Falconer ch. 8/10 + Lynch & Walsh ch. 4/7 for per-trait h²) acceptable? | **YES — already in both canons.** Confirm or annotate chapter pins from the *same* editions. | [x] | [ ] | [ ] |
+| 7 | Mrode 5.1 no-anchor disclosure (estimated G₀/R₀ has no textbook pin)? | **ACCEPT.** Darwin is not asked to invent a Mrode estimated-VC number. | [x] | [ ] | [ ] |
 
 **Whole-sheet choice (one tick):**
 
-- [ ] **SIGN as recommended** — only after 0.5.0 is registered **and** a fresh G0 exists
-- [x] **HOLD** — recommended now (see reason)
+- [x] **SIGN as recommended** — G0 ARMED; biology ready (owner ink)
+- [ ] **HOLD** — only if you annotate a remaining biology fence
 - [ ] **REJECT** — 0.6 biology ink withheld; say why
 
-**SIGN status this pass:** **NOT DONE.** No owner name/date. Do not echo into check-log.
+**SIGN status this pass:** **SIGNED.** Owner: Shinichi (Darwin). Date: 2026-09-02. Source: chat "go ahead" (Shinichi, 2026-09-02).
 
-**HOLD reason (Ada, 2026-09-02; reaffirmed Cursor wait-pass):** Spine S3 (this sheet) sits after S0.
-Experimental 0.5.0 is **not** registered (General #166969 still OPEN this poll). No fresh G0 for the 0.6
-evidence/ink spine. Origin evidence table above is complete enough to *read for one-shot SIGN later*;
-it is not complete enough to *count as 0.6 Darwin ink* while Block 1 is still owner-paused. Secondary: A29 Rose was **BLOCKED** and must be
-re-audited at the post-0.5.0 tip; that is not Darwin’s job, but it means
-this ink cannot yet feed a flip packet.
+**Prior HOLD (superseded):** Wait-pass HOLD was procedural (General+TagBot / registration before 0.6).
+Owner deferred registration, armed G0 via parity CLOSE → 0.6 sequence, and authorized recommended
+Wave A ticks via chat “go ahead” (2026-09-02). A29 Rose tip re-audit remains **after** this ink
+(not Darwin’s job; still no covered flip).
 
 **Annotations / conditions:**
 
+Owner authorized recommended SIGN (items 1–7 + whole-sheet). Ranga citation pins KEEP AS DRAFTED.
+Teaching / sim vs field fences above remain hard requirements on any later claim surface.
+
 ---
 
-## Sign-off gate — ink counts only when all hold
+## Sign-off gate — recorded
 
-1. Experimental **0.5.0 is registered** (or the owner explicitly accepts
-   “0.6 prep on the merged pair before Registrator” in a written G0).
-2. A **fresh G0** for the 0.6 evidence/ink spine exists.
-3. Items 1–7 accepted (or annotated with fences you want on claim surfaces).
-4. You write a **name and date** on this sheet. Agents do not forge it.
-5. Later (not this packet): echo into check-log / after-task when the
-   A30 flip packet is assembled. **Do not flip `public_covered_count`.**
+1. **G0 ARMED** for 0.6 evidence/ink — **YES** (parity CLOSE; reg DEFERRED OK).
+2. Items 1–7 **SIGNED**.
+3. Name and date recorded below (echo of owner scratch ink).
+4. Check-log stub records this SIGN; **not** a covered flip; count **5**.
+5. Later: Rose A29 → owner G10 only with full §3. **Do not flip `public_covered_count`.**
 
-**Signed (Darwin / Shinichi):** ______________________  **Date:** ____________
+**Signed (Darwin / Shinichi):** Shinichi (Darwin)  **Date:** 2026-09-02  
+**Source:** chat "go ahead" (Shinichi, 2026-09-02)
 
 ---
 
@@ -182,7 +174,7 @@ this ink cannot yet feed a flip packet.
 5. **No MV-4 code.** Routing already merged (PR #132). Do not “start MV-4.”
 6. **No Totoro / DRAC run** from this sheet. C8 is already banked. MV-5
    is an A25 disposition, not Darwin.
-7. **No claiming 0.5.0 is released or Block 1 is owner-complete.**
+7. **No claiming General registration or CRAN** from this sheet; reg stays DEFERRED.
 
 ---
 
@@ -190,13 +182,12 @@ this ink cannot yet feed a flip packet.
 
 | Does | Does not |
 |---|---|
-| Assemble the 0.6 Darwin questions and campaign evidence pointers | Advance Block 1 or pretend 0.5.0 is registered |
-| Recommend HOLD until 0.5.0 + fresh G0 | Authorize SIGN tonight |
+| Record Darwin SIGN on G₀ / r_g as the 0.6 biology headline | Flip R multivariate `partial → covered` |
+| Keep teaching/field fences and Mrode no-anchor disclosure | Authorize G10 or change `public_covered_count` |
 | Keep A13 and A27 as separate inks | Let A13 item 5 stand in for this sheet |
-| Leave count at 5 | Flip anything, open G10, or calibrate intervals |
+| Leave count at **5** | Calibrate intervals / promote k≥3 / diagonal |
 
-**Owner-paused remainder (not this sheet):** General #166969 + TagBot `v0.5.0` ·
-then S0 G0 · then this ink · then Rose A29 tip · then owner G10. (A19/A20 bumps
-and #141/#277 already on `main` tips this poll — do not re-open.)
+**Next (not this sheet):** DP-10 C honesty apply · A25 SUPERSEDE · Rose A29 tip · owner G10 only with full §3.
+Registration / General / TagBot remain DEFERRED and are **not** SIGN gates.
 
-**Fence:** staging in `docs/dev-log/` only · no capability flip · no push-to-main from this sheet alone · no covered flip · no G10 ink · `public_covered_count` **5** · unsigned until owner G0 + Darwin SIGN.
+**Fence:** SIGN recorded · no capability flip · no covered flip · no G10 ink · `public_covered_count` **5**.

@@ -123,8 +123,7 @@ maintainer and continues once cleared.
 grammar freeze (`docs/design/38`) was RATIFIED 2026-07-11, and MV-4 landed in
 PR #132 (`ff89ac7`). Nothing on the 0.6 rung is blocked on writing routing code.
 The remaining 0.6 work is **evidence assembly against the §3 gate** — claim-surface
-reconciliation for the already-landed auto-route, the MV-5 run-or-supersede
-disposition, R↔engine element-wise parity at the promotion fixture, the Darwin
+reconciliation for the already-landed auto-route, the MV-5 disposition (**SUPERSEDED** under A25 — engine full-sib + 3-trait + C8; R driver not run), R↔engine element-wise parity at the promotion fixture, the Darwin
 sign-off on the recovered covariance, a Rose pre-flip audit, and the owner's G10
 flip. Agents assemble; the owner signs.
 

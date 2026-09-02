@@ -36,7 +36,7 @@ PARALLEL long-lead threads (start NOW, feed later tags, mostly off critical path
 
 | Tag | Pillar | Engine status | Critical R-lane work | Julia work | Compute |
 |---|---|---|---|---|---|
-| **0.6.0** | MV Gaussian | **covered** (V4-MV-REML) | ~~MV-4 cbind auto-routing + Boole freeze~~ **DONE** (doc 38 ratified 2026-07-11; MV-4 merged PR #132 `ff89ac7`); ~~MV-1 in-suite sommer full-unstructured~~ **DONE** (same PR); remaining: claim-surface reconciliation, MV-3 identity gate wiring, MV-6 Darwin sign-off | MV-5 recovery pre-declare parity — run-or-supersede disposition still open | MV-5 Totoro (wall-clock bound), **only if the disposition says RUN** |
+| **0.6.0** | MV Gaussian | **covered** (V4-MV-REML) | ~~MV-4 cbind auto-routing + Boole freeze~~ **DONE** (doc 38 ratified 2026-07-11; MV-4 merged PR #132 `ff89ac7`); ~~MV-1 in-suite sommer full-unstructured~~ **DONE** (same PR); remaining: claim-surface reconciliation, MV-3 identity gate wiring, MV-6 Darwin sign-off | MV-5 SUPERSEDED (A25; doc 40) — engine full-sib + 3-trait + C8 banked; R broadened driver historical / NOT RUN | none for MV-5 under SUPERSEDE; Totoro/DRAC only if owner REJECTS SUPERSEDE and answers “Totoro or DRAC?” |
 | **0.7.0** | Genomic GREML | **covered** (V2-GREML) | G0 grammar/scale freeze; G4 auto-route + R parity; G6 h2 identity + anchor | G5 recovery | Totoro screen → DRAC fir 2000-rep confirm |
 | **0.8.0** | FA-G + single-step | **FA partial** (real engine fix) | S7 grammar freeze; S8 rotation-invariant bridge; single-step comparators | **S1 diagnose → S2 prereg → S3 reparam/EM warm-start → S4 run** | Totoro (only *after* S1 classifies failures) |
 | **0.9.0** | NG bundle 1 + calibration | engine ahead; h2 QGglmm-validated ≤4.5e-6 | NG-1 estimand contract; NG-3 extractor; NG-7 flip; calibration H0/H1/H3 | NG-5 recovery; coverage drivers | Totoro/DRAC |
@@ -68,8 +68,7 @@ slice (counted once, owned by the 1.0 close-out).
    multi_effect / repeatability) and **H3** (Fisher-z correlation-coverage: r_am,
    reused for r_g) — compute-free harness builds; write the symbolic-alignment
    table before either.
-3. **MV-5 broadened recovery on Totoro** — wall-clock (not core) bound; kick
-   first so it feeds MV-7's scope.
+3. ~~MV-5 Totoro~~ **SUPERSEDED (A25)** — breadth carried by engine checkpoints cited in doc 40; do not kick unless REJECT path re-opens compute.
 4. **Genomic G0** (grammar + genomic-scale estimand note) and **G2/G3** (sommer +
    AGHmatrix comparators — free, installed).
 5. **Single-step Mrode Ch.11 anchor** (textbook; feeds 0.8).
