@@ -14,10 +14,11 @@ v0.1 fits the univariate Gaussian animal model
 \code{y ~ fixed + animal(1 | id, pedigree = ped)} by REML (average-information)
 through the HSquared.jl engine: the default \code{hsquared()} call fits when a
 local Julia and \code{HSquared.jl} are available, and otherwise errors with
-install guidance. Genomic, single-step, repeatability, two-effect,
-multivariate Gaussian, and non-Gaussian (\code{poisson}/\code{binomial}, Laplace or
-variational REML) models also fit through opt-in, experimental engine paths;
-factor-analytic models remain planned.
+install guidance. A \code{cbind()} multivariate Gaussian response also routes on
+that default path, though the multivariate capability stays experimental.
+Genomic, single-step, repeatability, two-effect, and non-Gaussian
+(\code{poisson}/\code{binomial}, Laplace or variational REML) models fit through
+opt-in, experimental engine paths; factor-analytic models remain planned.
 }
 \section{Current limitations}{
 

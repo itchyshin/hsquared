@@ -108,7 +108,8 @@ default, mirroring a `partial` validation gate).
 
 ## Multivariate and factor-analytic grammar
 
-The first multivariate surface is the opt-in `cbind()` animal-model path:
+The first multivariate surface is the `cbind()` animal-model path, which routes
+on the default call:
 
 ```{r, eval = FALSE}
 cbind(weight, height) ~ sex + animal(1 | id, pedigree = ped)
@@ -138,8 +139,9 @@ Planned covariance meanings:
 - `cov = lowrank(K)`: `G = Lambda Lambda'`.
 - `cov = fa(K)`: `G = Lambda Lambda' + Psi`.
 
-Current status: the opt-in `cbind()` multivariate animal-model path is parsed
-and fitted experimentally. The long-format `animal(trait | id, cov = ...)`
+Current status: the `cbind()` multivariate animal-model path is parsed and
+routed by default, and fitted experimentally — the routing is default, the
+claim is still `partial`. The long-format `animal(trait | id, cov = ...)`
 grammar and residual structured covariance grammar are planned, not parsed or
 fitted.
 

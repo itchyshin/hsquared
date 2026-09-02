@@ -85,21 +85,23 @@ heritability.hsquared_fit <- function(object, ...) {
   # maternal effects and that h2_T < h2_d is real and expected when r_am < 0.
   # Use direct_heritability() or total_heritability() for targeted accessors.
   if (hs_fit_is_direct_maternal(object)) {
-    vc     <- object$result$variance_components
+    vc <- object$result$variance_components
     sigma_ad <- as.numeric(vc$estimate[vc$component == "direct"])
     sigma_am <- as.numeric(vc$estimate[vc$component == "maternal"])
     sigma_dm <- as.numeric(vc$estimate[vc$component == "covariance"])
     sigma_e2 <- as.numeric(vc$estimate[vc$component == "residual"])
-    sigma_P  <- sigma_ad + sigma_am + sigma_dm + sigma_e2
+    sigma_P <- sigma_ad + sigma_am + sigma_dm + sigma_e2
     h2_d <- if (sigma_P > 0) sigma_ad / sigma_P else NA_real_
-    m2   <- if (sigma_P > 0) sigma_am / sigma_P else NA_real_
-    h2_T <- if (sigma_P > 0)
+    m2 <- if (sigma_P > 0) sigma_am / sigma_P else NA_real_
+    h2_T <- if (sigma_P > 0) {
       (sigma_ad + 1.5 * sigma_dm + 0.5 * sigma_am) / sigma_P
-    else NA_real_
+    } else {
+      NA_real_
+    }
     r_am <- as.numeric(object$result$genetic_correlation$estimate[[1L]])
     out <- data.frame(
       component = c("h2_direct", "m2_maternal", "h2_total_willham", "r_am"),
-      estimate  = c(h2_d, m2, h2_T, r_am),
+      estimate = c(h2_d, m2, h2_T, r_am),
       stringsAsFactors = FALSE
     )
     attr(out, "interpretation") <- paste(
@@ -268,7 +270,11 @@ genetic_correlation.default <- function(object, ...) {
 
 #' @export
 genetic_correlation.hsquared_fit <- function(object, ...) {
-  out <- hs_fit_result(object, "genetic_correlation", "genetic correlation matrix")
+  out <- hs_fit_result(
+    object,
+    "genetic_correlation",
+    "genetic correlation matrix"
+  )
   # Warn when the direct-maternal genetic correlation is at or near the
   # boundary: |r_am| >= 0.99 signals a poorly identified G_dm (shallow
   # pedigree, too few offspring per dam) or a genuine constraint boundary.
@@ -310,9 +316,10 @@ hs_multivariate_extractor_default <- function(name) {
   stop(
     "`",
     name,
-    "()` requires an `hsquared_fit` object from the opt-in multivariate model ",
-    "(`target = \"multivariate\"`) or the opt-in direct-maternal correlated ",
-    "model (`target = \"direct_maternal\"`).",
+    "()` requires an `hsquared_fit` object from the multivariate model ",
+    "(a `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ",
+    "ped)`, which fits on the default path) or the opt-in direct-maternal ",
+    "correlated model (`target = \"direct_maternal\"`).",
     call. = FALSE
   )
 }
@@ -752,7 +759,9 @@ hs_two_effect_ratio_fence <- function(kind = c("common_env", "maternal")) {
   }
   paste0(
     "This is a variance ratio: the proportion of phenotypic variance ",
-    "attributable to the ", label, " effect (c2/m2), NOT a heritability. ",
+    "attributable to the ",
+    label,
+    " effect (c2/m2), NOT a heritability. ",
     "In the same fit heritability() reports narrow-sense ",
     "h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2) WITHIN this two-effect ",
     "model. At a variance-component boundary (sigma -> 0) the ratio is flagged ",
@@ -2379,20 +2388,24 @@ rr_eigenfunctions.hsquared_fit <- function(object, at = NULL, n = 25L, ...) {
 hs_fit_is_direct_maternal <- function(object) {
   identical(object$spec$target, "direct_maternal") ||
     (!is.null(object$result$direct_variance) &&
-       !is.null(object$result$partner_variance))
+      !is.null(object$result$partner_variance))
 }
 
 hs_require_direct_maternal <- function(object, name) {
   if (!inherits(object, "hsquared_fit")) {
     stop(
-      "`", name, "()` requires an `hsquared_fit` object from the opt-in ",
+      "`",
+      name,
+      "()` requires an `hsquared_fit` object from the opt-in ",
       "direct-maternal correlated model (`target = \"direct_maternal\"`).",
       call. = FALSE
     )
   }
   if (!hs_fit_is_direct_maternal(object)) {
     stop(
-      "`", name, "()` requires a fit from the opt-in direct-maternal ",
+      "`",
+      name,
+      "()` requires a fit from the opt-in direct-maternal ",
       "correlated model (`target = \"direct_maternal\"`), fitted with ",
       "`animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`.",
       call. = FALSE
@@ -2590,17 +2603,19 @@ total_heritability.default <- function(object, ...) {
 #' @export
 total_heritability.hsquared_fit <- function(object, ...) {
   hs_require_direct_maternal(object, "total_heritability")
-  vc      <- object$result$variance_components
+  vc <- object$result$variance_components
   sigma_ad <- as.numeric(vc$estimate[vc$component == "direct"])
   sigma_am <- as.numeric(vc$estimate[vc$component == "maternal"])
   sigma_dm <- as.numeric(vc$estimate[vc$component == "covariance"])
   sigma_e2 <- as.numeric(vc$estimate[vc$component == "residual"])
-  sigma_P  <- sigma_ad + sigma_am + sigma_dm + sigma_e2
-  h2_T <- if (sigma_P > 0)
+  sigma_P <- sigma_ad + sigma_am + sigma_dm + sigma_e2
+  h2_T <- if (sigma_P > 0) {
     (sigma_ad + 1.5 * sigma_dm + 0.5 * sigma_am) / sigma_P
-  else NA_real_
+  } else {
+    NA_real_
+  }
   out <- data.frame(
-    term     = "total_willham",
+    term = "total_willham",
     estimate = h2_T,
     stringsAsFactors = FALSE
   )

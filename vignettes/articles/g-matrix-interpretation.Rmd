@@ -24,7 +24,9 @@ This article is for the applied moment after a multivariate animal model has
 fit: you want to know what the genetic covariance matrix says, what the
 residual matrix says, and where the current evidence boundary is.
 
-The current `hsquared` multivariate path is experimental and opt-in. It
+The current `hsquared` multivariate path fits on the default call — a `cbind()`
+Gaussian response with an `animal()` term needs no `engine` or `target`
+argument — but it remains experimental. It
 estimates an unstructured additive-genetic covariance matrix `G` and residual
 covariance matrix `R` for Gaussian animal models. It is not yet production
 multi-trait software, and it does not yet provide standard errors, confidence
@@ -53,11 +55,7 @@ fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,
   family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "multivariate")
-  )
+  REML = TRUE
 )
 ```
 

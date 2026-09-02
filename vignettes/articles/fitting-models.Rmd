@@ -43,9 +43,12 @@ breeding_values(fit)   # EBVs (aliases: EBV(), BLUP())
 summary(fit)
 ```
 
-The remaining models below are **opt-in**: they are reached through
-`engine = "julia"` with an explicit `target`. They are all REML-only, experimental,
-and not the public default. Four of them are **covered at validation scale** —
+Most of the remaining models below are **opt-in**: they are reached through
+`engine = "julia"` with an explicit `target`. The one exception is the
+multivariate `cbind()` model, which routes on the default call — being reachable
+by default does not make it any less experimental. They are all REML-only,
+experimental, and none is a covered public default. Four of them are
+**covered at validation scale** —
 each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
 comparator: the common-environment two-effect model, arbitrary-N multi-effect,
 random regression k = 2, and the direct–maternal 2×2 G model. Covered at
@@ -177,8 +180,10 @@ breeding_values(fit_snp)             # per-individual GEBVs
 
 ## Multivariate Gaussian animal model
 
-The opt-in multivariate path uses a `cbind()` response and estimates
+The multivariate path uses a `cbind()` response and estimates
 trait-by-trait genetic and residual covariance matrices for the animal effect.
+It fits on the default call — no `engine` or `target` argument — while the
+capability itself stays `partial` and experimental.
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 
 ```{r}
@@ -186,11 +191,7 @@ fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,
   family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "multivariate")
-  )
+  REML = TRUE
 )
 
 genetic_covariance(fit_mv)
@@ -221,7 +222,8 @@ Only rows marked `covered` in `validation_status()` may be relied on as working.
 The four opt-in models listed as covered above (`two_effect` common-env leg,
 `multi_effect`, `random_regression`, `direct_maternal`) are covered at
 validation scale. The remaining opt-in models (`repeatability`, the maternal
-two-effect leg, genomic, SNP-BLUP, single-step, multivariate) remain `partial`
-until their `HSquared.jl` gates and external comparators are signed off.
+two-effect leg, genomic, SNP-BLUP, single-step) remain `partial` until their
+`HSquared.jl` gates and external comparators are signed off, and so does the
+multivariate `cbind()` model even though it now routes by default.
 Structured/factor-analytic multivariate covariance, non-Gaussian/GLLVM,
 unusual-inheritance, and GPU models remain on the roadmap.

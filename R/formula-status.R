@@ -30,8 +30,9 @@ print.hs_formula_status <- function(x, ...) {
   cat("<hs_formula_status>\n")
   cat("  parsed today: animal(1 | id, pedigree = ped); ")
   cat("animal(1 | id) with an hs_data pedigree\n")
-  cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
-  cat("permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in\n")
+  cat("  fitting: animal(1 | id) and cbind() multivariate fit by default ")
+  cat("(Gaussian REML; multivariate still experimental); ")
+  cat("permanent/common_env/maternal_genetic/genomic fit opt-in\n")
   cat(
     "  planned grammar: rows marked planned/reserved error before fitting\n"
   )
@@ -156,7 +157,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in single-step bundle construction)",
     "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
-    "fitted (opt-in multivariate)",
+    "fitted (default route, experimental multivariate)",
     rep("not available", 6L)
   )
 }
@@ -312,9 +313,12 @@ hs_formula_status_behavior <- function() {
     ),
     rep(inert_marker_text, 3L),
     paste(
-      "Experimental multivariate Gaussian animal model; requires a `cbind()`",
-      "response, an `animal()` term, and engine = \"julia\", target =",
-      "\"multivariate\". Missing trait cells are allowed as `NA`. Under",
+      "Experimental multivariate Gaussian animal model; a `cbind()` response",
+      "with an `animal()` term routes to the multivariate fitter on the",
+      "DEFAULT path (no engine/target argument needed; the explicit engine =",
+      "\"julia\", target = \"multivariate\" spelling still works). Default",
+      "routing is not a covered claim: this capability stays partial.",
+      "Missing trait cells are allowed as `NA`. Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
       "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
       "required), not a multivariate Gaussian."

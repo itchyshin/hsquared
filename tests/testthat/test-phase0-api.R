@@ -116,7 +116,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     status$fitting_status[
       status$term == "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)"
     ],
-    "fitted (opt-in multivariate)"
+    "fitted (default route, experimental multivariate)"
   )
   expect_true(all(
     c(

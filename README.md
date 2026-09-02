@@ -94,12 +94,14 @@ agreement with `sommer`. Engine-recovery results are validated locally through
 the R-to-Julia bridge; public CI exercises the equivalent pure-R REML reference
 and skip-guards the live-engine tests, since there is no Julia in CI.
 
-**Opt-in and experimental** (`hs_control(engine = "julia")`, not the default) —
-the code runs and is bridge-verified, but the evidence chain has a named hole.
-Exploratory use, or report beside your own comparator: repeatability / permanent
-environment, the maternal-genetic two-effect leg, genomic (GREML or SNP-BLUP),
-single-step effects, and the multivariate Gaussian animal model via a `cbind()`
-response.
+**Experimental** — the code runs and is bridge-verified, but the evidence chain
+has a named hole. Exploratory use, or report beside your own comparator:
+repeatability / permanent environment, the maternal-genetic two-effect leg,
+genomic (GREML or SNP-BLUP), and single-step effects, all reached through
+`hs_control(engine = "julia")` with an explicit target; plus the multivariate
+Gaussian animal model via a `cbind()` response, which routes on the ordinary
+`hsquared()` call. Default routing is a convenience, not a promotion — the
+multivariate row is still `partial`.
 
 **Reserved syntax only** — parses, then aborts as planned, not implemented:
 paternal effects, dominance, epistasis, cytoplasmic inheritance, imprinting,

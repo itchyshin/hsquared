@@ -79,9 +79,9 @@ hs_validation_status_phases <- function() {
 
 hs_validation_status_status <- function() {
   c(
-    rep("partial", 7L),      # positions 1-7
-    "covered",               # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    rep("partial", 3L),      # positions 9-11
+    rep("partial", 7L), # positions 1-7
+    "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
+    rep("partial", 3L), # positions 9-11
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -342,10 +342,15 @@ hs_validation_status_boundaries <- function() {
       "parity are planned. Not the default, not comparator-validated."
     ),
     paste(
-      "Experimental opt-in path only; Julia-owned dense/validation-scale",
+      "Experimental; Julia-owned dense/validation-scale",
       "multivariate REML estimator that R surfaces; mirrors the twin V4 rows",
-      "(partial). `cbind()` responses with missing trait cells are supported,",
-      "but this is REML-only, animal-model-only, and not the default. The R lane",
+      "(partial). ROUTING: a `cbind()` Gaussian response with an `animal()`",
+      "term auto-routes to this fitter on the DEFAULT path (MV-4); no",
+      "engine/target argument is required, and the explicit `engine =",
+      "\"julia\", target = \"multivariate\"` spelling still works. Default",
+      "routing is NOT a covered claim and did not move public_covered_count.",
+      "`cbind()` responses with missing trait cells are supported,",
+      "but this is REML-only and animal-model-only. The R lane",
       "has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
       "anchor plus a Bayesian MCMCglmm agreement probe. The MCMCglmm leg is",
@@ -362,9 +367,12 @@ hs_validation_status_boundaries <- function() {
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
       "REML only (ML is rejected on the fit path). Genomic, repeatability,",
-      "two-effect, marker-effect, multivariate, and non-Gaussian",
+      "two-effect, marker-effect, and non-Gaussian",
       "(poisson/binomial, Laplace or variational REML) fitting are separate",
-      "opt-in experimental targets, not the default. Mirrors the twin-owned",
+      "opt-in experimental targets, not the default. A `cbind()` multivariate",
+      "response also routes on the default path, but it is a separate,",
+      "experimental (partial) row and is NOT part of this covered claim.",
+      "Mirrors the twin-owned",
       "V1-AI-REML gate",
       "(covered); not ASReml multi-trait parity."
     ),

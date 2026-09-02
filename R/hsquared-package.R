@@ -8,10 +8,11 @@
 #' `y ~ fixed + animal(1 | id, pedigree = ped)` by REML (average-information)
 #' through the HSquared.jl engine: the default `hsquared()` call fits when a
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
-#' install guidance. Genomic, single-step, repeatability, two-effect,
-#' multivariate Gaussian, and non-Gaussian (`poisson`/`binomial`, Laplace or
-#' variational REML) models also fit through opt-in, experimental engine paths;
-#' factor-analytic models remain planned.
+#' install guidance. A `cbind()` multivariate Gaussian response also routes on
+#' that default path, though the multivariate capability stays experimental.
+#' Genomic, single-step, repeatability, two-effect, and non-Gaussian
+#' (`poisson`/`binomial`, Laplace or variational REML) models fit through
+#' opt-in, experimental engine paths; factor-analytic models remain planned.
 #'
 #' @section Current limitations:
 #' This package is **experimental**; the first CRAN release targets 0.5.0,

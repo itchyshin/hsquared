@@ -36,7 +36,7 @@ PARALLEL long-lead threads (start NOW, feed later tags, mostly off critical path
 
 | Tag | Pillar | Engine status | Critical R-lane work | Julia work | Compute |
 |---|---|---|---|---|---|
-| **0.6.0** | MV Gaussian | **covered** (V4-MV-REML) | MV-4 cbind auto-routing + Boole freeze *(critical)*; MV-1 in-suite sommer full-unstructured; MV-2/3/6 evidence + identity + Darwin | MV-5 recovery pre-declare parity | MV-5 Totoro (wall-clock bound) |
+| **0.6.0** | MV Gaussian | **covered** (V4-MV-REML) | ~~MV-4 cbind auto-routing + Boole freeze~~ **DONE** (doc 38 ratified 2026-07-11; MV-4 merged PR #132 `ff89ac7`); ~~MV-1 in-suite sommer full-unstructured~~ **DONE** (same PR); remaining: claim-surface reconciliation, MV-3 identity gate wiring, MV-6 Darwin sign-off | MV-5 recovery pre-declare parity — run-or-supersede disposition still open | MV-5 Totoro (wall-clock bound), **only if the disposition says RUN** |
 | **0.7.0** | Genomic GREML | **covered** (V2-GREML) | G0 grammar/scale freeze; G4 auto-route + R parity; G6 h2 identity + anchor | G5 recovery | Totoro screen → DRAC fir 2000-rep confirm |
 | **0.8.0** | FA-G + single-step | **FA partial** (real engine fix) | S7 grammar freeze; S8 rotation-invariant bridge; single-step comparators | **S1 diagnose → S2 prereg → S3 reparam/EM warm-start → S4 run** | Totoro (only *after* S1 classifies failures) |
 | **0.9.0** | NG bundle 1 + calibration | engine ahead; h2 QGglmm-validated ≤4.5e-6 | NG-1 estimand contract; NG-3 extractor; NG-7 flip; calibration H0/H1/H3 | NG-5 recovery; coverage drivers | Totoro/DRAC |
@@ -112,9 +112,12 @@ monolithic push (a big-bang plan bloats the orchestrator and forces premature FA
 threads (§2) fires immediately because they are design-bound or
 compute-wall-clock-bound.
 
-**First slice to dispatch: MV-4** (cbind auto-routing on the default `fit` path +
-Boole grammar/argument freeze) — the only medium R slice on the 0.6 critical path
-and gate item 4; R-lane, compute-free. Fire alongside three zero-marginal-cost
+**First slice to dispatch — corrected 2026-09-01.** This read "MV-4 (cbind
+auto-routing on the default `fit` path + Boole grammar/argument freeze)". Both
+are already delivered: doc 38 was RATIFIED 2026-07-11 and MV-4 merged in PR #132
+(`ff89ac7`). The first slice is instead **claim-surface reconciliation for the
+landed auto-route**, and the rest of the 0.6 critical path is evidence assembly,
+not code. R-lane, compute-free. Fire alongside three zero-marginal-cost
 kicks: **MV-5 recovery on Totoro** (pre-declare the bias/MCSE gate first),
 **NG-1 estimand contract** (design), **H0 calibration bank** (governance). DRAC
 enters at 0.7 (G5 confirm tier) and scales for the 0.9/1.0 campaigns.

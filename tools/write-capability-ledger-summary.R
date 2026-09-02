@@ -145,11 +145,12 @@ hs_route_table <- function() {
     list(
       key = "experimental multivariate REML estimator (opt-in)",
       expect = "partial",
+      default_route = TRUE,
       title = "Multivariate Gaussian animal model (cbind response)",
       call = paste0(
-        'hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat,\n',
-        '         control = hs_control(engine = "julia",\n',
-        '           engine_control = list(target = "multivariate")))'
+        'hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat)\n',
+        '# routes on the default path; engine = "julia", target = ',
+        '"multivariate" still works'
       ),
       scope = paste(
         "REML-only, animal-model-only, dense/validation-scale. Returns G0/R0",
@@ -158,7 +159,9 @@ hs_route_table <- function() {
         "study, one reproduced full-unstructured `sommer` comparator leg, a",
         "published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm",
         "agreement probe - which is NOT same-estimand REML parity. The engine row",
-        "is covered; this R-public surface is not."
+        "is covered; this R-public surface is not. Since MV-4 the cbind route is",
+        "selected on the default call: that is reachability, not promotion, and",
+        "public_covered_count did not move."
       ),
       point = "partial",
       interval = "no",
@@ -177,6 +180,8 @@ hs_permission_fit <- function(status, is_default) {
     "**Yes** - implemented and covered on the default call."
   } else if (identical(status, "covered")) {
     "**Yes** - implemented and covered at validation scale, behind an opt-in engine target."
+  } else if (identical(status, "partial") && is_default) {
+    "**Yes, but experimental** - it runs on the default call, yet the evidence is incomplete. Default routing is not a covered claim."
   } else if (identical(status, "partial")) {
     "**Yes, but opt-in and experimental** - the code runs; the evidence is incomplete."
   } else {
@@ -354,7 +359,11 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
   )
 
   for (route in routes) {
-    lines <- c(lines, hs_render_card(route, identical(route$key, default_key)))
+    # `default_route` is reachability, `expect` is the claim. A route can be
+    # default-reachable and still `partial` (the MV-4 cbind auto-route).
+    on_default <- isTRUE(route$default_route) ||
+      identical(route$key, default_key)
+    lines <- c(lines, hs_render_card(route, on_default))
   }
 
   lines <- c(

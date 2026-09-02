@@ -120,18 +120,17 @@ hsquared(y ~ genomic(1 | id, markers = M), data = dat,
 ### Multivariate Gaussian animal model (cbind response)
 
 ```r
-hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat,
-         control = hs_control(engine = "julia",
-           engine_control = list(target = "multivariate")))
+hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat)
+# routes on the default path; engine = "julia", target = "multivariate" still works
 ```
 
-**Can I fit it?** **Yes, but opt-in and experimental** - the code runs; the evidence is incomplete.
+**Can I fit it?** **Yes, but experimental** - it runs on the default call, yet the evidence is incomplete. Default routing is not a covered claim.
 
 **Can I report the point estimate?** **Not on this package's evidence alone.** Report only beside a comparator you ran yourself, and say the route is experimental.
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** REML-only, animal-model-only, dense/validation-scale. Returns G0/R0 covariance and correlation matrices, per-trait h2, and cross-trait EBVs. The R-lane evidence includes a 100-replicate t = 2 cold-start recovery study, one reproduced full-unstructured `sommer` comparator leg, a published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm agreement probe - which is NOT same-estimand REML parity. The engine row is covered; this R-public surface is not.
+**Exact scope and caveat.** REML-only, animal-model-only, dense/validation-scale. Returns G0/R0 covariance and correlation matrices, per-trait h2, and cross-trait EBVs. The R-lane evidence includes a 100-replicate t = 2 cold-start recovery study, one reproduced full-unstructured `sommer` comparator leg, a published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm agreement probe - which is NOT same-estimand REML parity. The engine row is covered; this R-public surface is not. Since MV-4 the cbind route is selected on the default call: that is reachability, not promotion, and public_covered_count did not move.
 
 **Concrete fallback.** Fit each trait with the covered univariate model, and report cross-trait covariance only beside an external multi-trait comparator.
 
