@@ -1,21 +1,49 @@
 on:
-  push:
+  workflow_run:
+    workflows: ["R-CMD-check"]
+    types: [completed]
     branches: [main, master]
   workflow_dispatch:
 
 name: pkgdown
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pkgdown
+  # Never cancel an in-flight deploy. The deploy job is short and idempotent
+  # (it re-publishes the rendered site). Cancelling it buys nothing, but when
+  # several merges land in quick succession it was killing good-tree deploys
+  # mid-publish while letting a stale-tree deploy run to a failed completion.
+  cancel-in-progress: false
 
 jobs:
-  pkgdown:
+  # Build and deploy are separate jobs on purpose (gllvmTMB pattern).
+  #
+  # The `github-pages` environment carries a protection rule restricting
+  # deployments to the default branch. When ONE job both built and deployed, that
+  # rule rejected the whole job before a single step ran. Splitting them means
+  # the build runs on any branch (no environment) while only deploy touches the
+  # environment, and only from main. The artifact is the interface between them.
+  build:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Build the current tip of the branch the check ran on, NOT the
+          # triggering run's pinned head_sha (stale concurrent main runs).
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+
+      - uses: actions/configure-pages@v5
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -25,17 +53,53 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown
+          extra-packages: any::pkgdown, local::.
           needs: website
 
-      - name: Configure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Hide internal project files from pkgdown
+        # pkgdown 2.2.0 renders every root .md (incl. AGENTS.md, CLAUDE.md, and
+        # ROADMAP.md) as a public page AND indexes it in search.json / sitemap.xml,
+        # honoring neither .Rbuildignore nor any exclude config. Move them out of
+        # pkgdown's view for the build so no page, search entry, or sitemap entry
+        # is produced. The CI checkout is ephemeral; the restore step is hygiene.
+        run: mkdir -p .pkgdown-hidden && mv AGENTS.md CLAUDE.md ROADMAP.md .pkgdown-hidden/
+        shell: bash
 
-      - name: Install package
-        run: R CMD INSTALL .
-
-      - name: Deploy pkgdown site
-        run: pkgdown::deploy_to_branch(new_process = FALSE)
+      - name: Build site
+        run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
+
+      - name: Verify internal pages are absent
+        run: |
+          test ! -e pkgdown-site/AGENTS.html
+          test ! -e pkgdown-site/CLAUDE.html
+          test ! -e pkgdown-site/ROADMAP.html
+          ! grep -E '(AGENTS|CLAUDE|ROADMAP)\.html' pkgdown-site/search.json pkgdown-site/sitemap.xml
+        shell: bash
+
+      - name: Restore internal project files
+        if: always()
+        run: mv .pkgdown-hidden/AGENTS.md .pkgdown-hidden/CLAUDE.md .pkgdown-hidden/ROADMAP.md . && rmdir .pkgdown-hidden
+        shell: bash
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          # Matches `destination: pkgdown-site` in _pkgdown.yml.
+          # `docs/` hosts design + dev-log scaffolding, not the rendered site.
+          path: pkgdown-site
+
+  deploy:
+    needs: build
+    # Publish only from the default branch. Stating it here means a non-main run
+    # SKIPS this job cleanly instead of failing it on the protection rule.
+    if: ${{ github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
