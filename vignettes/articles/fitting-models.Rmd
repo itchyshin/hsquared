@@ -19,8 +19,9 @@ sibling `HSquared.jl` engine, so every example needs a local Julia, the
 see the README or "Getting started" article for full setup. The code chunks are
 not run when this page is built (the build host has no Julia).
 
-All fits are by REML. ML is not implemented; `REML = FALSE` is rejected on the
-fit path.
+All fits are by REML. ML is not implemented. `REML = FALSE` is rejected; use
+`REML = TRUE` (the default). That is the same rule for the default fit and for
+`engine = "validate"`.
 
 ## The default: a univariate Gaussian animal model
 

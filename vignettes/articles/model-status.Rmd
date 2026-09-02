@@ -282,10 +282,11 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
   `engine = "julia", target = "multivariate"` spelling still works. The route is
   default, the capability is still experimental (`partial`).
 - **Gaussian identity link only.** Other families are planned, not implemented.
-- **REML only on the fit path.** `REML = FALSE` (ML) is rejected; the
-  supplied-variance paths (`henderson_mme`, and `snp_blup` *when variances are
-  supplied*) solve at given variances rather than estimating them (`snp_blup`
-  with variances omitted estimates them by REML).
+- **REML only.** `REML = FALSE` (ML) is rejected; use `REML = TRUE`
+  (the default). That is the same rule for the default fit and for
+  `engine = "validate"`. The supplied-variance paths (`henderson_mme`, and
+  `snp_blup` *when variances are supplied*) solve at given variances rather
+  than estimating them (`snp_blup` with variances omitted estimates them by REML).
 - **Fixed effects are unrestricted** otherwise: any number of ordinary
   fixed-effect terms (`sex + age + ...`) on the right-hand side is fine.
 
@@ -303,8 +304,8 @@ unsupported form rather than guessing.
   only through explicit `engine = "julia"` targets, never as the default — some
   covered at validation scale, some experimental (see the two opt-in sections
   above).
-- ML estimation on the fit path (`REML = FALSE` is rejected; only REML is
-  implemented).
+- ML estimation (`REML = FALSE` is rejected on the default fit and on
+  `engine = "validate"`; only REML is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a default for
   any model other than the v0.1 univariate Gaussian animal model or the explicit
