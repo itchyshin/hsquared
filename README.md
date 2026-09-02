@@ -12,10 +12,14 @@ data validation, summaries, extractors, examples — and the
 computation.
 
 > [!WARNING]
-> **Experimental package.** The version number tracks *covered* capability, not
-> surface area; the first CRAN release targets 0.5.0, not 1.0. **Fitting requires
-> a local Julia and an `HSquared.jl` checkout** — R alone parses and validates a
-> model but does not fit it. What you may report is listed on
+> **Experimental 0.5.0 — not production / not CRAN.** The version number tracks
+> *covered* capability, not surface area; the first CRAN release targets 0.5.0,
+> not 1.0. `public_covered_count` stays **5**. **Fitting requires a local Julia
+> and an `HSquared.jl` checkout** — R alone parses and validates a model but
+> does not fit it. The Julia twin's General registration
+> ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969)) is
+> pending AutoMerge; do not assume `Pkg.add("HSquared")` works yet. What you
+> may report is listed on
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
 > — not in `validation_status()`. Report point estimates only for **covered**
 > routes. Standard errors and intervals are experimental and **not coverage-calibrated**.
