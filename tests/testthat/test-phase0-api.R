@@ -157,7 +157,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   )
   expect_match(
     paste(capture.output(print(status)), collapse = "\n"),
-    "planned grammar: rows marked planned/reserved error before fitting",
+    "reserved/planned:",
     fixed = TRUE
   )
   expect_true(any(
@@ -212,6 +212,58 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
   ]
   expect_s3_class(subset, "hs_formula_status")
   expect_output(print(subset), "cov = lowrank")
+})
+
+test_that("formula_status helper vectors stay the same length", {
+  n <- lengths(list(
+    term = hsquared:::hs_formula_status_terms(),
+    category = hsquared:::hs_formula_status_categories(),
+    phase = hsquared:::hs_formula_status_phases(),
+    syntax_status = hsquared:::hs_formula_status_syntax(),
+    fitting_status = hsquared:::hs_formula_status_fitting(),
+    current_behavior = hsquared:::hs_formula_status_behavior()
+  ))
+  expect_equal(length(unique(n)), 1L)
+  expect_equal(unname(unique(n)), nrow(formula_status()))
+})
+
+test_that("formula_status print header is derived from the printed rows", {
+  status <- formula_status()
+  printed <- paste(capture.output(print(status)), collapse = "\n")
+
+  expect_match(printed, "default:")
+  expect_match(printed, "animal\\(\\)")
+  expect_match(printed, "cbind\\(\\)")
+  expect_match(printed, "opt-in:")
+  expect_match(printed, "animal\\(rr\\(\\)\\)")
+  expect_match(printed, "single_step\\(\\)")
+  expect_match(printed, "metafounder\\(\\)")
+  expect_match(printed, "relmat\\(\\)")
+  expect_match(printed, "precision\\(\\)")
+  expect_match(printed, "\\(1 \\| group\\)")
+  expect_match(printed, "\\$current_behavior")
+  expect_false(grepl(
+    "permanent/common_env/maternal_genetic/genomic fit opt-in",
+    printed,
+    fixed = TRUE
+  ))
+  expect_false(grepl("parsed today:", printed, fixed = TRUE))
+
+  rr <- status[
+    status$term == "animal(rr(covariate, order = 2) | id, pedigree = ped)",
+  ]
+  class(rr) <- unique(c("hs_formula_status", class(rr)))
+  rr_print <- paste(capture.output(print(rr)), collapse = "\n")
+  expect_match(rr_print, "animal\\(rr\\(\\)\\)")
+  expect_false(grepl("cbind()", rr_print, fixed = TRUE))
+  expect_false(grepl("default:", rr_print, fixed = TRUE))
+
+  planned <- status[status$syntax_status == "planned", ]
+  class(planned) <- unique(c("hs_formula_status", class(planned)))
+  planned_print <- paste(capture.output(print(planned)), collapse = "\n")
+  expect_match(planned_print, "reserved/planned:")
+  expect_false(grepl("default:", planned_print, fixed = TRUE))
+  expect_false(grepl("opt-in:", planned_print, fixed = TRUE))
 })
 
 test_that("validation_status separates evidence from planned validation", {
