@@ -65,13 +65,17 @@ expressible, and errors with install guidance if you ask it to fit. See the
 engine setup section of the [README](https://github.com/itchyshin/hsquared#engine-setup).
 
 ```{r validate-only, eval = FALSE}
-# no Julia required
-spec <- hsquared(
-  y ~ sex + animal(1 | id, pedigree = ped),
+# no Julia required; same ped/dat as the README
+hsquared(
+  weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
   control = hs_control(engine = "validate")
 )
-model_spec(spec)
+
+model_spec(
+  weight ~ sex + animal(1 | id, pedigree = ped),
+  data = dat
+)
 ```
 
 ## Route-by-route reporting permissions
