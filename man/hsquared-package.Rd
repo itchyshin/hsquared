@@ -25,9 +25,22 @@ opt-in, experimental engine paths; factor-analytic models remain planned.
 This package is \strong{experimental}; the first CRAN release targets 0.5.0,
 not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
 and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
-model contract without fitting. Report point estimates only for rows marked
-\code{covered} in \code{\link[=validation_status]{validation_status()}}; uncertainty intervals are experimental
-and not coverage-calibrated. See \code{vignette("model-status", package = "hsquared")} and \code{vignette("validation-evidence", package = "hsquared")}.
+model contract without fitting. Report point estimates only for \code{covered}
+routes; uncertainty intervals are experimental and not coverage-calibrated.
+
+\code{\link[=validation_status]{validation_status()}} is the live status table, but it is not a complete
+enumeration of the covered public routes. Two covered capabilities have no
+\code{validation_status()} row yet: the opt-in
+\code{engine_control = list(target = "random_regression")} reaction-norm model
+(k = 2) and the opt-in
+\code{engine_control = list(target = "direct_maternal")} correlated 2x2 G model.
+Read \code{\link[=validation_status]{validation_status()}} together with the covered-route enumeration in
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}, which
+lists all five covered capabilities and the reporting scope of each. The
+\href{https://itchyshin.github.io/hsquared/articles/model-status.html}{model status}
+and \href{https://itchyshin.github.io/hsquared/articles/validation-evidence.html}{validation evidence}
+articles are published on the package website rather than as installed
+vignettes.
 }
 
 \seealso{

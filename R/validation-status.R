@@ -6,6 +6,29 @@
 #' comparator lanes for `hsquared`. It is a status table only: it does not run
 #' validation checks, fit models, or promote any capability to working status.
 #'
+#' # This table is not the full list of covered routes
+#'
+#' The rows here are validation *atoms*, grouped by evidence chain rather than
+#' by public modelling route, so the `covered` row count is not the number of
+#' covered routes. Two capabilities that count as publicly covered have no row
+#' of their own yet:
+#'
+#' - the opt-in reaction-norm model, k = 2:
+#'   `animal(rr(x, order = 2) | id, pedigree = ped)` with
+#'   `engine_control = list(target = "random_regression")`;
+#' - the opt-in correlated direct-maternal 2x2 G model:
+#'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` with
+#'   `engine_control = list(target = "direct_maternal")`.
+#'
+#' Both are covered at validation scale, opt-in, REML-only, and dense
+#' (n <= 1000 or so). Their scope and reporting limits are recorded in the
+#' repository capability ledger (`docs/design/capability-status.md`) and, for
+#' readers, in [Can I fit and report this?](
+#' https://itchyshin.github.io/hsquared/articles/current-limits.html). Read
+#' this table together with that enumeration: an absent row is not an absent
+#' capability, and this table alone does not tell you everything you may
+#' report.
+#'
 #' # Capability identifiers versus labels
 #'
 #' `capability` is a **stable identifier**. Dated evidence records — comparator
@@ -41,7 +64,10 @@ validation_status <- function() {
 print.hs_validation_status <- function(x, ...) {
   cat("<hs_validation_status>\n")
   cat("  validation: status table only; checks are run by tests and CI\n")
-  cat("  public claims: only `covered` rows may be advertised as working\n")
+  cat("  public claims: `covered` rows may be advertised as working, but\n")
+  cat("  this table is not the full list of covered routes -- opt-in\n")
+  cat("  random_regression (k = 2) and direct_maternal are covered with no\n")
+  cat("  row yet; see ?validation_status\n")
   cat("  shown below: `capability_label` (current wording); look rows up by\n")
   cat("  the stable `capability` id that dated evidence records cite\n")
   out <- x

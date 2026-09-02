@@ -15,11 +15,14 @@ computation.
 > **Experimental package.** The version number tracks *covered* capability, not
 > surface area; the first CRAN release targets 0.5.0, not 1.0. **Fitting requires
 > a local Julia and an `HSquared.jl` checkout** — R alone parses and validates a
-> model but does not fit it. Report point estimates only for rows marked
-> `covered` by `validation_status()`. Standard errors and intervals are
-> experimental and **not coverage-calibrated**. Read
+> model but does not fit it. Report point estimates only for **covered**
+> routes. `validation_status()` lists the covered rows, but it is not the full
+> list of covered routes — the opt-in `random_regression` (k = 2) and
+> `direct_maternal` targets are covered and have no row there yet. Standard
+> errors and intervals are experimental and **not coverage-calibrated**. Read
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
-> before reporting results.
+> — which lists every covered route and its reporting scope — before reporting
+> results.
 
 ## Quick start — no Julia required
 

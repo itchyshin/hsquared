@@ -18,10 +18,24 @@
 #' This package is **experimental**; the first CRAN release targets 0.5.0,
 #' not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
 #' and HSquared.jl; use [hs_control()] with `engine = "validate"` to check the
-#' model contract without fitting. Report point estimates only for rows marked
-#' `covered` in [validation_status()]; uncertainty intervals are experimental
-#' and not coverage-calibrated. See `vignette("model-status", package =
-#' "hsquared")` and `vignette("validation-evidence", package = "hsquared")`.
+#' model contract without fitting. Report point estimates only for `covered`
+#' routes; uncertainty intervals are experimental and not coverage-calibrated.
+#'
+#' [validation_status()] is the live status table, but it is not a complete
+#' enumeration of the covered public routes. Two covered capabilities have no
+#' `validation_status()` row yet: the opt-in
+#' `engine_control = list(target = "random_regression")` reaction-norm model
+#' (k = 2) and the opt-in
+#' `engine_control = list(target = "direct_maternal")` correlated 2x2 G model.
+#' Read [validation_status()] together with the covered-route enumeration in
+#' [Can I fit and report this?](
+#' https://itchyshin.github.io/hsquared/articles/current-limits.html), which
+#' lists all five covered capabilities and the reporting scope of each. The
+#' [model status](https://itchyshin.github.io/hsquared/articles/model-status.html)
+#' and [validation evidence](
+#' https://itchyshin.github.io/hsquared/articles/validation-evidence.html)
+#' articles are published on the package website rather than as installed
+#' vignettes.
 #'
 #' @keywords internal
 ## usethis namespace: start
