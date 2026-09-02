@@ -76,11 +76,7 @@ hs_a26_ebv_matrix <- function(fit, animals) {
 }
 
 hs_a26_skip_bridge <- function() {
-  hs_skip_live_julia()
-  testthat::skip_if_not(
-    hsquared:::hs_julia_bridge_available(),
-    "JuliaCall, Julia, and a local HSquared.jl project are required."
-  )
+  hs_require_bridge("A26 parity")
 }
 
 test_that("Tier A: the payload R sends matches the engine's construction rule", {

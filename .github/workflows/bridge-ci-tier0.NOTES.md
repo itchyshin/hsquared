@@ -33,3 +33,7 @@ Julia `test_payload_v2_parity.jl`. Budget ≤ 15 min.
 
 Full `devtools::test()` with Julia available; row-specific parity per
 `bridge-parity-smoke-status.tsv` tolerances.
+
+## Tier 1 (2026-09-02)
+
+`bridge-parity-tier1.yaml` is `workflow_dispatch` only and sets `HSQUARED_REQUIRE_BRIDGE=true`. Do **not** flip `bridge-parity-tier1.stub.yaml` `if: false`. Owner DP-10 still decides whether this becomes standing evidence for criterion 8.
