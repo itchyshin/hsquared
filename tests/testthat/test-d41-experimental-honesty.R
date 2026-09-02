@@ -47,6 +47,10 @@ test_that(".onAttach points at Can I fit and report this?, not validation_status
   # the incomplete-table apology is off the attach message
   expect_no_match(text, "not a complete list", fixed = TRUE)
   expect_no_match(text, "random_regression", fixed = TRUE)
+
+  # Pat leftover: two short lines + URL, not a ledger paragraph
+  collapsed <- gsub("\\s+", " ", paste(text, collapse = " "))
+  expect_lt(nchar(collapsed), 400L)
 })
 
 test_that("validation_status() print output flags that it is not the full covered list", {
