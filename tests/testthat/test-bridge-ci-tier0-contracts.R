@@ -6,6 +6,21 @@ bridge_tier0_repo_root <- function() {
   normalizePath(file.path(testthat::test_path(), "..", ".."), mustWork = TRUE)
 }
 
+# `docs/` is .Rbuildignore'd, so the dashboard registry is absent under
+# `R CMD check`, which installs from the tarball. These are source-tree
+# contract tests.
+bridge_tier0_skip_without_docs <- function() {
+  testthat::skip_if_not(
+    dir.exists(file.path(
+      bridge_tier0_repo_root(),
+      "docs",
+      "dev-log",
+      "dashboard"
+    )),
+    "docs/dev-log/dashboard is not in the build tarball"
+  )
+}
+
 bridge_tier0_read_parity_tsv <- function() {
   path <- file.path(
     bridge_tier0_repo_root(),
@@ -46,6 +61,7 @@ bridge_tier0_payload_fingerprint <- function(payload) {
 }
 
 test_that("Tier 0 registry documents Julia-free parity smoke rows", {
+  bridge_tier0_skip_without_docs()
   parity <- bridge_tier0_read_parity_tsv()
   tier0_ids <- c(
     "smoke_payload_v2_emitter",
@@ -61,7 +77,10 @@ test_that("Tier 0 registry documents Julia-free parity smoke rows", {
 
   repo_root <- bridge_tier0_repo_root()
   for (ref in rows$evidence_url) {
-    expect_true(file.exists(file.path(repo_root, ref)), info = paste("missing:", ref))
+    expect_true(
+      file.exists(file.path(repo_root, ref)),
+      info = paste("missing:", ref)
+    )
   }
 })
 
@@ -79,6 +98,7 @@ test_that("Tier 0 canonical test files exist on disk", {
     expect_true(file.exists(file.path(repo_root, path)), info = path)
   }
 
+  bridge_tier0_skip_without_docs()
   tier0_doc <- file.path(
     repo_root,
     "docs",
@@ -139,7 +159,12 @@ test_that("Tier 0 payload v2 emitter fingerprints are stable (in-memory)", {
 
 test_that("Tier 0 emit_payload_v2_fixtures.R script is present and syntactically valid", {
   repo_root <- bridge_tier0_repo_root()
-  script <- file.path(repo_root, "tests", "fixtures", "emit_payload_v2_fixtures.R")
+  script <- file.path(
+    repo_root,
+    "tests",
+    "fixtures",
+    "emit_payload_v2_fixtures.R"
+  )
   expect_true(file.exists(script))
   parsed <- parse(file = script)
   expect_true(length(parsed) > 0L)

@@ -1,4 +1,5 @@
 test_that("real-data validation manifest defines 3-tier ladder with claim boundaries (A13)", {
+  hs_skip_without_realdata_manifest()
   manifest <- hs_read_realdata_manifest()
   expect_identical(manifest$schema_version, 1L)
   expect_identical(manifest$lane, "hsquared")
@@ -14,8 +15,16 @@ test_that("real-data validation manifest defines 3-tier ladder with claim bounda
   )
 
   expect_true(!is.null(manifest$tier_summary))
-  expect_match(manifest$tier_summary$tier_1, "Not empirical validation", fixed = FALSE)
-  expect_match(manifest$tier_summary$tier_2, "Not field empirical", fixed = FALSE)
+  expect_match(
+    manifest$tier_summary$tier_1,
+    "Not empirical validation",
+    fixed = FALSE
+  )
+  expect_match(
+    manifest$tier_summary$tier_2,
+    "Not field empirical",
+    fixed = FALSE
+  )
   expect_match(manifest$tier_summary$tier_4, "NOT STARTED", fixed = FALSE)
 
   ids <- hs_realdata_arc_ids(manifest)
@@ -71,6 +80,7 @@ test_that("real-data validation manifest defines 3-tier ladder with claim bounda
 })
 
 test_that("Darwin review stub is pending with checklist items (A13)", {
+  hs_skip_without_realdata_manifest()
   manifest <- hs_read_realdata_manifest()
   review <- manifest$darwin_review
 

@@ -1,12 +1,18 @@
 hs_realdata_manifest_path <- function() {
-  normalizePath(
-    file.path(
-      testthat::test_path("..", ".."),
-      "docs",
-      "design",
-      "real-data-validation-manifest.toml"
-    ),
-    mustWork = TRUE
+  file.path(
+    testthat::test_path("..", ".."),
+    "docs",
+    "design",
+    "real-data-validation-manifest.toml"
+  )
+}
+
+# `docs/` is .Rbuildignore'd, so the manifest is absent under `R CMD check`,
+# which installs from the tarball. These are source-tree contract tests.
+hs_skip_without_realdata_manifest <- function() {
+  testthat::skip_if_not(
+    file.exists(hs_realdata_manifest_path()),
+    "docs/design/real-data-validation-manifest.toml is not in the build tarball"
   )
 }
 
@@ -23,7 +29,11 @@ hs_parse_toml_scalar <- function(val) {
       return(character(0))
     }
     parts <- strsplit(inner, ",\\s*")[[1]]
-    return(vapply(trimws(parts), function(x) gsub('^"|"$', "", x), character(1)))
+    return(vapply(
+      trimws(parts),
+      function(x) gsub('^"|"$', "", x),
+      character(1)
+    ))
   }
   if (val %in% c("true", "false")) {
     return(as.logical(val))
@@ -61,7 +71,9 @@ hs_read_realdata_manifest <- function(path = hs_realdata_manifest_path()) {
       result$arc[[length(result$arc)]] <<- table
     } else if (grepl("^darwin_review\\.", section)) {
       subkey <- sub("^darwin_review\\.", "", section)
-      result$darwin_review[[subkey]][[length(result$darwin_review[[subkey]])]] <<- table
+      result$darwin_review[[subkey]][[length(result$darwin_review[[
+        subkey
+      ]])]] <<- table
     }
     invisible(NULL)
   }
@@ -96,7 +108,9 @@ hs_read_realdata_manifest <- function(path = hs_realdata_manifest_path()) {
       section <- sub("^\\[\\[(.*)\\]\\]$", "\\1", line)
       table <- list()
       subkey <- sub("^darwin_review\\.", "", section)
-      result$darwin_review[[subkey]][[length(result$darwin_review[[subkey]]) + 1L]] <- table
+      result$darwin_review[[subkey]][[
+        length(result$darwin_review[[subkey]]) + 1L
+      ]] <- table
       next
     }
 
@@ -171,7 +185,10 @@ hs_realdata_arc_ids <- function(manifest = hs_read_realdata_manifest()) {
   vapply(manifest$arc, `[[`, character(1), "id")
 }
 
-hs_realdata_arcs_by_tier <- function(tier, manifest = hs_read_realdata_manifest()) {
+hs_realdata_arcs_by_tier <- function(
+  tier,
+  manifest = hs_read_realdata_manifest()
+) {
   arcs <- manifest$arc
   arcs[vapply(arcs, function(a) identical(a$tier, tier), logical(1))]
 }
