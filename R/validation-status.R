@@ -447,7 +447,7 @@ hs_validation_status_boundaries <- function() {
       "workflow provisions Julia and the parity legs skip on a Julia-free",
       "runner), so read it as local evidence, not a CI-verified claim.",
       "Darwin A27 SIGNED; Rose A29 CLEAN. Intervals remain uncalibrated",
-      "(design-41 §3 #7 deferred). NO-ANCHOR DISCLOSURE (gate item 2): the",
+      "(design-41 section 3 #7 deferred). NO-ANCHOR DISCLOSURE (gate item 2): the",
       "published Mrode Example 5.1 anchor is SUPPLIED-covariance BLUP/MME and",
       "does NOT anchor an ESTIMATED G0/R0; no published textbook anchor for",
       "estimated multivariate G0/R0 exists. MV-1 sommer requires Suggests on",
