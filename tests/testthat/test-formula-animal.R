@@ -322,7 +322,7 @@ test_that("multi-effect emitter builds a pedigree block plus one iid block per g
 })
 
 test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for a live fit."
@@ -428,6 +428,7 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
   # problems the dense factorization cannot reach. Well-identified fixture (needs enough
   # data; an 8-record K=3 fit is under-identified and the two estimators land on different
   # boundary optima).
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "Julia bridge (Julia + JuliaCall + HSquared.jl project) not available"

@@ -519,7 +519,7 @@ test_that("Mrode-style supplied-variance fixture matches Julia when available", 
 })
 
 test_that("sparse REML optimizer reaches the same REML optimum from different starts", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live sparse REML estimate-recovery validation."
@@ -571,7 +571,7 @@ test_that("sparse REML optimizer reaches the same REML optimum from different st
 })
 
 test_that("sparse and dense REML optimizers reach the same REML optimum", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live sparse-vs-dense REML optimizer validation."
@@ -614,7 +614,7 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
 })
 
 test_that("AI-REML and sparse REML optimizers reach the same REML optimum", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live AI-REML-vs-sparse REML optimizer validation."
@@ -685,7 +685,7 @@ test_that("independent pure-R REML optimizer matches the Julia sparse REML estim
 
   # Cross-check: the Julia sparse REML estimate matches the independent pure-R
   # optimum (same estimand, fully independent implementation). Skip-guarded.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live sparse REML cross-check."
@@ -920,7 +920,7 @@ test_that("the Julia engine recovers the published gryphon estimates via supplie
   # (ancestral loops) and the engine correctly rejects it, so the signed-off
   # V1-MRODE-FIT anchor uses supplied A_gryphon. Tolerance = the signed-off
   # comparator band (~1-2% / h2 ~0.01-0.02).
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not_installed("enhancer")
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),

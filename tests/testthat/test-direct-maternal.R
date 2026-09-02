@@ -439,6 +439,7 @@ skip_if_no_julia_bridge <- function() {
 }
 
 test_that("live R<->engine parity: direct_maternal fit returns converged result", {
+  hs_skip_live_julia()
   skip_if_no_julia_bridge()
 
   ped <- make_dm_ped()

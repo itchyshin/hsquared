@@ -203,7 +203,7 @@ test_that("the non-Gaussian normalizer consumes the Julia parity fixture", {
 })
 
 test_that("the live Julia bridge fits a non-Gaussian (Poisson + Bernoulli) animal model", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live non-Gaussian bridge."
@@ -253,7 +253,7 @@ test_that("the live Julia bridge fits a non-Gaussian (Poisson + Bernoulli) anima
 })
 
 test_that("the live bridge fits the variational (VA) non-Gaussian marginal", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live non-Gaussian bridge."

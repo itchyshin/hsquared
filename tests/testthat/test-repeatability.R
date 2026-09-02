@@ -218,7 +218,7 @@ test_that("the repeatability initial validator enforces three named components",
 })
 
 test_that("hsquared fits the opt-in repeatability model on repeated records", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live repeatability."

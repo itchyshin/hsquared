@@ -449,7 +449,7 @@ test_that("R Legendre basis matches the engine convention", {
 })
 
 test_that("hsquared can use the opt-in experimental random-regression bridge", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live random-regression bridge smoke."

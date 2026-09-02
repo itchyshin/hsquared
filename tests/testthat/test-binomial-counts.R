@@ -128,7 +128,7 @@ test_that("the family-symbol mapper distinguishes Bernoulli from Binomial(n_tria
 })
 
 test_that("the live bridge fits a balanced binomial-counts model [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."
@@ -170,7 +170,7 @@ test_that("the live bridge fits a balanced binomial-counts model [live]", {
 })
 
 test_that("a cbind binomial with one trial reduces to the Bernoulli fit [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."
@@ -214,7 +214,7 @@ test_that("a cbind binomial with one trial reduces to the Bernoulli fit [live]",
 })
 
 test_that("the live bridge fits a binomial-counts model with per-record varying trials [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."

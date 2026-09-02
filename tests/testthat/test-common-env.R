@@ -277,7 +277,7 @@ test_that("heritability_interval() resolves on a two-effect fit", {
 })
 
 test_that("hsquared fits the opt-in common-environment model", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live two-effect."

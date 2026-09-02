@@ -440,7 +440,7 @@ test_that("precision carries the supplied precision verbatim in the payload", {
 # --- Live reduction / NULL cells (skip-guarded; require Julia) ------------------
 
 test_that("relmat with K = A_pedigree fits identically to the animal model", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live fits."
@@ -493,7 +493,7 @@ test_that("relmat with K = A_pedigree fits identically to the animal model", {
 })
 
 test_that("precision with Q = Ainv matches the animal model", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live fits."
@@ -538,7 +538,7 @@ test_that("precision with Q = Ainv matches the animal model", {
 })
 
 test_that("relmat with an arbitrary PD K fits and returns sane components", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live fits."
@@ -577,7 +577,7 @@ test_that("relmat with an arbitrary PD K fits and returns sane components", {
 })
 
 test_that("relmat with K = I reduces to an independent iid animal fit", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live fits."
@@ -647,7 +647,7 @@ test_that("relmat with K = I reduces to an independent iid animal fit", {
 })
 
 test_that("the supplied matrix is provenance, never reported as an estimate", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live fits."
