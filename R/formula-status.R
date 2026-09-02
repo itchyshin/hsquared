@@ -232,7 +232,8 @@ hs_formula_status_behavior <- function() {
       "normalized Legendre): engine V3-RR-REML covered via pre-declared 48-seed",
       "bias/MCSE gate PASSED + sommer 4.4.5 leg() same-estimand REML comparator",
       "AGREE (<=1.9e-5); live R<->engine parity EXACT (<=1.03e-5); h2(t) <=4.24e-6.",
-      "h2(t) is a CURVE, never scalar (scalar heritability() on this result errors);",
+      "rr_heritability() returns h2(t) as a CURVE, never a scalar; heritability()",
+      "is NOT the RR accessor and errors on this result, naming rr_heritability().",
       "PE-overstatement caveat when no permanent-environment term. POINT-ESTIMATE",
       "only (no interval/CI on the K_g curve). k>=3 experimental; (x|g) raw slopes",
       "rejected; PE term and heterogeneous residual deferred."

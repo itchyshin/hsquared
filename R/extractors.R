@@ -53,6 +53,12 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' h2_T < h2_d is expected when r_am < 0. Use [direct_heritability()] or
 #' [total_heritability()] for targeted accessors without the warning.
 #'
+#' Reaction-norm fence for the opt-in random-regression model
+#' (`target = "random_regression"`): heritability is a **trajectory** `h2(t)`
+#' over the covariate, not a scalar, so `heritability()` **errors** on such a
+#' fit and names the implemented accessor. Use [rr_heritability()] for the
+#' `h2(t)` curve.
+#'
 #' @inheritParams variance_components
 #'
 #' @return Heritability results for `hsquared_fit` objects.
@@ -119,6 +125,22 @@ heritability.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
     return(out)
+  }
+  # Reaction-norm fence: h2 is a trajectory h2(t), not a scalar, on the opt-in
+  # random-regression target, so `heritability()` has no scalar answer to give.
+  # Name the implemented accessor rather than falling through to the generic
+  # "planned v0.1 contract" miss, which reads as "not implemented" on a route
+  # that is covered at validation scale.
+  if (hs_fit_is_random_regression(object)) {
+    stop(
+      "`heritability()` is not defined for the opt-in random-regression ",
+      "(reaction-norm) model (`target = \"random_regression\"`), where ",
+      "heritability is a TRAJECTORY h2(t) over the covariate rather than a ",
+      "scalar. Use `rr_heritability()` for the h2(t) curve, and ",
+      "`rr_genetic_variance()` / `rr_correlation()` / `rr_eigenfunctions()` ",
+      "for the other reaction-norm trajectories.",
+      call. = FALSE
+    )
   }
   hs_fit_result(object, "heritability", "heritability estimates")
 }

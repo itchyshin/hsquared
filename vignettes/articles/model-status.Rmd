@@ -169,13 +169,16 @@ not the default, and not production.
   heritabilities. INDEPENDENT effects only — random slopes `(x | g)` and
   correlated `(x || g)` terms are rejected.
 - Random regression (reaction norm), k = 2 —
-  `animal(rr(t, k = 2) | id, pedigree = ped)`, `target = "random_regression"`:
+  `animal(rr(t, order = 2) | id, pedigree = ped)`, `target = "random_regression"`:
   a linear reaction norm returning the 2×2 genetic covariance `K_g`
   (intercept × slope), residual variance, EBVs, and an `h²(t)` trajectory.
   Covered at k = 2 (mirrors the twin `V3-RR-REML`: a 48-seed bias/MCSE gate PASS
   + a `sommer` `leg()` same-estimand comparator AGREE, exact live parity).
-  `heritability()` returns `h²(t)` as a **curve**, never a bare scalar (a scalar
-  call errors). Point estimate only (no interval on the curve); the residual is
+  `rr_heritability()` — **not** `heritability()` — is the reaction-norm
+  heritability accessor: it returns `h²(t)` as a **curve**, never a bare scalar.
+  `heritability()` on a random-regression fit **errors** and names
+  `rr_heritability()`, because a single scalar `h²` is not defined for this
+  model. Point estimate only (no interval on the curve); the residual is
   homogeneous and there is no permanent-environment term, so `h²(t)` can
   overstate for repeated-records designs. k ≥ 3 is experimental.
 - Direct–maternal correlated model (2×2 G) —

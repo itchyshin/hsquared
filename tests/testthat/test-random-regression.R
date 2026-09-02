@@ -526,3 +526,141 @@ test_that("hsquared can use the opt-in experimental random-regression bridge", {
 
   expect_true(isTRUE(fit$result$converged))
 })
+
+# A minimal normalized random-regression fit, built through the real result
+# normalizer so the fence is exercised against the payload shape the bridge
+# actually produces rather than a hand-shaped list.
+hs_rr_mock_fit <- function() {
+  payload <- structure(
+    list(
+      y = rep(c(1, 2, 3), 4),
+      X = matrix(1, nrow = 12L, ncol = 1L),
+      ids = c("a", "b", "c", "d"),
+      family = "gaussian",
+      random_regression = list(
+        covariate = "age",
+        order = 2L,
+        lower = 1,
+        upper = 5
+      ),
+      metadata = list(
+        fixed_colnames = "(Intercept)",
+        random_regression = list(
+          covariate = "age",
+          order = 2L,
+          lower = 1,
+          upper = 5
+        )
+      )
+    ),
+    class = c("hs_bridge_payload", "list")
+  )
+  raw <- list(
+    K_g = matrix(c(0.8, 0.1, 0.1, 0.3), 2L),
+    sigma_e2 = 0.5,
+    beta = 2.1,
+    coef_ids = payload$ids,
+    coef_values = matrix(seq(0.1, 0.8, length.out = 8L), nrow = 4L),
+    loglik = -10.2,
+    converged = TRUE,
+    iterations = 33L,
+    ncoef = 2L
+  )
+  hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "random_regression"
+    ),
+    payload = payload,
+    result = hsquared:::hs_normalize_random_regression_result(raw, payload)
+  )
+}
+
+# A21/C1+C2 regression guard. The `rr()` argument-naming predicate is `order =`,
+# and the reaction-norm heritability accessor is `rr_heritability()`. Two public
+# surfaces once carried `rr(t, k = 2)` and credited `heritability()` with the
+# h2(t) curve; both spellings are refused by the package, so they were false
+# statements about a route these same surfaces call covered.
+test_that("rr() argument naming and the RR heritability accessor are pinned", {
+  fx <- hs_rr_fixture()
+  ped <- fx$ped
+
+  # Accepted spelling: `order =` reaches the opt-in fence, i.e. the grammar
+  # itself is accepted and only the opt-in gate stops the call.
+  expect_error(
+    hsquared::hsquared(
+      weight ~ animal(rr(age, order = 2) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "experimental and opt-in",
+    fixed = TRUE
+  )
+
+  # Rejected spelling: `k =` is refused, and the error names the implemented
+  # spelling rather than only the unsupported one.
+  expect_error(
+    hsquared::hsquared(
+      weight ~ animal(rr(age, k = 2) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "rr(covariate, order = k)",
+    fixed = TRUE
+  )
+
+  # `heritability()` is not the RR accessor: it errors and points at
+  # `rr_heritability()` instead of falling through to the generic
+  # "planned v0.1 contract" miss, which reads as "not implemented".
+  fit <- hs_rr_mock_fit()
+  expect_error(heritability(fit), "rr_heritability()", fixed = TRUE)
+  expect_error(heritability(fit), "random-regression", fixed = TRUE)
+  expect_false(grepl(
+    "planned v0.1 contract",
+    conditionMessage(
+      tryCatch(heritability(fit), error = function(e) e)
+    ),
+    fixed = TRUE
+  ))
+
+  # And the implemented accessor still returns the curve.
+  expect_gt(nrow(rr_heritability(fit)), 1L)
+})
+
+# Claim-surface contract: `docs/` and `vignettes/articles/` are .Rbuildignore'd,
+# so these are source-tree-only checks (skipped under `R CMD check`).
+test_that("public claim surfaces use the implemented rr() grammar and accessor", {
+  surfaces <- c(
+    file.path("docs", "design", "06-public-claims-register.md"),
+    file.path("docs", "design", "capability-status.md"),
+    file.path("vignettes", "articles", "model-status.Rmd")
+  )
+  for (rel in surfaces) {
+    path <- file.path(testthat::test_path("..", ".."), rel)
+    skip_if_not(file.exists(path), paste(rel, "is not in the build tarball"))
+    lines <- readLines(path, warn = FALSE)
+
+    # No `rr(..., k = ...)` — the parser refuses that argument name.
+    expect_identical(
+      grep("rr\\([^)]*\\bk\\s*=", lines),
+      integer(0),
+      label = paste(rel, "uses rr(covariate, order = k)")
+    )
+
+    # Any surface crediting an RR heritability accessor must name the real one.
+    rr_rows <- grep(
+      "random.regression|reaction.norm",
+      lines,
+      ignore.case = TRUE
+    )
+    if (length(rr_rows) && any(grepl("h.\\(t\\)", lines[rr_rows]))) {
+      expect_true(
+        any(grepl("rr_heritability", lines, fixed = TRUE)),
+        label = paste(rel, "names rr_heritability() as the h2(t) accessor")
+      )
+    }
+  }
+})

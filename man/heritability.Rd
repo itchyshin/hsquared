@@ -37,4 +37,10 @@ data frame (Willham 1963, 1972). \code{sigma_P = sigma_ad + sigma_am + sigma_dm 
 because h2 is denominator-dependent under maternal effects and
 h2_T < h2_d is expected when r_am < 0. Use \code{\link[=direct_heritability]{direct_heritability()}} or
 \code{\link[=total_heritability]{total_heritability()}} for targeted accessors without the warning.
+
+Reaction-norm fence for the opt-in random-regression model
+(\code{target = "random_regression"}): heritability is a \strong{trajectory} \code{h2(t)}
+over the covariate, not a scalar, so \code{heritability()} \strong{errors} on such a
+fit and names the implemented accessor. Use \code{\link[=rr_heritability]{rr_heritability()}} for the
+\code{h2(t)} curve.
 }
