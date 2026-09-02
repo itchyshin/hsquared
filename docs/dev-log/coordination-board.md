@@ -16,6 +16,7 @@
 
 | Date | Lane | Owner | Branch | Files / surface | Status | Blocker | Next action |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-09-02 | R A20 experimental 0.5.0 version bump | Ada/Grace | `cursor/a20-experimental-050` | `DESCRIPTION`, `NEWS.md`, `inst/CITATION` | **DRAFT PR only.** Version `0.1.0.9000` → `0.5.0`. Experimental D-41 channels stay on. `public_covered_count` stays **5**. No CRAN submit. No covered flip. Base `origin/main` `44260a73` (#141 + #142). | Merge blocked until **A19 GO** (Julia first) then **A20 GO**. Also **A13 SIGNED**. | Watch R-CMD-check; **do not merge** |
 | 2026-09-02 | R Pat leftover `?hsquared` front door | Pat | `claude/lane-h2-twin-20260901` | `R/hsquared.R` | `?hsquared` is live animal-model path + limits link; stale Grace lease released (ASCII session ended at `cd13ac9`); no `validation_status()` row | — | keep fence |
 | 2026-09-02 | R Pat leftover attach shrink | Pat | `claude/lane-h2-twin-20260901` | `R/zzz.R` | attach shrunk to two lines + limits URL; length-capped in D-41 tests; `?hsquared` follow-up landed; no `validation_status()` row | — | keep fence |
 | 2026-09-02 | R Pat walk / current-limits snippet | Pat | `claude/lane-h2-twin-20260901` | `vignettes/articles/current-limits.Rmd` | leftover `model_spec(spec)` rewritten to live `model_spec(formula, data)`; `65ec743` already fixed README / Getting started / function-map; `_pkgdown.yml` already lists the article; live Pages still 404 until `main`; no `validation_status()` row | — | keep fence; do not claim live deploy |
