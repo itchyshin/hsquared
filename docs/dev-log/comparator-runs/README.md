@@ -19,6 +19,17 @@ Use `TEMPLATE.md` for the first pass of each ASReml-R, BLUPF90/AIREMLF90,
 DMU, WOMBAT, sommer, JWAS, or other external-comparator run. The template is a
 review surface, not evidence by itself.
 
+Current boundary reports (a documented boundary is not a blocker and not evidence):
+
+- `2026-09-01-sire-julia-only-boundary.md` records that `sire_model_fitted_target`
+  is the one comparator target of seven with **no R mirror**, and that this is now a
+  **documented Julia-only boundary** rather than a silent gap. Closes B3 barrier
+  condition **C2** in its boundary-note form. The harness still reports `gap` and
+  `--strict` still fails; whether to mirror the fixture or make the boundary
+  permanent is an open owner decision. `V1-SIRE-FIT` stays partial. Note in
+  particular that `tests/testthat/test-mrode-sire-anchor.R` is a *supplied-variance*
+  anchor and is **not** this mirror.
+
 Current blocker reports:
 
 - `2026-09-01-blupf90-tool-unavailability.md` closes fog ticket **F5** for arc
