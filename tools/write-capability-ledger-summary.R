@@ -24,7 +24,10 @@ hs_route_table <- function() {
         "average-information REML on the sparse mixed-model equations. Known-truth",
         "recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the",
         "near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary",
-        "pinning. ML is rejected on this path."
+        "pinning. ML is not implemented. `REML = FALSE` is rejected; use",
+        "`REML = TRUE` (the default). That is the same rule for the default",
+        "fit and for `engine = \"validate\"`. The covered claim is this REML",
+        "estimator, not ML."
       ),
       point = "yes",
       interval = "no",
