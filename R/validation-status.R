@@ -6,6 +6,18 @@
 #' comparator lanes for `hsquared`. It is a status table only: it does not run
 #' validation checks, fit models, or promote any capability to working status.
 #'
+#' # Capability identifiers versus labels
+#'
+#' `capability` is a **stable identifier**. Dated evidence records — comparator
+#' runs under `docs/dev-log/comparator-runs/` and check-log entries — cite these
+#' strings verbatim to name the row they report against, so an identifier is not
+#' rewritten once evidence points at it. Look rows up by `capability`.
+#'
+#' `capability_label` is the **current wording**, and is what reader-facing
+#' surfaces print. The two differ only where an identifier's wording has been
+#' overtaken by a later change; today that is the multivariate row, whose
+#' `cbind()` route became default rather than opt-in.
+#'
 #' @return A data frame of validation status records with class
 #'   `"hs_validation_status"`.
 #' @examples
@@ -14,6 +26,7 @@
 validation_status <- function() {
   out <- data.frame(
     capability = hs_validation_status_capabilities(),
+    capability_label = hs_validation_status_labels(),
     phase = hs_validation_status_phases(),
     status = hs_validation_status_status(),
     evidence = hs_validation_status_evidence(),
@@ -29,13 +42,37 @@ print.hs_validation_status <- function(x, ...) {
   cat("<hs_validation_status>\n")
   cat("  validation: status table only; checks are run by tests and CI\n")
   cat("  public claims: only `covered` rows may be advertised as working\n")
+  cat("  shown below: `capability_label` (current wording); look rows up by\n")
+  cat("  the stable `capability` id that dated evidence records cite\n")
   out <- x
   class(out) <- setdiff(class(out), "hs_validation_status")
   print.data.frame(
-    out[c("capability", "phase", "status")],
+    out[c("capability_label", "phase", "status")],
     row.names = FALSE
   )
   invisible(x)
+}
+
+# Capability identifiers are STABLE: dated comparator-run reports and check-log
+# entries cite them verbatim to name the row they report against, so renaming an
+# id would orphan its evidence. When an id's wording is overtaken by a later
+# change, the correction is recorded here as a display alias instead of a
+# rename. See docs/dev-log/decisions.md, "2026-09-02: Capability Ids Are
+# Historical; Labels Carry Current Wording".
+hs_validation_status_label_overrides <- function() {
+  c(
+    # MV-4 made the `cbind()` route default rather than opt-in, but three dated
+    # records (two comparator-run reports, one check-log entry) already cite the
+    # "(opt-in)" id. Reachability changed; the `partial` status did not.
+    "experimental multivariate REML estimator (opt-in)" = "experimental multivariate REML estimator (default route)"
+  )
+}
+
+hs_validation_status_labels <- function() {
+  ids <- hs_validation_status_capabilities()
+  overrides <- hs_validation_status_label_overrides()
+  hit <- match(ids, names(overrides))
+  unname(ifelse(is.na(hit), ids, overrides[hit]))
 }
 
 hs_validation_status_capabilities <- function() {
@@ -356,9 +393,9 @@ hs_validation_status_boundaries <- function() {
       "anchor plus a Bayesian MCMCglmm agreement probe. The MCMCglmm leg is",
       "not same-estimand REML parity. The engine `V4-MV-REML` is now covered at",
       "validation scale (one-owner consolidation, HSquared.jl#161) on a",
-      "substitutable gate, but this R public opt-in surface stays partial \u2014 it is",
-      "not the public default and still needs a broader/redeclared recovery gate",
-      "and another",
+      "substitutable gate, but this R public surface stays partial \u2014 default",
+      "routing did not promote it, and it still needs a broader/redeclared",
+      "recovery gate and another",
       "independent same-estimand comparator (ASReml, BLUPF90/AIREMLF90,",
       "JWAS/equivalent, or accepted alternative).",
       "The Julia engine currently inverts Ainv internally, so deep-inbreeding or",

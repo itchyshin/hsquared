@@ -305,7 +305,7 @@ is `partial` or `planned`.
 
 ```{r}
 status <- validation_status()
-status[status$status == "covered", c("capability", "phase", "status")]
+status[status$status == "covered", c("capability_label", "phase", "status")]
 ```
 
 To actually fit the validated model end-to-end — including installing and

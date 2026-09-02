@@ -337,7 +337,7 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "this R public opt-in surface stays partial",
+    "this R public surface stays partial",
     fixed = TRUE
   )
   expect_match(
@@ -366,6 +366,54 @@ test_that("validation_status separates evidence from planned validation", {
   expect_match(
     paste(capture.output(print(status)), collapse = "\n"),
     "supplied-variance Henderson MME fixture"
+  )
+})
+
+test_that("capability ids stay stable and labels carry current wording", {
+  status <- validation_status()
+
+  expect_true("capability_label" %in% names(status))
+  expect_type(status$capability_label, "character")
+  expect_length(status$capability_label, nrow(status))
+  expect_false(anyNA(status$capability_label))
+  expect_false(any(!nzchar(status$capability_label)))
+
+  # Every override must name a live capability id. Without this, renaming an id
+  # would silently strand its alias and the label would revert to the stale
+  # wording with no test failing.
+  overrides <- hs_validation_status_label_overrides()
+  expect_true(all(names(overrides) %in% status$capability))
+
+  # Rows with no override are unaliased: label is the id verbatim.
+  unaliased <- !(status$capability %in% names(overrides))
+  expect_identical(
+    status$capability_label[unaliased],
+    status$capability[unaliased]
+  )
+})
+
+test_that("the multivariate row is looked up by its historical opt-in id", {
+  status <- validation_status()
+
+  # Dated evidence cites this id verbatim - docs/dev-log/comparator-runs/
+  # 2026-06-21-multivariate-tool-availability.md and
+  # 2026-09-01-blupf90-tool-unavailability.md. Lookup by it must keep working.
+  historical_id <- "experimental multivariate REML estimator (opt-in)"
+  row <- status[status$capability == historical_id, ]
+  expect_equal(nrow(row), 1L)
+  expect_equal(row$status, "partial")
+
+  # MV-4 made the route default, so the reader-facing label drops "opt-in"
+  # while the id keeps it.
+  expect_false(grepl("opt-in", row$capability_label, fixed = TRUE))
+  expect_match(row$capability_label, "default route", fixed = TRUE)
+
+  # The printed table shows the label, not the stale id.
+  printed <- paste(capture.output(print(status)), collapse = "\n")
+  expect_match(
+    printed,
+    "multivariate REML estimator (default route)",
+    fixed = TRUE
   )
 })
 

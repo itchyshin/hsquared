@@ -18,6 +18,18 @@ A data frame of validation status records with class
 comparator lanes for \code{hsquared}. It is a status table only: it does not run
 validation checks, fit models, or promote any capability to working status.
 }
+\section{Capability identifiers versus labels}{
+\code{capability} is a \strong{stable identifier}. Dated evidence records — comparator
+runs under \verb{docs/dev-log/comparator-runs/} and check-log entries — cite these
+strings verbatim to name the row they report against, so an identifier is not
+rewritten once evidence points at it. Look rows up by \code{capability}.
+
+\code{capability_label} is the \strong{current wording}, and is what reader-facing
+surfaces print. The two differ only where an identifier's wording has been
+overtaken by a later change; today that is the multivariate row, whose
+\code{cbind()} route became default rather than opt-in.
+}
+
 \examples{
 validation_status()
 }
