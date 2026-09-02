@@ -333,13 +333,23 @@ test_that("validation_status separates evidence from planned validation", {
     ],
     "partial"
   )
-  expect_equal(
-    status$status[
-      status$capability ==
-        "univariate Gaussian animal-model fit (default path, AI-REML)"
-    ],
-    "covered"
+  default_row <- status[
+    status$capability ==
+      "univariate Gaussian animal-model fit (default path, AI-REML)",
+  ]
+  expect_equal(default_row$status, "covered")
+  expect_match(default_row$claim_boundary, "REML = FALSE", fixed = TRUE)
+  expect_match(default_row$claim_boundary, "default fit", fixed = TRUE)
+  expect_match(
+    default_row$claim_boundary,
+    'engine = "validate"',
+    fixed = TRUE
   )
+  expect_false(grepl(
+    "rejected on the fit path",
+    default_row$claim_boundary,
+    fixed = TRUE
+  ))
   expect_equal(
     status$status[
       status$capability ==

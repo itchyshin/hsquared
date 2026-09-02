@@ -457,7 +457,9 @@ hs_validation_status_boundaries <- function() {
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
-      "REML only (ML is rejected on the fit path). Genomic, repeatability,",
+      "REML only (`REML = FALSE` is rejected on the default fit and on",
+      "`engine = \"validate\"`; use `REML = TRUE`). The covered claim is",
+      "this REML estimator, not ML. Genomic, repeatability,",
       "two-effect, marker-effect, and non-Gaussian",
       "(poisson/binomial, Laplace or variational REML) fitting are separate",
       "opt-in experimental targets, not the default. A `cbind()` multivariate",
