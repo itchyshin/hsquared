@@ -150,15 +150,42 @@ fitted.
 
 ## Error rule
 
-Unsupported terms should fail early and plainly. The current expected shape is:
+Unsupported terms fail early. There are two live shapes.
+
+Reserved names such as `markers()`, `dominance()`, or `maternal_env()` stop
+as planned, not implemented, then name the nearest live path:
 
 ```text
-`marker()` is planned, not implemented. Run `formula_status()` for the live
-list of which terms parse and which fit.
+`markers()` is planned, not implemented. The live marker path is
+`genomic(1 | id, markers = )` or `gwas(fit, markers)`. Run
+`formula_status()` for the live list of which terms parse and which fit.
 ```
 
-That error is part of the user interface. It tells users the idea is on the
-roadmap without pretending that the model has been fitted.
+Terms that already parse but are not on the default path -- `common_env()`,
+`permanent()`, `maternal_genetic()`, `rr(...)` -- do not use that planned
+stop. They paste the next `hsquared()` call:
+
+```text
+`common_env()` is not on the default path.
+
+Closest working call:
+
+  hsquared(
+    y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+    data = dat,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "two_effect")
+    )
+  )
+
+That route is covered for point estimates only (validation-scale,
+common-environment leg). Intervals are experimental.
+See: current-limits article, formula_status().
+```
+
+That error is part of the user interface. It names the closest working call
+without pretending the default path already fitted the model.
 
 For a compact table of the same status information from R, use:
 
