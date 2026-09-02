@@ -2806,14 +2806,74 @@ hs_planned_qg_effect_marker_names <- function() {
   )
 }
 
+# Nearest live path for a reserved marker. common_env() / two_effect paste
+# copy is owned elsewhere; this map does not mention that route.
+hs_planned_marker_nearest_path <- function(marker) {
+  switch(
+    marker,
+    maternal_env = paste0(
+      "The live maternal sibling is `maternal_genetic(1 | dam)` with ",
+      "`target = \"direct_maternal\"` (covered correlated 2x2 G / Willham ",
+      "triple) or `target = \"two_effect\"` (experimental independent maternal)."
+    ),
+    paternal_genetic = paste0(
+      "The live genetic effect is `animal(1 | id, pedigree = ped)`."
+    ),
+    paternal_env = paste0(
+      "The live genetic effect is `animal(1 | id, pedigree = ped)`."
+    ),
+    inbreeding = paste0(
+      "Pedigree inbreeding F is already used internally when building Ainv; ",
+      "`inbreeding()` is a reserved future *effect*, not a missing coefficient."
+    ),
+    dominance = paste0(
+      "The live 'bring your own kernel' path is `relmat(1 | id, K = )` ",
+      "(or `precision(1 | id, Q = )`); that does not implement dominance."
+    ),
+    epistasis = paste0(
+      "The live 'bring your own kernel' path is `relmat(1 | id, K = )` ",
+      "(or `precision(1 | id, Q = )`); that does not implement epistasis."
+    ),
+    group = paste0(
+      "The live grouping path is bare `(1 | group)` with ",
+      "`target = \"multi_effect\"`."
+    ),
+    unknown_parent_group = paste0(
+      "The live grouping path is bare `(1 | group)` with ",
+      "`target = \"multi_effect\"`."
+    ),
+    cytoplasmic = paste0(
+      "The live maternal genetic sibling is `maternal_genetic(1 | dam)`."
+    ),
+    imprinting = paste0(
+      "The live maternal genetic sibling is `maternal_genetic(1 | dam)`."
+    ),
+    markers = paste0(
+      "The live marker path is `genomic(1 | id, markers = )` or ",
+      "`gwas(fit, markers)`."
+    ),
+    marker_scan = paste0(
+      "The live marker path is `genomic(1 | id, markers = )` or ",
+      "`gwas(fit, markers)`."
+    ),
+    qtl_scan = paste0(
+      "The live marker path is `genomic(1 | id, markers = )` or ",
+      "`gwas(fit, markers)`."
+    ),
+    ""
+  )
+}
+
 hs_stop_planned_marker <- function(expr) {
   expr <- hs_unwrap_parentheses(expr)
   marker <- as.character(expr[[1L]])
+  nearest <- hs_planned_marker_nearest_path(marker)
   hs_abort_unsupported_syntax(
     "`",
     marker,
-    "()` is planned, not implemented. Run `formula_status()` for the live ",
-    "list of which terms parse and which fit.",
+    "()` is planned, not implemented.",
+    if (nzchar(nearest)) paste0(" ", nearest) else "",
+    " Run `formula_status()` for the live list of which terms parse and which fit.",
     call. = FALSE
   )
 }

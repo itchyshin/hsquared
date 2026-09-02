@@ -529,6 +529,16 @@ test_that("formula parser rejects planned genomic and QTL syntax honestly", {
     "`markers()` is planned, not implemented.",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + markers(M, model = "random"),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "genomic(1 | id, markers = )",
+    fixed = TRUE
+  )
 
   expect_error(
     hsquared:::hs_build_model_spec(
@@ -538,6 +548,16 @@ test_that("formula parser rejects planned genomic and QTL syntax honestly", {
       REML = TRUE
     ),
     "`marker_scan()` is planned, not implemented.",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ sex + animal(1 | id, pedigree = ped) + marker_scan(M, map = map),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "gwas(fit, markers)",
     fixed = TRUE
   )
 })
@@ -562,6 +582,46 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
       REML = TRUE
     ),
     "`dominance()` is planned, not implemented.",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + dominance(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "relmat(1 | id, K = )",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + maternal_env(1 | dam),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "maternal_genetic(1 | dam)",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + maternal_env(1 | dam),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "direct_maternal",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + paternal_genetic(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "animal(1 | id, pedigree = ped)",
     fixed = TRUE
   )
 
@@ -601,6 +661,16 @@ test_that("formula parser rejects planned quantitative-genetic effects honestly"
       fixed = TRUE
     )
   }
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped) + inbreeding(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "already used internally when building Ainv",
+    fixed = TRUE
+  )
 })
 
 test_that("metafounder parses as an opt-in supplied-Gamma primary effect", {

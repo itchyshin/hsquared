@@ -3562,9 +3562,10 @@ hs_second_effect_target <- function(type) {
     type,
     permanent = "repeatability",
     common_env = "two_effect",
-    # maternal_genetic default suggestion is two_effect (INDEPENDENT model);
-    # the correlated model (direct_maternal) is the second allowed target,
-    # reached only by explicit opt-in.
+    # Routing map only: two_effect stays the single suggested *name* for
+    # callers that interpolate one target. Default-path user copy must use
+    # hs_maternal_genetic_default_path_message() so the covered
+    # direct_maternal sibling is named. Do not auto-route.
     maternal_genetic = "two_effect",
     iid_effects = "multi_effect",
     metafounder = "metafounder",
@@ -3573,6 +3574,40 @@ hs_second_effect_target <- function(type) {
     relmat = "relmat",
     precision = "precision",
     stop("Unknown random effect type: ", type, call. = FALSE)
+  )
+}
+
+# Default-path copy for maternal_genetic(). Names the covered correlated
+# sibling first, then the experimental independent two_effect path. Does
+# not change routing: neither target is auto-selected on engine = "fit".
+hs_maternal_genetic_default_path_message <- function() {
+  paste0(
+    "`maternal_genetic()` is not on the default path. ",
+    "Two opt-in targets fit this formula; neither is auto-routed.\n\n",
+    "Closest working call (covered correlated 2x2 G / Willham triple, ",
+    "not a scalar h2):\n\n",
+    "  control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"direct_maternal\"))\n\n",
+    "Experimental alternative (independent maternal):\n\n",
+    "  control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"two_effect\"))\n\n",
+    "See formula_status() and the current-limits article."
+  )
+}
+
+hs_abort_maternal_genetic_default_path <- function() {
+  hs_abort_unsupported_syntax(
+    hs_maternal_genetic_default_path_message(),
+    call. = FALSE
+  )
+}
+
+# Extra clause for a wrong-target maternal_genetic() formula on engine = "julia".
+hs_maternal_genetic_allowed_targets_note <- function() {
+  paste0(
+    " `target = \"direct_maternal\"` is covered (correlated 2x2 G / Willham ",
+    "triple, not a scalar h2); `target = \"two_effect\"` is experimental ",
+    "(independent maternal)."
   )
 }
 

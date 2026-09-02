@@ -118,12 +118,15 @@ hsquared <- function(
     opt_in_effect <- setdiff(names(spec$random), "animal")
     if (length(opt_in_effect) > 0L) {
       effect_type <- opt_in_effect[[1L]]
+      # Boole: maternal_genetic has two opt-in targets. Name the covered
+      # direct_maternal sibling first. Do not auto-route. common_env /
+      # permanent paste stays on the sibling helper.
+      if (identical(effect_type, "maternal_genetic")) {
+        hs_abort_maternal_genetic_default_path()
+      }
       # Pat UX: the natural second-effect formulas print a pasteable next
       # call. Other opt-in primaries keep the existing knob-name abort.
-      if (
-        effect_type %in%
-          c("common_env", "permanent", "maternal_genetic")
-      ) {
+      if (effect_type %in% c("common_env", "permanent")) {
         hs_abort_opt_in_next_call(effect_type, formula, data_name)
       }
       # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
@@ -292,9 +295,22 @@ hsquared <- function(
           },
           ". The `",
           target,
-          "` target fits the single additive-genetic effect only.\n\n",
-          "Closest working call:\n\n",
-          hs_format_next_call(formula, data_name, allowed[[1L]]),
+          "` target fits the single additive-genetic effect only.",
+          if (identical(second_effect[[1L]], "maternal_genetic")) {
+            hs_maternal_genetic_allowed_targets_note()
+          } else {
+            ""
+          },
+          "\n\nClosest working call:\n\n",
+          hs_format_next_call(
+            formula,
+            data_name,
+            if (identical(second_effect[[1L]], "maternal_genetic")) {
+              "direct_maternal"
+            } else {
+              allowed[[1L]]
+            }
+          ),
           call. = FALSE
         )
       }
