@@ -208,3 +208,17 @@ it. Rows without an override have `capability_label` identical to `capability`.
 
 **Not in scope.** This is a vocabulary and display decision only. No status
 changed, no `partial → covered` flip, and `public_covered_count` stays 5.
+
+## 2026-09-02: Block 1 check-log substitution (Option B)
+
+For Block 1 arcs B0–B3, B5–B6, and the Julia pass-3 cluster, the dated
+`docs/dev-log/check-log.d/` shards **are** the after-task record. Writing
+reflective summaries after the fact would manufacture narrative the Definition of
+Done is meant to prevent. Canonical decision text lives on the twin:
+`HSquared.jl/docs/dev-log/decisions/2026-09-02-block1-check-log-substitution.md`
+(A23, ADOPTED). B4 already has a real after-task report. **From A24 onward**,
+standard after-task reports are required again (see
+`docs/dev-log/after-task/2026-09-02-h2-a24-a29-mv-prep-after-task.md`).
+
+Does not authorise covered flips, G10, registry, version bumps, or push.
+`public_covered_count` stays 5.
