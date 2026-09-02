@@ -45,7 +45,7 @@ passed a pre-declared 48-seed recovery gate plus a same-estimand REML comparator
 common-environment two-effect, arbitrary-N multi-effect, random regression k = 2,
 and the direct–maternal correlated 2×2 G model. Further opt-in models mirror a
 `partial` validation gate: permanent environment, the maternal-genetic independent
-two-effect leg, genomic (GREML or SNP-BLUP), single-step effects, and the
+two-effect leg, SNP-BLUP, single-step effects, and the
 multivariate Gaussian animal model via a `cbind()` response. All opt-in models
 are experimental and not production. The rest — paternal effects, dominance, epistasis, cytoplasmic
 inheritance, imprinting, custom relationship or precision matrices, and
@@ -77,11 +77,19 @@ fit <- hsquared(
 
 This fits by default: the R side builds the `y`, `X`, sparse `Z`, and normalized
 pedigree payload, the `HSquared.jl` engine builds `Ainv`, estimates the variance
-components by REML, and returns an `hsquared_fit` object. A genomic GREML /
-SNP-BLUP effect, single-step, the multivariate Gaussian animal model, and
+components by REML, and returns an `hsquared_fit` object. A narrow genomic
+GREML model has an implemented but held ordinary no-control route candidate on
+this branch; it is not activated on main or released. Recovery-v3 retry 4
+completed 576 official fits and 576 independent base-R recomputations, but
+exact Julia replay stopped fail-closed after 455 rows on a one-ULP
+boundary-ratio representation defect. The root and its seeds are retired and
+unadjudicated; D1/D2 never opened. Retry 5 then produced one successful official
+fit before post-preseal tree validation stopped ahead of the second phenotype.
+Its immutable root and complete seed spaces are retired, and a strict post-run
+audit found its admission proof not contract-clean. Prospective Retry 6, Rose,
+and G10 remain open. SNP-BLUP, single-step, the multivariate Gaussian animal model, and
 non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no heritability)
-models also fit through the opt-in, experimental `engine = "julia"` path (not the
-default);
+models fit through the opt-in, experimental `engine = "julia"` path;
 factor-analytic models remain planned.
 For the multivariate Gaussian path, use:
 
@@ -200,8 +208,10 @@ bundle <- hs_data(
 ```
 
 The expression-feature, genotype-column, marker-map, annotation-feature, and
-environment-key checks are metadata validation only. Genomic, QTL/eQTL, omics, and
-environment-effect models remain planned.
+environment-key checks are metadata validation only. Integrated genomic,
+QTL/eQTL, omics, and environment-effect modelling through `hs_data()` remains
+planned; this is separate from the narrow, held `genomic()` route candidate
+described above.
 `summary(bundle)` and `data_status(bundle)` report pedigree coverage, founder
 and parent-link counts, marker-map size, genotype marker-column count,
 missing genotype value counts, unnamed or duplicate genotype marker columns,

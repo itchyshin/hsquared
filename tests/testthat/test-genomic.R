@@ -1,7 +1,7 @@
 # v0.7 genomic GREML activation: a single genomic random effect from either a
 # supplied precision or the frozen sample-p VanRaden-1 marker construction.
-# Gaussian REML remains an explicit Julia target after the activation pilot
-# stopped; the default fit path must reject it.
+# The held candidate auto-routes only the frozen Gaussian REML form; recovery-v3,
+# final review, and G10 still decide whether that default route may activate.
 
 hs_test_ginv <- function(ids) {
   n <- length(ids)
@@ -52,7 +52,7 @@ test_that("a formula must contain exactly one primary effect", {
   )
 })
 
-test_that("genomic() requires a Ginv argument", {
+test_that("genomic() requires exactly one relationship input", {
   ids <- paste0("g", 1:2)
   dat <- data.frame(y = c(1, 2), id = ids)
   expect_error(
@@ -87,7 +87,7 @@ test_that("genomic is a valid opt-in julia target", {
   expect_equal(hsquared:::hs_validate_julia_target("genomic"), "genomic")
 })
 
-test_that("the default fit path keeps genomic() opt-in", {
+test_that("the held default fit candidate accepts only genomic REML", {
   ids <- paste0("g", 1:3)
   Ginv <- hs_test_ginv(ids)
   dat <- data.frame(y = c(1, 2, 3), id = ids)
@@ -100,15 +100,25 @@ test_that("the default fit path keeps genomic() opt-in", {
   ))
   expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
 
-  expect_error(
+  default_result <- tryCatch(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
       data = dat,
       family = stats::gaussian()
     ),
-    "experimental and opt-in",
-    fixed = TRUE
+    error = identity
   )
+  if (inherits(default_result, "error")) {
+    expect_false(grepl(
+      "experimental and opt-in",
+      conditionMessage(default_result),
+      fixed = TRUE
+    ))
+    expect_match(conditionMessage(default_result), "HSquared.jl", fixed = TRUE)
+  } else {
+    expect_s3_class(default_result, "hsquared_fit")
+    expect_identical(default_result$spec$target, "genomic")
+  }
 
   expect_error(
     hsquared(
@@ -220,6 +230,7 @@ test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]
   )
   expect_true(fit$result$converged)
   expect_identical(fit$result$genomic_boundary$status, "boundary_lower")
+  expect_true(is.finite(fit$result$diagnostics$gradient_norm))
   expect_identical(heritability(fit)$estimate, 0)
   expect_identical(heritability(fit)$numerical_estimate, 1e-7)
   expect_null(fit$result[["breeding_values"]])
@@ -588,9 +599,9 @@ test_that("genomic boundary metadata distinguishes endpoint from MME representat
   )
   expect_identical(
     contract$julia_implementation_commit,
-    "ecc058f380be71058c9cfde373c345ab7a2f6aba"
+    "fc9d39df650b20aa09d769d9f9528eed1b606f1e"
   )
-  expect_identical(contract$candidate_id, "v07_genomic_closed_boundary_v1")
+  expect_identical(contract$candidate_id, "doc47_boundary_performance_v1")
   lower <- list(
     status = "boundary_lower",
     reason = "boundary_lower",
@@ -679,6 +690,31 @@ test_that("genomic ratio keeps term compatibility and fences uncertainty", {
   expect_equal(out$term, "genomic")
   expect_equal(out$component, "genomic_variance_ratio")
   expect_equal(out$relationship_scale, "K_lambda")
+  fit$spec$method <- "REML"
+  fit$spec$family <- list(family = "gaussian")
+  fit$result$converged <- TRUE
+  fit_output <- paste(capture.output(print(fit)), collapse = "\n")
+  expect_match(
+    fit_output,
+    "genomic variance-component ratio: 0.4",
+    fixed = TRUE
+  )
+  expect_match(
+    fit_output,
+    "declared relationship scale: K_lambda",
+    fixed = TRUE
+  )
+  summary_output <- paste(capture.output(print(summary(fit))), collapse = "\n")
+  expect_match(
+    summary_output,
+    "genomic variance-component ratio: 0.4",
+    fixed = TRUE
+  )
+  expect_match(
+    summary_output,
+    "declared relationship scale: K_lambda",
+    fixed = TRUE
+  )
   expect_error(
     heritability_interval(fit),
     "not available for genomic fits",
@@ -806,7 +842,7 @@ test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", 
   )
 })
 
-test_that("explicit marker and exact supplied-Q routes agree [live]", {
+test_that("default marker, explicit alias, and exact supplied-Q routes agree [live]", {
   testthat::skip_on_cran()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -834,6 +870,11 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
   fit <- hsquared(
     y ~ x + genomic(1 | id, markers = M),
     data = dat,
+    family = stats::gaussian()
+  )
+  fit_explicit <- hsquared(
+    y ~ x + genomic(1 | id, markers = M),
+    data = dat,
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
@@ -855,6 +896,20 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
   expect_equal(ratio$relationship_method, "vanraden1")
   expect_equal(ratio$allele_frequency_source, "sample")
   expect_equal(ratio$ridge, 0.01)
+  expect_equal(
+    variance_components(fit),
+    variance_components(fit_explicit),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    heritability(fit)$estimate,
+    heritability(fit_explicit)$estimate,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    fit$result$relationship_provenance$precision_fingerprint,
+    fit_explicit$result$relationship_provenance$precision_fingerprint
+  )
 
   # Reuse the engine's exact frozen construction as a supplied precision. This
   # proves the two R routes reach the same supplied-Q estimator and the same
@@ -870,11 +925,7 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
   fit_q <- hsquared(
     y ~ x + genomic(1 | id, Ginv = Q),
     data = dat,
-    family = stats::gaussian(),
-    control = hs_control(
-      engine = "julia",
-      engine_control = list(target = "genomic")
-    )
+    family = stats::gaussian()
   )
 
   expect_equal(breeding_values(fit_q)$id, ids)
@@ -899,6 +950,21 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
     fit$result$relationship_provenance$precision_fingerprint,
     fit_q$result$relationship_provenance$precision_fingerprint
   )
+})
+
+test_that("genomic AI diagnostics require one finite score norm", {
+  observed <- hsquared:::hs_normalize_genomic_ai_diagnostics(list(
+    ai_score_norm = 1e-9
+  ))
+  expect_identical(observed$gradient_norm, 1e-9)
+  for (value in list(NULL, NA_real_, NaN, Inf, c(0, 1))) {
+    expect_error(
+      hsquared:::hs_normalize_genomic_ai_diagnostics(list(
+        ai_score_norm = value
+      )),
+      "missing or non-finite"
+    )
+  }
 })
 
 test_that("frozen activation fixture matches base R and both public routes [live]", {

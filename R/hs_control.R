@@ -79,8 +79,9 @@
 #'   `HSquared.fit_two_effect_reml()` REML-only optimizer (three-component
 #'   `initial` with `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and not
 #'   the default.
-#'   `target = "genomic"` is the explicit experimental narrow Gaussian REML
-#'   genomic route. It accepts
+#'   `target = "genomic"` remains the explicit compatibility route for the
+#'   narrow Gaussian REML genomic model. On this held candidate branch, the
+#'   same narrow model also routes through the ordinary no-control call. It accepts
 #'   `genomic(1 | id, markers = M)`, using sample allele frequencies,
 #'   unweighted VanRaden method 1, and ridge `0.01`, or
 #'   `genomic(1 | id, Ginv = Ginv)`, whose construction method, allele-frequency
@@ -92,13 +93,18 @@
 #'   population-, or universal narrow-sense heritability. Genomic
 #'   `heritability_interval()` and
 #'   `heritability_standard_error()` are unavailable. The R capability remains
-#'   `partial`/experimental and validation-scale; the explicit route does not
-#'   move `public_covered_count` from 5. A fail-closed boundary candidate matched
-#'   an independent oracle on all 240 sealed holdouts, correcting 30
-#'   classifications with no losses, but one cell had a 5.99x p95 runtime ratio
-#'   against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
-#'   not run, and the route must remain opt-in pending performance work and a new
-#'   untouched holdout.
+#'   `partial`/experimental and validation-scale; this held candidate does not
+#'   move `public_covered_count` from 5. The original offset-5001 candidate
+#'   remains a banked 5.99x runtime failure. The revised offset-6001 candidate
+#'   passed its fresh holdout (240/240 valid, 40 wins, 0 losses, maximum p95
+#'   ratio 1.370), clearing only the performance gate. Three recovery-v3 D0F
+#'   corpora are permanently unadjudicated infrastructure blockers. Retry 4
+#'   completed 576 official fits and 576 base-R recomputations, but exact Julia
+#'   replay stopped fail-closed after 455 rows on a one-ULP boundary-ratio
+#'   representation defect. Its root and seeds are retired and unadjudicated;
+#'   D1/D2 never opened. Fresh prospective repair and Retry 5, Rose, and G10
+#'   remain open; the ordinary route is not
+#'   activated on main or released.
 #'   `target = "single_step"` remains an experimental, opt-in path for
 #'   `single_step(1 | id, Hinv = Hinv)` (a supplied single-step relationship
 #'   inverse). Both targets surface `HSquared.fit_ai_reml()` and are REML-only;

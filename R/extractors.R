@@ -35,6 +35,13 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' `heritability()` is part of the planned v0.1 fitted-object contract. It
 #' works for `hsquared_fit` objects that contain a Julia result.
 #'
+#' Genomic fence: for a genomic fit, this compatibility-named extractor returns
+#' `component = "genomic_variance_ratio"`, defined as
+#' `sigma_g2 / (sigma_g2 + sigma_e2)` on the fit's declared relationship
+#' scale. It is not automatically pedigree, population, or universal
+#' narrow-sense heritability. Inspect the returned `relationship_scale` and
+#' construction-provenance columns when interpreting it.
+#'
 #' Falconer fence for the opt-in two-effect model (`target = "two_effect"`):
 #' the reported number is the **narrow-sense direct heritability**
 #' `h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)` *within that model* (the

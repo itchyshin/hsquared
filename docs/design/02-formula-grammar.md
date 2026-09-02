@@ -33,8 +33,9 @@ Current default-fit limits:
 - Gaussian identity-link response only;
 - `cov =`, long-format trait syntax, marker scans, selfing, QTL, and
   non-Gaussian syntax aborts before marshalling;
-- genomic, repeatability, two-effect, single-step, SNP-BLUP, and multivariate
-  models remain explicit experimental targets, not default-fit routes.
+- the narrow Gaussian-REML single-genomic-effect form has an implemented held
+  ordinary-route candidate; repeatability, two-effect, single-step, SNP-BLUP,
+  and multivariate models remain explicit experimental targets.
 
 Current bridge-payload notes:
 
@@ -43,7 +44,8 @@ Current bridge-payload notes:
 - pedigree IDs are normalized to parent-before-offspring order;
 - the payload records parent indices for Julia-side sparse `Ainv`
   construction;
-- the default fit path supports the v0.1 pedigree animal model; genomic,
+- the default fit path supports the v0.1 pedigree animal model and, on this
+  held branch only, the narrow Gaussian-REML single-genomic-effect candidate;
   repeatability, two-effect, SNP-BLUP, single-step, and multivariate paths
   remain explicit experimental targets;
   non-Gaussian, QTL/GWAS/eQTL, structured covariance grammar, and unusual
@@ -72,8 +74,19 @@ relmat(1 | id, K = custom_K)
 precision(1 | id, Q = custom_Q)
 ```
 
-The two univariate Gaussian REML `genomic()` forms above are available through
-the explicit `engine = "julia", target = "genomic"` path. `markers = M` means
+The two univariate Gaussian REML `genomic()` forms above route through the
+ordinary no-control call on this held candidate branch. The explicit
+`engine = "julia", target = "genomic"` path remains supported. This is not
+activation on main. Recovery-v3 is the redesigned experiment, but its first
+three D0F corpora are unadjudicated infrastructure blockers with retired seeds.
+Retry 4 completed 576 official fits and 576 independent base-R recomputations,
+but exact Julia replay stopped after 455 rows on a one-ULP endpoint-
+representation contract defect. Its root and seeds are retired and
+unadjudicated; D1/D2 never opened. Retry 5 stopped after one successful official
+fit on a post-preseal runtime-tree blocker; its immutable root and complete seed
+spaces are retired, and its admission proof is not contract-clean. Activation
+still requires the separate prospective Retry-6 repair, durable admission
+evidence, Rose, and G10. `markers = M` means
 sample-frequency, unweighted VanRaden method
 1 with `K_lambda = G + 0.01I`; supplied `Ginv` is fitted unchanged and its
 construction method, allele-frequency base, ridge, and denominator remain

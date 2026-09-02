@@ -1,0 +1,2 @@
+commit	scope	verdict	finding	next
+f77acc072c6d917fb86855fb49dfd8f222c3d7ce	Totoro Retry-7 synthetic receipt chain and dirty deployment control	CLEAN	R and Julia heads match; synthetic run, D0F, and D1 receipt SHA-256 values match their sidecars and required values; D0F is COMPLETE, D1 is ELIGIBLE=12, lifecycle reports PASS, both clean clone statuses are empty, and the dirty deployment control reports the expected dirty-worktree rejection (Rscript execution-halted failure).	Proceed to the independent Grace Batch B verdict; do not treat this receipt as preseal authority.

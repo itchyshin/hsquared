@@ -2,7 +2,47 @@
 
 ## New features
 
-* **Genomic GREML hardening plus a banked negative activation gate.** The explicit `engine = "julia", target = "genomic"` route now has stricter marker/ID validation, engine-owned construction provenance, a deterministic cross-twin fixture, independent base-R construction, exact marker-versus-supplied-Q identity, and a fresh hash-pinned `blupf90+` point-estimate comparison. Marker input uses sample allele frequencies, unweighted VanRaden method 1, and `K = G + 0.01I`; supplied `Ginv` construction remains unknown. `heritability()` returns `genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`, the genomic variance-component ratio on the declared relationship scale—not generally an average marginal phenotypic-variance fraction or pedigree/founder-base/population heritability. Ratio intervals and standard errors are unavailable. A fail-closed boundary candidate matched an independent base-R oracle on all 240 sealed holdouts, corrected 30 boundary classifications with no losses, and produced no invalid or unresolved fits. The conjunctive activation gate nevertheless failed because `n120_m600_r050` had a 5.99x candidate/default p95 runtime ratio against the frozen 3x cap. The 240 seeds are spent, the nine-cell recovery campaign did not run, and default routing was not added. The holdout used independent HWE/no-LD markers and provides no robustness evidence for LD, population structure, imputation, base-frequency misspecification, real panels, or production genotype data. The R row remains `partial`/experimental, the route is not a production genotype pipeline, and `public_covered_count` remains 5.
+* **Genomic GREML hardening with a held ordinary-route candidate.** This branch
+  contains a narrow ordinary no-control route for Gaussian-REML `genomic()`
+  models; explicit `engine = "julia", target = "genomic"` remains supported.
+  Marker/ID validation, engine-owned construction provenance, deterministic
+  cross-twin identity, independent base-R construction, and exact-Q
+  `blupf90+` agreement are present. Marker input uses sample allele frequencies,
+  unweighted VanRaden method 1, and `K = G + 0.01I`; supplied `Ginv`
+  construction remains unknown. `heritability()` returns the scale-labelled
+  `genomic_variance_ratio`, not general pedigree/population heritability, and
+  interval/SE accessors remain unavailable. The original offset-5001 candidate
+  remains a banked 5.99x runtime-gate failure. The separately preregistered
+  revised offset-6001 candidate passed its fresh holdout (240/240 valid, 40
+  wins, 0 losses, maximum p95 ratio 1.370), clearing only the
+  performance/closed-boundary gate. The offset-7001 infrastructure attempt
+  failed before fitting because the bridge package was unavailable and offsets
+  7001:7048 are retired. The offset-7101 pilot completed 432/432 successful
+  converged fits, but its sealed adjudicator stopped on a logical serialization
+  defect before minting a receipt. All three create-once summaries say
+  `PRECISION_BLOCKER`: five cells require more than the frozen 2,000-fit cap
+  (maximum 16,325). No confirmation manifest exists, offsets 7101:7148 are
+  retired, and this is diagnostic rather than accepted recovery evidence.
+  Recovery-v3 then produced three separate 576-fit D0F corpora whose exact
+  Julia replay stopped before row 1 for fixed-panel cardinality,
+  concrete-`Cmd` typing, and missing successful-gradient contract failures.
+  All three roots and observed phenotype/bootstrap seeds are permanently
+  unadjudicated and retired. Retry 4 then completed 576/576 official fits and
+  576/576 independent base-R recomputations. Exact Julia replay stopped
+  fail-closed after 455 rows because the validator rederived a boundary ratio
+  and demanded exact endpoint equality; five of 13 boundary packets have a
+  one-ULP representation difference. The root and all observed seeds are
+  retired and unadjudicated, 121 later replay rows were unattempted, and D1/D2
+  never opened. Retry 5 then stopped after one successful official fit when
+  post-preseal validation treated legitimate runtime outputs as pristine-tree
+  drift. Its immutable root and complete seed spaces are retired; a strict
+  post-run audit also found the typed Julia mutation gate absent and durable
+  16-packet/two-batch proof incomplete at the draw. Prospective Retry 6, Rose,
+  and G10 remain open; the route is not
+  activated on main, released, or a production genotype pipeline. The HWE/no-LD
+  design gives no robustness evidence for LD, population structure, imputation,
+  base-frequency misspecification, real panels, or production data. The R row
+  remains `partial` and `public_covered_count` remains 5.
 
 * **Large-scale multi-effect fitting: `engine_control` `scale_method = "auto"` (opt-in, experimental).** For the arbitrary-N independent `(1 | g)` multi-effect model (`target = "multi_effect"`), `hs_control(engine = "julia", engine_control = list(target = "multi_effect", scale_method = "auto"))` lets the engine route large problems the dense factorization cannot reach through its **matrix-free Monte-Carlo REML** fit (never forming/factorizing the mixed-model coefficient matrix). The default `scale_method = "dense"` is unchanged and byte-identical. At validation scale `"auto"` uses the sparse-exact estimator, which reduces exactly to the covered dense result (verified live: dense-vs-auto variance components agree to ~3e-5 on a 200-animal fixture); only when the problem exceeds the direct-factorization budget does it fall back to the experimental matrix-free fit, whose estimates carry a Monte-Carlo standard error. **The covered claim is unchanged** (validation-scale, exact path); the large-scale matrix-free path is opt-in **experimental** (no calibrated intervals / no external comparator through it yet).
 

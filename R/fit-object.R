@@ -48,6 +48,30 @@ hs_fit_result <- function(object, name, label) {
   value
 }
 
+hs_print_genomic_ratio <- function(ratio) {
+  if (!is.data.frame(ratio) ||
+      !all(
+        c("component", "estimate", "relationship_scale") %in% names(ratio)
+      )) {
+    return(invisible(NULL))
+  }
+
+  row <- which(ratio$component == "genomic_variance_ratio")
+  if (length(row) != 1L) {
+    return(invisible(NULL))
+  }
+
+  cat(
+    "  genomic variance-component ratio: ", ratio$estimate[[row]], "\n",
+    sep = ""
+  )
+  cat(
+    "  declared relationship scale: ", ratio$relationship_scale[[row]], "\n",
+    sep = ""
+  )
+  invisible(NULL)
+}
+
 #' @export
 print.hsquared_fit <- function(x, ...) {
   method <- x$spec$method %||% "unknown"
@@ -61,6 +85,7 @@ print.hsquared_fit <- function(x, ...) {
   if (!is.null(converged)) {
     cat("  converged: ", isTRUE(converged), "\n", sep = "")
   }
+  hs_print_genomic_ratio(x$result$heritability)
   boundary <- x$result$genomic_boundary
   if (!is.null(boundary)) {
     cat("  genomic boundary status: ", boundary$status, "\n", sep = "")
@@ -107,6 +132,7 @@ print.summary_hsquared_fit <- function(x, ...) {
   if (!is.null(x$converged)) {
     cat("  converged: ", isTRUE(x$converged), "\n", sep = "")
   }
+  hs_print_genomic_ratio(x$heritability)
   if (!is.null(x$genomic_boundary)) {
     cat("  genomic boundary status: ", x$genomic_boundary$status, "\n", sep = "")
     if (x$genomic_boundary$status %in% c("boundary_lower", "boundary_upper")) {

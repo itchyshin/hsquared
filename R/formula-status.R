@@ -270,8 +270,9 @@ hs_formula_status_behavior <- function() {
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML route; a",
       "supplied `Ginv` is used without alteration and its construction method,",
-      "allele frequencies, ridge, and denominator remain unknown. The explicit",
-      "model requires engine = \"julia\", target = \"genomic\". The",
+      "allele frequencies, ridge, and denominator remain unknown. On this held",
+      "branch the narrow model uses the ordinary no-control call; explicit",
+      "engine = \"julia\", target = \"genomic\" remains supported. The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
       "and SE accessors are unavailable. R status stays partial/experimental,",
       "validation-scale; public_covered_count remains 5."
@@ -279,7 +280,7 @@ hs_formula_status_behavior <- function() {
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
       "sample allele frequencies, unweighted VanRaden method 1, ridge 0.01.",
-      "Use target = \"genomic\"; target =",
+      "The held ordinary route and explicit target = \"genomic\" are available; target =",
       "\"snp_blup\" remains opt-in. The coefficient-scale result is labelled",
       "`genomic_variance_ratio`; interval and SE accessors are unavailable. R",
       "status stays partial/experimental, validation-scale;",

@@ -101,10 +101,16 @@ y ~ sex + batch + single_step(1 | id, Hinv = Hinv)
 ```
 
 Current status: `markers()`, `marker_scan()`, and `qtl_scan()` are planned
-markers and do not fit yet. `genomic()` and `single_step()` now fit through an
-opt-in, experimental engine path (`engine = "julia"`, `target = "genomic"` /
-`"single_step"` / `"snp_blup"`; REML-only or supplied-variance, not the
-default, mirroring a `partial` validation gate).
+markers and do not fit yet. The narrow Gaussian-REML `genomic()` forms have a
+held ordinary-route candidate on this branch; explicit `target = "genomic"`
+remains supported. `single_step()` and SNP-BLUP remain opt-in experimental
+targets. The genomic row stays `partial`: recovery-v3 is the redesigned
+experiment, but its first three D0F corpora are unadjudicated infrastructure
+blockers with retired seeds. Retry 4 completed 576 official fits and 576
+independent base-R recomputations, but exact Julia replay stopped after 455
+rows on a one-ULP endpoint-representation contract defect. Its root and seeds
+are retired and unadjudicated; D1/D2 never opened. Activation still requires a
+fresh prospective repair and Retry 5, Rose, and G10.
 
 ## Multivariate and factor-analytic grammar
 

@@ -8,7 +8,15 @@
 #' guidance; `hs_control(engine = "validate")` validates the contract without
 #' fitting, then returns the validated model spec invisibly. A narrow Gaussian
 #' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model is
-#' available only through the explicit experimental Julia `target = "genomic"`.
+#' routed by the ordinary no-control call on this held candidate branch. The
+#' explicit experimental Julia `target = "genomic"` remains supported. This is
+#' not public activation. Recovery-v3 is the redesigned experiment, but its
+#' first three D0F corpora are unadjudicated infrastructure blockers with
+#' retired seeds. Retry 4 completed 576 official fits and 576 base-R
+#' recomputations, but exact Julia replay stopped fail-closed after 455 rows on
+#' a one-ULP boundary-ratio representation defect. Its root and seeds are
+#' retired and unadjudicated; D1/D2 never opened. Activation still requires a
+#' fresh prospective repair and Retry 5, Rose, and G10.
 #' Marker construction uses sample allele frequencies, unweighted VanRaden
 #' method 1, and ridge `0.01`.
 #' `heritability()` labels its coefficient-scale result
@@ -117,7 +125,14 @@ hsquared <- function(
         call. = FALSE
       )
     }
-    opt_in_effect <- setdiff(names(spec$random), "animal")
+    # Held v0.7 activation candidate: the already-validated narrow genomic
+    # random-intercept model follows the same bridge as the explicit genomic
+    # target. This branch remains unmerged until the recovery and Rose gates.
+    default_genomic <- !is.null(spec$random$genomic)
+    opt_in_effect <- setdiff(
+      names(spec$random),
+      c("animal", if (default_genomic) "genomic")
+    )
     if (length(opt_in_effect) > 0L) {
       # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
       # name them honestly rather than printing the internal slot name.
@@ -168,6 +183,18 @@ hsquared <- function(
           control,
           "multivariate"
         )
+      ))
+    }
+    if (default_genomic) {
+      return(hs_fit_julia_genomic_payload(
+        payload,
+        project = project,
+        initial = hs_engine_control_value(
+          control,
+          "initial",
+          c(sigma_a2 = 1, sigma_e2 = 1)
+        ),
+        iterations = hs_engine_control_value(control, "iterations", 100L)
       ))
     }
     return(hs_fit_julia_ai_reml_payload(

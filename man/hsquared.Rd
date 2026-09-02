@@ -55,7 +55,15 @@ Julia and \code{HSquared.jl} are available and otherwise errors with install
 guidance; \code{hs_control(engine = "validate")} validates the contract without
 fitting, then returns the validated model spec invisibly. A narrow Gaussian
 REML \code{genomic(1 | id, markers = M)} or \code{genomic(1 | id, Ginv = Q)} model is
-available only through the explicit experimental Julia \code{target = "genomic"}.
+routed by the ordinary no-control call on this held candidate branch. The
+explicit experimental Julia \code{target = "genomic"} remains supported. This is
+not public activation. Recovery-v3 is the redesigned experiment, but its
+first three D0F corpora are unadjudicated infrastructure blockers with
+retired seeds. Retry 4 completed 576 official fits and 576 base-R
+recomputations, but exact Julia replay stopped fail-closed after 455 rows on
+a one-ULP boundary-ratio representation defect. Its root and seeds are
+retired and unadjudicated; D1/D2 never opened. Activation still requires a
+fresh prospective repair and Retry 5, Rose, and G10.
 Marker construction uses sample allele frequencies, unweighted VanRaden
 method 1, and ridge \code{0.01}.
 \code{heritability()} labels its coefficient-scale result

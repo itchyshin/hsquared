@@ -1,3 +1,7 @@
+if (!exists("hs_sim_pedigree", mode = "function", inherits = TRUE)) {
+  source(testthat::test_path("helper-simulation.R"), local = TRUE)
+}
+
 test_that("tiny animal validation fixture pins R payload ordering", {
   fixture <- hsquared:::hs_tiny_animal_validation_fixture()
   spec <- hsquared:::hs_build_model_spec(

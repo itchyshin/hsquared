@@ -1,5 +1,13 @@
 # hsquared Agent Instructions
 
+## LOAD-FIRST manifest
+<!-- Brain dossier manifest (refresh: python3 ~/shinichi-brain/tools/route.py hsquared). Top = salience; drift-checked by route.py. -->
+- Compute is a default condition — before any heavy calibration/bridge-recovery run ask *"Totoro or DRAC?"* (fast CPU ≤100 cores → Totoro; replicated multi-seed / GPU → DRAC arrays); scale out, never laptop-scale. Playbook: `~/shinichi-brain/projects/COMPUTE-PLAYBOOK.md`.
+- Trust recovery-to-truth and run a sample-size ladder before changing an estimator verdict.
+- Diff main before building; write symbolic alignment before exposing a new estimand.
+- Load `r-package-engineer`, `validation-harness`, and the repo instructions below.
+- The R package owns public language; HSquared.jl owns engine reality. Never merge those claim surfaces.
+
 `hsquared` is the R-facing package identity for an open, Julia-backed
 quantitative-genetic modelling system. The Julia engine lives in the sibling
 repository `HSquared.jl`.

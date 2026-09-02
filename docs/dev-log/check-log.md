@@ -7581,3 +7581,181 @@ release".
 - Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
   `git diff --check` clean; boundary grep over the edited articles and
   after-task report confirms the fixed-panel-smoke/no-R-threshold wording.
+
+## 2026-07-13 — v0.7 genomic recovery-v2 precision blocker
+
+- Totoro pilot completed 432/432 successful converged attempts with no dropped
+  or replaced seeds.
+- Driver R and independent base R summaries are byte-identical; independent
+  Julia agrees within `3.33e-16` and all three say `PRECISION_BLOCKER`.
+- Five cells exceed the frozen 2,000-fit ceiling; maximum required N is 16,325.
+- A logical `FALSE` versus serialized `false` comparison withheld the sealed
+  adjudication receipt. The offset-7101 root remains hash-locked and retired; no confirmation
+  manifest exists and offsets 7101:7148 are retired.
+- Repair checks: focused recovery-v2 tests 134/134; full R suite 0 failures and
+  0 warnings; forced non-lazy pkgdown build and stale-render scan clean;
+  `R CMD check --no-manual` 0 errors / 0 warnings / 0 notes; Julia
+  recomputer self-test, full `Pkg.test()`, Documenter build, preamble cap, and
+  diff checks green.
+- No activation, capability/count promotion, G10, merge, release, or GitHub
+  Actions campaign occurred. Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-13-v07-genomic-recovery-v2-precision-blocker.md`.
+
+## 2026-07-13 — v0.7 genomic recovery-v3 pure preseal layer
+
+- Prospectively replaced the cyclic stage-seal draft with a 39-key acyclic
+  preseal -> corpus lock -> independent recomputation -> adjudication chain.
+- Froze 24x8 D0F and 12-cell D1, exact D0 diagnostics, actual committed cell
+  table, live environment/commit/blob/tree provenance, strict failure rows, and
+  official-R performance semantics.
+- Typed cross-twin fixtures pass for D0F (3x38 fields) and D1 (36x56 fields),
+  with every field mutation red.
+- Checks: R focused preseal/selftest green; full R suite 2,276 pass / 0 fail /
+  0 warn / 68 skip; Julia selftest and full package suite green; diff checks
+  green; Fisher/Curie, Hopper, and cross-twin Grace audits CLEAN.
+- No official driver, preseal, phenotype, fit, recovery evidence, activation,
+  capability/count change, or GitHub Actions campaign exists. Full log:
+  `docs/dev-log/check-log.d/2026-07-13-v07-genomic-recovery-v3-preseal.md`.
+
+## 2026-07-13 — v0.7 genomic recovery-v3 operational harness
+
+- Added the sole ordinary-auto-genomic R fitter, independent base-R
+  recomputation/adjudication, and a resumable Totoro/live-DRAC launcher.
+- Added exact phase/tree/provenance admission and executable negative controls
+  for compute context, worker caps, smoke denominator, partial outputs, and
+  child-process failures.
+- A live Noether probe caught cross-language last-bit K/Q hash differences;
+  D0F/D1 now keep exact marker/ID identity, exact Julia-native K/Q replay,
+  descriptive base-R native hashes, and frozen `1e-10` numerical parity.
+- Focused and full R checks, Julia replay/full-suite checks, diff checks, and
+  Hopper/Grace/Noether independent reviews are green; Rose's final pre-seed
+  audit is CLEAN after the direct-entry guard repair.
+- No official seed, recovery evidence, activation, capability/count change, or
+  GitHub Actions campaign exists. Full log:
+  `docs/dev-log/check-log.d/2026-07-13-v07-genomic-recovery-v3-operational-harness.md`.
+
+## 2026-07-14 — v0.7 D0F replay-infrastructure blocker and fresh retry
+
+- The first official D0F root completed 576/576 converged R fits and 576/576
+  base-R recomputations, but the presealed Julia fixed-panel validator failed
+  before writing any replay row because its `only()` filter omitted phenotype
+  rank. The root is hash-locked, retired, and unadjudicated, not recovery evidence.
+- Repaired the validator to require exact ranks `1:8` and common panel
+  fingerprints before a canonical rank-1 projection. Positive and three
+  mutation-red controls pass; Julia selftest and full `Pkg.test()` are green.
+- Corrected the neighbouring seed audit to retire the true 3x24x8 spent grid
+  plus its bootstrap seeds. The fresh retry bases `2032000000` and `2033000000`
+  are exact, in range, and disjoint; R selftests and focused tests pass
+  warning-free.
+- Built-package `_R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-manual` passes
+  with status `OK`, including package tests. A source-tree `devtools::test()`
+  sequence under local testthat 3.3.2 lost a long-standing helper only in the
+  final validation file; that file passes alone and is green under `R CMD check`.
+- No seed has been opened under the repaired contract. D1 remains paused; no
+  recovery, activation, capability/count change, release, or G10 occurred.
+  Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-replay-infrastructure-blocker.md`.
+
+## 2026-07-14 — v0.7 D0F retry-2 replay blocker and retry-3 repair
+
+- Retry 2 completed 576 official fits and 576 base-R recomputations but wrote
+  zero Julia replay rows because of `Cmd(::Vector{AbstractString})`; its root
+  and all seeds are retired and unadjudicated.
+- Prospective retry 3 uses disjoint bases `2034000000` / `2035000000`, concrete
+  Julia command typing, an exact runtime-type regression, and strengthened
+  downstream history/schema/provenance gates.
+- Focused R gates (52 + 218 + 156), built-package R check (0/0/0), Julia
+  selftest/full `Pkg.test()`, sidecars, diff checks, and independent
+  Fisher/Grace/Noether reviews are green.
+- No recovery, activation, capability/count change, or D1/D2 seed exists.
+  Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-14-v07-d0f-retry2-infrastructure-blocker.md`.
+
+## 2026-07-14 — v0.7 D0F retry-3 gradient blocker and retry-4 repair
+
+- Retry 3 completed 576 official fits and 576 base-R recomputations but wrote
+  zero Julia replay rows because every successful R attempt stored
+  `gradient_norm=NA`; the sealed root and its `2034000000` / `2035000000`
+  seed spaces are retired and unadjudicated.
+- The prospective repair surfaces the boundary AI score norm through the R
+  bridge, fails successful nonfinite diagnostics before publication and again
+  at admission, and reserves disjoint retry-4 bases `2036000000` /
+  `2037000000`.
+- Base-R recomputation and Julia replay now use deterministic external batches
+  with one full corpus validation per batch, retained digest maps, per-row
+  attempt-plus-packet reauthentication, create-once writes, and strict
+  complete-prefix resume validation.
+- Focused R mutation gates, downstream-contract tests, live R-to-Julia genomic
+  tests, tool sidecars, launcher syntax/selftest, and diff checks pass. A clean
+  built-package `R CMD check --no-manual` is `Status: OK`. Julia replay
+  selftests, full `Pkg.test()`, Documenter build, and preamble cap pass.
+- No retry-4 seed, recovery evidence, D1/D2 seed, activation, capability/count
+  change, release, or GitHub Actions campaign exists. Full report:
+  `docs/dev-log/after-task/2026-07-14-v07-d0f-retry3-gradient-batch-repair.md`.
+
+## 2026-07-14 — v0.7 D0F retry-4 endpoint-representation blocker
+
+- Retry 4 completed 576 official fits and 576 independent base-R
+  recomputations. Exact Julia replay stopped fail-closed after 455 admitted
+  rows; four strided batches left 121 later rows without replay output.
+- Five of 13 boundary packets expose a one-ULP endpoint reconstruction
+  difference under the bit-exact replay validator. This is a replay contract
+  and error-classification defect, not solver/KKT/gradient/recovery failure.
+- Root and seeds are retired and unadjudicated; D1/D2 never opened; activation
+  and count remain held. Detail:
+  `docs/dev-log/check-log.d/2026-07-14-v07-d0f-retry4-endpoint-representation-blocker.md`.
+
+## 2026-07-16 — Retry-7 architecture and seed-contract checkpoint
+
+- Route-safe admission, weighted lineage, exact receipt retry, adjudication v2,
+  and the 576-row D0F-to-D1 synthetic lifecycle are green under mutation tests
+  and three independent architecture reviews.
+- Retry-7 phenotype/bootstrap bases `2042000000` / `2043000000` are reserved,
+  disjoint, and unspent. Full `devtools::test()` passed with documented skips.
+- No preseal, official RNG, fit, activation, count change, merge, or release
+  occurred. Full report:
+  `docs/dev-log/after-task/2026-07-16-retry7-architecture-seed-contract-checkpoint.md`.
+
+## 2026-07-16 — Retry-7 S7 bounded-worker recovery local gate
+
+- Added a bounded, observable synthetic-worker envelope and clean-deployment
+  entry check after the incomplete Totoro rehearsal. The old interrupted run
+  is not evidence of a demonstrated deadlock.
+- New R worker tests, full R suite, fresh build, forced-Suggests check, Julia
+  package/docs/preamble checks, sidecar verification, and diff check pass.
+- This source change invalidates prior exact-head CI and review receipts. No
+  official RNG, official preseal, official adjudication, D1-D4, activation,
+  count change, merge, or release occurred; synthetic internal preseal files
+  remain harness-only. Full local record:
+  `docs/dev-log/check-log.d/2026-07-16-retry7-s7-bounded-recovery-local.md`.
+
+## 2026-07-16 — Retry-7 S7 remote-evidence blocker
+
+- A fresh Totoro synthetic D0F-to-D1 lifecycle, clean-deployment control, and
+  dirty-deployment rejection control all passed without official RNG.
+- S7 is nevertheless not cleared: the review chain was reset after a protected
+  filename exposure, and the retained lifecycle log lacks a durable bounded-
+  worker configuration receipt. No official preseal or official RNG occurred.
+  Full checkpoint:
+  `docs/dev-log/recovery-checkpoints/2026-07-16-retry7-s7-remote-evidence-blocker.md`.
+
+## 2026-07-16 — Retry-7 S7 durable-run-receipt local gate
+
+- The synthetic lifecycle now binds its deployed heads and bounded-worker
+  configuration in a create-once, sidecar-protected run receipt before either
+  D0F or D1 is materialized.
+- Focused/full R tests and Julia package/docs/preamble gates pass. This source
+  change resets exact-head CI and reviews; no official preseal or RNG occurred.
+  Full local record:
+  `docs/dev-log/check-log.d/2026-07-16-retry7-s7-durable-run-receipt-local.md`.
+
+## 2026-07-16 — Retry-7 repaired-sidecar canonical preseal
+
+- The recovery-v3 driver sidecar was corrected and all exact-head evidence was
+  restarted on R `01ad843` / Julia `97681439`. Full R and Julia suites, exact
+  CI, a clean Totoro synthetic D0F-to-D1 lifecycle, dirty deployment control,
+  fresh two-batch reviews, and an enforced Sol adjudication are recorded.
+- A fresh canonical D0F root is now presealed. The audit confirms that RNG was
+  unchanged and bootstrap indices, attempts, recomputations, corpus, and
+  adjudication output remain absent. This is not official execution evidence.
+  Details: `docs/dev-log/check-log.d/2026-07-16-retry7-01ad843-canonical-preseal.md`.
