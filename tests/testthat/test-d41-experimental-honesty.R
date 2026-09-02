@@ -11,7 +11,7 @@ test_that(".onAttach emits experimental honesty message", {
   text <- paste(msg, collapse = " ")
 
   expect_match(text, "experimental", ignore.case = TRUE)
-  expect_match(text, "0\\.5\\.0")
+  expect_match(text, "0\\.6\\.0")
   expect_match(text, "Julia")
   expect_match(text, "validate")
   expect_match(text, "validation_status")
@@ -91,7 +91,7 @@ test_that("README carries the D-41 callout and a validate-first example", {
   # channel 4: lifecycle badge + prominent callout
   expect_match(text, "lifecycle-experimental", fixed = TRUE)
   expect_match(text, "[!WARNING]", fixed = TRUE)
-  expect_match(text, "0.5.0", fixed = TRUE)
+  expect_match(text, "0.6.0", fixed = TRUE)
   expect_match(text, "not coverage-calibrated", fixed = TRUE)
 
   # I2: the first runnable example must not need Julia

@@ -12,9 +12,8 @@ data validation, summaries, extractors, examples — and the
 computation.
 
 > [!WARNING]
-> **Experimental 0.5.0 — not production / not CRAN.** The version number tracks
-> *covered* capability, not surface area; the first CRAN release targets 0.5.0,
-> not 1.0. `public_covered_count` stays **5**. **Fitting requires a local Julia
+> **Experimental 0.6.0 — not production / not CRAN.** The version number tracks
+> *covered* capability, not surface area; the first CRAN release is not this bump. `public_covered_count` is **6**. **Fitting requires a local Julia
 > and an `HSquared.jl` checkout** — R alone parses and validates a model but
 > does not fit it. The Julia twin's General registration
 > ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969)) is

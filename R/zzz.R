@@ -1,6 +1,6 @@
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage(
-    "hsquared is experimental (first CRAN target 0.5.0, not 1.0). ",
+    "hsquared is experimental (0.6.0, not 1.0; not CRAN). ",
     "Default fitting needs Julia + HSquared.jl; preview with ",
     "hs_control(engine = \"validate\").\n",
     "What you may report is listed on Can I fit and report this? ",

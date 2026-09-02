@@ -20,11 +20,13 @@ behind them to report.
 
 ## The three-line version
 
-1. The **univariate Gaussian animal model** — one additive genetic effect, a
-   Gaussian trait, REML — is the covered route. Report its point estimates.
-2. Almost everything else fits through an **opt-in, experimental** engine target.
-   Treat those fits as exploratory, or report them beside a comparator you ran
-   yourself.
+1. Two **default-routed covered** paths exist: the **univariate Gaussian animal
+   model**, and **t = 2 unstructured multivariate** `cbind()` (G10; validation-scale).
+   Report their point estimates within the stated scope.
+2. Almost everything else fits through an **opt-in** engine target (some covered
+   at validation scale, some experimental). k≥3 and diagonal multivariate stay
+   experimental. Treat experimental fits as exploratory, or report them beside a
+   comparator you ran yourself.
 3. **No standard error or interval in this package is coverage-calibrated.** Do
    not report one as if it were.
 

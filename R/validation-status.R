@@ -94,7 +94,8 @@ hs_validation_status_label_overrides <- function() {
   c(
     # MV-4 made the `cbind()` route default rather than opt-in, but three dated
     # records (two comparator-run reports, one check-log entry) already cite the
-    # "(opt-in)" id. Reachability changed; the `partial` status did not.
+    # "(opt-in)" id. G10 (2026-09-02) covers the R-public t=2 unstructured
+    # surface; the historical id is unchanged.
     "experimental multivariate REML estimator (opt-in)" = "experimental multivariate REML estimator (default route)"
   )
 }
@@ -149,7 +150,8 @@ hs_validation_status_status <- function() {
   c(
     rep("partial", 7L), # positions 1-7
     "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    rep("partial", 3L), # positions 9-11
+    rep("partial", 2L), # positions 9-10 genomic, SNP-BLUP
+    "covered", # position 11 = multivariate REML (G10 t=2 unstructured R-public)
     rep("covered", 3L),
     rep("planned", 7L)
   )
@@ -419,41 +421,40 @@ hs_validation_status_boundaries <- function() {
       "parity are planned. Not the default, not comparator-validated."
     ),
     paste(
-      "Experimental; Julia-owned dense/validation-scale",
-      "multivariate REML estimator that R surfaces; mirrors the twin V4 rows",
-      "(partial). ROUTING: a `cbind()` Gaussian response with an `animal()`",
+      "Covered at VALIDATION scale (G10, 2026-09-02); Julia-owned dense",
+      "multivariate REML estimator that R surfaces; mirrors the twin V4-MV-REML",
+      "covered row. ROUTING: a `cbind()` Gaussian response with an `animal()`",
       "term auto-routes to this fitter on the DEFAULT path (MV-4); no",
       "engine/target argument is required, and the explicit `engine =",
-      "\"julia\", target = \"multivariate\"` spelling still works. Default",
-      "routing is NOT a covered claim and did not move public_covered_count.",
-      "`cbind()` responses with missing trait cells are supported,",
-      "but this is REML-only and animal-model-only. The R lane",
-      "has cold-start recovery and one reproduced full-unstructured sommer",
+      "\"julia\", target = \"multivariate\"` spelling still works. Covered numeric",
+      "claim is scoped to k = 2 unstructured; k >= 3 stays",
+      "parseable-and-fittable-but-experimental; genetic_structure =",
+      "\"diagonal\" stays experimental at 0.6. `cbind()` responses with missing",
+      "trait cells are supported, but this is REML-only and animal-model-only.",
+      "The R lane has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
       "anchor plus a Bayesian MCMCglmm agreement probe. The MCMCglmm leg is",
-      "not same-estimand REML parity. The engine `V4-MV-REML` is now covered at",
-      "validation scale (one-owner consolidation, HSquared.jl#161) on a",
-      "substitutable gate, but this R public surface stays partial \u2014 default",
-      "routing did not promote it. Twin C8 broader-DGP confirm is banked",
-      "(DRAC job 47925486; 16x500; 14/16 pass; fails only rg_090_rec1/",
-      "rg_095_rec1; base_inside clean) as characterization, not an R flip;",
-      "R-lane MV-5 remains authorization-gated (driver committed, not run).",
-      "The engine blupf90+ same-estimand REML comparator is discharged.",
-      "A26 R<->engine element-wise parity is DISCHARGED LOCALLY (run at tip,",
-      "within predeclared tolerances) but is NOT CI-backed: Tier-1 parity CI",
-      "is not yet live (no workflow provisions Julia and the parity legs skip",
-      "on a Julia-free runner), so read it as local evidence, not a",
-      "CI-verified claim. The R flip still owes Darwin, Rose, and G10.",
-      "NO-ANCHOR DISCLOSURE (gate item 2): the published Mrode Example 5.1",
-      "anchor is SUPPLIED-covariance BLUP/MME and does NOT anchor an ESTIMATED",
-      "G0/R0; no published textbook anchor for estimated multivariate G0/R0",
-      "exists. MV-1 sommer",
-      "requires Suggests on NOT_CRAN (hs_require_suggests; CRAN still skips).",
-      "Covered numeric claim (when flipped) is scoped to k = 2 unstructured;",
-      "k >= 3 stays parseable-and-fittable-but-experimental; genetic_structure =",
-      "\"diagonal\" stays experimental at 0.6.",
-      "The Julia engine currently inverts Ainv internally, so deep-inbreeding or",
-      "high-condition-number pedigrees remain a twin-side hardening item."
+      "not same-estimand REML parity. The engine `V4-MV-REML` is covered at",
+      "validation scale (HSquared.jl#161). This R public surface is COVERED at",
+      "validation scale after owner G10 (Shinichi, 2026-09-02, source chat",
+      "\"G10 - you keep going\"); public_covered_count is 6. Twin C8 broader-DGP",
+      "confirm is banked (DRAC job 47925486; 16x500; 14/16 pass; fails only",
+      "rg_090_rec1/rg_095_rec1; base_inside clean) as characterization; R-lane",
+      "MV-5 is SUPERSEDED (A25). The engine blupf90+ same-estimand REML",
+      "comparator is discharged. A26 R<->engine element-wise parity is",
+      "DISCHARGED LOCALLY (run at a recorded commit, within predeclared",
+      "tolerances) but is NOT CI-backed: Tier-1 parity CI is not yet live (no",
+      "workflow provisions Julia and the parity legs skip on a Julia-free",
+      "runner), so read it as local evidence, not a CI-verified claim.",
+      "Darwin A27 SIGNED; Rose A29 CLEAN. Intervals remain uncalibrated",
+      "(design-41 §3 #7 deferred). NO-ANCHOR DISCLOSURE (gate item 2): the",
+      "published Mrode Example 5.1 anchor is SUPPLIED-covariance BLUP/MME and",
+      "does NOT anchor an ESTIMATED G0/R0; no published textbook anchor for",
+      "estimated multivariate G0/R0 exists. MV-1 sommer requires Suggests on",
+      "NOT_CRAN (hs_require_suggests; CRAN still skips). The Julia engine",
+      "currently inverts Ainv internally, so deep-inbreeding or",
+      "high-condition-number pedigrees remain a twin-side hardening item.",
+      "Not production, not ASReml-style multivariate fitting."
     ),
     paste(
       "Univariate Gaussian animal model only (single additive genetic effect);",
@@ -464,7 +465,7 @@ hs_validation_status_boundaries <- function() {
       "(poisson/binomial, Laplace or variational REML) fitting are separate",
       "opt-in experimental targets, not the default. A `cbind()` multivariate",
       "response also routes on the default path, but it is a separate,",
-      "experimental (partial) row and is NOT part of this covered claim.",
+      "covered (validation-scale) sibling row (G10) and is NOT part of this univariate covered claim.",
       "Mirrors the twin-owned",
       "V1-AI-REML gate",
       "(covered); not ASReml multi-trait parity."

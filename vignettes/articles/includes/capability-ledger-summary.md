@@ -4,8 +4,8 @@ The cards below are generated from `validation_status()`, a developer evidence t
 
 | Status | Rows | What it means for you |
 |---|---|---|
-| `covered` | 4 | Pre-declared recovery gate passed and an external same-estimand comparator agrees. Point estimates are reportable within the stated scope. |
-| `partial` | 10 | The code runs and is bridge-verified, but the evidence chain is incomplete. Exploratory use only. |
+| `covered` | 5 | Pre-declared recovery gate passed and an external same-estimand comparator agrees. Point estimates are reportable within the stated scope. |
+| `partial` | 9 | The code runs and is bridge-verified, but the evidence chain is incomplete. Exploratory use only. |
 | `planned` | 7 | Not implemented. No reporting permission. |
 
 Those counts are rows in the evidence ledger, not user-facing models. Some rows are validation atoms (a pedigree-inverse check, a textbook fixture) or evidence for another row rather than a model you would fit. The cards below are the model routes.
@@ -124,15 +124,15 @@ hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat)
 # routes on the default path; engine = "julia", target = "multivariate" still works
 ```
 
-**Can I fit it?** **Yes, but experimental** - it runs on the default call, yet the evidence is incomplete. Default routing is not a covered claim.
+**Can I fit it?** **Yes** - implemented and covered on the default call.
 
-**Can I report the point estimate?** **Not on this package's evidence alone.** Report only beside a comparator you ran yourself, and say the route is experimental.
+**Can I report the point estimate?** **Yes, within the stated scope** - a pre-declared recovery gate passed and an external same-estimand comparator agrees.
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** REML-only, animal-model-only, dense/validation-scale. Returns G0/R0 covariance and correlation matrices, per-trait h2, and cross-trait EBVs. The R-lane evidence includes a 100-replicate t = 2 cold-start recovery study, one reproduced full-unstructured `sommer` comparator leg, a published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm agreement probe - which is NOT same-estimand REML parity. The Mrode anchor is SUPPLIED-covariance (fixed effects and BLUPs given known G0/R0), so it does NOT anchor the ESTIMATED G0/R0, and no published textbook anchor for estimated multivariate G0/R0 exists - that evidence is comparator- and recovery-based, not textbook-anchored. R<->engine element-wise parity is verified LOCALLY at pre-declared tolerances, NOT in CI (the CI runner has no Julia, so those checks skip). The engine row is covered; this R-public surface is not. Since MV-4 the cbind route is selected on the default call: that is reachability, not promotion, and public_covered_count did not move.
+**Exact scope and caveat.** REML-only, animal-model-only, dense/validation-scale. Returns G0/R0 covariance and correlation matrices, per-trait h2, and cross-trait EBVs. Covered claim is t = 2 unstructured G0/R0 only (G10, 2026-09-02); k>=3 and genetic_structure = "diagonal" stay experimental. The R-lane evidence includes a 100-replicate t = 2 cold-start recovery study, one reproduced full-unstructured `sommer` comparator leg, a published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm agreement probe - which is NOT same-estimand REML parity. The Mrode anchor is SUPPLIED-covariance (fixed effects and BLUPs given known G0/R0), so it does NOT anchor the ESTIMATED G0/R0, and no published textbook anchor for estimated multivariate G0/R0 exists - that evidence is comparator- and recovery-based, not textbook-anchored. R<->engine element-wise parity is verified LOCALLY at pre-declared tolerances, NOT in CI (the CI runner has no Julia, so those checks skip). The engine row is covered; this R-public surface is now covered at validation scale; public_covered_count is 6. Since MV-4 the cbind route is selected on the default call.
 
-**Concrete fallback.** Fit each trait with the covered univariate model, and report cross-trait covariance only beside an external multi-trait comparator.
+**Concrete fallback.** For k>=3 or a diagonal genetic structure, treat the fit as experimental. For a single-trait question, use the covered univariate model.
 
 ## Not available (syntax reservations and planned lanes)
 

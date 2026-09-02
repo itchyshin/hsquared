@@ -1,4 +1,18 @@
+# hsquared 0.6.0
+
+* **G10 — R multivariate Gaussian animal model `partial → covered` (validation-scale).**
+  Owner ink: chat "G10 - you keep going" (2026-09-02). `public_covered_count` moves
+  **5 → 6**. Scope: default-route `cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)`
+  unstructured t=2 G0/R0 under design-41 §3 (items 1–6 + 8; #7 intervals deferred;
+  #9 DoD in this flip). Experimental label **retained**. NOT production, NOT CRAN,
+  NOT General force-merge. k≥3 and `genetic_structure = "diagonal"` stay experimental.
+  Interval calibration stays uncalibrated. **NO-ANCHOR DISCLOSURE:** Mrode 5.1 is
+  supplied-G0/R0 only; estimated G0/R0 have no published textbook anchor.
+  Evidence pointers: capability-status multivariate row; A29 CLEAN; Wave B merge
+  `55076481`; A27 Darwin SIGN; A26 local parity (DP-10 C).
+
 # hsquared 0.5.0
+
 
 This is an **experimental** numbered release (D-41). It is **not** a CRAN
 submission. Experimental banners, lifecycle badges, `.onAttach`, pkgdown

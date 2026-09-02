@@ -14,7 +14,7 @@
 # fixture THROUGH the bridge and confront the serialized target element-wise.
 #
 # Passing this file does NOT authorize the R multivariate covered flip: it
-# discharges one of nine acceptance criteria. R multivariate stays `partial`.
+# discharges one of nine acceptance criteria. R multivariate is covered at validation scale (G10); this file still pins local parity only.
 
 hs_a26_fixture <- function(file) {
   utils::read.csv(

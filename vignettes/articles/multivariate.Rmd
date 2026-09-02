@@ -216,14 +216,16 @@ factor-analytic covariance models.
 
 ## Claim boundary
 
-This page describes a partial capability. The route is default; the evidence
-behind it is not finished, and those are separate statements:
+This page describes a **covered (validation-scale)** capability for t=2
+unstructured G0/R0 (G10, 2026-09-02). The experimental label is retained.
+k≥3 and `genetic_structure = "diagonal"` stay experimental. Interval
+calibration is not claimed.
 
 - reached on the default path — a `cbind()` Gaussian response with an
   `animal()` term needs no `engine` or `target` argument; the explicit
   `engine = "julia"`, `target = "multivariate"` spelling remains accepted;
-- **still `partial`, not covered.** Default routing is a convenience change, not
-  a promotion, and it did not move `public_covered_count`;
+- **covered at validation scale** for t=2 unstructured; `public_covered_count`
+  is **6**. Default routing (MV-4) was reachability; G10 is the promotion;
 - Gaussian and REML-only;
 - animal-model-only;
 - dense validation-scale;
@@ -244,10 +246,8 @@ behind it is not finished, and those are separate statements:
 - R↔engine element-wise parity through the bridge has been **verified locally**
   at pre-declared tolerances, but **not in continuous integration** — the CI
   runner has no Julia, so the parity checks skip there rather than run;
-- covered promotion still needs the recovery gate accepted or broadened plus a
-  second independent same-estimand comparator beyond `sommer`;
 - `MCMCglmm` is Bayesian/MCMC agreement evidence, not same-estimand REML
   parity.
 
-Use `validation_status()` and the model-status article before treating any
-multivariate result as more than an experimental fit.
+Use `validation_status()` and the model-status article for the exact atom
+table. Report point estimates only within the t=2 unstructured covered scope.

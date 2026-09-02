@@ -116,7 +116,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     status$fitting_status[
       status$term == "cbind(trait1, trait2) ~ animal(1 | id, pedigree = ped)"
     ],
-    "fitted (default route, experimental multivariate)"
+    "fitted (default route, covered multivariate)"
   )
   expect_true(all(
     c(
@@ -294,7 +294,7 @@ test_that("validation_status separates evidence from planned validation", {
     status$status[
       status$capability == "experimental multivariate REML estimator (opt-in)"
     ],
-    "partial"
+    "covered"
   )
   # Phase 1 (2026-07-01): common-environment two-effect leg COVERED (public_covered_count 1->2).
   # Phase 2-R (2026-07-01): generalized to arbitrary-N independent (1|g) effects, same row,
@@ -371,7 +371,7 @@ test_that("validation_status separates evidence from planned validation", {
   multivariate_row <- status[
     status$capability == "experimental multivariate REML estimator (opt-in)",
   ]
-  expect_equal(multivariate_row$status, "partial")
+  expect_equal(multivariate_row$status, "covered")
   expect_match(
     multivariate_row$evidence,
     "100-replicate cold-start t=2 known-truth recovery study",
@@ -399,7 +399,7 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "this R public surface stays partial",
+    "This R public surface is COVERED at",
     fixed = TRUE
   )
   expect_match(
@@ -419,7 +419,7 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "MV-5 remains authorization-gated",
+    "MV-5 is SUPERSEDED",
     fixed = TRUE
   )
   expect_match(
@@ -493,7 +493,7 @@ test_that("the multivariate row is looked up by its historical opt-in id", {
   historical_id <- "experimental multivariate REML estimator (opt-in)"
   row <- status[status$capability == historical_id, ]
   expect_equal(nrow(row), 1L)
-  expect_equal(row$status, "partial")
+  expect_equal(row$status, "covered")
 
   # MV-4 made the route default, so the reader-facing label drops "opt-in"
   # while the id keeps it.

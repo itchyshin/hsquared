@@ -142,17 +142,31 @@ advanced opt-in engine controls.
 - Local tests for accepted syntax, rejected future syntax, and pedigree/data ID
   checks.
 
-## Opt-in and covered at validation scale (not the default)
+## Covered at validation scale (opt-in unless noted)
 
-These models are reachable only through
-`control = hs_control(engine = "julia", engine_control = list(target = ...))`,
-are REML only, are Julia-owned (R only surfaces them), and are **not** the
-default `engine = "fit"` path and not production. Each has cleared a pre-declared
-bias/MCSE recovery gate **and** a same-estimand REML comparator (mirroring a
-`covered` gate in the `HSquared.jl` twin), so each is comparator/known-truth-
-validated at **validation scale** (dense, `n ≤ ~1000`) — but each remains opt-in,
-not the default, and not production.
+These models are REML only, Julia-owned (R surfaces them), dense/validation-scale
+(`n ≤ ~1000`), and **not** production. Each has cleared a pre-declared bias/MCSE
+recovery gate **and** a same-estimand REML comparator (mirroring a `covered` gate
+in the `HSquared.jl` twin). Four remain explicit opt-in
+`control = hs_control(engine = "julia", engine_control = list(target = ...))`
+targets. Multivariate `cbind()` is the exception: it routes on the default
+`engine = "fit"` call (G10).
 
+- Multivariate Gaussian animal model — `cbind(trait1, trait2) ~
+  animal(1 | id, pedigree = ped)`, **routed on the default path** (no `target`
+  needed; `target = "multivariate"` still accepted). Returns G/R
+  covariance and correlation matrices, per-trait h2, and cross-trait EBVs;
+  missing trait cells may be `NA`. Covered claim is t=2 unstructured G0/R0
+  (G10, 2026-09-02); k≥3 and `genetic_structure = "diagonal"` stay experimental.
+  R-lane evidence includes cold-start recovery, one full-unstructured `sommer`
+  REML comparator, a published Mrode supplied-covariance BLUP/MME anchor, and a
+  `MCMCglmm` Bayesian agreement probe. The Mrode anchor is **supplied-covariance**
+  — it checks fixed effects and BLUPs given known `G0`/`R0`, not the estimated
+  covariances — and **no published textbook anchor for estimated multivariate
+  `G0`/`R0` exists**, so that part of the evidence is comparator- and
+  recovery-based rather than textbook-anchored. R↔engine element-wise parity is
+  verified **locally** at pre-declared tolerances, **not in CI**. `MCMCglmm` is
+  not REML parity. Intervals remain uncalibrated.
 - Common environment — `animal(1 | id) + common_env(1 | group)`,
   `target = "two_effect"` (additive animal genetic + IID common environment,
   A2 = I). The **common-environment leg** is covered (mirrors the twin
@@ -194,10 +208,8 @@ not the default, and not production.
 ## Opt-in and experimental (not the default)
 
 These models are **not** yet comparator/known-truth-validated at the bar above;
-each mirrors a `partial` gate in the `HSquared.jl` twin. All but one are reached
-through the opt-in `control = hs_control(engine = "julia", ...)` path; the
-multivariate `cbind()` model is the exception and routes by default, which
-changes how you reach it and not what may be claimed from it.
+each mirrors a `partial` gate in the `HSquared.jl` twin. They are reached
+through the opt-in `control = hs_control(engine = "julia", ...)` path.
 
 The genomic GREML route also remains explicit:
 `genomic(1 | id, markers = M)` and `genomic(1 | id, Ginv = Q)` require
@@ -213,7 +225,7 @@ matched an independent base-R oracle on all 240 sealed holdouts, correcting 30
 classifications with no losses, but the conjunctive gate still failed: the
 `n120_m600_r050` p95 runtime ratio was 5.99 times against the frozen 3 times cap.
 Default activation was not added, the nine-cell campaign did not run, and
-`public_covered_count` remains 5. The 240 seeds are spent; a revised candidate
+`public_covered_count` is 6 (genomic not covered). The 240 seeds are spent; a revised candidate
 requires performance work on discovery data, a new preregistration, and a fresh
 holdout block. The study used independent HWE/no-LD markers and provides no robustness
 evidence for LD, population structure, imputation, base-frequency
@@ -238,22 +250,6 @@ misspecification, real panels, or production genotype data.
   supplied `c(sigma_g2 = ..., sigma_e2 = ...)` it solves at those variances; when
   omitted it estimates `sigma_g2`/`sigma_e2` by REML from the markers. Mirrors the
   twin `V2-SNPBLUP` gate.
-- Multivariate Gaussian animal model — `cbind(trait1, trait2) ~
-  animal(1 | id, pedigree = ped)`, **routed on the default path** (no `target`
-  needed; `target = "multivariate"` still accepted). Returns G/R
-  covariance and correlation matrices, per-trait h2, and cross-trait EBVs;
-  missing trait cells may be `NA`. Dense validation-scale only; R-lane evidence
-  includes cold-start recovery, one full-unstructured `sommer` REML comparator,
-  a published Mrode supplied-covariance BLUP/MME anchor, and a `MCMCglmm`
-  Bayesian agreement probe. The Mrode anchor is **supplied-covariance** — it
-  checks fixed effects and BLUPs given known `G0`/`R0`, not the estimated
-  covariances — and **no published textbook anchor for estimated multivariate
-  `G0`/`R0` exists**, so that part of the evidence is comparator- and
-  recovery-based rather than textbook-anchored. R↔engine element-wise parity is
-  verified **locally** at pre-declared tolerances, **not in CI** (the CI runner
-  has no Julia, so those checks skip). Covered promotion still needs
-  recovery-gate acceptance or broadening plus a second independent
-  same-estimand comparator beyond `sommer`; `MCMCglmm` is not REML parity.
 
 ## Current limits
 
@@ -280,7 +276,7 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
   `cbind(...)` Gaussian response with an `animal()` term routes to the
   multivariate fitter on the default path; the explicit
   `engine = "julia", target = "multivariate"` spelling still works. The route is
-  default, the capability is still experimental (`partial`).
+  default; G10 covered t=2 unstructured at validation scale (experimental label retained).
 - **Gaussian identity link only.** Other families are planned, not implemented.
 - **REML only.** `REML = FALSE` (ML) is rejected; use `REML = TRUE`
   (the default). That is the same rule for the default fit and for
@@ -290,27 +286,25 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
 - **Fixed effects are unrestricted** otherwise: any number of ordinary
   fixed-effect terms (`sex + age + ...`) on the right-hand side is fine.
 
-Arbitrary numbers of random effects and slopes, multiple correlated random
-terms, and multi-trait responses are on the roadmap; the parser names each
-unsupported form rather than guessing.
+Arbitrary numbers of random effects and slopes, additional correlated random
+terms, and k≥3 / factor-analytic multi-trait responses remain on the roadmap;
+the parser names each unsupported form rather than guessing.
 
 ## Not implemented yet
 
 - General default model fitting beyond the v0.1 univariate Gaussian animal
-  model and the explicit experimental genomic route (the reserved inheritance
-  kernels). The multivariate, standard two-effect, repeatability, SNP-BLUP,
-  single-step, and non-Gaussian
+  model and the default-routed t=2 unstructured multivariate `cbind()` path
+  (G10). Repeatability, SNP-BLUP, single-step, genomic GREML, and non-Gaussian
   (`poisson`/`binomial`, Laplace or variational REML, no heritability) models fit
-  only through explicit `engine = "julia"` targets, never as the default — some
-  covered at validation scale, some experimental (see the two opt-in sections
-  above).
+  only through explicit `engine = "julia"` targets — some covered at validation
+  scale, some experimental (see the two sections above).
 - ML estimation (`REML = FALSE` is rejected on the default fit and on
   `engine = "validate"`; only REML is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a default for
-  any model other than the v0.1 univariate Gaussian animal model or the explicit
-  experimental genomic route (the explicit models above return them; the covered ones
-  are validated at validation scale only, the experimental ones are not).
+  any model other than the v0.1 univariate Gaussian animal model or the
+  default-routed t=2 unstructured multivariate path (the explicit models above
+  return them; covered ones are validated at validation scale only).
 - Log-likelihood or information criteria for supplied-variance Henderson MME
   bridge results.
 - Production sparse PEV or reliability.
@@ -333,7 +327,8 @@ unsupported form rather than guessing.
 - Production genomic or single-step workflows; both genomic GREML and
   single-step remain explicit experimental targets.
 - Factor-analytic and structured `cov()` G matrices (the unstructured
-  multivariate G/R path fits by default but experimentally; see above).
+  t=2 multivariate G/R path is covered at validation scale on the default
+  call; see above).
 - Paternal, dominance, epistasis, custom relationship/precision, QTL-style,
   selfing, clonal, haplodiploid, polyploid, cytoplasmic, imprinting, and
   GLLVM-style models. (Permanent environment, common environment, and maternal

@@ -66,7 +66,7 @@ test_that("claim surfaces pin k=2 scope and diagonal experimental fences", {
   mv <- status[
     status$capability == "experimental multivariate REML estimator (opt-in)",
   ]
-  expect_equal(mv$status, "partial")
+  expect_equal(mv$status, "covered")
   expect_match(
     mv$claim_boundary,
     "scoped to k = 2 unstructured",
@@ -101,18 +101,19 @@ test_that("claim surfaces pin k=2 scope and diagonal experimental fences", {
 
 test_that("structured / factor-analytic ledger row stays partial for diagonal", {
   status <- validation_status()
-  # The public structured-G claim is not a validation_status() capability id;
-  # pin the multivariate claim_boundary + formula note instead, and assert the
-  # capability-status prose contract via the diagonal control remaining
-  # non-covered in the live status table (multivariate stays partial).
+  # Diagonal is not a separate covered capability; k=2 unstructured G10
+  # cover does not promote genetic_structure = "diagonal".
   expect_false(any(
     grepl("diagonal", status$capability, fixed = TRUE) &
       status$status == "covered"
   ))
-  expect_equal(
-    status$status[
-      status$capability == "experimental multivariate REML estimator (opt-in)"
-    ],
-    "partial"
+  mv <- status[
+    status$capability == "experimental multivariate REML estimator (opt-in)",
+  ]
+  expect_equal(mv$status, "covered")
+  expect_match(
+    mv$claim_boundary,
+    "\"diagonal\" stays experimental",
+    fixed = TRUE
   )
 })

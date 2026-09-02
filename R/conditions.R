@@ -33,17 +33,18 @@ hs_reset_session_flags <- function() {
   invisible(NULL)
 }
 
-# Default-path cbind() routes to the multivariate fitter (MV-4) but the
-# capability stays partial/experimental. Warn once per session when that
-# path actually fits, so the easy syntax does not look reportable.
+# Default-path cbind() routes to the multivariate fitter (MV-4). G10 covered
+# t=2 unstructured at validation scale; the experimental label is retained.
+# Warn once per session so easy syntax does not look like interval-calibrated
+# or k>=3 / diagonal coverage.
 hs_warn_cbind_experimental_once <- function() {
   if (isTRUE(hs_session_flags$cbind_experimental)) {
     return(invisible(FALSE))
   }
   hs_session_flags$cbind_experimental <- TRUE
   warning(
-    "This cbind() model fitted, but it is experimental (partial).\n",
-    "Do not report these numbers from hsquared alone.",
+    "This cbind() model fitted; multivariate is covered at validation scale (experimental).\n",
+    "Report point estimates for t=2 unstructured G0/R0 only; intervals are not coverage-calibrated.",
     call. = FALSE
   )
   invisible(TRUE)

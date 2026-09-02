@@ -252,7 +252,7 @@ hs_formula_status_fitting <- function() {
     "fitted (opt-in single-step bundle construction)",
     "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
-    "fitted (default route, experimental multivariate)",
+    "fitted (default route, covered multivariate)",
     rep("not available", 6L)
   )
 }
@@ -371,7 +371,7 @@ hs_formula_status_behavior <- function() {
       "model requires engine = \"julia\", target = \"genomic\". The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
       "and SE accessors are unavailable. R status stays partial/experimental,",
-      "validation-scale; public_covered_count remains 5."
+      "validation-scale; public_covered_count remains 6."
     ),
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
@@ -380,7 +380,7 @@ hs_formula_status_behavior <- function() {
       "\"snp_blup\" remains opt-in. The coefficient-scale result is labelled",
       "`genomic_variance_ratio`; interval and SE accessors are unavailable. R",
       "status stays partial/experimental, validation-scale;",
-      "public_covered_count remains 5."
+      "public_covered_count remains 6."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental model; requires a",
@@ -408,12 +408,11 @@ hs_formula_status_behavior <- function() {
     ),
     rep(inert_marker_text, 3L),
     paste(
-      "Experimental multivariate Gaussian animal model; a `cbind()` response",
-      "with an `animal()` term routes to the multivariate fitter on the",
-      "DEFAULT path (no engine/target argument needed; the explicit engine =",
-      "\"julia\", target = \"multivariate\" spelling still works). Default",
-      "routing is not a covered claim: this capability stays partial.",
-      "Covered numeric claim (when flipped) is scoped to k = 2 unstructured G0/R0;",
+      "Covered at validation scale (G10) multivariate Gaussian animal model;",
+      "a `cbind()` response with an `animal()` term routes to the multivariate",
+      "fitter on the DEFAULT path (no engine/target argument needed; the explicit",
+      "engine = \"julia\", target = \"multivariate\" spelling still works).",
+      "Covered numeric claim is scoped to k = 2 unstructured G0/R0;",
       "k >= 3 traits stay parseable-and-fittable-but-experimental;",
       "genetic_structure = \"diagonal\" stays experimental at 0.6.",
       "Missing trait cells are allowed as `NA`. Under",

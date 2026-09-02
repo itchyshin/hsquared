@@ -13,11 +13,11 @@ bibentry(
   year = "2026",
   note = paste(
     "R package version",
-    if (exists("meta") && !is.null(meta$Version)) meta$Version else "0.5.0",
+    if (exists("meta") && !is.null(meta$Version)) meta$Version else "0.6.0",
     paste0(
       "; Julia twin HSquared.jl. ",
       "A single twin DOI (D-23) will replace this note when both packages ",
-      "are tagged 0.5.0 and the Zenodo (or equivalent) deposit exists - ",
+      "are tagged 0.6.0 and the Zenodo (or equivalent) deposit exists - ",
       "no DOI is claimed here yet."
     )
   ),

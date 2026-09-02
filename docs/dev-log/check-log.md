@@ -7592,3 +7592,5 @@ release".
 - Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
   `git diff --check` clean; boundary grep over the edited articles and
   after-task report confirms the fixed-panel-smoke/no-R-threshold wording.
+
+- [2026-09-02 G10 R MV covered 0.6.0](check-log.d/2026-09-02-g10-r-mv-covered-060.md)
