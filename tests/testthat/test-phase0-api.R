@@ -347,7 +347,22 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "another independent same-estimand comparator",
+    "Twin C8 broader-DGP confirm is banked",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "14/16 pass",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "MV-5 remains authorization-gated",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "skip_if_not_installed",
     fixed = TRUE
   )
   expect_match(
