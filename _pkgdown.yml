@@ -15,8 +15,11 @@ home:
           and [Validation evidence](articles/validation-evidence.html)
           before reporting results.
 
-redirects:
-  - ["ROADMAP.html", "articles/current-limits.html"]
+# Do not add a ROADMAP.html redirect. The pkgdown workflow hides
+# AGENTS.md / CLAUDE.md / ROADMAP.md, then verifies those HTML pages
+# are absent from the site, search.json, and sitemap.xml. A redirect
+# recreates ROADMAP.html and fails that gate (2026-09-02 main red
+# after #141). Send readers to articles/current-limits.html instead.
 
 template:
   bootstrap: 5
