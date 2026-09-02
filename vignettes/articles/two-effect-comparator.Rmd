@@ -12,6 +12,9 @@ estimates next to a `sommer::mmer` same-estimand cross-check. It is companion re
 [Validation evidence](validation-evidence.html), which explains what "covered" means in the
 `hsquared` validation ladder.
 
+<p class="hs-banner" role="note"><strong>Covered at validation scale · opt-in · dense · REML-only.</strong>
+The common-environment leg is covered; the independent maternal-genetic leg stays experimental. Intervals remain asymptotic / not coverage-calibrated.</p>
+
 ## Honesty notes
 
 Four points frame everything below.

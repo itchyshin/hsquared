@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>GWAS p-values: nominal · not genome-wide calibrated.</strong>
+Bonferroni on a Manhattan is a reference line, not a validated genome-wide threshold. A scoped permutation cutoff exists only for <code>method = "single", genome_wide = TRUE</code>.</p>
+
 This article is a status page for marker scans, QTL, GWAS, and eQTL in
 `hsquared`.
 

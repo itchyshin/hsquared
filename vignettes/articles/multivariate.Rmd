@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>Experimental · validation-scale · dense · REML-only.</strong>
+The experimental label is retained. Intervals are asymptotic and not coverage-calibrated. Whether this <code>cbind()</code> route is covered or partial is on <a href="current-limits.html">Can I fit and report this?</a> — this banner does not flip it.</p>
+
 Use the multivariate path when the same animals have two or more quantitative
 traits and the question is about genetic covariance: which traits share
 additive-genetic variation, what are the genetic correlations, and what are the
