@@ -5,7 +5,7 @@
 \alias{hsquared-package}
 \title{hsquared: R Interface for Julia-Backed Quantitative-Genetic Models}
 \description{
-The hsquared package is the planned R-facing interface for heritability,
+The hsquared package is the R-facing interface for heritability,
 breeding-value, G-matrix, and inheritance-structured quantitative-genetic
 models backed by the HSquared.jl Julia engine.
 }
@@ -30,7 +30,7 @@ routes; uncertainty intervals are experimental and not coverage-calibrated.
 
 What you may report is listed on
 \href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}
-— not in \code{\link[=validation_status]{validation_status()}}. That article lists every covered route
+-- not in \code{\link[=validation_status]{validation_status()}}. That article lists every covered route
 and its reporting scope. \code{validation_status()} is a developer evidence
 table of validation atoms; it is not the user-facing list. The
 \href{https://itchyshin.github.io/hsquared/articles/model-status.html}{model status}

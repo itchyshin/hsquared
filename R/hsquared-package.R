@@ -1,6 +1,6 @@
 #' hsquared: R Interface for Julia-Backed Quantitative-Genetic Models
 #'
-#' The hsquared package is the planned R-facing interface for heritability,
+#' The hsquared package is the R-facing interface for heritability,
 #' breeding-value, G-matrix, and inheritance-structured quantitative-genetic
 #' models backed by the HSquared.jl Julia engine.
 #'
