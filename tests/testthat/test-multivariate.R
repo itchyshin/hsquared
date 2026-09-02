@@ -410,7 +410,7 @@ test_that("non-converged multivariate fits do not expose logLik or AIC", {
 })
 
 test_that("JuliaCall sends multivariate response NA cells as NaN", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
@@ -443,7 +443,7 @@ test_that("JuliaCall sends multivariate response NA cells as NaN", {
 })
 
 test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live multivariate bridge smoke."

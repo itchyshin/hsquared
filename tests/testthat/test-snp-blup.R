@@ -144,7 +144,7 @@ test_that("snp_blup normalizer reports descriptive marker variance shares", {
 })
 
 test_that("hsquared fits opt-in SNP-BLUP marker effects from a marker matrix", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live SNP-BLUP."
@@ -209,7 +209,7 @@ test_that("hsquared fits opt-in SNP-BLUP marker effects from a marker matrix", {
 })
 
 test_that("hsquared fits REML-estimated SNP-BLUP when variances are unsupplied", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live SNP-BLUP."
@@ -291,7 +291,7 @@ test_that("GBLUP and REML SNP-BLUP give equivalent GEBVs on the same markers", {
   # effects (SNP-BLUP), each REML-estimating its own variances, yields the same
   # per-individual genomic breeding values. The small residual is the ridge the
   # genomic path applies to G (genomic_relationship_inverse), not a discrepancy.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live SNP-BLUP."

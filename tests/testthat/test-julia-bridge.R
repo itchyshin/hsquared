@@ -44,7 +44,7 @@ test_that("Julia result normalizer accepts optional PEV and reliability fields",
 })
 
 test_that("hs_data components marshal to Julia HSData [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live HSData marshalling."
@@ -120,7 +120,7 @@ test_that("hs_data components marshal to Julia HSData [live]", {
 })
 
 test_that("experimental Julia bridge smoke fits the tiny payload", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
@@ -168,7 +168,7 @@ test_that("experimental Julia bridge smoke fits the tiny payload", {
 })
 
 test_that("hsquared can use the opt-in experimental Julia engine", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
@@ -247,7 +247,7 @@ test_that("metafounder target is supplied-variance and formula-gated", {
 })
 
 test_that("metafounder supplied-variance bridge matches Gamma-zero Henderson path [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live metafounder bridge validation."
@@ -560,7 +560,7 @@ test_that("Julia Henderson MME normalizer accepts optional PEV and reliability f
 })
 
 test_that("experimental Julia Henderson MME bridge matches validation fixture", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live Henderson MME bridge validation."
@@ -626,7 +626,7 @@ test_that("experimental Julia Henderson MME bridge matches validation fixture", 
 })
 
 test_that("hsquared can use the opt-in supplied-variance Henderson MME bridge", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live Henderson MME bridge validation."
@@ -656,7 +656,7 @@ test_that("hsquared can use the opt-in supplied-variance Henderson MME bridge", 
 })
 
 test_that("hsquared can use the opt-in experimental sparse REML estimator bridge", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live sparse REML estimator bridge validation."
@@ -700,7 +700,7 @@ test_that("hsquared can use the opt-in experimental sparse REML estimator bridge
 })
 
 test_that("hsquared can use the opt-in experimental AI-REML estimator bridge", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live AI-REML estimator bridge validation."
@@ -745,7 +745,7 @@ test_that("hsquared can use the opt-in experimental AI-REML estimator bridge", {
 })
 
 test_that("em_warmup forwards through the bridge and is optimum-invariant", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live em_warmup bridge validation."
@@ -787,7 +787,7 @@ test_that("em_warmup forwards through the bridge and is optimum-invariant", {
 })
 
 test_that("the default engine fits the v0.1 contract via ai_reml", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the default-fit path."

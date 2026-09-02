@@ -97,7 +97,7 @@ test_that("model_spec() errors clearly on a single_step formula", {
 })
 
 test_that("hsquared fits the opt-in single-step model", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live single-step."
