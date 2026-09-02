@@ -362,7 +362,22 @@ test_that("validation_status separates evidence from planned validation", {
   )
   expect_match(
     multivariate_row$claim_boundary,
-    "skip_if_not_installed",
+    "hs_require_suggests",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "scoped to k = 2 unstructured",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "k >= 3 stays parseable-and-fittable-but-experimental",
+    fixed = TRUE
+  )
+  expect_match(
+    multivariate_row$claim_boundary,
+    "\"diagonal\" stays experimental",
     fixed = TRUE
   )
   expect_match(

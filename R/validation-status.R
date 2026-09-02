@@ -400,7 +400,10 @@ hs_validation_status_boundaries <- function() {
       "R-lane MV-5 remains authorization-gated (driver committed, not run).",
       "The engine blupf90+ same-estimand REML comparator is discharged;",
       "R flip still owes A26 parity, Darwin, Rose, and G10. MV-1 sommer",
-      "opens with skip_if_not_installed(\"sommer\") (silent-skip risk).",
+      "requires Suggests on NOT_CRAN (hs_require_suggests; CRAN still skips).",
+      "Covered numeric claim (when flipped) is scoped to k = 2 unstructured;",
+      "k >= 3 stays parseable-and-fittable-but-experimental; genetic_structure =",
+      "\"diagonal\" stays experimental at 0.6.",
       "The Julia engine currently inverts Ainv internally, so deep-inbreeding or",
       "high-condition-number pedigrees remain a twin-side hardening item."
     ),

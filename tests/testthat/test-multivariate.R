@@ -642,8 +642,10 @@ test_that("R consumes the shared Phase 4 multivariate parity fixture", {
 
 test_that("optional sommer comparator matches the Phase 4 diagonal-residual target", {
   testthat::skip_on_cran()
-  testthat::skip_if_not_installed("sommer")
-  testthat::skip_if_not_installed("nadiv")
+  # A26b: on NOT_CRAN / maintainer CI, missing Suggests must fail loudly — not
+  # skip_if_not_installed silently. CRAN still skips via skip_on_cran above.
+  hs_require_suggests("sommer", gate = "MV-1b")
+  hs_require_suggests("nadiv", gate = "MV-1b")
 
   ped <- hs_read_phase4_fixture("pedigree.csv")
   pheno <- hs_read_phase4_fixture("phenotypes.csv")
@@ -731,8 +733,10 @@ test_that("optional sommer comparator matches the Phase 4 FULL-UNSTRUCTURED targ
   # the diagonal check cannot -- promoting the reproducible comparator study
   # (data-raw/multivariate-comparator-study.R) into a CI-gated same-estimand check.
   testthat::skip_on_cran()
-  testthat::skip_if_not_installed("sommer")
-  testthat::skip_if_not_installed("nadiv")
+  # A26b: headline MV-1 comparator — fail loudly when NOT_CRAN and sommer/nadiv
+  # missing; never silent-skip on the maintainer path.
+  hs_require_suggests("sommer", gate = "MV-1")
+  hs_require_suggests("nadiv", gate = "MV-1")
 
   ped <- hs_read_phase4_fixture("pedigree.csv")
   pheno <- hs_read_phase4_fixture("phenotypes.csv")
