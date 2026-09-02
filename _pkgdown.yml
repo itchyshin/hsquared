@@ -106,30 +106,55 @@ reference:
       - animal
       - genomic_markers
       - qg_effect_markers
-  - title: Extractor contract
-    desc: Extractors for fitted `hsquared_fit` objects. The default `hsquared()` call fits the v0.1 Gaussian animal model; repeatability, two-effect, genomic, SNP-BLUP, multivariate, and random-regression outputs come from opt-in experimental targets.
+  - title: Core extractors
+    desc: >
+      What you read off a fitted univariate Gaussian animal model — the covered
+      default route. Read `fit_diagnostics()` (especially `at_boundary`) before
+      reporting anything else.
     contents:
       - variance_components
       - heritability
+      - breeding_values
+      - prediction_error_variance
+      - reliability
+      - fixef
+      - ranef
+      - fit_diagnostics
+      - response_scale_methods
+  - title: Uncertainty (experimental)
+    desc: >
+      Asymptotic/delta-method standard errors, intervals, and tests, surfaced when
+      the engine provides them. **Not coverage-calibrated** — no route carries an
+      interval-reporting permission. `confint()` and `vcov()` are deliberately
+      absent rather than shipped uncalibrated.
+    contents:
       - heritability_interval
       - variance_component_standard_errors
-      - multivariate_extractors
       - covariance_standard_errors
       - covariance_structure_lrt
-      - gamma_matrix
-      - metafounder_groups
-      - metafounder_effects
-      - factor_g_extractors
-      - g_matrix_geometry
-      - breeding_values
-      - repeatability
       - repeatability_interval
+      - common_env_proportion_interval
+      - inference_blocks
+  - title: Repeatability and independent extra effects
+    desc: >
+      Outputs of the opt-in `repeatability`, `two_effect`, and `multi_effect`
+      targets. The common-environment and arbitrary-N legs are covered; the
+      repeatability and maternal-genetic legs are experimental. Non-animal blocks
+      report variance-explained proportions, not heritabilities.
+    contents:
+      - repeatability
       - permanent_effects
       - common_env_effects
       - maternal_effects
       - common_env_proportion
       - maternal_proportion
-      - common_env_proportion_interval
+  - title: Direct–maternal and random regression
+    desc: >
+      Outputs of the opt-in `direct_maternal` and `random_regression` targets, both
+      covered at validation scale (k = 2 only for random regression). Direct h² is
+      not total heritability; `heritability()` returns the labelled Willham triple
+      for direct–maternal fits.
+    contents:
       - direct_maternal_extractors
       - direct_heritability
       - total_heritability
@@ -137,19 +162,31 @@ reference:
       - partner_variance
       - direct_maternal_covariance
       - random_regression_extractors
-      - prediction_error_variance
-      - reliability
-      - fit_diagnostics
-      - plot.hsquared_fit
-      - inference_blocks
+  - title: Multivariate and G matrices
+    desc: >
+      Outputs of the opt-in `multivariate`, `metafounder`, and factor-analytic
+      targets. Experimental: REML-only, animal-model-only, dense/validation-scale.
+    contents:
+      - multivariate_extractors
+      - gamma_matrix
+      - metafounder_groups
+      - metafounder_effects
+      - factor_g_extractors
+      - g_matrix_geometry
+  - title: Genomic and marker outputs
+    desc: >
+      Outputs of the opt-in genomic, single-step, and SNP-BLUP targets. Experimental;
+      QTL/eQTL scan outputs are reserved names, not fitted results.
+    contents:
       - marker_extractors
       - gwas
-      - fixef
-      - ranef
-      - response_scale_methods
   - title: Visualization
+    desc: >
+      Figures carry a machine-readable `hsquared_meta` honest-status attribute.
+      Uncertainty displays are not calibrated-precision statements.
     contents:
       - hsquared-autoplot
+      - plot.hsquared_fit
       - theme_hsquared
       - hs_recovery_forest
   - title: Package

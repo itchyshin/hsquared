@@ -11,7 +11,118 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-**Stub — full function map lands in A17 P1.**
+One page for "which function do I call now?". Every example here either runs
+without Julia or is marked as needing the engine.
 
-Start with [Getting started with hsquared](hsquared.html), then
-[Can I fit and report this?](current-limits.html) and `?validation_status`.
+## The five steps
+
+| Step | You are asking | Call |
+|---|---|---|
+| **1. Specify** | Is my data in the right shape? Is my model expressible? | `hs_data()`, `data_status()`, `animal()`, `formula_status()` |
+| **2. Preview** | What will the engine actually be sent? | `hs_control(engine = "validate")`, `model_spec()` |
+| **3. Fit** | Estimate the variance components | `hsquared()` |
+| **4. Check** | Did it converge, and may I report it? | `fit_diagnostics()`, `summary()`, `validation_status()`, `backend_info()` |
+| **5. Extract** | Get the quantities for the paper | `heritability()`, `variance_components()`, `breeding_values()`, `fixef()`, `ranef()` |
+
+Steps 1, 2, and 4's status calls need R only. Step 3 and the extractors need a
+fitted object, and therefore Julia.
+
+## 1. Specify
+
+```{r specify, eval = FALSE}
+# bundle phenotypes, pedigree, and any genomic/expression/environment metadata
+bundle <- hs_data(phenotypes = dat, pedigree = ped)
+summary(bundle)
+data_status(bundle)   # pedigree coverage, founders, parent links, marker map
+
+# what does the formula grammar parse, reserve, or refuse?
+formula_status()
+```
+
+`animal(1 | id, pedigree = ped)` is the additive genetic term. With
+`data = bundle` you can write `animal(1 | id)` and the bundle pedigree is used.
+
+## 2. Preview — no Julia needed
+
+```{r preview, eval = FALSE}
+spec <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  control = hs_control(engine = "validate")
+)
+
+model_spec(spec)   # fixed-effect design, sparse animal Z, pedigree ordering, engine target
+```
+
+This is the cheapest way to find out that a term is a syntax reservation rather
+than an implemented model: it tells you before you go looking for Julia.
+
+## 3. Fit — needs the engine
+
+```{r fit, eval = FALSE}
+fit <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE
+)
+```
+
+Opt-in experimental targets go through `hs_control(engine = "julia")` with an
+`engine_control` target — see
+[Can I fit and report this?](current-limits.html) for which ones you may report.
+
+## 4. Check
+
+```{r check, eval = FALSE}
+summary(fit)
+fit_diagnostics(fit)   # convergence, iterations, at_boundary flag
+backend_info()         # which engine answered, and its version
+validation_status()    # what the evidence ledger says about your route
+```
+
+Read `at_boundary` before anything else. A variance pinned at zero is a real
+result about your data, not a number to report as an estimate.
+
+## 5. Extract
+
+| You want | Call |
+|---|---|
+| Heritability | `heritability(fit)` |
+| Variance components | `variance_components(fit)` |
+| Breeding values (EBVs/BLUPs) | `breeding_values(fit)` |
+| Accuracy of those EBVs | `prediction_error_variance(fit)`, `reliability(fit)` |
+| Fixed effects | `fixef(fit)`, `coef(fit)` |
+| Random effects | `ranef(fit)` |
+| Fitted values and residuals | `fitted(fit)`, `residuals(fit)` |
+| Model comparison | `logLik(fit)`, `AIC(fit)`, `nobs(fit)` |
+| A plot | `plot(fit)`, `autoplot(fit)` |
+
+Route-specific extractors exist for the opt-in targets — `repeatability()`,
+`common_env_effects()`, `maternal_effects()`, `genetic_covariance()`,
+`marker_effects()`, `g_matrix_geometry()` — and inherit their route's status.
+
+## Uncertainty: read this before using it
+
+```{r intervals, eval = FALSE}
+heritability_interval(fit)                    # experimental
+variance_component_standard_errors(fit)       # experimental
+```
+
+These are asymptotic/delta-method quantities, surfaced when the engine provides
+them and labelled experimental. **They are not coverage-calibrated.** No route in
+this package currently carries an interval-reporting permission. `confint()` and
+`vcov()` are deliberately absent rather than shipped uncalibrated.
+
+## Reserved names that do not fit yet
+
+`qtl_table()`, `gwas_table()`, `eqtl_table()`, `lod_scores()`, and
+`marker_variance_explained()` are reserved output names for future marker/QTL
+results. They exist so the vocabulary is stable, not because the models fit.
+`marker_effects()` is the exception — it is live for the opt-in SNP-BLUP path.
+
+## Where to read next
+
+- [Getting started with hsquared](../hsquared.html) — the guided introduction.
+- [Can I fit and report this?](current-limits.html) — reporting permissions per route.
+- [Fitting models](fitting-models.html) — the longer fitting guide.

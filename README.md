@@ -1,70 +1,51 @@
 # hsquared
 
-`hsquared` is the R interface for an open, Julia-backed
-quantitative-genetic modelling system. The R package owns the applied-user
-surface: formula syntax, data validation, summaries, extractors, examples, and
-the bridge to the `HSquared.jl` engine.
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
-Version 0.1 fits the univariate Gaussian animal model
-`y ~ fixed + animal(1 | id, pedigree = ped)` by REML through the `HSquared.jl`
-engine. The default `hsquared()` call fits the model and returns heritability,
-variance components, breeding values (EBVs/BLUPs), fixed effects, fitted values,
-residuals, and diagnostics. Fitting requires a local Julia, the `JuliaCall`
-package, and an `HSquared.jl` checkout; without them the default call errors with
-install guidance, and `control = hs_control(engine = "validate")` validates the
-contract without fitting. Use `model_spec()` to preview the parsed fixed-effect
-design, sparse animal-effect design, normalized pedigree ordering, and Julia
-targets without fitting.
+`hsquared` is the R interface for an open, Julia-backed quantitative-genetic
+modelling system. The R package owns the applied-user surface — formula syntax,
+data validation, summaries, extractors, examples — and the
+[`HSquared.jl`](https://github.com/itchyshin/HSquared.jl) engine does the
+computation.
 
-The v0.1 fit is validated by known-truth recovery (a replicated DGP study in
-which the engine recovers the generating variance components near-unbiased), by
-the published gryphon REML estimate (Wilson et al. 2010, which the engine
-recovers within the maintainer-signed-off comparator band), and by agreement
-with the `sommer` package. These engine-recovery results are validated locally
-through the R-to-Julia bridge and require a local Julia plus an `HSquared.jl`
-checkout; public CI exercises the equivalent pure-R REML reference and
-skip-guards the live-engine tests (no Julia in CI). The fitted-object
-extractors — variance components, heritability, EBVs/BLUPs, PEV, reliability,
-accuracy, fixed effects, random effects, log-likelihood, AIC, prediction, fitted
-values, residuals, `summary()`, `coef()`, `nobs()`, and `fit_diagnostics()`
-(including an `at_boundary` flag) — operate on the fitted object. Experimental,
-asymptotic REML standard errors and confidence intervals are surfaced when a
-local engine provides them (clearly labelled experimental, not coverage-calibrated);
-validated SEs/CIs and `confint()`/`vcov()` remain out of v0.1 scope. The advanced
-`control = hs_control(engine = "julia")` path exposes
-explicit engine targets (supplied-variance Henderson MME, sparse REML). A
-lightweight `hs_data()` container now records phenotype, pedigree, genotype, expression,
-marker, annotation, and environment inputs for future integrated workflows,
-including optional expression-feature annotation diagnostics through
-`annotation_id` and environment-key diagnostics through `environment_id`.
-The package also provides readable formula vocabulary for genomic/QTL terms and
-standard quantitative-genetic extensions. Several now fit through an opt-in,
-experimental engine path (`engine = "julia"`, REML-only or supplied-variance,
-not the default). Four opt-in models are **covered at validation scale** — each
-passed a pre-declared 48-seed recovery gate plus a same-estimand REML comparator:
-common-environment two-effect, arbitrary-N multi-effect, random regression k = 2,
-and the direct–maternal correlated 2×2 G model. Further opt-in models mirror a
-`partial` validation gate: permanent environment, the maternal-genetic independent
-two-effect leg, genomic (GREML or SNP-BLUP), single-step effects, and the
-multivariate Gaussian animal model via a `cbind()` response. All opt-in models
-are experimental and not production. The rest — paternal effects, dominance, epistasis, cytoplasmic
-inheritance, imprinting, custom relationship or precision matrices, and
-marker/QTL scans — are syntax reservations only and currently abort as planned,
-not implemented.
-Use `formula_status()` to inspect the parsed, reserved, and planned formula
-grammar from R. Output extractor names such as `qtl_table()`, `gwas_table()`,
-`eqtl_table()`, `marker_variance_explained()`, and `lod_scores()` are reserved
-for future fitted marker/QTL/eQTL results; `marker_effects()` is live for the
-opt-in SNP-BLUP path.
+> [!WARNING]
+> **Experimental package.** The version number tracks *covered* capability, not
+> surface area; the first CRAN release targets 0.5.0, not 1.0. **Fitting requires
+> a local Julia and an `HSquared.jl` checkout** — R alone parses and validates a
+> model but does not fit it. Report point estimates only for rows marked
+> `covered` by `validation_status()`. Standard errors and intervals are
+> experimental and **not coverage-calibrated**. Read
+> [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
+> before reporting results.
 
-The intended two-package shape is:
+## Quick start — no Julia required
 
-```text
-hsquared       R package: friendly modelling interface for applied users
-HSquared.jl    Julia package: sparse quantitative-genetic engine
+You can check that your data and model are expressible before installing an
+engine:
+
+```r
+library(hsquared)
+
+spec <- hsquared(
+  y ~ sex + age + animal(1 | id, pedigree = ped),
+  data = dat,
+  control = hs_control(engine = "validate")
+)
+
+model_spec(spec)
 ```
 
-The v0.1 fit is the univariate Gaussian animal model:
+`model_spec()` shows the parsed fixed-effect design, the sparse animal-effect
+design, the normalized pedigree ordering, and the engine target that *would* be
+called — without fitting anything.
+
+## Fitting — requires the Julia engine
+
+With a local Julia, `JuliaCall`, and an `HSquared.jl` checkout (see
+[Engine setup](#engine-setup)), the default call fits:
 
 ```r
 fit <- hsquared(
@@ -73,151 +54,67 @@ fit <- hsquared(
   family = gaussian(),
   REML = TRUE
 )
+
+heritability(fit)
+variance_components(fit)
+breeding_values(fit)
+fit_diagnostics(fit)
 ```
 
-This fits by default: the R side builds the `y`, `X`, sparse `Z`, and normalized
-pedigree payload, the `HSquared.jl` engine builds `Ainv`, estimates the variance
-components by REML, and returns an `hsquared_fit` object. A genomic GREML /
-SNP-BLUP effect, single-step, the multivariate Gaussian animal model, and
-non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no heritability)
-models also fit through the opt-in, experimental `engine = "julia"` path (not the
-default);
-factor-analytic models remain planned.
-For the multivariate Gaussian path, use:
+The R side builds `y`, `X`, sparse `Z`, and the normalized pedigree payload; the
+engine builds `Ainv`, estimates the variance components by average-information
+REML, and returns an `hsquared_fit` object. Without the engine, this call errors
+with install guidance rather than silently degrading.
 
-```r
-fit_mv <- hsquared(
-  cbind(weight, height) ~ sex + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "multivariate")
-  )
-)
+## What is covered, and what is not
 
-genetic_covariance(fit_mv)
-genetic_correlation(fit_mv)
-heritability(fit_mv)
-breeding_values(fit_mv)
-```
+`validation_status()` is the live source of truth; the
+[limits page](https://itchyshin.github.io/hsquared/articles/current-limits.html)
+is generated from it.
 
-This multivariate path is REML-only, animal-model-only, dense validation-scale,
-and `partial`: it returns G/R covariance and correlation matrices, per-trait
-h2, and cross-trait EBVs, but it is not yet an ASReml-style production
-multi-trait claim or a t>=2 known-truth recovery claim.
-For supplied-variance MME checks, use:
+**Covered** — pre-declared recovery gate passed *and* an external same-estimand
+comparator agrees. Point estimates are reportable within the stated scope:
 
-```r
-fit_mme <- hsquared(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian(),
-  REML = FALSE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(
-      target = "henderson_mme",
-      variance_components = c(sigma_a2 = 1.2, sigma_e2 = 0.8)
-    )
-  )
-)
-```
+- the **univariate Gaussian animal model** on the default call
+  (`y ~ fixed + animal(1 | id, pedigree = ped)`, REML);
+- **common-environment two-effect** and its **arbitrary-N** independent-effect
+  generalization;
+- **random regression, k = 2** (k = 2 only);
+- the **direct–maternal correlated 2×2 G** model, whose `heritability()` returns
+  the labelled Willham triple rather than a bare scalar.
 
-This is a validation bridge target with supplied variances, not an optimizer.
-Current validation atoms include tiny deterministic `Ainv` checks, an optional
-Mrode9/nadiv pedigree-Ainv comparator, a supplied-variance Henderson MME
-fixture that compares R reference fixed effects, EBVs, fitted values, h2, and
-optional dense validation-path PEV/reliability with Julia when available, and a
-Mrode-style supplied-variance output fixture that pins Ainv, fixed effects,
-EBVs, fitted values, PEV, reliability, h2, ML log-likelihood, and dense/sparse
-REML log-likelihood. Optional local tests also compare Julia dense REML and
-sparse REML likelihood evaluators on a tiny supplied-variance three-founder
-fixture. All of these are tiny supplied-variance or deterministic validation
-fixtures — they check the engine arithmetic, not estimation, and are not
-reachable from the default call. Use `validation_status()` to inspect validation
-evidence and planned comparator lanes from R.
+The last two are recorded in `docs/design/capability-status.md` but do not yet
+have their own `validation_status()` row; the limits page says so explicitly and
+states their scope.
 
-```r
-spec <- model_spec(
-  y ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian()
-)
+Evidence for the default path: known-truth DGP recovery (near-unbiased variance
+components over a replicated study), the published gryphon REML estimate
+(Wilson et al. 2010) within the maintainer-signed-off comparator band, and
+agreement with `sommer`. Engine-recovery results are validated locally through
+the R-to-Julia bridge; public CI exercises the equivalent pure-R REML reference
+and skip-guards the live-engine tests, since there is no Julia in CI.
 
-summary(spec)
-```
+**Opt-in and experimental** (`hs_control(engine = "julia")`, not the default) —
+the code runs and is bridge-verified, but the evidence chain has a named hole.
+Exploratory use, or report beside your own comparator: repeatability / permanent
+environment, the maternal-genetic two-effect leg, genomic (GREML or SNP-BLUP),
+single-step effects, and the multivariate Gaussian animal model via a `cbind()`
+response.
 
-For integrated workflows, the same parser can read phenotypes and pedigree
-from an `hs_data()` bundle:
+**Reserved syntax only** — parses, then aborts as planned, not implemented:
+paternal effects, dominance, epistasis, cytoplasmic inheritance, imprinting,
+custom relationship or precision matrices, and marker/QTL scans. Use
+`formula_status()` to see the parsed, reserved, and planned grammar.
+Output names such as `qtl_table()`, `gwas_table()`, `eqtl_table()`,
+`marker_variance_explained()`, and `lod_scores()` are reserved for future fitted
+marker/QTL/eQTL results; `marker_effects()` is live for the opt-in SNP-BLUP path.
 
-```r
-bundle <- hs_data(phenotypes = dat, pedigree = ped)
-summary(bundle)
-data_status(bundle)
+### Uncertainty
 
-spec <- model_spec(
-  y ~ sex + age + animal(1 | id),
-  data = bundle
-)
-```
-
-Marker maps can also be checked in the same container:
-
-```r
-bundle <- hs_data(
-  phenotypes = dat,
-  pedigree = ped,
-  genotypes = geno,
-  markers = data.frame(
-    marker = c("m1", "m2"),
-    chr = c("1", "1"),
-    pos = c(10, 20)
-  )
-)
-```
-
-Expression feature annotations and environment metadata can also be checked
-without fitting eQTL, omics, or environmental models:
-
-```r
-bundle <- hs_data(
-  phenotypes = dat,
-  expression = expr,
-  annotation = genes,
-  annotation_id = "gene_id"
-)
-```
-
-```r
-bundle <- hs_data(
-  phenotypes = dat,
-  pedigree = ped,
-  environment = env,
-  environment_id = "site"
-)
-```
-
-The expression-feature, genotype-column, marker-map, annotation-feature, and
-environment-key checks are metadata validation only. Genomic, QTL/eQTL, omics, and
-environment-effect models remain planned.
-`summary(bundle)` and `data_status(bundle)` report pedigree coverage, founder
-and parent-link counts, marker-map size, genotype marker-column count,
-missing genotype value counts, unnamed or duplicate genotype marker columns,
-chromosome count, coordinate range, whether the genotype-marker alignment was
-checked, expression row and feature counts, unnamed or duplicate expression
-features, expression-feature annotation coverage when `annotation_id` is
-supplied, and environment metadata coverage when `environment_id` is supplied.
-When both `genotypes` and `markers` are supplied, genotype marker column names
-must match marker-map IDs exactly.
-The animal-model parser uses the bundle pedigree by default, so
-`animal(1 | id)` is equivalent to spelling `animal(1 | id, pedigree = pedigree)`
-for `data = bundle`.
-
-The interface rule is deliberately simple: easy, easy, easy. Applied users are
-gold; the package should make the common quantitative-genetic model feel
-obvious before it exposes specialist machinery.
+Experimental asymptotic REML standard errors and confidence intervals are
+surfaced when a local engine provides them, clearly labelled experimental and not
+coverage-calibrated. Validated SEs/CIs and `confint()`/`vcov()` are deliberately
+out of scope rather than shipped uncalibrated.
 
 ## Installation
 
@@ -226,18 +123,14 @@ obvious before it exposes specialist machinery.
 pak::pak("itchyshin/hsquared")
 ```
 
-Fitting also needs a local [Julia](https://julialang.org/), the
+That installs the R package only. Fitting additionally needs a local
+[Julia](https://julialang.org/), the
 [`JuliaCall`](https://cran.r-project.org/package=JuliaCall) R package, and a
-local [`HSquared.jl`](https://github.com/itchyshin/HSquared.jl) checkout (the
-engine that performs the fit). Without them, `hsquared()` still parses and
-validates the model — `control = hs_control(engine = "validate")` — but the
-default fit call errors with install guidance.
+local `HSquared.jl` checkout.
 
 ### Engine setup
 
-`HSquared.jl` is a from-source Julia checkout, not a package-managed
-dependency: `pak::pak("itchyshin/hsquared")` installs the R package only. To
-reach a working fit:
+`HSquared.jl` is a from-source Julia checkout, not a package-managed dependency:
 
 1. Install [Julia](https://julialang.org/downloads/) and the bridge R package:
 
@@ -245,7 +138,7 @@ reach a working fit:
    install.packages("JuliaCall")
    ```
 
-2. Clone the engine to a local directory:
+2. Clone the engine:
 
    ```sh
    git clone https://github.com/itchyshin/HSquared.jl
@@ -267,24 +160,55 @@ reach a working fit:
    )
    ```
 
-Until the engine is registered, `control = hs_control(engine = "validate")`
+Until the engine is available, `control = hs_control(engine = "validate")`
 parses and validates the model without fitting.
 
-## Development
+## Data bundles
 
-Run the local checks with:
+`hs_data()` records phenotype, pedigree, genotype, expression, marker,
+annotation, and environment inputs for integrated workflows:
+
+```r
+bundle <- hs_data(phenotypes = dat, pedigree = ped)
+summary(bundle)
+data_status(bundle)
+
+spec <- model_spec(y ~ sex + age + animal(1 | id), data = bundle)
+```
+
+The animal-model parser uses the bundle pedigree by default, so `animal(1 | id)`
+is equivalent to spelling `animal(1 | id, pedigree = pedigree)` when
+`data = bundle`.
+
+`summary(bundle)` and `data_status(bundle)` report pedigree coverage, founder and
+parent-link counts, marker-map size and coordinate range, genotype marker-column
+counts and missing values, expression row/feature counts and annotation coverage,
+and environment-key coverage. When both `genotypes` and `markers` are supplied,
+genotype marker column names must match marker-map IDs exactly.
+
+These are **metadata validation only**. Genomic, QTL/eQTL, omics, and
+environment-effect models are separate routes with their own status — see the
+limits page.
+
+## Documentation
+
+| Page | Question it answers |
+|---|---|
+| [Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html) | How do I fit my first model? |
+| [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html) | May I put this number in a paper? |
+| [Function map](https://itchyshin.github.io/hsquared/articles/function-map-cheatsheet.html) | Which function do I call now? |
+| [Validation evidence](https://itchyshin.github.io/hsquared/articles/validation-evidence.html) | What is the evidence behind each row? |
+
+The interface rule is deliberately simple: easy, easy, easy. Applied users are
+gold; the package should make the common quantitative-genetic model feel obvious
+before it exposes specialist machinery.
+
+## Development
 
 ```r
 devtools::check()
 ```
 
-The project operating system lives in:
-
-- `AGENTS.md`
-- `ROADMAP.md`
-- `docs/design/`
-- `docs/dev-log/`
-- `.agents/skills/`
-
-Repository memory is authoritative. Chat memory only points agents toward the
-right files.
+The project operating system lives in `AGENTS.md`, `ROADMAP.md`,
+`docs/design/`, `docs/dev-log/`, and `.agents/skills/`. Repository state is
+authoritative; chat memory only points agents toward the right files.
