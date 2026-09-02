@@ -62,7 +62,9 @@ made concrete for this lane:
 7. **Interval coverage** pre-registered; and for the 1.0 gate, calibrated by a
    coverage simulation — not only point-estimate bias/MCSE.
 8. **R↔engine element-wise parity + Rose clean audit + twin-discipline**
-   (engine-covered ≠ R-public-covered).
+   (engine-covered ≠ R-public-covered). Parity is verified at a recorded
+   commit with pre-declared tolerances; it is not implied by a Julia-free
+   R-CMD-check.
 9. **Definition of Done** (`AGENTS.md`): local checks pass; `check-log`,
    after-task report, and coordination board updated.
 
