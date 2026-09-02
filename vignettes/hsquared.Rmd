@@ -11,6 +11,14 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
+> **Experimental 0.5.0 — not production / not CRAN.** Version tracks *covered*
+> capability, not surface area. `public_covered_count` stays **5**. Fitting
+> needs a local Julia and an `HSquared.jl` checkout; the Julia General
+> registration ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
+> is still pending AutoMerge — do not assume install-by-name works. Read
+> [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
+> before putting a number in a paper.
+
 `hsquared` is the R interface for a Julia-backed animal model. The first
 working path is one Gaussian trait, one `animal()` term, REML. This page uses
 a four-animal pedigree so the first block runs without Julia. **n = 4 is a

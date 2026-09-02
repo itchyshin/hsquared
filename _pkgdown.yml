@@ -9,9 +9,12 @@ home:
       experimental:
         title: Status
         text: >-
-          **Experimental — use at your own risk.** Version tracks covered
-          capability, not surface area. Interval coverage is not certified.
-          Read [Can I fit and report this?](articles/current-limits.html)
+          **Experimental 0.5.0 — not production / not CRAN.** Version tracks
+          covered capability, not surface area. `public_covered_count` stays
+          **5**. Interval coverage is not certified. Julia General registration
+          ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
+          is pending AutoMerge. Read
+          [Can I fit and report this?](articles/current-limits.html)
           and [Validation evidence](articles/validation-evidence.html)
           before reporting results.
 
