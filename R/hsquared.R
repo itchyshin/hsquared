@@ -1,54 +1,33 @@
 #' Fit a quantitative-genetic model
 #'
-#' `hsquared()` is the R entry point for heritability, breeding-value,
-#' G-matrix, and inheritance-structured mixed models. v0.1 fits the univariate
-#' Gaussian animal model `y ~ fixed + animal(1 | id, pedigree = ped)` by REML
-#' through the `HSquared.jl` engine. The default `control` fits when a local
-#' Julia and `HSquared.jl` are available and otherwise errors with install
-#' guidance; `hs_control(engine = "validate")` validates the contract without
-#' fitting, then returns the validated model spec invisibly. A narrow Gaussian
-#' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model is
-#' available only through the explicit experimental Julia `target = "genomic"`.
-#' Marker construction uses sample allele frequencies, unweighted VanRaden
-#' method 1, and ridge `0.01`.
-#' `heritability()` labels its coefficient-scale result
-#' `genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`: the genomic
-#' variance-component ratio on the declared relationship scale. It is not
-#' generally the fraction of average marginal phenotypic variance and is not
-#' pedigree-, founder-base-, population-, or universal narrow-sense
-#' heritability. Genomic ratio intervals and standard errors are
-#' unavailable. Repeatability, two-effect, marker-effect, multivariate, and
-#' non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no
-#' heritability) models are opt-in experimental paths; factor-analytic models
-#' remain planned. The non-Gaussian marginal is selected with
-#' `engine_control = list(target = "nongaussian", marginal = "laplace")` (default)
-#' or `"variational"` (the variational/ELBO marginal; aliases `"la"`/`"va"`).
+#' The default path fits a univariate Gaussian animal model by REML:
+#' `y ~ sex + age + animal(1 | id, pedigree = ped)`. Fitting needs a local
+#' Julia and HSquared.jl. Preview the same call with
+#' `control = hs_control(engine = "validate")`.
 #'
-#' @param formula A model formula. The first planned v0.1 syntax is
-#'   `y ~ fixed + animal(1 | id, pedigree = ped)`, with
-#'   `animal(1 | id)` also accepted when `data` is an [hs_data()] object with a
-#'   pedigree component.
-#' @param data A data frame containing model variables, or an [hs_data()]
-#'   object whose `phenotypes` component contains the model variables. When
-#'   `data` is an `hs_data` object, formula arguments such as
-#'   `pedigree = pedigree` can refer to named components in the bundle, and
-#'   `animal(1 | id)` uses the bundle pedigree by default.
-#' @param family A response family. The v0.1 parser accepts only
-#'   `gaussian()`.
-#' @param REML Logical; whether to use REML estimation. The v0.1 fit path
-#'   supports REML only (the default, `TRUE`); `REML = FALSE` (ML) is not yet
-#'   implemented and is rejected with an error.
+#' What you may report is listed on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
+#' -- not in [validation_status()]. Other routes live in [formula_status()]
+#' and on that limits page.
+#'
+#' @param formula A model formula. The default path is
+#'   `y ~ fixed + animal(1 | id, pedigree = ped)`. `animal(1 | id)` is also
+#'   accepted when `data` is an [hs_data()] object with a pedigree.
+#' @param data A data frame of model variables, or an [hs_data()] object
+#'   whose `phenotypes` component holds them. Formula arguments such as
+#'   `pedigree = pedigree` can name components of the bundle.
+#' @param family A response family. The default path accepts `gaussian()`.
+#'   Opt-in experimental paths accept `poisson()` and `binomial()`; see
+#'   [formula_status()].
+#' @param REML Logical; REML estimation. The default path supports REML only
+#'   (`TRUE`). `REML = FALSE` (ML) is rejected.
 #' @param control An object created by [hs_control()].
 #' @param ... Reserved for future arguments.
 #'
-#' @return A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model.
-#'   Explicit experimental genomic fits carry their relationship-scale
-#'   provenance; supplied `Ginv` construction remains unknown.
-#'   When the Julia engine is unavailable, an informative error. When
-#'   `engine = "validate"`, the validated model specification is returned
-#'   invisibly as a named list (after a confirming message), for programmatic
-#'   inspection -- for example `spec$bridge$target` and `spec$response`. This is
-#'   the internal spec list, not the classed object that [model_spec()] builds.
+#' @return A `"hsquared_fit"` object from a successful default-path fit.
+#'   Missing Julia produces an install-guidance error. When
+#'   `engine = "validate"`, the validated model spec is returned invisibly
+#'   as a named list (not the classed object from [model_spec()]).
 #' @export
 hsquared <- function(
   formula,
