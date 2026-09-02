@@ -109,7 +109,7 @@ hs_warn_if_unusable_fit <- function(object, what = "heritability") {
   warning(
     "This `hsquared_fit` object did not converge. The ",
     what,
-    " number is not an estimate — do not report it.",
+    " number is not an estimate; do not report it.",
     extra,
     " Inspect `fit_diagnostics(fit)` before reading any number.",
     call. = FALSE

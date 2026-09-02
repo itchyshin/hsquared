@@ -680,7 +680,7 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
 # the Julia-owned `HSquared.fit_repeatability_reml()` REML-only optimizer through
 # the bridge. The permanent-environment effect shares the animal incidence `Z`
 # (the engine carries an identity relationship for it), so the existing payload
-# is sufficient. Variance components σ²a and σ²pe are only identifiable with
+# is sufficient. Variance components sigma^2_a and sigma^2_pe are only identifiable with
 # repeated records per individual.
 hs_fit_julia_repeatability_payload <- function(
   payload,
@@ -1020,7 +1020,7 @@ hs_fit_julia_direct_maternal_payload <- function(
   # The generic payload from hs_build_bridge_payload will have TWO blocks for a
   # maternal_genetic formula: block1 = animal (pedigree), block2 = maternal
   # (pedigree). We reassemble them as a SINGLE correlated block here, mirroring
-  # the engine's payload-v2 §2 correlated-block schema:
+  # the engine's payload-v2 section 2 correlated-block schema:
   #   type="correlated", Z=Zd (block1), partner_incidence=Zm (block2), pedigree.
   blocks <- payload$random_effects
   if (
@@ -1050,9 +1050,9 @@ hs_fit_julia_direct_maternal_payload <- function(
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_method", payload$method)
 
-  # block1: animal pedigree block — Z = Zd (record->animal)
+  # block1: animal pedigree block -- Z = Zd (record->animal)
   b_animal <- blocks[[1L]]
-  # block2: maternal pedigree block — Z = Zm (record->dam)
+  # block2: maternal pedigree block -- Z = Zm (record->dam)
   b_maternal <- blocks[[2L]]
 
   # Zd: record->animal (direct effect incidence)
@@ -1185,7 +1185,7 @@ hs_normalize_direct_maternal_result <- function(
   # sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i) for a
   # non-inbred base (2*A[i,dam] = 2*(1/2) = 1, so the covariance contributes
   # coefficient 1 to phenotypic variance; Willham 1963, 1972).  sigma_dm is
-  # included because it is a legitimate part of Var(y) — dropping it would
+  # included because it is a legitimate part of Var(y) -- dropping it would
   # misstate the denominator.  h2 is denominator-dependent under maternal
   # effects; see the conditioning_caveat and total_heritability().
   h2_direct <- if (sigma_P > 0) sigma_ad / sigma_P else NA_real_
@@ -1305,7 +1305,7 @@ hs_fit_julia_n_effect_payload <- function(
   JuliaCall::julia_assign("hsq_method", payload$method)
 
   # Assign each block's engine inputs and build a Julia Dict per block, matching
-  # the payload-v2 §2 field table read by `parse_payload_v2`:
+  # the payload-v2 section 2 field table read by `parse_payload_v2`:
   #   pedigree block: type="pedigree", relmat_status="build_in_julia",
   #                   pedigree=(id,sire,dam), ids
   #   iid block:      type="iid",      relmat_status="identity", ids
@@ -1533,7 +1533,7 @@ hs_normalize_two_effect_result <- function(raw, payload) {
 # `re_values` are the ragged per-block BLUP ids/values.
 #
 # Falconer fence: `heritability` is the narrow-sense h2 of the ANIMAL (pedigree)
-# block only — its additive-genetic variance over the TOTAL phenotypic variance
+# block only -- its additive-genetic variance over the TOTAL phenotypic variance
 # (the sum of ALL block variances plus the residual). Every other block's
 # variance ratio (`block_variance / total`) is a variance-explained proportion,
 # NOT a heritability. This normalizes the POINT ESTIMATES; the caller attaches
@@ -1818,7 +1818,7 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_mv_raw[\"n_genetic_params\"] = hsq_fit.n_genetic_params;",
     "end;",
     # Experimental covariance standard errors (engine row V4-MV-REML, partial;
-    # :unstructured only — the engine throws for structured / factor-analytic
+    # :unstructured only -- the engine throws for structured / factor-analytic
     # fits, and the observed information can be non-positive-definite at a
     # flat/boundary optimum, hence the try guard).
     "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
@@ -2813,7 +2813,7 @@ hs_fit_julia_single_step_construct_payload <- function(
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    # Guard the genotyped_rows alignment (docs/design/25 §8): the R-computed
+    # Guard the genotyped_rows alignment (docs/design/25 section 8): the R-computed
     # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
     # must preserve that order. Fail loudly rather than fit a misaligned G.
     "collect(String, hsq_ped.ids) == hsq_id ||",

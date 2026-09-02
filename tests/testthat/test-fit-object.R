@@ -699,7 +699,7 @@ test_that("heritability() and print() warn when the fit did not converge", {
 
   expect_warning(
     h2 <- heritability(failed),
-    "This `hsquared_fit` object did not converge. The heritability number is not an estimate — do not report it.",
+    "This `hsquared_fit` object did not converge. The heritability number is not an estimate; do not report it.",
     fixed = TRUE
   )
   expect_warning(
@@ -711,7 +711,7 @@ test_that("heritability() and print() warn when the fit did not converge", {
 
   expect_warning(
     printed <- paste(utils::capture.output(print(failed)), collapse = "\n"),
-    "This `hsquared_fit` object did not converge. The heritability number is not an estimate — do not report it.",
+    "This `hsquared_fit` object did not converge. The heritability number is not an estimate; do not report it.",
     fixed = TRUE
   )
   expect_match(printed, "converged: FALSE", fixed = TRUE)

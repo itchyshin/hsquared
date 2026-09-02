@@ -46,7 +46,7 @@ variance_components.hsquared_fit <- function(object, ...) {
 #'
 #' Willham fence for the opt-in direct-maternal correlated model
 #' (`target = "direct_maternal"`): `heritability()` returns the **labelled
-#' triple** — direct h2_d, maternal m2, Willham total h2_T, and r_am — as a
+#' triple** -- direct h2_d, maternal m2, Willham total h2_T, and r_am -- as a
 #' data frame (Willham 1963, 1972). `sigma_P = sigma_ad + sigma_am + sigma_dm +
 #' sigma_e2 = Var(y_i)` (coefficient 1 on sigma_dm). A warning is issued
 #' because h2 is denominator-dependent under maternal effects and
@@ -86,8 +86,8 @@ heritability.default <- function(object, ...) {
 heritability.hsquared_fit <- function(object, ...) {
   hs_warn_if_unusable_fit(object)
   # Willham fence for the direct-maternal correlated model: heritability() on
-  # a direct_maternal fit returns the LABELLED TRIPLE — direct h2_d, maternal
-  # m2, and Willham total h2_T — plus r_am, as a labelled data frame.
+  # a direct_maternal fit returns the LABELLED TRIPLE -- direct h2_d, maternal
+  # m2, and Willham total h2_T -- plus r_am, as a labelled data frame.
   # A warning is issued to signal that h2 is denominator-dependent under
   # maternal effects and that h2_T < h2_d is real and expected when r_am < 0.
   # Use direct_heritability() or total_heritability() for targeted accessors.
@@ -285,7 +285,7 @@ genetic_correlation.hsquared_fit <- function(object, ...) {
   # Warn when the direct-maternal genetic correlation is at or near the
   # boundary: |r_am| >= 0.99 signals a poorly identified G_dm (shallow
   # pedigree, too few offspring per dam) or a genuine constraint boundary.
-  # A negative r_am is NOT a warning — it is real and biologically expected.
+  # A negative r_am is NOT a warning -- it is real and biologically expected.
   if (hs_fit_is_direct_maternal(object) && is.data.frame(out)) {
     r_am <- out$estimate[[1L]]
     if (!is.na(r_am) && abs(r_am) >= 0.99) {
@@ -1185,7 +1185,7 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
 #' repeatability REML estimator and this interval are engine-internal
 #' self-consistency tested (recovery of `t` and interval bracketing / range /
 #' level-nesting / point-estimate match on seeded fixtures), but there is no
-#' external comparator, no `h²` interval, and no deep-pedigree validation. It is
+#' external comparator, no `h^2` interval, and no deep-pedigree validation. It is
 #' asymptotic, REML-only, unreliable at small `n` or near the (0, 1) boundary
 #' (where the engine throws and the field is omitted), and not a validated
 #' capability.
@@ -1233,7 +1233,7 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 #' delta-method CI built from the two-effect REML observed information (the
 #' finite-difference Hessian of the two-effect REML log-likelihood at the
 #' optimum). It is **asymptotic, delta-method, REML only, and NOT
-#' coverage-calibrated** — on small samples the REML surface is flat and the
+#' coverage-calibrated** -- on small samples the REML surface is flat and the
 #' interval is unreliable (the parametric bootstrap is the only finite-sample-
 #' aware path). No calibrated coverage is claimed.
 #'
@@ -1308,15 +1308,15 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #'
 #' `covariance_standard_errors()` returns **experimental** large-sample
 #' (delta-method) standard errors for the multivariate genetic/residual
-#' covariance and correlation matrices and per-trait `h²`, for an opt-in
+#' covariance and correlation matrices and per-trait `h^2`, for an opt-in
 #' **unstructured** multivariate fit, when the engine returned them.
 #'
 #' Heavy caveats (engine row `V4-MV-REML`, `partial`): the strict per-seed
 #' recovery gate is still a non-pass (7/12 unstructured seeds in the updated
 #' study), but a 12-seed bias/MCSE study (twin `HSquared.jl#78`) shows **no
-#' detectable bias** — all six covariance parameters have `|bias| ≤ 2·MCSE`
-#' (largest 0.84·MCSE), a low-power non-rejection consistent with an unbiased
-#' estimator (not a proof), with EBV accuracy ≈ 0.90 in both traits; a cold-start
+#' detectable bias** -- all six covariance parameters have `|bias| <= 2*MCSE`
+#' (largest 0.84*MCSE), a low-power non-rejection consistent with an unbiased
+#' estimator (not a proof), with EBV accuracy ~ 0.90 in both traits; a cold-start
 #' replication (#79) reaches the same optimum on all 12 seeds, so it is not a
 #' warm-start artifact. The per-seed gate failures reflect sampling variance of
 #' the estimated `G` at this design, not a detected bias. These SEs remain
@@ -1367,13 +1367,13 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 #' `df = n_genetic_params(full) - n_genetic_params(constrained)`.
 #'
 #' For diagonal-vs-unstructured the null (off-diagonal genetic covariances = 0)
-#' is interior, so the χ² reference is exact (`boundary = FALSE`). Structures
+#' is interior, so the chi^2 reference is exact (`boundary = FALSE`). Structures
 #' whose null lies on a rank/PSD boundary (low-rank / factor-analytic) would need
-#' a χ²-mixture correction and are gated out of the R bridge for now.
+#' a chi^2-mixture correction and are gated out of the R bridge for now.
 #'
 #' It mirrors the engine row `V4-MV-REML` (`partial`): asymptotic, REML-only,
 #' dense validation-scale, with the multivariate recovery calibration not yet
-#' passed — a reported test, not a validated one. Both fits must be on the same
+#' passed -- a reported test, not a validated one. Both fits must be on the same
 #' response, fixed effects, and pedigree.
 #'
 #' @param constrained,full Two `hsquared_fit` objects from the multivariate

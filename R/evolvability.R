@@ -7,8 +7,8 @@
 #' path) through its
 #' **rotation-invariant** geometry, following Hansen & Houle (2008). They are
 #' defined on `G` itself (not on factor loadings), so they are well defined for
-#' any multivariate fit — unstructured, diagonal, or (when bridged) low-rank /
-#' factor-analytic — and do not depend on a loading rotation convention.
+#' any multivariate fit -- unstructured, diagonal, or (when bridged) low-rank /
+#' factor-analytic -- and do not depend on a loading rotation convention.
 #'
 #' - `eigen_G()` returns the genetic eigenstructure: `values` (the variance along
 #'   each genetic principal axis, descending) and `vectors` (the genetic
@@ -18,13 +18,13 @@
 #'   `eigenvector` (the direction of maximum evolvability).
 #' - `mean_evolvability()` is the average evolvability over random selection
 #'   directions, `tr(G) / t`.
-#' - `evolvability(fit, direction)` is `e(β) = β'Gβ` (unit `β`): the additive
+#' - `evolvability(fit, direction)` is `e(beta) = beta'G beta` (unit `beta`): the additive
 #'   genetic variance available to directional selection along `direction`.
-#' - `variance_along_gradient(fit, direction, normalize)` is `β'Gβ` for a unit
+#' - `variance_along_gradient(fit, direction, normalize)` is `beta'G beta` for a unit
 #'   `direction` (`normalize = TRUE`, equal to `evolvability()`) or for the raw
 #'   `direction` (`normalize = FALSE`).
-#' - `respondability(fit, direction)` is `‖Gβ‖`: the length of the response.
-#' - `conditional_evolvability(fit, direction)` is `1 / (β'G⁻¹β)`: evolvability
+#' - `respondability(fit, direction)` is `||G beta||`: the length of the response.
+#' - `conditional_evolvability(fit, direction)` is `1 / (beta' G^-1 beta)`: evolvability
 #'   when all other directions are held under stabilising selection (requires a
 #'   positive-definite `G`).
 #' - `autonomy(fit, direction)` is `conditional_evolvability / evolvability`
@@ -248,7 +248,7 @@ g_max.hsquared_fit <- function(object, ...) {
 #' @param normalize For `variance_along_gradient()`, whether to scale
 #'   `direction` to unit length first (`TRUE`, the default, which then equals
 #'   `evolvability()`); `FALSE` uses `direction` as given, returning the genetic
-#'   variance in the raw (un-normalised) selection gradient `β'Gβ`.
+#'   variance in the raw (un-normalised) selection gradient `beta'G beta`.
 #' @export
 variance_along_gradient <- function(object, direction, normalize = TRUE, ...) {
   UseMethod("variance_along_gradient")

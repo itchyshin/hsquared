@@ -24,7 +24,7 @@
 #' What you may report is listed on
 #' [Can I fit and report this?](
 #' https://itchyshin.github.io/hsquared/articles/current-limits.html)
-#' — not in [validation_status()]. That article lists every covered route
+#' -- not in [validation_status()]. That article lists every covered route
 #' and its reporting scope. `validation_status()` is a developer evidence
 #' table of validation atoms; it is not the user-facing list. The
 #' [model status](https://itchyshin.github.io/hsquared/articles/model-status.html)

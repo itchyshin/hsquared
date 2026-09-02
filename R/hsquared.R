@@ -47,7 +47,7 @@
 #'   When the Julia engine is unavailable, an informative error. When
 #'   `engine = "validate"`, the validated model specification is returned
 #'   invisibly as a named list (after a confirming message), for programmatic
-#'   inspection — for example `spec$bridge$target` and `spec$response`. This is
+#'   inspection -- for example `spec$bridge$target` and `spec$response`. This is
 #'   the internal spec list, not the classed object that [model_spec()] builds.
 #' @export
 hsquared <- function(
@@ -200,7 +200,7 @@ hsquared <- function(
       "target",
       "fit_animal_model"
     ))
-    # MV-4 (doc 38 §H2): a multivariate `cbind(...)` response under
+    # MV-4 (doc 38 section H2): a multivariate `cbind(...)` response under
     # `engine = "julia"` with no explicit target auto-selects the multivariate
     # target, mirroring the default-path auto-route. An explicit
     # non-multivariate target with a multivariate response still errors below.
@@ -254,7 +254,7 @@ hsquared <- function(
     # (`sparse_reml`/`ai_reml`, which would otherwise silently ignore the ML
     # request). Reject `REML = FALSE` for all of them. `henderson_mme` solves at
     # supplied variances, so its method label is cosmetic and it is exempt;
-    # `snp_blup` is exempt ONLY when variances are supplied — without them it
+    # `snp_blup` is exempt ONLY when variances are supplied -- without them it
     # genuinely REML-estimates `sigma_g2`/`sigma_e2` (`fit_snp_blup_reml`), so
     # `REML = FALSE` must not be silently accepted there.
     snp_blup_supplied <- identical(target, "snp_blup") &&

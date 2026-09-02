@@ -35,8 +35,8 @@
 #'
 #' # Capability identifiers versus labels
 #'
-#' `capability` is a **stable identifier**. Dated evidence records — comparator
-#' runs under `docs/dev-log/comparator-runs/` and check-log entries — cite these
+#' `capability` is a **stable identifier**. Dated evidence records -- comparator
+#' runs under `docs/dev-log/comparator-runs/` and check-log entries -- cite these
 #' strings verbatim to name the row they report against, so an identifier is not
 #' rewritten once evidence points at it. Look rows up by `capability`.
 #'

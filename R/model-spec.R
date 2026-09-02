@@ -1597,7 +1597,7 @@ hs_single_step_bundle_markers <- function(genotypes, id) {
 # Parse the single-step CONSTRUCTION call `single_step(1 | id, pedigree = ped,
 # markers = M, ...)`. Combines the pedigree path (id/sire/dam -> Ainv, A) with a
 # genotyped-subset marker matrix (-> G among the genotyped animals). The crux is
-# the `genotyped_rows` alignment (docs/design/25 §3): the genotyped ids must be a
+# the `genotyped_rows` alignment (docs/design/25 section 3): the genotyped ids must be a
 # subset of the pedigree ids (NOT the observed ids -- ungenotyped phenotyped
 # animals are the whole point of single-step), and the marker rows are reordered
 # to the genotyped animals' sorted pedigree-row positions so G aligns with the
@@ -2946,7 +2946,7 @@ hs_deparse <- function(expr) {
   paste(deparse(expr, width.cutoff = 500L), collapse = " ")
 }
 
-# A bare grouping/random-effect expression like `(1 | x)` or `x | id` — i.e. a
+# A bare grouping/random-effect expression like `(1 | x)` or `x | id` -- i.e. a
 # top-level `|` call that is not wrapped in a recognized effect function such as
 # `animal()`/`permanent()`. These must be named, not silently absorbed into the
 # fixed-effect design.

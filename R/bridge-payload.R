@@ -79,7 +79,7 @@ hs_build_bridge_payload <- function(spec) {
   rr <- animal$random_regression
 
   # Payload-v2: an ordered list of random-effect blocks. The existing top-level
-  # Z / Z2 / effect2 fields are preserved byte-for-byte (back-compat alias §4 of
+  # Z / Z2 / effect2 fields are preserved byte-for-byte (back-compat alias section 4 of
   # the frozen schema 21-payload-v2-multiblock-schema.md). The `random_effects`
   # list is ADDITIVE; the v0.1 dispatch in julia-bridge.R is unchanged.
   pedigree_rows <- list(
