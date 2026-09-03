@@ -92,7 +92,7 @@ test_that("formula parser rejects unsupported animal syntax", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "`animal()` argument `cov` is planned, not implemented.",
+    "`animal()` argument `cov` is reserved, not parsed.",
     fixed = TRUE
   )
   expect_error(

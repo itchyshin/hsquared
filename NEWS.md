@@ -1,5 +1,12 @@
 # hsquared 0.7.0
 
+* **Factor-analytic G is no longer planned-only.** The Julia engine has an
+  experimental FA fitter (HSquared.jl #292 S4 Totoro `d4-k1` 8/10 PASS). R
+  now reserves `cov = fa()` in `formula_status()` and errors honestly that
+  the R formula/bridge are not activated. Status is **partial /
+  experimental**, not covered. `public_covered_count` stays **7**. No
+  General / CRAN / 1.0.
+
 * **G5 — default genomic GREML activation (honesty-safe; no count bump).**
   Owner YES 2026-09-03. Narrow `genomic(1 | id, markers = M)` /
   `genomic(1 | id, Ginv = Q)` now auto-routes on `engine = "fit"` (and on

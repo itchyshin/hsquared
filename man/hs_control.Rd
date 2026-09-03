@@ -170,10 +170,11 @@ not the default and remains a \code{partial} validation claim until t>=2
 known-truth recovery and external-comparator evidence are committed. The
 reserved \code{genetic_structure} control currently accepts \code{"unstructured"} and
 \code{"diagonal"} on the R bridge. \code{"diagonal"} is the rotation-free structured
-subset: off-diagonal genetic covariances are fixed at zero. \code{"lowrank"} and
-\code{"factor_analytic"} remain planned until the loading rotation and
-interpretation contract is validated. The future \code{rank} control is also
-reserved and currently errors instead of being ignored.
+subset: off-diagonal genetic covariances are fixed at zero. \code{"lowrank"}
+remains planned. \code{"factor_analytic"} is experimental on the Julia engine
+(HSquared.jl #292 S4) and reserved, not activated, on the R bridge; not
+covered. The future \code{rank} control is also reserved and currently errors
+instead of being ignored.
 
 \code{target = "nongaussian"} is an experimental, opt-in latent-scale GLMM for
 \code{family = poisson()}/\code{binomial()} (binary 0/1) on \code{animal(1 | id, pedigree = ped)}, surfacing the Julia-owned \code{HSquared.fit_laplace_reml()} REML

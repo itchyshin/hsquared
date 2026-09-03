@@ -18,7 +18,8 @@ install guidance. A \code{cbind()} multivariate Gaussian response also routes on
 that default path; multivariate is covered at validation scale (G10) and stays experimental.
 Genomic, single-step, repeatability, two-effect, and non-Gaussian
 (\code{poisson}/\code{binomial}, Laplace or variational REML) models fit through
-opt-in, experimental engine paths; factor-analytic models remain planned.
+opt-in, experimental engine paths; factor-analytic G is experimental on
+the Julia engine and reserved, not fitted, on the R formula (not covered).
 }
 \section{Current limitations}{
 
