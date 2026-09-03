@@ -102,6 +102,10 @@ devtools::check()
 
 Use `air format .` after R code changes when `air` is available.
 
+```sh
+bash tools/preamble_cap.sh   # AGENTS.md + CLAUDE.md are re-read every session -- keep them small
+```
+
 ## Definition Of Done
 
 A meaningful slice is done only when:
@@ -113,7 +117,8 @@ A meaningful slice is done only when:
 - `docs/dev-log/check-log.md` records exact commands and outcomes;
 - an after-task report exists;
 - the coordination board and issue/roadmap state are updated;
-- Rose records either a clean audit or explicit blockers.
+- Rose records either a clean audit or explicit blockers;
+- `bash tools/preamble_cap.sh` green (AGENTS.md/CLAUDE.md are re-read every session; they are capped).
 
 Additionally, for any slice that flips a `validation_status` row to `covered`
 (see the 2026-07-09 "Standard-Tier Covered-Flip Gate" entry in
