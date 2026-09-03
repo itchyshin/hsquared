@@ -11,10 +11,11 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-> **Experimental 0.6.0 — not production / not CRAN.** Version tracks *covered*
-> capability, not surface area. `public_covered_count` is **7**. Fitting
-> needs a local Julia and an `HSquared.jl` checkout; the Julia General
-> registration ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
+> **Experimental 0.7.0 — not production / not CRAN.** Version tracks *covered*
+> capability, not surface area. `public_covered_count` is **7** (G10 multivariate
+> + 0.7 genomic GREML opt-in). Fitting needs a local Julia and an
+> `HSquared.jl` checkout; the Julia General registration
+> ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
 > is deferred pending collaborator review — do not use install-by-name
 > (`Pkg.add("HSquared")`). Read
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
