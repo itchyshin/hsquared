@@ -150,7 +150,7 @@ hs_validation_status_status <- function() {
   c(
     rep("partial", 7L), # positions 1-7
     "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    "covered", # position 9 = genomic GREML (0.7 opt-in validation-scale; single-step still partial elsewhere)
+    "covered", # position 9 = genomic GREML (0.7 covered validation-scale; G5 default-route)
     "partial", # position 10 = SNP-BLUP
     "covered", # position 11 = multivariate REML (G10 t=2 unstructured R-public)
     rep("covered", 3L),
@@ -408,7 +408,7 @@ hs_validation_status_boundaries <- function() {
       "`engine = \"julia\", target = \"genomic\"` remains an alias. Single-step /",
       "metafounder / SNP-BLUP stay opt-in or partial. Public estimand is",
       "genomic_variance_ratio on K_lambda (design-51). Design-44 nine-cell G5",
-      "recovery campaign is confirmatory / may still run under Totoro — not",
+      "recovery campaign is confirmatory / may still run under Totoro -- not",
       "claimed PASS here. APY, intervals, and field-panel robustness remain out",
       "of the covered claim. Experimental label retained; not ML, not",
       "production. NO-ANCHOR: no clean Mrode genomic-h2 pin.",
