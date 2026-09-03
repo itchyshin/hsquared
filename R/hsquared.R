@@ -97,6 +97,39 @@ hsquared <- function(
     opt_in_effect <- setdiff(names(spec$random), "animal")
     if (length(opt_in_effect) > 0L) {
       effect_type <- opt_in_effect[[1L]]
+      # G5 (design-44 / owner YES 2026-09-03): narrow univariate genomic GREML
+      # auto-routes on the default path. Same estimator as explicit
+      # target = "genomic". single_step / snp_blup / relmat stay opt-in.
+      if (identical(effect_type, "genomic")) {
+        project <- hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        )
+        if (!hs_julia_bridge_available(project)) {
+          stop(
+            "Fitting genomic GREML on the default path requires the HSquared.jl ",
+            "Julia engine (Julia, the `JuliaCall` R package, and a from-source ",
+            "checkout of `HSquared.jl`). Point the bridge via ",
+            "`HSQUARED_JULIA_PROJECT` or `hs_control(engine = \"julia\", ",
+            "engine_control = list(julia_project = \"/path/to/HSquared.jl\", ",
+            "target = \"genomic\"))`. To validate without fitting, use ",
+            "`control = hs_control(engine = \"validate\")`.",
+            call. = FALSE
+          )
+        }
+        hs_warn_genomic_default_once()
+        return(hs_fit_julia_genomic_payload(
+          payload,
+          project = project,
+          initial = hs_engine_control_value(
+            control,
+            "initial",
+            c(sigma_a2 = 1, sigma_e2 = 1)
+          ),
+          iterations = hs_engine_control_value(control, "iterations", 100L)
+        ))
+      }
       # Boole: maternal_genetic has two opt-in targets. Name the covered
       # direct_maternal sibling first. Do not auto-route. common_env /
       # permanent paste stays on the sibling helper.
@@ -188,6 +221,15 @@ hsquared <- function(
         identical(target, "fit_animal_model")
     ) {
       target <- "multivariate"
+    }
+    # G5: genomic primary under engine = "julia" with no explicit target
+    # auto-selects genomic GREML (same as default-path auto-route). Explicit
+    # target = "snp_blup" / "single_step" still required for those siblings.
+    if (
+      identical(target, "fit_animal_model") &&
+        identical(names(spec$random), "genomic")
+    ) {
+      target <- "genomic"
     }
     genetic_structure <- hs_validate_genetic_structure_control(control, target)
     if (
