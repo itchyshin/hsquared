@@ -1128,13 +1128,14 @@ hs_stop_animal_non_intercept <- function() {
 
 hs_stop_animal_covariance_arg <- function() {
   hs_abort_unsupported_syntax(
-    "`animal()` argument `cov` is planned, not implemented. For the current ",
+    "`animal()` argument `cov` is reserved, not parsed. For the current ",
     "multivariate animal model, put traits on the left-hand side as ",
     "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)`; that ",
     "routes to the multivariate fitter on the default path, with no ",
-    "`engine`/`target` argument. Structured covariance ",
-    "grammar such as `cov = us()`, `cov = diag()`, `cov = lowrank(K = 2)`, ",
-    "or `cov = fa(K = 2)` is planned, not implemented.",
+    "`engine`/`target` argument. Long-format `cov = us()`, `cov = diag()`, ",
+    "and `cov = lowrank(K = 2)` remain planned grammar. `cov = fa(K = 2)` ",
+    "names an experimental Julia engine path (HSquared.jl #292); the R ",
+    "formula does not fit it.",
     call. = FALSE
   )
 }

@@ -1,5 +1,12 @@
 # hsquared 0.7.0
 
+* **Factor-analytic G: engine-covered pointer, R row stays planned.** Julia
+  `V4-FA` is engine-covered (HSquared.jl #300 / `60895208`; S4 evidence on
+  #292). R `formula_status()` reserves `cov = fa()` and errors that the
+  formula/bridge are not activated. The R capability row stays **planned**
+  (post-G10 pointer). Not covered. `public_covered_count` stays **7**.
+  Experimental stays **0.7.0**. No General / CRAN / 1.0.
+
 * **Default genomic GREML activation (honesty-safe; no count bump).**
   Owner YES 2026-09-03. Narrow `genomic(1 | id, markers = M)` /
   `genomic(1 | id, Ginv = Q)` now auto-routes on `engine = "fit"` (and on

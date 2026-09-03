@@ -280,7 +280,7 @@ test_that("multivariate genetic_structure control is fenced", {
         ),
         "multivariate"
       ),
-      "gated on a validated",
+      "not activated on the R bridge",
       fixed = TRUE
     )
   }

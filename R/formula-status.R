@@ -228,7 +228,15 @@ hs_formula_status_syntax <- function() {
     rep("parsed", 6L),
     rep("reserved", 3L),
     "parsed",
-    rep("planned", 6L)
+    # cbind() multivariate is parsed; long-format cov=us/diag/lowrank stay
+    # planned; cov=fa is reserved (engine-experimental, R not fitted);
+    # missing-data rows stay planned.
+    "planned",
+    "planned",
+    "planned",
+    "reserved",
+    "planned",
+    "planned"
   )
 }
 
@@ -421,13 +429,28 @@ hs_formula_status_behavior <- function() {
       "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
       "required), not a multivariate Gaussian."
     ),
-    rep(
-      paste(
-        "Roadmap syntax for long-format structured covariance; the current",
-        "parser rejects trait and `cov` arguments and points users to the",
-        "`cbind()` multivariate path, which fits on the default path."
-      ),
-      4L
+    paste(
+      "Roadmap syntax for long-format unstructured covariance; the current",
+      "parser rejects trait and `cov` arguments and points users to the",
+      "`cbind()` multivariate path, which fits on the default path."
+    ),
+    paste(
+      "Roadmap syntax for long-format diagonal covariance; the current",
+      "parser rejects trait and `cov` arguments. Rotation-free diagonal G0 is",
+      "already reachable as engine_control$genetic_structure = \"diagonal\"",
+      "on the cbind() multivariate path."
+    ),
+    paste(
+      "Roadmap syntax for long-format low-rank covariance (Lambda Lambda');",
+      "the current parser rejects trait and `cov` arguments. Not R-activated."
+    ),
+    paste(
+      "Reserved stub for long-format factor-analytic G (Lambda Lambda' + Psi).",
+      "The Julia engine has an experimental FA fitter (HSquared.jl #292 S4",
+      "d4-k1 8/10 PASS). The R parser rejects trait and `cov` arguments and",
+      "does not fit this form. Use cbind() unstructured or",
+      "genetic_structure = \"diagonal\". Engine evidence is not an R-public",
+      "covered claim; public_covered_count stays 7."
     ),
     paste(
       "Ratified planned missing-response control. Future behavior will keep",
