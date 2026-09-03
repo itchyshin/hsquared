@@ -283,7 +283,7 @@ What the v0.1 promotion does **not** claim:
   model (`target = "multi_effect"`); (3) **random regression k = 2**
   (`target = "random_regression"`); (4) the **direct–maternal correlated 2×2 G**
   model (`target = "direct_maternal"`); and (5) **t=2 unstructured multivariate**
-  `cbind()` on the default path (G10). Covered at validation scale means the
+  `cbind()` on the default path. Covered at validation scale means the
   experimental label is retained, dense, and not production — the warranty is
   validation-scale only, and intervals are asymptotic/uncalibrated. The remaining
   opt-in models — repeatability (`target = "repeatability"`), the
@@ -308,7 +308,7 @@ checks, fit models, or promote anything.
 For v0.1 the default-path `covered` rows are the univariate Gaussian animal-model
 fit and its two recovery anchors (the known-truth DGP study and the published
 gryphon estimate). Beyond v0.1, four opt-in models plus default-routed t=2
-unstructured multivariate (G10) are also `covered` at validation scale (see the
+unstructured multivariate are also `covered` at validation scale (see the
 bullet above). Everything else is `partial` or `planned`.
 
 ```{r}

@@ -205,7 +205,7 @@ geometry as the stable interpretation layer.
 ## Current evidence boundary
 
 The current multivariate surface is **covered at validation scale** for t=2
-unstructured G0/R0 (G10; experimental label retained). k≥3 and
+unstructured G0/R0 (experimental label retained). k≥3 and
 `genetic_structure = "diagonal"` stay experimental. G-geometry extractors remain
 descriptive (no standard errors).
 
