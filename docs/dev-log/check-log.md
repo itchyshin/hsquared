@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-09-03 (R pointer after Julia V4-FA G10 — not an R-public flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-fa-v4-fa-r-pointer.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-fa-v4-fa-r-pointer.md`.
+- Julia `V4-FA` engine-covered at `60895208`. R FA stays **planned**.
+  Count stays **7**. No 0.8.0.
+
+
 ## 2026-09-02 (0.7 genomic GREML covered + experimental 0.7.0)
 
 - See `docs/dev-log/check-log.d/2026-09-02-07-greml-covered-flip.md` and
