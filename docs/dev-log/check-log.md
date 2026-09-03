@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-09-02 (0.7 genomic GREML covered + experimental 0.7.0)
+
+- See `docs/dev-log/check-log.d/2026-09-02-07-greml-covered-flip.md` and
+  `docs/dev-log/after-task/2026-09-02-07-greml-covered-flip.md`.
+- Rose CLEAN tip audit; owner #7 auto-flip. Count **6→7**. No General/CRAN/1.0.
+
+
 ## 2026-09-02 (0.7 GREML Rose gap-clear G1–G6 — no flip)
 
 - See `docs/dev-log/check-log.d/2026-09-02-07-totoro-exactG-pass.md`,

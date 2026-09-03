@@ -150,7 +150,8 @@ hs_validation_status_status <- function() {
   c(
     rep("partial", 7L), # positions 1-7
     "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    rep("partial", 2L), # positions 9-10 genomic, SNP-BLUP
+    "covered", # position 9 = genomic GREML (0.7 opt-in validation-scale; single-step still partial elsewhere)
+    "partial", # position 10 = SNP-BLUP
     "covered", # position 11 = multivariate REML (G10 t=2 unstructured R-public)
     rep("covered", 3L),
     rep("planned", 7L)
@@ -396,21 +397,19 @@ hs_validation_status_boundaries <- function() {
       "path is opt-in experimental."
     ),
     paste(
-      "Experimental opt-in path only; Julia-owned REML estimator (fit_ai_reml on",
-      "a relationship-inverse spec) that R surfaces; mirrors the twin V2-GREML /",
-      "V2-GRM / V2-GINV (genomic) and V2-SSHINV (single-step) gates (partial).",
-      "Genomic accepts a supplied Ginv or a marker matrix (engine-built G);",
-      "single-step accepts either a supplied Hinv or R-surfaced H^-1 construction",
-      "from pedigree + genotyped-subset markers (`target =",
-      "\"single_step_construct\"`) or supplied-Gamma H^Gamma construction",
-      "(`target = \"metafounder_single_step\"`). The animal-only",
-      "`metafounder()` path fits supplied-variance A^Gamma models through",
-      "`target = \"metafounder\"` only; variance components and Gamma are",
-      "supplied, not estimated. The construction knobs (tau/omega/blend/ridge)",
-      "are not comparator-validated. Metafounder-specific extractors are not",
-      "implemented. Low-rank m>>n solves, APY, and",
-      "AGHmatrix/sommer/BLUPF90 comparator parity are planned. Not the default,",
-      "not ML, not production or comparator-validated."
+      "Covered at VALIDATION scale for opt-in genomic GREML (0.7 / owner #7);",
+      "Julia-owned REML estimator (fit_ai_reml / fit_gblup_reml on a",
+      "relationship-inverse or marker-built Q_lambda) that R surfaces; mirrors",
+      "the twin V2-GREML covered gate for the supplied-Ginv estimator, with",
+      "marker≡Q identity + Totoro exact-G comparator + design-53 SUPERSEDE.",
+      "Single-step / metafounder construction paths in this combined row remain",
+      "PARTIAL (V2-SSHINV). Genomic GREML accepts a supplied Ginv or a marker",
+      "matrix (engine-built VanRaden1 G + ridge 0.01); public estimand is",
+      "genomic_variance_ratio on K_lambda (design-51). Default activation,",
+      "APY, SNP-BLUP, intervals, and field-panel robustness are out of the",
+      "covered claim. Experimental label retained; not the default route, not",
+      "ML, not production. NO-ANCHOR: no clean Mrode genomic-h2 pin.",
+      "public_covered_count is 7."
     ),
     paste(
       "Experimental opt-in path only; Julia-owned VanRaden method-1 marker model",
@@ -437,7 +436,7 @@ hs_validation_status_boundaries <- function() {
       "not same-estimand REML parity. The engine `V4-MV-REML` is covered at",
       "validation scale (HSquared.jl#161). This R public surface is COVERED at",
       "validation scale after owner G10 (Shinichi, 2026-09-02, source chat",
-      "\"G10 - you keep going\"); public_covered_count is 6. Twin C8 broader-DGP",
+      "\"G10 - you keep going\"); public_covered_count is 7. Twin C8 broader-DGP",
       "confirm is banked (DRAC job 47925486; 16x500; 14/16 pass; fails only",
       "rg_090_rec1/rg_095_rec1; base_inside clean) as characterization; R-lane",
       "MV-5 is SUPERSEDED (A25). The engine blupf90+ same-estimand REML",

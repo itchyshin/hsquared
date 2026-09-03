@@ -22,7 +22,7 @@ opt-in, experimental engine paths; factor-analytic models remain planned.
 }
 \section{Current limitations}{
 
-This package is \strong{experimental} (0.6.0); the first CRAN release is not this bump,
+This package is \strong{experimental} (0.7.0); the first CRAN release is not this bump,
 not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
 and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
 model contract without fitting. Report point estimates only for \code{covered}

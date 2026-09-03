@@ -4,8 +4,8 @@ The cards below are generated from `validation_status()`, a developer evidence t
 
 | Status | Rows | What it means for you |
 |---|---|---|
-| `covered` | 5 | Pre-declared recovery gate passed and an external same-estimand comparator agrees. Point estimates are reportable within the stated scope. |
-| `partial` | 9 | The code runs and is bridge-verified, but the evidence chain is incomplete. Exploratory use only. |
+| `covered` | 6 | Pre-declared recovery gate passed and an external same-estimand comparator agrees. Point estimates are reportable within the stated scope. |
+| `partial` | 8 | The code runs and is bridge-verified, but the evidence chain is incomplete. Exploratory use only. |
 | `planned` | 7 | Not implemented. No reporting permission. |
 
 Those counts are rows in the evidence ledger, not user-facing models. Some rows are validation atoms (a pedigree-inverse check, a textbook fixture) or evidence for another row rather than a model you would fit. The cards below are the model routes.
@@ -86,18 +86,19 @@ hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
 
 ```r
 hsquared(y ~ genomic(1 | id, markers = M), data = dat,
-         control = hs_control(engine = "julia"))
+         control = hs_control(engine = "julia",
+           engine_control = list(target = "genomic")))
 ```
 
-**Can I fit it?** **Yes, but opt-in and experimental** - the code runs; the evidence is incomplete.
+**Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
 
-**Can I report the point estimate?** **Not on this package's evidence alone.** Report only beside a comparator you ran yourself, and say the route is experimental.
+**Can I report the point estimate?** **Yes, within the stated scope** - a pre-declared recovery gate passed and an external same-estimand comparator agrees.
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** Accepts a supplied Ginv/Hinv or builds G from markers and H^-1 from pedigree plus a genotyped subset. Construction knobs (tau, omega, blend, ridge) are not comparator-validated; low-rank m >> n solves, APY, and AGHmatrix/sommer/BLUPF90 parity are planned. Metafounder paths are supplied-variance only.
+**Exact scope and caveat.** 0.7 covered claim is opt-in genomic GREML only (target = "genomic"; genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Default activation is held (design-44 G5 / boundary holdout). Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
 
-**Concrete fallback.** Use the covered pedigree animal model, or report genomic estimates only beside an external comparator you ran yourself.
+**Concrete fallback.** Report genomic_variance_ratio on the declared kernel with the no-anchor and scale disclosures. Do not treat single-step or default genomic routing as covered.
 
 ### SNP-BLUP marker effects
 
