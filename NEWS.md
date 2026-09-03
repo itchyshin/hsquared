@@ -1,9 +1,9 @@
 # hsquared 0.7.0
 
-* **#7 — R genomic GREML `partial → covered` (validation-scale, opt-in).**
-  Owner ink: overnight approvals #5–#10 (auto-flip #7 when design-41 §3 + Rose
-  CLEAN). Darwin SIGN + Rose tip CLEAN after G1–G6 gap-clear (R #154 / Julia #287).
-  `public_covered_count` moves **6 → 7**. Version **0.7.0** experimental label
+* **#7 - R genomic GREML `partial -> covered` (validation-scale, opt-in).**
+  Owner ink: overnight approvals #5-#10 (auto-flip #7 when design-41 section 3 + Rose
+  CLEAN). Darwin SIGN + Rose tip CLEAN after G1-G6 gap-clear (R #154 / Julia #287).
+  `public_covered_count` moves **6 -> 7**. Version **0.7.0** experimental label
   **retained**. Scope: explicit `engine = "julia", target = "genomic"` on
   `genomic(1 | id, markers = M)` / `Ginv = Q`; estimand `genomic_variance_ratio`
   on \(K_\lambda = G + 0.01 I\) (design-51). **NOT** default activation

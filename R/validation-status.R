@@ -401,7 +401,7 @@ hs_validation_status_boundaries <- function() {
       "Julia-owned REML estimator (fit_ai_reml / fit_gblup_reml on a",
       "relationship-inverse or marker-built Q_lambda) that R surfaces; mirrors",
       "the twin V2-GREML covered gate for the supplied-Ginv estimator, with",
-      "marker≡Q identity + Totoro exact-G comparator + design-53 SUPERSEDE.",
+      "marker==Q identity + Totoro exact-G comparator + design-53 SUPERSEDE.",
       "Single-step / metafounder construction paths in this combined row remain",
       "PARTIAL (V2-SSHINV). Genomic GREML accepts a supplied Ginv or a marker",
       "matrix (engine-built VanRaden1 G + ridge 0.01); public estimand is",
