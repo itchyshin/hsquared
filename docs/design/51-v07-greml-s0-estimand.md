@@ -50,6 +50,10 @@ Scaffolding: `tests/testthat/test-genomic-greml-s0-identity.R` (R) · `test/test
 
 ## Boole freeze sketch (default path only)
 
+Boole perspective (2026-09-02 S0b): **no new public names.** `genomic()`,
+`markers` / `Ginv`, `genomic_variance_ratio`, and ridge `0.01` stay as frozen
+in design-44. This slice does not export a new term or argument.
+
 Accepted (0.7):
 
 ```r

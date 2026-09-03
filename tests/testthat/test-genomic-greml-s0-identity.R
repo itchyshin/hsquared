@@ -61,7 +61,36 @@ test_that("N1 scaffold: genomic() takes exactly one of Ginv or markers", {
   expect_match(spec_q$bridge$target, "Ginv", fixed = TRUE)
 })
 
+test_that("N2 julia-free: heritability() labels genomic_variance_ratio (not pedigree h2)", {
+  # CI/CRAN pin. The live-Julia twin of this obligation is skipped below
+  # (hs_skip_live_julia) — expected 1 skip, not a defect.
+  fit <- structure(
+    list(
+      spec = list(target = "genomic"),
+      result = list(
+        heritability = data.frame(
+          term = "genomic",
+          component = "genomic_variance_ratio",
+          estimate = 0.4,
+          relationship_scale = "K_lambda",
+          relationship_source = "markers",
+          relationship_method = "vanraden1",
+          allele_frequency_source = "sample",
+          ridge = 0.01
+        )
+      )
+    ),
+    class = "hsquared_fit"
+  )
+  ratio <- hsquared::heritability(fit)
+  expect_equal(ratio$component, "genomic_variance_ratio")
+  expect_false(identical(ratio$component, "h2"))
+  expect_equal(ratio$ridge, 0.01)
+})
+
 test_that("N2: marker live fit labels genomic_variance_ratio (not pedigree h2) [live]", {
+  # Expected skip on CRAN/GHA without live Julia. Parser N1/N3 + julia-free N2
+  # above still pin S0. Set HSQUARED_JULIA_TESTS=true or NOT_CRAN=true to run.
   hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -88,7 +117,7 @@ test_that("N2: marker live fit labels genomic_variance_ratio (not pedigree h2) [
       engine_control = list(target = "genomic")
     )
   )
-  ratio <- heritability(fit)
+  ratio <- hsquared::heritability(fit)
   expect_equal(ratio$component, "genomic_variance_ratio")
   expect_equal(ratio$relationship_source, "markers")
   expect_equal(ratio$ridge, 0.01)
