@@ -276,14 +276,15 @@ test_that("validation_status separates evidence from planned validation", {
       status$capability ==
         "experimental supplied-relationship estimator (opt-in: genomic, single-step)"
     ],
-    "partial"
+    "covered"
   )
   supplied_row <- status[
     status$capability ==
       "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
   ]
   expect_match(supplied_row$evidence, "single_step_construct", fixed = TRUE)
-  expect_match(supplied_row$claim_boundary, "supplied Hinv", fixed = TRUE)
+  expect_match(supplied_row$claim_boundary, "genomic GREML", fixed = TRUE)
+  expect_match(supplied_row$claim_boundary, "public_covered_count is 7", fixed = TRUE)
   expect_equal(
     status$status[
       status$capability == "experimental repeatability estimator (opt-in)"
