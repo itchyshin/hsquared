@@ -1,5 +1,13 @@
 # hsquared 0.7.0
 
+* **Single-step H⁻¹ is no longer planned-only.** The Julia engine has
+  construction AGREE vs AGHmatrix::Hmatrix and an n=240 recovery PASS
+  (HSquared.jl #295). R keeps the existing opt-in
+  `target = "single_step_construct"` / supplied-`Hinv` routes and does
+  **not** promote `single_step()` to the ordinary default path. Status is
+  **partial / experimental**, not covered. Darwin UNSIGNED.
+  `public_covered_count` stays **7**. No General / CRAN / 1.0.
+
 * **G5 — default genomic GREML activation (honesty-safe; no count bump).**
   Owner YES 2026-09-03. Narrow `genomic(1 | id, markers = M)` /
   `genomic(1 | id, Ginv = Q)` now auto-routes on `engine = "fit"` (and on

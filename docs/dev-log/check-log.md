@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-09-03 (R single-step partial / experimental honesty — no flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-ss-r-partial.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-ss-r-partial.md`.
+- Julia #295 cited. Count stays **7**. Darwin UNSIGNED. No ordinary-route
+  promotion. No General/CRAN/1.0.
+
+
 ## 2026-09-02 (0.7 genomic GREML covered + experimental 0.7.0)
 
 - See `docs/dev-log/check-log.d/2026-09-02-07-greml-covered-flip.md` and
