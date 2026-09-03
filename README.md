@@ -12,8 +12,8 @@ data validation, summaries, extractors, examples — and the
 computation.
 
 > [!WARNING]
-> **Experimental 0.6.0 — not production / not CRAN.** The version number tracks
-> *covered* capability, not surface area; the first CRAN release is not this bump. `public_covered_count` is **6**. **Fitting requires a local Julia
+> **Experimental 0.7.0 — not production / not CRAN.** The version number tracks
+> *covered* capability, not surface area; the first CRAN release is not this bump. `public_covered_count` is **7**. **Fitting requires a local Julia
 > and an `HSquared.jl` checkout** — R alone parses and validates a model but
 > does not fit it. The Julia twin's General registration
 > ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969)) is
@@ -112,7 +112,7 @@ comparator agrees. Point estimates are reportable within the stated scope:
 
 Several of these are covered at validation scale and are listed on that limits
 page; some do not yet have their own `validation_status()` row.
-`public_covered_count` is **6**.
+`public_covered_count` is **7**.
 
 Evidence for the default univariate path: known-truth DGP recovery (near-unbiased variance
 components over a replicated study), the published gryphon REML estimate

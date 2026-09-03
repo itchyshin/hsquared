@@ -106,24 +106,27 @@ hs_route_table <- function() {
     ),
     list(
       key = "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
-      expect = "partial",
+      expect = "covered",
       title = "Genomic (GREML) and single-step relationship models",
       call = paste0(
         'hsquared(y ~ genomic(1 | id, markers = M), data = dat,\n',
-        '         control = hs_control(engine = "julia"))'
+        '         control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "genomic")))'
       ),
       scope = paste(
-        "Accepts a supplied Ginv/Hinv or builds G from markers and H^-1 from",
-        "pedigree plus a genotyped subset. Construction knobs (tau, omega, blend,",
-        "ridge) are not comparator-validated; low-rank m >> n solves, APY, and",
-        "AGHmatrix/sommer/BLUPF90 parity are planned. Metafounder paths are",
-        "supplied-variance only."
+        "0.7 covered claim is opt-in genomic GREML only (target = \"genomic\";",
+        "genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied",
+        "Ginv or builds VanRaden1 G from markers. Default activation is held",
+        "(design-44 G5 / boundary holdout). Single-step / metafounder paths in",
+        "this combined validation_status row remain exploratory (not the 0.7",
+        "covered claim). APY / production / intervals out of scope."
       ),
-      point = "partial",
+      point = "yes",
       interval = "no",
       fallback = paste(
-        "Use the covered pedigree animal model, or report genomic estimates only",
-        "beside an external comparator you ran yourself."
+        "Report genomic_variance_ratio on the declared kernel with the no-anchor",
+        "and scale disclosures. Do not treat single-step or default genomic",
+        "routing as covered."
       )
     ),
     list(

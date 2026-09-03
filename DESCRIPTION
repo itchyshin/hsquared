@@ -1,12 +1,12 @@
 Package: hsquared
 Title: R Interface for Julia-Backed Quantitative-Genetic Models
-Version: 0.6.0
+Version: 0.7.0
 Authors@R: 
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
 Description: Provides the R-facing interface for an open quantitative-genetic
     modelling system backed by the HSquared.jl Julia engine. Experimental
-    0.6.0 package (not production; not CRAN): the version tracks covered
-    capability (public covered count is 6), not maturity; experimental label
+    0.7.0 package (not production; not CRAN): the version tracks covered
+    capability (public covered count is 7), not maturity; experimental label
     retained. First CRAN release is not this bump. Version 0.1 fits the univariate Gaussian
     animal model (y ~ fixed + animal(1 | id, pedigree = ped)) by restricted
     maximum likelihood and returns heritability, variance components, breeding
@@ -15,11 +15,13 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     contract without fitting. What you may report is listed on the package
     article 'Can I fit and report this?', not in validation_status(), which is
     a developer evidence table. Uncertainty intervals are experimental and not
-    coverage-calibrated. Genomic, single-step, SNP-BLUP, repeatability, and
-    two-effect animal models fit through opt-in, experimental engine paths;
-    multivariate cbind() animal models route on the default call and are
-    covered at validation scale (t = 2 unstructured; k >= 3 and diagonal stay
-    experimental); non-Gaussian (poisson/binomial)
+    coverage-calibrated. Opt-in genomic GREML is covered at validation scale (explicit target =
+    "genomic"; default activation still held). Single-step, SNP-BLUP,
+    repeatability, and two-effect animal models fit through opt-in engine paths
+    (repeatability/two-effect covered where previously covered; SNP-BLUP/
+    single-step remain experimental); multivariate cbind() animal models route
+    on the default call and are covered at validation scale (t = 2 unstructured;
+    k >= 3 and diagonal stay experimental); non-Gaussian (poisson/binomial)
     models fit through an opt-in experimental engine path and report no
     heritability; factor-analytic models remain planned.
 License: MIT + file LICENSE

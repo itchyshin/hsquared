@@ -371,7 +371,7 @@ hs_formula_status_behavior <- function() {
       "model requires engine = \"julia\", target = \"genomic\". The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
       "and SE accessors are unavailable. R status stays partial/experimental,",
-      "validation-scale; public_covered_count remains 6."
+      "validation-scale; public_covered_count remains 7."
     ),
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
@@ -380,7 +380,7 @@ hs_formula_status_behavior <- function() {
       "\"snp_blup\" remains opt-in. The coefficient-scale result is labelled",
       "`genomic_variance_ratio`; interval and SE accessors are unavailable. R",
       "status stays partial/experimental, validation-scale;",
-      "public_covered_count remains 6."
+      "public_covered_count remains 7."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental model; requires a",
