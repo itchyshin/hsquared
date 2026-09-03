@@ -6,8 +6,9 @@ ratification.**
 
 > This is a **CLAIM CHANGE**, not a code or capability change. It flips *interval
 > claim levels* on already-shipped surfaces to match the now-banked 2000-rep C1
-> coverage evidence. It is **NOT** a `public_covered_count` move (count stays 5),
-> it does **not** touch `validation_status()` covered rows (stay 4), and it does
+> coverage evidence. It is **NOT** a `public_covered_count` move (count unchanged;
+> live count is 7), it does **not** touch `validation_status()` covered rows
+> (unchanged from live; do not reset to 4), and it does
 > **not** change `DESCRIPTION`. Every wording change below is a proposal; none may
 > land before Rose records a clean pre-public audit and the maintainer ratifies
 > the amended Uncertainty Scope. **H0** is the label for this first interval-
@@ -198,7 +199,7 @@ surfaces —
 > `experimental-only` (under-covers, 0.897 at h²=0.5) — a point estimate ± SE only,
 > not a calibrated or conservative interval. `directional-conservative` ≠
 > coverage-calibrated-at-nominal; no leg reaches `point` (maintainer-owned). Not a
-> `public_covered_count` move (stays 5).
+> `public_covered_count` move (unchanged; live count is 7).
 
 ### 5.3 `docs/design/06-public-claims-register.md` — add a dedicated interval-coverage row
 
@@ -299,8 +300,8 @@ Add:
 - **No `point` tier.** No surface is promoted to `point`; the ~2000-rep in-band
   `point` threshold is maintainer-owned (`decisions.md:51-64`) and not declared met
   here, even for the in-band profile-σ²a leg (O1).
-- **Not a `public_covered_count` move** (stays 5); **`validation_status()` covered
-  rows unchanged** (stay 4); **`DESCRIPTION` unchanged**. Interval claim levels are
+- **Not a `public_covered_count` move** (unchanged; live count is 7); **`validation_status()` covered
+  rows unchanged** (unchanged from live; do not reset to 4); **`DESCRIPTION` unchanged**. Interval claim levels are
   an Uncertainty-Scope axis, orthogonal to the covered-count.
 - **σ²a delta/Wald "conservative" is forbidden.** It under-covers; it may be called
   experimental and point-only, never conservative and never calibrated.
@@ -370,8 +371,7 @@ Per `AGENTS.md` DoD and the pre-public discipline:
 - [ ] `devtools::test()` passes, including the updated `print`/`summary` snapshots.
 - [ ] `devtools::check()` clean; commands + outcomes recorded in
       `docs/dev-log/check-log.md`; after-task report written; coordination board row added.
-- [ ] Confirm `public_covered_count` = 5 and `validation_status()` covered rows = 4
-      are **unchanged** in the diff.
+- [ ] Confirm `public_covered_count` (live **7**) and `validation_status()` covered rows are **unchanged** in the diff (do not reset either number to a historical 5 / 4).
 
 ---
 
