@@ -1311,7 +1311,7 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #' covariance and correlation matrices and per-trait `h^2`, for an opt-in
 #' **unstructured** multivariate fit, when the engine returned them.
 #'
-#' Heavy caveats (engine row `V4-MV-REML`, `partial`): the strict per-seed
+#' Heavy caveats (engine multivariate REML validation row, `partial`): the strict per-seed
 #' recovery gate is still a non-pass (7/12 unstructured seeds in the updated
 #' study), but a 12-seed bias/MCSE study (twin `HSquared.jl#78`) shows **no
 #' detectable bias** -- all six covariance parameters have `|bias| <= 2*MCSE`
@@ -1371,7 +1371,7 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 #' whose null lies on a rank/PSD boundary (low-rank / factor-analytic) would need
 #' a chi^2-mixture correction and are gated out of the R bridge for now.
 #'
-#' It mirrors the engine row `V4-MV-REML` (`partial`): asymptotic, REML-only,
+#' It mirrors the engine multivariate REML validation row (`partial`): asymptotic, REML-only,
 #' dense validation-scale, with the multivariate recovery calibration not yet
 #' passed -- a reported test, not a validated one. Both fits must be on the same
 #' response, fixed effects, and pedigree.

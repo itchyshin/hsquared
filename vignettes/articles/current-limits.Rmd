@@ -20,9 +20,10 @@ behind them to report.
 
 ## The three-line version
 
-1. Two **default-routed covered** paths exist: the **univariate Gaussian animal
-   model**, and **t = 2 unstructured multivariate** `cbind()` (G10; validation-scale).
-   Report their point estimates within the stated scope.
+1. Three **default-routed covered** paths exist: the **univariate Gaussian animal
+   model**, **t = 2 unstructured multivariate** `cbind()` (validation-scale), and
+   **genomic GREML** via narrow `genomic(...)` (validation-scale; experimental
+   0.7.0 retained). Report their point estimates within the stated scope.
 2. Almost everything else fits through an **opt-in** engine target (some covered
    at validation scale, some experimental). k≥3 and diagonal multivariate stay
    experimental. Treat experimental fits as exploratory, or report them beside a
@@ -37,7 +38,7 @@ cat(sprintf(
 ))
 ```
 
-<p class="hs-banner" role="note"><strong>Covered at validation scale · opt-in · dense · REML-only</strong> still means experimental packaging. It is not 1.0 and not interval-calibrated. The ladder caption is dated to this source tree; the live count is <code>validation_status()</code> and this limits page after any G10 merge — this figure does not flip a row.</p>
+<p class="hs-banner" role="note"><strong>Covered at validation scale · experimental · dense · REML-only</strong> still means experimental packaging. It is not 1.0 and not interval-calibrated. The ladder caption is dated to this source tree; the live count is <code>validation_status()</code> and this limits page after any covered-row update — this figure does not flip a row. <code>public_covered_count</code> stays 7.</p>
 
 ## What the status words mean
 
