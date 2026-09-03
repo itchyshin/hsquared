@@ -2,13 +2,24 @@
 # Fast fixture/contract test: no Julia, no coverage numbers, no flip.
 # Optional extra smoke (same path, still not a claim):
 #   HSQUARED_C1EXT_SMOKE=1 Rscript sim/phase1_interval_coverage_ext.R
+# sim/ is .Rbuildignore'd, so the helper is source-tree only (same pattern as
+# test-v07-genomic-boundary-oracle.R and data-raw comparator skips).
 
-source(
-  testthat::test_path("..", "..", "sim", "phase1_interval_coverage_ext.R"),
-  local = TRUE
+ext_helper <- testthat::test_path(
+  "..",
+  "..",
+  "sim",
+  "phase1_interval_coverage_ext.R"
 )
+if (file.exists(ext_helper)) {
+  source(normalizePath(ext_helper, mustWork = TRUE), local = TRUE)
+}
 
 test_that("C1-ext H1/H3 R pointer freezes Julia #294 campaign contract", {
+  skip_if_not(
+    file.exists(ext_helper),
+    "sim/phase1_interval_coverage_ext.R is not in the build tarball"
+  )
   expect_equal(EXT_INTERPRETABLE_FRACTION, 0.9)
   expect_equal(EXT_CONFIRM_REPS_TARGET, 2000L)
   expect_equal(EXT_SEED_STRIDE, 40009L)
@@ -36,6 +47,10 @@ test_that("C1-ext H1/H3 R pointer freezes Julia #294 campaign contract", {
 })
 
 test_that("C1-ext R parser is PATH_ONLY smoke and rejects claim modes", {
+  skip_if_not(
+    file.exists(ext_helper),
+    "sim/phase1_interval_coverage_ext.R is not in the build tarball"
+  )
   cfg <- hs_c1ext_parse_args(character())
   expect_equal(cfg$mode, "smoke")
   expect_equal(cfg$campaigns, EXT_CAMPAIGNS)
@@ -60,6 +75,10 @@ test_that("C1-ext R parser is PATH_ONLY smoke and rejects claim modes", {
 })
 
 test_that("C1-ext smoke TSV is PATH_ONLY and never claim-eligible", {
+  skip_if_not(
+    file.exists(ext_helper),
+    "sim/phase1_interval_coverage_ext.R is not in the build tarball"
+  )
   path <- tempfile(fileext = ".tsv")
   on.exit(unlink(path), add = TRUE)
   written <- hs_c1ext_write_smoke_tsv(path)
