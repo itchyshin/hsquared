@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit.</strong>
+Inheritance-system terms beyond diploid additive animal are roadmap / planned or partial — this article does not activate them.</p>
+
 This article shows how `hsquared` is expected to grow beyond the ordinary
 diploid additive animal model.
 

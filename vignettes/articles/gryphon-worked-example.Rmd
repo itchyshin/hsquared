@@ -6,6 +6,9 @@ title: "A worked animal-model analysis (gryphon)"
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 ```
 
+<p class="hs-banner" role="note"><strong>Intervals: asymptotic / experimental · not coverage-calibrated.</strong>
+This is a teaching walk of the default univariate animal-model path on gryphon. Whiskers, when shown, are not coverage-calibrated 95% CIs for publication.</p>
+
 This article walks one univariate animal model end to end on a real teaching dataset — fit,
 heritability with its experimental uncertainty, breeding values and accuracy, and a diagnostic
 plot — so you can see the whole `hsquared` extractor surface in one place. It complements the

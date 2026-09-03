@@ -6,6 +6,9 @@ title: "Random regression (k = 2): sommer comparator and validation evidence"
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 ```
 
+<p class="hs-banner" role="note"><strong>Covered at validation scale · opt-in · dense · REML-only.</strong>
+Random-regression k = 2 is covered at validation scale and remains experimental packaging — not the default fit. Intervals are asymptotic / not coverage-calibrated.</p>
+
 This article documents the **random-regression (reaction-norm) animal model** — the opt-in
 `target = "random_regression"` path in `hsquared` — at its covered aim **k = 2** (a linear
 reaction norm: intercept + one slope, a 2 × 2 coefficient genetic covariance `K_g`). It places

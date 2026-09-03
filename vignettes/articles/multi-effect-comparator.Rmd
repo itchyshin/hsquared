@@ -6,6 +6,9 @@ title: "Multi-effect model (K >= 3): sommer comparator and validation evidence"
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 ```
 
+<p class="hs-banner" role="note"><strong>Covered at validation scale · opt-in · dense · REML-only.</strong>
+Arbitrary-N multi-effect (K ≥ 3) is covered at validation scale and remains experimental packaging — not the default fit. Intervals are asymptotic / not coverage-calibrated.</p>
+
 This article documents the **arbitrary-`(1 | group)` multi-effect animal model** — the opt-in
 `target = "multi_effect"` path in `hsquared` — for the case of an additive-genetic animal
 effect plus **two or more** pedigree-independent i.i.d. random effects (K >= 3 variance

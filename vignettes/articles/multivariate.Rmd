@@ -84,6 +84,17 @@ fit_mv <- hsquared(
 Read this as one additive animal effect shared across traits. The trait
 covariances live in `G0`; the residual covariances live in `R0`.
 
+```{r g0-rg-callout, echo = FALSE, results = "asis", eval = TRUE}
+cat(sprintf(
+  '<p><img src="../reference/figures/g0-rg-teaching.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Teaching panel of an illustrative two-trait genetic covariance matrix G0 beside its genetic-correlation triangle r_g. Experimental opt-in multivariate; rotation-invariant; loadings not shown; point display only."
+))
+```
+
+<p class="hs-caption"><em>After a multivariate fit, read G0 then the r_g triangle — see
+<a href="g-matrix-interpretation.html">Reading G matrices</a> for extractors and
+<code>autoplot(fit, "g_matrix")</code>.</em></p>
+
 The explicit spelling still works and still means the same thing, so older
 scripts do not break:
 

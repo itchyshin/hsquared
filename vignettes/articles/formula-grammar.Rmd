@@ -7,6 +7,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit</strong> for reserved and planned terms.
+Parsed-today syntax is not a promise that every term is covered — check
+<a href="current-limits.html">Can I fit and report this?</a>.</p>
+
 This page is a map of the modelling language. It separates syntax that is
 parsed today from syntax that is reserved for later phases.
 

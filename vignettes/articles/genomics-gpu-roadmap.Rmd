@@ -7,6 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit.</strong>
+This page is a roadmap. Production genomics, QTL/eQTL, GLLVM/omics, and CPU/GPU acceleration remain gated — it does not flip <code>public_covered_count</code>.</p>
+
 This page is a roadmap and status map. Some genomic building blocks now exist
 as opt-in experimental paths, while production genomics, QTL/eQTL, GLLVM/omics,
 and CPU/GPU acceleration remain gated roadmap work.

@@ -1,5 +1,11 @@
 # Check Log
 
+## 2026-09-02 (Florence P1 twin-bridge + G0/r_g + banners)
+
+- See `docs/dev-log/check-log.d/2026-09-02-docs-quality-florence-p1.md` and `docs/dev-log/after-task/2026-09-02-florence-p1-figures.md`.
+- Draft PR #150. No covered flip.
+
+
 ## 2026-09-02 (G10 R multivariate covered + experimental 0.6.0)
 
 - **G10 AUTHORIZE applied** — see `docs/dev-log/check-log.d/2026-09-02-g10-r-mv-covered-060.md`
