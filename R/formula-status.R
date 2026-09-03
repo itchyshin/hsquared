@@ -228,7 +228,15 @@ hs_formula_status_syntax <- function() {
     rep("parsed", 6L),
     rep("reserved", 3L),
     "parsed",
-    rep("planned", 6L)
+    # cbind() multivariate is parsed; long-format cov=us/diag/lowrank stay
+    # planned; cov=fa is reserved (engine-experimental, R not fitted);
+    # missing-data rows stay planned.
+    "planned",
+    "planned",
+    "planned",
+    "reserved",
+    "planned",
+    "planned"
   )
 }
 
@@ -325,7 +333,7 @@ hs_formula_status_behavior <- function() {
       "of a within-individual covariate; requires repeated records and engine =",
       "\"julia\", target = \"random_regression\". COVERED at k=2 (linear reaction norm,",
       "intercept + ONE slope, K_g 2x2, Gaussian, homogeneous residual, D=I2",
-      "normalized Legendre): engine V3-RR-REML covered via pre-declared 48-seed",
+      "normalized Legendre): random-regression REML validation row covered via pre-declared 48-seed",
       "bias/MCSE gate PASSED + sommer 4.4.5 leg() same-estimand REML comparator",
       "AGREE (<=1.9e-5); live R<->engine parity EXACT (<=1.03e-5); h2(t) <=4.24e-6.",
       "rr_heritability() returns h2(t) as a CURVE, never a scalar; heritability()",
@@ -368,7 +376,7 @@ hs_formula_status_behavior <- function() {
       "Primary genomic effect for the narrow default-route Gaussian REML form;",
       "a supplied `Ginv` is used without alteration and its construction method,",
       "allele frequencies, ridge, and denominator remain unknown. Auto-routes on",
-      "engine = \"fit\" (design-44 / owner G5 YES 2026-09-03); explicit",
+      "engine = \"fit\" (design-44 / owner YES 2026-09-03); explicit",
       "engine = \"julia\", target = \"genomic\" remains an alias. The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
       "and SE accessors are unavailable. Covered at validation scale (0.7);",
@@ -413,7 +421,7 @@ hs_formula_status_behavior <- function() {
     ),
     rep(inert_marker_text, 3L),
     paste(
-      "Covered at validation scale (G10) multivariate Gaussian animal model;",
+      "Covered at validation scale (2026-09-02 maintainer sign-off) multivariate Gaussian animal model;",
       "a `cbind()` response with an `animal()` term routes to the multivariate",
       "fitter on the DEFAULT path (no engine/target argument needed; the explicit",
       "engine = \"julia\", target = \"multivariate\" spelling still works).",
@@ -425,13 +433,28 @@ hs_formula_status_behavior <- function() {
       "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
       "required), not a multivariate Gaussian."
     ),
-    rep(
-      paste(
-        "Roadmap syntax for long-format structured covariance; the current",
-        "parser rejects trait and `cov` arguments and points users to the",
-        "`cbind()` multivariate path, which fits on the default path."
-      ),
-      4L
+    paste(
+      "Roadmap syntax for long-format unstructured covariance; the current",
+      "parser rejects trait and `cov` arguments and points users to the",
+      "`cbind()` multivariate path, which fits on the default path."
+    ),
+    paste(
+      "Roadmap syntax for long-format diagonal covariance; the current",
+      "parser rejects trait and `cov` arguments. Rotation-free diagonal G0 is",
+      "already reachable as engine_control$genetic_structure = \"diagonal\"",
+      "on the cbind() multivariate path."
+    ),
+    paste(
+      "Roadmap syntax for long-format low-rank covariance (Lambda Lambda');",
+      "the current parser rejects trait and `cov` arguments. Not R-activated."
+    ),
+    paste(
+      "Reserved stub for long-format factor-analytic G (Lambda Lambda' + Psi).",
+      "The Julia engine has an experimental FA fitter (HSquared.jl #292 S4",
+      "d4-k1 8/10 PASS). The R parser rejects trait and `cov` arguments and",
+      "does not fit this form. Use cbind() unstructured or",
+      "genetic_structure = \"diagonal\". Engine evidence is not an R-public",
+      "covered claim; public_covered_count stays 7."
     ),
     paste(
       "Ratified planned missing-response control. Future behavior will keep",

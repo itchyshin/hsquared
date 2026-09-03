@@ -31,11 +31,11 @@ trait-specific heritabilities?
 Two things about this path are true at once, and it is worth separating them
 before anything else. **Reaching it is the default:** a `cbind()` Gaussian
 response with an `animal()` term routes to the multivariate REML fitter on an
-ordinary `hsquared()` call, with no `engine` or `target` argument. **G10
-(2026-09-02) covers the claim at validation scale** for t=2 unstructured
+ordinary `hsquared()` call, with no `engine` or `target` argument. **A
+2026-09-02 maintainer sign-off covers the claim at validation scale** for t=2 unstructured
 G0/R0 (`public_covered_count` **6**); the experimental label is retained.
 k≥3 and `genetic_structure = "diagonal"` stay experimental. Default routing
-was reachability; G10 is the promotion.
+was reachability; that sign-off is the promotion.
 
 The validation ledger records cold-start recovery, one full-unstructured
 `sommer` REML comparator, a published supplied-covariance Mrode anchor, and a
@@ -177,8 +177,8 @@ blocked for non-converged multivariate fits.
 
 `covariance_standard_errors(fit_mv)` returns **experimental**, asymptotic
 delta-method standard errors for the G/R covariance and correlation matrices and
-per-trait h², when a local engine provides them. It mirrors `V4-MV-REML`
-(`partial`): unstructured-only, REML-only, not coverage-calibrated. The strict
+per-trait h², when a local engine provides them. It mirrors the engine
+multivariate REML validation row (`partial`): unstructured-only, REML-only, not coverage-calibrated. The strict
 per-seed recovery gate is still a non-pass (7/12 seeds), but the 12-seed
 bias/MCSE study (twin `HSquared.jl#78`/`#79`) shows no detectable bias
 (`|bias| ≤ 2·MCSE` for all six covariance parameters) — reported, not validated.
@@ -232,7 +232,7 @@ factor-analytic covariance models.
 ## Claim boundary
 
 This page describes a **covered (validation-scale)** capability for t=2
-unstructured G0/R0 (G10, 2026-09-02). The experimental label is retained.
+unstructured G0/R0 (2026-09-02). The experimental label is retained.
 k≥3 and `genetic_structure = "diagonal"` stay experimental. Interval
 calibration is not claimed.
 
@@ -240,7 +240,7 @@ calibration is not claimed.
   `animal()` term needs no `engine` or `target` argument; the explicit
   `engine = "julia"`, `target = "multivariate"` spelling remains accepted;
 - **covered at validation scale** for t=2 unstructured; `public_covered_count`
-  is **6**. Default routing (MV-4) was reachability; G10 is the promotion;
+  is **6**. Default routing was reachability; the 2026-09-02 sign-off is the promotion;
 - Gaussian and REML-only;
 - animal-model-only;
 - dense validation-scale;

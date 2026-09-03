@@ -107,6 +107,7 @@ hs_route_table <- function() {
     list(
       key = "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
       expect = "covered",
+      default_route = TRUE,
       title = "Genomic (GREML) and single-step relationship models",
       call = paste0(
         'hsquared(y ~ genomic(1 | id, markers = M), data = dat)'
@@ -115,7 +116,7 @@ hs_route_table <- function() {
         "0.7 covered claim is genomic GREML (genomic_variance_ratio on",
         "K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G",
         "from markers. Default engine = \"fit\" auto-routes the narrow form",
-        "(owner G5 YES 2026-09-03 / design-44); explicit target = \"genomic\"",
+        "(owner YES 2026-09-03 / design-44); explicit target = \"genomic\"",
         "remains an alias. Design-44 nine-cell recovery campaign is",
         "confirmatory / may still run — not claimed PASS here. Single-step /",
         "metafounder paths in this combined validation_status row remain",
@@ -162,7 +163,7 @@ hs_route_table <- function() {
       scope = paste(
         "REML-only, animal-model-only, dense/validation-scale. Returns G0/R0",
         "covariance and correlation matrices, per-trait h2, and cross-trait EBVs.",
-        "Covered claim is t = 2 unstructured G0/R0 only (G10, 2026-09-02);",
+        "Covered claim is t = 2 unstructured G0/R0 only (2026-09-02 maintainer sign-off);",
         "k>=3 and genetic_structure = \"diagonal\" stay experimental.",
         "The R-lane evidence includes a 100-replicate t = 2 cold-start recovery",
         "study, one reproduced full-unstructured `sommer` comparator leg, a",
@@ -175,7 +176,7 @@ hs_route_table <- function() {
         "element-wise parity is verified LOCALLY at pre-declared tolerances, NOT",
         "in CI (the CI runner has no Julia, so those checks skip). The engine row",
         "is covered; this R-public surface is now covered at validation scale;",
-        "public_covered_count is 6. Since MV-4 the cbind route is selected on",
+        "public_covered_count is 7. Since default routing the cbind route is selected on",
         "the default call."
       ),
       point = "yes",

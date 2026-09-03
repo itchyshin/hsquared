@@ -55,7 +55,7 @@ test_that("diagonal is accepted; lowrank/FA stay aborted (doc-38 §H.4)", {
         ),
         "multivariate"
       ),
-      "planned, not implemented",
+      "not activated on the R bridge",
       fixed = TRUE
     )
   }

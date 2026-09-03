@@ -161,10 +161,11 @@
 #'   known-truth recovery and external-comparator evidence are committed. The
 #'   reserved `genetic_structure` control currently accepts `"unstructured"` and
 #'   `"diagonal"` on the R bridge. `"diagonal"` is the rotation-free structured
-#'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"` and
-#'   `"factor_analytic"` remain planned until the loading rotation and
-#'   interpretation contract is validated. The future `rank` control is also
-#'   reserved and currently errors instead of being ignored.
+#'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"`
+#'   remains planned. `"factor_analytic"` is experimental on the Julia engine
+#'   (HSquared.jl #292 S4) and reserved, not activated, on the R bridge; not
+#'   covered. The future `rank` control is also reserved and currently errors
+#'   instead of being ignored.
 #'
 #'   `target = "nongaussian"` is an experimental, opt-in latent-scale GLMM for
 #'   `family = poisson()`/`binomial()` (binary 0/1) on `animal(1 | id, pedigree =

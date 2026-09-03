@@ -26,7 +26,7 @@ them.
 covariance and correlation matrices and per-trait \code{h^2}, for an opt-in
 \strong{unstructured} multivariate fit, when the engine returned them.
 
-Heavy caveats (engine row \code{V4-MV-REML}, \code{partial}): the strict per-seed
+Heavy caveats (engine multivariate REML validation row, \code{partial}): the strict per-seed
 recovery gate is still a non-pass (7/12 unstructured seeds in the updated
 study), but a 12-seed bias/MCSE study (twin \code{HSquared.jl#78}) shows \strong{no
 detectable bias} -- all six covariance parameters have \verb{|bias| <= 2*MCSE}

@@ -15,8 +15,10 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     contract without fitting. What you may report is listed on the package
     article 'Can I fit and report this?', not in validation_status(), which is
     a developer evidence table. Uncertainty intervals are experimental and not
-    coverage-calibrated. Opt-in genomic GREML is covered at validation scale (explicit target =
-    "genomic"; default activation still held). Single-step, SNP-BLUP,
+    coverage-calibrated. Default-route genomic GREML is covered at validation
+    scale (narrow genomic() on the ordinary call; explicit target = "genomic"
+    remains an alias). Experimental 0.7.0 retained; public covered count stays
+    7. Single-step, SNP-BLUP,
     repeatability, and two-effect animal models fit through opt-in engine paths
     (repeatability/two-effect covered where previously covered; SNP-BLUP/
     single-step remain experimental); multivariate cbind() animal models route

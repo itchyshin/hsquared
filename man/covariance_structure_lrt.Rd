@@ -32,7 +32,7 @@ is interior, so the chi^2 reference is exact (\code{boundary = FALSE}). Structur
 whose null lies on a rank/PSD boundary (low-rank / factor-analytic) would need
 a chi^2-mixture correction and are gated out of the R bridge for now.
 
-It mirrors the engine row \code{V4-MV-REML} (\code{partial}): asymptotic, REML-only,
+It mirrors the engine multivariate REML validation row (\code{partial}): asymptotic, REML-only,
 dense validation-scale, with the multivariate recovery calibration not yet
 passed -- a reported test, not a validated one. Both fits must be on the same
 response, fixed effects, and pedigree.

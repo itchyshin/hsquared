@@ -45,8 +45,8 @@ Five points frame everything below.
    explained, sign-canonicalized eigen-coefficients, and the eigenfunctions `ψ_j(t) = φ(t)ᵀ v_j`.
    These are rotation-invariant; no raw, rotation-arbitrary Legendre loadings are interpreted.
 
-5. **Validation status.** The random-regression REML row `V3-RR-REML` is **covered at
-   validation scale** — the maintainer G10 flip has been applied and the R public `rr()` surface
+5. **Validation status.** The random-regression REML validation row is **covered at
+   validation scale** — the maintainer sign-off has been applied and the R public `rr()` surface
    now matches the twin engine's covered status. This is experimental and opt-in (not the
    default; not production or ML; intervals on `K_g` are not implemented). The fences in notes
    2–4 above (h²(t) is a curve, not a scalar; overstatement risk without PE; eigenfunctions are
@@ -261,8 +261,8 @@ sm_vc
 ## Validation evidence (do not re-run)
 
 This `sommer` cross-check is corroborating evidence. The **primary validation evidence** for the
-random-regression REML estimator lives on the Julia side (row `V3-RR-REML` in
-`HSquared.validation_status()`), at the covered aim **k = 2**:
+random-regression REML estimator lives on the Julia side (the random-regression
+REML row in `HSquared.validation_status()`), at the covered aim **k = 2**:
 
 - **Pre-declared 48-seed bias/MCSE recovery gate** (`sim/phase3_rr_recovery_gate.jl`;
   predeclaration committed **before** the run, harness byte-identical pre/post). DGP: half-sib

@@ -127,9 +127,44 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     ) %in%
       status$term
   ))
-  expect_true(all(
-    status$syntax_status[grepl("cov =", status$term, fixed = TRUE)] == "planned"
-  ))
+  expect_equal(
+    status$syntax_status[
+      status$term == "animal(trait | id, pedigree = ped, cov = us())"
+    ],
+    "planned"
+  )
+  expect_equal(
+    status$syntax_status[
+      status$term == "animal(trait | id, pedigree = ped, cov = diag())"
+    ],
+    "planned"
+  )
+  expect_equal(
+    status$syntax_status[
+      status$term == "animal(trait | id, pedigree = ped, cov = lowrank(K = 2))"
+    ],
+    "planned"
+  )
+  expect_equal(
+    status$syntax_status[
+      status$term == "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
+    ],
+    "reserved"
+  )
+  expect_match(
+    status$current_behavior[
+      status$term == "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
+    ],
+    "HSquared.jl #292",
+    fixed = TRUE
+  )
+  expect_match(
+    status$current_behavior[
+      status$term == "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
+    ],
+    "public_covered_count stays 7",
+    fixed = TRUE
+  )
   expect_true(all(
     c(
       "missing = miss_control(response = \"include\")",
