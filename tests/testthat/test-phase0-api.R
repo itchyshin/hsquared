@@ -199,6 +199,24 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     status$term == "single_step(1 | id, pedigree = ped, markers = M)" &
       status$fitting_status == "fitted (opt-in single-step construction)"
   ))
+  single_step_construct_row <- status[
+    status$term == "single_step(1 | id, pedigree = ped, markers = M)",
+  ]
+  expect_match(
+    single_step_construct_row$current_behavior,
+    "HSquared.jl #295",
+    fixed = TRUE
+  )
+  expect_match(
+    single_step_construct_row$current_behavior,
+    "public_covered_count stays 7",
+    fixed = TRUE
+  )
+  expect_match(
+    single_step_construct_row$current_behavior,
+    "not a default-route promotion",
+    fixed = TRUE
+  )
   single_step_bundle_row <- status[
     status$term ==
       paste0(
@@ -319,7 +337,11 @@ test_that("validation_status separates evidence from planned validation", {
   ]
   expect_match(supplied_row$evidence, "single_step_construct", fixed = TRUE)
   expect_match(supplied_row$claim_boundary, "genomic GREML", fixed = TRUE)
-  expect_match(supplied_row$claim_boundary, "public_covered_count is 7", fixed = TRUE)
+  expect_match(
+    supplied_row$claim_boundary,
+    "public_covered_count is 7",
+    fixed = TRUE
+  )
   expect_equal(
     status$status[
       status$capability == "experimental repeatability estimator (opt-in)"

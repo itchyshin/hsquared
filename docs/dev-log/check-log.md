@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-09-03 (R single-step partial / experimental honesty — no flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-ss-r-partial.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-ss-r-partial.md`.
+- Julia #295 cited. Count stays **7**. Darwin UNSIGNED. No ordinary-route
+  promotion. No General/CRAN/1.0.
+
 ## 2026-09-03 (R pointer after Julia V4-FA G10 — not an R-public flip)
 
 - See `docs/dev-log/check-log.d/2026-09-03-v08-fa-v4-fa-r-pointer.md` and

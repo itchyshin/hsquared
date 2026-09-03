@@ -399,14 +399,18 @@ hs_formula_status_behavior <- function() {
       "Primary single-step effect of the opt-in, experimental construction path;",
       "requires `pedigree` + `markers` or an hs_data() bundle carrying both, and",
       "engine = \"julia\", target = \"single_step_construct\". The engine builds",
-      "H^-1 from pedigree and genotyped-subset markers at validation scale."
+      "H^-1 from pedigree and genotyped-subset markers at validation scale.",
+      "HSquared.jl #295 records AGHmatrix Hmatrix construction AGREE and an",
+      "n=240 recovery PASS; that is engine evidence, not an R-public covered",
+      "claim and not a default-route promotion. public_covered_count stays 7."
     ),
     paste(
       "Bundle shorthand for the opt-in, experimental single-step construction",
       "path; when data is an hs_data() object with pedigree and genotypes,",
       "`single_step(1 | id)` resolves both from the bundle. Explicit `pedigree`",
       "or `markers` arguments override the bundle. Requires engine = \"julia\",",
-      "target = \"single_step_construct\"."
+      "target = \"single_step_construct\". Engine evidence is HSquared.jl #295;",
+      "R is not a default-route / ordinary-path promotion."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-Gamma",

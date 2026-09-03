@@ -1,5 +1,13 @@
 # hsquared 0.7.0
 
+* **Single-step H⁻¹ is no longer planned-only.** The Julia engine has
+  construction AGREE vs AGHmatrix::Hmatrix and an n=240 recovery PASS
+  (HSquared.jl #295). R keeps the existing opt-in
+  `target = "single_step_construct"` / supplied-`Hinv` routes and does
+  **not** promote `single_step()` to the ordinary default path. Status is
+  **partial / experimental**, not covered. Darwin UNSIGNED.
+  `public_covered_count` stays **7**. No General / CRAN / 1.0.
+
 * **Factor-analytic G: engine-covered pointer, R row stays planned.** Julia
   `V4-FA` is engine-covered (HSquared.jl #300 / `60895208`; S4 evidence on
   #292). R `formula_status()` reserves `cov = fa()` and errors that the
