@@ -150,7 +150,7 @@ hs_validation_status_status <- function() {
   c(
     rep("partial", 7L), # positions 1-7
     "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    "covered", # position 9 = genomic GREML (0.7 opt-in validation-scale; single-step still partial elsewhere)
+    "covered", # position 9 = genomic GREML (0.7 covered validation-scale; G5 default-route)
     "partial", # position 10 = SNP-BLUP
     "covered", # position 11 = multivariate REML (G10 t=2 unstructured R-public)
     rep("covered", 3L),
@@ -397,18 +397,21 @@ hs_validation_status_boundaries <- function() {
       "path is opt-in experimental."
     ),
     paste(
-      "Covered at VALIDATION scale for opt-in genomic GREML (0.7 / owner #7);",
-      "Julia-owned REML estimator (fit_ai_reml / fit_gblup_reml on a",
-      "relationship-inverse or marker-built Q_lambda) that R surfaces; mirrors",
-      "the twin V2-GREML covered gate for the supplied-Ginv estimator, with",
-      "marker==Q identity + Totoro exact-G comparator + design-53 SUPERSEDE.",
-      "Single-step / metafounder construction paths in this combined row remain",
-      "PARTIAL (V2-SSHINV). Genomic GREML accepts a supplied Ginv or a marker",
-      "matrix (engine-built VanRaden1 G + ridge 0.01); public estimand is",
-      "genomic_variance_ratio on K_lambda (design-51). Default activation,",
-      "APY, SNP-BLUP, intervals, and field-panel robustness are out of the",
-      "covered claim. Experimental label retained; not the default route, not",
-      "ML, not production. NO-ANCHOR: no clean Mrode genomic-h2 pin.",
+      "Covered at VALIDATION scale for genomic GREML (0.7 / owner #7; default",
+      "route activated under owner G5 YES 2026-09-03); Julia-owned REML",
+      "estimator (fit_ai_reml / fit_gblup_reml on a relationship-inverse or",
+      "marker-built Q_lambda) that R surfaces; mirrors the twin V2-GREML",
+      "covered gate for the supplied-Ginv estimator, with marker==Q identity +",
+      "Totoro exact-G comparator + design-53 SUPERSEDE. ROUTING: a narrow",
+      "`genomic(1 | id, markers = M)` / `genomic(1 | id, Ginv = Q)` Gaussian",
+      "REML form auto-routes on the DEFAULT path (design-44); explicit",
+      "`engine = \"julia\", target = \"genomic\"` remains an alias. Single-step /",
+      "metafounder / SNP-BLUP stay opt-in or partial. Public estimand is",
+      "genomic_variance_ratio on K_lambda (design-51). Design-44 nine-cell G5",
+      "recovery campaign is confirmatory / may still run under Totoro -- not",
+      "claimed PASS here. APY, intervals, and field-panel robustness remain out",
+      "of the covered claim. Experimental label retained; not ML, not",
+      "production. NO-ANCHOR: no clean Mrode genomic-h2 pin.",
       "public_covered_count is 7."
     ),
     paste(

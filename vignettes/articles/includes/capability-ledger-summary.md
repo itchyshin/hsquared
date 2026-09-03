@@ -85,9 +85,7 @@ hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
 ### Genomic (GREML) and single-step relationship models
 
 ```r
-hsquared(y ~ genomic(1 | id, markers = M), data = dat,
-         control = hs_control(engine = "julia",
-           engine_control = list(target = "genomic")))
+hsquared(y ~ genomic(1 | id, markers = M), data = dat)
 ```
 
 **Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
@@ -96,9 +94,9 @@ hsquared(y ~ genomic(1 | id, markers = M), data = dat,
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** 0.7 covered claim is opt-in genomic GREML only (target = "genomic"; genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Default activation is held (design-44 G5 / boundary holdout). Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
+**Exact scope and caveat.** 0.7 covered claim is genomic GREML (genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Default engine = "fit" auto-routes the narrow form (owner G5 YES 2026-09-03 / design-44); explicit target = "genomic" remains an alias. Design-44 nine-cell recovery campaign is confirmatory / may still run — not claimed PASS here. Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
 
-**Concrete fallback.** Report genomic_variance_ratio on the declared kernel with the no-anchor and scale disclosures. Do not treat single-step or default genomic routing as covered.
+**Concrete fallback.** Report genomic_variance_ratio on the declared kernel with the no-anchor and scale disclosures. Do not treat single-step or SNP-BLUP as the 0.7 covered claim.
 
 ### SNP-BLUP marker effects
 

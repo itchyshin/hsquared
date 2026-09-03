@@ -1,13 +1,22 @@
 # hsquared 0.7.0
 
+* **G5 — default genomic GREML activation (honesty-safe; no count bump).**
+  Owner YES 2026-09-03. Narrow `genomic(1 | id, markers = M)` /
+  `genomic(1 | id, Ginv = Q)` now auto-routes on `engine = "fit"` (and on
+  `engine = "julia"` with no explicit target) to the same covered
+  validation-scale GREML estimand as `target = "genomic"`. Session warn-once
+  keeps relationship-scale / experimental fences. Design-44 nine-cell recovery
+  campaign is confirmatory / may still run — not claimed PASS. `public_covered_count`
+  stays **7**. Single-step / SNP-BLUP stay opt-in. No General / CRAN / 1.0.
+
 * **#7 - R genomic GREML `partial -> covered` (validation-scale, opt-in).**
   Owner ink: overnight approvals #5-#10 (auto-flip #7 when design-41 section 3 + Rose
   CLEAN). Darwin SIGN + Rose tip CLEAN after G1-G6 gap-clear (R #154 / Julia #287).
   `public_covered_count` moves **6 -> 7**. Version **0.7.0** experimental label
   **retained**. Scope: explicit `engine = "julia", target = "genomic"` on
   `genomic(1 | id, markers = M)` / `Ginv = Q`; estimand `genomic_variance_ratio`
-  on \(K_\lambda = G + 0.01 I\) (design-51). **NOT** default activation
-  (design-44 G5 / boundary holdout still owed). **NOT** single-step / SNP-BLUP /
+  on \(K_\lambda = G + 0.01 I\) (design-51). **G5 later activated the default
+  route for this same estimand (2026-09-03).** **NOT** single-step / SNP-BLUP /
   APY / GPU / intervals. **NO-ANCHOR DISCLOSURE:** no clean Mrode genomic-\(h^2\)
   pin. Evidence: design-53 SUPERSEDE; Totoro exact-`G` PASS; Boole RATIFIED;
   canon VanRaden lock; promotion parity (DP-10 CI caveat). No General / CRAN / 1.0.

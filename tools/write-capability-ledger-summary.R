@@ -109,24 +109,25 @@ hs_route_table <- function() {
       expect = "covered",
       title = "Genomic (GREML) and single-step relationship models",
       call = paste0(
-        'hsquared(y ~ genomic(1 | id, markers = M), data = dat,\n',
-        '         control = hs_control(engine = "julia",\n',
-        '           engine_control = list(target = "genomic")))'
+        'hsquared(y ~ genomic(1 | id, markers = M), data = dat)'
       ),
       scope = paste(
-        "0.7 covered claim is opt-in genomic GREML only (target = \"genomic\";",
-        "genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied",
-        "Ginv or builds VanRaden1 G from markers. Default activation is held",
-        "(design-44 G5 / boundary holdout). Single-step / metafounder paths in",
-        "this combined validation_status row remain exploratory (not the 0.7",
-        "covered claim). APY / production / intervals out of scope."
+        "0.7 covered claim is genomic GREML (genomic_variance_ratio on",
+        "K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G",
+        "from markers. Default engine = \"fit\" auto-routes the narrow form",
+        "(owner G5 YES 2026-09-03 / design-44); explicit target = \"genomic\"",
+        "remains an alias. Design-44 nine-cell recovery campaign is",
+        "confirmatory / may still run — not claimed PASS here. Single-step /",
+        "metafounder paths in this combined validation_status row remain",
+        "exploratory (not the 0.7 covered claim). APY / production / intervals",
+        "out of scope."
       ),
       point = "yes",
       interval = "no",
       fallback = paste(
         "Report genomic_variance_ratio on the declared kernel with the no-anchor",
-        "and scale disclosures. Do not treat single-step or default genomic",
-        "routing as covered."
+        "and scale disclosures. Do not treat single-step or SNP-BLUP as the",
+        "0.7 covered claim."
       )
     ),
     list(

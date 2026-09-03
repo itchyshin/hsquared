@@ -50,6 +50,24 @@ hs_warn_cbind_experimental_once <- function() {
   invisible(TRUE)
 }
 
+# Default-path genomic() routes to genomic GREML (design-44 / owner G5 YES
+# 2026-09-03). Same validation-scale covered estimand as the former opt-in
+# target = "genomic" route; experimental label retained. Warn once so easy
+# syntax does not look like pedigree h2, production genomics, or G5 nine-cell
+# recovery already banked.
+hs_warn_genomic_default_once <- function() {
+  if (isTRUE(hs_session_flags$genomic_default)) {
+    return(invisible(FALSE))
+  }
+  hs_session_flags$genomic_default <- TRUE
+  warning(
+    "This genomic() model fitted on the default path; genomic GREML is covered at validation scale (experimental).\n",
+    "Report genomic_variance_ratio on the declared K_lambda relationship scale only; not pedigree h2, not production genomics, intervals not coverage-calibrated.",
+    call. = FALSE
+  )
+  invisible(TRUE)
+}
+
 # Deparse a user formula or data argument into a pasteable snippet.
 hs_deparse_user_expr <- function(x) {
   paste(deparse(x, width.cutoff = 500L), collapse = "\n    ")
