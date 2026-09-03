@@ -213,3 +213,38 @@ partition of `σ_P` and the selection-response total.
 `R` (breeder's equation `R = h²S`) has no surface in either lane; none
 is owed (A21 C8). If a selection-response extractor lands, the identity
 is `R = h²_T · S` on the Willham scale, not `h²_d · S`.
+
+### Genomic GREML identities (0.7 candidate)
+
+These lock the derived estimand for the **opt-in** R-public genomic GREML
+surface (`target = "genomic"`). They do **not** flip status; live count stays
+**6** until a separate Rose CLEAN tip audit and lockstep flip. Component
+\(\sigma_g^2/\sigma_e^2\) stay external-comparator gated (Totoro exact-`G`
+sommer/rrBLUP; engine `blupf90+` on supplied `Ginv`). Recovery for the opt-in
+claim is carried by design-53 SUPERSEDE (engine V2-GREML 48-seed + marker≡Q
+identity), not by a fresh R 48-seed campaign.
+
+Locked construction citation (relationship scale, not a Mrode genomic-\(h^2\)
+pin):
+
+- VanRaden, P. M. (2008). Efficient methods to compute genomic predictions.
+  *Journal of Dairy Science* **91**(11): 4414–4423.
+  doi:10.3168/jds.2007-0980 (method 1; sample allele frequencies; \(G = WW'/k\)).
+- Scale honesty retained from design-43 §1 / design-51 (Legarra 2016 base-
+  population discussion as secondary scale literature, not a textbook \(h^2\)
+  anchor).
+
+- **Genomic variance ratio**
+  \(r_G = \sigma_g^2 / (\sigma_g^2 + \sigma_e^2)\) =
+  `genomic_variance_ratio` on the declared kernel
+  \(K_\lambda = G + 0.01\,I\). This is a **variance-component ratio on the
+  genomic relationship scale**, not pedigree narrow-sense \(h^2\), not a
+  founder-base additive heritability, and not generally the fraction of average
+  marginal phenotypic variance under ridge. Identity tests:
+  `tests/testthat/test-genomic-greml-s0-identity.R` (N2 label pin; julia-free
+  mock + optional live) and live `heritability(fit)$component ==
+  "genomic_variance_ratio"` on the genomic route
+  (`tests/testthat/test-genomic.R`). Locked citation: VanRaden (2008) for \(G\);
+  Falconer & Mackay (1996) ch. 8/10 for the two-component variance-ratio form
+  (applied here on the genomic scale, with the explicit no-anchor disclosure
+  that no clean Mrode genomic-\(h^2\) pin exists).

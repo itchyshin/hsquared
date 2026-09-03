@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-09-02 (0.7 GREML Rose gap-clear G1–G6 — no flip)
+
+- See `docs/dev-log/check-log.d/2026-09-02-07-totoro-exactG-pass.md`,
+  `docs/dev-log/check-log.d/2026-09-02-07-greml-promotion-parity-predeclaration.md`,
+  `docs/dev-log/check-log.d/2026-09-02-07-greml-promotion-parity.md`, and
+  `docs/dev-log/after-task/2026-09-02-07-greml-gapclear.md`.
+- design-53 SUPERSEDE · design-51 Boole RATIFIED · canon genomic citation lock ·
+  claim-surface NO-ANCHOR · DoD ink. **Count stays 6.** No covered flip.
+
+
 ## 2026-09-02 (Florence P1 twin-bridge + G0/r_g + banners)
 
 - See `docs/dev-log/check-log.d/2026-09-02-docs-quality-florence-p1.md` and `docs/dev-log/after-task/2026-09-02-florence-p1-figures.md`.
