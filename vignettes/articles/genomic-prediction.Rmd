@@ -20,22 +20,25 @@ knitr::opts_chunk$set(
 )
 ```
 
-<p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit.</strong>
-Genomic GREML, SNP-BLUP, and single-step stay partial/held. This page is not public activation and does not change <code>public_covered_count</code>.</p>
+<p class="hs-banner" role="note"><strong>Experimental 0.7.0 · default-route GREML · count stays 7.</strong>
+Narrow <code>genomic()</code> GREML now auto-routes on the ordinary call and is covered at validation scale. SNP-BLUP and single-step stay opt-in and experimental. This page does not flip <code>public_covered_count</code> and does not claim the nine-cell recovery campaign as PASS.</p>
 
-This article shows the current opt-in genomic prediction surface in `hsquared`.
+This article shows the current genomic prediction surface in `hsquared`.
 It is for users who already have a genomic relationship inverse, a marker
 matrix, or a single-step relationship inverse and want to understand which path
 is live today.
 
-The genomic GREML paths are experimental, REML-only, Julia-backed, and remain
-explicit targets. A repaired boundary candidate resolved all 240 sealed holdouts
-and corrected 30 classifications with no losses, but its preregistered activation
-gate failed because one cell was 5.99 times slower at p95 than the old path, above
-the frozen 3 times cap. They require
-`control = hs_control(engine = "julia", engine_control = list(target =
-"genomic"))`; other genomic paths below use their own explicit targets. All require local Julia,
-`JuliaCall`, and a sibling `HSquared.jl` checkout.
+The genomic GREML paths are experimental, REML-only, and Julia-backed.
+Narrow `genomic(1 | id, markers = M)` / `Ginv = Q` auto-routes on
+`engine = "fit"` (and on `engine = "julia"` with no target); explicit
+`target = "genomic"` remains an alias. SNP-BLUP and single-step still
+need their own explicit targets. A repaired boundary candidate resolved
+all 240 sealed holdouts and corrected 30 classifications with no losses,
+but its preregistered runtime gate failed because one cell was 5.99 times
+slower at p95 than the old path, above the frozen 3 times cap. That
+history is confirmatory debt — not a claim that the nine-cell recovery
+campaign passed. All fitting paths require local Julia, `JuliaCall`, and
+a sibling `HSquared.jl` checkout.
 
 ## Three current paths
 
@@ -358,8 +361,10 @@ single-step blending of pedigree and genomic information. Useful anchors are
 (2010)](https://pubmed.ncbi.nlm.nih.gov/20105546/).
 
 For `hsquared`, those papers motivate the roadmap. The package exposes one
-narrow opt-in genomic GREML route while keeping default activation, recovery,
-interval, and broad production genomic claims behind explicit validation gates.
+narrow default-route genomic GREML path (covered at validation scale;
+experimental 0.7.0; count stays 7) while keeping SNP-BLUP, single-step,
+recovery-campaign PASS, interval, and broad production genomic claims
+behind explicit validation gates.
 
 See also:
 

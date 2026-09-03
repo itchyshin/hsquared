@@ -88,7 +88,7 @@ hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
 hsquared(y ~ genomic(1 | id, markers = M), data = dat)
 ```
 
-**Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
+**Can I fit it?** **Yes** - implemented and covered on the default call.
 
 **Can I report the point estimate?** **Yes, within the stated scope** - a pre-declared recovery gate passed and an external same-estimand comparator agrees.
 
@@ -129,7 +129,7 @@ hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat)
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** REML-only, animal-model-only, dense/validation-scale. Returns G0/R0 covariance and correlation matrices, per-trait h2, and cross-trait EBVs. Covered claim is t = 2 unstructured G0/R0 only (2026-09-02 maintainer sign-off); k>=3 and genetic_structure = "diagonal" stay experimental. The R-lane evidence includes a 100-replicate t = 2 cold-start recovery study, one reproduced full-unstructured `sommer` comparator leg, a published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm agreement probe - which is NOT same-estimand REML parity. The Mrode anchor is SUPPLIED-covariance (fixed effects and BLUPs given known G0/R0), so it does NOT anchor the ESTIMATED G0/R0, and no published textbook anchor for estimated multivariate G0/R0 exists - that evidence is comparator- and recovery-based, not textbook-anchored. R<->engine element-wise parity is verified LOCALLY at pre-declared tolerances, NOT in CI (the CI runner has no Julia, so those checks skip). The engine row is covered; this R-public surface is now covered at validation scale; public_covered_count is 6. Since default routing the cbind route is selected on the default call.
+**Exact scope and caveat.** REML-only, animal-model-only, dense/validation-scale. Returns G0/R0 covariance and correlation matrices, per-trait h2, and cross-trait EBVs. Covered claim is t = 2 unstructured G0/R0 only (2026-09-02 maintainer sign-off); k>=3 and genetic_structure = "diagonal" stay experimental. The R-lane evidence includes a 100-replicate t = 2 cold-start recovery study, one reproduced full-unstructured `sommer` comparator leg, a published Mrode-style supplied-variance anchor, and a Bayesian MCMCglmm agreement probe - which is NOT same-estimand REML parity. The Mrode anchor is SUPPLIED-covariance (fixed effects and BLUPs given known G0/R0), so it does NOT anchor the ESTIMATED G0/R0, and no published textbook anchor for estimated multivariate G0/R0 exists - that evidence is comparator- and recovery-based, not textbook-anchored. R<->engine element-wise parity is verified LOCALLY at pre-declared tolerances, NOT in CI (the CI runner has no Julia, so those checks skip). The engine row is covered; this R-public surface is now covered at validation scale; public_covered_count is 7. Since default routing the cbind route is selected on the default call.
 
 **Concrete fallback.** For k>=3 or a diagonal genetic structure, treat the fit as experimental. For a single-trait question, use the covered univariate model.
 
