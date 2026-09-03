@@ -107,6 +107,7 @@ hs_route_table <- function() {
     list(
       key = "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
       expect = "covered",
+      default_route = TRUE,
       title = "Genomic (GREML) and single-step relationship models",
       call = paste0(
         'hsquared(y ~ genomic(1 | id, markers = M), data = dat)'
@@ -175,7 +176,7 @@ hs_route_table <- function() {
         "element-wise parity is verified LOCALLY at pre-declared tolerances, NOT",
         "in CI (the CI runner has no Julia, so those checks skip). The engine row",
         "is covered; this R-public surface is now covered at validation scale;",
-        "public_covered_count is 6. Since default routing the cbind route is selected on",
+        "public_covered_count is 7. Since default routing the cbind route is selected on",
         "the default call."
       ),
       point = "yes",

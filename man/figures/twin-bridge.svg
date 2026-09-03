@@ -61,5 +61,5 @@
   <text x="831" y="236" text-anchor="middle" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="11" fill="#94a3b8">never cross as objects</text>
 
   <text x="24" y="290" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12" fill="#0f2533">Default path: engine = "fit" / v0.1 univariate Gaussian REML.</text>
-  <text x="24" y="310" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12" fill="#64748b">Opt-in experimental: engine = "julia" + explicit target (repeatability, genomic, RR, ...). Multivariate cbind() routes on the default call but keeps the experimental label.</text>
+  <text x="24" y="310" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12" fill="#64748b">Opt-in experimental: engine = "julia" + explicit target (repeatability, SNP-BLUP, RR, ...). Multivariate cbind() and genomic GREML route on the default call but keep the experimental label.</text>
 </svg>
