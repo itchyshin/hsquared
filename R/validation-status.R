@@ -292,7 +292,7 @@ hs_validation_status_evidence <- function() {
       "(sommer 4.4.5, blupf90+ 2.60, cold-start recovery), not",
       "textbook-anchored. Any covered flip carries this disclosure, never an",
       "implied Mrode anchor (precedent: docs/design/43-genomic-greml-g0.md).",
-      "Mirrors the twin V4-MULTIVARIATE / V4-MV-REML gates (partial)."
+      "Mirrors the twin engine multivariate REML validation row (partial)."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",
@@ -398,7 +398,7 @@ hs_validation_status_boundaries <- function() {
     ),
     paste(
       "Covered at VALIDATION scale for genomic GREML (0.7 / owner #7; default",
-      "route activated under owner G5 YES 2026-09-03); Julia-owned REML",
+      "route activated under owner YES 2026-09-03); Julia-owned REML",
       "estimator (fit_ai_reml / fit_gblup_reml on a relationship-inverse or",
       "marker-built Q_lambda) that R surfaces; mirrors the twin V2-GREML",
       "covered gate for the supplied-Ginv estimator, with marker==Q identity +",
@@ -407,7 +407,7 @@ hs_validation_status_boundaries <- function() {
       "REML form auto-routes on the DEFAULT path (design-44); explicit",
       "`engine = \"julia\", target = \"genomic\"` remains an alias. Single-step /",
       "metafounder / SNP-BLUP stay opt-in or partial. Public estimand is",
-      "genomic_variance_ratio on K_lambda (design-51). Design-44 nine-cell G5",
+      "genomic_variance_ratio on K_lambda (design-51). Design-44 nine-cell",
       "recovery campaign is confirmatory / may still run under Totoro -- not",
       "claimed PASS here. APY, intervals, and field-panel robustness remain out",
       "of the covered claim. Experimental label retained; not ML, not",
@@ -423,10 +423,10 @@ hs_validation_status_boundaries <- function() {
       "parity are planned. Not the default, not comparator-validated."
     ),
     paste(
-      "Covered at VALIDATION scale (G10, 2026-09-02); Julia-owned dense",
-      "multivariate REML estimator that R surfaces; mirrors the twin V4-MV-REML",
-      "covered row. ROUTING: a `cbind()` Gaussian response with an `animal()`",
-      "term auto-routes to this fitter on the DEFAULT path (MV-4); no",
+      "Covered at VALIDATION scale (2026-09-02 maintainer sign-off); Julia-owned dense",
+      "multivariate REML estimator that R surfaces; mirrors the twin engine",
+      "multivariate REML validation row. ROUTING: a `cbind()` Gaussian response with an `animal()`",
+      "term auto-routes to this fitter on the DEFAULT path; no",
       "engine/target argument is required, and the explicit `engine =",
       "\"julia\", target = \"multivariate\"` spelling still works. Covered numeric",
       "claim is scoped to k = 2 unstructured; k >= 3 stays",
@@ -436,10 +436,10 @@ hs_validation_status_boundaries <- function() {
       "The R lane has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
       "anchor plus a Bayesian MCMCglmm agreement probe. The MCMCglmm leg is",
-      "not same-estimand REML parity. The engine `V4-MV-REML` is covered at",
-      "validation scale (HSquared.jl#161). This R public surface is COVERED at",
-      "validation scale after owner G10 (Shinichi, 2026-09-02, source chat",
-      "\"G10 - you keep going\"); public_covered_count is 7. Twin C8 broader-DGP",
+      "not same-estimand REML parity. The engine multivariate REML validation",
+      "row is covered at validation scale (HSquared.jl#161). This R public surface is COVERED at",
+      "validation scale after maintainer sign-off (Shinichi, 2026-09-02);",
+      "public_covered_count is 7. Twin C8 broader-DGP",
       "confirm is banked (DRAC job 47925486; 16x500; 14/16 pass; fails only",
       "rg_090_rec1/rg_095_rec1; base_inside clean) as characterization; R-lane",
       "MV-5 is SUPERSEDED (A25). The engine blupf90+ same-estimand REML",
@@ -467,7 +467,7 @@ hs_validation_status_boundaries <- function() {
       "(poisson/binomial, Laplace or variational REML) fitting are separate",
       "opt-in experimental targets, not the default. A `cbind()` multivariate",
       "response also routes on the default path, but it is a separate,",
-      "covered (validation-scale) sibling row (G10) and is NOT part of this univariate covered claim.",
+      "covered (validation-scale) sibling row and is NOT part of this univariate covered claim.",
       "Mirrors the twin-owned",
       "V1-AI-REML gate",
       "(covered); not ASReml multi-trait parity."

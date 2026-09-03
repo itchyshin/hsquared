@@ -102,7 +102,7 @@ comparator agrees. Point estimates are reportable within the stated scope:
 - the **univariate Gaussian animal model** on the default call
   (`y ~ fixed + animal(1 | id, pedigree = ped)`, REML);
 - **t = 2 unstructured multivariate** via a `cbind()` response on the ordinary
-  `hsquared()` call (G10; validation-scale; experimental label retained;
+  `hsquared()` call (validation-scale; experimental label retained;
   k≥3 and diagonal stay out);
 - **common-environment two-effect** and its **arbitrary-N** independent-effect
   generalization;
