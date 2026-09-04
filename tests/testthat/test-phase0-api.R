@@ -155,7 +155,7 @@ test_that("formula_status separates parsed, reserved, and planned grammar", {
     status$current_behavior[
       status$term == "animal(trait | id, pedigree = ped, cov = fa(K = 2))"
     ],
-    "HSquared.jl #292",
+    "60895208",
     fixed = TRUE
   )
   expect_match(

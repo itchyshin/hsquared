@@ -1134,8 +1134,9 @@ hs_stop_animal_covariance_arg <- function() {
     "routes to the multivariate fitter on the default path, with no ",
     "`engine`/`target` argument. Long-format `cov = us()`, `cov = diag()`, ",
     "and `cov = lowrank(K = 2)` remain planned grammar. `cov = fa(K = 2)` ",
-    "names an experimental Julia engine path (HSquared.jl #292); the R ",
-    "formula does not fit it.",
+    "is planned R grammar for factor-analytic G. Julia V4-FA is ",
+    "engine-covered (HSquared.jl 60895208); that is not an R-public fit. ",
+    "The R formula does not parse or fit it.",
     call. = FALSE
   )
 }

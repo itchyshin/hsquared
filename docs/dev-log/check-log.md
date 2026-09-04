@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-09-04 (R FA S0 honesty — not R-public)
+
+- See `docs/dev-log/check-log.d/2026-09-04-v08-fa-r-catchup-honesty.md` and
+  `docs/dev-log/after-task/2026-09-04-v08-fa-r-catchup-honesty.md`.
+- Julia `V4-FA` engine-covered at `60895208`. R FA stays **planned**.
+  Count stays **7**. No `cov = fa`. No version bump. No G10.
+
 ## 2026-09-04 (experimental version 0.7.0 → 0.8.0 — count stays 7)
 
 - See `docs/dev-log/check-log.d/2026-09-04-v08-experimental-080-bump.md` and
