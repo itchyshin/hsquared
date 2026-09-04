@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-09-04 (R pointer after Julia V2-SSHINV G10 — not an R-public flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-ss-v2-sshinv-r-pointer.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-ss-v2-sshinv-r-pointer.md`.
+- Julia `V2-SSHINV` engine-covered at `cf2a9bbf`. R SS stays **opt-in
+  partial**. Count stays **7**. No 0.8.0.
+
 ## 2026-09-03 (R single-step partial / experimental honesty — no flip)
 
 - See `docs/dev-log/check-log.d/2026-09-03-v08-ss-r-partial.md` and
