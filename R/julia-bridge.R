@@ -3486,16 +3486,22 @@ hs_validate_genetic_structure_control <- function(control, target) {
       "`target = \"multivariate\"` with a `cbind(...)` response."
     )
   }
-  if (value %in% c("lowrank", "factor_analytic")) {
+  if (identical(value, "factor_analytic")) {
     hs_abort_unsupported_syntax(
-      "Structured multivariate genetic covariance controls ",
-      "(`genetic_structure = \"lowrank\"` or \"factor_analytic\") are ",
-      "experimental on the Julia engine and not activated on the R bridge: ",
-      "the engine payload still withholds rotation-nonidentified loadings. ",
-      "HSquared.jl #292 records S4 FA d4-k1 8/10 PASS; that is engine ",
-      "evidence, not an R-public covered claim. The multivariate path ",
-      "estimates `\"unstructured\"` or `\"diagonal\"` G0; use one of those. ",
+      "`genetic_structure = \"factor_analytic\"` is planned on the R ",
+      "surface and not activated on the R bridge. Julia V4-FA is ",
+      "engine-covered (HSquared.jl 60895208 / #300); that is not an ",
+      "R-public factor-analytic fit. The rotation convention is already ",
+      "ratified (rotation-invariant functionals only, never loadings). ",
+      "Use `genetic_structure = \"unstructured\"` or `\"diagonal\"`. ",
       "public_covered_count stays 7."
+    )
+  }
+  if (identical(value, "lowrank")) {
+    hs_abort_unsupported_syntax(
+      "`genetic_structure = \"lowrank\"` is planned, not activated on ",
+      "the R bridge. The opt-in multivariate path estimates ",
+      "`\"unstructured\"` or `\"diagonal\"` G0; use one of those."
     )
   }
   # "unstructured" (default) and "diagonal" are both reachable. "diagonal" has

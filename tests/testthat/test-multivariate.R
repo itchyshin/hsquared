@@ -267,7 +267,8 @@ test_that("multivariate genetic_structure control is fenced", {
     ),
     "diagonal"
   )
-  # "lowrank" / "factor_analytic" stay gated on the rotation convention.
+  # "lowrank" / "factor_analytic" stay rejected; FA names the engine-covered
+  # twin without becoming an R-public fit.
   for (gs in c("lowrank", "factor_analytic")) {
     expect_error(
       hsquared:::hs_validate_genetic_structure_control(
@@ -284,6 +285,34 @@ test_that("multivariate genetic_structure control is fenced", {
       fixed = TRUE
     )
   }
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "factor_analytic"
+        )
+      ),
+      "multivariate"
+    ),
+    "60895208",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate",
+          genetic_structure = "factor_analytic"
+        )
+      ),
+      "multivariate"
+    ),
+    "planned on the R surface",
+    fixed = TRUE
+  )
   expect_error(
     hsquared:::hs_validate_genetic_structure_control(
       hs_control(

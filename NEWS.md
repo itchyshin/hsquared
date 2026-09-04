@@ -6,6 +6,13 @@
   `public_covered_count` stays **7**. Experimental label **retained**.
   Not production, not CRAN, not 1.0.
 
+* **R FA reject text catch-up (not a public FA).** Parser and
+  `engine_control` still reject `cov = fa(K)` and
+  `genetic_structure = "factor_analytic"`. Errors and `formula_status()`
+  now name Julia `V4-FA` as engine-covered (`60895208` / #300) instead of
+  the stale experimental #292 8/10 wording. R FA stays **planned**. Count
+  stays **7**. No `cov = fa` parse. No version bump.
+
 # hsquared 0.7.0
 
 * **Single-step H⁻¹ is no longer planned-only.** The Julia engine has
