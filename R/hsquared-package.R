@@ -16,7 +16,7 @@
 #' the Julia engine and reserved, not fitted, on the R formula (not covered).
 #'
 #' @section Current limitations:
-#' This package is **experimental** (0.7.0); the first CRAN release is not this bump,
+#' This package is **experimental** (0.8.0); the first CRAN release is not this bump,
 #' not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
 #' and HSquared.jl; use [hs_control()] with `engine = "validate"` to check the
 #' model contract without fitting. Report point estimates only for `covered`

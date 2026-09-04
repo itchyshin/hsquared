@@ -32,7 +32,7 @@ complete).
 | **0.5.0** | Covered Gaussian core (Phase 1–2) — first registration, experimental label | near-done: needs twin parity (#267/#268), the three release decisions, `cran-comments.md`, the version bump |
 | **0.6.0** | Multivariate Gaussian → R-public covered (Phase 3) | **landed 2026-09-02 (G10)** — experimental label retained; next pillar Genomic GREML → 0.7.0 |
 | **0.7.0** | Genomic GREML covered (Phase 5a) | engine covered; free comparators exist |
-| **0.8.0** | Factor-analytic G + single-step (Phase 4) | first real engine fix (FA calibration) |
+| **0.8.0** | Factor-analytic G + single-step (Phase 4) | landed (experimental number; label retained) — engine FA + SS covered; R FA planned; R SS opt-in partial; count 7 |
 | **0.9.0** | Non-Gaussian bundle 1 (Poisson/Binomial) + interval-coverage calibration across covered pillars (Phase 6a) | estimand ratified first (NG-1) |
 | **1.0.0** | Non-Gaussian family set + production sparse + calibrated intervals + committed-stable API + **maintainer's maturity declaration** | the maturity milestone |
 
