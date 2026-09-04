@@ -1,3 +1,11 @@
+# hsquared 0.8.0
+
+* **Experimental number 0.7.0 → 0.8.0.** Both twins lockstep. Marks the
+  0.8 engine pillar pair (Julia FA + single-step covered). R FA stays
+  **planned** (#169). R `single_step()` stays **opt-in partial**.
+  `public_covered_count` stays **7**. Experimental label **retained**.
+  Not production, not CRAN, not 1.0.
+
 # hsquared 0.7.0
 
 * **Single-step H⁻¹ is no longer planned-only.** The Julia engine has

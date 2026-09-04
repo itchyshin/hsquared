@@ -12,7 +12,7 @@ data validation, summaries, extractors, examples — and the
 computation.
 
 > [!WARNING]
-> **Experimental 0.7.0 — not production / not CRAN.** The version number tracks
+> **Experimental 0.8.0 — not production / not CRAN.** The version number tracks
 > *covered* capability, not surface area; the first CRAN release is not this bump. `public_covered_count` is **7**. **Fitting requires a local Julia
 > and an `HSquared.jl` checkout** — R alone parses and validates a model but
 > does not fit it. The Julia twin's General registration
@@ -111,7 +111,7 @@ comparator agrees. Point estimates are reportable within the stated scope:
   the labelled Willham triple rather than a bare scalar;
 - **genomic GREML** on the ordinary
   `hsquared(y ~ genomic(1 | id, markers = M))` / `Ginv = Q` call
-  (validation-scale; experimental 0.7.0 retained; single-step and SNP-BLUP stay
+  (validation-scale; experimental 0.8.0 retained; single-step and SNP-BLUP stay
   out).
 
 Several of these are covered at validation scale and are listed on that limits

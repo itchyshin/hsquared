@@ -91,7 +91,7 @@ test_that("C1-ext smoke TSV is PATH_ONLY and never claim-eligible", {
   expect_true(all(rows$gate == "PATH_ONLY"))
   expect_true(all(rows$claim_eligible == FALSE))
   expect_true(all(rows$public_covered_count == 7L))
-  expect_true(all(rows$experimental_version == "0.7.0"))
+  expect_true(all(rows$experimental_version == "0.8.0"))
   expect_true(all(rows$campaign %in% EXT_CAMPAIGNS))
   expect_equal(sum(rows$role == "characterization_only"), 1L)
 })
@@ -109,7 +109,7 @@ test_that("R interval claim surface stays experimental / blocked for H1/H3", {
   ))
 
   desc <- read.dcf(system.file("DESCRIPTION", package = "hsquared"))
-  expect_equal(unname(desc[, "Version"]), "0.7.0")
+  expect_equal(unname(desc[, "Version"]), "0.8.0")
   expect_match(
     unname(desc[, "Description"]),
     "public covered count is 7",

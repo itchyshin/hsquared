@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-> **Experimental 0.7.0 — not production / not CRAN.** Version tracks *covered*
+> **Experimental 0.8.0 — not production / not CRAN.** Version tracks *covered*
 > capability, not surface area. `public_covered_count` is **7** (multivariate
 > + 0.7 genomic GREML default-route). Fitting needs a local Julia and an
 > `HSquared.jl` checkout; the Julia General registration

@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-09-04 (experimental version 0.7.0 → 0.8.0 — count stays 7)
+
+- See `docs/dev-log/check-log.d/2026-09-04-v08-experimental-080-bump.md` and
+  `docs/dev-log/after-task/2026-09-04-v08-experimental-080-bump.md`.
+- Lockstep with HSquared.jl. `public_covered_count` stays **7**.
+  Experimental label **retained**. R FA stays **planned**. R SS stays
+  **opt-in partial**. No tag / CRAN / 1.0.
+
 ## 2026-09-04 (R pointer after Julia V2-SSHINV G10 — not an R-public flip)
 
 - See `docs/dev-log/check-log.d/2026-09-03-v08-ss-v2-sshinv-r-pointer.md` and

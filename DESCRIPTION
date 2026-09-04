@@ -1,11 +1,11 @@
 Package: hsquared
 Title: R Interface for Julia-Backed Quantitative-Genetic Models
-Version: 0.7.0
+Version: 0.8.0
 Authors@R: 
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
 Description: Provides the R-facing interface for an open quantitative-genetic
     modelling system backed by the HSquared.jl Julia engine. Experimental
-    0.7.0 package (not production; not CRAN): the version tracks covered
+    0.8.0 package (not production; not CRAN): the version tracks covered
     capability (public covered count is 7), not maturity; experimental label
     retained. First CRAN release is not this bump. Version 0.1 fits the univariate Gaussian
     animal model (y ~ fixed + animal(1 | id, pedigree = ped)) by restricted
@@ -17,7 +17,7 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     a developer evidence table. Uncertainty intervals are experimental and not
     coverage-calibrated. Default-route genomic GREML is covered at validation
     scale (narrow genomic() on the ordinary call; explicit target = "genomic"
-    remains an alias). Experimental 0.7.0 retained; public covered count stays
+    remains an alias). Experimental 0.8.0 retained; public covered count stays
     7. Single-step, SNP-BLUP,
     repeatability, and two-effect animal models fit through opt-in engine paths
     (repeatability/two-effect covered where previously covered; SNP-BLUP/
