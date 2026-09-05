@@ -1,5 +1,12 @@
 # hsquared 0.8.0
 
+* **R factor-analytic boundary is now documented and contract-tested.** The
+  planned R surface is documented separately from the Julia `V4-FA`
+  engine-covered route; `cov = fa(...)` and
+  `genetic_structure = "factor_analytic"` remain explicit planned-path
+  rejections. This does not expose R loadings or an R-public FA fit, and
+  `public_covered_count` stays **7**.
+
 * **Experimental number 0.7.0 → 0.8.0.** Both twins lockstep. Marks the
   0.8 engine pillar pair (Julia FA + single-step covered). R FA stays
   **planned** (#169). R `single_step()` stays **opt-in partial**.
