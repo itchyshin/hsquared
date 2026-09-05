@@ -34,6 +34,25 @@ a twin result-payload change.
 > varying-trial formula activation, external comparator/calibration evidence,
 > and any promotion beyond partial remain open.
 
+> **Update 2026-09-05 (R main `84bd385`, Julia main `70bd2a71`).** Twin engine
+> rows moved while R public rows did **not**. Cross-check live status on both
+> lanes before reading the historical table below as current engine truth:
+>
+> - Julia `V4-FA` is **engine-covered** (validation-scale; HSquared.jl `60895208` /
+>   #300). R `factor-analytic G matrices` stays **planned** — no `cov = fa(K)`
+>   activation, no R-facing FA payload claim. See R
+>   [`capability-status.md`](capability-status.md) and Julia
+>   [`capability-status.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/capability-status.md)
+>   plus the bridge matrix
+>   [`12-bridge-compatibility.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/12-bridge-compatibility.md).
+> - Julia `V2-SSHINV` is **engine-covered** (validation-scale H-scale σ²a/σ²e;
+>   HSquared.jl `cf2a9bbf` / #295 family). R single-step construction stays
+>   **opt-in partial** (`target = "single_step_construct"`). Engine-covered ≠
+>   R-public. See R [`25-single-step-construction-bridge.md`](25-single-step-construction-bridge.md)
+>   and the debt pointer in [`validation-debt-register.md`](validation-debt-register.md).
+> - `public_covered_count` stays **7** on both public claim surfaces. No covered
+>   flip follows from this bridge-status cross-link refresh.
+
 > **The twin is actively reshaping `main`** (it advanced abf777d → c4fb442 → 4e8ffde within one
 > hour, and closed all 19 open PRs via the trunk merge PR #36). Pin each WS2 slice to a known
 > `origin/main` SHA and coordinate the result-payload shape via the bridge-activation issues
@@ -50,9 +69,7 @@ bridge candidate function is now on `origin/main` and exported.
 
 `validation_status()` on `origin/main` still has only **7** non-`partial` rows:
 `covered` = V0-LOAD, V1-PED, V1-AINV-TINY, V1-AI-REML; `covered_external` = V1-AINV-MRODE9,
-V1-MRODE-FIT, V1-COMPARATORS. Every new capability row (V1-HERIT-CI, V1-SELINV-PEV, V2-GREML,
-V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-GENOMIC-QTL is
-`planned`. **So R may build these bridges but must surface them as opt-in / experimental.**
+V1-MRODE-FIT, V1-COMPARATORS. The 2026-06 snapshot below listed every then-new capability row (V1-HERIT-CI, V1-SELINV-PEV, V2-GREML, V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) as **`partial`**, with V5-GENOMIC-QTL `planned`. **As of 2026-09-05 that engine-side list is stale for `V4-FA` and `V2-SSHINV` (now engine-covered)** — see the Update block above. R may still build or keep those bridges only as opt-in / experimental (or planned, for FA grammar); engine-covered ≠ R-public, and `public_covered_count` stays **7**.
 
 ## Gap table
 
@@ -62,8 +79,8 @@ V2-SSHINV, V3-REPEAT-REML, V4-MV-REML, V4-FA, V5-MARKER-*) is **`partial`**; V5-
 | `repeatability_interval` | V3-REPEAT-REML · partial | repeatability target, no CI | **Yes (Class A)** | same, on the repeatability target — #12 |
 | `prediction_error_variance(...; method=:selinv)`, `reliability` | V1-SELINV-PEV · partial (engine: selinv==dense PEV-diagonal + reliability parity to rtol 1e-8 on a **110-animal 4-generation pedigree**, nfixed=2, off-diag Ainv nnz=550 — `HSquared.jl` test/runtests.jl, gate #81) | standard `:selinv` fields consumed on default/sparse/AI result-payload routes; Henderson MME attaches dense validation fields unconditionally | **Done for univariate/Henderson; MV/prod sparse still gated** | #21 remains open for multivariate per-trait PEV/reliability, production sparse strategy, and comparator validation. Engine has 110-animal correctness evidence; no production-sparse or comparator claim. |
 | `fit_gblup_reml` / `fit_snp_blup_reml` | V2-GREML · partial | supplied-variance fitters only | **Yes (Class A)** | route genomic/snp_blup to the `_reml` variant when variances absent — #13 |
-| `metafounder_animal_model` / `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · partial plus metafounder/H^Gamma partial | **verified correct (#14)**: supplied `Hinv` -> `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP; construction path now surfaced with `target = "single_step_construct"` | **Done for ordinary single-step construction, animal-only supplied-variance metafounder, and supplied-Gamma `H^Gamma` live bridge** | R surfaces `single_step(1 \| id, pedigree = ped, markers = M)` experimentally; live tests cover marker-row reorder invariance, ungenotyped animal GEBVs, ridge handling, and `hs_data()` shorthand. `metafounder(..., group =, Gamma =)` now fits through `target = "metafounder"` with supplied `sigma_a2`/`sigma_e2`; live tests pin `Gamma = 0` reduction to ordinary Henderson MME supplied-variance output and nonzero-`Gamma` sensitivity. `single_step(..., group =, Gamma =)` fits through `target = "metafounder_single_step"` with skip-guarded `Gamma = 0` reduction and nonzero-`Gamma` sensitivity probes. |
-| `factor_analytic_covariance` + `genetic_structure`/`genetic_loadings`/`genetic_uniqueness` | V4-FA · partial (calibration failed 8/10, 9/10); V4-BRIDGE · partial (diagonal payload `ad6006d`) | bridge accepts `unstructured` + `diagonal` (rotation-free); rejects `lowrank`/`fa`; reserved loading extractors error | **Diagonal done (Class A); lowrank/fa No yet (Class B)** | `diagonal` shipped + LRT fixture-verified (#61); loadings/uniqueness still need the result payload to expose them (twin #42) + failing calibration — #22 |
+| `metafounder_animal_model` / `fit_single_step` / `fit_single_step_reml` / `single_step_inverse` | V2-SSHINV · **engine-covered** (2026-09-04; was partial in the 2026-06 snapshot) plus metafounder/H^Gamma partial; R surface stays opt-in partial — not an R-public flip | **verified correct (#14)**: supplied `Hinv` -> `fit_ai_reml` on the inverse (= ssGBLUP REML), not SNP-BLUP; construction path now surfaced with `target = "single_step_construct"` | **Done for ordinary single-step construction, animal-only supplied-variance metafounder, and supplied-Gamma `H^Gamma` live bridge** | R surfaces `single_step(1 \| id, pedigree = ped, markers = M)` experimentally; live tests cover marker-row reorder invariance, ungenotyped animal GEBVs, ridge handling, and `hs_data()` shorthand. `metafounder(..., group =, Gamma =)` now fits through `target = "metafounder"` with supplied `sigma_a2`/`sigma_e2`; live tests pin `Gamma = 0` reduction to ordinary Henderson MME supplied-variance output and nonzero-`Gamma` sensitivity. `single_step(..., group =, Gamma =)` fits through `target = "metafounder_single_step"` with skip-guarded `Gamma = 0` reduction and nonzero-`Gamma` sensitivity probes. |
+| `factor_analytic_covariance` + `genetic_structure`/`genetic_loadings`/`genetic_uniqueness` | V4-FA · **engine-covered** (2026-09-03; was partial in the 2026-06 snapshot; calibration history retained as debt context); V4-BRIDGE · partial (diagonal payload `ad6006d`); R FA grammar stays **planned** — not an R-public flip | bridge accepts `unstructured` + `diagonal` (rotation-free); rejects `lowrank`/`fa`; reserved loading extractors error | **Diagonal done (Class A); lowrank/fa No yet (Class B)** | `diagonal` shipped + LRT fixture-verified (#61); loadings/uniqueness still need the result payload to expose them (twin #42) + failing calibration — #22 |
 | `single_marker_scan`/`mixed_model_marker_scan`/`loco_*`, `gwas_table`/`qtl_table`/`eqtl_table` | V5-MARKER-* · partial | `gwas()` live for mixed/single/LOCO; `gwas_table(scan)` + `lod_scores(scan)` are thin views of an existing `hs_gwas`; fit-level QTL/GWAS/eQTL tables remain reserved | **Partial** | post-fit scan payload fixture is banked (#45 closed); calibrated thresholds, map joins, formula-level scan grammar, and QTL/eQTL table workflows remain #23/#48/#61 |
 | `fit_laplace_reml`, `laplace_reml_interval`, `NonGaussianFit` | V6-LAPLACE/VA · partial | opt-in `target = "nongaussian"` accepts `poisson(log)` and `binomial(logit)` (binary or common-trial `cbind(successes, failures)`), surfaces Laplace/VA via `engine_control$marginal`, normalizes `NonGaussianFit` payloads, reports no heritability, and consumes the Julia `non_gaussian_parity` fixture without live Julia | **Done for opt-in common-trial bridge; partial gates remain** | R PR #95 (`05fbdd3`) mirrors HSquared.jl PR #152 (`3843ddb`) fixture payloads and preserves serialized vector `n_trials` at the normalizer boundary. R PR #96 (`e7c7a4a`) corrected this bridge-gap row; Julia PR #154 (`38286b1`) corrected the matching Julia #44/ledger wording. Remaining gaps: no R formula activation for per-record varying binomial trials, no external GLLVM/gllvmTMB/MCMCglmm-or-equivalent comparator evidence, no interval calibration, and no promotion beyond partial. |
 
