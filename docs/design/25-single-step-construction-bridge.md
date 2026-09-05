@@ -164,14 +164,22 @@ alignment fails loudly, not silently, if the two topological sorts ever diverge)
 ## 7. Honesty / status
 
 **LANDED 2026-06-20** (R lane). Experimental, opt-in, REML-only,
-dense/validation-scale; mirrors the twin `V2-SSHINV` (partial). The construction
-`τ/ω/blend/ridge` knobs are **not** comparator-validated. Promotion past `partial`
-is twin-gated (BLUPF90/AGHmatrix single-step comparator). `capability-status.md`
-row "genomic/single-step construction beyond supplied inverses" is now `partial
-(R)` (the reorder + differs-from-pedigree guards are green live). The `hs_data()`
-bundle shorthand (`single_step(1 | id)` resolving pedigree + genotypes from the
-container) **landed s6** (§2), live-verified to fit identically to the explicit
-call; `markers` without a `pedigree` (and no bundle) emits a directing error.
+dense/validation-scale. The twin engine row `V2-SSHINV` is now **engine-covered**
+at HSquared.jl `cf2a9bbf` (H-scale σ²a/σ²e; G10 SS 2026-09-04) — see Julia
+[`capability-status.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/capability-status.md)
+and the R↔Julia matrix
+[`12-bridge-compatibility.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/12-bridge-compatibility.md).
+That engine flip does **not** promote this R bridge: R stays **opt-in partial**
+(`target = "single_step_construct"`; ordinary no-control route held). The
+construction `τ/ω/blend/ridge` knobs are **not** comparator-validated.
+R-public promotion past `partial` remains separately gated (bridge/result
+parity, external comparator/scale evidence, maintainer authorization).
+`capability-status.md` row "genomic/single-step construction beyond supplied
+inverses" remains `partial (R)`. `public_covered_count` stays **7**. The
+`hs_data()` bundle shorthand (`single_step(1 | id)` resolving pedigree +
+genotypes from the container) **landed s6** (§2), live-verified to fit
+identically to the explicit call; `markers` without a `pedigree` (and no
+bundle) emits a directing error.
 
 ## 8. Risk register
 
