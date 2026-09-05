@@ -68,6 +68,8 @@ navbar:
     status:
       text: Status
       menu:
+        - text: Twin boundary (R public vs Julia engine)
+          href: articles/twin-boundary.html
         - text: Can I fit and report this?
           href: articles/current-limits.html
         - text: Model status
