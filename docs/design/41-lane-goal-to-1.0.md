@@ -7,6 +7,13 @@
 > milestone ladder (§2) under the success gate (§3); the guardrails (§4) and the
 > autonomy boundary (§5) are what make it safe to leave running.
 
+**Current position (2026-09-04; R `origin/main` `08fa6f1`).** Live
+experimental number is **0.8.0**; `public_covered_count` is **7**; the
+experimental label is **retained**. That is the tip. It is **not** Phase 6
+done and **not** 1.0. Block 1 / first-registration **0.5.0** / MV-4 evidence
+assembly are historical or paused owner debt — they are **not** the active
+spine. The north star below is unchanged.
+
 ## 1. The goal (north star)
 
 **Finish the capability arc through Phase 6 to a capable, honest 1.0 of the
@@ -29,19 +36,21 @@ complete).
 
 | Milestone | Pillar | State |
 |---|---|---|
-| **0.5.0** | Covered Gaussian core (Phase 1–2) — first registration, experimental label | near-done: needs twin parity (#267/#268), the three release decisions, `cran-comments.md`, the version bump |
-| **0.6.0** | Multivariate Gaussian → R-public covered (Phase 3) | **landed 2026-09-02 (G10)** — experimental label retained; next pillar Genomic GREML → 0.7.0 |
-| **0.7.0** | Genomic GREML covered (Phase 5a) | engine covered; free comparators exist |
-| **0.8.0** | Factor-analytic G + single-step (Phase 4) | landed (experimental number; label retained) — engine FA + SS covered; R FA planned; R SS opt-in partial; count 7 |
-| **0.9.0** | Non-Gaussian bundle 1 (Poisson/Binomial) + interval-coverage calibration across covered pillars (Phase 6a) | estimand ratified first (NG-1) |
-| **1.0.0** | Non-Gaussian family set + production sparse + calibrated intervals + committed-stable API + **maintainer's maturity declaration** | the maturity milestone |
+| **0.5.0** | Covered Gaussian core (Phase 1–2) — first registration, experimental label | historical first-registration rung — experimental number superseded by **0.8.0**; twin parity (#267/#268), CRAN decisions, and `cran-comments.md` remain paused owner debt, **not** the live tip |
+| **0.6.0** | Multivariate Gaussian → R-public covered (Phase 3) | **landed 2026-09-02 (G10)** — experimental label retained; number superseded by **0.8.0** |
+| **0.7.0** | Genomic GREML covered (Phase 5a) | **landed 2026-09-02** (engine + R-public at validation scale; G5 default-route later) — number superseded by **0.8.0** |
+| **0.8.0** | Factor-analytic G + single-step (Phase 4) | **live tip** (experimental number; label retained) — engine FA + SS covered; R FA planned; R SS opt-in partial; count **7**. Not Phase 6. Not 1.0. |
+| **0.9.0** | Non-Gaussian bundle 1 (Poisson/Binomial) + interval-coverage calibration across covered pillars (Phase 6a) | **planned** — next spine after 0.8.0; estimand ratified first (NG-1). Not claimed. |
+| **1.0.0** | Non-Gaussian family set + production sparse + calibrated intervals + committed-stable API + **maintainer's maturity declaration** | the maturity milestone (**unchanged end state**) |
 
 "Finished really well **up to Phase 6**" (this lane's headline target) = the
 **0.6 → 0.9** rungs are all covered under §3, the interval-calibration campaign
 has banked coverage for the covered pillars, and the non-Gaussian estimand is
 ratified with its first families covered — leaving only the production sparse
 kernel, the full family set, and the maturity declaration between the lane and
-1.0.
+1.0. Today: 0.6 and 0.7 are covered at validation scale; the experimental
+**number** is **0.8.0** with count **7**; 0.9 and 1.0 remain planned. Do not
+read the live number as Phase 6 or 1.0.
 
 ## 3. Success gate (a pillar is "done well" only when ALL hold)
 
@@ -118,14 +127,13 @@ recovery. Each pillar closes with an after-task report + coordination-board row.
 At every §5 boundary the lane pauses with a crisp decision packet for the
 maintainer and continues once cleared.
 
-**First slice on the spine — corrected 2026-09-01.** This line used to read
-"MV-4 (`cbind()` auto-routing + Boole freeze)". Both are already done: the Boole
-grammar freeze (`docs/design/38`) was RATIFIED 2026-07-11, and MV-4 landed in
-PR #132 (`ff89ac7`). Nothing on the 0.6 rung is blocked on writing routing code.
-The remaining 0.6 work is **evidence assembly against the §3 gate** — claim-surface
-reconciliation for the already-landed auto-route, the MV-5 disposition (**SUPERSEDED** under A25 — engine full-sib + 3-trait + C8; R driver not run), R↔engine element-wise parity at the promotion fixture, the Darwin
-sign-off on the recovered covariance, a Rose pre-flip audit, and the owner's G10
-flip. Agents assemble; the owner signs.
+**Current slice on the spine — honesty 2026-09-04.** This paragraph used to
+present Block 1 / 0.5.0 registration or MV-4 evidence assembly as the live
+tip. Those are done or paused. The live position is experimental **0.8.0** /
+count **7**. Reversible next work is **0.9 prep** (NG-1 remaining
+ratification; interval-calibration Layer B / H1–H3) under §5 — drafts and
+inventories only. That is not a 0.9 claim, not a covered flip, and not a
+smaller replacement for Phase 6 / 1.0.
 
 ## 7. Definition of done for this goal
 
