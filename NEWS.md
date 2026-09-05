@@ -1,5 +1,11 @@
 # hsquared 0.8.0
 
+* **Single-step opt-in routes are now distinguished in user-facing status
+  guidance.** `single_step(..., Hinv = Hinv)` consumes a supplied relationship
+  inverse, whereas `single_step(..., pedigree = ped, markers = M)` (or the
+  matching `hs_data()` bundle) constructs H^-1. Both remain experimental and
+  opt-in; `public_covered_count` stays **7**.
+
 * **R factor-analytic boundary is now documented and contract-tested.** The
   planned R surface is documented separately from the Julia `V4-FA`
   engine-covered route; `cov = fa(...)` and

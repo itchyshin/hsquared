@@ -392,8 +392,13 @@ hs_formula_status_behavior <- function() {
       "public_covered_count remains 7."
     ),
     paste(
-      "Primary single-step effect of the opt-in, experimental model; requires a",
-      "user-supplied `Hinv` and engine = \"julia\", target = \"single_step\"."
+      "Primary single-step effect of the opt-in, experimental supplied-inverse",
+      "route; requires a user-supplied ID-keyed `Hinv` and",
+      "engine = \"julia\", target = \"single_step\". This route consumes the",
+      "relationship precision as supplied: it does not construct H^-1 from",
+      "pedigree and markers. To construct H^-1, use the separate",
+      "`single_step(1 | id, pedigree = ped, markers = M)` route and",
+      "target = \"single_step_construct\"."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental construction path;",
@@ -402,15 +407,18 @@ hs_formula_status_behavior <- function() {
       "H^-1 from pedigree and genotyped-subset markers at validation scale.",
       "HSquared.jl #295 records AGHmatrix Hmatrix construction AGREE and an",
       "n=240 recovery PASS; that is engine evidence, not an R-public covered",
-      "claim and not a default-route promotion. public_covered_count stays 7."
+      "claim. This is separate from the supplied-`Hinv` route, is not a",
+      "default-route promotion, and public_covered_count stays 7."
     ),
     paste(
       "Bundle shorthand for the opt-in, experimental single-step construction",
       "path; when data is an hs_data() object with pedigree and genotypes,",
       "`single_step(1 | id)` resolves both from the bundle. Explicit `pedigree`",
       "or `markers` arguments override the bundle. Requires engine = \"julia\",",
-      "target = \"single_step_construct\". Engine evidence is HSquared.jl #295;",
-      "R is not a default-route / ordinary-path promotion."
+      "target = \"single_step_construct\"; a plain data.frame still needs an",
+      "explicit pedigree and marker matrix. Engine evidence is HSquared.jl #295;",
+      "R is not a default-route / ordinary-path promotion and",
+      "public_covered_count stays 7."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-Gamma",
