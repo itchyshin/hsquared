@@ -13,6 +13,11 @@
   rejections. This does not expose R loadings or an R-public FA fit, and
   `public_covered_count` stays **7**.
 
+* **Twin-boundary article added for 0.9 prep.** New pkgdown page documents the
+  R-public versus Julia-engine split, `public_covered_count = 7`, experimental
+  0.8.0 (0.9 not released), and the FA/SS engine-only versus R-public fence.
+  No covered flip.
+
 * **Experimental number 0.7.0 → 0.8.0.** Both twins lockstep. Marks the
   0.8 engine pillar pair (Julia FA + single-step covered). R FA stays
   **planned** (#169). R `single_step()` stays **opt-in partial**.
