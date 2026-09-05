@@ -154,7 +154,7 @@ twin adds committed recovery/comparator evidence. See
 
 ## Phase 4: Factor-Analytic G Matrices
 
-Status: partial (diagonal) / planned (lowrank, fa). The R-side expert-control
+Status: partial (diagonal) / planned (lowrank, fa) at the R public layer. HSquared.jl has engine-side V4-FA validation evidence, but R has no activated FA grammar or bridge. The R phase remains gated on a rotation-invariant payload contract, R activation, same-estimand comparator evidence, and declared calibration/recovery evidence. The R-side expert-control
 contract for the first structured multivariate bridge is recorded in
 [`docs/design/18-structured-covariance-r-control.md`](docs/design/18-structured-covariance-r-control.md).
 It keeps the current `cbind(...)` response grammar. The rotation-free
@@ -171,10 +171,10 @@ against the twin `structured_covariance_parity` target (live fit skip-guarded).
 
 ## Phase 5: Genomic And Single-Step Models
 
-Status: partial (opt-in). Genomic GREML, SNP-BLUP / RR-BLUP marker effects,
+Status: partial (opt-in) at the R public layer. Genomic GREML, SNP-BLUP / RR-BLUP marker effects,
 constructed single-step `H^-1`, supplied-`Gamma` metafounder `A^Gamma`, and
 supplied-`Gamma` single-step `H^Gamma` are surfaced experimentally through the
-Julia bridge. The R lane now also carries Julia-free target/payload fixtures for
+Julia bridge. The Julia engine's V2-SSHINV coverage is engine evidence only; it does not make the R single-step row covered. R-public promotion remains separately gated by bridge/result parity, external comparator and scale evidence, and maintainer authorization. The R lane now also carries Julia-free target/payload fixtures for
 genomic GBLUP/SNP-BLUP and marker-scan result payloads. Production-scale genomic
 workflows and external same-estimand comparator validation remain planned.
 
