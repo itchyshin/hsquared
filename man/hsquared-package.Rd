@@ -16,14 +16,15 @@ through the HSquared.jl engine: the default \code{hsquared()} call fits when a
 local Julia and \code{HSquared.jl} are available, and otherwise errors with
 install guidance. A \code{cbind()} multivariate Gaussian response also routes on
 that default path; multivariate is covered at validation scale and stays experimental.
-Genomic, single-step, repeatability, two-effect, and non-Gaussian
+Genomic, repeatability, two-effect, and non-Gaussian
 (\code{poisson}/\code{binomial}, Laplace or variational REML) models fit through
-opt-in, experimental engine paths; factor-analytic G is engine-covered on
-the Julia engine (\code{V4-FA}) and planned, not fitted, on the R formula (not covered).
+opt-in, experimental engine paths; single-step stays \strong{opt-in partial};
+factor-analytic G is engine-covered on the Julia engine (\code{V4-FA}) and
+planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
 }
 \section{Current limitations}{
 
-This package is \strong{experimental} (0.8.0); the first CRAN release is not this bump,
+This package is \strong{experimental} (0.8.0); \strong{0.9 is not released}; the first CRAN release is not this bump,
 not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
 and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
 model contract without fitting. Report point estimates only for \code{covered}
