@@ -136,6 +136,9 @@ hsquared <- function(
       if (identical(effect_type, "maternal_genetic")) {
         hs_abort_maternal_genetic_default_path()
       }
+      if (identical(effect_type, "single_step")) {
+        hs_abort_single_step_default_path()
+      }
       # Pat UX: the natural second-effect formulas print a pasteable next
       # call. Other opt-in primaries keep the existing knob-name abort.
       if (effect_type %in% c("common_env", "permanent")) {

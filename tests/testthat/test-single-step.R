@@ -85,6 +85,41 @@ test_that("the default engine = \"fit\" rejects a single_step() formula", {
   )
 })
 
+test_that("the default single-step error names both opt-in routes", {
+  ids <- paste0("a", 1:3)
+  Hinv <- hs_test_hinv(ids)
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+
+  cnd <- expect_error(
+    hsquared(
+      y ~ single_step(1 | id, Hinv = Hinv),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    class = "hsquared_unsupported_syntax"
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "`single_step()` is not on the default `engine = \"fit\"` path",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "target = \"single_step\"",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "target = \"single_step_construct\"",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "Neither route is a covered default R formula path.",
+    fixed = TRUE
+  )
+})
+
 test_that("model_spec() errors clearly on a single_step formula", {
   ids <- paste0("a", 1:2)
   Hinv <- hs_test_hinv(ids)
