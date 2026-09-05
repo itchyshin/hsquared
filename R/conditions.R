@@ -169,6 +169,26 @@ hs_abort_opt_in_next_call <- function(
   )
 }
 
+# Default-path copy for single_step(). The supplied-Hinv and engine-built
+# construction routes are distinct, so a generic target-only suggestion would
+# leave users unsure which formula arguments they need.
+hs_abort_single_step_default_path <- function() {
+  hs_abort_unsupported_syntax(
+    "`single_step()` is not on the default `engine = \"fit\"` path. ",
+    "R single-step remains experimental and opt-in.\n\n",
+    "For a supplied inverse, use `single_step(1 | id, Hinv = Hinv)` with ",
+    "`control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"single_step\"))`.\n\n",
+    "For engine-built H^-1, use ",
+    "`single_step(1 | id, pedigree = ped, markers = M)` with ",
+    "`control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"single_step_construct\"))` (or the matching `hs_data()` ",
+    "bundle). Neither route is a covered default R formula path.\n\n",
+    "See: current-limits article, formula_status().",
+    call. = FALSE
+  )
+}
+
 # One rule for the public hsquared() door: ML is not a live path.
 # REML = TRUE is the nearest working call. Internal spec builders and
 # model_spec() may still construct an ML-labelled spec; engine = "julia"

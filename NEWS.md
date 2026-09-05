@@ -13,6 +13,12 @@
   the stale experimental #292 8/10 wording. R FA stays **planned**. Count
   stays **7**. No `cov = fa` parse. No version bump.
 
+* **Single-step default-path errors now name both opt-in routes.** Rejections
+  distinguish supplied-`Hinv` fitting (`target = "single_step"`) from
+  engine-built `H^-1` construction (`target = "single_step_construct"`).
+  Both remain experimental and opt-in; neither is a covered default R formula
+  path. `public_covered_count` stays **7**.
+
 # hsquared 0.7.0
 
 * **Single-step H⁻¹ is no longer planned-only.** The Julia engine has
