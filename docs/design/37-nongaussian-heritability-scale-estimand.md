@@ -3,8 +3,9 @@
 > **Status: NG-2 SIGNED OFF — ratify-with-fixes (3–1), 2026-07-11.** Framework and
 > all math independently re-derived and confirmed sound (no mathematical or
 > estimand error); resolved decisions in the sign-off block below (§0a) and §6;
-> the remaining ratification is labelling/wording (this revision) plus the still-
-> unused Boole grammar freeze and the maintainer's final nod. This is a pure
+> the remaining ratification is labelling/wording (this revision). Owner phrases
+> `freeze NG-1 Boole` and `nod NG-1` are **PAID** (fired off-PR, 2026-09-05).
+> This is a pure
 > design / symbolic-alignment slice: no code, no API change, no default change,
 > no `validation_status` flip. It ratifies **how `hsquared` (the R lane) will
 > define, compute, label, and surface heritability for non-Gaussian animal
@@ -14,19 +15,18 @@
 > deliberately **heritability-free** (`R/hs_control.R:120-130`,
 > `R/julia-bridge.R:625`).
 >
-> **DRAFT / PROPOSED wording — not frozen.** §8 items 3–12 below are proposed
-> body text. This revision does **not** fire unused owner phrases
-> `freeze NG-1 Boole` or `nod NG-1`. Merge waits on those, in that order.
-> `public_covered_count` stays **7**. Experimental stays **0.8.0**. Engine
-> `V6-NS-H2` stays **partial**. No Poisson/Binomial covered claim travels here.
+> **DRAFT / PROPOSED wording — merge gate only.** §8 items 3–12 below are
+> proposed body text awaiting merge of **#173**. Owner phrases `freeze NG-1
+> Boole` and `nod NG-1` are **PAID** (fired off-PR, 2026-09-05); this PR does
+> **not** re-fire them. **WAITING** explicit owner paste `merge 173`. Do **not**
+> merge on green CI alone. `public_covered_count` stays **7**. Experimental
+> stays **0.8.0**. Engine `V6-NS-H2` stays **partial**. No Poisson/Binomial
+> covered claim travels here. NG-1 is **not** covered.
 >
-> **Status after experimental 0.8.0 (2026-09-04).** NG-2 remains SIGNED
-> (2026-07-11). Experimental 0.8.0 is FA-G + single-step on both mains
-> (Julia `a70106c2`, R `88225d4`, count 7). That number does **not** ratify
-> NG-1, surface non-Gaussian heritability, or start 0.9. Remaining NG-1
-> blocks after this wording lands: the Boole extractor-grammar freeze and
-> the maintainer's final nod. Until those close, the R non-Gaussian path
-> stays **heritability-free**.
+> **Live pins (2026-09-05).** NG-2 remains SIGNED (2026-07-11). Both mains at
+> experimental 0.8.0 sprint (Julia `f8abd105`, R `7a5215d`, count **7**). That
+> does **not** ratify NG-1, surface non-Gaussian heritability, or start 0.9.
+> Until **#173** merges, the R non-Gaussian path stays **heritability-free**.
 
 **Lane / twin discipline.** The estimand *mathematics* is engine work and is
 already implemented and QGglmm-validated in the twin
@@ -429,11 +429,11 @@ lane.
 
 ### 4.4 Extractor grammar (what `heritability()` returns for a non-Gaussian fit)
 
-**Proposed grammar — not frozen.** This section is the naming draft Boole must
-still freeze. It does not become a freeze by sitting in this DRAFT. The six
-unpaid naming gaps (logit `liability` alias, numeric `m ≫ 1` cut, refuse vs
-return before covered, `mu` / `predictor_variance` spelling, return class,
-`information_limited` UX) stay open on the companion Boole card.
+**Proposed grammar — Boole freeze PAID, merge gate open.** Owner phrase
+`freeze NG-1 Boole` is **PAID** (2026-09-05, off-PR). This section is the
+naming draft that **#173** applies on merge; it does not become binding until
+that merge. The six naming gaps were answered in the same nod (companion card:
+`~/local-scratch/h2-ng1-boole-freeze-card-2026-09-04.md`).
 
 **Contract.** `heritability(fit)` on a non-Gaussian `hsquared_fit` returns a
 **scale-labelled data frame**, never a numeric scalar — structurally identical to
@@ -661,17 +661,19 @@ There is **no** "apply §8" fire phrase that skips Boole.
 12. **[PROPOSED / not frozen]** (polish) §2.1 V_link footnote: intrinsic latent
     residual, not the NS delta-method `1/[p(1−p)]` term.
 
-**Still unpaid after this wording (not fired here):**
+**Owner phrase receipt (fired off-PR — not re-fired here):**
 
-| Leftover | Unused phrase | Unlocks | Does not unlock |
+| Gate | Phrase | Status | Does not unlock |
 |---|---|---|---|
-| Boole freeze of the six naming gaps | `freeze NG-1 Boole` | Treat §4.4 names as frozen after the six gaps are answered | Extractor merge · h² numbers · covered · 0.9 · Layer B |
-| Maintainer nod | `nod NG-1` | Close NG-1 *as a contract* | Poisson/Binomial covered · `V6-NS-H2` covered · G10 · compute-go · 0.9.0 |
+| Boole freeze of the six naming gaps | `freeze NG-1 Boole` | **PAID** 2026-09-05 | Extractor merge · h² numbers · covered · 0.9 · Layer B |
+| Maintainer nod | `nod NG-1` | **PAID** 2026-09-05 | Poisson/Binomial covered · `V6-NS-H2` covered · G10 · compute-go · 0.9.0 |
+| Apply §8 wording | `merge 173` | **WAITING** (owner paste) | Covered flip · version bump · heritability surface |
 
 ---
 
-*NG-1 — NG-2 signed off (2026-07-11). This DRAFT proposes the §8 wording.
-Remaining ratification blocks: the Boole grammar/argument freeze, then the
-maintainer's final nod. Those phrases are unused. No code, no default, no
-`validation_status` change, no version bump, and no covered-count change land
-with this document. Count stays **7**. Experimental stays **0.8.0**.*
+*NG-1 — NG-2 signed off (2026-07-11). Freeze+nod **PAID** off-PR (2026-09-05).
+This DRAFT (#173) proposes the §8 wording; merge waits on explicit owner paste
+`merge 173`. No code, no default, no `validation_status` change, no version bump,
+and no covered-count change land with this document. NG-1 is **not** covered.
+Count stays **7**. Experimental stays **0.8.0**. Pins: R `7a5215d`, Julia
+`f8abd105`.*
