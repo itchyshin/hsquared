@@ -20,8 +20,9 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     remains an alias). Experimental 0.8.0 retained; public covered count stays
     7. Single-step, SNP-BLUP,
     repeatability, and two-effect animal models fit through opt-in engine paths
-    (repeatability/two-effect covered where previously covered; SNP-BLUP/
-    single-step remain experimental); multivariate cbind() animal models route
+    (repeatability/two-effect covered where previously covered; SNP-BLUP
+    remains experimental; single-step remains opt-in partial; Julia
+    engine-covered is not R covered; 0.9 is not released); multivariate cbind() animal models route
     on the default call and are covered at validation scale (t = 2 unstructured;
     k >= 3 and diagonal stay experimental); non-Gaussian (poisson/binomial)
     models fit through an opt-in experimental engine path and report no

@@ -10,13 +10,14 @@
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
 #' install guidance. A `cbind()` multivariate Gaussian response also routes on
 #' that default path; multivariate is covered at validation scale and stays experimental.
-#' Genomic, single-step, repeatability, two-effect, and non-Gaussian
+#' Genomic, repeatability, two-effect, and non-Gaussian
 #' (`poisson`/`binomial`, Laplace or variational REML) models fit through
-#' opt-in, experimental engine paths; factor-analytic G is engine-covered on
-#' the Julia engine (`V4-FA`) and planned, not fitted, on the R formula (not covered).
+#' opt-in, experimental engine paths; single-step stays **opt-in partial**;
+#' factor-analytic G is engine-covered on the Julia engine (`V4-FA`) and
+#' planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
 #'
 #' @section Current limitations:
-#' This package is **experimental** (0.8.0); the first CRAN release is not this bump,
+#' This package is **experimental** (0.8.0); **0.9 is not released**; the first CRAN release is not this bump,
 #' not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
 #' and HSquared.jl; use [hs_control()] with `engine = "validate"` to check the
 #' model contract without fitting. Report point estimates only for `covered`

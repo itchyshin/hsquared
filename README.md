@@ -12,14 +12,16 @@ data validation, summaries, extractors, examples — and the
 computation.
 
 > [!WARNING]
-> **Experimental 0.8.0 — not production / not CRAN.** The version number tracks
-> *covered* capability, not surface area; the first CRAN release is not this bump. `public_covered_count` is **7**. **Fitting requires a local Julia
-> and an `HSquared.jl` checkout** — R alone parses and validates a model but
-> does not fit it. The Julia twin's General registration
+> **Experimental 0.8.0 — not production / not CRAN / 0.9 is not released.** The
+> version number tracks *covered* capability, not surface area; the first CRAN
+> release is not this bump. `public_covered_count` is **7**. **Fitting requires a
+> local Julia and an `HSquared.jl` checkout** — R alone parses and validates a
+> model but does not fit it. Julia engine-covered evidence is **not** R-public
+> covered: factor-analytic G stays **planned** on the R formula; single-step stays
+> **opt-in partial** (not default-route). The Julia twin's General registration
 > ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969)) is
 > deferred pending collaborator review; do not use `Pkg.add("HSquared")` by
-> name. What you
-> may report is listed on
+> name. What you may report is listed on
 > [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
 > — not in `validation_status()`. Report point estimates only for **covered**
 > routes. Standard errors and intervals are experimental and **not coverage-calibrated**.
@@ -125,13 +127,18 @@ agreement with `sommer`. Engine-recovery results are validated locally through
 the R-to-Julia bridge; public CI exercises the equivalent pure-R REML reference
 and skip-guards the live-engine tests, since there is no Julia in CI.
 
-**Experimental** — the code runs and is bridge-verified, but the evidence chain
-has a named hole. Exploratory use, or report beside your own comparator:
+**Experimental / opt-in partial** — the code runs and is bridge-verified, but
+the evidence chain has a named hole (or the R status is deliberately not
+covered). Exploratory use, or report beside your own comparator:
 repeatability / permanent environment, the maternal-genetic two-effect leg,
-SNP-BLUP, and single-step effects, all reached through
-`hs_control(engine = "julia")` with an explicit target.
+and SNP-BLUP, all reached through `hs_control(engine = "julia")` with an
+explicit target. **Single-step** is the same opt-in path and stays
+**opt-in partial** on the R public layer — not default-route, not R covered.
+Julia engine-covered rows (for example `V2-SSHINV` / `V4-FA`) do **not** flip
+R coverage.
 
-**Reserved syntax only** — parses, then aborts as planned, not implemented:
+**Reserved / planned** — parses, then aborts as planned, not implemented:
+factor-analytic G matrices (`cov = fa(K)` is not an activated R formula),
 paternal effects, dominance, epistasis, cytoplasmic inheritance, imprinting,
 custom relationship or precision matrices, and marker/QTL scans. Use
 `formula_status()` to see the parsed, reserved, and planned grammar.
