@@ -239,6 +239,7 @@ articles:
       Capability limits, validation evidence, and model-family status. Read these
       before reporting point estimates or intervals.
     contents:
+      - articles/twin-boundary
       - articles/current-limits
       - articles/model-status
       - articles/validation-evidence
