@@ -2,7 +2,11 @@ test_that("comparator target manifest indexes mirrored R fixtures (#49 coordinat
   manifest <- hs_read_comparator_manifest()
   expect_identical(manifest$schema_version, 1L)
   expect_identical(manifest$lane, "hsquared")
-  expect_match(manifest$claim_boundary, "not add external comparator evidence", fixed = FALSE)
+  expect_match(
+    manifest$claim_boundary,
+    "not add external comparator evidence",
+    fixed = FALSE
+  )
 
   targets <- manifest$target
   ids <- vapply(targets, `[[`, character(1), "id")
@@ -78,7 +82,10 @@ test_that("frozen comparator fixture SHA256 pins match mirrored CSV bytes", {
   mirrored_ids <- mirrored_ids[!is.na(mirrored_ids)]
 
   for (id in mirrored_ids) {
-    target <- manifest$target[[match(id, vapply(manifest$target, `[[`, "", "id"))]]
+    target <- manifest$target[[match(
+      id,
+      vapply(manifest$target, `[[`, "", "id")
+    )]]
     fixture_dir <- file.path(pkg_root, target$r_fixture_path)
     rows <- pins[pins$target == id, , drop = FALSE]
     expect_true(nrow(rows) > 0L)

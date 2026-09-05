@@ -3,7 +3,15 @@
 
 bridge_dashboard_path <- function(file) {
   candidates <- c(
-    file.path(testthat::test_path(), "..", "..", "docs", "dev-log", "dashboard", file),
+    file.path(
+      testthat::test_path(),
+      "..",
+      "..",
+      "docs",
+      "dev-log",
+      "dashboard",
+      file
+    ),
     file.path(getwd(), "docs", "dev-log", "dashboard", file)
   )
   found <- candidates[file.exists(candidates)]
@@ -35,24 +43,49 @@ test_that("bridge dashboard TSV column contracts match the A14 schema", {
   expect_named(
     schema,
     c(
-      "schema_id", "route", "r_target", "julia_dispatch", "estimator",
-      "payload_fields", "relinv_builder", "r_bridge_status", "julia_status",
-      "claim_boundary", "evidence_url", "next_gate"
+      "schema_id",
+      "route",
+      "r_target",
+      "julia_dispatch",
+      "estimator",
+      "payload_fields",
+      "relinv_builder",
+      "r_bridge_status",
+      "julia_status",
+      "claim_boundary",
+      "evidence_url",
+      "next_gate"
     )
   )
   expect_named(
     parity,
     c(
-      "smoke_id", "schema_id", "model_cell", "r_path", "julia_path",
-      "parity_target", "tolerance_rule", "parity_status", "test_status",
-      "bridge_status", "evidence_url", "claim_boundary", "next_gate"
+      "smoke_id",
+      "schema_id",
+      "model_cell",
+      "r_path",
+      "julia_path",
+      "parity_target",
+      "tolerance_rule",
+      "parity_status",
+      "test_status",
+      "bridge_status",
+      "evidence_url",
+      "claim_boundary",
+      "next_gate"
     )
   )
   expect_named(
     boundary,
     c(
-      "boundary_id", "target", "smoke_status", "parity_required",
-      "bridge_status", "boundary_doc_status", "evidence_url", "claim_boundary",
+      "boundary_id",
+      "target",
+      "smoke_status",
+      "parity_required",
+      "bridge_status",
+      "boundary_doc_status",
+      "evidence_url",
+      "claim_boundary",
       "next_gate"
     )
   )
@@ -79,7 +112,9 @@ test_that("bridge dashboard rows carry claim_boundary and link schema_ids to tes
     "v02_direct_maternal"
   )
   expect_true(all(public_covered %in% schema$schema_id))
-  expect_true(all(schema$r_bridge_status[schema$schema_id %in% public_covered] == "covered"))
+  expect_true(all(
+    schema$r_bridge_status[schema$schema_id %in% public_covered] == "covered"
+  ))
 
   evidence_files <- unique(c(
     schema$evidence_url,
@@ -87,7 +122,10 @@ test_that("bridge dashboard rows carry claim_boundary and link schema_ids to tes
     boundary$evidence_url[boundary$boundary_doc_status == "documented"]
   ))
   evidence_files <- evidence_files[!grepl("^HSquared\\.jl/", evidence_files)]
-  repo_root <- normalizePath(file.path(testthat::test_path(), "..", ".."), mustWork = TRUE)
+  repo_root <- normalizePath(
+    file.path(testthat::test_path(), "..", ".."),
+    mustWork = TRUE
+  )
   for (ref in evidence_files) {
     path <- file.path(repo_root, ref)
     expect_true(file.exists(path), info = paste("missing evidence:", ref))
@@ -123,9 +161,15 @@ test_that("Tier 0 parity smoke rows stay Julia-free with covered test_status", {
 })
 
 test_that("bridge dashboard validator passes on the committed ledgers", {
-  repo_root <- normalizePath(file.path(testthat::test_path(), "..", ".."), mustWork = TRUE)
+  repo_root <- normalizePath(
+    file.path(testthat::test_path(), "..", ".."),
+    mustWork = TRUE
+  )
   validator <- file.path(repo_root, "tools", "validate-bridge-dashboard.py")
-  skip_if_not(file.exists(validator), "validate-bridge-dashboard.py not present")
+  skip_if_not(
+    file.exists(validator),
+    "validate-bridge-dashboard.py not present"
+  )
 
   out_file <- tempfile(fileext = ".txt")
   on.exit(unlink(out_file), add = TRUE)

@@ -33,7 +33,11 @@ test_that("N3: marker bridge payload freezes ridge = 0.01 (parser)", {
 test_that("N1 scaffold: genomic() takes exactly one of Ginv or markers", {
   ids <- paste0("i", 1:5)
   set.seed(1)
-  M <- matrix(sample(0:2, 5 * 12, replace = TRUE), nrow = 5, dimnames = list(ids, paste0("m", 1:12)))
+  M <- matrix(
+    sample(0:2, 5 * 12, replace = TRUE),
+    nrow = 5,
+    dimnames = list(ids, paste0("m", 1:12))
+  )
   Ginv <- hs_s0_test_ginv(ids)
   dat <- data.frame(y = rnorm(5), id = ids, stringsAsFactors = FALSE)
   expect_error(

@@ -63,8 +63,14 @@ test_that("S2: engine = julia dense fit_animal_model differs from default ai_rem
 
   default_vc <- variance_components(default_fit)$estimate
   dense_vc <- variance_components(dense_fit)$estimate
-  expect_equal(variance_components(default_fit)$component, c("animal", "residual"))
-  expect_equal(variance_components(dense_fit)$component, c("animal", "residual"))
+  expect_equal(
+    variance_components(default_fit)$component,
+    c("animal", "residual")
+  )
+  expect_equal(
+    variance_components(dense_fit)$component,
+    c("animal", "residual")
+  )
   expect_true(all(is.finite(default_vc)) && all(default_vc > 0))
   expect_true(all(is.finite(dense_vc)) && all(dense_vc > 0))
   expect_true(is.finite(stats::logLik(default_fit)))
@@ -84,7 +90,10 @@ test_that("S2: engine = julia dense fit_animal_model differs from default ai_rem
   expect_lt(max(abs(default_vc - dense_vc) / abs(default_vc)), 5e-3)
   expect_lt(abs(default_h2 - dense_h2), 1e-3)
   expect_lt(
-    abs(as.numeric(stats::logLik(default_fit)) - as.numeric(stats::logLik(dense_fit))),
+    abs(
+      as.numeric(stats::logLik(default_fit)) -
+        as.numeric(stats::logLik(dense_fit))
+    ),
     1e-5
   )
 })

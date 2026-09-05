@@ -3,7 +3,13 @@
 # No Julia required. Does not flip capability rows or public_covered_count.
 
 test_that("bridge-gap design notes engine-covered V4-FA / V2-SSHINV without R flips", {
-  path <- testthat::test_path("..", "..", "docs", "design", "19-on-main-bridge-gap.md")
+  path <- testthat::test_path(
+    "..",
+    "..",
+    "docs",
+    "design",
+    "19-on-main-bridge-gap.md"
+  )
   skip_if_not(file.exists(path), "design-19 not present in the check copy")
   text <- paste(readLines(path, warn = FALSE), collapse = "\n")
 

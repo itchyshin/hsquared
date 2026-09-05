@@ -1,4 +1,9 @@
-oracle_tool <- testthat::test_path("..", "..", "tools", "v07_genomic_boundary_oracle.R")
+oracle_tool <- testthat::test_path(
+  "..",
+  "..",
+  "tools",
+  "v07_genomic_boundary_oracle.R"
+)
 testthat::skip_if_not(
   file.exists(oracle_tool),
   "repository-only v0.7 boundary oracle is unavailable in the built package"
@@ -91,7 +96,10 @@ v07_test_packet <- function() {
   arm$id_hash <- v07_test_hash("b")
   arm$kernel_hash <- v07_test_hash("c")
 
-  v07_test_write(data.frame(row = seq_along(y), y = y), file.path(root, "y.tsv"))
+  v07_test_write(
+    data.frame(row = seq_along(y), y = y),
+    file.path(root, "y.tsv")
+  )
   v07_test_write(
     data.frame(row = seq_len(nrow(X)), as.data.frame(X), check.names = FALSE),
     file.path(root, "X.tsv")
@@ -308,9 +316,13 @@ test_that("CLI oracle and verify modes exercise a sealed packet end to end", {
 v07_test_holdout_reseal <- function(root) {
   lock <- data.frame(
     relative_path = v07_holdout_files,
-    sha256 = vapply(v07_holdout_files, function(file) {
-      v07_sha256_file(file.path(root, file))
-    }, character(1L))
+    sha256 = vapply(
+      v07_holdout_files,
+      function(file) {
+        v07_sha256_file(file.path(root, file))
+      },
+      character(1L)
+    )
   )
   v07_test_write(lock, file.path(root, "files.sha256.tsv"))
 }
@@ -330,7 +342,10 @@ v07_test_holdout_packet <- function() {
     candidate_id = v07_holdout_candidate_id,
     cell_id = "n120_m600_r020",
     seed = "2027135001",
-    n = "8", p = "1", m = "12", ridge = "0.01",
+    n = "8",
+    p = "1",
+    m = "12",
+    ridge = "0.01",
     marker_hash = v07_test_hash("a"),
     id_hash = v07_test_hash("b"),
     kernel_hash = v07_test_hash("c"),
@@ -349,11 +364,15 @@ v07_test_holdout_packet <- function() {
   mkfit <- function(route) {
     candidate <- route == "boundary_candidate"
     data.frame(
-      cell_id = metadata[["cell_id"]], seed = as.numeric(metadata[["seed"]]),
-      route = route, converged = TRUE,
+      cell_id = metadata[["cell_id"]],
+      seed = as.numeric(metadata[["seed"]]),
+      route = route,
+      converged = TRUE,
       termination_reason = if (candidate) "ai_interior" else "converged",
-      iterations = 10, sigma_g2 = oracle$sigma_g2,
-      sigma_e2 = oracle$sigma_e2, numerical_ratio = oracle$ratio,
+      iterations = 10,
+      sigma_g2 = oracle$sigma_g2,
+      sigma_e2 = oracle$sigma_e2,
+      numerical_ratio = oracle$ratio,
       profile_ratio = if (candidate) oracle$ratio else NaN,
       profile_t_hat = if (candidate) oracle$sigma_g2 + oracle$sigma_e2 else NaN,
       boundary_status = if (candidate) "interior" else "not_classified",
@@ -361,26 +380,44 @@ v07_test_holdout_packet <- function() {
       profile_loglik = if (candidate) oracle$loglik else NaN,
       lower_derivative_per_observation = if (candidate) {
         oracle$d0_per_observation
-      } else NaN,
+      } else {
+        NaN
+      },
       upper_derivative_per_observation = if (candidate) {
         oracle$d1_per_observation
-      } else NaN,
-      objective = -oracle$loglik, ai_score_norm = 0,
-      fd_log_gradient_norm = 0, runtime_seconds = 0.1,
+      } else {
+        NaN
+      },
+      objective = -oracle$loglik,
+      ai_score_norm = 0,
+      fd_log_gradient_norm = 0,
+      runtime_seconds = 0.1,
       marker_hash = metadata[["marker_hash"]],
-      id_hash = metadata[["id_hash"]], kernel_hash = metadata[["kernel_hash"]],
+      id_hash = metadata[["id_hash"]],
+      kernel_hash = metadata[["kernel_hash"]],
       check.names = FALSE
     )
   }
-  v07_test_write(data.frame(row = seq_along(y), y = y), file.path(root, "y.tsv"))
-  v07_test_write(data.frame(row = seq_len(8), X, check.names = FALSE),
-    file.path(root, "X.tsv"))
-  v07_test_write(data.frame(row = seq_len(8), K, check.names = FALSE),
-    file.path(root, "K.tsv"))
-  v07_test_write(data.frame(key = names(metadata), value = unname(metadata)),
-    file.path(root, "metadata.tsv"))
-  v07_test_write(rbind(mkfit("default_ai"), mkfit("boundary_candidate")),
-    file.path(root, "fits.tsv"))
+  v07_test_write(
+    data.frame(row = seq_along(y), y = y),
+    file.path(root, "y.tsv")
+  )
+  v07_test_write(
+    data.frame(row = seq_len(8), X, check.names = FALSE),
+    file.path(root, "X.tsv")
+  )
+  v07_test_write(
+    data.frame(row = seq_len(8), K, check.names = FALSE),
+    file.path(root, "K.tsv")
+  )
+  v07_test_write(
+    data.frame(key = names(metadata), value = unname(metadata)),
+    file.path(root, "metadata.tsv")
+  )
+  v07_test_write(
+    rbind(mkfit("default_ai"), mkfit("boundary_candidate")),
+    file.path(root, "fits.tsv")
+  )
   v07_test_holdout_reseal(root)
   root
 }
@@ -415,13 +452,15 @@ test_that("doc46 packet hash, order, fit, seed, and hash drift fail closed", {
   root <- v07_test_holdout_packet()
   fits <- v07_read_tsv(file.path(root, "fits.tsv"))
   fits$seed[[2L]] <- fits$seed[[2L]] + 1
-  v07_test_write(fits, file.path(root, "fits.tsv")); v07_test_holdout_reseal(root)
+  v07_test_write(fits, file.path(root, "fits.tsv"))
+  v07_test_holdout_reseal(root)
   expect_error(v07_read_holdout_exchange(root), "mismatch in seed")
 
   root <- v07_test_holdout_packet()
   fits <- v07_read_tsv(file.path(root, "fits.tsv"))
   fits$kernel_hash[[2L]] <- v07_test_hash("f")
-  v07_test_write(fits, file.path(root, "fits.tsv")); v07_test_holdout_reseal(root)
+  v07_test_write(fits, file.path(root, "fits.tsv"))
+  v07_test_holdout_reseal(root)
   expect_error(v07_read_holdout_exchange(root), "mismatch in kernel_hash")
 })
 
@@ -432,8 +471,10 @@ test_that("doc46 endpoint adjacency, tie, and KKT signs fail safely", {
   expect_true(v07_is_distinct_interior(1 - 2 * v07_holdout_epsilon))
 
   set.seed(99)
-  y <- stats::rnorm(8); A <- matrix(stats::rnorm(64), 8, 8)
-  K <- crossprod(A) / 8 + diag(8) * 0.05; X <- matrix(1, 8, 1)
+  y <- stats::rnorm(8)
+  A <- matrix(stats::rnorm(64), 8, 8)
+  K <- crossprod(A) / 8 + diag(8) * 0.05
+  X <- matrix(1, 8, 1)
   expect_identical(v07_classify_oracle(y, X, K)$class, "lower_boundary")
   expect_identical(
     v07_classify_oracle(y, X, K, reverse_kkt = TRUE)$class,
@@ -450,10 +491,18 @@ test_that("doc46 CLI modes create and independently verify synthetic output", {
   root <- v07_test_holdout_packet()
   output <- file.path(dirname(root), paste0(basename(root), "-cli-oracle.tsv"))
   common <- c("--dataset", shQuote(root), "--output", shQuote(output))
-  created <- system2(file.path(R.home("bin"), "Rscript"),
-    c(shQuote(oracle_tool), "holdout-oracle", common), stdout = TRUE, stderr = TRUE)
+  created <- system2(
+    file.path(R.home("bin"), "Rscript"),
+    c(shQuote(oracle_tool), "holdout-oracle", common),
+    stdout = TRUE,
+    stderr = TRUE
+  )
   expect_null(attr(created, "status"))
-  verified <- system2(file.path(R.home("bin"), "Rscript"),
-    c(shQuote(oracle_tool), "holdout-verify", common), stdout = TRUE, stderr = TRUE)
+  verified <- system2(
+    file.path(R.home("bin"), "Rscript"),
+    c(shQuote(oracle_tool), "holdout-verify", common),
+    stdout = TRUE,
+    stderr = TRUE
+  )
   expect_null(attr(verified, "status"))
 })

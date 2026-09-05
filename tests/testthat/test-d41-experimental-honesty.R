@@ -114,7 +114,11 @@ test_that("README carries the D-41 callout and a validate-first example", {
 test_that("README and pkgdown lock 0.9-prep public honesty fences", {
   readme <- testthat::test_path("..", "..", "README.md")
   skip_if_not(file.exists(readme), "README.md not present in the check copy")
-  text <- gsub("\\s+", " ", paste(readLines(readme, warn = FALSE), collapse = " "))
+  text <- gsub(
+    "\\s+",
+    " ",
+    paste(readLines(readme, warn = FALSE), collapse = " ")
+  )
 
   expect_match(text, "Experimental 0.8.0", fixed = TRUE)
   expect_match(text, "0.9 is not released", fixed = TRUE)
@@ -123,14 +127,23 @@ test_that("README and pkgdown lock 0.9-prep public honesty fences", {
   expect_match(text, "planned", ignore.case = TRUE)
   expect_match(text, "opt-in partial", fixed = TRUE)
   expect_match(text, "engine-covered", ignore.case = TRUE)
-  expect_true(any(grepl("not R-public covered", text, fixed = TRUE),
-                  grepl("not R covered", text, fixed = TRUE)))
+  expect_true(any(
+    grepl("not R-public covered", text, fixed = TRUE),
+    grepl("not R covered", text, fixed = TRUE)
+  ))
   expect_match(text, "do **not** flip R coverage", fixed = TRUE)
   expect_match(text, "cov = fa(K)", fixed = TRUE)
 
   pkgdown <- testthat::test_path("..", "..", "_pkgdown.yml")
-  skip_if_not(file.exists(pkgdown), "_pkgdown.yml not present in the check copy")
-  ptext <- gsub("\\s+", " ", paste(readLines(pkgdown, warn = FALSE), collapse = " "))
+  skip_if_not(
+    file.exists(pkgdown),
+    "_pkgdown.yml not present in the check copy"
+  )
+  ptext <- gsub(
+    "\\s+",
+    " ",
+    paste(readLines(pkgdown, warn = FALSE), collapse = " ")
+  )
   expect_match(ptext, "0.9 is not", fixed = TRUE)
   expect_match(ptext, "public_covered_count", fixed = TRUE)
   expect_match(ptext, "**7**", fixed = TRUE)
@@ -141,10 +154,21 @@ test_that("README and pkgdown lock 0.9-prep public honesty fences", {
 
 test_that("model-status article keeps FA planned / SS opt-in partial / count 7", {
   article <- testthat::test_path(
-    "..", "..", "vignettes", "articles", "model-status.Rmd"
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "model-status.Rmd"
   )
-  skip_if_not(file.exists(article), "model-status.Rmd not present in the check copy")
-  text <- gsub("\\s+", " ", paste(readLines(article, warn = FALSE), collapse = " "))
+  skip_if_not(
+    file.exists(article),
+    "model-status.Rmd not present in the check copy"
+  )
+  text <- gsub(
+    "\\s+",
+    " ",
+    paste(readLines(article, warn = FALSE), collapse = " ")
+  )
 
   expect_match(text, "experimental 0.8.0", fixed = TRUE)
   expect_no_match(text, "experimental 0.7.0", fixed = TRUE)

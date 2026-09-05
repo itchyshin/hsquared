@@ -9,15 +9,24 @@ root <- if (nzchar(script)) {
 } else {
   getwd()
 }
-candidate <- file.path(root, "inst", "tools", "v07_genomic_recovery_recompute.R")
+candidate <- file.path(
+  root,
+  "inst",
+  "tools",
+  "v07_genomic_recovery_recompute.R"
+)
 if (!file.exists(candidate)) {
   candidate <- system.file(
-    "tools", "v07_genomic_recovery_recompute.R", package = "hsquared"
+    "tools",
+    "v07_genomic_recovery_recompute.R",
+    package = "hsquared"
   )
 }
 if (!nzchar(candidate) || !file.exists(candidate)) {
-  stop("cannot locate the installed v0.7 recovery recomputation tool", call. = FALSE)
+  stop(
+    "cannot locate the installed v0.7 recovery recomputation tool",
+    call. = FALSE
+  )
 }
 source(candidate, local = globalenv())
 v07_main(commandArgs(trailingOnly = TRUE))
-
