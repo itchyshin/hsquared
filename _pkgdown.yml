@@ -3,6 +3,12 @@ destination: pkgdown-site
 
 # D-41: prominent site-wide EXPERIMENTAL callout on the home sidebar (channel 3).
 home:
+  title: How much is genetic?
+  description: >-
+    Experimental 0.8.0 R interface for a Julia-backed animal model.
+    public_covered_count is 7. Not production / not CRAN / 0.9 is not
+    released. Fitting needs a local Julia and an HSquared.jl checkout.
+    Report point estimates only for covered routes.
   sidebar:
     structure: [experimental, links, license, community, citation, authors, dev]
     components:
@@ -39,18 +45,17 @@ template:
     # #12A3A3 / #0F8E8E fail on white (BRAIN-NOTES 2026-09-06).
     bg: "#ffffff"
     fg: "#112638"
-    primary: "#0f4c5c"
+    primary: "#12141A"
     secondary: "#37515a"
     headings-color: "#112638"
     link-color: "#0B7C7C"
     link-hover-color: "#0a5f5f"
     border-color: "#c5d6d6"
-  # HEX is a PROPOSAL pending Shinichi pick (BRAIN-NOTES 2026-09-06).
+  # HEX PROPOSAL v2 pending Shinichi pick.
+  # Navbar / favicon / opengraph: man/figures/logo.svg + logo.png (no wordmark).
+  # Home hero: man/figures/sticker.svg + sticker.png (wordmark lockup).
   # Installed from ~/local-scratch/h2-09-finish-docs-brand/hex/hsquared/.
-  # pkgdown 2.2 find_logo() prefers man/figures/logo.svg, then logo.png.
-  # Both files are the same dark PROPOSAL mark. PNG is the raster / favicon
-  # / opengraph source. Navbar hex is injected from the package logo via
-  # pkgdown/templates/navbar.html (no native navbar-logo YAML key).
+  # pkgdown 2.2 find_logo() prefers logo.svg — that stays the navbar mark.
   opengraph:
     image:
       src: man/figures/logo.png

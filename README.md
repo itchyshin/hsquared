@@ -1,17 +1,32 @@
-# hsquared <a href="https://itchyshin.github.io/hsquared/"><img src="man/figures/logo.png" align="right" height="138" alt="hsquared hex logo (PROPOSAL)" /></a>
+# hsquared <a href="https://itchyshin.github.io/hsquared/"><img src="man/figures/sticker.png" align="right" height="138" alt="hsquared hex sticker (PROPOSAL v2)" /></a>
 
-<!-- HEX: PROPOSAL pending Shinichi pick (BRAIN-NOTES 2026-09-06). Not a settled brand. -->
+<!-- HEX: PROPOSAL v2 pending Shinichi pick. Navbar = man/figures/logo.*; hero = sticker.*. -->
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+<div class="hs-hero">
+<p class="hs-hero-mark"><img class="hs-hero-hex" src="man/figures/sticker.svg" alt="hsquared hex sticker (PROPOSAL v2)" width="220" height="220" /></p>
+<p class="hs-kicker">R interface · Julia engine · a twin, not a port</p>
+<p class="hs-question">How much is genetic?</p>
+<p class="hs-pitch">Formula first. The engine estimates heritability, variance
+components, and breeding values on the routes that are
+<strong>covered</strong>. Experimental 0.8.0 — not production, not CRAN,
+and 0.9 is not released.</p>
+<p class="hs-cta">
+<a class="hs-btn hs-btn-primary" href="articles/hsquared.html">Check a model without Julia</a>
+<a class="hs-btn" href="articles/current-limits.html">Can I fit and report this?</a>
+<a class="hs-btn" href="articles/model-status.html">What is covered today?</a>
+</p>
+</div>
+
 <div class="hs-banner" role="status">
 <p><strong>Warning — experimental 0.8.0.</strong> Not production / not CRAN /
 0.9 is not released. The version number tracks <em>covered</em> capability,
 not surface area; the first CRAN release is not this bump.
-<code>public_covered_count</code> is <strong>7</strong>.
-<strong>Fitting requires a local Julia and an <code>HSquared.jl</code>
+<code>public_covered_count</code> is <strong>7</strong>.</p>
+<p><strong>Fitting requires a local Julia and an <code>HSquared.jl</code>
 checkout</strong> — R alone parses and validates a model but does not fit
 it. Julia engine-covered evidence is <strong>not</strong> R-public covered:
 factor-analytic G stays <strong>planned</strong> on the R formula;
@@ -26,16 +41,31 @@ is deferred pending collaborator review; do not use
 experimental and <strong>not coverage-calibrated</strong>.</p>
 </div>
 
-`hsquared` is the R interface for a Julia-backed quantitative-genetic
-modelling system. The first question is simple:
-
-<blockquote class="hs-question">
-<p>How much is genetic?</p>
-</blockquote>
-
-The default path is the univariate Gaussian animal model. The R package
-owns the formula, the summaries, and the extractors. `HSquared.jl` owns
-the engine — a twin, not a port.
+<div class="hs-features">
+<div class="hs-feature">
+<h3>Formula first</h3>
+<p>The default path is the univariate Gaussian animal model:
+<code>y ~ sex + animal(1 | id, pedigree = ped)</code>. R owns the formula,
+the summaries, and the extractors.</p>
+</div>
+<div class="hs-feature">
+<h3>Seven covered routes</h3>
+<p><code>public_covered_count</code> is <strong>7</strong>, at validation
+scale. Partial and planned stay labelled. Julia engine-covered is not
+R-public covered.</p>
+</div>
+<div class="hs-feature">
+<h3>Read the estimand</h3>
+<p>Report h², G, and EBVs only where the route is covered. Intervals are
+experimental and <strong>not coverage-calibrated</strong>.</p>
+</div>
+<div class="hs-feature">
+<h3>A twin, not a port</h3>
+<p><code>hsquared</code> is the applied-user interface.
+<a href="https://itchyshin.github.io/HSquared.jl/">HSquared.jl</a> is the
+sparse engine. Not ASReml. Not a GLLVM.</p>
+</div>
+</div>
 
 ## Start here
 

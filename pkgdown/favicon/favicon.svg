@@ -1,26 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><title id="title">hsquared hex mark (PROPOSAL)</title><desc id="desc">PROPOSAL draft, not a settled brand decision. Dark teal hex with white h-squared and a gold two-generation pedigree. No wordmark: navbar and favicon safe. Package is EXPERIMENTAL (D-41).</desc><defs>
-    <linearGradient id="hsqFill" x1="220" y1="140" x2="980" y2="1060" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0A3A48"></stop>
-      <stop offset="0.55" stop-color="#072A36"></stop>
-      <stop offset="1" stop-color="#041C24"></stop>
-    </linearGradient>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><title id="title">hsquared hex mark (PROPOSAL v2)</title><desc id="desc">PROPOSAL v2 draft, not a settled brand. Dark charcoal hex, Julia-blue rim, white h-squared, four-node pedigree in Julia colours. No wordmark: navbar and favicon safe. Inspired by Julia dots; not the Julia wordmark. Package stays EXPERIMENTAL (D-41).</desc><defs>
     <clipPath id="hsqClip">
-      <path d="M600 44 1058 322v556L600 1156 142 878V322Z"></path>
+      <path d="M600.00 92.00L1039.94 346.00L1039.94 854.00L600.00 1108.00L160.06 854.00L160.06 346.00Z"></path>
     </clipPath>
-  </defs><path d="M600 44 1058 322v556L600 1156 142 878V322Z" fill="url(#hsqFill)"></path><path d="M600 44 1058 322v556L600 1156 142 878V322Z" fill="none" stroke="#D6E8E8" stroke-width="22" stroke-linejoin="round"></path><path d="M600 82 1028 342v516L600 1118 172 858V342Z" fill="none" stroke="#F0B429" stroke-width="5" stroke-linejoin="round" opacity="0.85"></path><g clip-path="url(#hsqClip)">
-    <!-- Pedigree sits in the upper hex so gold never rests on the white h -->
-    <g fill="none" stroke="#F0B429" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M400 268 H800"></path>
-      <path d="M600 268 V392"></path>
-      <path d="M400 392 H800"></path>
-      <path d="M400 392 V458"></path>
-      <path d="M800 392 V458"></path>
+  </defs><path d="M600.00 40.00L1084.97 320.00L1084.97 880.00L600.00 1160.00L115.03 880.00L115.03 320.00Z" fill="#12141A" id="hsqFill"></path><path d="M600.00 40.00L1084.97 320.00L1084.97 880.00L600.00 1160.00L115.03 880.00L115.03 320.00Z" fill="none" stroke="#E8EEF8" stroke-width="14" stroke-linejoin="round"></path><path d="M600.00 64.00L1064.19 332.00L1064.19 868.00L600.00 1136.00L135.81 868.00L135.81 332.00Z" fill="none" stroke="#4063D8" stroke-width="30" stroke-linejoin="round"></path><path d="M600.00 86.00L1045.14 343.00L1045.14 857.00L600.00 1114.00L154.86 857.00L154.86 343.00Z" fill="none" stroke="#E8EEF8" stroke-width="5" stroke-linejoin="round"></path><g clip-path="url(#hsqClip)">
+    <g fill="none" stroke="#F8FBFB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M420 278 H780"></path>
+      <path d="M600 278 V388"></path>
+      <path d="M420 388 H780"></path>
+      <path d="M420 388 V468"></path>
+      <path d="M780 388 V468"></path>
     </g>
-    <circle cx="400" cy="268" r="46" fill="#F0B429"></circle>
-    <circle cx="800" cy="268" r="46" fill="#F0B429"></circle>
-    <circle cx="400" cy="458" r="46" fill="#F0B429"></circle>
-    <circle cx="800" cy="458" r="46" fill="#F0B429"></circle>
+    <circle cx="420" cy="278" r="62" fill="#4063D8"></circle>
+    <circle cx="780" cy="278" r="62" fill="#389826"></circle>
+    <circle cx="420" cy="468" r="62" fill="#CB3C33"></circle>
+    <circle cx="780" cy="468" r="62" fill="#9558B2"></circle>
 
-    <text x="600" y="860" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="400" fill="#F8FBFB">h</text>
-    <text x="812" y="568" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="188" fill="#F8FBFB">2</text>
+    <text x="562" y="910" text-anchor="middle" font-family="Arial, Helvetica, 'Helvetica Neue', sans-serif" font-weight="800" font-size="380" fill="#F8FBFB">h</text>
+    <text x="786" y="698" text-anchor="middle" font-family="Arial, Helvetica, 'Helvetica Neue', sans-serif" font-weight="800" font-size="176" fill="#F8FBFB">2</text>
   </g></svg>

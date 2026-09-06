@@ -1,17 +1,24 @@
 /* hsquared pkgdown extras.
-   Brand hue paints the navbar and links — not body text.
+   Brand hue paints the navbar and accents — not body text.
    Link teal is #0B7C7C (AA 4.5:1 on white). Do not use #12A3A3 / #0F8E8E
    for links. Never add theme/style.css (takeover); keep overrides here. */
 
 :root {
   --hs-ink: #112638;
-  --hs-teal: #0f4c5c;
-  --hs-teal-2: #0c3d4a;
+  --hs-teal: #12141a;
+  --hs-teal-2: #0b0d12;
+  --hs-teal-lift: #1b1f2a;
   --hs-link: #0b7c7c;
   --hs-ice: #e7f3f3;
-  --hs-amber: #e69f00;
+  --hs-paper: #f8fbfb;
+  --hs-hairline: #d6e8e8;
+  --hs-amber: #f0b429;
   --hs-amber-ink: #92400e;
   --hs-banner-bg: #fffbeb;
+  --jl-blue: #4063d8;
+  --jl-green: #389826;
+  --jl-purple: #9558b2;
+  --jl-red: #cb3c33;
 }
 
 .template-home main,
@@ -42,13 +49,16 @@
   overflow-wrap: anywhere;
 }
 
-/* Deeper teal navbar — sister to drmTMB / gllvmTMB. White ink on teal. */
+/* Deeper hex-navy navbar. White ink on #072A36. Gold hairline from the hex. */
 .bg-primary,
 .navbar.bg-primary,
 .navbar {
   background-color: var(--hs-teal) !important;
   background-image: none !important;
-  border-bottom: 1px solid var(--hs-teal-2);
+  border-bottom: 2px solid var(--jl-blue);
+  box-shadow: 0 1px 0 rgba(4, 28, 36, 0.35);
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
 }
 
 .bg-primary .navbar-brand,
@@ -61,7 +71,12 @@
 .navbar .nav-link,
 .navbar .fab,
 .navbar .fa {
-  color: #f6fbfb !important;
+  color: var(--hs-paper) !important;
+}
+
+.navbar .navbar-brand {
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 .bg-primary .navbar-nav .show > .nav-link,
@@ -72,9 +87,9 @@
 .navbar .nav-link:focus,
 .navbar .nav-link.active,
 .navbar .show > .nav-link {
-  color: var(--hs-ice) !important;
-  background: rgba(231, 243, 243, 0.14);
-  border-radius: 0.32rem;
+  color: #ffffff !important;
+  background: rgba(248, 251, 251, 0.12);
+  border-radius: 0.4rem;
 }
 
 .navbar .version,
@@ -83,29 +98,32 @@
 }
 
 .bg-primary .dropdown-menu {
-  --bs-dropdown-bg: #102830;
-  --bs-dropdown-border-color: rgba(231, 243, 243, 0.22);
+  --bs-dropdown-bg: #041c24;
+  --bs-dropdown-border-color: rgba(214, 232, 232, 0.22);
   --bs-dropdown-link-color: #e7f3f3;
-  --bs-dropdown-link-hover-bg: rgba(231, 243, 243, 0.14);
+  --bs-dropdown-link-hover-bg: rgba(64, 99, 216, 0.22);
   --bs-dropdown-link-hover-color: #ffffff;
-  --bs-dropdown-link-active-bg: var(--hs-teal-2);
+  --bs-dropdown-link-active-bg: var(--hs-teal-lift);
   --bs-dropdown-link-active-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 0.4rem;
 }
 
 .navbar .form-control,
 .navbar .search-input {
-  background-color: #16343c;
-  border-color: rgba(231, 243, 243, 0.35);
-  color: #f6fbfb;
+  background-color: #0a3a48;
+  border-color: rgba(214, 232, 232, 0.35);
+  color: var(--hs-paper);
+  border-radius: 999px;
 }
 
 .navbar .form-control::placeholder,
 .navbar .search-input::placeholder {
-  color: rgba(246, 251, 251, 0.75);
+  color: rgba(248, 251, 251, 0.7);
 }
 
 .navbar .navbar-toggler {
-  border-color: rgba(231, 243, 243, 0.45);
+  border-color: rgba(214, 232, 232, 0.45);
 }
 
 .navbar .navbar-toggler-icon {
@@ -113,33 +131,71 @@
 }
 
 .hsquared-version-note {
-  border: 1px solid rgba(231, 243, 243, 0.35);
+  border: 1px solid rgba(64, 99, 216, 0.55);
   border-radius: 999px;
-  color: #e7f3f3;
+  color: #f8fbfb;
   display: inline-flex;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
   line-height: 1.1;
   margin-right: 0.85rem;
   max-width: 18rem;
-  padding: 0.16rem 0.48rem;
-  white-space: normal;
+  padding: 0.2rem 0.58rem;
+  white-space: nowrap;
 }
 
-/* HEX PROPOSAL — man/figures/logo.png + logo.svg; not a settled brand pick.
-   pkgdown 2.2 prefers logo.svg as the package logo (header + navbar). */
+/* HEX PROPOSAL — man/figures/logo.png + logo.svg; not a settled brand pick. */
 .navbar-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .navbar-brand .navbar-logo {
   display: inline-block;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   margin: 0;
   border-radius: 0;
   background: transparent;
+}
+
+/* Home lockup: title only. Sticker lives in .hs-hero (PROPOSAL v2). */
+.template-home .page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  border-bottom: 0;
+  margin: 0.25rem 0 0;
+  min-height: 0;
+  padding-bottom: 0;
+  text-align: center;
+}
+
+.template-home .page-header img.logo {
+  display: none;
+}
+
+.template-home .page-header h1 {
+  font-size: clamp(2.15rem, 4.2vw, 2.85rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0;
+  order: 2;
+}
+
+.template-home .page-header img.logo {
+  display: block;
+  float: none;
+  height: auto;
+  margin: 0.15rem auto 0.15rem;
+  max-width: min(46%, 220px);
+  order: 1;
+  width: clamp(168px, 20vw, 220px);
 }
 
 .page-header img.logo {
@@ -147,29 +203,16 @@
   width: clamp(130px, 12vw, 160px);
 }
 
-.template-home .page-header img.logo {
-  height: auto;
-  margin-left: 3rem;
-  max-width: min(42%, 260px);
-  width: clamp(220px, 18vw, 260px);
-}
-
 @media (min-width: 576px) {
   .page-header {
-    min-height: 10.5rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .template-home .page-header {
-    min-height: clamp(13rem, 18vw, 15rem);
+    min-height: 0;
   }
 }
 
 @media (max-width: 767.98px) {
   .template-home .page-header .logo {
     height: auto;
-    max-width: 132px;
+    max-width: 148px;
   }
 
   .hsquared-version-note {
@@ -181,22 +224,115 @@
   .template-home .page-header img.logo {
     display: block;
     float: none;
-    margin: 0 auto 1rem;
-    max-width: 50vw;
+    margin: 0 auto 0.35rem;
+    max-width: 46vw;
     width: 132px;
   }
 }
 
-/* F5 — Experimental banner chrome (Florence 2026-09-02, kept).
-   Amber left border + ink text. Not red panic, not green “go”. */
+/* First-screen hero: sticker, question, pitch, pill CTAs. */
+.hs-hero {
+  margin: 0.15rem 0 1.15rem;
+  text-align: center;
+}
+
+.hs-hero-mark {
+  margin: 0 0 0.55rem;
+}
+
+.hs-hero-hex {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  width: clamp(168px, 22vw, 228px);
+}
+
+.hs-kicker {
+  color: #37515a;
+  font-size: 0.86rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+}
+
+.hs-question {
+  border: 0;
+  color: var(--hs-ink);
+  font-size: clamp(1.7rem, 3.6vw, 2.35rem);
+  font-style: normal;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 0.7rem;
+  padding: 0;
+}
+
+.hs-hero .hs-question,
+p.hs-question {
+  margin-bottom: 0.7rem;
+}
+
+.hs-pitch {
+  color: #243746;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 0 auto 1.15rem;
+  max-width: 38rem;
+}
+
+.hs-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: center;
+  margin: 0 0 0.25rem;
+}
+
+.hs-btn {
+  background: #eef4f4;
+  border: 1px solid #c5d6d6;
+  border-radius: 999px;
+  color: var(--hs-ink) !important;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.2;
+  padding: 0.55rem 1.05rem;
+  text-decoration: none !important;
+}
+
+.hs-btn:hover,
+.hs-btn:focus {
+  background: #e1eded;
+  border-color: var(--hs-link);
+  color: var(--hs-teal) !important;
+}
+
+.hs-btn-primary {
+  background: var(--hs-link);
+  border-color: var(--hs-link);
+  color: #ffffff !important;
+}
+
+.hs-btn-primary:hover,
+.hs-btn-primary:focus {
+  background: #0a5f5f;
+  border-color: #0a5f5f;
+  color: #ffffff !important;
+}
+
+/* Experimental banner — amber, not red panic, not a leaked [!WARNING]. */
 .hs-banner,
 aside .experimental,
 aside .status {
+  border: 1px solid #f3e0b5;
   border-left: 4px solid var(--hs-amber);
   background: var(--hs-banner-bg);
+  border-radius: 0.55rem;
   color: var(--hs-ink);
-  padding: 0.75rem 1rem;
-  margin: 1rem 0 1.5rem;
+  margin: 0.85rem 0 1.35rem;
+  padding: 0.85rem 1.05rem;
 }
 
 aside .experimental,
@@ -207,9 +343,15 @@ aside .status {
 .hs-banner p,
 aside .experimental p,
 aside .status p {
-  margin: 0;
+  margin: 0 0 0.55rem;
   font-size: 0.95rem;
   line-height: 1.45;
+}
+
+.hs-banner p:last-child,
+aside .experimental p:last-child,
+aside .status p:last-child {
+  margin-bottom: 0;
 }
 
 .hs-banner strong,
@@ -250,34 +392,50 @@ aside .status strong {
   color: #37515a;
 }
 
-.hs-question {
-  border-left: 0.35rem solid var(--hs-teal);
-  color: var(--hs-ink);
-  font-size: 1.15rem;
-  font-style: italic;
-  margin: 1.1rem 0 1.4rem;
-  padding: 0.15rem 0 0.15rem 0.9rem;
-}
-
+/* 2×2 scan cards. Julia four-colour left rails are accents only. */
 .hs-features {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 1.25rem 0 1.75rem;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0.35rem 0 1.75rem;
 }
 
 .hs-features > .section,
 .hs-feature {
-  background: #f4f8f8;
-  border: 1px solid #c5d6d6;
-  border-radius: 0.45rem;
+  background: var(--hs-paper);
+  border: 1px solid var(--hs-hairline);
+  border-left: 4px solid var(--hs-link);
+  border-radius: 0.7rem;
+  box-shadow: 0 0.12rem 0.4rem rgba(7, 42, 54, 0.06);
   margin: 0;
-  padding: 1rem 1.1rem;
+  padding: 1rem 1.1rem 1.05rem;
+}
+
+.hs-features > .section:nth-child(1),
+.hs-feature:nth-child(1) {
+  border-left-color: var(--jl-blue);
+}
+
+.hs-features > .section:nth-child(2),
+.hs-feature:nth-child(2) {
+  border-left-color: var(--jl-green);
+}
+
+.hs-features > .section:nth-child(3),
+.hs-feature:nth-child(3) {
+  border-left-color: var(--jl-purple);
+}
+
+.hs-features > .section:nth-child(4),
+.hs-feature:nth-child(4) {
+  border-left-color: var(--jl-red);
 }
 
 .hs-features h3,
 .hs-feature h3 {
   font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   margin-top: 0;
 }
 
@@ -286,9 +444,33 @@ aside .status strong {
   margin-bottom: 0;
 }
 
+.template-home #start-here + table,
+.template-home h2 + table.table {
+  border: 1px solid var(--hs-hairline);
+  border-radius: 0.7rem;
+  overflow: hidden;
+}
+
+.template-home table.table thead th {
+  background: #eef5f5;
+  color: var(--hs-ink);
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 767.98px) {
   .hs-features {
     grid-template-columns: 1fr;
+  }
+
+  .hs-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hs-btn {
+    justify-content: center;
   }
 }
 
@@ -315,4 +497,53 @@ main table {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Grouped navbar needs more room than Bootstrap's lg breakpoint. */
+@media (max-width: 1439.98px) {
+  .navbar.navbar-expand-lg {
+    flex-wrap: wrap;
+  }
+
+  .navbar.navbar-expand-lg .navbar-toggler {
+    display: block;
+  }
+
+  .navbar.navbar-expand-lg .navbar-collapse {
+    flex-basis: 100%;
+    flex-grow: 1;
+    align-items: center;
+  }
+
+  .navbar.navbar-expand-lg .navbar-collapse:not(.show) {
+    display: none !important;
+  }
+
+  .navbar.navbar-expand-lg .navbar-collapse.show,
+  .navbar.navbar-expand-lg .navbar-collapse.collapsing {
+    display: block !important;
+  }
+
+  .navbar.navbar-expand-lg .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .navbar.navbar-expand-lg .navbar-nav .dropdown-menu {
+    position: static;
+  }
+
+  .navbar.navbar-expand-lg form[role="search"],
+  .navbar.navbar-expand-lg .search-form {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+}
+
+a {
+  color: var(--hs-link);
+}
+
+a:hover {
+  color: #0a5f5f;
 }
