@@ -1,112 +1,971 @@
-.navbar {
-  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%) !important;
-  background-color: #e0f2fe !important;
-  border-bottom: 1px solid #7dd3fc;
-  box-shadow: 0 1px 0 rgba(14, 165, 233, 0.18);
+/* hsquared pkgdown extras.
+   R-sister chrome (drmTMB / gllvmTMB): one teal family, neutral panels, status
+   accents. No Julia RGBP on the R page. Brand hue paints chrome and accents —
+   never body text. Never add theme/style.css (that is a takeover); keep every
+   override here so one file explains the whole visual system.
+
+   Composition contract for the home page:
+     ONE hex (page header) -> brand line -> kicker -> question -> pitch -> CTA.
+   The navbar mark is removed in pkgdown/templates/navbar.html, and hidden here
+   as well, so a second or third hex cannot come back by template drift. */
+
+:root {
+  /* Ink and neutrals */
+  --hs-ink: #112638;
+  --hs-body: #223546;
+  --hs-muted: #4a6570;
+  --hs-faint: #6b8189;
+
+  /* Sister teal family */
+  --hs-teal: #0f7887;
+  --hs-teal-deep: #0a5f6d;
+  --hs-teal-ink: #084652;
+  --hs-teal-2: #087f8c;
+  --hs-teal-lift: #0a617d;
+  --hs-link: #0f7887;
+  --hs-link-hover: #084652;
+
+  /* Panels and hairlines */
+  --hs-ice: #f2f7f8;
+  --hs-paper: #f8fbfb;
+  --hs-hairline: #d6e3e6;
+  --hs-hairline-soft: #e5eef0;
+
+  /* Status accents */
+  --hs-amber: #ca8a04;
+  --hs-amber-ink: #8a5a06;
+  --hs-amber-rim: #f0dfb4;
+  --hs-banner-bg: #fffbeb;
+  --hs-ok: #278a67;
+
+  /* Rhythm */
+  --hs-radius: 0.7rem;
+  --hs-radius-sm: 0.45rem;
+  --hs-shadow: 0 1px 2px rgba(9, 42, 54, 0.04), 0 6px 18px -10px rgba(9, 42, 54, 0.16);
 }
 
+/* ---------------------------------------------------------------- chrome --
+   Solid sister teal. The navbar carries brand hue and the honest status pill;
+   nothing else on the page needs to shout. */
+
+.bg-primary,
+.navbar.bg-primary,
+.navbar {
+  background-color: var(--hs-teal) !important;
+  background-image: none !important;
+  border-bottom: 1px solid rgba(4, 28, 36, 0.4);
+  box-shadow: 0 1px 12px -4px rgba(4, 28, 36, 0.45);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.bg-primary .navbar-brand,
+.bg-primary .navbar-brand:hover,
+.bg-primary .navbar-brand:focus,
+.bg-primary .navbar-text,
+.bg-primary .navbar-nav .nav-link,
 .navbar .navbar-brand,
 .navbar .navbar-text,
 .navbar .nav-link,
 .navbar .fab,
 .navbar .fa {
-  color: #082f49 !important;
+  color: var(--hs-paper) !important;
 }
 
-.navbar .version,
-.navbar .nav-text.text-muted {
-  color: #0369a1 !important;
+.navbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.022em;
 }
 
+.navbar .nav-link {
+  border-radius: 0.4rem;
+  font-weight: 500;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.bg-primary .navbar-nav .show > .nav-link,
+.bg-primary .navbar-nav .nav-link.active,
+.bg-primary .navbar-nav .nav-link:hover,
+.bg-primary .navbar-nav .nav-link:focus,
 .navbar .nav-link:hover,
 .navbar .nav-link:focus,
 .navbar .nav-link.active,
 .navbar .show > .nav-link {
-  color: #075985 !important;
-  background-color: rgba(14, 165, 233, 0.16);
+  color: #ffffff !important;
+  background: rgba(248, 251, 251, 0.14);
 }
 
-.navbar .form-control {
-  background-color: #f8fafc;
-  border-color: #7dd3fc;
-  color: #0f2533;
+.navbar .version,
+.navbar .nav-text.text-muted {
+  color: rgba(242, 247, 248, 0.82) !important;
+}
+
+.bg-primary .dropdown-menu {
+  --bs-dropdown-bg: #063642;
+  --bs-dropdown-border-color: rgba(214, 232, 232, 0.2);
+  --bs-dropdown-link-color: #e4f2f3;
+  --bs-dropdown-link-hover-bg: rgba(248, 251, 251, 0.12);
+  --bs-dropdown-link-hover-color: #ffffff;
+  --bs-dropdown-link-active-bg: var(--hs-teal);
+  --bs-dropdown-link-active-color: #ffffff;
+  border-radius: 0.6rem;
+  box-shadow: 0 18px 38px -18px rgba(4, 28, 36, 0.65);
+  padding: 0.4rem;
+}
+
+.bg-primary .dropdown-menu .dropdown-item {
+  border-radius: 0.35rem;
+  font-size: 0.94rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.bg-primary .dropdown-menu .dropdown-divider {
+  border-top-color: rgba(214, 232, 232, 0.22);
+}
+
+.navbar .form-control,
+.navbar .search-input {
+  background-color: rgba(4, 28, 36, 0.32);
+  border-color: rgba(214, 232, 232, 0.32);
+  border-radius: 999px;
+  color: var(--hs-paper);
+}
+
+.navbar .form-control:focus,
+.navbar .search-input:focus {
+  background-color: rgba(4, 28, 36, 0.45);
+  border-color: rgba(232, 245, 246, 0.7);
+  box-shadow: 0 0 0 0.2rem rgba(248, 251, 251, 0.18);
+  color: #ffffff;
+}
+
+.navbar .form-control::placeholder,
+.navbar .search-input::placeholder {
+  color: rgba(248, 251, 251, 0.66);
 }
 
 .navbar .navbar-toggler {
-  border-color: #38bdf8;
+  border-color: rgba(214, 232, 232, 0.4);
+}
+
+.navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(248, 251, 251, 0.2);
 }
 
 .navbar .navbar-toggler-icon {
-  filter: none;
+  filter: invert(1);
 }
 
-/* F5 — Experimental banner chrome (Florence 2026-09-02).
-   Amber left border + ink text. Not red panic, not green “go”.
-   Templates: Experimental · opt-in · not the default fit
-              Covered at validation scale · opt-in · dense · REML-only
-              Intervals: asymptotic / experimental · not coverage-calibrated
-              GWAS p-values: nominal · not genome-wide calibrated */
-:root {
-  --hs-ink: #0f2533;
-  --hs-amber: #e69f00;
-  --hs-amber-ink: #92400e;
-  --hs-navy: #0072b2;
-  --hs-banner-bg: #fffbeb;
+/* Honest status stays in the chrome: amber pill, calm not alarming. */
+.hsquared-version-note {
+  align-items: center;
+  background: rgba(255, 251, 235, 0.12);
+  border: 1px solid rgba(246, 214, 138, 0.55);
+  border-radius: 999px;
+  color: #ffeec9;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  margin-right: 0.85rem;
+  padding: 0.22rem 0.6rem;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.hs-banner,
-aside .experimental {
-  border-left: 4px solid var(--hs-amber);
-  background: var(--hs-banner-bg);
+/* Sticky (not fixed) navbar: it can never overlay the page header or TOC,
+   at any wrap state or browser. */
+.navbar.fixed-top {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+
+html {
+  scroll-padding-top: 7rem;
+}
+
+/* ------------------------------------------------------- reading surface -- */
+
+body {
+  color: var(--hs-body);
+}
+
+main {
+  padding-top: 0.75rem;
+}
+
+main h1,
+main h2,
+main h3,
+main h4 {
   color: var(--hs-ink);
-  padding: 0.75rem 1rem;
+  letter-spacing: -0.02em;
+}
+
+main h2 {
+  font-size: clamp(1.3rem, 1.9vw, 1.55rem);
+  font-weight: 700;
+  margin-top: 2.6rem;
+}
+
+main h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 1.9rem;
+}
+
+main p,
+main li {
+  line-height: 1.62;
+}
+
+a {
+  color: var(--hs-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+a:hover,
+a:focus {
+  color: var(--hs-link-hover);
+}
+
+a:focus-visible,
+.hs-btn:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--hs-teal);
+  outline-offset: 2px;
+}
+
+/* Inline code reads as a name, not as a warning. */
+main :not(pre) > code {
+  background: var(--hs-ice);
+  border-radius: 0.3rem;
+  color: var(--hs-teal-ink);
+  font-size: 0.88em;
+  padding: 0.1em 0.32em;
+}
+
+main a > code,
+main code a {
+  color: var(--hs-link);
+}
+
+/* Code blocks: quiet paper panels with a hairline, not raw grey slabs. */
+main div.sourceCode,
+main pre {
+  background-color: var(--hs-paper);
+  border: 1px solid var(--hs-hairline-soft);
+  border-radius: var(--hs-radius-sm);
+}
+
+main div.sourceCode > pre,
+main pre.sourceCode {
+  background-color: transparent;
+  border: 0;
+  margin: 0;
+  padding: 1rem 1.1rem;
+}
+
+main div.sourceCode {
   margin: 1rem 0 1.5rem;
 }
 
-aside .experimental {
-  margin-top: 0.5rem;
+/* --------------------------------------------------------- home overflow --
+   Narrow-screen protections. These predate the beauty pass and stay. */
+
+/* Do not add `max-width` here. pkgdown caps `main` at 800px on purpose (a quiet
+   reading measure); overriding it lets the 75% column win, and `main` + `aside`
+   then exceed the row and the sidebar wraps below the page at >=1400px. */
+.template-home main,
+.template-home aside {
+  min-width: 0;
 }
 
-.hs-banner p,
-aside .experimental p {
+.template-home pre,
+.template-home .sourceCode {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.template-home table.table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.template-home table.table th,
+.template-home table.table td,
+.template-home table.table code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.template-home p,
+.template-home li {
+  overflow-wrap: anywhere;
+}
+
+main table {
+  max-width: 100%;
+}
+
+/* ------------------------------------------------------------- home hero --
+   ONE LEFT AXIS. The previous pass centred the hero inside `main`, which is
+   itself pushed left by the `aside`: the stack landed well left of the
+   viewport centre, and then every section below it (`Start here`, the code
+   blocks, the tables) hung off the left edge instead. Two axes on one page is
+   what read as "terrible alignment", and no amount of hex craft fixes it.
+
+   drmTMB's answer is the right one: name and body share one left edge, the
+   mark floats right in the same band, a rule closes the block. We keep our
+   hero copy (eyebrow, question, CTAs) that the R sisters do not have, and hang
+   all of it off that same edge.
+
+   The mark is positioned absolutely against `.section.level1` rather than
+   floated, because the hero copy is a run of sibling `<p>` elements that
+   pkgdown emits after `.page-header` — a float inside the header cannot
+   reliably reserve space across them, and `extra.js` loads in <head>, so DOM
+   rewriting would flash. Absolute + a capped copy measure is the version with
+   no moving parts. If CSS fails entirely the hero degrades to a left-aligned
+   stack, which is still correct. */
+
+.template-home main > .section.level1 {
+  position: relative;
+}
+
+.template-home .page-header {
+  border-bottom: 0;
+  display: block;
+  margin: 1.5rem 0 0;
+  min-height: 0;
+  padding-bottom: 0;
+  text-align: left;
+}
+
+.template-home .page-header img.logo {
+  display: block !important;
+  float: none;
+  height: auto;
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.45;
+  max-width: 42%;
+  position: absolute;
+  right: 0;
+  top: 0.4rem;
+  /* Sized against the element box, but the SVG carries transparent margin
+     outside the hex silhouette, so the *visible* mark lands near 165px — the
+     R sisters both run one dark saturated hex at roughly 200px against a lot
+     of white, and ours was reading small beside them. The copy measure above
+     is capped at 30rem, so at the narrowest desktop the two cannot meet. */
+  width: clamp(150px, 16vw, 212px);
 }
 
-.hs-banner strong,
-aside .experimental strong {
-  color: var(--hs-amber-ink);
+.template-home .page-header h1 {
+  color: var(--hs-teal-deep);
+  font-size: clamp(1.5rem, 2.3vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.template-home .page-header .anchor {
+  display: none;
+}
+
+/* Article pages keep the smaller sister mark, floated as pkgdown intends. */
+.page-header img.logo {
+  margin-left: 1.5rem;
+  width: clamp(120px, 11vw, 150px);
+}
+
+/* Belt and braces: the navbar is text-only (see templates/navbar.html).
+   If a future template edit re-adds the mark, it still cannot render. */
+.navbar-brand {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.navbar-brand .navbar-logo,
+.navbar .navbar-logo {
+  display: none !important;
+}
+
+/* Hero copy: one left composition, one measure. The measure is capped at
+   30rem so the question and pitch cannot run under the mark pinned at the
+   right of the column; below 992px the mark goes back into the flow and the
+   cap is released (see the responsive block). */
+.template-home .hs-kicker,
+.template-home .hs-question,
+.template-home .hs-pitch,
+.template-home .hs-cta {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 30rem;
+  text-align: left;
+}
+
+/* The rule that closes the hero, so the reading below it starts as a second
+   register rather than as more hero. drmTMB draws the same line. */
+.template-home .hs-cta {
+  border-bottom: 1px solid var(--hs-hairline-soft);
+  max-width: none;
+  padding-bottom: 2.1rem;
+}
+
+.hs-kicker {
+  color: var(--hs-faint);
+  font-size: 0.76rem;
   font-weight: 650;
+  letter-spacing: 0.1em;
+  margin: 0.55rem 0 1.1rem;
+  text-transform: uppercase;
+}
+
+.hs-question {
+  border: 0;
+  color: var(--hs-ink);
+  font-size: clamp(1.95rem, 3.6vw, 2.5rem);
+  font-style: normal;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  text-wrap: balance;
+}
+
+.hs-pitch {
+  color: var(--hs-body);
+  font-size: 1.06rem;
+  line-height: 1.58;
+  margin: 0 0 1.7rem;
+}
+
+.hs-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  margin: 0 0 2.4rem;
+}
+
+.hs-btn {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.2;
+  padding: 0.6rem 1.15rem;
+  text-decoration: none !important;
+  transition: background-color 120ms ease, border-color 120ms ease,
+    color 120ms ease, transform 120ms ease;
+}
+
+/* Secondary actions are outlines, so the page reads as one decision rather
+   than a row of equal pills. */
+.hs-btn {
+  background: #ffffff;
+  border: 1px solid var(--hs-hairline);
+  color: var(--hs-ink) !important;
+}
+
+.hs-btn:hover,
+.hs-btn:focus {
+  background: var(--hs-ice);
+  border-color: var(--hs-teal);
+  color: var(--hs-teal-ink) !important;
+}
+
+.hs-btn-primary {
+  background: var(--hs-teal-ink);
+  border-color: var(--hs-teal-ink);
+  box-shadow: 0 8px 18px -12px rgba(8, 70, 82, 0.9);
+  color: #ffffff !important;
+}
+
+.hs-btn-primary:hover,
+.hs-btn-primary:focus {
+  background: #063642;
+  border-color: #063642;
+  color: #ffffff !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-btn,
+  .navbar .nav-link {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------- status panels --
+   Experimental honesty must look calm, never apologetic: ordinary reading
+   type, one coloured edge. Not a red alarm, not a marketing badge.
+   The home warning is an ordinary markdown blockquote, so it renders with the
+   same weight on GitHub; GitHub alert-callout syntax must never be used there
+   because pandoc leaks its bracketed marker onto the page as literal text.
+
+   Warm on article pages, COOL on the home page. Both R sisters state the same
+   warning in a plain, sober, left-ruled block and read composed because of it;
+   neither carries any amber in the first viewport. We were carrying two amber
+   blocks (this one and the sidebar Status card) plus the gold navbar pill —
+   three warm interruptions on one screen saying substantially the same thing.
+   The statement is unchanged and still said in full here. Only its temperature
+   and the sidebar's duplicate copy changed. */
+
+.hs-banner {
+  background: var(--hs-banner-bg);
+  border: 1px solid var(--hs-amber-rim);
+  border-left: 4px solid var(--hs-amber);
+  border-radius: var(--hs-radius);
+  color: var(--hs-ink);
+  margin: 0 0 2.4rem;
+  padding: 1.2rem 1.35rem 1.05rem;
+}
+
+.template-home main > .section.level1 > blockquote p,
+.hs-banner p {
+  font-size: 0.95rem;
+  line-height: 1.58;
+  margin: 0 0 0.6rem;
+}
+
+.template-home main > .section.level1 > blockquote p:last-child,
+.hs-banner p:last-child {
+  margin-bottom: 0;
+}
+
+.hs-banner strong {
+  color: var(--hs-amber-ink);
+  font-weight: 700;
+}
+
+.hs-banner a {
+  color: var(--hs-amber-ink);
+}
+
+/* The home statement, cool. Same words, same weight, sister temperature. */
+.template-home main > .section.level1 > blockquote {
+  background: var(--hs-ice);
+  border: 1px solid var(--hs-hairline);
+  border-left: 4px solid var(--hs-teal);
+  border-radius: var(--hs-radius);
+  color: var(--hs-ink);
+  margin: 0 0 2.6rem;
+  padding: 1.2rem 1.35rem 1.05rem;
+}
+
+.template-home main > .section.level1 > blockquote strong {
+  color: var(--hs-teal-ink);
+  font-weight: 700;
+}
+
+.template-home main > .section.level1 > blockquote a {
+  color: var(--hs-link);
+}
+
+.template-home main > .section.level1 > blockquote .hs-note-eyebrow {
+  color: var(--hs-teal-ink);
+}
+
+.hs-note-eyebrow {
+  color: var(--hs-amber-ink);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.template-home main > .section.level1 > blockquote p:has(.hs-note-eyebrow) {
+  margin-bottom: 0.5rem;
 }
 
 .hs-banner-covered-optin {
-  border-left-color: var(--hs-navy);
-  background: #f0f9ff;
+  background: var(--hs-ice);
+  border-color: var(--hs-hairline);
+  border-left-color: var(--hs-teal);
 }
 
 .hs-banner-covered-optin strong {
-  color: #075985;
+  color: var(--hs-teal-ink);
+}
+
+/* -------------------------------------------------------- routes and cards -- */
+
+/* The route table is drawn cell by cell, and it must be laid out as a real
+   table to do that. pkgdown ships `table { display: block }` so wide tables can
+   scroll, but a block box is sized independently of the row box inside it: the
+   rows then stop 30-140px short of the table's own edge, and any border or
+   background drawn on the table sits visibly wider than the rows it encloses.
+   `display: table` re-couples them; the phone breakpoint below puts the block
+   box back, which is the only width where the scrolling is needed. */
+.template-home table.table {
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  display: table;
+  margin-bottom: 1.9rem;
+}
+
+.template-home table.table th,
+.template-home table.table td {
+  border-bottom: 1px solid var(--hs-hairline-soft);
+  border-top: 0;
+  padding: 0.72rem 1rem;
+  vertical-align: top;
+}
+
+.template-home table.table th:first-child,
+.template-home table.table td:first-child {
+  border-left: 1px solid var(--hs-hairline);
+}
+
+.template-home table.table th:last-child,
+.template-home table.table td:last-child {
+  border-right: 1px solid var(--hs-hairline);
+}
+
+.template-home table.table thead th {
+  background: var(--hs-ice);
+  border-bottom: 1px solid var(--hs-hairline);
+  border-top: 1px solid var(--hs-hairline);
+  color: var(--hs-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.template-home table.table thead th:first-child {
+  border-top-left-radius: var(--hs-radius);
+}
+
+.template-home table.table thead th:last-child {
+  border-top-right-radius: var(--hs-radius);
+}
+
+.template-home table.table tbody tr:last-child td {
+  border-bottom: 1px solid var(--hs-hairline);
+}
+
+.template-home table.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--hs-radius);
+}
+
+.template-home table.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--hs-radius);
+}
+
+.template-home table.table tbody tr:hover td {
+  background: rgba(242, 247, 248, 0.65);
+}
+
+.template-home table.table tbody td:first-child {
+  color: var(--hs-ink);
+}
+
+.hs-features {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0.5rem 0 2rem;
+}
+
+.hs-features > .section,
+.hs-feature {
+  background: #ffffff;
+  border: 1px solid var(--hs-hairline);
+  border-left: 4px solid var(--hs-teal);
+  border-radius: var(--hs-radius);
+  box-shadow: var(--hs-shadow);
+  margin: 0;
+  padding: 1.1rem 1.2rem;
+}
+
+.hs-features h3,
+.hs-feature h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 0;
+}
+
+.hs-features p:last-child,
+.hs-feature p:last-child {
+  margin-bottom: 0;
 }
 
 .hs-figure {
-  margin: 1.25rem 0 1.5rem;
+  margin: 1.5rem 0 1.75rem;
 }
 
 .hs-figure img {
-  width: 100%;
-  height: auto;
   background: #ffffff;
+  height: auto;
+  width: 100%;
 }
 
-.hs-figure figcaption {
-  margin-top: 0.4rem;
-  font-size: 0.9rem;
-  color: #475569;
-}
-
+.hs-figure figcaption,
 .hs-caption {
-  margin: 0.35rem 0 1.1rem;
+  color: var(--hs-muted);
   font-size: 0.9rem;
-  color: #475569;
+  margin-top: 0.5rem;
+}
+
+/* ------------------------------------------------------------- sidebar -- */
+
+.template-home aside {
+  font-size: 0.94rem;
+}
+
+.template-home aside > div {
+  margin-bottom: 1.6rem;
+}
+
+.template-home aside h2 {
+  color: var(--hs-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.template-home aside ul.list-unstyled {
+  margin-bottom: 0;
+}
+
+.template-home aside ul.list-unstyled li {
+  line-height: 1.5;
+  margin-bottom: 0.3rem;
+}
+
+/* The status callout leads the sidebar (gllvmTMB's ordering, which is the
+   right one) and is the only bordered block in it. Cool, like the body
+   statement: the sidebar is a pointer to the full text a few centimetres to
+   its left, not a second warning competing with it. */
+.template-home aside .status,
+.template-home aside .experimental {
+  background: var(--hs-ice);
+  border: 1px solid var(--hs-hairline);
+  border-left: 4px solid var(--hs-teal);
+  border-radius: var(--hs-radius-sm);
+  margin-bottom: 1.9rem;
+  padding: 0.9rem 1rem;
+}
+
+.template-home aside .status h2,
+.template-home aside .experimental h2 {
+  color: var(--hs-teal-ink);
+}
+
+.template-home aside .status p,
+.template-home aside .experimental p {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.template-home aside .status strong,
+.template-home aside .experimental strong {
+  color: var(--hs-teal-ink);
+}
+
+.template-home aside .status a,
+.template-home aside .experimental a {
+  color: var(--hs-link);
+}
+
+.template-home aside .dev-status ul.list-unstyled li {
+  margin-bottom: 0.4rem;
+}
+
+.template-home aside .roles {
+  color: var(--hs-faint);
+}
+
+footer {
+  border-top: 1px solid var(--hs-hairline-soft);
+  color: var(--hs-muted);
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+}
+
+/* ----------------------------------------------------------- responsive -- */
+
+@media (min-width: 576px) {
+  .page-header {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 991.98px) {
+  main h2 {
+    margin-top: 2.1rem;
+  }
+
+  /* Below the pkgdown two-column breakpoint the sidebar drops under the
+     article, so there is no longer a right-hand column to hold the mark out
+     of. Put it back in the flow above the name and release the copy measure;
+     the axis stays left, which is the point. */
+  .template-home .page-header img.logo {
+    margin: 0 0 1rem;
+    max-width: 40vw;
+    position: static;
+    width: 148px;
+  }
+
+  .template-home .hs-kicker,
+  .template-home .hs-question,
+  .template-home .hs-pitch {
+    max-width: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .template-home .page-header img.logo {
+    max-width: 150px;
+    width: 150px;
+  }
+
+  .hsquared-version-note {
+    display: none;
+  }
+
+  .hs-features {
+    grid-template-columns: 1fr;
+  }
+
+  .hs-cta {
+    align-items: stretch;
+    flex-direction: column;
+    margin-bottom: 2rem;
+  }
+
+  .hs-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  /* Phones: the reading column is pinned to the viewport and every wide child
+     scrolls inside it. Without this the widest table sets the document width,
+     the whole page shifts left, and the navbar toggler lands off-screen. */
+  .template-home > .row {
+    --bs-gutter-x: 0;
+  }
+
+  .template-home main,
+  .template-home aside {
+    max-width: calc(100vw - 1.5rem);
+    overflow-x: visible;
+    width: calc(100vw - 1.5rem);
+  }
+
+  .template-home .page-header {
+    margin-top: 0.5rem;
+  }
+
+  .template-home .page-header img.logo {
+    display: block;
+    float: none;
+    margin: 0 0 0.75rem;
+    max-width: 44vw;
+    position: static;
+    width: 128px;
+  }
+
+  .hs-question {
+    max-width: none;
+  }
+
+  .template-home .hs-cta {
+    padding-bottom: 1.6rem;
+  }
+
+  /* `table-layout: fixed` cannot apply once the table is a block box, so the
+     cells would otherwise size to their content and widen the page. */
+  .template-home table.table,
+  main table {
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    min-width: 0;
+    overflow-x: auto;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  main div.sourceCode > pre,
+  main pre.sourceCode {
+    padding: 0.8rem 0.85rem;
+  }
+
+  #TOC {
+    max-width: 100%;
+    width: auto;
+  }
+}
+
+/* Widest desktops: centre the block instead of letting it hang left.
+   Measured with a same-origin iframe probe rather than by eye. At 1440 the
+   Bootstrap container is 1320px (60 -> 1380), but `main` is capped at 800px
+   and `aside` is 330px, so the two columns only fill 1210 of it: the page sat
+   at [60, 1270] with a 60px left margin and a 170px right one. That 110px
+   asymmetry is invisible as a number and very visible as "the page is not
+   centred". Below 1400px the container is narrower than the columns need and
+   the margins already match (88/88 at 1280, 32/32 at 1024), so this is scoped
+   to the only widths where the gap opens.
+
+   `justify-content` on the flex row rather than a max-width on it: `.row`
+   carries Bootstrap's negative gutter margins, and overriding those with
+   `margin-inline: auto` shifts the content off its own gutter by half a
+   gutter. Centring the free space leaves the gutter arithmetic alone. */
+@media (min-width: 1400px) {
+  .template-home > .row {
+    justify-content: center;
+  }
+}
+
+/* The grouped navbar needs more room than Bootstrap's lg breakpoint gives. */
+@media (max-width: 1439.98px) {
+  .navbar.navbar-expand-lg {
+    flex-wrap: wrap;
+  }
+
+  .navbar.navbar-expand-lg .navbar-toggler {
+    display: block;
+  }
+
+  .navbar.navbar-expand-lg .navbar-collapse {
+    align-items: center;
+    flex-basis: 100%;
+    flex-grow: 1;
+  }
+
+  .navbar.navbar-expand-lg .navbar-collapse:not(.show) {
+    display: none !important;
+  }
+
+  .navbar.navbar-expand-lg .navbar-collapse.show,
+  .navbar.navbar-expand-lg .navbar-collapse.collapsing {
+    display: block !important;
+  }
+
+  .navbar.navbar-expand-lg .navbar-nav {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .navbar.navbar-expand-lg .navbar-nav .dropdown-menu {
+    position: static;
+  }
+
+  .navbar.navbar-expand-lg form[role="search"],
+  .navbar.navbar-expand-lg .search-form {
+    margin: 0.5rem 0;
+    width: 100%;
+  }
 }
