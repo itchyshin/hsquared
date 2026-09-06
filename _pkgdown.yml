@@ -30,15 +30,27 @@ home:
 
 template:
   bootstrap: 5
+  bootswatch: flatly
+  includes:
+    before_navbar: '<span class="hsquared-version-note">0.8.0 experimental</span>'
   bslib:
+    # Deeper teal navbar (drmTMB/gllvmTMB sister). Body ink is NOT the brand
+    # hue. Link teal is the darkened AA 4.5:1 sibling (#0B7C7C); logo teals
+    # #12A3A3 / #0F8E8E fail on white (BRAIN-NOTES 2026-09-06).
     bg: "#ffffff"
-    fg: "#0f2533"
-    primary: "#0284c7"
-    secondary: "#475569"
-    headings-color: "#082f49"
-    link-color: "#0369a1"
-    link-hover-color: "#075985"
-    border-color: "#bae6fd"
+    fg: "#112638"
+    primary: "#0f4c5c"
+    secondary: "#37515a"
+    headings-color: "#112638"
+    link-color: "#0B7C7C"
+    link-hover-color: "#0a5f5f"
+    border-color: "#c5d6d6"
+  # HEX is a PROPOSAL pending Shinichi pick (BRAIN-NOTES 2026-09-06).
+  # Installed from ~/local-scratch/h2-09-finish-docs-brand/hex/hsquared/.
+  opengraph:
+    image:
+      src: man/figures/logo.png
+      alt: "hsquared hex logo (PROPOSAL)"
 
 navbar:
   structure:

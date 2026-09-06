@@ -1,59 +1,178 @@
-.navbar {
-  background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%) !important;
-  background-color: #e0f2fe !important;
-  border-bottom: 1px solid #7dd3fc;
-  box-shadow: 0 1px 0 rgba(14, 165, 233, 0.18);
+/* hsquared pkgdown extras.
+   Brand hue paints the navbar and links — not body text.
+   Link teal is #0B7C7C (AA 4.5:1 on white). Do not use #12A3A3 / #0F8E8E
+   for links. Never add theme/style.css (takeover); keep overrides here. */
+
+:root {
+  --hs-ink: #112638;
+  --hs-teal: #0f4c5c;
+  --hs-teal-2: #0c3d4a;
+  --hs-link: #0b7c7c;
+  --hs-ice: #e7f3f3;
+  --hs-amber: #e69f00;
+  --hs-amber-ink: #92400e;
+  --hs-banner-bg: #fffbeb;
 }
 
+.template-home main,
+.template-home aside {
+  min-width: 0;
+}
+
+.template-home pre,
+.template-home .sourceCode {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.template-home table.table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.template-home table.table th,
+.template-home table.table td,
+.template-home table.table code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.template-home p,
+.template-home li {
+  overflow-wrap: anywhere;
+}
+
+/* Deeper teal navbar — sister to drmTMB / gllvmTMB. White ink on teal. */
+.bg-primary,
+.navbar.bg-primary,
+.navbar {
+  background-color: var(--hs-teal) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--hs-teal-2);
+}
+
+.bg-primary .navbar-brand,
+.bg-primary .navbar-brand:hover,
+.bg-primary .navbar-brand:focus,
+.bg-primary .navbar-text,
+.bg-primary .navbar-nav .nav-link,
 .navbar .navbar-brand,
 .navbar .navbar-text,
 .navbar .nav-link,
 .navbar .fab,
 .navbar .fa {
-  color: #082f49 !important;
+  color: #f6fbfb !important;
 }
 
-.navbar .version,
-.navbar .nav-text.text-muted {
-  color: #0369a1 !important;
-}
-
+.bg-primary .navbar-nav .show > .nav-link,
+.bg-primary .navbar-nav .nav-link.active,
+.bg-primary .navbar-nav .nav-link:hover,
+.bg-primary .navbar-nav .nav-link:focus,
 .navbar .nav-link:hover,
 .navbar .nav-link:focus,
 .navbar .nav-link.active,
 .navbar .show > .nav-link {
-  color: #075985 !important;
-  background-color: rgba(14, 165, 233, 0.16);
+  color: var(--hs-ice) !important;
+  background: rgba(231, 243, 243, 0.14);
+  border-radius: 0.32rem;
 }
 
-.navbar .form-control {
-  background-color: #f8fafc;
-  border-color: #7dd3fc;
-  color: #0f2533;
+.navbar .version,
+.navbar .nav-text.text-muted {
+  color: var(--hs-ice) !important;
+}
+
+.bg-primary .dropdown-menu {
+  --bs-dropdown-bg: #102830;
+  --bs-dropdown-border-color: rgba(231, 243, 243, 0.22);
+  --bs-dropdown-link-color: #e7f3f3;
+  --bs-dropdown-link-hover-bg: rgba(231, 243, 243, 0.14);
+  --bs-dropdown-link-hover-color: #ffffff;
+  --bs-dropdown-link-active-bg: var(--hs-teal-2);
+  --bs-dropdown-link-active-color: #ffffff;
+}
+
+.navbar .form-control,
+.navbar .search-input {
+  background-color: #16343c;
+  border-color: rgba(231, 243, 243, 0.35);
+  color: #f6fbfb;
+}
+
+.navbar .form-control::placeholder,
+.navbar .search-input::placeholder {
+  color: rgba(246, 251, 251, 0.75);
 }
 
 .navbar .navbar-toggler {
-  border-color: #38bdf8;
+  border-color: rgba(231, 243, 243, 0.45);
 }
 
 .navbar .navbar-toggler-icon {
-  filter: none;
+  filter: invert(1);
 }
 
-/* F5 — Experimental banner chrome (Florence 2026-09-02).
-   Amber left border + ink text. Not red panic, not green “go”.
-   Templates: Experimental · opt-in · not the default fit
-              Covered at validation scale · opt-in · dense · REML-only
-              Intervals: asymptotic / experimental · not coverage-calibrated
-              GWAS p-values: nominal · not genome-wide calibrated */
-:root {
-  --hs-ink: #0f2533;
-  --hs-amber: #e69f00;
-  --hs-amber-ink: #92400e;
-  --hs-navy: #0072b2;
-  --hs-banner-bg: #fffbeb;
+.hsquared-version-note {
+  border: 1px solid rgba(231, 243, 243, 0.35);
+  border-radius: 999px;
+  color: #e7f3f3;
+  display: inline-flex;
+  font-size: 0.76rem;
+  line-height: 1.1;
+  margin-right: 0.85rem;
+  max-width: 18rem;
+  padding: 0.16rem 0.48rem;
+  white-space: normal;
 }
 
+/* HEX PROPOSAL — man/figures/logo.png wired; not a settled brand pick. */
+.page-header img.logo {
+  margin-left: 2rem;
+  width: clamp(130px, 12vw, 160px);
+}
+
+.template-home .page-header img.logo {
+  height: auto;
+  margin-left: 3rem;
+  max-width: min(42%, 260px);
+  width: clamp(220px, 18vw, 260px);
+}
+
+@media (min-width: 576px) {
+  .page-header {
+    min-height: 10.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .template-home .page-header {
+    min-height: clamp(13rem, 18vw, 15rem);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .template-home .page-header .logo {
+    height: auto;
+    max-width: 132px;
+  }
+
+  .hsquared-version-note {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .template-home .page-header img.logo {
+    display: block;
+    float: none;
+    margin: 0 auto 1rem;
+    max-width: 50vw;
+    width: 132px;
+  }
+}
+
+/* F5 — Experimental banner chrome (Florence 2026-09-02, kept).
+   Amber left border + ink text. Not red panic, not green “go”. */
 .hs-banner,
 aside .experimental {
   border-left: 4px solid var(--hs-amber);
@@ -81,12 +200,12 @@ aside .experimental strong {
 }
 
 .hs-banner-covered-optin {
-  border-left-color: var(--hs-navy);
-  background: #f0f9ff;
+  border-left-color: var(--hs-link);
+  background: #f3fafa;
 }
 
 .hs-banner-covered-optin strong {
-  color: #075985;
+  color: #0a5f5f;
 }
 
 .hs-figure {
@@ -102,11 +221,78 @@ aside .experimental strong {
 .hs-figure figcaption {
   margin-top: 0.4rem;
   font-size: 0.9rem;
-  color: #475569;
+  color: #37515a;
 }
 
 .hs-caption {
   margin: 0.35rem 0 1.1rem;
   font-size: 0.9rem;
-  color: #475569;
+  color: #37515a;
+}
+
+.hs-question {
+  border-left: 0.35rem solid var(--hs-teal);
+  color: var(--hs-ink);
+  font-size: 1.15rem;
+  font-style: italic;
+  margin: 1.1rem 0 1.4rem;
+  padding: 0.15rem 0 0.15rem 0.9rem;
+}
+
+.hs-features {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 1.25rem 0 1.75rem;
+}
+
+.hs-features > .section,
+.hs-feature {
+  background: #f4f8f8;
+  border: 1px solid #c5d6d6;
+  border-radius: 0.45rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
+}
+
+.hs-features h3,
+.hs-feature h3 {
+  font-size: 1.05rem;
+  margin-top: 0;
+}
+
+.hs-features p:last-child,
+.hs-feature p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .hs-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sticky navbar so the bar cannot overlay the page header / TOC. */
+.navbar.fixed-top {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+
+html {
+  scroll-padding-top: 7rem;
+}
+
+main table {
+  max-width: 100%;
+}
+
+@media (max-width: 575.98px) {
+  .template-home table.table,
+  main table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
