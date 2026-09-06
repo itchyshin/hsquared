@@ -47,6 +47,10 @@ template:
     border-color: "#c5d6d6"
   # HEX is a PROPOSAL pending Shinichi pick (BRAIN-NOTES 2026-09-06).
   # Installed from ~/local-scratch/h2-09-finish-docs-brand/hex/hsquared/.
+  # pkgdown 2.2 find_logo() prefers man/figures/logo.svg, then logo.png.
+  # Both files are the same dark PROPOSAL mark. PNG is the raster / favicon
+  # / opengraph source. Navbar hex is injected from the package logo via
+  # pkgdown/templates/navbar.html (no native navbar-logo YAML key).
   opengraph:
     image:
       src: man/figures/logo.png

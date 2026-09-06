@@ -6,27 +6,32 @@
 [![R-CMD-check](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-> [!WARNING]
-> **Experimental 0.8.0 — not production / not CRAN / 0.9 is not released.**
-> The version number tracks *covered* capability, not surface area; the first
-> CRAN release is not this bump. `public_covered_count` is **7**. **Fitting
-> requires a local Julia and an `HSquared.jl` checkout** — R alone parses and
-> validates a model but does not fit it. Julia engine-covered evidence is
-> **not** R-public covered: factor-analytic G stays **planned** on the R
-> formula; single-step stays **opt-in partial** (not default-route). The Julia
-> twin's General registration
-> ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969)) is
-> deferred pending collaborator review; do not use `Pkg.add("HSquared")` by
-> name. What you may report is listed on
-> [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
-> — not in `validation_status()`. Report point estimates only for **covered**
-> routes. Standard errors and intervals are experimental and **not
-> coverage-calibrated**.
+<div class="hs-banner" role="status">
+<p><strong>Warning — experimental 0.8.0.</strong> Not production / not CRAN /
+0.9 is not released. The version number tracks <em>covered</em> capability,
+not surface area; the first CRAN release is not this bump.
+<code>public_covered_count</code> is <strong>7</strong>.
+<strong>Fitting requires a local Julia and an <code>HSquared.jl</code>
+checkout</strong> — R alone parses and validates a model but does not fit
+it. Julia engine-covered evidence is <strong>not</strong> R-public covered:
+factor-analytic G stays <strong>planned</strong> on the R formula;
+single-step stays <strong>opt-in partial</strong> (not default-route). The
+Julia twin's General registration
+(<a href="https://github.com/JuliaRegistries/General/pull/166969">PR #166969</a>)
+is deferred pending collaborator review; do not use
+<code>Pkg.add("HSquared")</code> by name. What you may report is listed on
+<a href="https://itchyshin.github.io/hsquared/articles/current-limits.html">Can I fit and report this?</a>
+— not in <code>validation_status()</code>. Report point estimates only for
+<strong>covered</strong> routes. Standard errors and intervals are
+experimental and <strong>not coverage-calibrated</strong>.</p>
+</div>
 
 `hsquared` is the R interface for a Julia-backed quantitative-genetic
 modelling system. The first question is simple:
 
-> How much is genetic?
+<blockquote class="hs-question">
+<p>How much is genetic?</p>
+</blockquote>
 
 The default path is the univariate Gaussian animal model. The R package
 owns the formula, the summaries, and the extractors. `HSquared.jl` owns

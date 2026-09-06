@@ -125,7 +125,23 @@
   white-space: normal;
 }
 
-/* HEX PROPOSAL — man/figures/logo.png wired; not a settled brand pick. */
+/* HEX PROPOSAL — man/figures/logo.png + logo.svg; not a settled brand pick.
+   pkgdown 2.2 prefers logo.svg as the package logo (header + navbar). */
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.navbar-brand .navbar-logo {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .page-header img.logo {
   margin-left: 2rem;
   width: clamp(130px, 12vw, 160px);
@@ -174,7 +190,8 @@
 /* F5 — Experimental banner chrome (Florence 2026-09-02, kept).
    Amber left border + ink text. Not red panic, not green “go”. */
 .hs-banner,
-aside .experimental {
+aside .experimental,
+aside .status {
   border-left: 4px solid var(--hs-amber);
   background: var(--hs-banner-bg);
   color: var(--hs-ink);
@@ -182,19 +199,22 @@ aside .experimental {
   margin: 1rem 0 1.5rem;
 }
 
-aside .experimental {
+aside .experimental,
+aside .status {
   margin-top: 0.5rem;
 }
 
 .hs-banner p,
-aside .experimental p {
+aside .experimental p,
+aside .status p {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.45;
 }
 
 .hs-banner strong,
-aside .experimental strong {
+aside .experimental strong,
+aside .status strong {
   color: var(--hs-amber-ink);
   font-weight: 650;
 }
