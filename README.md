@@ -1,81 +1,43 @@
-# hsquared <a href="https://itchyshin.github.io/hsquared/"><img src="man/figures/sticker.png" align="right" height="138" alt="hsquared hex sticker (PROPOSAL v3 R-sister teal)" /></a>
+# hsquared
 
-<!-- HEX: PROPOSAL v3 R palette. Navbar = man/figures/logo.*; hero = sticker.*. -->
+<!-- ONE hex only: pkgdown uses man/figures/logo.* in the page header (drmTMB pattern).
+     Do not also put a hex in this title or in a hero block — that made three. -->
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-<div class="hs-hero">
-<p class="hs-hero-mark"><img class="hs-hero-hex" src="man/figures/sticker.svg" alt="hsquared hex sticker (PROPOSAL v3 R-sister teal)" width="220" height="220" /></p>
 <p class="hs-kicker">R interface · Julia engine · a twin, not a port</p>
+
 <p class="hs-question">How much is genetic?</p>
+
 <p class="hs-pitch">Formula first. The engine estimates heritability, variance
 components, and breeding values on the routes that are
 <strong>covered</strong>. Experimental 0.8.0 — not production, not CRAN,
 and 0.9 is not released.</p>
+
 <p class="hs-cta">
-<a class="hs-btn hs-btn-primary" href="articles/hsquared.html">Check a model without Julia</a>
+<a class="hs-btn hs-btn-primary" href="articles/hsquared.html">Getting started</a>
 <a class="hs-btn" href="articles/current-limits.html">Can I fit and report this?</a>
 <a class="hs-btn" href="articles/model-status.html">What is covered today?</a>
 </p>
-</div>
 
-<div class="hs-banner" role="status">
-<p><strong>Warning — experimental 0.8.0.</strong> Not production / not CRAN /
-0.9 is not released. The version number tracks <em>covered</em> capability,
-not surface area; the first CRAN release is not this bump.
-<code>public_covered_count</code> is <strong>7</strong>.</p>
-<p><strong>Fitting requires a local Julia and an <code>HSquared.jl</code>
-checkout</strong> — R alone parses and validates a model but does not fit
-it. Julia engine-covered evidence is <strong>not</strong> R-public covered:
-factor-analytic G stays <strong>planned</strong> on the R formula;
-single-step stays <strong>opt-in partial</strong> (not default-route). The
-Julia twin's General registration
-(<a href="https://github.com/JuliaRegistries/General/pull/166969">PR #166969</a>)
-is deferred pending collaborator review; do not use
-<code>Pkg.add("HSquared")</code> by name. What you may report is listed on
-<a href="https://itchyshin.github.io/hsquared/articles/current-limits.html">Can I fit and report this?</a>
-— not in <code>validation_status()</code>. Report point estimates only for
-<strong>covered</strong> routes. Standard errors and intervals are
-experimental and <strong>not coverage-calibrated</strong>.</p>
-</div>
-
-<div class="hs-features">
-<div class="hs-feature">
-<h3>Formula first</h3>
-<p>The default path is the univariate Gaussian animal model:
-<code>y ~ sex + animal(1 | id, pedigree = ped)</code>. R owns the formula,
-the summaries, and the extractors.</p>
-</div>
-<div class="hs-feature">
-<h3>Seven covered routes</h3>
-<p><code>public_covered_count</code> is <strong>7</strong>, at validation
-scale. Partial and planned stay labelled. Julia engine-covered is not
-R-public covered.</p>
-</div>
-<div class="hs-feature">
-<h3>Read the estimand</h3>
-<p>Report h², G, and EBVs only where the route is covered. Intervals are
-experimental and <strong>not coverage-calibrated</strong>.</p>
-</div>
-<div class="hs-feature">
-<h3>A twin, not a port</h3>
-<p><code>hsquared</code> is the applied-user interface.
-<a href="https://itchyshin.github.io/HSquared.jl/">HSquared.jl</a> is the
-sparse engine. Not ASReml. Not a GLLVM.</p>
-</div>
-</div>
+> **Warning — experimental 0.8.0.** Not production / not CRAN / 0.9 is not
+> released. `public_covered_count` is **7**. Fitting needs a local Julia and an
+> `HSquared.jl` checkout — R alone parses and validates but does not fit.
+> Julia engine-covered ≠ R-public covered. Report point estimates only for
+> **covered** routes. Intervals are experimental and **not coverage-calibrated**.
+> See [Can I fit and report this?](articles/current-limits.html).
 
 ## Start here
 
 | If you want to… | Read this |
 | --- | --- |
-| check a formula without installing Julia | [Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html) (`engine = "validate"`) |
-| decide whether a number may go in a paper | [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html) |
-| see the seven covered routes | [Model status](https://itchyshin.github.io/hsquared/articles/model-status.html) |
+| check a formula without installing Julia | [Getting started](articles/hsquared.html) (`engine = "validate"`) |
+| decide whether a number may go in a paper | [Can I fit and report this?](articles/current-limits.html) |
+| see the seven covered routes | [Model status](articles/model-status.html) |
 | set up the Julia engine | [Installation](#installation) |
-| look up a function | [Reference](https://itchyshin.github.io/hsquared/reference/) |
+| look up a function | [Reference](reference/index.html) |
 
 ## Quick start — no Julia required
 
@@ -98,137 +60,45 @@ dat <- data.frame(
 hsquared(
   weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
-  control = hs_control(engine = "validate")
-)
-
-model_spec(
-  weight ~ sex + animal(1 | id, pedigree = ped),
-  data = dat
+  engine = "validate"
 )
 ```
-
-`engine = "validate"` confirms the formula and data. `model_spec()` shows
-the parsed design and the engine target — without fitting.
 
 ## Fitting — requires the Julia engine
 
 With a local Julia, `JuliaCall`, and an `HSquared.jl` checkout (see
-[Engine setup](#engine-setup)), the same call *attempts* a fit. This is
-not a silent fallback.
-
-**n = 4 is still a syntax demo.** This tiny pedigree often fails to
-converge. You may see `converged: FALSE` and a near-zero heritability.
-That is not h² = 0, and it is not a number for a paper. Check
-`fit_diagnostics(fit)` first. The successful first path on this page is
-`engine = "validate"` above.
+[Installation](#installation)):
 
 ```r
 fit <- hsquared(
   weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat
 )
-
-fit_diagnostics(fit)
-heritability(fit)          # warns if the fit did not converge
-variance_components(fit)
-breeding_values(fit)
+summary(fit)
 ```
 
-Without the engine, this call errors with install guidance rather than
-silently degrading.
-
-## What is covered (count 7)
-
-Covered means a pre-declared recovery gate passed and an external
-same-estimand comparator agrees. Point estimates are reportable inside
-the stated scope. Several of these are **validation-scale** and still
-carry the experimental 0.8.0 label. `public_covered_count` is **7**.
-
-- Univariate Gaussian animal model on the default call
-  (`y ~ fixed + animal(1 | id, pedigree = ped)`, REML)
-- Common-environment two-effect
-- Arbitrary-N independent multi-effect
-- Random regression, **k = 2 only**
-- Direct–maternal correlated 2×2 G (`heritability()` returns the
-  labelled Willham triple, not a bare scalar)
-- Unstructured multivariate **t = 2** via `cbind()` (k ≥ 3 and diagonal
-  stay out)
-- Genomic GREML on the ordinary
-  `hsquared(y ~ genomic(1 | id, markers = M))` / `Ginv = Q` call
-  (single-step and SNP-BLUP stay out)
-
-What you may report is listed on
-[Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
-`validation_status()` is a developer evidence table, not that list.
-Evidence for the default univariate path is on
-[Validation evidence](https://itchyshin.github.io/hsquared/articles/validation-evidence.html).
-
-**Partial / opt-in** — code runs; the evidence chain has a named hole:
-repeatability / permanent environment, the maternal-genetic two-effect
-leg, SNP-BLUP, and single-step, all through
-`hs_control(engine = "julia")` with an explicit target. Julia
-engine-covered rows (for example `V2-SSHINV` / `V4-FA`) do **not** flip
-R coverage.
-
-**Planned / reserved** — parses, then aborts as planned: factor-analytic
-G (`cov = fa(K)` is not an activated R formula), paternal effects,
-dominance, epistasis, cytoplasmic inheritance, imprinting, and
-marker / QTL scans as a public report path.
-
-### Uncertainty
-
-Experimental asymptotic REML standard errors and confidence intervals
-are surfaced when a local engine provides them, clearly labelled
-experimental and **not coverage-calibrated**. Validated SEs/CIs and
-`confint()` / `vcov()` are deliberately out of scope rather than shipped
-uncalibrated.
+Report only what [Can I fit and report this?](articles/current-limits.html)
+allows for the route you ran.
 
 ## Installation
 
 ```r
-# install.packages("pak")
-pak::pak("itchyshin/hsquared")
+# install.packages("remotes")
+remotes::install_github("itchyshin/hsquared")
 ```
 
-That installs the R package only. Fitting also needs a local
-[Julia](https://julialang.org/),
-[`JuliaCall`](https://cran.r-project.org/package=JuliaCall), and a local
-[`HSquared.jl`](https://github.com/itchyshin/HSquared.jl) checkout.
+Fitting also needs Julia, `JuliaCall`, and a local `HSquared.jl` tree.
 `HSquared` is not in the Julia General registry — do not use
 `Pkg.add("HSquared")` by name.
-
-### Engine setup
 
 ```r
 install.packages("JuliaCall")
 ```
 
-```sh
-git clone https://github.com/itchyshin/HSquared.jl
-```
-
-```r
-Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
-```
-
-Until the engine is available, `control = hs_control(engine = "validate")`
-parses and validates without fitting.
+Clone or point at your `HSquared.jl` checkout per the getting-started guide.
 
 ## Twin
 
-```text
-hsquared       R package: applied-user interface
-HSquared.jl    Julia package: sparse quantitative-genetic engine
-```
-
-Engine docs: <https://itchyshin.github.io/HSquared.jl/>
-
-## Development
-
-```r
-devtools::check()
-```
-
-The project operating system lives in `AGENTS.md`, `ROADMAP.md`,
-`docs/design/`, `docs/dev-log/`, and `.agents/skills/`. Repository state
-is authoritative.
+`hsquared` is the applied R interface.
+[HSquared.jl](https://itchyshin.github.io/HSquared.jl/) is the sparse engine.
+A twin, not a port.
