@@ -25,7 +25,7 @@ worst-cell rule:
 | **h²** | directional-conservative | directional-conservative | directional-conservative |
 | **σ²a** | **experimental-only** (0.897 at h²=0.5, under-covers) | directional-conservative | directional-conservative |
 
-- The h² interval is `directional-conservative` on all three legs (HSquared.jl DRAC `fir` job **47925485**, copy-not-rerun): delta over-covers (worst Ĉ 0.969), profile is in-band where measured (worst Ĉ 0.950), and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924). That is a measured, target-specific direction — **not** coverage-calibrated at nominal, and **not** a `point`-tier claim. *(2026-09 wording repair of the 2026-07-10 bank; this file is not a 2026-09 re-run.)*
+- The h² interval is `directional-conservative` on all three legs (HSquared.jl DRAC `fir` job **47925485**, copy-not-rerun): delta over-covers (worst Ĉ 0.969), profile's worst interior cell is in-band (Ĉ 0.950; the h²=0.3 cell over-covers), and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924). That is a measured, target-specific direction — **not** coverage-calibrated at nominal, and **not** a `point`-tier claim. *(2026-09 wording repair of the 2026-07-10 bank; this file is not a 2026-09 re-run.)*
 - **The σ²a Wald/delta interval genuinely under-covers** (0.897 < 0.90 at h²=0.5), while **profile
   stays calibrated** (0.947/0.956 at h²=0.5/0.7) — this measures, at 2000 reps, exactly why the
   shipped variance-component interval is profile-only.

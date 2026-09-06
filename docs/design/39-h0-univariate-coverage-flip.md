@@ -29,10 +29,11 @@ univariate animal-model interval surfaces:
 
 1. **`h²` interval — `directional-conservative`** on all three legs
    (HSquared.jl DRAC `fir` job **47925485**, copy-not-rerun): delta over-covers
-   (worst Ĉ 0.969), profile is in-band where measured (worst Ĉ 0.950), and
-   bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924). That is a
-   measured, target-specific direction — **not** coverage-calibrated at nominal,
-   and **not** a `point`-tier claim. This **confirms** the tier the earlier
+   (worst Ĉ 0.969), profile's worst interior cell is in-band (Ĉ 0.950; the
+   h²=0.3 cell over-covers), and bootstrap mildly under-covers but stays ≥0.90
+   (worst Ĉ 0.924). That is a measured, target-specific direction — **not**
+   coverage-calibrated at nominal, and **not** a `point`-tier claim. This
+   **confirms** the tier the earlier
    500-rep evidence had only provisionally licensed, now at the 2000-rep tier
    and now including the bootstrap leg.
 2. **`σ²a` profile interval — `directional-conservative`** (NEW positive claim):
@@ -68,10 +69,10 @@ Verified facts from the checkpoint (do not re-derive):
 
 - The h² interval is `directional-conservative` on all three legs (HSquared.jl
   DRAC `fir` job **47925485**, copy-not-rerun): delta over-covers (worst Ĉ
-  0.969), profile is in-band where measured (worst Ĉ 0.950), and bootstrap
-  mildly under-covers but stays ≥0.90 (worst Ĉ 0.924). That is a measured,
-  target-specific direction — **not** coverage-calibrated at nominal, and
-  **not** a `point`-tier claim.
+  0.969), profile's worst interior cell is in-band (Ĉ 0.950; the h²=0.3 cell
+  over-covers), and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ
+  0.924). That is a measured, target-specific direction — **not**
+  coverage-calibrated at nominal, and **not** a `point`-tier claim.
 - **The σ²a delta/Wald interval genuinely under-covers** (0.897 < 0.90 at h²=0.5),
   while **profile stays calibrated** (0.947 / 0.956 at h²=0.5 / 0.7). This measures,
   at 2000 reps, exactly why the shipped variance-component interval is profile-only
@@ -163,10 +164,11 @@ agree with it. Land none before Rose + maintainer.
 >    (`small` design q=120, h²∈{0.3,0.5,0.7}, 0.95 level; doc-34 §4 worst-cell). At
 >    nominal 0.95 the **h²** interval is `directional-conservative` at the
 >    interpretable interior cells (`small` q=120, h²∈{0.3,0.5,0.7}): delta
->    over-covers (worst Ĉ 0.969), profile is in-band where measured (worst Ĉ
->    0.950), and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924).
->    Job **47925485** governs; precursor jobs **46853279** and **47870067** are
->    context only. The conservative direction is measured and target-specific —
+>    over-covers (worst Ĉ 0.969), profile's worst interior cell is in-band
+>    (Ĉ 0.950; the h²=0.3 cell over-covers), and bootstrap mildly under-covers
+>    but stays ≥0.90 (worst Ĉ 0.924). Job **47925485** governs; precursor jobs
+>    **46853279** and **47870067** are context only. The conservative direction
+>    is measured and target-specific —
 >    not coverage-calibrated → `directional-conservative` for h². For the
 >    **variance component σ²a** the legs
 >    split: the **profile** interval is **calibrated where measured** (0.947 / 0.956
@@ -236,9 +238,10 @@ The Rd is generated; edit the roxygen block. **Replace** the final details sente
 > The interval leg is a REML-only, asymptotic (logit delta-method or profile)
 > approximation. The 2000-rep C1 coverage confirm (HSquared.jl DRAC job 47925485)
 > places the h² interval at the **directional-conservative** claim level — delta
-> over-covers (worst Ĉ 0.969), profile is in-band where measured (worst Ĉ 0.950),
-> and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924) — which is
-> **not** the same as coverage-calibrated at nominal; it is reported as a point
+> over-covers (worst Ĉ 0.969), profile's worst interior cell is in-band (Ĉ 0.950;
+> the h²=0.3 cell over-covers), and bootstrap mildly under-covers but stays ≥0.90
+> (worst Ĉ 0.924) — which is **not** the same as coverage-calibrated at
+> nominal; it is reported as a point
 > estimate plus bounds, not a validated (coverage-calibrated) capability, and
 > remains unreliable near the `h² → 0` boundary. The underlying estimators
 > `V3-TWOEFFECT-REML` / `V3-NEFFECT-REML` are `covered`, but this **interval** is
@@ -299,10 +302,11 @@ Add:
 >   2000-rep confirm tier (HSquared.jl DRAC job 47925485). Mapped through the
 >   pre-committed decision rule (doc-34 §4), the **h² interval** is
 >   `directional-conservative` on all three legs (copy-not-rerun): delta
->   over-covers (worst Ĉ 0.969), profile is in-band where measured (worst Ĉ
->   0.950), and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924).
->   That is a measured, target-specific direction — **not** coverage-calibrated at
->   nominal, and **not** a `point`-tier claim. The σ²a **profile** interval is
+>   over-covers (worst Ĉ 0.969), profile's worst interior cell is in-band
+>   (Ĉ 0.950; the h²=0.3 cell over-covers), and bootstrap mildly under-covers
+>   but stays ≥0.90 (worst Ĉ 0.924). That is a measured, target-specific
+>   direction — **not** coverage-calibrated at nominal, and **not** a
+>   `point`-tier claim. The σ²a **profile** interval is
 >   `directional-conservative` where measured. The σ²a **delta/Wald** interval
 >   under-covers (**0.897** at h²=0.5, below the 0.90 floor) and stays
 >   **experimental-only** — a point estimate ± SE, never a conservative or
