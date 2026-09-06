@@ -1,23 +1,284 @@
 /* hsquared pkgdown extras.
-   Brand hue paints the navbar and accents — not body text.
-   Link teal is #0B7C7C (AA 4.5:1 on white). Never add theme/style.css
-   (takeover); keep overrides here. */
+   R-sister chrome (drmTMB / gllvmTMB): one teal family, neutral panels, status
+   accents. No Julia RGBP on the R page. Brand hue paints chrome and accents —
+   never body text. Never add theme/style.css (that is a takeover); keep every
+   override here so one file explains the whole visual system.
+
+   Composition contract for the home page:
+     ONE hex (page header) -> brand line -> kicker -> question -> pitch -> CTA.
+   The navbar mark is removed in pkgdown/templates/navbar.html, and hidden here
+   as well, so a second or third hex cannot come back by template drift. */
 
 :root {
-  /* R-sister chrome (drmTMB): no Julia RGBP */
+  /* Ink and neutrals */
   --hs-ink: #112638;
+  --hs-body: #223546;
+  --hs-muted: #4a6570;
+  --hs-faint: #6b8189;
+
+  /* Sister teal family */
   --hs-teal: #0f7887;
+  --hs-teal-deep: #0a5f6d;
+  --hs-teal-ink: #084652;
   --hs-teal-2: #087f8c;
   --hs-teal-lift: #0a617d;
   --hs-link: #0f7887;
+  --hs-link-hover: #084652;
+
+  /* Panels and hairlines */
   --hs-ice: #f2f7f8;
   --hs-paper: #f8fbfb;
   --hs-hairline: #d6e3e6;
+  --hs-hairline-soft: #e5eef0;
+
+  /* Status accents */
   --hs-amber: #ca8a04;
-  --hs-amber-ink: #92400e;
+  --hs-amber-ink: #8a5a06;
+  --hs-amber-rim: #f0dfb4;
   --hs-banner-bg: #fffbeb;
+  --hs-ok: #278a67;
+
+  /* Rhythm */
+  --hs-radius: 0.7rem;
+  --hs-radius-sm: 0.45rem;
+  --hs-shadow: 0 1px 2px rgba(9, 42, 54, 0.04), 0 6px 18px -10px rgba(9, 42, 54, 0.16);
 }
 
+/* ---------------------------------------------------------------- chrome --
+   Solid sister teal. The navbar carries brand hue and the honest status pill;
+   nothing else on the page needs to shout. */
+
+.bg-primary,
+.navbar.bg-primary,
+.navbar {
+  background-color: var(--hs-teal) !important;
+  background-image: none !important;
+  border-bottom: 1px solid rgba(4, 28, 36, 0.4);
+  box-shadow: 0 1px 12px -4px rgba(4, 28, 36, 0.45);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.bg-primary .navbar-brand,
+.bg-primary .navbar-brand:hover,
+.bg-primary .navbar-brand:focus,
+.bg-primary .navbar-text,
+.bg-primary .navbar-nav .nav-link,
+.navbar .navbar-brand,
+.navbar .navbar-text,
+.navbar .nav-link,
+.navbar .fab,
+.navbar .fa {
+  color: var(--hs-paper) !important;
+}
+
+.navbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+.navbar .nav-link {
+  border-radius: 0.4rem;
+  font-weight: 500;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.bg-primary .navbar-nav .show > .nav-link,
+.bg-primary .navbar-nav .nav-link.active,
+.bg-primary .navbar-nav .nav-link:hover,
+.bg-primary .navbar-nav .nav-link:focus,
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-link.active,
+.navbar .show > .nav-link {
+  color: #ffffff !important;
+  background: rgba(248, 251, 251, 0.14);
+}
+
+.navbar .version,
+.navbar .nav-text.text-muted {
+  color: rgba(242, 247, 248, 0.82) !important;
+}
+
+.bg-primary .dropdown-menu {
+  --bs-dropdown-bg: #063642;
+  --bs-dropdown-border-color: rgba(214, 232, 232, 0.2);
+  --bs-dropdown-link-color: #e4f2f3;
+  --bs-dropdown-link-hover-bg: rgba(248, 251, 251, 0.12);
+  --bs-dropdown-link-hover-color: #ffffff;
+  --bs-dropdown-link-active-bg: var(--hs-teal);
+  --bs-dropdown-link-active-color: #ffffff;
+  border-radius: 0.6rem;
+  box-shadow: 0 18px 38px -18px rgba(4, 28, 36, 0.65);
+  padding: 0.4rem;
+}
+
+.bg-primary .dropdown-menu .dropdown-item {
+  border-radius: 0.35rem;
+  font-size: 0.94rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.bg-primary .dropdown-menu .dropdown-divider {
+  border-top-color: rgba(214, 232, 232, 0.22);
+}
+
+.navbar .form-control,
+.navbar .search-input {
+  background-color: rgba(4, 28, 36, 0.32);
+  border-color: rgba(214, 232, 232, 0.32);
+  border-radius: 999px;
+  color: var(--hs-paper);
+}
+
+.navbar .form-control:focus,
+.navbar .search-input:focus {
+  background-color: rgba(4, 28, 36, 0.45);
+  border-color: rgba(232, 245, 246, 0.7);
+  box-shadow: 0 0 0 0.2rem rgba(248, 251, 251, 0.18);
+  color: #ffffff;
+}
+
+.navbar .form-control::placeholder,
+.navbar .search-input::placeholder {
+  color: rgba(248, 251, 251, 0.66);
+}
+
+.navbar .navbar-toggler {
+  border-color: rgba(214, 232, 232, 0.4);
+}
+
+.navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(248, 251, 251, 0.2);
+}
+
+.navbar .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+/* Honest status stays in the chrome: amber pill, calm not alarming. */
+.hsquared-version-note {
+  align-items: center;
+  background: rgba(255, 251, 235, 0.12);
+  border: 1px solid rgba(246, 214, 138, 0.55);
+  border-radius: 999px;
+  color: #ffeec9;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  margin-right: 0.85rem;
+  padding: 0.22rem 0.6rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Sticky (not fixed) navbar: it can never overlay the page header or TOC,
+   at any wrap state or browser. */
+.navbar.fixed-top {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+}
+
+html {
+  scroll-padding-top: 7rem;
+}
+
+/* ------------------------------------------------------- reading surface -- */
+
+body {
+  color: var(--hs-body);
+}
+
+main {
+  padding-top: 0.75rem;
+}
+
+main h1,
+main h2,
+main h3,
+main h4 {
+  color: var(--hs-ink);
+  letter-spacing: -0.02em;
+}
+
+main h2 {
+  font-size: clamp(1.3rem, 1.9vw, 1.55rem);
+  font-weight: 700;
+  margin-top: 2.6rem;
+}
+
+main h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 1.9rem;
+}
+
+main p,
+main li {
+  line-height: 1.62;
+}
+
+a {
+  color: var(--hs-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+a:hover,
+a:focus {
+  color: var(--hs-link-hover);
+}
+
+a:focus-visible,
+.hs-btn:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--hs-teal);
+  outline-offset: 2px;
+}
+
+/* Inline code reads as a name, not as a warning. */
+main :not(pre) > code {
+  background: var(--hs-ice);
+  border-radius: 0.3rem;
+  color: var(--hs-teal-ink);
+  font-size: 0.88em;
+  padding: 0.1em 0.32em;
+}
+
+main a > code,
+main code a {
+  color: var(--hs-link);
+}
+
+/* Code blocks: quiet paper panels with a hairline, not raw grey slabs. */
+main div.sourceCode,
+main pre {
+  background-color: var(--hs-paper);
+  border: 1px solid var(--hs-hairline-soft);
+  border-radius: var(--hs-radius-sm);
+}
+
+main div.sourceCode > pre,
+main pre.sourceCode {
+  background-color: transparent;
+  border: 0;
+  margin: 0;
+  padding: 1rem 1.1rem;
+}
+
+main div.sourceCode {
+  margin: 1rem 0 1.5rem;
+}
+
+/* --------------------------------------------------------- home overflow --
+   Narrow-screen protections. These predate the beauty pass and stay. */
+
+/* Do not add `max-width` here. pkgdown caps `main` at 800px on purpose (a quiet
+   reading measure); overriding it lets the 75% column win, and `main` + `aside`
+   then exceed the row and the sidebar wraps below the page at >=1400px. */
 .template-home main,
 .template-home aside {
   min-width: 0;
@@ -46,125 +307,25 @@
   overflow-wrap: anywhere;
 }
 
-/* Deeper R-sister teal navbar; keep the link teal AA-safe on white. */
-.bg-primary,
-.navbar.bg-primary,
-.navbar {
-  background-color: var(--hs-teal) !important;
-  background-image: none !important;
-  border-bottom: 2px solid var(--hs-link);
-  box-shadow: 0 1px 0 rgba(4, 28, 36, 0.35);
-  padding-top: 0.45rem;
-  padding-bottom: 0.45rem;
+main table {
+  max-width: 100%;
 }
 
-.bg-primary .navbar-brand,
-.bg-primary .navbar-brand:hover,
-.bg-primary .navbar-brand:focus,
-.bg-primary .navbar-text,
-.bg-primary .navbar-nav .nav-link,
-.navbar .navbar-brand,
-.navbar .navbar-text,
-.navbar .nav-link,
-.navbar .fab,
-.navbar .fa {
-  color: var(--hs-paper) !important;
-}
+/* ------------------------------------------------------------- home hero --
+   ONE hex, centred, then the brand line, then the question. The mark is the
+   page's visual memory; the question gets its first attention, so the hex is
+   capped well below display-type weight. */
 
-.navbar .navbar-brand {
-  font-weight: 650;
-  letter-spacing: -0.02em;
-}
-
-.bg-primary .navbar-nav .show > .nav-link,
-.bg-primary .navbar-nav .nav-link.active,
-.bg-primary .navbar-nav .nav-link:hover,
-.bg-primary .navbar-nav .nav-link:focus,
-.navbar .nav-link:hover,
-.navbar .nav-link:focus,
-.navbar .nav-link.active,
-.navbar .show > .nav-link {
-  color: #ffffff !important;
-  background: rgba(248, 251, 251, 0.12);
-  border-radius: 0.4rem;
-}
-
-.navbar .version,
-.navbar .nav-text.text-muted {
-  color: var(--hs-ice) !important;
-}
-
-.bg-primary .dropdown-menu {
-  --bs-dropdown-bg: #041c24;
-  --bs-dropdown-border-color: rgba(214, 232, 232, 0.22);
-  --bs-dropdown-link-color: #e7f3f3;
-  --bs-dropdown-link-hover-bg: rgba(15, 120, 135, 0.35);
-  --bs-dropdown-link-hover-color: #ffffff;
-  --bs-dropdown-link-active-bg: var(--hs-teal-lift);
-  --bs-dropdown-link-active-color: #ffffff;
-  border-radius: 0.5rem;
-  padding: 0.4rem;
-}
-
-.navbar .form-control,
-.navbar .search-input {
-  background-color: #0a3a48;
-  border-color: rgba(214, 232, 232, 0.35);
-  color: var(--hs-paper);
-  border-radius: 999px;
-}
-
-.navbar .form-control::placeholder,
-.navbar .search-input::placeholder {
-  color: rgba(248, 251, 251, 0.7);
-}
-
-.navbar .navbar-toggler {
-  border-color: rgba(214, 232, 232, 0.45);
-}
-
-.navbar .navbar-toggler-icon {
-  filter: invert(1);
-}
-
-.hsquared-version-note {
-  border: 1px solid rgba(70, 214, 214, 0.45);
-  border-radius: 999px;
-  color: #f8fbfb;
-  display: inline-flex;
-  font-size: 0.74rem;
-  font-weight: 650;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  margin-right: 0.85rem;
-  max-width: 18rem;
-  padding: 0.2rem 0.58rem;
-  white-space: nowrap;
-}
-
-/* R package hex lockup — man/figures/logo.png + logo.svg. */
-.navbar-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.navbar-brand .navbar-logo {
-  /* One hex on the page is enough — navbar stays text-only. */
-  display: none !important;
-}
-
-/* Home: ONE large hex above the title. */
 .template-home .page-header {
+  align-items: center;
+  border-bottom: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 0;
   justify-content: flex-start;
-  gap: 0.35rem;
-  border-bottom: 0;
-  margin: 0.4rem 0 0.75rem;
+  margin: 1.75rem 0 0;
   min-height: 0;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0;
   text-align: center;
 }
 
@@ -172,233 +333,296 @@
   display: block !important;
   float: none;
   height: auto;
-  margin: 0 auto 0.35rem;
-  max-width: min(52%, 240px);
+  margin: 0 auto 0.9rem;
+  max-width: min(52%, 200px);
   order: 1;
-  width: clamp(180px, 22vw, 240px);
+  width: clamp(160px, 16vw, 200px);
 }
 
 .template-home .page-header h1 {
-  font-size: clamp(2.15rem, 4.2vw, 2.85rem);
-  font-weight: 750;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
+  color: var(--hs-teal-deep);
+  font-size: clamp(1.45rem, 2.2vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin: 0;
   order: 2;
 }
 
+.template-home .page-header .anchor {
+  display: none;
+}
+
+/* Article pages keep the smaller sister mark, floated as pkgdown intends. */
 .page-header img.logo {
-  margin-left: 0;
-  width: clamp(130px, 12vw, 160px);
+  margin-left: 1.5rem;
+  width: clamp(120px, 11vw, 150px);
 }
 
-@media (min-width: 576px) {
-  .page-header {
-    min-height: 0;
-  }
+/* Belt and braces: the navbar is text-only (see templates/navbar.html).
+   If a future template edit re-adds the mark, it still cannot render. */
+.navbar-brand {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
 }
 
-@media (max-width: 767.98px) {
-  .template-home .page-header .logo {
-    height: auto;
-    max-width: 148px;
-  }
-
-  .hsquared-version-note {
-    display: none;
-  }
+.navbar-brand .navbar-logo,
+.navbar .navbar-logo {
+  display: none !important;
 }
 
-@media (max-width: 575.98px) {
-  .template-home .page-header img.logo {
-    display: block;
-    float: none;
-    margin: 0 auto 0.35rem;
-    max-width: 46vw;
-    width: 132px;
-  }
-}
-
-/* First-screen hero: sticker, question, pitch, pill CTAs. */
-.hs-hero {
-  margin: 0.15rem 0 1.15rem;
+/* Hero copy: one centred composition, one measure. */
+.template-home .hs-kicker,
+.template-home .hs-question,
+.template-home .hs-pitch,
+.template-home .hs-cta {
+  margin-left: auto;
+  margin-right: auto;
   text-align: center;
 }
 
-.hs-hero-mark {
-  margin: 0 0 0.55rem;
-}
-
-.hs-hero-hex {
-  display: none !important;
-  display: block;
-  height: auto;
-  margin: 0 auto;
-  width: clamp(168px, 22vw, 228px);
-}
-
 .hs-kicker {
-  color: #37515a;
-  font-size: 0.86rem;
+  color: var(--hs-faint);
+  font-size: 0.76rem;
   font-weight: 650;
-  letter-spacing: 0.06em;
-  margin: 0 0 0.45rem;
+  letter-spacing: 0.1em;
+  margin: 0.55rem 0 1.1rem;
   text-transform: uppercase;
 }
 
 .hs-question {
   border: 0;
   color: var(--hs-ink);
-  font-size: clamp(1.7rem, 3.6vw, 2.35rem);
+  font-size: clamp(1.95rem, 3.6vw, 2.5rem);
   font-style: normal;
   font-weight: 750;
   letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin: 0 0 0.7rem;
+  line-height: 1.12;
+  margin: 0 auto 0.85rem;
+  max-width: 26rem;
   padding: 0;
-}
-
-.hs-hero .hs-question,
-p.hs-question {
-  margin-bottom: 0.7rem;
+  text-wrap: balance;
 }
 
 .hs-pitch {
-  color: #243746;
-  font-size: 1.05rem;
-  line-height: 1.5;
-  margin: 0 auto 1.15rem;
-  max-width: 38rem;
+  color: var(--hs-body);
+  font-size: 1.06rem;
+  line-height: 1.58;
+  margin: 0 auto 1.6rem;
+  max-width: 34rem;
 }
 
 .hs-cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
+  gap: 0.6rem;
   justify-content: center;
-  margin: 0 0 0.25rem;
+  margin: 0 auto 2.4rem;
 }
 
 .hs-btn {
-  background: #eef4f4;
-  border: 1px solid #c5d6d6;
   border-radius: 999px;
-  color: var(--hs-ink) !important;
   display: inline-flex;
   font-size: 0.95rem;
   font-weight: 650;
   line-height: 1.2;
-  padding: 0.55rem 1.05rem;
+  padding: 0.6rem 1.15rem;
   text-decoration: none !important;
+  transition: background-color 120ms ease, border-color 120ms ease,
+    color 120ms ease, transform 120ms ease;
+}
+
+/* Secondary actions are outlines, so the page reads as one decision rather
+   than a row of equal pills. */
+.hs-btn {
+  background: #ffffff;
+  border: 1px solid var(--hs-hairline);
+  color: var(--hs-ink) !important;
 }
 
 .hs-btn:hover,
 .hs-btn:focus {
-  background: #e1eded;
-  border-color: var(--hs-link);
-  color: var(--hs-teal) !important;
+  background: var(--hs-ice);
+  border-color: var(--hs-teal);
+  color: var(--hs-teal-ink) !important;
 }
 
 .hs-btn-primary {
-  background: var(--hs-link);
-  border-color: var(--hs-link);
+  background: var(--hs-teal-ink);
+  border-color: var(--hs-teal-ink);
+  box-shadow: 0 8px 18px -12px rgba(8, 70, 82, 0.9);
   color: #ffffff !important;
 }
 
 .hs-btn-primary:hover,
 .hs-btn-primary:focus {
-  background: #0a5f5f;
-  border-color: #0a5f5f;
+  background: #063642;
+  border-color: #063642;
   color: #ffffff !important;
 }
 
-/* Experimental banner — amber, not red panic, not a leaked [!WARNING]. */
-.hs-banner,
-aside .experimental,
-aside .status {
-  border: 1px solid #f3e0b5;
-  border-left: 4px solid var(--hs-amber);
+@media (prefers-reduced-motion: reduce) {
+  .hs-btn,
+  .navbar .nav-link {
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------- status panels --
+   Experimental honesty must look calm, never apologetic: warm paper, one amber
+   edge, ordinary reading type. Not a red alarm, not a marketing badge.
+   The home warning is an ordinary markdown blockquote, so it renders with the
+   same weight on GitHub; GitHub alert-callout syntax must never be used there
+   because pandoc leaks its bracketed marker onto the page as literal text. */
+
+.template-home main > .section.level1 > blockquote,
+.hs-banner {
   background: var(--hs-banner-bg);
-  border-radius: 0.55rem;
+  border: 1px solid var(--hs-amber-rim);
+  border-left: 4px solid var(--hs-amber);
+  border-radius: var(--hs-radius);
   color: var(--hs-ink);
-  margin: 0.85rem 0 1.35rem;
-  padding: 0.85rem 1.05rem;
+  margin: 0 0 2.4rem;
+  padding: 1.2rem 1.35rem 1.05rem;
 }
 
-aside .experimental,
-aside .status {
-  margin-top: 0.5rem;
-}
-
-.hs-banner p,
-aside .experimental p,
-aside .status p {
-  margin: 0 0 0.55rem;
+.template-home main > .section.level1 > blockquote p,
+.hs-banner p {
   font-size: 0.95rem;
-  line-height: 1.45;
+  line-height: 1.58;
+  margin: 0 0 0.6rem;
 }
 
-.hs-banner p:last-child,
-aside .experimental p:last-child,
-aside .status p:last-child {
+.template-home main > .section.level1 > blockquote p:last-child,
+.hs-banner p:last-child {
   margin-bottom: 0;
 }
 
-.hs-banner strong,
-aside .experimental strong,
-aside .status strong {
+.template-home main > .section.level1 > blockquote strong,
+.hs-banner strong {
   color: var(--hs-amber-ink);
-  font-weight: 650;
+  font-weight: 700;
+}
+
+.template-home main > .section.level1 > blockquote a,
+.hs-banner a {
+  color: var(--hs-amber-ink);
+}
+
+.hs-note-eyebrow {
+  color: var(--hs-amber-ink);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.template-home main > .section.level1 > blockquote p:has(.hs-note-eyebrow) {
+  margin-bottom: 0.5rem;
 }
 
 .hs-banner-covered-optin {
-  border-left-color: var(--hs-link);
-  background: #f3fafa;
+  background: var(--hs-ice);
+  border-color: var(--hs-hairline);
+  border-left-color: var(--hs-teal);
 }
 
 .hs-banner-covered-optin strong {
-  color: #0a5f5f;
+  color: var(--hs-teal-ink);
 }
 
-.hs-figure {
-  margin: 1.25rem 0 1.5rem;
+/* -------------------------------------------------------- routes and cards -- */
+
+/* The route table is drawn cell by cell, and it must be laid out as a real
+   table to do that. pkgdown ships `table { display: block }` so wide tables can
+   scroll, but a block box is sized independently of the row box inside it: the
+   rows then stop 30-140px short of the table's own edge, and any border or
+   background drawn on the table sits visibly wider than the rows it encloses.
+   `display: table` re-couples them; the phone breakpoint below puts the block
+   box back, which is the only width where the scrolling is needed. */
+.template-home table.table {
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  display: table;
+  margin-bottom: 1.9rem;
 }
 
-.hs-figure img {
-  width: 100%;
-  height: auto;
-  background: #ffffff;
+.template-home table.table th,
+.template-home table.table td {
+  border-bottom: 1px solid var(--hs-hairline-soft);
+  border-top: 0;
+  padding: 0.72rem 1rem;
+  vertical-align: top;
 }
 
-.hs-figure figcaption {
-  margin-top: 0.4rem;
-  font-size: 0.9rem;
-  color: #37515a;
+.template-home table.table th:first-child,
+.template-home table.table td:first-child {
+  border-left: 1px solid var(--hs-hairline);
 }
 
-.hs-caption {
-  margin: 0.35rem 0 1.1rem;
-  font-size: 0.9rem;
-  color: #37515a;
+.template-home table.table th:last-child,
+.template-home table.table td:last-child {
+  border-right: 1px solid var(--hs-hairline);
 }
 
-/* 2×2 scan cards. Use one R-sister teal accent throughout. */
+.template-home table.table thead th {
+  background: var(--hs-ice);
+  border-bottom: 1px solid var(--hs-hairline);
+  border-top: 1px solid var(--hs-hairline);
+  color: var(--hs-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.template-home table.table thead th:first-child {
+  border-top-left-radius: var(--hs-radius);
+}
+
+.template-home table.table thead th:last-child {
+  border-top-right-radius: var(--hs-radius);
+}
+
+.template-home table.table tbody tr:last-child td {
+  border-bottom: 1px solid var(--hs-hairline);
+}
+
+.template-home table.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--hs-radius);
+}
+
+.template-home table.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--hs-radius);
+}
+
+.template-home table.table tbody tr:hover td {
+  background: rgba(242, 247, 248, 0.65);
+}
+
+.template-home table.table tbody td:first-child {
+  color: var(--hs-ink);
+}
+
 .hs-features {
   display: grid;
-  gap: 0.85rem;
+  gap: 1rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0.35rem 0 1.75rem;
+  margin: 0.5rem 0 2rem;
 }
 
 .hs-features > .section,
 .hs-feature {
-  background: var(--hs-paper);
+  background: #ffffff;
   border: 1px solid var(--hs-hairline);
-  border-left: 4px solid var(--hs-link);
-  border-radius: 0.7rem;
-  box-shadow: 0 0.12rem 0.4rem rgba(7, 42, 54, 0.06);
+  border-left: 4px solid var(--hs-teal);
+  border-radius: var(--hs-radius);
+  box-shadow: var(--hs-shadow);
   margin: 0;
-  padding: 1rem 1.1rem 1.05rem;
+  padding: 1.1rem 1.2rem;
 }
 
 .hs-features h3,
@@ -414,29 +638,131 @@ aside .status strong {
   margin-bottom: 0;
 }
 
-.template-home #start-here + table,
-.template-home h2 + table.table {
-  border: 1px solid var(--hs-hairline);
-  border-radius: 0.7rem;
-  overflow: hidden;
+.hs-figure {
+  margin: 1.5rem 0 1.75rem;
 }
 
-.template-home table.table thead th {
-  background: #eef5f5;
-  color: var(--hs-ink);
-  font-size: 0.86rem;
-  letter-spacing: 0.02em;
+.hs-figure img {
+  background: #ffffff;
+  height: auto;
+  width: 100%;
+}
+
+.hs-figure figcaption,
+.hs-caption {
+  color: var(--hs-muted);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* ------------------------------------------------------------- sidebar -- */
+
+.template-home aside {
+  font-size: 0.94rem;
+}
+
+.template-home aside > div {
+  margin-bottom: 1.6rem;
+}
+
+.template-home aside h2 {
+  color: var(--hs-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  margin: 0 0 0.5rem;
   text-transform: uppercase;
 }
 
+.template-home aside ul.list-unstyled {
+  margin-bottom: 0;
+}
+
+.template-home aside ul.list-unstyled li {
+  line-height: 1.5;
+  margin-bottom: 0.3rem;
+}
+
+/* The status callout leads the sidebar and is the only bordered block in it. */
+.template-home aside .status,
+.template-home aside .experimental {
+  background: var(--hs-banner-bg);
+  border: 1px solid var(--hs-amber-rim);
+  border-left: 4px solid var(--hs-amber);
+  border-radius: var(--hs-radius-sm);
+  margin-bottom: 1.9rem;
+  padding: 0.9rem 1rem;
+}
+
+.template-home aside .status h2,
+.template-home aside .experimental h2 {
+  color: var(--hs-amber-ink);
+}
+
+.template-home aside .status p,
+.template-home aside .experimental p {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.template-home aside .status strong,
+.template-home aside .experimental strong {
+  color: var(--hs-amber-ink);
+}
+
+.template-home aside .status a,
+.template-home aside .experimental a {
+  color: var(--hs-amber-ink);
+}
+
+.template-home aside .dev-status ul.list-unstyled li {
+  margin-bottom: 0.4rem;
+}
+
+.template-home aside .roles {
+  color: var(--hs-faint);
+}
+
+footer {
+  border-top: 1px solid var(--hs-hairline-soft);
+  color: var(--hs-muted);
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+}
+
+/* ----------------------------------------------------------- responsive -- */
+
+@media (min-width: 576px) {
+  .page-header {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 991.98px) {
+  main h2 {
+    margin-top: 2.1rem;
+  }
+}
+
 @media (max-width: 767.98px) {
+  .template-home .page-header img.logo {
+    max-width: 150px;
+    width: 150px;
+  }
+
+  .hsquared-version-note {
+    display: none;
+  }
+
   .hs-features {
     grid-template-columns: 1fr;
   }
 
   .hs-cta {
-    flex-direction: column;
     align-items: stretch;
+    flex-direction: column;
+    margin-bottom: 2rem;
   }
 
   .hs-btn {
@@ -444,32 +770,61 @@ aside .status strong {
   }
 }
 
-/* Sticky navbar so the bar cannot overlay the page header / TOC. */
-.navbar.fixed-top {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-}
-
-html {
-  scroll-padding-top: 7rem;
-}
-
-main table {
-  max-width: 100%;
-}
-
 @media (max-width: 575.98px) {
+  /* Phones: the reading column is pinned to the viewport and every wide child
+     scrolls inside it. Without this the widest table sets the document width,
+     the whole page shifts left, and the navbar toggler lands off-screen. */
+  .template-home > .row {
+    --bs-gutter-x: 0;
+  }
+
+  .template-home main,
+  .template-home aside {
+    max-width: calc(100vw - 1.5rem);
+    overflow-x: visible;
+    width: calc(100vw - 1.5rem);
+  }
+
+  .template-home .page-header {
+    margin-top: 0.5rem;
+  }
+
+  .template-home .page-header img.logo {
+    display: block;
+    float: none;
+    margin: 0 auto 0.75rem;
+    max-width: 44vw;
+    width: 132px;
+  }
+
+  .hs-question {
+    max-width: none;
+  }
+
+  /* `table-layout: fixed` cannot apply once the table is a block box, so the
+     cells would otherwise size to their content and widen the page. */
   .template-home table.table,
   main table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    display: block;
+    min-width: 0;
+    overflow-x: auto;
+    table-layout: auto;
+    width: 100%;
+  }
+
+  main div.sourceCode > pre,
+  main pre.sourceCode {
+    padding: 0.8rem 0.85rem;
+  }
+
+  #TOC {
+    max-width: 100%;
+    width: auto;
   }
 }
 
-/* Grouped navbar needs more room than Bootstrap's lg breakpoint. */
+/* The grouped navbar needs more room than Bootstrap's lg breakpoint gives. */
 @media (max-width: 1439.98px) {
   .navbar.navbar-expand-lg {
     flex-wrap: wrap;
@@ -480,9 +835,9 @@ main table {
   }
 
   .navbar.navbar-expand-lg .navbar-collapse {
+    align-items: center;
     flex-basis: 100%;
     flex-grow: 1;
-    align-items: center;
   }
 
   .navbar.navbar-expand-lg .navbar-collapse:not(.show) {
@@ -505,15 +860,7 @@ main table {
 
   .navbar.navbar-expand-lg form[role="search"],
   .navbar.navbar-expand-lg .search-form {
-    width: 100%;
     margin: 0.5rem 0;
+    width: 100%;
   }
-}
-
-a {
-  color: var(--hs-link);
-}
-
-a:hover {
-  color: #0a5f5f;
 }

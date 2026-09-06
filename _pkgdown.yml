@@ -38,7 +38,9 @@ template:
   bootstrap: 5
   bootswatch: flatly
   includes:
-    before_navbar: '<span class="hsquared-version-note">0.8.0 experimental</span>'
+    # pkgdown already prints the plain version beside the brand; the pill adds
+    # the status word, not a second copy of the number.
+    before_navbar: '<span class="hsquared-version-note">experimental</span>'
   bslib:
     # Deeper teal navbar matching the drmTMB/gllvmTMB sister packages.
     # Body ink is not the brand hue; link teal remains AA-safe on white.
@@ -50,15 +52,15 @@ template:
     link-color: "#0f7887"
     link-hover-color: "#0a617d"
     border-color: "#d6e3e6"
-  # HEX R-package lockup; keep the visual identity R/sister teal.
-  # Navbar / favicon / opengraph: man/figures/logo.svg + logo.png (no wordmark).
-  # Home hero: man/figures/sticker.svg + sticker.png (wordmark lockup).
+  # HEX R-package lockup; keep the visual identity R/sister teal, never Julia
+  # RGBP. man/figures/logo.svg is the single mark: pkgdown 2.2 find_logo()
+  # prefers it, and it renders exactly once per page (the home page header).
+  # The navbar is text-only — see pkgdown/templates/navbar.html.
   # Installed from ~/local-scratch/h2-09-finish-docs-brand/hex/hsquared/.
-  # pkgdown 2.2 find_logo() prefers logo.svg — that stays the navbar mark.
   opengraph:
     image:
       src: man/figures/logo.png
-      alt: "hsquared hex logo (PROPOSAL v3 R-sister)"
+      alt: "hsquared hex logo: a pedigree and h squared, dark teal (proposed mark)"
 
 navbar:
   structure:

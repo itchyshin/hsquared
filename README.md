@@ -11,10 +11,10 @@
 
 <p class="hs-question">How much is genetic?</p>
 
-<p class="hs-pitch">Formula first. The engine estimates heritability, variance
+<p class="hs-pitch">Formula first. The engine returns heritability, variance
 components, and breeding values on the routes that are
-<strong>covered</strong>. Experimental 0.8.0 — not production, not CRAN,
-and 0.9 is not released.</p>
+<strong>covered</strong> — experimental 0.8.0, not production, not CRAN, and
+0.9 is not released.</p>
 
 <p class="hs-cta">
 <a class="hs-btn hs-btn-primary" href="articles/hsquared.html">Getting started</a>
@@ -22,6 +22,12 @@ and 0.9 is not released.</p>
 <a class="hs-btn" href="articles/model-status.html">What is covered today?</a>
 </p>
 
+<!-- Plain blockquote, never GitHub alert-callout syntax. pkgdown renders
+     README.md through pandoc, which passes those bracketed alert markers
+     through as literal text and leaks them onto the landing page. This wording
+     carries the same weight on GitHub and on the site. -->
+> <span class="hs-note-eyebrow">Before you report anything</span>
+>
 > **Warning — experimental 0.8.0.** Not production / not CRAN / 0.9 is not
 > released. `public_covered_count` is **7**. Fitting needs a local Julia and an
 > `HSquared.jl` checkout — R alone parses and validates but does not fit.

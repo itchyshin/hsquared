@@ -2,7 +2,9 @@
 <nav class="navbar navbar-expand-lg fixed-top {{#bg}}bg-{{{.}}}{{/bg}}" {{#type}}data-bs-theme="{{{.}}}"{{/type}} aria-label="{{#translate}}{{site_nav}}{{/translate}}">
   <div class="container">
     {{#includes}}{{{before_title}}}{{/includes}}
-    <a class="navbar-brand me-2" href="{{#site}}{{root}}{{/site}}index.html">{{#logo}}<img src="{{src}}" class="navbar-logo" alt="hsquared hex logo (PROPOSAL v2)" width="32" height="32">{{/logo}}{{#site}}{{title}}{{/site}}</a>
+    <!-- Text-only brand. ONE hex per page, in the page header; a navbar mark
+         would make it two on the home page and three with a hero block. -->
+    <a class="navbar-brand me-2" href="{{#site}}{{root}}{{/site}}index.html">{{#site}}{{title}}{{/site}}</a>
 
     <small class="nav-text {{#development}}text-{{version_label}}{{/development}} me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{#development}}{{version_tooltip}}{{/development}}">{{#package}}{{version}}{{/package}}</small>
 
