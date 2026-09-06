@@ -1,13 +1,13 @@
-# hsquared <a href="https://itchyshin.github.io/hsquared/"><img src="man/figures/sticker.png" align="right" height="138" alt="hsquared hex sticker (PROPOSAL v2)" /></a>
+# hsquared <a href="https://itchyshin.github.io/hsquared/"><img src="man/figures/sticker.png" align="right" height="138" alt="hsquared hex sticker (PROPOSAL v3 R-sister teal)" /></a>
 
-<!-- HEX: PROPOSAL v2 pending Shinichi pick. Navbar = man/figures/logo.*; hero = sticker.*. -->
+<!-- HEX: PROPOSAL v3 R palette. Navbar = man/figures/logo.*; hero = sticker.*. -->
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/itchyshin/hsquared/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 <div class="hs-hero">
-<p class="hs-hero-mark"><img class="hs-hero-hex" src="man/figures/sticker.svg" alt="hsquared hex sticker (PROPOSAL v2)" width="220" height="220" /></p>
+<p class="hs-hero-mark"><img class="hs-hero-hex" src="man/figures/sticker.svg" alt="hsquared hex sticker (PROPOSAL v3 R-sister teal)" width="220" height="220" /></p>
 <p class="hs-kicker">R interface · Julia engine · a twin, not a port</p>
 <p class="hs-question">How much is genetic?</p>
 <p class="hs-pitch">Formula first. The engine estimates heritability, variance

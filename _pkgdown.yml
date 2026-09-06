@@ -40,18 +40,17 @@ template:
   includes:
     before_navbar: '<span class="hsquared-version-note">0.8.0 experimental</span>'
   bslib:
-    # Deeper teal navbar (drmTMB/gllvmTMB sister). Body ink is NOT the brand
-    # hue. Link teal is the darkened AA 4.5:1 sibling (#0B7C7C); logo teals
-    # #12A3A3 / #0F8E8E fail on white (BRAIN-NOTES 2026-09-06).
+    # Deeper teal navbar matching the drmTMB/gllvmTMB sister packages.
+    # Body ink is not the brand hue; link teal remains AA-safe on white.
     bg: "#ffffff"
     fg: "#112638"
-    primary: "#12141A"
+    primary: "#0f7887"
     secondary: "#37515a"
     headings-color: "#112638"
-    link-color: "#0B7C7C"
-    link-hover-color: "#0a5f5f"
-    border-color: "#c5d6d6"
-  # HEX PROPOSAL v2 pending Shinichi pick.
+    link-color: "#0f7887"
+    link-hover-color: "#0a617d"
+    border-color: "#d6e3e6"
+  # HEX R-package lockup; keep the visual identity R/sister teal.
   # Navbar / favicon / opengraph: man/figures/logo.svg + logo.png (no wordmark).
   # Home hero: man/figures/sticker.svg + sticker.png (wordmark lockup).
   # Installed from ~/local-scratch/h2-09-finish-docs-brand/hex/hsquared/.
@@ -59,7 +58,7 @@ template:
   opengraph:
     image:
       src: man/figures/logo.png
-      alt: "hsquared hex logo (PROPOSAL)"
+      alt: "hsquared hex logo (PROPOSAL v3 R-sister)"
 
 navbar:
   structure:
