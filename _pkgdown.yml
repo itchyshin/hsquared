@@ -12,17 +12,24 @@ home:
   sidebar:
     structure: [experimental, links, license, community, citation, authors, dev]
     components:
+      # D-41 channel 3 stays, but as the SHORT form. The full statement
+      # (experimental 0.8.0 / not production / not CRAN / 0.9 not released /
+      # needs a local Julia) is said once, in the body callout a few
+      # centimetres to the left of this card; repeating it verbatim here put
+      # the same paragraph on screen twice, which is the craft defect the
+      # 2026-09-06 sister-bar review flagged. Every fact unique to this card —
+      # the planned/partial rows, the registry status, both evidence links —
+      # is kept. Nothing was removed from the page, only from the second copy.
       experimental:
         title: Status
         text: >-
-          **Experimental 0.8.0 — not production / not CRAN / 0.9 is not
-          released.** Version tracks covered capability, not surface area.
-          `public_covered_count` is **7**. Factor-analytic G stays **planned**
-          on R; single-step stays **opt-in partial**. Julia engine-covered ≠
-          R covered. Interval coverage is not certified. Julia General
-          registration
+          **Experimental 0.8.0.** Version tracks covered capability, not
+          surface area. `public_covered_count` is **7**. Factor-analytic G
+          stays **planned** on R; single-step stays **opt-in partial**.
+          Julia engine-covered ≠ R covered, and interval coverage is not
+          certified. Not in the Julia General registry — registration
           ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
-          is deferred pending collaborator review; do not use
+          is deferred pending collaborator review, so do not use
           `Pkg.add("HSquared")` by name. Read
           [Can I fit and report this?](articles/current-limits.html)
           and [Validation evidence](articles/validation-evidence.html)

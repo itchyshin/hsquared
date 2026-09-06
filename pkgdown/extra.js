@@ -1,7 +1,11 @@
 /* pkgdown 2.2 hardcodes alt="" on the header logo it injects
    (tweak_homepage_html), so the one hex on the page would be announced as
    nothing. Give it a real description instead. */
-(function () {
+/* pkgdown emits this file as a plain <script> in <head>, so it runs before the
+   body exists and every querySelector below returned an empty list. Defer to
+   DOMContentLoaded (or run immediately if the document is already parsed, e.g.
+   if a future pkgdown moves the tag). */
+function hsquaredEnhance() {
   var marks = document.querySelectorAll("img.logo");
   for (var i = 0; i < marks.length; i++) {
     if (!marks[i].getAttribute("alt")) {
@@ -20,4 +24,10 @@
       }
     }
   }
-})();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", hsquaredEnhance);
+} else {
+  hsquaredEnhance();
+}

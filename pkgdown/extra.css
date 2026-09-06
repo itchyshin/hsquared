@@ -312,41 +312,62 @@ main table {
 }
 
 /* ------------------------------------------------------------- home hero --
-   ONE hex, centred, then the brand line, then the question. The mark is the
-   page's visual memory; the question gets its first attention, so the hex is
-   capped well below display-type weight. */
+   ONE LEFT AXIS. The previous pass centred the hero inside `main`, which is
+   itself pushed left by the `aside`: the stack landed well left of the
+   viewport centre, and then every section below it (`Start here`, the code
+   blocks, the tables) hung off the left edge instead. Two axes on one page is
+   what read as "terrible alignment", and no amount of hex craft fixes it.
+
+   drmTMB's answer is the right one: name and body share one left edge, the
+   mark floats right in the same band, a rule closes the block. We keep our
+   hero copy (eyebrow, question, CTAs) that the R sisters do not have, and hang
+   all of it off that same edge.
+
+   The mark is positioned absolutely against `.section.level1` rather than
+   floated, because the hero copy is a run of sibling `<p>` elements that
+   pkgdown emits after `.page-header` — a float inside the header cannot
+   reliably reserve space across them, and `extra.js` loads in <head>, so DOM
+   rewriting would flash. Absolute + a capped copy measure is the version with
+   no moving parts. If CSS fails entirely the hero degrades to a left-aligned
+   stack, which is still correct. */
+
+.template-home main > .section.level1 {
+  position: relative;
+}
 
 .template-home .page-header {
-  align-items: center;
   border-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  justify-content: flex-start;
-  margin: 1.75rem 0 0;
+  display: block;
+  margin: 1.5rem 0 0;
   min-height: 0;
   padding-bottom: 0;
-  text-align: center;
+  text-align: left;
 }
 
 .template-home .page-header img.logo {
   display: block !important;
   float: none;
   height: auto;
-  margin: 0 auto 0.9rem;
-  max-width: min(52%, 200px);
-  order: 1;
-  width: clamp(160px, 16vw, 200px);
+  margin: 0;
+  max-width: 42%;
+  position: absolute;
+  right: 0;
+  top: 0.4rem;
+  /* Sized against the element box, but the SVG carries transparent margin
+     outside the hex silhouette, so the *visible* mark lands near 165px — the
+     R sisters both run one dark saturated hex at roughly 200px against a lot
+     of white, and ours was reading small beside them. The copy measure above
+     is capped at 30rem, so at the narrowest desktop the two cannot meet. */
+  width: clamp(150px, 16vw, 212px);
 }
 
 .template-home .page-header h1 {
   color: var(--hs-teal-deep);
-  font-size: clamp(1.45rem, 2.2vw, 1.8rem);
+  font-size: clamp(1.5rem, 2.3vw, 1.9rem);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
   line-height: 1.1;
   margin: 0;
-  order: 2;
 }
 
 .template-home .page-header .anchor {
@@ -372,14 +393,26 @@ main table {
   display: none !important;
 }
 
-/* Hero copy: one centred composition, one measure. */
+/* Hero copy: one left composition, one measure. The measure is capped at
+   30rem so the question and pitch cannot run under the mark pinned at the
+   right of the column; below 992px the mark goes back into the flow and the
+   cap is released (see the responsive block). */
 .template-home .hs-kicker,
 .template-home .hs-question,
 .template-home .hs-pitch,
 .template-home .hs-cta {
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 30rem;
+  text-align: left;
+}
+
+/* The rule that closes the hero, so the reading below it starts as a second
+   register rather than as more hero. drmTMB draws the same line. */
+.template-home .hs-cta {
+  border-bottom: 1px solid var(--hs-hairline-soft);
+  max-width: none;
+  padding-bottom: 2.1rem;
 }
 
 .hs-kicker {
@@ -398,9 +431,8 @@ main table {
   font-style: normal;
   font-weight: 750;
   letter-spacing: -0.03em;
-  line-height: 1.12;
-  margin: 0 auto 0.85rem;
-  max-width: 26rem;
+  line-height: 1.1;
+  margin: 0 0 0.85rem;
   padding: 0;
   text-wrap: balance;
 }
@@ -409,16 +441,15 @@ main table {
   color: var(--hs-body);
   font-size: 1.06rem;
   line-height: 1.58;
-  margin: 0 auto 1.6rem;
-  max-width: 34rem;
+  margin: 0 0 1.7rem;
 }
 
 .hs-cta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
-  justify-content: center;
-  margin: 0 auto 2.4rem;
+  justify-content: flex-start;
+  margin: 0 0 2.4rem;
 }
 
 .hs-btn {
@@ -470,13 +501,20 @@ main table {
 }
 
 /* --------------------------------------------------------- status panels --
-   Experimental honesty must look calm, never apologetic: warm paper, one amber
-   edge, ordinary reading type. Not a red alarm, not a marketing badge.
+   Experimental honesty must look calm, never apologetic: ordinary reading
+   type, one coloured edge. Not a red alarm, not a marketing badge.
    The home warning is an ordinary markdown blockquote, so it renders with the
    same weight on GitHub; GitHub alert-callout syntax must never be used there
-   because pandoc leaks its bracketed marker onto the page as literal text. */
+   because pandoc leaks its bracketed marker onto the page as literal text.
 
-.template-home main > .section.level1 > blockquote,
+   Warm on article pages, COOL on the home page. Both R sisters state the same
+   warning in a plain, sober, left-ruled block and read composed because of it;
+   neither carries any amber in the first viewport. We were carrying two amber
+   blocks (this one and the sidebar Status card) plus the gold navbar pill —
+   three warm interruptions on one screen saying substantially the same thing.
+   The statement is unchanged and still said in full here. Only its temperature
+   and the sidebar's duplicate copy changed. */
+
 .hs-banner {
   background: var(--hs-banner-bg);
   border: 1px solid var(--hs-amber-rim);
@@ -499,15 +537,37 @@ main table {
   margin-bottom: 0;
 }
 
-.template-home main > .section.level1 > blockquote strong,
 .hs-banner strong {
   color: var(--hs-amber-ink);
   font-weight: 700;
 }
 
-.template-home main > .section.level1 > blockquote a,
 .hs-banner a {
   color: var(--hs-amber-ink);
+}
+
+/* The home statement, cool. Same words, same weight, sister temperature. */
+.template-home main > .section.level1 > blockquote {
+  background: var(--hs-ice);
+  border: 1px solid var(--hs-hairline);
+  border-left: 4px solid var(--hs-teal);
+  border-radius: var(--hs-radius);
+  color: var(--hs-ink);
+  margin: 0 0 2.6rem;
+  padding: 1.2rem 1.35rem 1.05rem;
+}
+
+.template-home main > .section.level1 > blockquote strong {
+  color: var(--hs-teal-ink);
+  font-weight: 700;
+}
+
+.template-home main > .section.level1 > blockquote a {
+  color: var(--hs-link);
+}
+
+.template-home main > .section.level1 > blockquote .hs-note-eyebrow {
+  color: var(--hs-teal-ink);
 }
 
 .hs-note-eyebrow {
@@ -683,12 +743,15 @@ main table {
   margin-bottom: 0.3rem;
 }
 
-/* The status callout leads the sidebar and is the only bordered block in it. */
+/* The status callout leads the sidebar (gllvmTMB's ordering, which is the
+   right one) and is the only bordered block in it. Cool, like the body
+   statement: the sidebar is a pointer to the full text a few centimetres to
+   its left, not a second warning competing with it. */
 .template-home aside .status,
 .template-home aside .experimental {
-  background: var(--hs-banner-bg);
-  border: 1px solid var(--hs-amber-rim);
-  border-left: 4px solid var(--hs-amber);
+  background: var(--hs-ice);
+  border: 1px solid var(--hs-hairline);
+  border-left: 4px solid var(--hs-teal);
   border-radius: var(--hs-radius-sm);
   margin-bottom: 1.9rem;
   padding: 0.9rem 1rem;
@@ -696,7 +759,7 @@ main table {
 
 .template-home aside .status h2,
 .template-home aside .experimental h2 {
-  color: var(--hs-amber-ink);
+  color: var(--hs-teal-ink);
 }
 
 .template-home aside .status p,
@@ -708,12 +771,12 @@ main table {
 
 .template-home aside .status strong,
 .template-home aside .experimental strong {
-  color: var(--hs-amber-ink);
+  color: var(--hs-teal-ink);
 }
 
 .template-home aside .status a,
 .template-home aside .experimental a {
-  color: var(--hs-amber-ink);
+  color: var(--hs-link);
 }
 
 .template-home aside .dev-status ul.list-unstyled li {
@@ -742,6 +805,23 @@ footer {
 @media (max-width: 991.98px) {
   main h2 {
     margin-top: 2.1rem;
+  }
+
+  /* Below the pkgdown two-column breakpoint the sidebar drops under the
+     article, so there is no longer a right-hand column to hold the mark out
+     of. Put it back in the flow above the name and release the copy measure;
+     the axis stays left, which is the point. */
+  .template-home .page-header img.logo {
+    margin: 0 0 1rem;
+    max-width: 40vw;
+    position: static;
+    width: 148px;
+  }
+
+  .template-home .hs-kicker,
+  .template-home .hs-question,
+  .template-home .hs-pitch {
+    max-width: none;
   }
 }
 
@@ -792,13 +872,18 @@ footer {
   .template-home .page-header img.logo {
     display: block;
     float: none;
-    margin: 0 auto 0.75rem;
+    margin: 0 0 0.75rem;
     max-width: 44vw;
-    width: 132px;
+    position: static;
+    width: 128px;
   }
 
   .hs-question {
     max-width: none;
+  }
+
+  .template-home .hs-cta {
+    padding-bottom: 1.6rem;
   }
 
   /* `table-layout: fixed` cannot apply once the table is a block box, so the
@@ -821,6 +906,26 @@ footer {
   #TOC {
     max-width: 100%;
     width: auto;
+  }
+}
+
+/* Widest desktops: centre the block instead of letting it hang left.
+   Measured with a same-origin iframe probe rather than by eye. At 1440 the
+   Bootstrap container is 1320px (60 -> 1380), but `main` is capped at 800px
+   and `aside` is 330px, so the two columns only fill 1210 of it: the page sat
+   at [60, 1270] with a 60px left margin and a 170px right one. That 110px
+   asymmetry is invisible as a number and very visible as "the page is not
+   centred". Below 1400px the container is narrower than the columns need and
+   the margins already match (88/88 at 1280, 32/32 at 1024), so this is scoped
+   to the only widths where the gap opens.
+
+   `justify-content` on the flex row rather than a max-width on it: `.row`
+   carries Bootstrap's negative gutter margins, and overriding those with
+   `margin-inline: auto` shifts the content off its own gutter by half a
+   gutter. Centring the free space leaves the gutter arithmetic alone. */
+@media (min-width: 1400px) {
+  .template-home > .row {
+    justify-content: center;
   }
 }
 
