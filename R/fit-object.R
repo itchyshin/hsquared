@@ -267,14 +267,18 @@ print.summary_hsquared_fit <- function(x, ...) {
 
 # Print the experimental uncertainty surfaces (CIs / SEs) when present. These
 # are asymptotic, REML-only, partial-row surfaces (V1-HERIT-CI / V3-REPEAT-REML).
-# The univariate h^2/VC coverage runs (HSquared.jl DRAC jobs 46853279 delta/profile
-# + 47870067 the full delta/t/profile/bootstrap grid) license only a DIRECTIONAL,
-# TARGET-SPECIFIC claim, NOT a coverage-calibrated one: the h^2 interval is
-# CONSERVATIVE (over-covers at small n: 0.997 -> 0.964 as n grows, nominal 0.95),
-# but the raw variance-component SE is APPROXIMATELY NOMINAL (delta_z ~0.92, if
-# anything slightly anti-conservative) - so "conservative" is claimed for h^2 only.
-# Repeatability is NOT in either study, so its label stays "experimental; asymptotic
-# REML" (no direction). Labelled experimental so they are never read as validated.
+# Governing univariate h^2/VC coverage: HSquared.jl DRAC fir job 47925485
+# (2000-rep confirm, copy-not-rerun). Precursor jobs 46853279 (500-rep
+# delta/profile) and 47870067 (delta/t/profile/bootstrap grid) are context only.
+# h^2 is directional-conservative on all three legs: delta over-covers (worst
+# C 0.969), profile is in-band where measured (worst C 0.950), bootstrap mildly
+# under-covers but stays >= 0.90 (worst C 0.924). Not coverage-calibrated at
+# nominal; not a point-tier claim.
+# sigma^2_a profile is directional-conservative where measured. sigma^2_a
+# delta/Wald under-covers (0.897 at h^2=0.5, below the 0.90 floor) and is
+# experimental-only — never "approximately nominal" and never "conservative".
+# Repeatability is not in this study; its label stays experimental / no direction.
+# Labelled experimental so they are never read as validated.
 hs_print_uncertainty <- function(x) {
   fmt <- function(v) format(signif(as.numeric(v), 4))
   if (!is.null(x$heritability_se) || !is.null(x$heritability_interval)) {
