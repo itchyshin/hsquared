@@ -8,7 +8,7 @@ generated:articles/index.html	Articles	Browse	corrected	Intentional pkgdown arti
 generated:reference/index.html	Reference	Reference	corrected	Intentional pkgdown reference index, regrouped by reader stage.
 generated:news/index.html	Changelog	Progression	retain	Intentional pkgdown history route; separate from evidence progression.
 vignettes/hsquared.Rmd	Getting started with hsquared	Get started	corrected	Canonical validation-to-fit entry; now links through the five-stage journey.
-vignettes/articles/progression-evidence.Rmd	Progression & evidence	Progression	new	Dated 0.1–0.8 evidence milestones with historical counts explicitly separated from current status.
+vignettes/articles/progression-evidence.Rmd	Progression & evidence	Progression	new	Dated 0.1–0.8 evidence milestones with verified v0.1.0 GitHub release, later 0.5 policy, and historical counts explicitly separated from current status.
 vignettes/articles/current-limits.Rmd	Can I fit and report this?	Choose a model	corrected	Current reporting permission; current 0.8 versus historical 0.7 wording clarified.
 vignettes/articles/fitting-models.Rmd	Fitting quantitative-genetic models	Fit	corrected	Default and opt-in workflows retained; now directs to diagnose and report stages.
 vignettes/articles/gryphon-worked-example.Rmd	A worked animal-model analysis (gryphon)	Fit	corrected	Concrete default workflow retained; diagnosis and reporting destinations added.
