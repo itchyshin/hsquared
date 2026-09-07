@@ -118,7 +118,8 @@ twin gates:
 
 - the engine payload-widening commits on `HSquared.jl` `main`;
 - signed-off known-truth recovery for the structured fit — the twin's per-seed
-  calibration has **not** passed (FA ~8/10, low-rank ~9/10 at last record), so
+  calibration has **not** passed (FA: 8 of 10 scenarios passed; low-rank: 9 of
+  10 passed at the last record), so
   the row stays `partial`;
 - an external structured-`G` comparator (WOMBAT/ASReml `xfa`, Kirkpatrick & Meyer
   reduced-rank parity);
