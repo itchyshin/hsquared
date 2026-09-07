@@ -3416,6 +3416,12 @@ hs_validate_em_warmup <- function(em_warmup) {
   em_warmup
 }
 
+# Production fence (0.9): allowed `engine_control$target` values below are
+# validation-scale live routes only — not production sparse fitting. Default
+# `engine = "fit"` auto-selects ai_reml / genomic / multivariate without listing
+# them here. payload_v2 block routing is separate (direct_maternal, multi_effect).
+# FA/lowrank stay blocked in hs_validate_genetic_structure_control(). PATH_ONLY
+# interval smoke (C1-ext) is not a target here. See design-45 DRAFT.
 hs_validate_julia_target <- function(target) {
   if (!is.character(target) || length(target) != 1L || is.na(target)) {
     stop(

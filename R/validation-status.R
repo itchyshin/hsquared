@@ -33,6 +33,18 @@
 #' capability, and this table alone does not tell you everything you may
 #' report.
 #'
+#' # Bridge production fences (0.9)
+#'
+#' The R-to-Julia bridge is **live at validation scale** for covered default and
+#' opt-in targets, but **not production-complete**. Infrastructure capabilities
+#' (`R-to-Julia bridge payload`, `opt-in experimental Julia engine`) stay
+#' **partial** even when individual targets are covered. Targets split into:
+#' default live (`engine = "fit"`), opt-in live (`engine_control$target`),
+#' **PATH_ONLY** smoke (C1-ext intervals — not a fit bridge), and **blocked**
+#' planned grammar (for example `genetic_structure = "factor_analytic"`).
+#' `payload_v2` routing is limited to `direct_maternal` and `multi_effect`.
+#' See `docs/design/45-bridge-production-fences-DRAFT.md`.
+#'
 #' # Capability identifiers versus labels
 #'
 #' `capability` is a **stable identifier**. Dated evidence records -- comparator
