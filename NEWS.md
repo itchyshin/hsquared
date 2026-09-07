@@ -1,5 +1,25 @@
 # hsquared 0.8.0
 
+* **Interval-coverage claim levels for the univariate animal model (2000-rep
+  C1 confirm; H0 Layer B).** The pre-registered C1 campaign
+  (`docs/design/34-interval-recovery-pre-registration.md`) returned at the
+  2000-rep confirm tier (HSquared.jl DRAC job 47925485). Mapped through
+  doc-34 §4 at the worst interpretable interior cell: the **h² interval**
+  is **directional-conservative** on all three legs — delta over-covers
+  (0.969), profile is in-band (0.950), and bootstrap **mildly
+  under-covers versus nominal 0.95** at Ĉ **0.924** (still ≥0.90). Do
+  **not** describe h² as "never under-covers." The **σ²a profile** and
+  **σ²a bootstrap** intervals are directional-conservative (profile
+  0.963/0.947/0.956; bootstrap worst 0.918). The **σ²a delta/Wald**
+  interval is **experimental-only** — it under-covers (0.897) and is
+  shown as a point estimate ± SE only, not as a calibrated or
+  conservative interval. `directional-conservative` is **not**
+  coverage-calibrated-at-nominal: no leg is promoted to `point`. No
+  capability is promoted — `public_covered_count` stays **7**. This is
+  an honesty / claim-level change, not a covered flip, not a version
+  bump, and not a 0.9 / 1.0 claim. **H0 Layer B ratified** (owner
+  `ratify H0 Layer B`, 2026-09-07; Rose CLEAN WITH NITS; no covered flip).
+
 * **Single-step opt-in routes are now distinguished in user-facing status
   guidance.** `single_step(..., Hinv = Hinv)` consumes a supplied relationship
   inverse, whereas `single_step(..., pedigree = ped, markers = M)` (or the

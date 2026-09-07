@@ -1055,11 +1055,21 @@ accuracy.hsquared_fit <- function(object, ...) {
 #' phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 #' separately in `fit$result$variance_ratio_intervals`.
 #'
-#' The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
-#' not a coverage-calibrated interval, and is unreliable at small `n` (as with the
-#' `partial` `V1-HERIT-CI`). The underlying estimators `V3-TWOEFFECT-REML` /
-#' `V3-NEFFECT-REML` are `covered`, but this interval is reported as a point estimate
-#' plus bounds, not a validated (coverage-calibrated) capability.
+#' The interval leg is a REML-only, asymptotic (logit delta-method or profile)
+#' approximation returned by the engine. The 2000-rep C1 coverage confirm
+#' (HSquared.jl DRAC job **47925485**) places the univariate pedigree h²
+#' interval at the **directional-conservative** claim level under doc-34 §4:
+#' delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
+#' bootstrap **mildly under-covers versus nominal 0.95** at the governing
+#' interior cell (worst Ĉ **0.924** at h²=0.5, still ≥0.90). That is **not**
+#' coverage-calibrated at nominal and **not** "never under-covers." Profile and
+#' bootstrap h² interval legs were measured in the same confirm but are **not**
+#' separately surfaced by this extractor; only the engine-returned interval is
+#' shown. It is reported as a point estimate plus bounds, not a validated
+#' (coverage-calibrated) capability, and remains unreliable near the
+#' `h² → 0` boundary. Genomic fits still error (scale-labelled interval not
+#' validated). The underlying estimators `V3-TWOEFFECT-REML` /
+#' `V3-NEFFECT-REML` are `covered`, but this **interval** is not.
 #'
 #' @inheritParams variance_components
 #'
@@ -1108,10 +1118,18 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #' populates them from the engine when a local Julia engine is present and the
 #' AI matrix is invertible.
 #'
-#' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic, REML-only,
-#' and unreliable at small `n` or near a variance-component boundary (where the
-#' AI matrix is ill-conditioned and the fields are omitted). They are not
-#' coverage-calibrated and not a validated capability.
+#' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic,
+#' REML-only, and unreliable at small `n` or near a variance-component
+#' boundary (where the AI matrix is ill-conditioned and the fields are
+#' omitted). The 2000-rep C1 coverage confirm (job **47925485**) measured the
+#' **σ²a delta/Wald** interval implied by these SEs to **under-cover**
+#' (0.897 at nominal 0.95, h²=0.5), placing it at **experimental-only**:
+#' the SE is a point-estimate reference only, **not a calibrated and not a
+#' conservative interval**. (A profile σ²a interval is
+#' `directional-conservative` by the same run — including the h²=0.3 cell
+#' 0.963 — but is not surfaced by this delta-method extractor. σ²a
+#' bootstrap worst-cell Ĉ 0.918 is the same DC mild-under branch as h²
+#' bootstrap.) Not coverage-calibrated, not a validated capability.
 #'
 #' @inheritParams variance_components
 #'

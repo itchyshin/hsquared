@@ -265,28 +265,22 @@ print.summary_hsquared_fit <- function(x, ...) {
   invisible(x)
 }
 
-# Print the experimental uncertainty surfaces (CIs / SEs) when present. These
-# are asymptotic, REML-only, partial-row surfaces (V1-HERIT-CI / V3-REPEAT-REML).
-# Governing univariate h^2/VC coverage: HSquared.jl DRAC fir job 47925485
-# (2000-rep confirm, copy-not-rerun). Precursor jobs 46853279 (500-rep
-# delta/profile) and 47870067 (delta/t/profile/bootstrap grid) are context only.
-# h^2 is directional-conservative on all three legs: delta over-covers (worst
-# C 0.969), profile's worst interior cell is in-band (C 0.950; the h^2=0.3
-# cell over-covers), bootstrap mildly under-covers but stays >= 0.90 (worst
-# C 0.924). Not coverage-calibrated at nominal; not a point-tier claim.
-# sigma^2_a carries NO conservative direction here: the profile-vs-delta/Wald
-# claim-level split is the unratified proposal in
-# docs/design/39-h0-univariate-coverage-flip.md, not landed (see
-# docs/design/01-v0.1-contract.md Uncertainty Scope). What IS measured: sigma^2_a
-# delta/Wald under-covers (0.897 at h^2=0.5, below the 0.90 floor) and is
-# experimental-only - never "approximately nominal" and never "conservative".
-# Repeatability is not in this study; its label stays experimental / no direction.
+# Print the experimental uncertainty surfaces (CIs / SEs) when present.
+# Governing evidence is HSquared.jl DRAC fir job 47925485 (2000-rep C1
+# confirm; doc-34 §4; unratified until Layer B land). Precursor jobs
+# 46853279 / 47870067 do not govern. h² is directional-conservative,
+# leg-specific: delta over-covers; profile in-band; bootstrap worst-cell
+# C 0.924 (mild under vs 0.95, >= 0.90). Do not write "never under-covers."
+# sigma^2_a profile / bootstrap are directional-conservative (not point).
+# sigma^2_a delta/Wald under-covers (0.897) -> experimental-only; the old
+# "delta_z ~0.92, approximately nominal" note is superseded and must not return.
+# Repeatability is not in C1; its label stays experimental / no direction.
 # Labelled experimental so they are never read as validated.
 hs_print_uncertainty <- function(x) {
   fmt <- function(v) format(signif(as.numeric(v), 4))
   if (!is.null(x$heritability_se) || !is.null(x$heritability_interval)) {
     cat(
-      "  heritability uncertainty (experimental; conservative / not coverage-calibrated; asymptotic REML):\n"
+      "  heritability uncertainty (experimental; directional-conservative / not coverage-calibrated; asymptotic REML):\n"
     )
     if (!is.null(x$heritability_se)) {
       cat("    SE: ", fmt(x$heritability_se), "\n", sep = "")
@@ -306,7 +300,7 @@ hs_print_uncertainty <- function(x) {
   }
   if (!is.null(x$variance_component_se)) {
     cat(
-      "  variance-component SEs (experimental; not coverage-calibrated; asymptotic REML):\n"
+      "  variance-component SEs (experimental; NOT coverage-calibrated — the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n"
     )
     se <- x$variance_component_se
     for (i in seq_len(nrow(se))) {
