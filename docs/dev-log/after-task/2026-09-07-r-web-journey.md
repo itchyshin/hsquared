@@ -10,6 +10,8 @@ current/historical evidence boundaries.
 Added the five-stage journey, a bounded progression page, a 78-entry page
 disposition receipt, route-specific interval wording, and current R/Julia
 boundary fences. Added CI cleanup for pkgdown's duplicate article subtree.
+The final validation-evidence follow-up separates evidence scope from route
+controls without changing a capability status.
 
 ## 3a. Decisions and Rejected Alternatives
 
@@ -30,7 +32,9 @@ workflow, and this check/after-task record.
 See `docs/dev-log/check-log.d/2026-09-07-r-web-journey.md`: targeted tests 101
 pass; generator identity and diff check passed; a bounded default fit and static
 link audit passed. The renderer follow-up passed 16 route/viewport checks with
-the candidate stylesheet; all tracked SVGs are XML-valid.
+the candidate stylesheet; all tracked SVGs are XML-valid. The final
+route/evidence prose regression was red then green (65 pass) and rendered only
+the affected article; see `docs/dev-log/check-log.d/2026-09-07-r-validation-evidence-prose.md`.
 
 ## 6. Tests of the Tests
 

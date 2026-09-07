@@ -47,14 +47,17 @@ ladder has three rungs, and the meanings are deliberately narrow:
 
 - **planned** — named in the roadmap, no implementation and no evidence. The
   parser may even reserve the syntax, but it errors as not implemented.
-- **partial** — implemented behind an opt-in control, with tests that pin its
-  *shape* and *internal consistency*, but **not** promoted to a working claim.
-  Partial rows are experimental: REML-only, Julia-owned, gated on the twin
-  engine's own status, and explicitly not the default, not production, and not
-  validated against a known truth or an external comparator.
-- **covered** — promoted. The capability fits by default and is backed by
-  known-truth recovery and/or a citable external anchor at declared tolerances.
-  Only `covered` rows may be described as working.
+- **partial** — implemented, but not yet through every requirement for a
+  `covered` claim. A partial route may have limited evidence (for example,
+  tests of shape or internal consistency, or a narrow evidence atom), but that
+  evidence does not establish its full declared scope. It remains experimental;
+  its routing controls and limitations are stated row by row.
+- **covered** — has declared scope evidence: documented known-truth recovery
+  and/or a same-estimand external anchor at the stated tolerances. Evidence
+  scope and routing are separate: a covered route can be
+  default-routed or opt-in. Coverage is not a production guarantee or a
+  nominal-interval guarantee; use [Model status and route
+  scope](model-status.html) for each route's controls and boundaries.
 
 The gate is real. The v0.1 univariate Gaussian animal model could not move from
 `partial` to `covered` until a written, binding promotion rule (the predicate)

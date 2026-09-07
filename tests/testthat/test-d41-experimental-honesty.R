@@ -149,6 +149,23 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
   expect_match(text, "cov = fa(K)", fixed = TRUE)
 })
 
+test_that("validation-evidence separates declared evidence scope from route controls", {
+  article <- testthat::test_path(
+    "..", "..", "vignettes", "articles", "validation-evidence.Rmd"
+  )
+  skip_if_not(
+    file.exists(article),
+    "validation-evidence.Rmd not present in the check copy"
+  )
+  text <- gsub("\\s+", " ", paste(readLines(article, warn = FALSE), collapse = " "))
+
+  expect_no_match(text, "The capability fits by default", fixed = TRUE)
+  expect_no_match(text, "Partial rows are experimental: REML-only", fixed = TRUE)
+  expect_match(text, "may have limited evidence", fixed = TRUE)
+  expect_match(text, "declared scope evidence", fixed = TRUE)
+  expect_match(text, "default-routed or opt-in", fixed = TRUE)
+})
+
 test_that("DESCRIPTION keeps count 7 and FA planned without claiming 0.9", {
   desc <- gsub(
     "\\s+",
