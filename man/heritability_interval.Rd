@@ -32,9 +32,19 @@ ANIMAL block's ratio interval (the animal additive variance over the total
 phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
 
-The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
-not a coverage-calibrated interval, and is unreliable at small \code{n} (as with the
-\code{partial} \code{V1-HERIT-CI}). The underlying estimators \code{V3-TWOEFFECT-REML} /
-\code{V3-NEFFECT-REML} are \code{covered}, but this interval is reported as a point estimate
-plus bounds, not a validated (coverage-calibrated) capability.
+The interval leg is a REML-only, asymptotic (logit delta-method or profile)
+approximation returned by the engine. The 2000-rep C1 coverage confirm
+(HSquared.jl DRAC job \strong{47925485}) places the univariate pedigree h²
+interval at the \strong{directional-conservative} claim level under doc-34 §4:
+delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
+bootstrap \strong{mildly under-covers versus nominal 0.95} at the governing
+interior cell (worst Ĉ \strong{0.924} at h²=0.5, still ≥0.90). That is \strong{not}
+coverage-calibrated at nominal and \strong{not} "never under-covers." Profile and
+bootstrap h² interval legs were measured in the same confirm but are \strong{not}
+separately surfaced by this extractor; only the engine-returned interval is
+shown. It is reported as a point estimate plus bounds, not a validated
+(coverage-calibrated) capability, and remains unreliable near the
+\verb{h² → 0} boundary. Genomic fits still error (scale-labelled interval not
+validated). The underlying estimators \code{V3-TWOEFFECT-REML} /
+\code{V3-NEFFECT-REML} are \code{covered}, but this \strong{interval} is not.
 }

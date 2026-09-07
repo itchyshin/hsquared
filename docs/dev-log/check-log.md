@@ -1,5 +1,21 @@
 # Check Log
 
+## 2026-09-07 (Gate-6 Rose audit — not 0.9.0)
+
+- See `docs/dev-log/check-log.d/2026-09-07-gate6-rose-audit.md` and
+  `docs/dev-log/after-task/2026-09-07-gate6-rose-audit.md`.
+- Verdict **CLEAN WITH NITS** on merged public surfaces @ R `fc7230c` ·
+  Julia `b571184`. Count **7**. Version **0.8.0**. **0.9.0 NOT
+  authorized.** No covered flip.
+
+## 2026-09-07 (Layer B #191 merge + H0 ratification — not a covered flip)
+
+- See `docs/dev-log/check-log.d/2026-09-07-layerb-191-merge.md` and
+  `docs/dev-log/after-task/2026-09-07-layerb-191-merge.md`.
+- R #191 merged @ `06bce492`; Rose Layer B **CLEAN WITH NITS** @
+  `8a3f597`; owner `ratify H0 Layer B` banked. Count **7**. Version
+  **0.8.0**. R #192 L-4 merged @ `fc7230c` (post-ratification nit).
+
 ## 2026-09-04 (R FA S0 honesty — not R-public)
 
 - See `docs/dev-log/check-log.d/2026-09-04-v08-fa-r-catchup-honesty.md` and
