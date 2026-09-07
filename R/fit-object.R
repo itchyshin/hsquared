@@ -267,8 +267,8 @@ print.summary_hsquared_fit <- function(x, ...) {
 
 # Print the experimental uncertainty surfaces (CIs / SEs) when present.
 # Governing evidence is HSquared.jl DRAC fir job 47925485 (2000-rep C1
-# confirm; doc-34 §4; unratified until Layer B land). Precursor jobs
-# 46853279 / 47870067 do not govern. h² is directional-conservative,
+# confirm; doc-34 sec. 4; unratified until Layer B land). Precursor jobs
+# 46853279 / 47870067 do not govern. h^2 is directional-conservative,
 # leg-specific: delta over-covers; profile in-band; bootstrap worst-cell
 # C 0.924 (mild under vs 0.95, >= 0.90). Do not write "never under-covers."
 # sigma^2_a profile / bootstrap are directional-conservative (not point).
@@ -300,7 +300,7 @@ hs_print_uncertainty <- function(x) {
   }
   if (!is.null(x$variance_component_se)) {
     cat(
-      "  variance-component SEs (experimental; NOT coverage-calibrated — the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n"
+      "  variance-component SEs (experimental; NOT coverage-calibrated -- the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n"
     )
     se <- x$variance_component_se
     for (i in seq_len(nrow(se))) {
