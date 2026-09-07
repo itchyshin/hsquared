@@ -6,6 +6,14 @@
 > Release Model") and `ROADMAP.md`. Optimised for the **quickest path where
 > accuracy and usability are non-negotiable**.
 
+> **Record status (2026-09-07):** This is the historical scientific/release
+> ladder, not the current documentation milestone. The latter completed the
+> website and named honesty documentation at experimental **0.8.0** / public
+> count **7**, but did not authorize a package number, tag, registration, or
+> release. The 0.9/1.0 science gates below remain planned; H1/H3 are deferred
+> and G10 promotion holds remain in force. See
+> [`2026-09-07-documentation-milestone-release-boundary.md`](../dev-log/decisions/2026-09-07-documentation-milestone-release-boundary.md).
+
 ## Controlling insight
 
 The **engine is already ahead of the R surface on every pillar except FA**. So
