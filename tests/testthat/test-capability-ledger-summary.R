@@ -74,7 +74,7 @@ test_that("a demoted capability row aborts generation", {
   )
 })
 
-test_that("no route claims an interval-reporting permission", {
+test_that("only the named default route has a directional interval claim level", {
   skip_without_generator()
   gen <- load_generator()
 
@@ -83,7 +83,23 @@ test_that("no route claims an interval-reporting permission", {
     function(x) x$interval,
     character(1)
   )
-  expect_true(all(intervals == "no"))
+  expect_identical(intervals[[1L]], "directional_conservative")
+  expect_true(all(intervals[-1L] == "no"))
+})
+
+test_that("directional interval wording is confined to the named pedigree methods", {
+  skip_without_generator()
+  gen <- load_generator()
+  routes <- gen$hs_route_table()
+  text <- paste(gen$hs_build_summary(as.data.frame(validation_status())), collapse = "\n")
+
+  expect_equal(sum(vapply(routes, `[[`, character(1), "interval") == "directional_conservative"), 1L)
+  expect_identical(routes[[1L]]$key, "univariate Gaussian animal-model fit (default path, AI-REML)")
+  expect_match(text, "h2 delta/profile/bootstrap", fixed = TRUE)
+  expect_match(text, "sigma-a2 profile/bootstrap", fixed = TRUE)
+  expect_match(text, "Sigma-a2 delta/Wald is experimental-only", fixed = TRUE)
+  expect_no_match(text, "SNP-BLUP marker effects[\\s\\S]*directional-conservative")
+  expect_no_match(text, "Multivariate Gaussian animal model[\\s\\S]*directional-conservative")
 })
 
 test_that("generated summary states covered/partial/planned honestly", {
@@ -97,7 +113,8 @@ test_that("generated summary states covered/partial/planned honestly", {
 
   expect_match(text, "do not edit by hand", fixed = TRUE)
   expect_match(text, "validation_status()", fixed = TRUE)
-  expect_match(text, "NOT coverage-calibrated", fixed = TRUE)
+  expect_match(text, "directional-conservative", fixed = TRUE)
+  expect_match(text, "nominally calibrated", fixed = TRUE)
   expect_match(text, "## Reader routes", fixed = TRUE)
   expect_match(text, "## Before you report", fixed = TRUE)
 

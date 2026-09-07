@@ -225,6 +225,9 @@ the multivariate article for the current claim boundary.
 
 ## What is fitted, and what is planned
 
+Before extracting an estimate, read [fit diagnostics and plots](visualizing-models.html).
+Before reporting one, return to [Can I fit and report this?](current-limits.html).
+
 `formula_status()` and `validation_status()` report, from R, exactly which terms
 fit and how each capability is validated.
 

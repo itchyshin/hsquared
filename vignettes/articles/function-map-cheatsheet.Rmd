@@ -146,6 +146,6 @@ results. They exist so the vocabulary is stable, not because the models fit.
 
 ## Where to read next
 
-- [Getting started with hsquared](../hsquared.html) — the guided introduction.
+- [Getting started with hsquared](hsquared.html) — the guided introduction.
 - [Can I fit and report this?](current-limits.html) — reporting permissions per route.
 - [Fitting models](fitting-models.html) — the longer fitting guide.
