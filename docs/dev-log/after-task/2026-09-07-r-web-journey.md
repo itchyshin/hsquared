@@ -29,7 +29,8 @@ workflow, and this check/after-task record.
 
 See `docs/dev-log/check-log.d/2026-09-07-r-web-journey.md`: targeted tests 101
 pass; generator identity and diff check passed; a bounded default fit and static
-link audit passed.
+link audit passed. The renderer follow-up passed 16 route/viewport checks with
+the candidate stylesheet; all tracked SVGs are XML-valid.
 
 ## 6. Tests of the Tests
 
@@ -40,9 +41,10 @@ methods, and reject its appearance on SNP-BLUP and multivariate cards.
 
 Fixed: stale current 0.7/count-six wording; ambiguous FA denominator; stale
 GREML partial wording; blanket interval denial; broken relative article links;
-private scratch path comment; duplicate pkgdown article subtree. Deferred:
-coordinator browser audit, CI draft-PR verification, and independent final
-claims review.
+private scratch path comment; duplicate pkgdown article subtree; invalid
+G-matrix SVG; and 404/reference/mobile-math horizontal overflows. Deferred:
+coordinator's full browser crawl, CI draft-PR verification, and independent
+final claims review.
 
 ## 8. Consistency Audit
 
@@ -55,7 +57,9 @@ are hidden during rendering and omitted from the public route receipt.
 Sandboxed pkgdown could not access R cache/CRAN metadata; elevated local render
 was required. pkgdown generated a duplicate article subtree, so the workflow now
 removes it before artifact upload. The first Julia example attempt was blocked by
-manifest-cache permission and succeeded on authorized retry.
+manifest-cache permission and succeeded on authorized retry. pkgdown HTML uses
+the production absolute stylesheet even when served from localhost, so the
+rendered repair probe explicitly routed the candidate local stylesheet.
 
 ## 10. Known Residuals
 

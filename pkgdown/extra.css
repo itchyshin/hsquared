@@ -947,6 +947,22 @@ footer {
     width: auto;
   }
 
+  /* Function names are intentionally rendered as code in the reference
+     index. Let an unusually long name wrap inside its own entry rather than
+     widening the phone viewport. */
+  .template-reference-index dt code {
+    overflow-wrap: anywhere;
+  }
+
+  /* Display mathematics has no natural wrap points. Keep a long equation in
+     its reading column and let that equation, rather than the whole document,
+     scroll horizontally on a phone. */
+  main math[display="block"] {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
   .hs-workflow {
     grid-template-columns: 1fr;
   }
