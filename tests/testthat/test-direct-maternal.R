@@ -17,17 +17,17 @@
 
 make_dm_ped <- function() {
   data.frame(
-    id   = c("g1", "g2", "g3", "g4", "g5", "g6"),
-    sire = c(NA,   NA,   "g1", "g1", "g2", "g2"),
-    dam  = c(NA,   NA,   "g2", "g2", "g1", "g1"),
+    id = c("g1", "g2", "g3", "g4", "g5", "g6"),
+    sire = c(NA, NA, "g1", "g1", "g2", "g2"),
+    dam = c(NA, NA, "g2", "g2", "g1", "g1"),
     stringsAsFactors = FALSE
   )
 }
 
 make_dm_dat <- function() {
   data.frame(
-    y   = c(1.2, 0.8, 2.1, 1.9, 1.5, 2.3, 1.7, 0.9),
-    id  = c("g3", "g4", "g5", "g6", "g3", "g4", "g5", "g6"),
+    y = c(1.2, 0.8, 2.1, 1.9, 1.5, 2.3, 1.7, 0.9),
+    id = c("g3", "g4", "g5", "g6", "g3", "g4", "g5", "g6"),
     dam = c("g2", "g2", "g1", "g1", "g2", "g2", "g1", "g1"),
     stringsAsFactors = FALSE
   )
@@ -78,7 +78,9 @@ test_that("maternal_genetic with wrong target gives allowed-targets error", {
 
 test_that("target 'direct_maternal' without maternal_genetic term errors", {
   ped <- data.frame(
-    id = c("a", "b", "c"), sire = c(NA, NA, "a"), dam = c(NA, NA, "b"),
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b"),
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2), id = c("b", "c"), stringsAsFactors = FALSE)
@@ -167,7 +169,7 @@ test_that("block2 pedigree carries the same rows as block1 for maternal_genetic"
   # Both blocks should share the pedigree structure (same founders / ordering)
   expect_equal(re[[1L]]$pedigree$id, re[[2L]]$pedigree$id)
   expect_equal(re[[1L]]$pedigree$sire, re[[2L]]$pedigree$sire)
-  expect_equal(re[[1L]]$pedigree$dam,  re[[2L]]$pedigree$dam)
+  expect_equal(re[[1L]]$pedigree$dam, re[[2L]]$pedigree$dam)
 })
 
 test_that("relmat_status is 'build_in_julia' for both blocks", {
@@ -204,11 +206,11 @@ make_dm_fit <- function(r_am = NULL, converged = TRUE) {
   result <- list(
     variance_components = data.frame(
       component = c("direct", "maternal", "covariance", "residual"),
-      estimate  = c(sigma_ad, sigma_am, sigma_dm, 0.55),
+      estimate = c(sigma_ad, sigma_am, sigma_dm, 0.55),
       stringsAsFactors = FALSE
     ),
     heritability = data.frame(
-      term     = "direct",
+      term = "direct",
       # sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2
       #         = 0.30 + 0.15 + (-0.10) + 0.55 = 0.90  (Willham 1972)
       # Old denominator (0.30+0.15+0.55 = 1.00) was wrong; updated.
@@ -216,33 +218,44 @@ make_dm_fit <- function(r_am = NULL, converged = TRUE) {
       stringsAsFactors = FALSE
     ),
     genetic_correlation = data.frame(
-      term_1   = "direct",
-      term_2   = "maternal",
+      term_1 = "direct",
+      term_2 = "maternal",
       estimate = r_am,
       stringsAsFactors = FALSE
     ),
-    direct_variance  = 0.30,
+    direct_variance = 0.30,
     partner_variance = 0.15,
-    covariance       = -0.10,
-    breeding_values  = data.frame(id = "g1", value = 0.1, stringsAsFactors = FALSE),
-    random_effects   = list(
-      animal   = data.frame(id = "g1", value = 0.1, stringsAsFactors = FALSE),
+    covariance = -0.10,
+    breeding_values = data.frame(
+      id = "g1",
+      value = 0.1,
+      stringsAsFactors = FALSE
+    ),
+    random_effects = list(
+      animal = data.frame(id = "g1", value = 0.1, stringsAsFactors = FALSE),
       maternal = data.frame(id = "g1", value = 0.0, stringsAsFactors = FALSE)
     ),
-    maternal_effects  = data.frame(id = "g1", value = 0.0, stringsAsFactors = FALSE),
-    fixed_effects     = c(`(Intercept)` = 1.8),
-    loglik            = -10.5,
-    nobs              = 8L,
-    converged         = converged,
-    diagnostics       = list(target = "direct_maternal")
+    maternal_effects = data.frame(
+      id = "g1",
+      value = 0.0,
+      stringsAsFactors = FALSE
+    ),
+    fixed_effects = c(`(Intercept)` = 1.8),
+    loglik = -10.5,
+    nobs = 8L,
+    converged = converged,
+    diagnostics = list(target = "direct_maternal")
   )
   structure(
     list(
-      spec    = list(target = "direct_maternal", method = "REML",
-                     family = list(family = "gaussian", link = "identity")),
+      spec = list(
+        target = "direct_maternal",
+        method = "REML",
+        family = list(family = "gaussian", link = "identity")
+      ),
       payload = NULL,
-      result  = result,
-      engine  = "HSquared.jl"
+      result = result,
+      engine = "HSquared.jl"
     ),
     class = "hsquared_fit"
   )
@@ -287,12 +300,21 @@ test_that("heritability() on direct_maternal fit warns and returns labelled trip
     c("h2_direct", "m2_maternal", "h2_total_willham", "r_am")
   )
   # h2_direct numerics — sigma_P = 0.30+0.15+(-0.10)+0.55 = 0.90
-  expect_equal(out$estimate[out$component == "h2_direct"],
-               0.30 / 0.90, tolerance = 1e-10)
-  expect_equal(out$estimate[out$component == "m2_maternal"],
-               0.15 / 0.90, tolerance = 1e-10)
-  expect_equal(out$estimate[out$component == "h2_total_willham"],
-               (0.30 + 1.5 * (-0.10) + 0.5 * 0.15) / 0.90, tolerance = 1e-10)
+  expect_equal(
+    out$estimate[out$component == "h2_direct"],
+    0.30 / 0.90,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    out$estimate[out$component == "m2_maternal"],
+    0.15 / 0.90,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    out$estimate[out$component == "h2_total_willham"],
+    (0.30 + 1.5 * (-0.10) + 0.5 * 0.15) / 0.90,
+    tolerance = 1e-10
+  )
   expect_true(!is.null(attr(out, "interpretation")))
   expect_match(attr(out, "interpretation"), "Willham", fixed = TRUE)
 })
@@ -305,9 +327,11 @@ test_that("total_heritability() returns Willham h2_T data frame", {
   # sigma_P = 0.30 + 0.15 + (-0.10) + 0.55 = 0.90
   # h2_T = (0.30 + 1.5*(-0.10) + 0.5*0.15) / 0.90
   #       = (0.30 - 0.15 + 0.075) / 0.90 = 0.225 / 0.90 = 0.25
-  expect_equal(out$estimate,
-               (0.30 + 1.5 * (-0.10) + 0.5 * 0.15) / 0.90,
-               tolerance = 1e-10)
+  expect_equal(
+    out$estimate,
+    (0.30 + 1.5 * (-0.10) + 0.5 * 0.15) / 0.90,
+    tolerance = 1e-10
+  )
   expect_true(!is.null(attr(out, "interpretation")))
   expect_match(attr(out, "interpretation"), "Willham", fixed = TRUE)
   expect_match(attr(out, "interpretation"), "MASS SELECTION", fixed = TRUE)
@@ -377,7 +401,10 @@ test_that("capability-status maternal fences distinguish the two m2 denominators
     "design",
     "capability-status.md"
   )
-  skip_if_not(file.exists(path), "capability-status.md is not in the build tarball")
+  skip_if_not(
+    file.exists(path),
+    "capability-status.md is not in the build tarball"
+  )
   text <- paste(readLines(path, warn = FALSE), collapse = "\n")
   expect_true(
     grepl("maternal_proportion()", text, fixed = TRUE),
@@ -429,7 +456,7 @@ test_that("direct_maternal_covariance() returns sigma_dm (may be negative)", {
 test_that("direct_heritability() errors on non-dm fit", {
   fit_plain <- structure(
     list(
-      spec   = list(target = NULL),
+      spec = list(target = NULL),
       result = list(heritability = 0.3)
     ),
     class = "hsquared_fit"
@@ -513,9 +540,9 @@ test_that("live R<->engine parity: direct_maternal fit returns converged result"
 
   fit_dm <- hsquared(
     y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
-    data   = dat,
+    data = dat,
     family = stats::gaussian(),
-    REML   = TRUE,
+    REML = TRUE,
     control = hs_control(
       engine = "julia",
       engine_control = list(target = "direct_maternal")
@@ -578,9 +605,9 @@ test_that("live R<->engine parity: direct_maternal fit returns converged result"
   # then compare sigma_ad to within 1e-6.
   spec <- hsquared:::hs_build_model_spec(
     y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
-    data   = dat,
+    data = dat,
     family = stats::gaussian(),
-    REML   = TRUE
+    REML = TRUE
   )
   payload <- hsquared:::hs_build_bridge_payload(spec)
   Zd_mat <- as.matrix(payload$random_effects[[1L]]$Z)

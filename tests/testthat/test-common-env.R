@@ -215,7 +215,9 @@ test_that("common_env_proportion_interval() errors clearly without the field", {
   fit_no_ci <- hsquared:::hs_new_fit(
     spec = list(method = "REML", family = list(family = "gaussian")),
     payload = list(y = seq_len(10)),
-    result = list(common_env_proportion = data.frame(term = "common_env", estimate = 0.2))
+    result = list(
+      common_env_proportion = data.frame(term = "common_env", estimate = 0.2)
+    )
   )
   expect_error(
     common_env_proportion_interval(fit_no_ci),
@@ -226,9 +228,15 @@ test_that("common_env_proportion_interval() errors clearly without the field", {
 test_that("hs_normalize_two_effect_ratio_interval() builds the two shapes", {
   # ratio1 (h2) carries a method column; ratio2 (c2) omits it.
   r1 <- hsquared:::hs_normalize_two_effect_ratio_interval(
-    estimate = 0.42, lower = 0.21, upper = 0.66, se = 0.11,
-    lower_clamped = FALSE, upper_clamped = FALSE, boundary = FALSE,
-    level = 0.95, with_method = TRUE
+    estimate = 0.42,
+    lower = 0.21,
+    upper = 0.66,
+    se = 0.11,
+    lower_clamped = FALSE,
+    upper_clamped = FALSE,
+    boundary = FALSE,
+    level = 0.95,
+    with_method = TRUE
   )
   expect_equal(nrow(r1), 1L)
   expect_equal(r1$estimate, 0.42)
@@ -236,20 +244,34 @@ test_that("hs_normalize_two_effect_ratio_interval() builds the two shapes", {
   expect_true(r1$lower <= r1$estimate && r1$estimate <= r1$upper)
 
   r2 <- hsquared:::hs_normalize_two_effect_ratio_interval(
-    estimate = 0.23, lower = 0.10, upper = 0.44, se = 0.08,
-    lower_clamped = FALSE, upper_clamped = FALSE, boundary = FALSE,
-    level = 0.95, with_method = FALSE
+    estimate = 0.23,
+    lower = 0.10,
+    upper = 0.44,
+    se = 0.08,
+    lower_clamped = FALSE,
+    upper_clamped = FALSE,
+    boundary = FALSE,
+    level = 0.95,
+    with_method = FALSE
   )
   expect_false("method" %in% names(r2))
-  expect_true(all(c("lower_clamped", "upper_clamped", "boundary") %in% names(r2)))
+  expect_true(all(
+    c("lower_clamped", "upper_clamped", "boundary") %in% names(r2)
+  ))
 })
 
 test_that("hs_normalize_two_effect_ratio_interval() flags a boundary component", {
   # Engine returns NaN bounds at a sigma -> 0 boundary; normalize to NA, flagged.
   bd <- hsquared:::hs_normalize_two_effect_ratio_interval(
-    estimate = 0.0, lower = NaN, upper = NaN, se = NaN,
-    lower_clamped = FALSE, upper_clamped = FALSE, boundary = TRUE,
-    level = 0.95, with_method = FALSE
+    estimate = 0.0,
+    lower = NaN,
+    upper = NaN,
+    se = NaN,
+    lower_clamped = FALSE,
+    upper_clamped = FALSE,
+    boundary = TRUE,
+    level = 0.95,
+    with_method = FALSE
   )
   expect_true(is.na(bd$lower))
   expect_true(is.na(bd$upper))
@@ -260,10 +282,20 @@ test_that("hs_normalize_two_effect_ratio_interval() flags a boundary component",
 test_that("hs_attach_two_effect_intervals routes ratio2 to the common-env field", {
   raw_ci <- list(
     level = 0.95,
-    r1_estimate = 0.42, r1_lower = 0.21, r1_upper = 0.66, r1_se = 0.11,
-    r1_lower_clamped = FALSE, r1_upper_clamped = FALSE, r1_boundary = FALSE,
-    r2_estimate = 0.23, r2_lower = 0.10, r2_upper = 0.44, r2_se = 0.08,
-    r2_lower_clamped = FALSE, r2_upper_clamped = FALSE, r2_boundary = FALSE
+    r1_estimate = 0.42,
+    r1_lower = 0.21,
+    r1_upper = 0.66,
+    r1_se = 0.11,
+    r1_lower_clamped = FALSE,
+    r1_upper_clamped = FALSE,
+    r1_boundary = FALSE,
+    r2_estimate = 0.23,
+    r2_lower = 0.10,
+    r2_upper = 0.44,
+    r2_se = 0.08,
+    r2_lower_clamped = FALSE,
+    r2_upper_clamped = FALSE,
+    r2_boundary = FALSE
   )
   payload <- list(effect2 = list(type = "common_env"))
   result <- hsquared:::hs_attach_two_effect_intervals(list(), raw_ci, payload)
@@ -281,14 +313,24 @@ test_that("heritability_interval() resolves on a two-effect fit", {
   # After the bridge attaches ratio1 to `heritability_interval`, the existing
   # extractor works on a two-effect fit with no special-casing.
   fit <- hsquared:::hs_new_fit(
-    spec = list(method = "REML", family = list(family = "gaussian"),
-                target = "two_effect"),
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "two_effect"
+    ),
     payload = list(y = seq_len(10)),
     result = list(
       heritability_interval = data.frame(
-        estimate = 0.42, lower = 0.21, upper = 0.66, level = 0.95,
-        se = 0.11, lower_clamped = FALSE, upper_clamped = FALSE,
-        boundary = FALSE, method = "delta", stringsAsFactors = FALSE
+        estimate = 0.42,
+        lower = 0.21,
+        upper = 0.66,
+        level = 0.95,
+        se = 0.11,
+        lower_clamped = FALSE,
+        upper_clamped = FALSE,
+        boundary = FALSE,
+        method = "delta",
+        stringsAsFactors = FALSE
       )
     )
   )
@@ -363,12 +405,16 @@ test_that("hsquared fits the opt-in common-environment model", {
     hi <- heritability_interval(fit)
     expect_equal(hi$estimate, h2, tolerance = 1e-6)
     expect_equal(hi$method, "delta")
-    expect_true(hi$boundary || (hi$lower <= hi$estimate && hi$estimate <= hi$upper))
+    expect_true(
+      hi$boundary || (hi$lower <= hi$estimate && hi$estimate <= hi$upper)
+    )
   }
   if (!is.null(fit$result$common_env_proportion_interval)) {
     ci <- common_env_proportion_interval(fit)
     expect_equal(ci$estimate, c2, tolerance = 1e-6)
-    expect_true(ci$boundary || (ci$lower <= ci$estimate && ci$estimate <= ci$upper))
+    expect_true(
+      ci$boundary || (ci$lower <= ci$estimate && ci$estimate <= ci$upper)
+    )
     expect_match(attr(ci, "interpretation"), "variance ratio", fixed = TRUE)
   }
 })

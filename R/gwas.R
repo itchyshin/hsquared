@@ -131,7 +131,11 @@ gwas.hsquared_fit <- function(
       )
     }
     n_permutations <- as.integer(n_permutations)
-    if (length(n_permutations) != 1L || is.na(n_permutations) || n_permutations < 1L) {
+    if (
+      length(n_permutations) != 1L ||
+        is.na(n_permutations) ||
+        n_permutations < 1L
+    ) {
       stop("`n_permutations` must be a positive whole number.", call. = FALSE)
     }
     seed <- as.integer(seed)
@@ -532,15 +536,19 @@ hs_validate_gwas_calibration_metadata <- function(
   # `validation_reference`. For that method `empirical_type1` may be NA; for any other
   # (e.g. fixed-panel-simulation) calibration it must be a measured value in [0, 1].
   if (identical(method, "permutation_addone")) {
-    if (!is.na(empirical_type1) &&
-      (empirical_type1 < 0 || empirical_type1 > 1)) {
+    if (
+      !is.na(empirical_type1) &&
+        (empirical_type1 < 0 || empirical_type1 > 1)
+    ) {
       stop(
         "GWAS calibration `empirical_type1` must be NA or between 0 and 1 for ",
         "the `permutation_addone` method.",
         call. = FALSE
       )
     }
-    validation_reference <- hs_scalar_character(calibration$validation_reference)
+    validation_reference <- hs_scalar_character(
+      calibration$validation_reference
+    )
     if (is.na(validation_reference) || !nzchar(validation_reference)) {
       stop(
         "GWAS calibration method `permutation_addone` requires a non-empty ",
@@ -666,7 +674,8 @@ print.hs_gwas <- function(x, ...) {
       )
       cat(sprintf(
         "  %s, type-I-control validated). Significant when genome_wide_p <= %.2g.\n",
-        cal$calibration_method %||% "permutation_addone", cal$alpha %||% 0.05
+        cal$calibration_method %||% "permutation_addone",
+        cal$alpha %||% 0.05
       ))
       cat(
         "  The nominal `p_value`/`bonferroni_p`/`bh_qvalue` columns remain NOT\n"

@@ -2558,8 +2558,11 @@ hs_fit_julia_genomic_payload <- function(
     # until that contract is validated.
     result$heritability_interval <- NULL
     result$heritability_se <- NULL
-    if (!is.null(result$genomic_boundary) &&
-        result$genomic_boundary$status %in% c("boundary_lower", "boundary_upper")) {
+    if (
+      !is.null(result$genomic_boundary) &&
+        result$genomic_boundary$status %in%
+          c("boundary_lower", "boundary_upper")
+    ) {
       result$breeding_values <- NULL
       result$breeding_values_plot_data <- NULL
       result$random_effects <- NULL
@@ -2588,17 +2591,30 @@ hs_fit_julia_genomic_payload <- function(
 
 hs_normalize_genomic_boundary <- function(raw) {
   raw <- hs_drop_julia_classes(raw)
-  if (is.data.frame(raw)) raw <- as.list(raw)
+  if (is.data.frame(raw)) {
+    raw <- as.list(raw)
+  }
   if (!is.list(raw)) {
-    stop("Internal bridge error: genomic boundary metadata is missing.", call. = FALSE)
+    stop(
+      "Internal bridge error: genomic boundary metadata is missing.",
+      call. = FALSE
+    )
   }
   scalar_character <- function(name) {
     x <- raw[[name]]
-    if (is.null(x) || !length(x) || all(is.na(x))) NA_character_ else as.character(x[[1L]])
+    if (is.null(x) || !length(x) || all(is.na(x))) {
+      NA_character_
+    } else {
+      as.character(x[[1L]])
+    }
   }
   scalar_numeric <- function(name) {
     x <- raw[[name]]
-    if (is.null(x) || !length(x) || all(is.na(x))) NA_real_ else as.numeric(x[[1L]])
+    if (is.null(x) || !length(x) || all(is.na(x))) {
+      NA_real_
+    } else {
+      as.numeric(x[[1L]])
+    }
   }
   out <- list(
     status = scalar_character("status"),
@@ -2607,29 +2623,65 @@ hs_normalize_genomic_boundary <- function(raw) {
     numerical_ratio = scalar_numeric("numerical_ratio"),
     boundary_epsilon = scalar_numeric("boundary_epsilon"),
     profile_loglik = scalar_numeric("profile_loglik"),
-    lower_derivative_per_observation = scalar_numeric("lower_derivative_per_observation"),
-    upper_derivative_per_observation = scalar_numeric("upper_derivative_per_observation")
+    lower_derivative_per_observation = scalar_numeric(
+      "lower_derivative_per_observation"
+    ),
+    upper_derivative_per_observation = scalar_numeric(
+      "upper_derivative_per_observation"
+    )
   )
-  allowed <- c("boundary_lower", "boundary_upper", "interior", "interior_rescued", "boundary_unresolved")
+  allowed <- c(
+    "boundary_lower",
+    "boundary_upper",
+    "interior",
+    "interior_rescued",
+    "boundary_unresolved"
+  )
   if (is.na(out$status) || !out$status %in% allowed) {
-    stop("Internal bridge error: unknown genomic boundary status.", call. = FALSE)
+    stop(
+      "Internal bridge error: unknown genomic boundary status.",
+      call. = FALSE
+    )
   }
   if (!identical(out$boundary_epsilon, 1e-7)) {
-    stop("Internal bridge error: genomic boundary epsilon drift.", call. = FALSE)
+    stop(
+      "Internal bridge error: genomic boundary epsilon drift.",
+      call. = FALSE
+    )
   }
   resolved <- !identical(out$status, "boundary_unresolved")
-  required <- unlist(out[c("profile_ratio", "numerical_ratio", "profile_loglik",
-    "lower_derivative_per_observation", "upper_derivative_per_observation")])
+  required <- unlist(out[c(
+    "profile_ratio",
+    "numerical_ratio",
+    "profile_loglik",
+    "lower_derivative_per_observation",
+    "upper_derivative_per_observation"
+  )])
   if (resolved && any(!is.finite(required))) {
-    stop("Internal bridge error: resolved genomic boundary metadata is non-finite.", call. = FALSE)
+    stop(
+      "Internal bridge error: resolved genomic boundary metadata is non-finite.",
+      call. = FALSE
+    )
   }
-  if (identical(out$status, "boundary_lower") &&
-      (!identical(out$profile_ratio, 0) || !identical(out$numerical_ratio, 1e-7))) {
-    stop("Internal bridge error: lower-boundary ratio contract drift.", call. = FALSE)
+  if (
+    identical(out$status, "boundary_lower") &&
+      (!identical(out$profile_ratio, 0) ||
+        !identical(out$numerical_ratio, 1e-7))
+  ) {
+    stop(
+      "Internal bridge error: lower-boundary ratio contract drift.",
+      call. = FALSE
+    )
   }
-  if (identical(out$status, "boundary_upper") &&
-      (!identical(out$profile_ratio, 1) || !identical(out$numerical_ratio, 1 - 1e-7))) {
-    stop("Internal bridge error: upper-boundary ratio contract drift.", call. = FALSE)
+  if (
+    identical(out$status, "boundary_upper") &&
+      (!identical(out$profile_ratio, 1) ||
+        !identical(out$numerical_ratio, 1 - 1e-7))
+  ) {
+    stop(
+      "Internal bridge error: upper-boundary ratio contract drift.",
+      call. = FALSE
+    )
   }
   out
 }
