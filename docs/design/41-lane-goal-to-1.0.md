@@ -14,6 +14,13 @@ done and **not** 1.0. Block 1 / first-registration **0.5.0** / MV-4 evidence
 assembly are historical or paused owner debt — they are **not** the active
 spine. The north star below is unchanged.
 
+> **Record status (2026-09-07):** A later documentation/usability milestone is
+> complete, but it changes neither this scientific goal nor the release ladder:
+> package numbering and release authorization remain undecided. The 0.9 and 1.0
+> rows below are still planned; H1/H3 are deferred and G10 promotion holds are
+> not released. See
+> [`2026-09-07-documentation-milestone-release-boundary.md`](../dev-log/decisions/2026-09-07-documentation-milestone-release-boundary.md).
+
 ## 1. The goal (north star)
 
 **Finish the capability arc through Phase 6 to a capable, honest 1.0 of the
