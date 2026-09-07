@@ -166,6 +166,36 @@ test_that("validation-evidence separates declared evidence scope from route cont
   expect_match(text, "default-routed or opt-in", fixed = TRUE)
 })
 
+test_that("reader articles use canonical Documenter leaf URLs", {
+  articles <- testthat::test_path("..", "..", "vignettes", "articles")
+  skip_if_not(dir.exists(articles), "reader article sources not present in the check copy")
+  paths <- list.files(articles, pattern = "[.]Rmd$", full.names = TRUE)
+  text <- paste(
+    unlist(lapply(paths, readLines, warn = FALSE), use.names = FALSE),
+    collapse = "\n"
+  )
+
+  expect_no_match(
+    text,
+    "https://itchyshin\\.github\\.io/HSquared\\.jl/dev/[^/[:space:]<>]+/"
+  )
+
+  twin_boundary <- paste(
+    readLines(file.path(articles, "twin-boundary.Rmd"), warn = FALSE),
+    collapse = "\n"
+  )
+  expect_match(
+    twin_boundary,
+    "https://itchyshin.github.io/HSquared.jl/dev/validation-status.html",
+    fixed = TRUE
+  )
+  expect_match(
+    twin_boundary,
+    "https://itchyshin.github.io/HSquared.jl/dev/twin-boundary.html",
+    fixed = TRUE
+  )
+})
+
 test_that("DESCRIPTION keeps count 7 and FA planned without claiming 0.9", {
   desc <- gsub(
     "\\s+",
