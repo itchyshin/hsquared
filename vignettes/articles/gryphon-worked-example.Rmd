@@ -105,6 +105,10 @@ property of *this population in this environment*, not a fixed constant of the t
 
 ## See also
 
+- [Visualizing models](visualizing-models.html) — diagnose a fitted result before
+  reporting it.
+- [Can I fit and report this?](current-limits.html) — the reporting permission
+  for this route.
 - [Fitting models](fitting-models.html) — the broad tour, including the ordinary raw-pedigree path
   and the opt-in models.
 - [Benchmark: hsquared vs sommer and pedigreemm](benchmark-comparators.html) — the same gryphon fit

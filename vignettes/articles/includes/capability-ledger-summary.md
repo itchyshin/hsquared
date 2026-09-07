@@ -24,9 +24,9 @@ hsquared(y ~ sex + animal(1 | id, pedigree = ped), data = dat)
 
 **Can I report the point estimate?** **Yes, within the stated scope** - a pre-declared recovery gate passed and an external same-estimand comparator agrees.
 
-**Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
+**Can I report an interval?** **Measured, but not nominally calibrated.** Named univariate pedigree h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals have a directional-conservative claim level. Sigma-a2 delta/Wald is experimental-only. Do not report any of them as nominal 95% coverage.
 
-**Exact scope and caveat.** One additive genetic effect, Gaussian response, REML only, fitted by average-information REML on the sparse mixed-model equations. Known-truth recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary pinning. ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE` (the default). That is the same rule for the default fit and for `engine = "validate"`. The covered claim is this REML estimator, not ML.
+**Exact scope and caveat.** One additive genetic effect, Gaussian response, REML only, fitted by average-information REML on the sparse mixed-model equations. Known-truth recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary pinning. ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE` (the default). That is the same rule for the default fit and for `engine = "validate"`. The covered claim is this REML estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals are directional-conservative here; sigma-a2 delta/Wald remains experimental-only. None is nominally calibrated.
 
 **Concrete fallback.** None needed - this is the recommended route. For a model with a second random effect, see the two-effect card below.
 
@@ -149,7 +149,6 @@ These rows are `planned` in `validation_status()`. The formula vocabulary may pa
 
 1. Confirm this page still lists your route as reportable. Do not treat `validation_status()` as the complete user list.
 2. Report point estimates for covered routes only.
-3. Do not report a standard error or interval as calibrated. None of them are, in any release of this package so far.
+3. Do not report a standard error or interval as nominally calibrated. The named univariate-pedigree directional-conservative methods are a narrower claim, not a nominal-coverage permission.
 4. For a `partial` route, run an external comparator yourself and report both numbers.
 5. Say in the methods that the fit came from an experimental package, and name the version.
-

@@ -23,13 +23,16 @@ behind them to report.
 1. Three **default-routed covered** paths exist: the **univariate Gaussian animal
    model**, **t = 2 unstructured multivariate** `cbind()` (validation-scale), and
    **genomic GREML** via narrow `genomic(...)` (validation-scale; experimental
-   0.7.0 retained). Report their point estimates within the stated scope.
+   0.7.0 at its promotion and 0.8.0 currently). Report their point estimates
+   within the stated scope.
 2. Almost everything else fits through an **opt-in** engine target (some covered
    at validation scale, some experimental). k≥3 and diagonal multivariate stay
    experimental. Treat experimental fits as exploratory, or report them beside a
    comparator you ran yourself.
-3. **No standard error or interval in this package is coverage-calibrated.** Do
-   not report one as if it were.
+3. **No standard error or interval in this package is nominally
+   coverage-calibrated.** Named univariate pedigree intervals have a narrower
+   `directional-conservative` claim level, not a nominal-calibration claim. Do
+   not report any interval as if nominal coverage had been established.
 
 ```{r f3-recovery-ladder, echo = FALSE, results = "asis"}
 cat(sprintf(
@@ -124,6 +127,10 @@ the evidence table and will not mention them until those rows exist.
 
 ## Where to read next
 
+- [Fitting models](fitting-models.html) — the smallest honest workflow after you
+  choose a route.
+- [Visualizing models](visualizing-models.html) — diagnose a fitted result before
+  extracting it.
 - [Model status](model-status.html) — the same ledger organised by model family.
 - [Validation evidence](validation-evidence.html) — the evidence chain behind each
   row, atom by atom.
@@ -131,3 +138,5 @@ the evidence table and will not mention them until those rows exist.
   call at which step.
 - [Formula grammar roadmap](formula-grammar.html) — what the parser reserves for
   later, and what it refuses today.
+- [Progression & evidence](progression-evidence.html) — dated milestones that do
+  not themselves change a reporting permission.

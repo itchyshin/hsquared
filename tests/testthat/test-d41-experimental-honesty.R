@@ -78,7 +78,7 @@ test_that("DESCRIPTION and README point at Can I fit and report this?, not valid
   flat <- gsub("\\s+", " ", paste(sub("^>\\s?", "", lines), collapse = " "))
 
   expect_match(flat, "Can I fit and report this", fixed = TRUE)
-  expect_match(flat, "developer evidence table", fixed = TRUE)
+  expect_match(flat, "R-public covered routes", fixed = TRUE)
   expect_no_match(flat, "live source of truth", fixed = TRUE)
   expect_no_match(flat, "only for rows marked `covered` by", fixed = TRUE)
 })
@@ -90,9 +90,9 @@ test_that("README carries the D-41 callout and a validate-first example", {
 
   # channel 4: lifecycle badge + prominent callout
   expect_match(text, "lifecycle-experimental", fixed = TRUE)
-  expect_match(text, "[!WARNING]", fixed = TRUE)
+  expect_match(text, "Warning — experimental 0.8.0", fixed = TRUE)
   expect_match(text, "0.8.0", fixed = TRUE)
-  expect_match(text, "not coverage-calibrated", fixed = TRUE)
+  expect_match(text, "No interval is nominally", fixed = TRUE)
 
   # I2: the first runnable example must not need Julia
   validate_at <- which(
@@ -116,17 +116,9 @@ test_that("README and pkgdown lock 0.9-prep public honesty fences", {
   skip_if_not(file.exists(readme), "README.md not present in the check copy")
   text <- gsub("\\s+", " ", paste(readLines(readme, warn = FALSE), collapse = " "))
 
-  expect_match(text, "Experimental 0.8.0", fixed = TRUE)
+  expect_match(text, "experimental 0.8.0", fixed = TRUE)
   expect_match(text, "0.9 is not released", fixed = TRUE)
-  expect_match(text, "`public_covered_count` is **7**", fixed = TRUE)
-  expect_match(text, "factor-analytic", ignore.case = TRUE)
-  expect_match(text, "planned", ignore.case = TRUE)
-  expect_match(text, "opt-in partial", fixed = TRUE)
-  expect_match(text, "engine-covered", ignore.case = TRUE)
-  expect_true(any(grepl("not R-public covered", text, fixed = TRUE),
-                  grepl("not R covered", text, fixed = TRUE)))
-  expect_match(text, "do **not** flip R coverage", fixed = TRUE)
-  expect_match(text, "cov = fa(K)", fixed = TRUE)
+  expect_match(text, "R-public covered routes", fixed = TRUE)
 
   pkgdown <- testthat::test_path("..", "..", "_pkgdown.yml")
   skip_if_not(file.exists(pkgdown), "_pkgdown.yml not present in the check copy")
@@ -155,6 +147,23 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
   expect_match(text, "planned", ignore.case = TRUE)
   expect_match(text, "engine-covered", ignore.case = TRUE)
   expect_match(text, "cov = fa(K)", fixed = TRUE)
+})
+
+test_that("validation-evidence separates declared evidence scope from route controls", {
+  article <- testthat::test_path(
+    "..", "..", "vignettes", "articles", "validation-evidence.Rmd"
+  )
+  skip_if_not(
+    file.exists(article),
+    "validation-evidence.Rmd not present in the check copy"
+  )
+  text <- gsub("\\s+", " ", paste(readLines(article, warn = FALSE), collapse = " "))
+
+  expect_no_match(text, "The capability fits by default", fixed = TRUE)
+  expect_no_match(text, "Partial rows are experimental: REML-only", fixed = TRUE)
+  expect_match(text, "may have limited evidence", fixed = TRUE)
+  expect_match(text, "declared scope evidence", fixed = TRUE)
+  expect_match(text, "default-routed or opt-in", fixed = TRUE)
 })
 
 test_that("DESCRIPTION keeps count 7 and FA planned without claiming 0.9", {

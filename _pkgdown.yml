@@ -63,7 +63,7 @@ template:
   # RGBP. man/figures/logo.svg is the single mark: pkgdown 2.2 find_logo()
   # prefers it, and it renders exactly once per page (the home page header).
   # The navbar is text-only — see pkgdown/templates/navbar.html.
-  # Installed from ~/local-scratch/h2-09-finish-docs-brand/hex/hsquared/.
+  # Repository-local figure assets are the public source of this mark.
   opengraph:
     image:
       src: man/figures/logo.png
@@ -71,7 +71,7 @@ template:
 
 navbar:
   structure:
-    left: [intro, model_guides, status, comparators, developer, reference, news]
+    left: [intro, choose, fit, diagnose, report, progression, developer, reference, news]
     right: [search, github]
   components:
     intro:
@@ -85,17 +85,37 @@ navbar:
           href: articles/function-map-cheatsheet.html
         - text: Worked example (gryphon)
           href: articles/gryphon-worked-example.html
-    model_guides:
-      text: Model guides
+    choose:
+      text: Choose a model
+      menu:
+        - text: Can I fit and report this?
+          href: articles/current-limits.html
+        - text: Model status and route scope
+          href: articles/model-status.html
+        - text: Multivariate Gaussian animal models
+          href: articles/multivariate.html
+        - text: Genomic prediction
+          href: articles/genomic-prediction.html
+    fit:
+      text: Fit
       menu:
         - text: Fitting models
           href: articles/fitting-models.html
+        - text: Worked example (gryphon)
+          href: articles/gryphon-worked-example.html
+        - text: Function map and cheat sheet
+          href: articles/function-map-cheatsheet.html
+    diagnose:
+      text: Diagnose
+      menu:
         - text: Visualizing models
           href: articles/visualizing-models.html
-        - text: Multivariate Gaussian animal models
-          href: articles/multivariate.html
-    status:
-      text: Status
+        - text: Model status
+          href: articles/model-status.html
+        - text: Validation evidence
+          href: articles/validation-evidence.html
+    report:
+      text: Report
       menu:
         - text: Twin boundary (R public vs Julia engine)
           href: articles/twin-boundary.html
@@ -105,9 +125,7 @@ navbar:
           href: articles/model-status.html
         - text: Validation evidence
           href: articles/validation-evidence.html
-    comparators:
-      text: Comparators
-      menu:
+        - text: "---------"
         - text: "Benchmark: sommer & pedigreemm"
           href: articles/benchmark-comparators.html
         - text: "Two-effect model: sommer comparator"
@@ -116,6 +134,9 @@ navbar:
           href: articles/multi-effect-comparator.html
         - text: "Random regression (k = 2): sommer comparator"
           href: articles/rr-comparator.html
+    progression:
+      text: Progression & evidence
+      href: articles/progression-evidence.html
     developer:
       text: Developer
       menu:
@@ -126,8 +147,6 @@ navbar:
         - text: Genomics and GPU roadmap
           href: articles/genomics-gpu-roadmap.html
         - text: "---------"
-        - text: Genomic prediction
-          href: articles/genomic-prediction.html
         - text: Reading G matrices
           href: articles/g-matrix-interpretation.html
         - text: QTL, GWAS, and eQTL status
@@ -202,9 +221,9 @@ reference:
   - title: Uncertainty (experimental)
     desc: >
       Asymptotic/delta-method standard errors, intervals, and tests, surfaced when
-      the engine provides them. **Not coverage-calibrated** — no route carries an
-      interval-reporting permission. `confint()` and `vcov()` are deliberately
-      absent rather than shipped uncalibrated.
+      the engine provides them. No route has nominal coverage calibration; named
+      univariate-pedigree methods are directional-conservative only. `confint()`
+      and `vcov()` are deliberately absent.
     contents:
       - heritability_interval
       - variance_component_standard_errors
@@ -253,35 +272,51 @@ articles:
       - articles/function-map-cheatsheet
       - articles/gryphon-worked-example
 
-  - title: Model guides
+  - title: Choose a model
     desc: >
-      Fitting and visualization for the animal-model path. Multivariate is
-      opt-in experimental. Genomic prediction and G-matrix pages live under
-      Developer until those routes are covered.
+      Decide whether a route is current and what its evidence allows before
+      opening a fitting command.
+    contents:
+      - articles/current-limits
+      - articles/model-status
+      - articles/multivariate
+      - articles/genomic-prediction
+
+  - title: Fit
+    desc: >
+      The default animal-model workflow and its specialist companions. Each page
+      keeps engine requirements and route scope visible.
     contents:
       - articles/fitting-models
-      - articles/visualizing-models
-      - articles/multivariate
+      - articles/gryphon-worked-example
+      - articles/function-map-cheatsheet
 
-  - title: Status
+  - title: Diagnose
     desc: >
-      Capability limits, validation evidence, and model-family status. Read these
-      before reporting point estimates or intervals.
+      Check convergence, boundary flags, model status, and validation evidence
+      before extracting or reporting an estimate.
     contents:
-      - articles/twin-boundary
-      - articles/current-limits
+      - articles/visualizing-models
       - articles/model-status
       - articles/validation-evidence
 
-  - title: Comparators
+  - title: Report
     desc: >
-      External comparator evidence against sommer and pedigreemm. Comparator
+      Route-scoped reporting permission and comparator evidence. Comparator
       agreement does not certify interval coverage.
     contents:
+      - articles/current-limits
+      - articles/twin-boundary
       - articles/benchmark-comparators
       - articles/two-effect-comparator
       - articles/multi-effect-comparator
       - articles/rr-comparator
+
+  - title: Progression & evidence
+    desc: >
+      Dated evidence milestones, not a release announcement or a status ledger.
+    contents:
+      - articles/progression-evidence
 
   - title: Developer
     desc: >
@@ -292,6 +327,5 @@ articles:
       - articles/formula-grammar
       - articles/inheritance-systems
       - articles/genomics-gpu-roadmap
-      - articles/genomic-prediction
       - articles/g-matrix-interpretation
       - articles/qtl-gwas-eqtl-status

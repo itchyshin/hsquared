@@ -26,6 +26,10 @@ knitr::opts_chunk$set(
 <p class="hs-banner" role="note"><strong>Intervals: asymptotic / experimental · not coverage-calibrated.</strong>
 Figures below are from small <em>illustrative</em> fit objects (no engine at build time). Subtitles and captions must be read as product chrome, not as a live analysis.</p>
 
+Use this page after fitting and before extracting a result for a paper. The
+[current-limits](current-limits.html) page decides what may be reported; a plot
+or a converged optimizer does not broaden that permission.
+
 `hsquared` ships a small `ggplot2` visualization layer in the style of the
 `brms`/`bayesplot` ecosystem (and consistent with the sister packages `drmTMB`
 and `gllvmTMB`). Every figure is produced by an `autoplot()` method, returns a
@@ -41,6 +45,18 @@ fit <- hsquared(
   data = dat, family = gaussian(), REML = TRUE
 )
 autoplot(fit, "variance")
+```
+
+## Check the fit before plotting
+
+Start with the exported diagnostic table. It reports the current fit payload;
+it does not refit, validate a route, or turn a converged optimizer into broader
+reporting permission. Read any convergence or boundary indication before
+extracting a number, then return to [current limits](current-limits.html) for
+the route-specific reporting scope.
+
+```{r, eval = FALSE}
+fit_diagnostics(fit)
 ```
 
 The figures below are rendered from **small illustrative fit objects** so the

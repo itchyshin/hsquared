@@ -1,0 +1,62 @@
+---
+title: "Progression & evidence"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Progression & evidence}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<p class="hs-banner" role="note"><strong>Evidence history, not a release announcement.</strong>
+<code>hsquared</code> is experimental <strong>0.8.0</strong> with
+<code>public_covered_count = 7</code>; it is not production, not CRAN, and
+0.9 is not released. Evidence is route-specific, and no package interval is
+generally cleared for nominal coverage reporting.</p>
+
+This page connects the project history to a practical question: what does a
+route's label mean today? Start with [Can I fit and report this?](current-limits.html)
+for a current decision, then use this page to trace the evidence behind it.
+
+## Where we are now
+
+`hsquared` is the formula-first R interface; `HSquared.jl` is the computational
+engine. A covered R-public route has the evidence stated in its own row. It is
+not a production claim, and Julia engine coverage does not itself change the
+R-public count. Report point estimates only within the route scope; interval
+coverage is not a general permission.
+
+## How a route earns its label
+
+```{r recovery-ladder, echo = FALSE, results = "asis"}
+cat(sprintf(
+  '<p><img src="../reference/figures/recovery-ladder.svg" class="r-plt" alt="Three-rung validation ladder from planned to partial to covered; internal self-agreement alone is insufficient for covered status." width="100%%"></p>\n'
+))
+```
+
+A route moves from **planned** to **partial** when it is implemented with a
+named evidence gap. It earns **covered** only when its predeclared recovery and
+external same-estimand comparator requirements are met. The current
+[model-status](model-status.html) and [validation evidence](validation-evidence.html)
+pages carry the scope and limits that the ladder cannot show by itself.
+
+## Historical milestones
+
+These are dated, bounded milestones rather than a release timeline. Counts in
+this list are historical where stated; the current count is seven.
+
+| Date and phase | What changed | Read the route-specific evidence |
+| --- | --- | --- |
+| 2026-06-19, 0.1.0 | The univariate Gaussian animal-model contract gained known-truth recovery, the gryphon published anchor, and `sommer` agreement. It was released publicly on GitHub as [hsquared 0.1.0](https://github.com/itchyshin/hsquared/releases/tag/v0.1.0); this is not a CRAN or production claim. | [Worked gryphon example](gryphon-worked-example.html) and [benchmark evidence](benchmark-comparators.html) |
+| 2026-06 to 2026-09, 0.2–0.4 capability build | The experimental covered set grew from one to five through the direct–maternal, common-environment/multi-effect, and k=2 random-regression routes; each has its own evidence boundary. | [Direct–maternal status](model-status.html), [multi-effect comparator](multi-effect-comparator.html), and [random-regression comparator](rr-comparator.html) |
+| 2026-09-02, 0.5.0 | A later experimental public-number policy used 0.5.0 at count five. It did not supersede the earlier 0.1.0 GitHub release or imply CRAN, General registration, production readiness, or a new evidence promotion. | [Changelog](../news/index.html) and [current limits](current-limits.html) |
+| 2026-09-02, 0.6.0 | Two-trait unstructured multivariate REML became covered at validation scale; the historical count moved 5 → 6. | [Multivariate scope](multivariate.html) and [model status](model-status.html) |
+| 2026-09-02, 0.7.0 | Narrow genomic GREML became covered at validation scale; the historical count moved 6 → 7. A later decision made that same narrow route default-routed. | [Genomic prediction](genomic-prediction.html) and [current limits](current-limits.html) |
+| 2026-09-04 to 2026-09-07, 0.8.0 | The experimental number advanced while R FA remained planned and R single-step remained opt-in partial. Julia FA is engine-covered only for `t = 4`, `K = 1`, interior rotation-invariant G/R/psi; its broad protocol passed 8/10. Julia single-step is engine-covered only for ordinary-default H-scale sigma-a2/sigma-e2 and the teaching `G = A22 + 0.05I` kernel. The 0.8 interval work refined claim wording; it did not promote a route or announce 0.9. | [Twin boundary](twin-boundary.html) and [validation evidence](validation-evidence.html) |
+
+## What remains separate
+
+Julia registry status, a public CRAN release, interval calibration, and future
+roadmaps are separate decisions. This page does not announce a release, change
+a status row, or turn a future roadmap into a reporting permission. For the
+technical backlog, see the [developer pages](genomics-gpu-roadmap.html); for a
+reporting decision, return to [Can I fit and report this?](current-limits.html).

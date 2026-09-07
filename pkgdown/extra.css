@@ -452,6 +452,41 @@ main table {
   margin: 0 0 2.4rem;
 }
 
+/* Five explicit reader stages turn the home page into a route, not a link
+   wall. The ordered DOM is the keyboard/screen-reader order; the grid only
+   changes presentation. */
+.hs-workflow {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  list-style: none;
+  margin: 1.75rem 0 2.25rem;
+  padding: 0;
+}
+
+.hs-workflow li {
+  background: var(--hs-paper);
+  border: 1px solid var(--hs-hairline);
+  border-radius: var(--hs-radius-sm);
+  line-height: 1.45;
+  min-height: 8.5rem;
+  padding: 1rem;
+}
+
+.hs-workflow strong {
+  color: var(--hs-teal-ink);
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+/* At tablet widths, retain the ordered journey while avoiding five cramped
+   cards: three stages on the first row, then two. */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .hs-workflow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .hs-btn {
   border-radius: 999px;
   display: inline-flex;
@@ -848,6 +883,10 @@ footer {
   .hs-btn {
     justify-content: center;
   }
+
+  .hs-workflow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 575.98px) {
@@ -907,6 +946,30 @@ footer {
     max-width: 100%;
     width: auto;
   }
+
+  /* Function names are intentionally rendered as code in the reference
+     index. Let an unusually long name wrap inside its own entry rather than
+     widening the phone viewport. */
+  .template-reference-index dt code {
+    overflow-wrap: anywhere;
+  }
+
+  /* Display mathematics has no natural wrap points. Keep a long equation in
+     its reading column and let that equation, rather than the whole document,
+     scroll horizontally on a phone. */
+  main math[display="block"] {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .hs-workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .hs-workflow li {
+    min-height: 44px;
+  }
 }
 
 /* Widest desktops: centre the block instead of letting it hang left.
@@ -929,8 +992,10 @@ footer {
   }
 }
 
-/* The grouped navbar needs more room than Bootstrap's lg breakpoint gives. */
-@media (max-width: 1439.98px) {
+/* The grouped reader-journey navbar needs more room than Bootstrap's lg
+   breakpoint gives. It collapses before a 1440px desktop would crowd the
+   search and GitHub controls. */
+@media (max-width: 1599.98px) {
   .navbar.navbar-expand-lg {
     flex-wrap: wrap;
   }

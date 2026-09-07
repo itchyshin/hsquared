@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-<p class="hs-banner" role="note"><strong>Experimental 0.7.0 · default-route GREML · count stays 7.</strong>
+<p class="hs-banner" role="note"><strong>Experimental 0.8.0 · default-route GREML · count stays 7.</strong>
 Narrow <code>genomic()</code> GREML now auto-routes on the ordinary call and is covered at validation scale. SNP-BLUP and single-step stay opt-in and experimental. This page does not flip <code>public_covered_count</code> and does not claim the nine-cell recovery campaign as PASS.</p>
 
 This article shows the current genomic prediction surface in `hsquared`.
@@ -113,9 +113,11 @@ and is not pedigree-, founder-base-, population-, or universal narrow-sense
 heritability.
 Genomic `heritability_interval()` and `heritability_standard_error()` are
 unavailable until a scale-labelled interval contract is separately validated.
-The R surface remains partial because the sealed boundary candidate failed its
-runtime gate, the nine-cell campaign did not run, and production-scale genomic
-validation is not complete.
+The covered narrow GREML route remains validation-scale only: the sealed
+boundary candidate failed its runtime gate, the nine-cell campaign did not run,
+and production-scale genomic validation is not complete. Those are remaining
+debts, not a demotion of GREML; SNP-BLUP and both single-step routes remain
+opt-in partial.
 
 ## Marker-built G
 
@@ -308,8 +310,10 @@ eqtl_table(fit_g)   # reserved
 
 ## Current evidence boundary
 
-The current R genomic and single-step rows remain `partial`; the explicit route
-does not change `public_covered_count` (live count 6; genomic not covered).
+The current R genomic and single-step rows have different status: narrow genomic
+GREML is covered at validation scale, while supplied and constructed single-step
+routes remain opt-in partial. This page does not change the current
+`public_covered_count` of 7.
 
 Covered in the R lane:
 
@@ -362,7 +366,7 @@ single-step blending of pedigree and genomic information. Useful anchors are
 
 For `hsquared`, those papers motivate the roadmap. The package exposes one
 narrow default-route genomic GREML path (covered at validation scale;
-experimental 0.7.0; count stays 7) while keeping SNP-BLUP, single-step,
+experimental 0.8.0; count stays 7) while keeping SNP-BLUP, single-step,
 recovery-campaign PASS, interval, and broad production genomic claims
 behind explicit validation gates.
 

@@ -27,10 +27,12 @@ hs_route_table <- function() {
         "pinning. ML is not implemented. `REML = FALSE` is rejected; use",
         "`REML = TRUE` (the default). That is the same rule for the default",
         "fit and for `engine = \"validate\"`. The covered claim is this REML",
-        "estimator, not ML."
+        "estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2",
+        "profile/bootstrap intervals are directional-conservative here; sigma-a2",
+        "delta/Wald remains experimental-only. None is nominally calibrated."
       ),
       point = "yes",
-      interval = "no",
+      interval = "directional_conservative",
       fallback = paste(
         "None needed - this is the recommended route. For a model with a second",
         "random effect, see the two-effect card below."
@@ -225,6 +227,12 @@ hs_permission_interval <- function(interval) {
   switch(
     interval,
     yes = "**Yes** - named, coverage-calibrated interval method.",
+    directional_conservative = paste(
+      "**Measured, but not nominally calibrated.** Named univariate pedigree",
+      "h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals have",
+      "a directional-conservative claim level. Sigma-a2 delta/Wald is",
+      "experimental-only. Do not report any of them as nominal 95% coverage."
+    ),
     no = paste(
       "**No.** Standard errors and intervals are asymptotic/delta-method,",
       "labelled experimental, and NOT coverage-calibrated. No route in this",
@@ -394,8 +402,9 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
     ),
     "2. Report point estimates for covered routes only.",
     paste0(
-      "3. Do not report a standard error or interval as calibrated. None of them ",
-      "are, in any release of this package so far."
+      "3. Do not report a standard error or interval as nominally calibrated. The ",
+      "named univariate-pedigree directional-conservative methods are a narrower ",
+      "claim, not a nominal-coverage permission."
     ),
     paste0(
       "4. For a `partial` route, run an external comparator yourself and report ",
@@ -404,8 +413,7 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
     paste0(
       "5. Say in the methods that the fit came from an experimental package, and ",
       "name the version."
-    ),
-    ""
+    )
   )
 
   lines

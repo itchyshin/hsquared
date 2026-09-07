@@ -52,8 +52,8 @@ advanced opt-in engine controls.
   normalized pedigree ordering, and Julia target metadata. It does not fit a
   model.
 - Narrow univariate Gaussian REML `genomic()` (supplied `Ginv` or a `markers`
-  matrix) remains an explicit Julia `target = "genomic"`. `single_step()`
-  (supplied `Hinv`, or constructed `Hinv` from
+  matrix) is covered at validation scale and default-routed; explicit
+  `target = "genomic"` remains an alias. `single_step()` (supplied `Hinv`, or constructed `Hinv` from
   `pedigree` + `markers`), `permanent()`, `common_env()`, `maternal_genetic()`, and the
   supplied-relationship primaries `relmat()` (dense `K`) and `precision()`
   (supplied inverse `Q`) remain explicit `engine = "julia"` targets — some
@@ -280,7 +280,9 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
   multivariate fitter on the default path; the explicit
   `engine = "julia", target = "multivariate"` spelling still works. The route is
   default; t=2 unstructured is covered at validation scale (experimental label retained).
-- **Gaussian identity link only.** Other families are planned, not implemented.
+- **The default route is Gaussian with an identity link.** Non-Gaussian
+  Poisson/binomial paths exist only as explicit experimental Julia targets;
+  they are not default-route or reporting permissions.
 - **REML only.** `REML = FALSE` (ML) is rejected; use `REML = TRUE`
   (the default). That is the same rule for the default fit and for
   `engine = "validate"`. The supplied-variance paths (`henderson_mme`, and

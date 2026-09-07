@@ -33,7 +33,8 @@ before anything else. **Reaching it is the default:** a `cbind()` Gaussian
 response with an `animal()` term routes to the multivariate REML fitter on an
 ordinary `hsquared()` call, with no `engine` or `target` argument. **A
 2026-09-02 maintainer sign-off covers the claim at validation scale** for t=2 unstructured
-G0/R0 (`public_covered_count` **6**); the experimental label is retained.
+G0/R0. At that historical promotion, `public_covered_count` moved to **6**;
+the current R-public count is **7**. The experimental label is retained.
 k≥3 and `genetic_structure = "diagonal"` stay experimental. Default routing
 was reachability; that sign-off is the promotion.
 

@@ -39,14 +39,20 @@ does not claim a 0.9 release, production readiness, or a covered-status flip.
 In particular:
 
 - **Factor-analytic covariance (`V4-FA`)** is covered only as a Julia engine,
-  validation-scale, opt-in capability. R factor-analytic grammar and payload
-  activation remain **planned** (`cov = fa(K)` is not parsed).
+  validation-scale, opt-in capability for the narrow S4 cell: `t = 4`, `K = 1`,
+  positive Ledermann slack and interior uniqueness, with rotation-invariant
+  G/R/psi outputs only. Broad calibration passed 8 of 10 scenarios, so it is
+  not a general FA claim. R factor-analytic grammar and payload activation
+  remain **planned** (`cov = fa(K)` is not parsed).
 - **Single-step (`V2-SSHINV`)** is covered only as a Julia engine,
-  validation-scale, opt-in capability. R `single_step()` remains **opt-in
-  partial** and does not inherit the engine row's covered status.
+  validation-scale, opt-in capability for H-scale sigma-a2/sigma-e2 under
+  ordinary defaults (`tau = omega = 1`, blend/ridge zero) and the teaching
+  `G = A22 + 0.05I` kernel. H-scale h2 is reported but not claim-gated, and
+  fit parity to preGSf90/BLUPF90 is still absent. R `single_step()` remains
+  **opt-in partial** and does not inherit the engine row's covered status.
 
 See [Model status](model-status.html), [Validation evidence](validation-evidence.html),
-and the live [`validation_status()`](reference/validation_status.html) output.
+and the live [`validation_status()`](../reference/validation_status.html) output.
 For the engine-side ledger, use the
 [HSquared.jl validation status](https://itchyshin.github.io/HSquared.jl/dev/validation-status/)
 and the twin

@@ -32,7 +32,7 @@ cat(sprintf(
 ))
 ```
 
-<p class="hs-banner" role="note"><strong>Internal self-agreement is not covered.</strong> An R reference matching the engine at supplied variances proves the optimiser is reproducible on the same objective. Known-truth recovery and/or an external same-estimand comparator are what move a row. Genomic / GREML / interval rows stay partial. This figure does not flip a status.</p>
+<p class="hs-banner" role="note"><strong>Internal self-agreement is not covered.</strong> An R reference matching the engine at supplied variances proves the optimiser is reproducible on the same objective. Known-truth recovery and/or an external same-estimand comparator are what move a row. Narrow genomic GREML is covered at validation scale; SNP-BLUP, single-step, and unmeasured interval routes remain partial. This figure does not flip a status.</p>
 
 ```{r}
 library(hsquared)
@@ -47,14 +47,17 @@ ladder has three rungs, and the meanings are deliberately narrow:
 
 - **planned** — named in the roadmap, no implementation and no evidence. The
   parser may even reserve the syntax, but it errors as not implemented.
-- **partial** — implemented behind an opt-in control, with tests that pin its
-  *shape* and *internal consistency*, but **not** promoted to a working claim.
-  Partial rows are experimental: REML-only, Julia-owned, gated on the twin
-  engine's own status, and explicitly not the default, not production, and not
-  validated against a known truth or an external comparator.
-- **covered** — promoted. The capability fits by default and is backed by
-  known-truth recovery and/or a citable external anchor at declared tolerances.
-  Only `covered` rows may be described as working.
+- **partial** — implemented, but not yet through every requirement for a
+  `covered` claim. A partial route may have limited evidence (for example,
+  tests of shape or internal consistency, or a narrow evidence atom), but that
+  evidence does not establish its full declared scope. It remains experimental;
+  its routing controls and limitations are stated row by row.
+- **covered** — has declared scope evidence: documented known-truth recovery
+  and/or a same-estimand external anchor at the stated tolerances. Evidence
+  scope and routing are separate: a covered route can be
+  default-routed or opt-in. Coverage is not a production guarantee or a
+  nominal-interval guarantee; use [Model status and route
+  scope](model-status.html) for each route's controls and boundaries.
 
 The gate is real. The v0.1 univariate Gaussian animal model could not move from
 `partial` to `covered` until a written, binding promotion rule (the predicate)
@@ -263,13 +266,15 @@ What the v0.1 promotion does **not** claim:
   `REML = TRUE` (the default). That is the same rule for the default fit and
   for `engine = "validate"`. The supplied-variance paths (`henderson_mme`,
   `snp_blup`) solve at given variances rather than estimating them.
-- **No validated SEs/CIs.** A *validated*, coverage-calibrated SE/interval — and
+- **No nominally calibrated SEs/CIs.** A *validated*, coverage-calibrated SE/interval — and
   `confint()`/`vcov()` — is deferred. `summary()` and the extractors may surface
   *experimental*, asymptotic REML SEs/intervals (`heritability_interval()`,
   `variance_component_standard_errors()`, `heritability_standard_error()`,
   `repeatability_interval()`, and multivariate `covariance_standard_errors()`),
-  clearly labelled experimental and not coverage-calibrated — point estimates
-  plus bounds only, never to be read as validated inference.
+  clearly labelled experimental and not coverage-calibrated. The named
+  univariate-pedigree h2 delta/profile/bootstrap and sigma-a2
+  profile/bootstrap methods have directional-conservative evidence; sigma-a2
+  delta/Wald remains experimental-only. None is a nominal-coverage permission.
 - **`accuracy()` is not a validated accuracy.** It is the square root of
   reliability — a model-internal quantity on the dense validation path — not the
   realised `cor(EBV, true)` used as recovery evidence. PEV and reliability are
@@ -288,8 +293,10 @@ What the v0.1 promotion does **not** claim:
   validation-scale only, and intervals are asymptotic/uncalibrated. The remaining
   opt-in models — repeatability (`target = "repeatability"`), the
   **maternal-genetic two-effect leg** (`target = "two_effect"` with
-  `maternal_genetic()`), genomic GREML, single-step, and SNP-BLUP — stay
-  **experimental/partial**. k≥3 and diagonal multivariate stay experimental.
+  `maternal_genetic()`), single-step, and SNP-BLUP — stay
+  **experimental/partial**. Narrow genomic GREML is covered at validation scale
+  on the default route, but its production and interval debt remains. k≥3 and
+  diagonal multivariate stay experimental.
 - **Multivariate covered scope is t=2 unstructured.** Known-truth recovery and
   full-unstructured `sommer` / `blupf90+` comparators back that scope. They do
   not cover k≥3, diagonal genetic structure, or interval calibration. The
