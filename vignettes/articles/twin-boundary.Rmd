@@ -54,9 +54,9 @@ In particular:
 See [Model status](model-status.html), [Validation evidence](validation-evidence.html),
 and the live [`validation_status()`](../reference/validation_status.html) output.
 For the engine-side ledger, use the
-[HSquared.jl validation status](https://itchyshin.github.io/HSquared.jl/dev/validation-status/)
+[HSquared.jl validation status](https://itchyshin.github.io/HSquared.jl/dev/validation-status.html)
 and the twin
-[Documenter twin-boundary page](https://itchyshin.github.io/HSquared.jl/dev/twin-boundary/).
+[Documenter twin-boundary page](https://itchyshin.github.io/HSquared.jl/dev/twin-boundary.html).
 
 ## How to read a covered row
 
