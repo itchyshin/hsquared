@@ -26,8 +26,10 @@ available:
 points. When the fit carries the \strong{experimental} variance-component
 standard errors (see \code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}}), it adds
 approximate \verb{+/- 1.96 * SE} whiskers and labels the panel experimental;
-those intervals are asymptotic, REML-only, and not coverage-calibrated (the raw
-variance-component SE covers approximately nominally; only h^2 over-covers).
+those intervals are asymptotic, REML-only, and not coverage-calibrated. The
+governing coverage study found under-coverage for the sigma^2_a delta/Wald
+interval (worst interior coverage 0.897 at h^2 = 0.5), so no conservative
+direction is claimed for the plotted variance-component SE.
 \item \code{type = "residuals"} plots residuals against fitted values (with a zero
 reference line), when the fit carries fitted values and a response.
 }
