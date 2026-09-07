@@ -1,6 +1,6 @@
 # 2026-07-10 — coverage & recovery evidence results (governed by doc 34)
 
-**Status: EVIDENCE BANKED through the 2000-rep CONFIRM tier. supplied-K recovery CLEAN at confirm; repeatability `t` a banked NEGATIVE at confirm (marginal fail, gate not moved per R4). Nothing promoted — `public_covered_count` stays 5.**
+**Status: EVIDENCE BANKED through the 2000-rep CONFIRM tier. supplied-K recovery CLEAN at confirm; repeatability `t` a banked NEGATIVE at confirm (marginal fail, gate not moved per R4). Nothing promoted — `public_covered_count` stays 5.** *(Dated 2026-07-10 historical: then 5; live count is **7**; do not reset.)*
 
 Results of the four campaigns pre-registered in `docs/design/34-interval-recovery-pre-registration.md`.
 All ran on DRAC `fir` (`def-snakagaw_cpu`), verified by real Julia exit code + the driver's own
@@ -25,7 +25,7 @@ worst-cell rule:
 | **h²** | directional-conservative | directional-conservative | directional-conservative |
 | **σ²a** | **experimental-only** (0.897 at h²=0.5, under-covers) | directional-conservative | directional-conservative |
 
-- **h² intervals over-cover (conservative) across all three legs** — never under-cover.
+- The h² interval is `directional-conservative` on all three legs (HSquared.jl DRAC `fir` job **47925485**, copy-not-rerun): delta over-covers (worst Ĉ 0.969), profile's worst interior cell is in-band (Ĉ 0.950; the h²=0.3 cell over-covers), and bootstrap mildly under-covers but stays ≥0.90 (worst Ĉ 0.924). That is a measured, target-specific direction — **not** coverage-calibrated at nominal, and **not** a `point`-tier claim. *(2026-09 wording repair of the 2026-07-10 bank; this file is not a 2026-09 re-run.)*
 - **The σ²a Wald/delta interval genuinely under-covers** (0.897 < 0.90 at h²=0.5), while **profile
   stays calibrated** (0.947/0.956 at h²=0.5/0.7) — this measures, at 2000 reps, exactly why the
   shipped variance-component interval is profile-only.
@@ -89,7 +89,7 @@ worst-cell rule:
 ## Maintainer-gated items now teed up
 
 1. **C1 claim-level upgrade** to directional-conservative (h² all legs; profile σ²a; Wald σ²a stays a
-   demoted experimental probe) — Uncertainty-Scope change, after Rose. **No count move (stays 5).**
+   demoted experimental probe) — Uncertainty-Scope change, after Rose. **No count move (stays 5).** *(Dated 2026-07-10 historical: then 5; live count is **7**; do not reset.)*
 2. **supplied-K flip (5→6)** — recovery **confirm CLEAN**; still needs the escape-hatch IN/OUT call
    (#5) + the `sommer` comparator + n-ladder/null + R-surface wiring (`relmat()`/`precision()`) + Rose + G10.
 3. **repeatability — NOT a flip.** The 2000-rep confirm marginally failed (banked negative, §5); `t`
