@@ -7,9 +7,10 @@ current/historical evidence boundaries.
 
 ## 2. Implemented
 
-Added the five-stage journey, a bounded progression page, a 78-entry page
-disposition receipt, route-specific interval wording, and current R/Julia
-boundary fences. Added CI cleanup for pkgdown's duplicate article subtree.
+Added the five-stage journey, a bounded progression page, a 78-entry disposition
+receipt (71 reader sources plus seven intentional generated routes), route-specific
+interval wording, and current R/Julia boundary fences. Added CI cleanup for
+pkgdown's duplicate article subtree.
 The final validation-evidence follow-up separates evidence scope from route
 controls without changing a capability status.
 
@@ -35,6 +36,12 @@ link audit passed. The renderer follow-up passed 16 route/viewport checks with
 the candidate stylesheet; all tracked SVGs are XML-valid. The final
 route/evidence prose regression was red then green (65 pass) and rendered only
 the affected article; see `docs/dev-log/check-log.d/2026-09-07-r-validation-evidence-prose.md`.
+At the exact candidate head `09b679f7588a5dc67e337131863c71c080eaa590`, the
+package check (run `34146698142`) and documentation workflow (run `34146694025`)
+were successful; documentation deployment was skipped. The final R browser
+receipt passed 588 route/viewport checks. See
+`docs/dev-log/check-log.d/2026-09-07-r-web-closeout.md` for the dated
+cross-review and head-boundary receipt.
 
 ## 6. Tests of the Tests
 
@@ -47,12 +54,14 @@ Fixed: stale current 0.7/count-six wording; ambiguous FA denominator; stale
 GREML partial wording; blanket interval denial; broken relative article links;
 private scratch path comment; duplicate pkgdown article subtree; invalid
 G-matrix SVG; and 404/reference/mobile-math horizontal overflows. Deferred:
-coordinator's full browser crawl, CI draft-PR verification, and independent
-final claims review.
+the draft PR remains unmerged and undeployed. The 588-route browser crawl,
+independent claims recheck, technical verification, and usability recheck all
+passed at `09b679f`; this report-only follow-up requires its own CI refresh and
+does not inherit that commit's CI result.
 
 ## 8. Consistency Audit
 
-Reviewed 69 canonical R sources plus nine intentional new/generated routes.
+Reviewed 71 reader sources plus seven intentional generated routes.
 Historical counts remain historical; current count is seven. Operational pages
 are hidden during rendering and omitted from the public route receipt.
 
@@ -67,9 +76,13 @@ rendered repair probe explicitly routed the candidate local stylesheet.
 
 ## 10. Known Residuals
 
-The isolated website commit is local because the push/draft-PR action was denied
-by the external-action safety gate. Browser/device acceptance and CI on that
-commit remain coordinator gates.
+The candidate was pushed by the coordinator using the verified administrator SSH
+remote and remains draft PR #198; there was no merge or deployment. The exact
+candidate head `09b679f` has successful package and documentation workflows
+(documentation deploy skipped), a passing 588-route local browser receipt, Sol
+claims CLEAN, independent technical verification PASS, and Terra usability PASS.
+This report-only commit is newer than those exact-head checks, so the coordinator
+must push it and refresh CI before treating the draft's current head as green.
 
 ## 11. Team Learning
 
@@ -85,3 +98,6 @@ cover ✗ nominal calibration, sigma-a2 delta/Wald, genomic intervals,
 multivariate intervals, or any route not named in its evidence record. The
 reader journey covers ✓ navigation and public article ordering; it does NOT
 cover ✗ a deployment, release, count change, or scientific promotion.
+This closeout does NOT cover a new CI result for its own report-only commit;
+the package and documentation workflows must be refreshed after the coordinator
+pushes that commit.
