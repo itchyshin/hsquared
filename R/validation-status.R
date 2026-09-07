@@ -217,7 +217,9 @@ hs_validation_status_evidence <- function() {
       "variance_components_source = \"estimated_two_effect_reml\"."
     ),
     paste(
-      "Pure-R control/validator tests plus skip-guarded live tests running Julia",
+      "Opt-in experimental only; Julia V2-SSHINV engine-covered does not promote",
+      "R-public covered. AGHmatrix/BLUPF90 external comparators owed. Pure-R",
+      "control/validator tests plus skip-guarded live tests running Julia",
       "fit_ai_reml() on a user-supplied relationship inverse through the opt-in",
       "bridge: target = \"genomic\" on `genomic(1 | id, Ginv = Ginv)` (a genomic",
       "relationship inverse) and target = \"single_step\" on",
@@ -431,7 +433,8 @@ hs_validation_status_boundaries <- function() {
       "\"julia\", target = \"multivariate\"` spelling still works. Covered numeric",
       "claim is scoped to k = 2 unstructured; k >= 3 stays",
       "parseable-and-fittable-but-experimental; genetic_structure =",
-      "\"diagonal\" stays experimental at 0.6. `cbind()` responses with missing",
+      "\"diagonal\" stays experimental at 0.6; \"factor_analytic\" and \"lowrank\"",
+      "error as planned on the R bridge (rotation fence). `cbind()` responses with missing",
       "trait cells are supported, but this is REML-only and animal-model-only.",
       "The R lane has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",

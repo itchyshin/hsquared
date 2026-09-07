@@ -19,7 +19,7 @@ campaign yet. Run one cheap discriminating test first.
 The FA calibration sim **already warm-starts at a near-oracle point** —
 `initial = (0.7·Λ_true, 1.3·ψ_true, 1.2·R_true)`
 (`HSquared.jl/sim/phase4b_structured_covariance_recovery.jl:135-137`, truth at
-`:106-109`). The recorded **8/10** FA recovery
+`:106-109`). The recorded **8-of-10-pass** FA recovery
 (`HSquared.jl/src/validation_status.jl:344`) therefore happens **despite starting
 in the truth neighbourhood**. A data-driven Rubin–Thayer EM start (doc-20) is
 generically *worse* than `0.7·Λ_true`, so it cannot rescue seeds that already
