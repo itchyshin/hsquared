@@ -431,9 +431,10 @@ test_that("the legacy non-Gaussian normalizer remains a separate compatibility p
 
 test_that("the v0.9 Poisson route carries the three-field result through the live bridge", {
   # This is deliberately a tiny deterministic integration check, not a
-  # calibration run.  Keep the candidate Julia worktree explicit so this test
-  # cannot silently exercise an unrelated default checkout.
-  project <- "/private/tmp/hsq09-a3-julia-plan-7770"
+  # calibration run.  Resolve the explicitly configured Julia project so Tier-1
+  # CI and local callers exercise the intended checkout rather than a retired
+  # temporary worktree.
+  project <- hsquared:::hs_default_julia_project()
   hs_require_bridge("A3 v0.9 non-Gaussian bridge", project = project)
 
   pedigree <- data.frame(
