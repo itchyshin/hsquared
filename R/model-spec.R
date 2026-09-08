@@ -742,8 +742,9 @@ hs_validate_model_inputs <- function(
       "fit through the experimental, opt-in ",
       "`hs_control(engine = \"julia\", engine_control = list(target = ",
       "\"nongaussian\"))` path: a latent-scale GLMM (engine row V6-LAPLACE/VA, ",
-      "partial) with `marginal = \"laplace\"` (default) or `\"variational\"`; ",
-      "REML-only, no heritability, not coverage-calibrated. Use `model_spec()` ",
+      "partial) with a Laplace marginal likelihood or variational ELBO; ",
+      "the 0.9 conditional three-field h2 contract remains experimental and ",
+      "not coverage-calibrated. Use `model_spec()` ",
       "with `family = gaussian()` to inspect the contract without fitting.",
       call. = FALSE
     )

@@ -1,5 +1,14 @@
 # Per-Record Varying-Trial Binomial Activation Plan (R formula/bridge)
 
+> **A3 reconciliation (2026-09-08).** The limited transport planned here is
+> now implemented for the ratified 0.9 three-field route only: intercept-only
+> `animal(1 | id, pedigree = ped)` Binomial(logit) accepts binary or `cbind`
+> scalar/varying positive trial counts. The output is latent/liability and
+> literal `NaN` observation (`not_yet_ratified`), not an averaged observation
+> scalar. This remains experimental/partial, with no REML/AI-REML, calibration,
+> comparator, promotion, default, or release claim. The broader production and
+> evidence gates below remain deferred.
+
 Status: **PLAN ONLY.** This is a design plan for activating per-record
 varying-trial Binomial responses in the R formula/bridge surface. It does **not**
 activate them. As of this writing the R `cbind(successes, failures)` route still

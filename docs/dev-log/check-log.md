@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-09-08 (A3 paired three-field contract — not a promotion)
+
+- See `docs/dev-log/check-log.d/2026-09-08-a3-three-field-contract.md` and
+  `docs/dev-log/after-task/2026-09-08-a3-three-field-contract.md`.
+- Isolated R/Julia candidate only: R bridge and Julia private envelope tested;
+  both A3 Unlazy ledgers **8/8 met**. R ordinary source-tar `R CMD check`
+  **Status: OK**; Julia `Pkg.test()` includes A3 **43/43**. Experimental/partial
+  only: no calibration, comparator, covered flip, version, tag, registry, or
+  release. Current version remains **0.8.0**, public covered count **7**.
+
 ## 2026-09-07 (Gate-6 Rose audit — not 0.9.0)
 
 - See `docs/dev-log/check-log.d/2026-09-07-gate6-rose-audit.md` and

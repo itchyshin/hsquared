@@ -27,9 +27,12 @@ Model").
   every pillar to be **covered + production + interval-coverage-calibrated**, a
   committed-stable public API, and the maintainer's explicit declaration.
   Interval-coverage calibration exists for no model today, so `1.0` is materially
-  later than Phase 6. Non-Gaussian (Phase 6) is the longest pole — blocked on an
-  undefined non-Gaussian-scale heritability estimand and comparator scarcity, not
-  compute — so it is sequenced last and kept off the release critical path.
+  later than Phase 6. The broader non-Gaussian programme (Phase 6) remains the
+  longest pole — its general-scale estimands and comparator evidence are still
+  incomplete. That historical statement does not undo the narrow ratified 0.9
+  three-field contract, which is experimental/partial and separately fenced
+  from calibration or promotion — so the broader work stays sequenced last and
+  off the release critical path.
 
 ## Phase 0: Team Operating System And Public Scaffold
 
@@ -199,11 +202,16 @@ workflows and external same-estimand comparator validation remain planned.
 
 Status: partial for simple non-Gaussian animal models, planned for GLLVM/omics.
 
-- Poisson and binomial animal-model fits are surfaced experimentally through the
-  Julia-owned Laplace/variational marginal path (`target = "nongaussian"`),
-  including Bernoulli and equal-total binomial-count responses. No heritability
-  is reported on the non-Gaussian scale. Negative binomial, beta-binomial,
-  ordinal, zero-inflated, hurdle, and broader family extensions remain planned.
+- Poisson(log) and binomial(logit) animal-model fits are surfaced
+  experimentally through the Julia-owned Laplace marginal-likelihood or
+  variational-ELBO path (`target = "nongaussian"`), with one intercept and
+  animal effect. The ratified conditional three-field output supplies Poisson
+  latent/count-scale observation h2, logit latent/liability h2, and a literal
+  `NaN` logit observation cell marked `not_yet_ratified`; Bernoulli and scalar
+  or varying binomial-count trial totals are admitted. This remains partial:
+  no coverage calibration, external same-estimand comparator, or promotion.
+  Negative binomial, beta-binomial, ordinal, zero-inflated, hurdle, and broader
+  family extensions remain planned.
 - Wide response matrices, latent genetic axes, ordination, and community
   ecology examples.
 - Estimation by **both Laplace approximation (LA) and variational

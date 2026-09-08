@@ -490,16 +490,12 @@ hs_validate_marginal_method <- function(marginal) {
   canon
 }
 
-# Opt-in, experimental non-Gaussian (GLMM) animal model. Surfaces the
-# Julia-owned `HSquared.fit_laplace_reml()` REML optimizer for a
-# `poisson`/`bernoulli` response on the latent scale, over either the Laplace
-# (`marginal = "laplace"`, default) or variational (`marginal = "variational"`)
-# marginal. There is no residual-variance scale for these families, so the result
-# deliberately carries NO heritability. Experimental, REML-only, not
-# coverage-calibrated (mirrors the engine row V6-LAPLACE/VA, partial); the VA
-# objective is the ELBO (a lower bound on the marginal log-likelihood, so VA and
-# Laplace `logLik`/`AIC` are NOT comparable); Bernoulli `sigma_a2` is prone to a
-# search-bound boundary at small scale.
+# Opt-in, experimental non-Gaussian animal model.  The versioned 0.9 transport
+# reports only the ratified conditional three-field contract: Poisson has latent
+# and count-scale observation h2; logit Bernoulli/Binomial has latent and
+# liability h2 with an explicit NaN observation-scale hold.  The Laplace
+# objective is a marginal likelihood approximation; the variational objective
+# is an ELBO, not a REML or AI-REML claim.
 hs_fit_julia_nongaussian_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -517,6 +513,11 @@ hs_fit_julia_nongaussian_payload <- function(
       call. = FALSE
     )
   }
+  admission <- hs_validate_nongaussian_three_field_v09_admission(
+    payload = payload,
+    family = family,
+    marginal = marginal
+  )
   if (!hs_julia_bridge_available(project)) {
     stop(
       "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
@@ -525,9 +526,9 @@ hs_fit_julia_nongaussian_payload <- function(
     )
   }
 
-  n_trials <- payload$n_trials
-  family_symbol <- hs_nongaussian_family_symbol(family, n_trials)
-  marginal <- hs_validate_marginal_method(marginal)
+  n_trials <- admission$n_trials
+  family_symbol <- admission$family
+  marginal <- admission$method
   iterations <- hs_validate_iterations(iterations)
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
@@ -542,53 +543,27 @@ hs_fit_julia_nongaussian_payload <- function(
   JuliaCall::julia_assign("hsq_family", family_symbol)
   JuliaCall::julia_assign("hsq_marginal", marginal)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  # A binomial-counts response carries per-record trial counts; the engine's
-  # BinomialResponse takes them via the n_trials keyword (Bernoulli == all-ones,
-  # so the keyword is omitted for every non-binomial family). When every record
-  # shares one trial count we pass the scalar (the live-verified common-trial
-  # path); a genuinely varying vector is passed as a Vector{Int} (the per-record
-  # path, R-side parsed/tested but verified live separately).
-  n_trials_kw <- ""
   if (identical(family_symbol, "binomial")) {
     n_trials_int <- as.integer(n_trials)
     if (length(unique(n_trials_int)) == 1L) {
       JuliaCall::julia_assign("hsq_n_trials", n_trials_int[[1L]])
-      n_trials_kw <- "n_trials = Int(hsq_n_trials), "
     } else {
       JuliaCall::julia_assign("hsq_n_trials", n_trials_int)
-      n_trials_kw <- "n_trials = Vector{Int}(hsq_n_trials), "
     }
   }
-  JuliaCall::julia_command(paste0(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped); ",
-    "hsq_fit = HSquared.fit_laplace_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv; ",
-    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal), ",
-    n_trials_kw,
-    "ids = hsq_ped.ids, iterations = hsq_iterations);",
-    "hsq_result = HSquared.nongaussian_result_payload(hsq_fit);",
-    "hsq_ng_raw = Dict(",
-    "\"family\" => String(hsq_result.family),",
-    "\"method\" => String(hsq_result.method),",
-    "\"sigma_a2\" => hsq_result.variance_components.sigma_a2,",
-    "\"beta\" => collect(Float64, hsq_result.fixed_effects),",
-    "\"breeding_ids\" => string.(collect(hsq_result.breeding_values.ids)),",
-    "\"breeding_values\" => collect(Float64, hsq_result.breeding_values.values),",
-    "\"n_trials\" => (hasproperty(hsq_result, :n_trials) ? hsq_result.n_trials : nothing),",
-    "\"loglik\" => hsq_result.loglik,",
-    "\"converged\" => hsq_result.converged",
-    ");"
+  JuliaCall::julia_command(hs_nongaussian_three_field_julia_command(
+    family_symbol = family_symbol,
+    marginal = marginal,
+    n_trials = n_trials
   ))
 
   raw <- JuliaCall::julia_eval("hsq_ng_raw")
-  result <- hs_normalize_nongaussian_result(raw, payload)
-  # The engine echoes the canonical method it actually ran (laplace/variational);
-  # surface it in the user-facing spec method rather than assuming Laplace.
+  result <- hs_normalize_nongaussian_three_field_v09(raw, payload)
+  # The engine echoes the canonical marginal objective it actually ran.
   method_label <- if (identical(result$marginal_method, "variational")) {
-    "Variational-REML"
+    "Variational ELBO"
   } else {
-    "Laplace-REML"
+    "Laplace marginal likelihood"
   }
   hs_new_fit(
     spec = list(
@@ -621,9 +596,9 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
   )
   converged <- isTRUE(raw$converged)
   result <- list(
-    # Latent-scale additive genetic variance; a non-Gaussian family has no
-    # residual-variance scale, so no heritability is reported (surfacing a
-    # liability-scale h2 here would be an unbacked claim).
+    # Legacy envelope only: it reports latent-scale additive variance, but no
+    # h2. The separately versioned three-field route carries the narrow A3
+    # contract after explicit admission validation.
     variance_components = data.frame(
       component = "animal",
       estimate = as.numeric(raw$sigma_a2),
@@ -655,9 +630,9 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
         "laplace marginal loglik"
       },
       heritability_note = paste(
-        "No heritability is reported: a non-Gaussian family has no",
-        "residual-variance scale, so a latent/liability-scale h2 would be an",
-        "unbacked claim."
+        "The legacy non-Gaussian envelope reports no heritability. The",
+        "separately versioned three-field route is available only for its",
+        "explicitly admitted experimental contract."
       )
     )
   )
@@ -674,6 +649,445 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
     result$df <- as.integer(ncol(payload$X) + 1L)
   }
   result
+}
+
+# Private 0.9 wire-contract helpers.  These are intentionally distinct from
+# `hs_normalize_nongaussian_result()` above: the old experimental payload is a
+# compatibility surface and may not acquire the three-field semantics by
+# accident.  A later, explicitly versioned Julia call will select this
+# normalizer by its `nongaussian_three_field_v09` schema tag.
+hs_ng09_abort <- function(message) {
+  stop("Invalid `nongaussian_three_field_v09` envelope: ", message, call. = FALSE)
+}
+
+hs_ng09_required <- function(raw, name) {
+  if (!is.list(raw) || !name %in% names(raw)) {
+    hs_ng09_abort(paste0("missing required `", name, "` member."))
+  }
+  raw[[name]]
+}
+
+hs_ng09_scalar_number <- function(value, name, nonnegative = FALSE) {
+  ok <- is.numeric(value) && length(value) == 1L && is.finite(value)
+  if (isTRUE(nonnegative)) {
+    ok <- ok && value >= 0
+  }
+  if (!ok) {
+    hs_ng09_abort(paste0("`", name, "` must be a finite numeric scalar",
+      if (isTRUE(nonnegative)) " >= 0." else "."))
+  }
+  as.numeric(value)
+}
+
+hs_ng09_exact_number <- function(actual, expected, name) {
+  actual <- hs_ng09_scalar_number(actual, name)
+  if (!identical(unname(actual), unname(as.numeric(expected)))) {
+    hs_ng09_abort(paste0("`", name, "` does not equal its ratified identity."))
+  }
+  actual
+}
+
+hs_ng09_components <- function(raw) {
+  components <- hs_ng09_required(raw, "components")
+  expected_names <- c("V_A", "V_RE", "V_O")
+  if (
+    is.list(components) && length(components) == 2L &&
+      setequal(names(components), c("names", "values"))
+  ) {
+    components <- stats::setNames(
+      components[["values"]], components[["names"]]
+    )
+  }
+  if (
+    !is.numeric(components) ||
+      !identical(names(components), expected_names) ||
+      length(components) != length(expected_names) ||
+      any(!is.finite(components)) || any(components < 0) ||
+      sum(components) <= 0
+  ) {
+    hs_ng09_abort(
+      "`components` must be named exactly V_A, V_RE, V_O with finite non-negative values and positive total."
+    )
+  }
+  if (components[["V_RE"]] != 0 || components[["V_O"]] != 0) {
+    hs_ng09_abort(
+      "`V_RE` and `V_O` are structural zero in the current 0.9 one-additive-effect model."
+    )
+  }
+  as.numeric(stats::setNames(components, expected_names))
+}
+
+hs_ng09_intercept <- function(raw) {
+  fixed_effects <- hs_ng09_required(raw, "fixed_effects")
+  if (
+    is.list(fixed_effects) && length(fixed_effects) == 2L &&
+      setequal(names(fixed_effects), c("names", "values"))
+  ) {
+    fixed_effects <- stats::setNames(
+      fixed_effects[["values"]],
+      fixed_effects[["names"]]
+    )
+  }
+  if (
+    !is.numeric(fixed_effects) || length(fixed_effects) != 1L ||
+      !identical(names(fixed_effects), "(Intercept)") ||
+      !is.finite(fixed_effects)
+  ) {
+    hs_ng09_abort(
+      "`fixed_effects` must contain exactly one finite named `(Intercept)`; 0.9 does not average predictors."
+    )
+  }
+  as.numeric(fixed_effects[[1L]])
+}
+
+hs_ng09_loglik_kind <- function(method) {
+  if (identical(method, "variational")) {
+    return("elbo (variational lower bound)")
+  }
+  "laplace marginal loglik"
+}
+
+hs_ng09_breeding_values <- function(raw) {
+  ids <- hs_ng09_required(raw, "breeding_ids")
+  values <- hs_ng09_required(raw, "breeding_values")
+  if (!is.character(ids) || !is.numeric(values) || length(ids) < 1L ||
+    length(ids) != length(values) || anyNA(ids) || any(!nzchar(ids)) ||
+    any(!is.finite(values))) {
+    hs_ng09_abort(
+      "`breeding_ids` and `breeding_values` must be non-empty, aligned, finite vectors."
+    )
+  }
+  data.frame(
+    id = as.character(ids), value = as.numeric(values),
+    stringsAsFactors = FALSE
+  )
+}
+
+hs_ng09_converged <- function(raw) {
+  converged <- hs_ng09_required(raw, "converged")
+  if (!is.logical(converged) || length(converged) != 1L || is.na(converged)) {
+    hs_ng09_abort("`converged` must be one non-missing logical value.")
+  }
+  if (!isTRUE(converged)) {
+    hs_ng09_abort(
+      "`converged` is FALSE; no three-field fit is returned from an unconverged optimization."
+    )
+  }
+  TRUE
+}
+
+hs_ng09_heritability_table <- function(result) {
+  fields <- "h2_latent"
+  labels <- result$h2_latent_label
+  estimates <- result$h2_latent
+  reasons <- NA_character_
+  if ("h2_liability" %in% names(result)) {
+    fields <- c(fields, "h2_liability")
+    labels <- c(labels, result$h2_liability_label)
+    estimates <- c(estimates, result$h2_liability)
+    reasons <- c(reasons, NA_character_)
+  }
+  if ("h2_observation" %in% names(result)) {
+    fields <- c(fields, "h2_observation")
+    labels <- c(labels, result$h2_observation_label)
+    estimates <- c(estimates, result$h2_observation)
+    reasons <- c(reasons, result$h2_observation_undefined_reason %||% NA_character_)
+  }
+  data.frame(
+    field = fields,
+    label = labels,
+    estimate = as.numeric(estimates),
+    undefined_reason = reasons,
+    stringsAsFactors = FALSE
+  )
+}
+
+# Assemble, but do not execute, the versioned Julia transport.  Keeping this
+# string builder pure makes the every-key-present contract testable without a
+# Julia process.  The returned `Dict` deliberately contains explicit `nothing`
+# values, which JuliaCall converts to R NULL; absence is therefore detectable
+# as a schema error by the normalizer.
+hs_nongaussian_three_field_julia_command <- function(
+  family_symbol,
+  marginal,
+  n_trials = NULL
+) {
+  if (!family_symbol %in% c("poisson", "bernoulli", "binomial")) {
+    stop("Invalid v0.9 non-Gaussian engine family.", call. = FALSE)
+  }
+  marginal <- hs_validate_marginal_method(marginal)
+  n_trials_kw <- ""
+  if (identical(family_symbol, "binomial")) {
+    n_trials <- as.integer(n_trials)
+    if (length(n_trials) == 1L) {
+      n_trials_kw <- "n_trials = Int(hsq_n_trials), "
+    } else {
+      n_trials_kw <- "n_trials = Vector{Int}(hsq_n_trials), "
+    }
+  }
+  paste0(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped); ",
+    "hsq_fit = HSquared.fit_laplace_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv; ",
+    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal), ",
+    n_trials_kw,
+    "ids = hsq_ped.ids, iterations = hsq_iterations); ",
+    "hsq_result = HSquared.nongaussian_three_field_payload(",
+    "hsq_fit; predictor_variance = 0.0, response_length = length(hsq_y)); ",
+    "hsq_ng_raw = Dict(",
+    "\"schema\" => hsq_result.schema, ",
+    "\"family\" => hsq_result.family, ",
+    "\"method\" => hsq_result.method, ",
+    "\"loglik\" => hsq_result.loglik, ",
+    "\"components\" => Dict(\"names\" => [\"V_A\", \"V_RE\", \"V_O\"], ",
+    "\"values\" => [hsq_result.components.V_A, hsq_result.components.V_RE, hsq_result.components.V_O]), ",
+    "\"fixed_effects\" => Dict(\"names\" => hsq_result.fixed_effects.names, ",
+    "\"values\" => hsq_result.fixed_effects.values), ",
+    "\"breeding_ids\" => string.(collect(hsq_fit.ids)), ",
+    "\"breeding_values\" => collect(Float64, hsq_fit.breeding_values), ",
+    "\"h2_latent\" => hsq_result.h2_latent, ",
+    "\"h2_liability\" => hsq_result.h2_liability, ",
+    "\"h2_observation\" => hsq_result.h2_observation, ",
+    "\"h2_observation_undefined_reason\" => hsq_result.h2_observation_undefined_reason, ",
+    "\"n_trials\" => hsq_result.n_trials, ",
+    "\"converged\" => hsq_fit.converged);"
+  )
+}
+
+# Normalize a complete v0.9 three-field envelope.  Exact (zero-tolerance)
+# identities are checked at the language boundary, so a transport or formula
+# mutation cannot become a different scientific estimand in the R result.
+hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
+  schema <- hs_ng09_required(raw, "schema")
+  if (!identical(schema, "nongaussian_three_field_v09")) {
+    hs_ng09_abort("`schema` must equal `nongaussian_three_field_v09`.")
+  }
+  if (!is.list(payload) || is.null(payload$y)) {
+    hs_ng09_abort("a payload with response `y` is required for normalization.")
+  }
+
+  family <- hs_ng09_required(raw, "family")
+  if (!is.character(family) || length(family) != 1L ||
+    !family %in% c("poisson", "bernoulli", "binomial")) {
+    hs_ng09_abort("`family` must be one of poisson, bernoulli, or binomial.")
+  }
+  method <- hs_validate_marginal_method(hs_ng09_required(raw, "method"))
+  loglik <- hs_ng09_scalar_number(hs_ng09_required(raw, "loglik"), "loglik")
+  converged <- hs_ng09_converged(raw)
+  components <- hs_ng09_components(raw)
+  names(components) <- c("V_A", "V_RE", "V_O")
+  mu <- hs_ng09_intercept(raw)
+  animal_bv <- hs_ng09_breeding_values(raw)
+  v_eta_random <- sum(components)
+  h2_latent <- hs_ng09_exact_number(
+    hs_ng09_required(raw, "h2_latent"),
+    components[["V_A"]] / v_eta_random,
+    "h2_latent"
+  )
+  h2_liability <- hs_ng09_required(raw, "h2_liability")
+  h2_observation <- hs_ng09_required(raw, "h2_observation")
+  undefined_reason <- hs_ng09_required(
+    raw,
+    "h2_observation_undefined_reason"
+  )
+  n_trials <- hs_ng09_required(raw, "n_trials")
+
+  result <- list(
+    family = family,
+    marginal_method = method,
+    loglik = loglik,
+    loglik_kind = hs_ng09_loglik_kind(method),
+    variance_components = data.frame(
+      component = names(components), estimate = as.numeric(components),
+      stringsAsFactors = FALSE
+    ),
+    fixed_effects = stats::setNames(mu, "(Intercept)"),
+    nobs = length(payload$y),
+    converged = converged,
+    breeding_values = animal_bv,
+    random_effects = list(animal = animal_bv),
+    h2_latent = h2_latent,
+    h2_latent_label = "latent-scale h2 (conditional)"
+  )
+
+  if (identical(family, "poisson")) {
+    if (!is.null(h2_liability) || !is.null(undefined_reason) || !is.null(n_trials)) {
+      hs_ng09_abort(
+        "Poisson requires present `nothing` for liability, observation reason, and n_trials."
+      )
+    }
+    expected_observation <- components[["V_A"]] / (
+      expm1(v_eta_random) + exp(-(mu + v_eta_random / 2))
+    )
+    result$h2_observation <- hs_ng09_exact_number(
+      h2_observation,
+      expected_observation,
+      "h2_observation"
+    )
+    result$h2_observation_label <- "count-scale observation h2 (conditional)"
+    result$heritability <- hs_ng09_heritability_table(result)
+    return(result)
+  }
+
+  expected_liability <- components[["V_A"]] /
+    (v_eta_random + pi^2 / 3)
+  result$h2_liability <- hs_ng09_exact_number(
+    h2_liability,
+    expected_liability,
+    "h2_liability"
+  )
+  result$h2_liability_label <- "liability-scale h2 (conditional)"
+  if (!is.numeric(h2_observation) || length(h2_observation) != 1L ||
+    !is.nan(h2_observation)) {
+    hs_ng09_abort("logit `h2_observation` must be literal NaN.")
+  }
+  if (!identical(undefined_reason, "not_yet_ratified")) {
+    hs_ng09_abort(
+      "logit `h2_observation_undefined_reason` must equal `not_yet_ratified`."
+    )
+  }
+  result$h2_observation <- NaN
+  result$h2_observation_label <- "observation-scale h2 (not yet ratified)"
+  result$h2_observation_undefined_reason <- undefined_reason
+  result$heritability <- hs_ng09_heritability_table(result)
+
+  if (identical(family, "bernoulli")) {
+    if (!is.null(n_trials)) {
+      hs_ng09_abort("Bernoulli requires present `nothing` for n_trials.")
+    }
+    return(result)
+  }
+
+  n_trials <- hs_ng09_validate_trials(n_trials, length(payload$y))
+  result$n_trials <- n_trials
+  result
+}
+
+hs_ng09_validate_trials <- function(n_trials, nobs) {
+  if (!is.numeric(n_trials) || length(n_trials) < 1L ||
+    any(!is.finite(n_trials)) || any(n_trials != round(n_trials)) ||
+    any(n_trials < 1)) {
+    hs_ng09_abort("Binomial `n_trials` must be positive integer scalar or vector.")
+  }
+  n_trials <- as.integer(n_trials)
+  if (length(n_trials) == 1L) {
+    if (n_trials <= 1L) {
+      hs_ng09_abort("Binomial scalar `n_trials` must be greater than one.")
+    }
+    return(n_trials)
+  }
+  if (length(n_trials) != nobs) {
+    hs_ng09_abort("Binomial `n_trials` vector must have response length.")
+  }
+  if (all(n_trials == 1L)) {
+    hs_ng09_abort("All-one trials are Bernoulli and must not carry n_trials.")
+  }
+  n_trials
+}
+
+# Validate the narrow 0.9 admission boundary before any Julia marshalling.
+# This helper has no side effects and intentionally does not select an engine
+# target; dispatch stays unavailable until the paired Julia entrypoint exists.
+hs_validate_nongaussian_three_field_v09_admission <- function(
+  payload,
+  family,
+  marginal = "laplace",
+  predictor_variance = 0,
+  weights = NULL,
+  dots = list()
+) {
+  if (!is.list(payload) || is.null(payload$y) || is.null(payload$X)) {
+    stop("The v0.9 non-Gaussian admission helper requires payload y and X.", call. = FALSE)
+  }
+  y <- payload$y
+  X <- payload$X
+  fixed_names <- payload$metadata$fixed_colnames
+  if (!is.matrix(X) || nrow(X) != length(y) || ncol(X) != 1L ||
+    !identical(fixed_names, "(Intercept)")) {
+    stop(
+      "The v0.9 non-Gaussian contract permits exactly one intercept and no fixed predictors.",
+      call. = FALSE
+    )
+  }
+  if (!is.numeric(predictor_variance) || length(predictor_variance) != 1L ||
+    !is.finite(predictor_variance) || predictor_variance != 0) {
+    stop("`predictor_variance` must be exactly zero in the v0.9 contract.", call. = FALSE)
+  }
+  if (!is.null(weights)) {
+    stop("The v0.9 non-Gaussian contract does not accept weights.", call. = FALSE)
+  }
+  if (!is.list(dots) || length(dots) > 0L) {
+    stop("The v0.9 non-Gaussian contract does not accept ... controls.", call. = FALSE)
+  }
+  if (!inherits(family, "family")) {
+    stop("`family` must be an R family object.", call. = FALSE)
+  }
+  method <- hs_validate_marginal_method(marginal)
+  if (!is.numeric(y) || anyNA(y) || any(!is.finite(y))) {
+    stop("The v0.9 non-Gaussian response must be numeric and finite.", call. = FALSE)
+  }
+
+  if (identical(family$family, "poisson") && identical(family$link, "log")) {
+    if (any(y < 0) || any(y != round(y)) || !is.null(payload$n_trials)) {
+      stop(
+        "Poisson(log) requires non-negative integer counts and no n_trials.",
+        call. = FALSE
+      )
+    }
+    return(list(family = "poisson", method = method, n_trials = NULL))
+  }
+  if (!identical(family$family, "binomial") || !identical(family$link, "logit")) {
+    stop(
+      "The v0.9 non-Gaussian contract admits only poisson(log) and binomial(logit).",
+      call. = FALSE
+    )
+  }
+
+  n_trials <- payload$n_trials
+  if (is.null(n_trials)) {
+    if (any(!y %in% c(0, 1))) {
+      stop("A one-column binomial response must be binary 0/1, not proportions.", call. = FALSE)
+    }
+    return(list(family = "bernoulli", method = method, n_trials = NULL))
+  }
+  if (
+    is.numeric(n_trials) && length(n_trials) == length(y) &&
+      all(is.finite(n_trials)) && all(n_trials == round(n_trials)) &&
+      all(n_trials == 1)
+  ) {
+    if (any(!y %in% c(0, 1))) {
+      stop("All-one binomial trials require binary 0/1 successes.", call. = FALSE)
+    }
+    return(list(family = "bernoulli", method = method, n_trials = NULL))
+  }
+  n_trials <- hs_ng09_validate_trials(n_trials, length(y))
+  if (any(y < 0) || any(y != round(y)) || any(y > rep(n_trials, length.out = length(y)))) {
+    stop(
+      "Binomial successes must be non-negative integers no greater than n_trials.",
+      call. = FALSE
+    )
+  }
+  if (length(n_trials) == 1L) {
+    return(list(family = "binomial", method = method, n_trials = n_trials))
+  }
+  if (length(unique(n_trials)) == 1L) {
+    return(list(
+      family = "binomial", method = method,
+      n_trials = n_trials[[1L]]
+    ))
+  }
+  list(family = "binomial", method = method, n_trials = n_trials)
+}
+
+hs_validate_nongaussian_three_field_v09_dots <- function(dots) {
+  if (!is.list(dots) || length(dots) == 0L) {
+    return(invisible(TRUE))
+  }
+  if (!is.null(names(dots)) && "weights" %in% names(dots)) {
+    stop("The v0.9 non-Gaussian contract does not accept weights.", call. = FALSE)
+  }
+  stop("The v0.9 non-Gaussian contract does not accept ... controls.", call. = FALSE)
 }
 
 # Opt-in, experimental repeatability (permanent-environment) estimator. Surfaces

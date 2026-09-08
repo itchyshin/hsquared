@@ -44,6 +44,18 @@ capability, and this table alone does not tell you everything you may
 report.
 }
 
+\section{Bridge production fences (0.9)}{
+The R-to-Julia bridge is \strong{live at validation scale} for covered default and
+opt-in targets, but \strong{not production-complete}. Infrastructure capabilities
+(\verb{R-to-Julia bridge payload}, \verb{opt-in experimental Julia engine}) stay
+\strong{partial} even when individual targets are covered. Targets split into:
+default live (\code{engine = "fit"}), opt-in live (\code{engine_control$target}),
+\strong{PATH_ONLY} smoke (C1-ext intervals — not a fit bridge), and \strong{blocked}
+planned grammar (for example \code{genetic_structure = "factor_analytic"}).
+\code{payload_v2} routing is limited to \code{direct_maternal} and \code{multi_effect}.
+See \code{docs/design/45-bridge-production-fences-DRAFT.md}.
+}
+
 \section{Capability identifiers versus labels}{
 \code{capability} is a \strong{stable identifier}. Dated evidence records -- comparator
 runs under \verb{docs/dev-log/comparator-runs/} and check-log entries -- cite these

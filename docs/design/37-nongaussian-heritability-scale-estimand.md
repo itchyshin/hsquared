@@ -1,5 +1,15 @@
 # 37 · Non-Gaussian heritability-scale estimand contract (NG-1)
 
+> **A3 reconciliation (2026-09-08).** The current narrow ratified 0.9 transport
+> supersedes the former “heritability-free” implementation statement only for
+> an intercept-only `animal(1 | id, pedigree = ped)` Poisson(log) or
+> Binomial(logit) route. It returns Poisson latent/count-observation, or logit
+> latent/liability plus literal `NaN` observation (`not_yet_ratified`), and
+> accepts binary or `cbind` scalar/varying positive trial counts. It is
+> experimental/partial—not a REML/AI-REML, calibration, external-comparator,
+> promotion, default, or release claim. Remaining broader derivation and
+> evidence text below stays historical or deferred.
+
 > **Status: NG-2 SIGNED OFF — ratify-with-fixes (3–1), 2026-07-11.** Framework and
 > all math independently re-derived and confirmed sound (no mathematical or
 > estimand error); resolved decisions in the sign-off block below (§0a) and §6;
