@@ -492,8 +492,9 @@ hs_validate_marginal_method <- function(marginal) {
 
 # Opt-in, experimental non-Gaussian animal model.  The versioned 0.9 transport
 # reports only the ratified conditional three-field contract: Poisson has latent
-# and count-scale observation h2; logit Bernoulli/Binomial has latent and
-# liability h2 with an explicit NaN observation-scale hold.  The Laplace
+# and count-scale observation h2; logit Bernoulli and common-trial Binomial have
+# latent, liability, and observation h2, while heterogeneous trial vectors retain
+# the explicit non-scalar observation-scale sentinel.  The Laplace
 # objective is a marginal likelihood approximation; the variational objective
 # is an ELBO, not a REML or AI-REML claim.
 hs_fit_julia_nongaussian_payload <- function(

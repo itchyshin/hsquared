@@ -31,9 +31,12 @@ release evidence.
 
 The A4-1 source slice changed the versioned normalizer/control documentation,
 the targeted non-Gaussian tests, generated help, and existing experimental
-status/design prose in commits `354f6bd` and `82df320`. This closure commit
-adds only:
+status/design prose in commits `354f6bd` and `82df320`. The post-closure
+regression repair changes only the stale binomial-count test contract, its
+adjacent internal explanatory comment, and this evidence record:
 
+- `R/julia-bridge.R` (comment-only)
+- `tests/testthat/test-binomial-counts.R`
 - `docs/dev-log/after-task/2026-09-08-a4-binomial-observation-scale.md`
 - `docs/dev-log/check-log.md`
 
@@ -47,8 +50,17 @@ adds only:
   expectations**, **PASS**. It verifies finite common-trial and Bernoulli
   fields and the heterogeneous-trial sentinel through the paired Julia
   candidate; it is not a coverage or calibration run.
-- A4-1 Unlazy leaf re-verification: **3/3 gates met** (focused wire semantics,
-  R-facing wording, and configured live Binomial bridge).
+- Post-closure live `binomial-counts` regression: **42 passing expectations,
+  0 failures**, **PASS**. It repairs six stale A3 expectations to assert the
+  three structural variance components, all three common-trial fields, and the
+  varying-trial `NaN` plus exact sentinel.
+- A4-1 Unlazy leaf re-verification: **4/4 gates met** (focused wire semantics,
+  R-facing wording, configured live Binomial bridge, and the repaired
+  `binomial-counts` regression).
+- A full `devtools::test()` attempt against the exact Julia candidate was
+  stopped after roughly two minutes without a final testthat result, at the
+  bounded-run owner's direction. It is retained as incomplete, not reported as
+  a full-suite pass; the exact R process was terminated and verified gone.
 - `git diff --check`: **PASS** at the candidate before this closure record.
 
 ## 6. Tests of the Tests
@@ -82,6 +94,12 @@ fluke: the test was repaired to assert the Bernoulli reduction while still
 requiring its finite observation-scale h2. The common-trial and genuinely
 varying-trial cases remain distinct controls.
 
+The later full-suite regression exposed six stale A3 test expectations: they
+treated the three-component result as scalar and expected an obsolete
+heritability error. The focused live regression now checks the ratified fields
+instead. The full-suite rerun did not finish in the bounded local window, so
+its result remains explicitly incomplete rather than silently treated as pass.
+
 ## 10. Known Residuals
 
 Varying-trial Binomial deliberately has no scalar observation-scale estimand.
@@ -104,5 +122,5 @@ This closure covers the R normalizer, R-facing contract wording, targeted
 mutations, and the paired live R-to-Julia observation-field distinction. It
 does not cover heterogeneous-trial scalarization, additional families or
 scales, confidence intervals, calibration, external comparator agreement,
-campaign compute, a capability/status flip, versioning, tags, registration, or
-release.
+campaign compute, a capability/status flip, versioning, tags, registration,
+release, or a completed post-repair full-suite regression.

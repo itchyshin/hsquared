@@ -13,6 +13,14 @@
   `git diff --check`: **PASS**.
 - The all-one `cbind()` control initially exposed the producer's Bernoulli
   reduction; its repaired assertion is retained as a regression check.
+- Post-closure repair: the live `binomial-counts` test exposed **six stale A3
+  expectations** (scalar variance-component comparison and obsolete
+  heritability-error expectations). It now passes **42/0** against the paired
+  candidate, explicitly checking `V_A`, structural `V_RE`/`V_O` zeros, all
+  finite common-trial scale fields, and the exact heterogeneous-trial sentinel.
+  The A4 leaf is **4/4 met**. A bounded full `devtools::test()` attempt did not
+  reach a final result and was terminated; it is not reported as a full-suite
+  pass.
 - Boundary: experimental/partial only. No varying-trial scalar, calibration,
   comparator, compute, covered flip, version, tag, registry, or release.
   Current version remains **0.8.0** and public covered count remains **7**.
