@@ -36,6 +36,9 @@ the source bundle.
 - Maintainer live-Julia check — exit 0, 0 errors/0 warnings; a reproducible
   macOS temporary `dsymutil-*` NOTE is retained as environmental evidence.
 - `git diff --check` and Unlazy A3 ledger — PASS, 8/8 gates.
+- Post-review: the live A3 bridge test now resolves
+  `HSQUARED_JULIA_PROJECT` rather than a retired temporary worktree; the
+  configured Poisson R-to-Julia check and a fresh full `devtools::test()` pass.
 
 ## 6. Tests of the Tests
 
@@ -51,10 +54,6 @@ overstate the A3 surface. Deferred: calibration, campaign, and external
 same-estimand comparator evidence.
 
 ## 8. Consistency Audit
-
-Rose passed the final claim surface. The result is experimental/partial and
-explicitly not a REML/AI-REML, calibrated, comparator-backed, covered, default,
-or release claim.
 
 Rose passed the final claim surface. The result is experimental/partial and
 explicitly not a REML/AI-REML, calibrated, comparator-backed, covered, default,
