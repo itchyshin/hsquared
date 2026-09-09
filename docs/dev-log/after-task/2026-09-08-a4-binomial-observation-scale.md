@@ -57,10 +57,15 @@ adjacent internal explanatory comment, and this evidence record:
 - A4-1 Unlazy leaf re-verification: **4/4 gates met** (focused wire semantics,
   R-facing wording, configured live Binomial bridge, and the repaired
   `binomial-counts` regression).
-- A full `devtools::test()` attempt against the exact Julia candidate was
-  stopped after roughly two minutes without a final testthat result, at the
-  bounded-run owner's direction. It is retained as incomplete, not reported as
-  a full-suite pass; the exact R process was terminated and verified gone.
+- Full `devtools::test()` attempts (with and without opt-in live Julia) did not
+  reach a final testthat result inside a 120-second bounded capture. Both are
+  retained as incomplete, not reported as full-suite passes; the exact R
+  processes were terminated and verified gone. The capture localized the
+  pre-existing delay to `test-validation-fixtures.R`'s 25-seed, 200-animal
+  pure-R recovery test, not to the A4 files. A one-seed deterministic pre-run
+  took 0.606 seconds (a 15.2-second linear 25-seed projection), so the
+  file-level non-completion is an unresolved test-infrastructure interaction,
+  not evidence of an A4 numerical failure.
 - `git diff --check`: **PASS** at the candidate before this closure record.
 
 ## 6. Tests of the Tests
@@ -104,8 +109,9 @@ its result remains explicitly incomplete rather than silently treated as pass.
 
 Varying-trial Binomial deliberately has no scalar observation-scale estimand.
 There is no non-Gaussian interval calibration, retained campaign evidence,
-external same-estimand pedigree-A comparator, compute run, promotion, or
-release evidence. No S10/S11 or DRAC/Totoro work was performed by this slice.
+external same-estimand pedigree-A comparator, promotion, or release evidence.
+The one-seed local timing pre-run above is test-infrastructure measurement, not
+claim-bearing compute; no S10/S11, Totoro, or DRAC work was performed.
 
 ## 11. Team Learning
 
@@ -123,4 +129,5 @@ mutations, and the paired live R-to-Julia observation-field distinction. It
 does not cover heterogeneous-trial scalarization, additional families or
 scales, confidence intervals, calibration, external comparator agreement,
 campaign compute, a capability/status flip, versioning, tags, registration,
-release, or a completed post-repair full-suite regression.
+release, or a completed post-repair full-suite regression.  The unrelated
+`validation-fixtures` non-completion remains an explicit G4 hold.

@@ -18,11 +18,17 @@
   heritability-error expectations). It now passes **42/0** against the paired
   candidate, explicitly checking `V_A`, structural `V_RE`/`V_O` zeros, all
   finite common-trial scale fields, and the exact heterogeneous-trial sentinel.
-  The A4 leaf is **4/4 met**. A bounded full `devtools::test()` attempt did not
-  reach a final result and was terminated; it is not reported as a full-suite
-  pass.
+  The A4 leaf is **4/4 met**. Bounded full `devtools::test()` attempts with and
+  without opt-in live Julia did not reach a final result and were terminated;
+  neither is reported as a full-suite pass. The retained capture localizes the
+  delay to the pre-existing 25-seed, 200-animal pure-R recovery test in
+  `test-validation-fixtures.R`, after the A4 Binomial file had completed. One
+  deterministic seed took **0.606 s** (linear 25-seed projection **15.2 s**),
+  so the file-level non-completion is an unresolved test-infrastructure hold,
+  not A4 evidence.
 - Boundary: experimental/partial only. No varying-trial scalar, calibration,
-  comparator, compute, covered flip, version, tag, registry, or release.
+  comparator, claim-bearing compute, covered flip, version, tag, registry, or
+  release. The one-seed local timing pre-run above is not campaign evidence.
   Current version remains **0.8.0** and public covered count remains **7**.
 
 ## 2026-09-08 (A3 paired three-field contract — not a promotion)
