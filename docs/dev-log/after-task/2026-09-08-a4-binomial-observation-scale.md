@@ -63,9 +63,11 @@ adjacent internal explanatory comment, and this evidence record:
   processes were terminated and verified gone. The capture localized the
   pre-existing delay to `test-validation-fixtures.R`'s 25-seed, 200-animal
   pure-R recovery test, not to the A4 files. A one-seed deterministic pre-run
-  took 0.606 seconds (a 15.2-second linear 25-seed projection), so the
-  file-level non-completion is an unresolved test-infrastructure interaction,
-  not evidence of an A4 numerical failure.
+  took 0.606 seconds (a 15.2-second linear 25-seed projection). A subsequent
+  direct, capped replay of all 25 fixed seeds completed in 17.332 seconds (max
+  0.824 seconds; zero errors), so the file-level non-completion is an
+  unresolved test-session/live-Julia activation interaction, not evidence of
+  an A4 numerical failure or a slow recovery denominator.
 - `git diff --check`: **PASS** at the candidate before this closure record.
 
 ## 6. Tests of the Tests
@@ -129,5 +131,7 @@ mutations, and the paired live R-to-Julia observation-field distinction. It
 does not cover heterogeneous-trial scalarization, additional families or
 scales, confidence intervals, calibration, external comparator agreement,
 campaign compute, a capability/status flip, versioning, tags, registration,
-release, or a completed post-repair full-suite regression.  The unrelated
-`validation-fixtures` non-completion remains an explicit G4 hold.
+release, or a completed post-repair full-suite regression. The unrelated
+`validation-fixtures` non-completion remains an explicit G4 hold: the direct
+25-seed recovery loop is green, but a full test session unexpectedly activates
+the stale `~/local-scratch/lanes/HSquared.jl-08-ss-20260903` Julia project.

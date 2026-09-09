@@ -23,9 +23,12 @@
   neither is reported as a full-suite pass. The retained capture localizes the
   delay to the pre-existing 25-seed, 200-animal pure-R recovery test in
   `test-validation-fixtures.R`, after the A4 Binomial file had completed. One
-  deterministic seed took **0.606 s** (linear 25-seed projection **15.2 s**),
-  so the file-level non-completion is an unresolved test-infrastructure hold,
-  not A4 evidence.
+  deterministic seed took **0.606 s** (linear 25-seed projection **15.2 s**);
+  a direct capped replay of all 25 fixed seeds completed in **17.332 s** (max
+  **0.824 s**, zero errors). Thus the recovery denominator itself is healthy;
+  the remaining hold is a test-session/live-Julia activation interaction that
+  reaches stale `~/local-scratch/lanes/HSquared.jl-08-ss-20260903`, not A4
+  evidence.
 - Boundary: experimental/partial only. No varying-trial scalar, calibration,
   comparator, claim-bearing compute, covered flip, version, tag, registry, or
   release. The one-seed local timing pre-run above is not campaign evidence.
