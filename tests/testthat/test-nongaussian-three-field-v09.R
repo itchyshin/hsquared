@@ -510,3 +510,74 @@ test_that("the v0.9 Poisson route carries the three-field result through the liv
     hsquared:::hs_normalize_nongaussian_three_field_v09
   ))
 })
+
+test_that("the v0.9 Binomial route carries A4-1 observation semantics through the live bridge", {
+  # This tiny configured bridge check proves the Julia producer and R consumer
+  # agree on the A4-1 field distinction; it is not a calibration campaign.
+  project <- hsquared:::hs_default_julia_project()
+  hs_require_bridge("A4-1 v0.9 Binomial bridge", project = project)
+
+  pedigree <- data.frame(
+    id = c("s1", "d1", "s2", "d2", "a1", "a2", "b1", "b2"),
+    sire = c(NA, NA, NA, NA, "s1", "s1", "s2", "s2"),
+    dam = c(NA, NA, NA, NA, "d1", "d1", "d2", "d2")
+  )
+  control <- hs_control(
+    engine = "julia",
+    engine_control = list(
+      target = "nongaussian",
+      julia_project = project,
+      iterations = 40L
+    )
+  )
+
+  common <- data.frame(
+    successes = c(0, 1, 2, 3, 0, 1, 2, 3),
+    failures = c(3, 2, 1, 0, 3, 2, 1, 0),
+    id = pedigree$id
+  )
+  common_fit <- hsquared(
+    cbind(successes, failures) ~ animal(1 | id, pedigree = pedigree),
+    data = common,
+    family = stats::binomial(),
+    control = control
+  )
+  expect_identical(common_fit$result$family, "binomial")
+  expect_true(is.finite(common_fit$result$h2_observation))
+  expect_true(common_fit$result$h2_observation >= 0)
+  expect_true(common_fit$result$h2_observation <= 1)
+  expect_false("h2_observation_undefined_reason" %in% names(common_fit$result))
+
+  all_one <- data.frame(
+    successes = c(0, 1, 0, 1, 1, 0, 1, 0),
+    failures = c(1, 0, 1, 0, 0, 1, 0, 1),
+    id = pedigree$id
+  )
+  all_one_fit <- hsquared(
+    cbind(successes, failures) ~ animal(1 | id, pedigree = pedigree),
+    data = all_one,
+    family = stats::binomial(),
+    control = control
+  )
+  expect_identical(all_one_fit$result$family, "bernoulli")
+  expect_true(is.finite(all_one_fit$result$h2_observation))
+  expect_false("h2_observation_undefined_reason" %in% names(all_one_fit$result))
+
+  varying <- data.frame(
+    successes = c(0, 1, 3, 4, 1, 2, 1, 5),
+    failures = c(2, 2, 1, 1, 1, 1, 3, 0),
+    id = pedigree$id
+  )
+  varying_fit <- hsquared(
+    cbind(successes, failures) ~ animal(1 | id, pedigree = pedigree),
+    data = varying,
+    family = stats::binomial(),
+    control = control
+  )
+  expect_identical(varying_fit$result$family, "binomial")
+  expect_true(is.nan(varying_fit$result$h2_observation))
+  expect_identical(
+    varying_fit$result$h2_observation_undefined_reason,
+    "varying_trials_no_scalar_estimand"
+  )
+})
