@@ -18,20 +18,20 @@
   heritability-error expectations). It now passes **42/0** against the paired
   candidate, explicitly checking `V_A`, structural `V_RE`/`V_O` zeros, all
   finite common-trial scale fields, and the exact heterogeneous-trial sentinel.
-  The A4 leaf is **4/4 met**. Bounded full `devtools::test()` attempts with and
-  without opt-in live Julia did not reach a final result and were terminated;
-  neither is reported as a full-suite pass. The retained capture localizes the
-  delay to the pre-existing 25-seed, 200-animal pure-R recovery test in
-  `test-validation-fixtures.R`, after the A4 Binomial file had completed. One
-  deterministic seed took **0.606 s** (linear 25-seed projection **15.2 s**);
-  a direct capped replay of all 25 fixed seeds completed in **17.332 s** (max
-  **0.824 s**, zero errors). Thus the recovery denominator itself is healthy;
-  the remaining hold is a test-session/live-Julia activation interaction that
-  reaches stale `~/local-scratch/lanes/HSquared.jl-08-ss-20260903`, not A4
-  evidence.
+  The A4 leaf is **4/4 met**. Normal full `devtools::test()` under explicit
+  CRAN-safe routing and one BLAS/OpenMP thread is **PASS / exit 0**;
+  `pkgdown::check_pkgdown()` is **PASS**; and constrained
+  `R CMD check --no-manual` (`_R_CHECK_FORCE_SUGGESTS_=false`) is **0 errors /
+  0 warnings / 0 notes**, including examples, tests, and vignette rebuild.
+  The strict local check still stops before code on unavailable optional
+  `pedigreemm`, so no cross-Suggests release inference is made. Earlier
+  unconstrained attempts that activated stale Julia session state are retained
+  for test hardening, not reported as A4 failures. A direct capped replay of
+  all 25 recovery seeds completed in **17.332 s** (max **0.824 s**, zero
+  errors), confirming the denominator itself is healthy.
 - Boundary: experimental/partial only. No varying-trial scalar, calibration,
   comparator, claim-bearing compute, covered flip, version, tag, registry, or
-  release. The one-seed local timing pre-run above is not campaign evidence.
+  release. The local timing replays above are not campaign evidence.
   Current version remains **0.8.0** and public covered count remains **7**.
 
 ## 2026-09-08 (A3 paired three-field contract — not a promotion)

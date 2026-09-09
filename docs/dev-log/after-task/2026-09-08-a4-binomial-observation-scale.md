@@ -57,17 +57,21 @@ adjacent internal explanatory comment, and this evidence record:
 - A4-1 Unlazy leaf re-verification: **4/4 gates met** (focused wire semantics,
   R-facing wording, configured live Binomial bridge, and the repaired
   `binomial-counts` regression).
-- Full `devtools::test()` attempts (with and without opt-in live Julia) did not
-  reach a final testthat result inside a 120-second bounded capture. Both are
-  retained as incomplete, not reported as full-suite passes; the exact R
-  processes were terminated and verified gone. The capture localized the
-  pre-existing delay to `test-validation-fixtures.R`'s 25-seed, 200-animal
-  pure-R recovery test, not to the A4 files. A one-seed deterministic pre-run
-  took 0.606 seconds (a 15.2-second linear 25-seed projection). A subsequent
-  direct, capped replay of all 25 fixed seeds completed in 17.332 seconds (max
-  0.824 seconds; zero errors), so the file-level non-completion is an
-  unresolved test-session/live-Julia activation interaction, not evidence of
-  an A4 numerical failure or a slow recovery denominator.
+- Normal full `devtools::test()` under explicit CRAN-safe routing
+  (`NOT_CRAN=false`, `HSQUARED_JULIA_TESTS=false`, empty Julia-project
+  overrides, one BLAS/OpenMP thread) — **PASS**, exit 0. The separately focused
+  live A4 bridge remains the evidence for the optional Julia path.
+- `pkgdown::check_pkgdown()` — **PASS**.
+- Full `R CMD check --no-manual` with unavailable optional Suggests disabled
+  (`_R_CHECK_FORCE_SUGGESTS_=false`) — **0 errors / 0 warnings / 0 notes**;
+  package installation, examples, tests, and vignette rebuild all passed. A
+  strict local check still reports the unavailable optional `pedigreemm`
+  before running code, so this is not cross-Suggests release evidence.
+- Earlier unconstrained test attempts did not reach a final result inside a
+  120-second bounded capture and unexpectedly activated stale Julia session
+  state. Their retained stack is not reported as an A4 failure. The associated
+  direct 25-seed recovery replay completed in 17.332 seconds (max 0.824 seconds;
+  zero errors), confirming that the recovery denominator itself is healthy.
 - `git diff --check`: **PASS** at the candidate before this closure record.
 
 ## 6. Tests of the Tests
@@ -131,7 +135,6 @@ mutations, and the paired live R-to-Julia observation-field distinction. It
 does not cover heterogeneous-trial scalarization, additional families or
 scales, confidence intervals, calibration, external comparator agreement,
 campaign compute, a capability/status flip, versioning, tags, registration,
-release, or a completed post-repair full-suite regression. The unrelated
-`validation-fixtures` non-completion remains an explicit G4 hold: the direct
-25-seed recovery loop is green, but a full test session unexpectedly activates
-the stale `~/local-scratch/lanes/HSquared.jl-08-ss-20260903` Julia project.
+release, or a cross-Suggests / cross-platform completed package check. The
+unconstrained stale-session activation is retained for later test-hardening;
+the normal CRAN-safe G4 package checks are green.
