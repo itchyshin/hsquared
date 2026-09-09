@@ -1,5 +1,22 @@
 # Check Log
 
+## 2026-09-08 (A4-1 Binomial observation-scale contract — not a promotion)
+
+- Isolated R candidate `82df320` atop `354f6bd`: Bernoulli and common-trial
+  Binomial now require a finite numerically integrated logit observation-scale
+  h2; heterogeneous trial vectors require literal `NaN` plus
+  `varying_trials_no_scalar_estimand`. No trial-count averaging occurs.
+- Focused versioned normalizer and broader non-Gaussian tests: **PASS**.
+  Configured live R-to-Julia exact-candidate parent check: **104 passing
+  expectations**, including finite Bernoulli/common-trial fields and the
+  heterogeneous-trial sentinel. A4-1 Unlazy re-verification: **3/3 met**;
+  `git diff --check`: **PASS**.
+- The all-one `cbind()` control initially exposed the producer's Bernoulli
+  reduction; its repaired assertion is retained as a regression check.
+- Boundary: experimental/partial only. No varying-trial scalar, calibration,
+  comparator, compute, covered flip, version, tag, registry, or release.
+  Current version remains **0.8.0** and public covered count remains **7**.
+
 ## 2026-09-08 (A3 paired three-field contract — not a promotion)
 
 - See `docs/dev-log/check-log.d/2026-09-08-a3-three-field-contract.md` and
