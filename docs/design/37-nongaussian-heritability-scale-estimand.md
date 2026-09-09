@@ -4,7 +4,9 @@
 > supersedes the former “heritability-free” implementation statement only for
 > an intercept-only `animal(1 | id, pedigree = ped)` Poisson(log) or
 > Binomial(logit) route. It returns Poisson latent/count-observation, or logit
-> latent/liability plus literal `NaN` observation (`not_yet_ratified`), and
+> latent/liability plus a numerically integrated observation h2 for Bernoulli or
+> common trials. Only varying trials return literal `NaN` with
+> `varying_trials_no_scalar_estimand`; no scalar is averaged across trials. It
 > accepts binary or `cbind` scalar/varying positive trial counts. It is
 > experimental/partial—not a REML/AI-REML, calibration, external-comparator,
 > promotion, default, or release claim. Remaining broader derivation and

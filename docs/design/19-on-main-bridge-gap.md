@@ -6,7 +6,9 @@
 > `animal(1 | id, pedigree = ped)` Poisson(log) or Binomial(logit) path:
 > binary or `cbind` scalar/varying positive trial counts. It returns only the
 > ratified labelled fields—Poisson latent/count-observation, or logit
-> latent/liability plus literal `NaN` observation (`not_yet_ratified`). This is
+> latent/liability plus a numerically integrated observation cell for Bernoulli
+> or common trials. Only varying trials return literal `NaN`, with
+> `varying_trials_no_scalar_estimand`; no trial-count average is a scalar. This is
 > experimental/partial, not a REML/AI-REML, calibration, comparator,
 > promotion, default, or release claim. Any contrary wording below is historical
 > scope or refers to broader deferred work.

@@ -21,6 +21,8 @@ ng09_raw <- function(family = "poisson", method = "laplace", n_trials = NULL) {
   components <- c(V_A = 0.4, V_RE = 0, V_O = 0)
   v_eta <- sum(components)
   mu <- 0.3
+  varying_trials <- identical(family, "binomial") &&
+    length(n_trials) > 1L && length(unique(n_trials)) > 1L
   list(
     schema = "nongaussian_three_field_v09",
     family = family,
@@ -39,13 +41,17 @@ ng09_raw <- function(family = "poisson", method = "laplace", n_trials = NULL) {
     },
     h2_observation = if (identical(family, "poisson")) {
       components[["V_A"]] / (expm1(v_eta) + exp(-(mu + v_eta / 2)))
-    } else {
+    } else if (isTRUE(varying_trials)) {
       NaN
+    } else {
+      0.125
     },
     h2_observation_undefined_reason = if (identical(family, "poisson")) {
       NULL
+    } else if (isTRUE(varying_trials)) {
+      "varying_trials_no_scalar_estimand"
     } else {
-      "not_yet_ratified"
+      NULL
     },
     n_trials = n_trials
   )
@@ -139,11 +145,16 @@ test_that("the v0.9 normalizer preserves scalar and varying Binomial trials", {
     ng09_payload()
   )
   expect_identical(scalar$n_trials, 3L)
-  expect_true(is.nan(scalar$h2_observation))
-  expect_identical(
-    scalar$h2_observation_undefined_reason,
-    "not_yet_ratified"
+  expect_identical(scalar$h2_observation, 0.125)
+  expect_false("h2_observation_undefined_reason" %in% names(scalar))
+
+  common_vector <- hsquared:::hs_normalize_nongaussian_three_field_v09(
+    ng09_julia_raw("binomial", n_trials = rep(3L, 4L)),
+    ng09_payload()
   )
+  expect_identical(common_vector$n_trials, rep(3L, 4L))
+  expect_identical(common_vector$h2_observation, 0.125)
+  expect_false("h2_observation_undefined_reason" %in% names(common_vector))
 
   varying_trials <- c(2L, 3L, 4L, 5L)
   varying <- hsquared:::hs_normalize_nongaussian_three_field_v09(
@@ -154,7 +165,7 @@ test_that("the v0.9 normalizer preserves scalar and varying Binomial trials", {
   expect_true(is.nan(varying$h2_observation))
   expect_identical(
     varying$h2_observation_undefined_reason,
-    "not_yet_ratified"
+    "varying_trials_no_scalar_estimand"
   )
 })
 
@@ -175,14 +186,11 @@ test_that("the v0.9 normalizer exposes only ratified labelled scale rows", {
     c(
       "latent-scale h2 (conditional)",
       "liability-scale h2 (conditional)",
-      "observation-scale h2 (not yet ratified)"
+      "observation-scale h2 (conditional)"
     )
   )
-  expect_true(is.nan(logit$heritability$estimate[[3L]]))
-  expect_identical(
-    logit$heritability$undefined_reason[[3L]],
-    "not_yet_ratified"
-  )
+  expect_identical(logit$heritability$estimate[[3L]], 0.125)
+  expect_true(is.na(logit$heritability$undefined_reason[[3L]]))
 })
 
 test_that("the existing non-Gaussian target validates before Julia setup", {
@@ -253,7 +261,7 @@ test_that("the v0.9 Julia command builds a complete explicit envelope", {
   expect_match(command, "\\\"converged\\\" => hsq_fit\\.converged")
 })
 
-test_that("the v0.9 normalizer admits only literal logit NaN observation cells", {
+test_that("the v0.9 normalizer distinguishes defined and non-scalar logit observations", {
   raw <- ng09_raw("bernoulli", method = "VA")
   result <- hsquared:::hs_normalize_nongaussian_three_field_v09(
     raw,
@@ -263,23 +271,37 @@ test_that("the v0.9 normalizer admits only literal logit NaN observation cells",
   expect_equal(result$marginal_method, "variational")
   expect_equal(result$loglik_kind, "elbo (variational lower bound)")
   expect_identical(result$h2_liability, raw$h2_liability)
-  expect_true(is.nan(result$h2_observation))
-  expect_identical(
-    result$h2_observation_undefined_reason,
-    "not_yet_ratified"
-  )
+  expect_identical(result$h2_observation, 0.125)
+  expect_identical(result$h2_observation_label, "observation-scale h2 (conditional)")
+  expect_false("h2_observation_undefined_reason" %in% names(result))
 
   bad <- raw
   bad$h2_observation <- NA_real_
   expect_error(
     hsquared:::hs_normalize_nongaussian_three_field_v09(bad, ng09_payload()),
-    "literal NaN"
+    "finite numeric scalar"
   )
   bad <- raw
-  bad$h2_observation_undefined_reason <- "not_defined"
+  bad$h2_observation_undefined_reason <- ""
   expect_error(
     hsquared:::hs_normalize_nongaussian_three_field_v09(bad, ng09_payload()),
-    "not_yet_ratified"
+    "present `nothing`"
+  )
+  bad <- raw
+  bad$h2_observation <- 1.01
+  expect_error(
+    hsquared:::hs_normalize_nongaussian_three_field_v09(bad, ng09_payload()),
+    "in \\[0, 1\\]"
+  )
+
+  varying_raw <- ng09_julia_raw("binomial", n_trials = c(2L, 3L, 4L, 5L))
+  varying_raw$h2_observation <- 0.125
+  expect_error(
+    hsquared:::hs_normalize_nongaussian_three_field_v09(
+      varying_raw,
+      ng09_payload()
+    ),
+    "literal NaN"
   )
 })
 

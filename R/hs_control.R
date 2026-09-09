@@ -174,8 +174,10 @@
 #'   marginal likelihood approximation (`"laplace"`, default) or a variational
 #'   ELBO (`"variational"`; aliases `"la"`/`"va"`). It reports the ratified
 #'   conditional three-field contract: Poisson latent and count-scale observation
-#'   h2; logit latent and liability h2 plus a literal `NaN` observation-scale h2
-#'   marked `"not_yet_ratified"`. The ELBO is a lower bound on the marginal
+#'   h2; logit latent, liability, and numerically integrated observation-scale h2
+#'   for Bernoulli or common-trial Binomial input. Varying trials return literal
+#'   `NaN` with `"varying_trials_no_scalar_estimand"`, never a trial-count-averaged
+#'   scalar. The ELBO is a lower bound on the marginal
 #'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
 #'   comparable. This path remains experimental and not coverage-calibrated.
 #'

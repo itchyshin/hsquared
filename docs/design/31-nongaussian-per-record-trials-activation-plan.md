@@ -3,9 +3,10 @@
 > **A3 reconciliation (2026-09-08).** The limited transport planned here is
 > now implemented for the ratified 0.9 three-field route only: intercept-only
 > `animal(1 | id, pedigree = ped)` Binomial(logit) accepts binary or `cbind`
-> scalar/varying positive trial counts. The output is latent/liability and
-> literal `NaN` observation (`not_yet_ratified`), not an averaged observation
-> scalar. This remains experimental/partial, with no REML/AI-REML, calibration,
+> scalar/varying positive trial counts. Bernoulli and common-trial Binomial
+> return the numerically integrated observation-scale h2; varying trials return
+> literal `NaN` with `varying_trials_no_scalar_estimand`, not an averaged
+> observation scalar. This remains experimental/partial, with no REML/AI-REML, calibration,
 > comparator, promotion, default, or release claim. The broader production and
 > evidence gates below remain deferred.
 

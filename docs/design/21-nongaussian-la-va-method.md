@@ -5,8 +5,10 @@
 > only intercept-only `animal(1 | id, pedigree = ped)` Poisson(log) or
 > Binomial(logit), with binary or `cbind` scalar/varying positive trial counts.
 > The versioned result is Poisson latent/count-observation, or logit
-> latent/liability plus literal `NaN` observation (`not_yet_ratified`). It is
-> experimental/partial and makes no REML/AI-REML, calibration, comparator,
+> latent/liability plus a numerically integrated observation-scale h2 for
+> Bernoulli or common-trial Binomial. Varying trial counts return literal `NaN`
+> with the named reason `varying_trials_no_scalar_estimand`; they are never
+> silently averaged into a scalar. It is experimental/partial and makes no REML/AI-REML, calibration, comparator,
 > promotion, default, or release claim. Statements below about wider methods,
 > payloads, or an h2-free route are historical/deferred unless they match this
 > boundary.

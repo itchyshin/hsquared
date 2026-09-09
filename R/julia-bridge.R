@@ -938,29 +938,57 @@ hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
     "h2_liability"
   )
   result$h2_liability_label <- "liability-scale h2 (conditional)"
-  if (!is.numeric(h2_observation) || length(h2_observation) != 1L ||
-    !is.nan(h2_observation)) {
-    hs_ng09_abort("logit `h2_observation` must be literal NaN.")
-  }
-  if (!identical(undefined_reason, "not_yet_ratified")) {
-    hs_ng09_abort(
-      "logit `h2_observation_undefined_reason` must equal `not_yet_ratified`."
-    )
-  }
-  result$h2_observation <- NaN
-  result$h2_observation_label <- "observation-scale h2 (not yet ratified)"
-  result$h2_observation_undefined_reason <- undefined_reason
-  result$heritability <- hs_ng09_heritability_table(result)
 
   if (identical(family, "bernoulli")) {
     if (!is.null(n_trials)) {
       hs_ng09_abort("Bernoulli requires present `nothing` for n_trials.")
     }
-    return(result)
+    varying_trials <- FALSE
+  } else {
+    n_trials <- hs_ng09_validate_trials(n_trials, length(payload$y))
+    varying_trials <- length(n_trials) > 1L && length(unique(n_trials)) > 1L
   }
 
-  n_trials <- hs_ng09_validate_trials(n_trials, length(payload$y))
-  result$n_trials <- n_trials
+  if (isTRUE(varying_trials)) {
+    if (!is.numeric(h2_observation) || length(h2_observation) != 1L ||
+      !is.nan(h2_observation)) {
+      hs_ng09_abort(
+        "varying-trial logit `h2_observation` must be literal NaN."
+      )
+    }
+    if (!identical(undefined_reason, "varying_trials_no_scalar_estimand")) {
+      hs_ng09_abort(
+        paste0(
+          "varying-trial `h2_observation_undefined_reason` must equal ",
+          "`varying_trials_no_scalar_estimand`."
+        )
+      )
+    }
+    result$h2_observation <- NaN
+    result$h2_observation_label <- "observation-scale h2 (no scalar estimand)"
+    result$h2_observation_undefined_reason <- undefined_reason
+  } else {
+    if (!is.null(undefined_reason)) {
+      hs_ng09_abort(
+        "defined logit observation h2 requires present `nothing` for its reason."
+      )
+    }
+    h2_observation <- hs_ng09_scalar_number(
+      h2_observation,
+      "h2_observation",
+      nonnegative = TRUE
+    )
+    if (h2_observation > 1) {
+      hs_ng09_abort("logit `h2_observation` must lie in [0, 1].")
+    }
+    result$h2_observation <- h2_observation
+    result$h2_observation_label <- "observation-scale h2 (conditional)"
+  }
+  result$heritability <- hs_ng09_heritability_table(result)
+
+  if (!identical(family, "bernoulli")) {
+    result$n_trials <- n_trials
+  }
   result
 }
 
