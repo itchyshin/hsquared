@@ -157,16 +157,29 @@ test_that("the live bridge fits a balanced binomial-counts model [live]", {
   )
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$result$family, "binomial")
-  expect_true(is.finite(variance_components(fit)$estimate))
+  vc <- variance_components(fit)
+  expect_identical(vc$component, c("V_A", "V_RE", "V_O"))
+  expect_true(all(is.finite(vc$estimate)))
+  expect_identical(vc$estimate[match("V_RE", vc$component)], 0)
+  expect_identical(vc$estimate[match("V_O", vc$component)], 0)
   expect_equal(nrow(breeding_values(fit)), n)
-  expect_error(heritability(fit), "heritability") # latent scale, no h2
+  h2 <- heritability(fit)
+  expect_identical(
+    h2$field,
+    c("h2_latent", "h2_liability", "h2_observation")
+  )
+  expect_true(all(is.finite(h2$estimate)))
 
   # parity: the R binomial-counts fit matches a direct engine fit_laplace_reml
   # with family = :binomial and the common n_trials (the bridge left hsq_*).
   direct_sa2 <- JuliaCall::julia_eval(
     "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = Int(hsq_n_trials), ids = hsq_ped.ids).variance_components.sigma_a2"
   )
-  expect_equal(variance_components(fit)$estimate, direct_sa2, tolerance = 1e-6)
+  expect_equal(
+    vc$estimate[match("V_A", vc$component)],
+    direct_sa2,
+    tolerance = 1e-6
+  )
 })
 
 test_that("a cbind binomial with one trial reduces to the Bernoulli fit [live]", {
@@ -243,14 +256,36 @@ test_that("the live bridge fits a binomial-counts model with per-record varying 
   )
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$result$family, "binomial")
-  expect_true(is.finite(variance_components(fit)$estimate))
+  vc <- variance_components(fit)
+  expect_identical(vc$component, c("V_A", "V_RE", "V_O"))
+  expect_true(all(is.finite(vc$estimate)))
+  expect_identical(vc$estimate[match("V_RE", vc$component)], 0)
+  expect_identical(vc$estimate[match("V_O", vc$component)], 0)
   expect_equal(nrow(breeding_values(fit)), n)
-  expect_error(heritability(fit), "heritability") # latent scale, no h2
+  h2 <- heritability(fit)
+  expect_identical(
+    h2$field,
+    c("h2_latent", "h2_liability", "h2_observation")
+  )
+  expect_true(all(is.finite(h2$estimate[h2$field != "h2_observation"])))
+  expect_true(is.nan(h2$estimate[h2$field == "h2_observation"]))
+  expect_identical(
+    h2$undefined_reason[h2$field == "h2_observation"],
+    "varying_trials_no_scalar_estimand"
+  )
+  expect_identical(
+    fit$result$h2_observation_undefined_reason,
+    "varying_trials_no_scalar_estimand"
+  )
 
   # parity: matches a direct engine fit with the per-record n_trials VECTOR
   # (the bridge left hsq_* in the Julia session; varying totals -> Vector{Int}).
   direct_sa2 <- JuliaCall::julia_eval(
     "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = Vector{Int}(hsq_n_trials), ids = hsq_ped.ids).variance_components.sigma_a2"
   )
-  expect_equal(variance_components(fit)$estimate, direct_sa2, tolerance = 1e-6)
+  expect_equal(
+    vc$estimate[match("V_A", vc$component)],
+    direct_sa2,
+    tolerance = 1e-6
+  )
 })

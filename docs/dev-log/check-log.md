@@ -1,5 +1,49 @@
 # Check Log
 
+## 2026-09-08 (A4-1 Binomial observation-scale contract — not a promotion)
+
+- Isolated R candidate `82df320` atop `354f6bd`: Bernoulli and common-trial
+  Binomial now require a finite numerically integrated logit observation-scale
+  h2; heterogeneous trial vectors require literal `NaN` plus
+  `varying_trials_no_scalar_estimand`. No trial-count averaging occurs.
+- Focused versioned normalizer and broader non-Gaussian tests: **PASS**.
+  Configured live R-to-Julia exact-candidate parent check: **104 passing
+  expectations**, including finite Bernoulli/common-trial fields and the
+  heterogeneous-trial sentinel. A4-1 Unlazy re-verification: **3/3 met**;
+  `git diff --check`: **PASS**.
+- The all-one `cbind()` control initially exposed the producer's Bernoulli
+  reduction; its repaired assertion is retained as a regression check.
+- Post-closure repair: the live `binomial-counts` test exposed **six stale A3
+  expectations** (scalar variance-component comparison and obsolete
+  heritability-error expectations). It now passes **42/0** against the paired
+  candidate, explicitly checking `V_A`, structural `V_RE`/`V_O` zeros, all
+  finite common-trial scale fields, and the exact heterogeneous-trial sentinel.
+  The A4 leaf is **4/4 met**. Normal full `devtools::test()` under explicit
+  CRAN-safe routing and one BLAS/OpenMP thread is **PASS / exit 0**;
+  `pkgdown::check_pkgdown()` is **PASS**; and constrained
+  `R CMD check --no-manual` (`_R_CHECK_FORCE_SUGGESTS_=false`) is **0 errors /
+  0 warnings / 0 notes**, including examples, tests, and vignette rebuild.
+  The strict local check still stops before code on unavailable optional
+  `pedigreemm`, so no cross-Suggests release inference is made. Earlier
+  unconstrained attempts that activated stale Julia session state are retained
+  for test hardening, not reported as A4 failures. A direct capped replay of
+  all 25 recovery seeds completed in **17.332 s** (max **0.824 s**, zero
+  errors), confirming the denominator itself is healthy.
+- Boundary: experimental/partial only. No varying-trial scalar, calibration,
+  comparator, claim-bearing compute, covered flip, version, tag, registry, or
+  release. The local timing replays above are not campaign evidence.
+  Current version remains **0.8.0** and public covered count remains **7**.
+
+## 2026-09-08 (A3 paired three-field contract — not a promotion)
+
+- See `docs/dev-log/check-log.d/2026-09-08-a3-three-field-contract.md` and
+  `docs/dev-log/after-task/2026-09-08-a3-three-field-contract.md`.
+- Isolated R/Julia candidate only: R bridge and Julia private envelope tested;
+  both A3 Unlazy ledgers **8/8 met**. R ordinary source-tar `R CMD check`
+  **Status: OK**; Julia `Pkg.test()` includes A3 **43/43**. Experimental/partial
+  only: no calibration, comparator, covered flip, version, tag, registry, or
+  release. Current version remains **0.8.0**, public covered count **7**.
+
 ## 2026-09-07 (Gate-6 Rose audit — not 0.9.0)
 
 - See `docs/dev-log/check-log.d/2026-09-07-gate6-rose-audit.md` and

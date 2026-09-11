@@ -300,8 +300,9 @@ the parser names each unsupported form rather than guessing.
 - General default model fitting beyond the v0.1 univariate Gaussian animal
   model, the default-routed t=2 unstructured multivariate `cbind()` path,
   and default-route genomic GREML. Repeatability, SNP-BLUP, single-step, and
-  non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no
-  heritability) models fit only through explicit `engine = "julia"` targets —
+  non-Gaussian (`poisson(log)`/`binomial(logit)`, Laplace marginal likelihood
+  or variational ELBO, experimental conditional three-field h2 outputs) models
+  fit only through explicit `engine = "julia"` targets —
   some covered at validation scale, some experimental (see the two sections
   above).
 - ML estimation (`REML = FALSE` is rejected on the default fit and on

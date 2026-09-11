@@ -11,7 +11,8 @@
 #' install guidance. A `cbind()` multivariate Gaussian response also routes on
 #' that default path; multivariate is covered at validation scale and stays experimental.
 #' Genomic, repeatability, two-effect, and non-Gaussian
-#' (`poisson`/`binomial`, Laplace or variational REML) models fit through
+#' (`poisson(log)`/`binomial(logit)`, Laplace marginal likelihood or variational
+#' ELBO) models fit through
 #' opt-in, experimental engine paths; single-step stays **opt-in partial**;
 #' factor-analytic G is engine-covered on the Julia engine (`V4-FA`) and
 #' planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).

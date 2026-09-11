@@ -176,16 +176,19 @@ remains planned. \code{"factor_analytic"} is planned on the R surface (Julia
 activated on the R bridge; not covered. The future \code{rank} control is also
 reserved and currently errors instead of being ignored.
 
-\code{target = "nongaussian"} is an experimental, opt-in latent-scale GLMM for
-\code{family = poisson()}/\code{binomial()} (binary 0/1) on \code{animal(1 | id, pedigree = ped)}, surfacing the Julia-owned \code{HSquared.fit_laplace_reml()} REML
-optimizer. The \code{marginal} control selects the approximation: \code{"laplace"}
-(the Laplace approximation, default) or \code{"variational"} (the variational/ELBO
-marginal; aliases \code{"la"}/\code{"va"}). Because a non-Gaussian family has no
-residual-variance scale, \strong{no heritability} is reported. The variational
-objective is the ELBO (a lower bound on the marginal log-likelihood), so a
-variational fit's \code{logLik}/\code{AIC} are \strong{not} comparable with a Laplace fit's.
-Experimental, REML-only, not coverage-calibrated (twin gate \code{V6-LAPLACE}/\code{VA},
-partial).}
+\code{target = "nongaussian"} is an experimental, opt-in conditional GLMM for
+\code{poisson(log)} or \code{binomial(logit)} (binary 0/1 or
+\code{cbind(successes, failures)} counts) with one intercept and
+\code{animal(1 | id, pedigree = ped)}. The \code{marginal} control selects a Laplace
+marginal likelihood approximation (\code{"laplace"}, default) or a variational
+ELBO (\code{"variational"}; aliases \code{"la"}/\code{"va"}). It reports the ratified
+conditional three-field contract: Poisson latent and count-scale observation
+h2; logit latent, liability, and numerically integrated observation-scale h2
+for Bernoulli or common-trial Binomial input. Varying trials return literal
+\code{NaN} with \code{"varying_trials_no_scalar_estimand"}, never a trial-count-averaged
+scalar. The ELBO is a lower bound on the marginal
+log-likelihood, so variational and Laplace \code{logLik}/\code{AIC} are \strong{not}
+comparable. This path remains experimental and not coverage-calibrated.}
 }
 \value{
 An object of class \code{"hs_control"}.

@@ -438,8 +438,8 @@ hs_formula_status_behavior <- function() {
       "genetic_structure = \"diagonal\" stays experimental at 0.6.",
       "Missing trait cells are allowed as `NA`. Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
-      "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
-      "required), not a multivariate Gaussian."
+      "binomial-counts GLMM via target = \"nongaussian\" (scalar or varying",
+      "positive row totals admitted), not a multivariate Gaussian."
     ),
     paste(
       "Roadmap syntax for long-format unstructured covariance; the current",

@@ -58,6 +58,9 @@ hsquared <- function(
   } else {
     NA_character_
   }
+  if (identical(julia_target, "nongaussian")) {
+    hs_validate_nongaussian_three_field_v09_dots(dots)
+  }
   allow_families <- if (identical(julia_target, "nongaussian")) {
     c("gaussian", "poisson", "binomial")
   } else {

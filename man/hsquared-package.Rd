@@ -17,7 +17,8 @@ local Julia and \code{HSquared.jl} are available, and otherwise errors with
 install guidance. A \code{cbind()} multivariate Gaussian response also routes on
 that default path; multivariate is covered at validation scale and stays experimental.
 Genomic, repeatability, two-effect, and non-Gaussian
-(\code{poisson}/\code{binomial}, Laplace or variational REML) models fit through
+(\code{poisson(log)}/\code{binomial(logit)}, Laplace marginal likelihood or variational
+ELBO) models fit through
 opt-in, experimental engine paths; single-step stays \strong{opt-in partial};
 factor-analytic G is engine-covered on the Julia engine (\code{V4-FA}) and
 planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
