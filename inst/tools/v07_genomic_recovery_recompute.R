@@ -306,19 +306,50 @@ v07_compare_summary <- function(recomputed, julia_summary, tolerance = 1e-10) {
 }
 
 # A SHA-256 command is used because base R exposes MD5 but not SHA-256. The
-# semantic gates remain authoritative if neither platform command is present.
-v07_sha256 <- function(path) {
-  command <- if (nzchar(Sys.which("shasum"))) {
-    c("shasum", "-a", "256", path)
-  } else if (nzchar(Sys.which("sha256sum"))) {
-    c("sha256sum", path)
-  } else {
-    v07_abort("neither shasum nor sha256sum is available")
+# semantic gates remain authoritative if no usable platform command is present.
+v07_extract_sha256 <- function(output) {
+  output <- tolower(trimws(output))
+  unix_candidates <- sub("^([0-9a-f]{64})[[:space:]].*$", "\\1", output)
+  unix_candidates <- unix_candidates[grepl("^[0-9a-f]{64}$", unix_candidates)]
+  certutil_candidates <- gsub("[[:space:]]", "", output)
+  certutil_candidates <- certutil_candidates[
+    grepl("^[0-9a-f]{64}$", certutil_candidates)
+  ]
+  candidates <- unique(c(unix_candidates, certutil_candidates))
+
+  if (length(candidates) != 1L) {
+    v07_abort("SHA-256 command did not return exactly one digest")
   }
-  output <- system2(command[[1L]], command[-1L], stdout = TRUE, stderr = TRUE)
-  status <- attr(output, "status")
-  if (!is.null(status) && status != 0L) v07_abort("SHA-256 command failed for %s", path)
-  strsplit(output[[1L]], "[[:space:]]+")[[1L]][[1L]]
+
+  candidates[[1L]]
+}
+
+v07_sha256 <- function(path) {
+  commands <- list(
+    list(command = "shasum", args = c("-a", "256", path)),
+    list(command = "sha256sum", args = path),
+    list(command = "certutil", args = c("-hashfile", path, "SHA256"))
+  )
+
+  for (candidate in commands) {
+    if (!nzchar(Sys.which(candidate$command))) next
+    output <- tryCatch(
+      suppressWarnings(system2(candidate$command, candidate$args, stdout = TRUE, stderr = TRUE)),
+      error = function(...) NULL
+    )
+    if (is.null(output) || (!is.null(attr(output, "status")) && attr(output, "status") != 0L)) next
+    digest <- tryCatch(v07_extract_sha256(output), error = function(...) NULL)
+    if (!is.null(digest)) return(digest)
+  }
+
+  v07_abort("no usable SHA-256 command is available (tried shasum, sha256sum, certutil)")
+}
+
+v07_has_sha256_command <- function() {
+  probe <- tempfile("hsquared-v07-sha256-")
+  on.exit(unlink(probe), add = TRUE)
+  writeLines("SHA-256 backend probe", probe, useBytes = TRUE)
+  !inherits(try(v07_sha256(probe), silent = TRUE), "try-error")
 }
 
 v07_raw_lock_path <- function(out_dir, tier) {

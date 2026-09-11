@@ -89,3 +89,32 @@ test_that("frozen comparator fixture SHA256 pins match mirrored CSV bytes", {
     }
   }
 })
+
+test_that("SHA-256 output parser accepts the Windows certutil form", {
+  expected <- "8bc191bf660c0c26d0e51f0f243502fe601c648f3c97a2047fa2c2b62bc3884f"
+  certutil_output <- c(
+    "SHA256 hash of file C:\\fixtures\\sealed.csv:",
+    "8b c1 91 bf 66 0c 0c 26 d0 e5 1f 0f 24 35 02 fe 60 1c 64 8f 3c 97 a2 04 7f a2 c2 b6 2b c3 88 4f",
+    "CertUtil: -hashfile command completed successfully."
+  )
+
+  expect_identical(hs_extract_sha256(certutil_output), expected)
+})
+
+test_that("fixture SHA-256 helper falls through a failed backend", {
+  expected <- "8bc191bf660c0c26d0e51f0f243502fe601c648f3c97a2047fa2c2b62bc3884f"
+  find_command <- function(command) {
+    if (command %in% c("shasum", "sha256sum")) command else ""
+  }
+  run_command <- function(command, ...) {
+    if (identical(command, "shasum")) {
+      return(structure("Git shasum failed", status = 29L))
+    }
+    paste(expected, "sealed.csv")
+  }
+
+  expect_identical(
+    hs_sha256_file("sealed.csv", find_command = find_command, run_command = run_command),
+    expected
+  )
+})
