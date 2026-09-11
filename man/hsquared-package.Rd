@@ -16,12 +16,15 @@ through the HSquared.jl engine: the default \code{hsquared()} call fits when a
 local Julia and \code{HSquared.jl} are available, and otherwise errors with
 install guidance. A \code{cbind()} multivariate Gaussian response also routes on
 that default path; multivariate is covered at validation scale and stays experimental.
-Genomic, repeatability, two-effect, and non-Gaussian
-(\code{poisson(log)}/\code{binomial(logit)}, Laplace marginal likelihood or variational
-ELBO) models fit through
-opt-in, experimental engine paths; single-step stays \strong{opt-in partial};
-factor-analytic G is engine-covered on the Julia engine (\code{V4-FA}) and
-planned, not fitted, on the R formula (Julia engine-covered is not R covered).
+Narrow genomic GREML also routes on the default path (the explicit
+\code{target = "genomic"} spelling remains available) and is covered at validation
+scale. The covered common-environment two-effect, independent multi-effect,
+direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
+maternal two-effect, and non-Gaussian (\code{poisson(log)}/\code{binomial(logit)},
+Laplace marginal likelihood or variational ELBO) models are opt-in and
+experimental; single-step stays \strong{opt-in partial}. Factor-analytic G is
+engine-covered on the Julia engine (\code{V4-FA}) and planned, not fitted, on the
+R formula (Julia engine-covered is not R covered).
 }
 \section{Current limitations}{
 
@@ -53,11 +56,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com}
+\strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com} [copyright holder]
 
 Authors:
 \itemize{
-  \item Shinichi Nakagawa \email{itchyshin@gmail.com}
+  \item Shinichi Nakagawa \email{itchyshin@gmail.com} [copyright holder]
 }
 
 }

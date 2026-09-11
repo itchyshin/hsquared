@@ -160,14 +160,13 @@ covered or the default; the supplied matrix is provenance, not an estimate.
 \code{target = "multivariate"} names the experimental multivariate Gaussian
 animal model. Naming it is optional: a \code{cbind()} Gaussian response with an
 \code{animal()} term auto-routes to this target on the default path, and under
-\code{engine = "julia"} with no \code{target}. The target is default-routed but the
-capability is still \code{partial}. It requires a
+\code{engine = "julia"} with no \code{target}. The t = 2 unstructured capability is
+covered at validation scale, while remaining experimental. It requires a
 \code{cbind(trait1, trait2, ...)} response with \code{animal(1 | id, pedigree = ped)},
 surfaces the Julia-owned \code{HSquared.fit_multivariate_reml()} REML-only
 optimizer, and returns G/R covariance matrices, genetic and residual
-correlations, per-trait heritability, and cross-trait breeding values. It is
-not the default and remains a \code{partial} validation claim until t>=2
-known-truth recovery and external-comparator evidence are committed. The
+correlations, per-trait heritability, and cross-trait breeding values.
+Three or more traits and structured covariance are experimental. The
 reserved \code{genetic_structure} control currently accepts \code{"unstructured"} and
 \code{"diagonal"} on the R bridge. \code{"diagonal"} is the rotation-free structured
 subset: off-diagonal genetic covariances are fixed at zero. \code{"lowrank"}

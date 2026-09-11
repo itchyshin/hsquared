@@ -2,7 +2,7 @@ Package: hsquared
 Title: R Interface for Julia-Backed Quantitative-Genetic Models
 Version: 0.9.0
 Authors@R: 
-    person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
+    person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre", "cph"))
 Description: Provides the R-facing interface for an open quantitative-genetic
     modelling system backed by the HSquared.jl Julia engine. Experimental
     0.9.0 experimental release candidate (not production; not submitted to

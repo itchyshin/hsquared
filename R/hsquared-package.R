@@ -10,12 +10,15 @@
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
 #' install guidance. A `cbind()` multivariate Gaussian response also routes on
 #' that default path; multivariate is covered at validation scale and stays experimental.
-#' Genomic, repeatability, two-effect, and non-Gaussian
-#' (`poisson(log)`/`binomial(logit)`, Laplace marginal likelihood or variational
-#' ELBO) models fit through
-#' opt-in, experimental engine paths; single-step stays **opt-in partial**;
-#' factor-analytic G is engine-covered on the Julia engine (`V4-FA`) and
-#' planned, not fitted, on the R formula (Julia engine-covered is not R covered).
+#' Narrow genomic GREML also routes on the default path (the explicit
+#' `target = "genomic"` spelling remains available) and is covered at validation
+#' scale. The covered common-environment two-effect, independent multi-effect,
+#' direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
+#' maternal two-effect, and non-Gaussian (`poisson(log)`/`binomial(logit)`,
+#' Laplace marginal likelihood or variational ELBO) models are opt-in and
+#' experimental; single-step stays **opt-in partial**. Factor-analytic G is
+#' engine-covered on the Julia engine (`V4-FA`) and planned, not fitted, on the
+#' R formula (Julia engine-covered is not R covered).
 #'
 #' @section Current limitations:
 #' This package is an **experimental 0.9.0 candidate**; it is **not submitted
