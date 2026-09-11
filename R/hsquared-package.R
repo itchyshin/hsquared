@@ -15,7 +15,7 @@
 #' ELBO) models fit through
 #' opt-in, experimental engine paths; single-step stays **opt-in partial**;
 #' factor-analytic G is engine-covered on the Julia engine (`V4-FA`) and
-#' planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
+#' planned, not fitted, on the R formula (Julia engine-covered is not R covered).
 #'
 #' @section Current limitations:
 #' This package is an **experimental 0.9.0 candidate**; it is **not submitted

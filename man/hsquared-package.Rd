@@ -21,7 +21,7 @@ Genomic, repeatability, two-effect, and non-Gaussian
 ELBO) models fit through
 opt-in, experimental engine paths; single-step stays \strong{opt-in partial};
 factor-analytic G is engine-covered on the Julia engine (\code{V4-FA}) and
-planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
+planned, not fitted, on the R formula (Julia engine-covered is not R covered).
 }
 \section{Current limitations}{
 

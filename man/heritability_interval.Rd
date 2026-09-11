@@ -38,7 +38,7 @@ approximation returned by the engine. The 2000-rep C1 coverage confirm
 interval at the \strong{directional-conservative} claim level under doc-34 §4:
 delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
 bootstrap \strong{mildly under-covers versus nominal 0.95} at the governing
-interior cell (worst Ĉ \strong{0.924} at h²=0.5, still ≥0.90). That is \strong{not}
+interior cell (worst Ĉ \strong{0.924} at h²=0.5, still at least 0.90). That is \strong{not}
 coverage-calibrated at nominal and \strong{not} "never under-covers." Profile and
 bootstrap h² interval legs were measured in the same confirm but are \strong{not}
 separately surfaced by this extractor; only the engine-returned interval is
