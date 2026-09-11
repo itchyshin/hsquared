@@ -7741,3 +7741,13 @@ release".
 - Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
   `git diff --check` clean; boundary grep over the edited articles and
   after-task report confirms the fixed-panel-smoke/no-R-threshold wording.
+## 2026-09-11 — 0.9 Gate-B R exact-artifact candidate [R]
+
+- Source basis: clean `a1bd525e8594ccc346f43d7741eb37b1e7e112d2`; frozen
+  `hsquared_0.9.0.tar.gz` SHA-256
+  `1934c4526279ba8a7e6f0e2cdb204d797a4a33e290028e2e1ed0f5dca745ed32`.
+- Package tests, exact-head bridge cell, pkgdown/URL checks, artifact scan,
+  and as-CRAN tarball check passed. The tarball check has one expected
+  new-submission NOTE only.
+- Boundary: candidate evidence only; no PR update, push, merge, tag, CRAN
+  submission, registry action, promotion, or release.
