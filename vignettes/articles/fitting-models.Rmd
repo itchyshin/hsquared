@@ -25,9 +25,10 @@ sibling `HSquared.jl` engine, so every example needs a local Julia, the
 see the README or "Getting started" article for full setup. The code chunks are
 not run when this page is built (the build host has no Julia).
 
-All fits are by REML. ML is not implemented. `REML = FALSE` is rejected; use
-`REML = TRUE` (the default). That is the same rule for the default fit and for
-`engine = "validate"`.
+Gaussian fits use REML. ML is not implemented for that route: `REML = FALSE`
+is rejected, and `REML = TRUE` is the default. That rule applies to the default
+fit and to `engine = "validate"`; the opt-in non-Gaussian route below instead
+uses a Laplace marginal likelihood or variational ELBO.
 
 ```{r twin-bridge, echo = FALSE, results = "asis", eval = TRUE}
 cat(sprintf(
@@ -65,8 +66,9 @@ summary(fit)
 Most of the remaining models below are **opt-in**: they are reached through
 `engine = "julia"` with an explicit `target`. The one exception is the
 multivariate `cbind()` model, which routes on the default call — being reachable
-by default does not make it any less experimental. They are all REML-only,
-experimental, and none is a covered public default. Four of them are
+by default does not make it any less experimental. The Gaussian opt-in routes
+are REML-only; the non-Gaussian route has its own marginal-likelihood methods.
+All remain experimental, and none is a covered public default. Four are
 **covered at validation scale** —
 each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
 comparator: the common-environment two-effect model, arbitrary-N multi-effect,
@@ -247,7 +249,6 @@ fit_fledge <- hsquared(
   cbind(fledged, failed) ~ animal(1 | id, pedigree = ped),
   data = dat,
   family = binomial(),           # logit link
-  REML = TRUE,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "nongaussian")   # marginal = "laplace" (default)
@@ -257,6 +258,11 @@ fit_fledge <- hsquared(
 variance_components(fit_fledge)  # V_A on the latent (logit) scale
 heritability(fit_fledge)
 ```
+
+`REML = TRUE` is the R front door's current required default, so it is omitted
+above. It does **not** make this non-Gaussian fit a REML fit: this route uses a
+Laplace marginal likelihood (or variational ELBO when selected), as stated
+below.
 
 `heritability()` returns a small table rather than a single value. For a
 varying-trials fit like this one it looks like:
