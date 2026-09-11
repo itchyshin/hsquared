@@ -26,9 +26,11 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     on the default call and are covered at validation scale (t = 2 unstructured;
     k >= 3 and diagonal stay experimental); non-Gaussian
     (poisson(log)/binomial(logit)) models fit through an opt-in experimental
-    conditional three-field engine path: logit observation-scale h2 is an
-    explicit NaN/not-yet-ratified cell, and no coverage-calibrated or covered
-    claim is made; factor-analytic models remain planned.
+    conditional three-field engine path: logit observation-scale h2 is finite
+    for Bernoulli and common-trial Binomial data, while varying trial counts
+    return the explicit NaN sentinel because no scalar estimand is defined;
+    no coverage-calibrated or covered claim is made; factor-analytic models
+    remain planned.
 License: MIT + file LICENSE
 URL: https://itchyshin.github.io/hsquared/,
     https://github.com/itchyshin/hsquared,
