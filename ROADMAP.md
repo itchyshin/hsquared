@@ -206,9 +206,12 @@ Status: partial for simple non-Gaussian animal models, planned for GLLVM/omics.
   experimentally through the Julia-owned Laplace marginal-likelihood or
   variational-ELBO path (`target = "nongaussian"`), with one intercept and
   animal effect. The ratified conditional three-field output supplies Poisson
-  latent/count-scale observation h2, logit latent/liability h2, and a literal
-  `NaN` logit observation cell marked `not_yet_ratified`; Bernoulli and scalar
-  or varying binomial-count trial totals are admitted. This remains partial:
+  latent/count-scale observation h2 and Binomial-logit latent/liability h2.
+  Its logit observation-scale h2 is finite for Bernoulli and common-trial
+  Binomial data; varying binomial trial totals return the explicit `NaN`
+  sentinel `varying_trials_no_scalar_estimand`, because no scalar estimand is
+  defined. Bernoulli and scalar or varying binomial-count trial totals are
+  admitted. This remains partial:
   no coverage calibration, external same-estimand comparator, or promotion.
   Negative binomial, beta-binomial, ordinal, zero-inflated, hurdle, and broader
   family extensions remain planned.
