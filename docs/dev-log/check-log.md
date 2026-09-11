@@ -1,5 +1,24 @@
 # Check Log
 
+## 2026-09-11 (R 0.9 explicit genomic route — isolated candidate)
+
+- Candidate `d15bbaf`: default `engine = "fit"` and targetless
+  `engine = "julia"` no longer select genomic GREML. The existing covered
+  validation-scale genomic claim is explicit `target = "genomic"` only; count
+  stays **7**. No estimand, fixture, or evidence change.
+- Focused genomic tests **PASS** (220 passes / 0 failures); full
+  `devtools::test()` **PASS** (2,867 passes / 0 failures / 0 warnings / 75
+  explicit skips); `pkgdown::check_pkgdown()` **PASS**.
+- Fresh source archive
+  `/private/tmp/hsq09-r-090-current/hsquared_0.9.0.tar.gz` SHA-256
+  `8bc86b6a371ddaff8a38c519c69586179d2997b3988cd54349d72aeabea7bfca`;
+  direct `R CMD check --as-cran --run-donttest` completed with only the expected
+  **New submission** NOTE. Unlazy **10/10 met** after a measured 900-second
+  full-suite ceiling replaced the false 120-second timeout.
+- Boundary: isolated local candidate only. No promotion, version/tag action,
+  merge, registry/CRAN action, or publication. Exact-head independent artifact
+  audit remains a required Gate B prerequisite.
+
 ## 2026-09-08 (A4-1 Binomial observation-scale contract — not a promotion)
 
 - Isolated R candidate `82df320` atop `354f6bd`: Bernoulli and common-trial
