@@ -87,7 +87,7 @@ test_that("genomic is a valid opt-in julia target", {
   expect_equal(hsquared:::hs_validate_julia_target("genomic"), "genomic")
 })
 
-test_that("the default fit path auto-routes genomic() GREML (G5)", {
+test_that("the default fit path keeps genomic() opt-in", {
   ids <- paste0("g", 1:3)
   Ginv <- hs_test_ginv(ids)
   dat <- data.frame(y = c(1, 2, 3), id = ids)
@@ -100,7 +100,17 @@ test_that("the default fit path auto-routes genomic() GREML (G5)", {
   ))
   expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
 
-  # REML = FALSE stays rejected on the genomic default route (design-44).
+  expect_error(
+    hsquared(
+      y ~ genomic(1 | id, Ginv = Ginv),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    "experimental and opt-in",
+    fixed = TRUE
+  )
+
+  # REML = FALSE stays rejected on the explicit genomic route (design-44).
   expect_error(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
@@ -112,19 +122,6 @@ test_that("the default fit path auto-routes genomic() GREML (G5)", {
     fixed = TRUE
   )
 
-  # Without Julia the default genomic route names the bridge requirement
-  # (honest failure; not the old opt-in abort).
-  if (!isTRUE(hsquared:::hs_julia_bridge_available())) {
-    expect_error(
-      hsquared(
-        y ~ genomic(1 | id, Ginv = Ginv),
-        data = dat,
-        family = stats::gaussian()
-      ),
-      "genomic GREML",
-      fixed = TRUE
-    )
-  }
 })
 
 test_that("the genomic bridge requires an internal payload", {
@@ -196,58 +193,6 @@ test_that("the explicit supplied-Ginv route fits [live]", {
       fit_diagnostics(fit)$metric == "variance_components_source"
     ],
     "estimated_genomic_ai_reml"
-  )
-})
-
-test_that("the default fit path genomic GREML route matches explicit target [live]", {
-  hs_skip_live_julia()
-  testthat::skip_if_not(
-    hsquared:::hs_julia_bridge_available(),
-    "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
-  )
-  hsquared:::hs_reset_session_flags()
-
-  set.seed(5)
-  na <- 8
-  ids <- paste0("g", seq_len(na))
-  m <- matrix(stats::rbinom(na * 60, 2, 0.3), na, 60)
-  mc <- scale(m, scale = FALSE)
-  g <- tcrossprod(mc)
-  g <- g / mean(diag(g)) + diag(na) * 0.01
-  Ginv <- solve(g)
-  dimnames(Ginv) <- list(ids, ids)
-
-  n <- 24
-  rec <- rep(ids, length.out = n)
-  dat <- data.frame(
-    y = 3 + stats::rnorm(n, 0, 1),
-    id = rec
-  )
-
-  fit_default <- suppressWarnings(hsquared(
-    y ~ genomic(1 | id, Ginv = Ginv),
-    data = dat,
-    family = stats::gaussian()
-  ))
-  fit_explicit <- hsquared(
-    y ~ genomic(1 | id, Ginv = Ginv),
-    data = dat,
-    family = stats::gaussian(),
-    control = hs_control(
-      engine = "julia",
-      engine_control = list(target = "genomic")
-    )
-  )
-  expect_equal(fit_default$spec$target, "genomic")
-  expect_equal(
-    unname(as.numeric(variance_components(fit_default)$estimate)),
-    unname(as.numeric(variance_components(fit_explicit)$estimate)),
-    tolerance = 1e-10
-  )
-  expect_equal(
-    unname(as.numeric(heritability(fit_default)$estimate)),
-    unname(as.numeric(heritability(fit_explicit)$estimate)),
-    tolerance = 1e-10
   )
 })
 

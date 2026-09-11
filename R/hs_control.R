@@ -116,8 +116,8 @@
 #'   population-, or universal narrow-sense heritability. Genomic
 #'   `heritability_interval()` and
 #'   `heritability_standard_error()` are unavailable. The R capability remains
-#'   `partial`/experimental and validation-scale; the explicit route does not
-#'   move `public_covered_count` from 7. A fail-closed boundary candidate matched
+#'   covered at validation scale, experimental, and opt-in; the explicit route
+#'   does not move `public_covered_count` from 7. A fail-closed boundary candidate matched
 #'   an independent oracle on all 240 sealed holdouts, correcting 30
 #'   classifications with no losses, but one cell had a 5.99x p95 runtime ratio
 #'   against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
@@ -151,14 +151,13 @@
 #'   `target = "multivariate"` names the experimental multivariate Gaussian
 #'   animal model. Naming it is optional: a `cbind()` Gaussian response with an
 #'   `animal()` term auto-routes to this target on the default path, and under
-#'   `engine = "julia"` with no `target`. The target is default-routed but the
-#'   capability is still `partial`. It requires a
+#'   `engine = "julia"` with no `target`. The t = 2 unstructured capability is
+#'   covered at validation scale, while remaining experimental. It requires a
 #'   `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ped)`,
 #'   surfaces the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
 #'   optimizer, and returns G/R covariance matrices, genetic and residual
-#'   correlations, per-trait heritability, and cross-trait breeding values. It is
-#'   not the default and remains a `partial` validation claim until t>=2
-#'   known-truth recovery and external-comparator evidence are committed. The
+#'   correlations, per-trait heritability, and cross-trait breeding values.
+#'   Three or more traits and structured covariance are experimental. The
 #'   reserved `genetic_structure` control currently accepts `"unstructured"` and
 #'   `"diagonal"` on the R bridge. `"diagonal"` is the rotation-free structured
 #'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"`
@@ -167,17 +166,19 @@
 #'   activated on the R bridge; not covered. The future `rank` control is also
 #'   reserved and currently errors instead of being ignored.
 #'
-#'   `target = "nongaussian"` is an experimental, opt-in latent-scale GLMM for
-#'   `family = poisson()`/`binomial()` (binary 0/1) on `animal(1 | id, pedigree =
-#'   ped)`, surfacing the Julia-owned `HSquared.fit_laplace_reml()` REML
-#'   optimizer. The `marginal` control selects the approximation: `"laplace"`
-#'   (the Laplace approximation, default) or `"variational"` (the variational/ELBO
-#'   marginal; aliases `"la"`/`"va"`). Because a non-Gaussian family has no
-#'   residual-variance scale, **no heritability** is reported. The variational
-#'   objective is the ELBO (a lower bound on the marginal log-likelihood), so a
-#'   variational fit's `logLik`/`AIC` are **not** comparable with a Laplace fit's.
-#'   Experimental, REML-only, not coverage-calibrated (twin gate `V6-LAPLACE`/`VA`,
-#'   partial).
+#'   `target = "nongaussian"` is an experimental, opt-in conditional GLMM for
+#'   `poisson(log)` or `binomial(logit)` (binary 0/1 or
+#'   `cbind(successes, failures)` counts) with one intercept and
+#'   `animal(1 | id, pedigree = ped)`. The `marginal` control selects a Laplace
+#'   marginal likelihood approximation (`"laplace"`, default) or a variational
+#'   ELBO (`"variational"`; aliases `"la"`/`"va"`). It reports the ratified
+#'   conditional three-field contract: Poisson latent and count-scale observation
+#'   h2; logit latent, liability, and numerically integrated observation-scale h2
+#'   for Bernoulli or common-trial Binomial input. Varying trials return literal
+#'   `NaN` with `"varying_trials_no_scalar_estimand"`, never a trial-count-averaged
+#'   scalar. The ELBO is a lower bound on the marginal
+#'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
+#'   comparable. This path remains experimental and not coverage-calibrated.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

@@ -17,7 +17,7 @@ make every listed target covered, production-scale, or a default route.
 
 | Boundary | Current record | Not established here |
 | --- | --- | --- |
-| Default R fit | `engine = "fit"` retains its separately documented narrow animal, genomic, and `cbind()` routes. | Production-scale sparse fitting or a general bridge guarantee. |
+| Default R fit | `engine = "fit"` retains its separately documented narrow animal and `cbind()` routes; genomic GREML requires the explicit `target = "genomic"` route. | Production-scale sparse fitting or a general bridge guarantee. |
 | Explicit Julia target | `hs_validate_julia_target()` accepts the documented opt-in target vocabulary. Each target keeps the status in `docs/design/capability-status.md`. | A claim that all accepted targets are fitted, covered, or interchangeable. |
 | `payload_v2` | The current R bridge uses the versioned block contract for `direct_maternal` and `multi_effect`; the Julia matrix records the plain-data/result contract and fixtures. | Universal `payload_v2` coverage or an undocumented result shape. |
 | Structured covariance | R rejects `factor_analytic` and `lowrank`; Julia FA evidence remains engine-only and rotation-invariant. | R `cov = fa()` activation, loading payloads, or structured-fit intervals. |
@@ -30,8 +30,8 @@ The following checklist is **PENDING**. No Hopper sign-off is asserted, and it
 cannot authorize a release by itself.
 
 1. Recheck each accepted R target against its actual dispatch and its
-   capability-status boundary, including the genomic default route versus held
-   ordinary routes.
+   capability-status boundary, including the explicit genomic route versus the
+   held ordinary route.
 2. Recheck the `payload_v2` R scope (`direct_maternal`, `multi_effect`) and
    result-shape fixtures against the Julia compatibility matrix.
 3. Recheck the FA rotation fence, the SS engine-versus-R-public boundary, and

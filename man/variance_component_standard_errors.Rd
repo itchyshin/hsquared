@@ -34,12 +34,12 @@ These mirror the engine row \code{V1-HERIT-CI} (\code{partial}): asymptotic,
 REML-only, and unreliable at small \code{n} or near a variance-component
 boundary (where the AI matrix is ill-conditioned and the fields are
 omitted). The 2000-rep C1 coverage confirm (job \strong{47925485}) measured the
-\strong{σ²a delta/Wald} interval implied by these SEs to \strong{under-cover}
+\strong{additive-variance delta/Wald} interval implied by these SEs to \strong{under-cover}
 (0.897 at nominal 0.95, h²=0.5), placing it at \strong{experimental-only}:
 the SE is a point-estimate reference only, \strong{not a calibrated and not a
-conservative interval}. (A profile σ²a interval is
+conservative interval}. (A profile additive-variance interval is
 \code{directional-conservative} by the same run — including the h²=0.3 cell
-0.963 — but is not surfaced by this delta-method extractor. σ²a
+0.963 — but is not surfaced by this delta-method extractor. Additive-variance
 bootstrap worst-cell Ĉ 0.918 is the same DC mild-under branch as h²
 bootstrap.) Not coverage-calibrated, not a validated capability.
 }

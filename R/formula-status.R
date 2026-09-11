@@ -253,7 +253,7 @@ hs_formula_status_fitting <- function() {
     rep("not available", 5L),
     "fitted (opt-in supplied relationship, experimental)",
     "fitted (opt-in supplied precision, experimental)",
-    "fitted (default-route genomic GREML, covered validation-scale)",
+    "fitted (opt-in genomic, covered validation-scale)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
@@ -373,23 +373,21 @@ hs_formula_status_behavior <- function() {
       "NOT covered, NOT the default; `Q` is supplied provenance, not estimated."
     ),
     paste(
-      "Primary genomic effect for the narrow default-route Gaussian REML form;",
-      "a supplied `Ginv` is used without alteration and its construction method,",
-      "allele frequencies, ridge, and denominator remain unknown. Auto-routes on",
-      "engine = \"fit\" (design-44 / owner YES 2026-09-03); explicit",
-      "engine = \"julia\", target = \"genomic\" remains an alias. The",
+      "Primary genomic effect for the narrow opt-in Gaussian REML route; a",
+      "supplied `Ginv` is used without alteration and its construction method,",
+      "allele frequencies, ridge, and denominator remain unknown. The explicit",
+      "model requires engine = \"julia\", target = \"genomic\". The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. Covered at validation scale (0.7);",
-      "public_covered_count remains 7."
+      "and SE accessors are unavailable. Covered at validation scale (0.7),",
+      "experimental; public_covered_count remains 7."
     ),
     paste(
-      "Primary genomic effect for the narrow default-route Gaussian REML marker",
-      "form: sample allele frequencies, unweighted VanRaden method 1, ridge",
-      "0.01. Auto-routes on engine = \"fit\"; explicit target = \"genomic\"",
-      "remains an alias. target = \"snp_blup\" remains opt-in. The",
+      "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
+      "sample allele frequencies, unweighted VanRaden method 1, ridge 0.01.",
+      "Use target = \"genomic\"; target = \"snp_blup\" remains opt-in. The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. Covered at validation scale (0.7);",
-      "public_covered_count remains 7."
+      "and SE accessors are unavailable. Covered at validation scale (0.7),",
+      "experimental; public_covered_count remains 7."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-inverse",
@@ -438,8 +436,8 @@ hs_formula_status_behavior <- function() {
       "genetic_structure = \"diagonal\" stays experimental at 0.6.",
       "Missing trait cells are allowed as `NA`. Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
-      "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
-      "required), not a multivariate Gaussian."
+      "binomial-counts GLMM via target = \"nongaussian\" (scalar or varying",
+      "positive row totals admitted), not a multivariate Gaussian."
     ),
     paste(
       "Roadmap syntax for long-format unstructured covariance; the current",

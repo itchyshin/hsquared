@@ -1,10 +1,10 @@
 ## Submission summary
 
-This is a **draft** first-CRAN comment file for hsquared version **0.5.0**
-(experimental). It is prepared for the A20 local gate and is **not** a live
-submission. Tarball SHA, win-builder, and R-hub results below remain
-placeholders until the release pass after HSquared.jl is in General (Julia
-registers first).
+This is a **draft** first-CRAN comment file for hsquared version **0.9.0**
+(experimental). It is prepared only for an independent frozen-artifact gate;
+it is **not** a CRAN submission.  No tag, merge, registry action, or public
+release has occurred. The exact tarball receipt is intentionally maintained in
+the release-gate evidence outside this draft until the independent gate passes.
 
 hsquared is the R-facing twin of the Julia engine HSquared.jl. It provides
 formula syntax, validation, summaries, and extractors for quantitative-genetic
@@ -12,25 +12,32 @@ animal models. Default fitting requires a local Julia and HSquared.jl; CRAN
 checks must not invoke live Julia setup. Use `hs_control(engine = "validate")`
 to preview the model contract without fitting.
 
-Package status at first CRAN: **experimental** (D-41). Version is intentionally
-`0.5.0`, not `1.0.0`. Report point estimates only for rows marked `covered` in
+Package status for this candidate: **experimental**. Version is intentionally
+`0.9.0`, not `1.0.0`. Report point estimates only for rows marked `covered` in
 `validation_status()`; uncertainty intervals are experimental and not
-coverage-calibrated.
+coverage-calibrated. The 0.9.0 candidate retains a public covered count of 7;
+its opt-in Poisson/log and Binomial/logit path has a narrow three-field engine
+contract and makes no covered or coverage-calibrated claim.
 
-## Artifact (fill at release pass)
+## Frozen artifact gate
 
-* tarball `hsquared_0.5.0.tar.gz`;
-* SHA-256 `TBD`;
-* size TBD;
-* built from clean twin-aligned commit `TBD` (after Julia General acceptance).
+* a fresh `hsquared_0.9.0.tar.gz` is built only from a clean, isolated source
+  candidate;
+* its SHA-256, byte size, source commit, inventory, and direct `R CMD check
+  --as-cran --run-donttest` output are retained as gate evidence;
+* an earlier failed portable-manual artifact is retained as a failed attempt,
+  rather than overwritten;
+* HSquared.jl General registration is deferred and is not a precondition for
+  this preparation gate.
 
-## R CMD check results (local gate — update at release)
+## R CMD check results (local gate)
 
-Local macOS `devtools::check()` / `R CMD check --as-cran` on the campaign branch
-(worktree tip recorded in `docs/dev-log/check-log.d/`):
+Local macOS normal package checks and the direct frozen-artifact `R CMD check
+--as-cran` are run on the isolated candidate. Their exact receipt is part of
+the independent gate; it is not a claim that CRAN has accepted the package.
 
 ```
-Status: see check-log shard for A20
+Status: pending independent frozen-artifact gate
 ```
 
 Expected first-submission NOTE when submitted:

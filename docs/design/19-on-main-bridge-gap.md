@@ -1,5 +1,18 @@
 # 19 — On-main engine vs R-surface gap (WS2 Step 0)
 
+> **A3 reconciliation (2026-09-08).** This historical gap record does not
+> describe the narrow ratified 0.9 transport now implemented in fresh paired
+> worktrees. `target = "nongaussian"` admits only an intercept-only
+> `animal(1 | id, pedigree = ped)` Poisson(log) or Binomial(logit) path:
+> binary or `cbind` scalar/varying positive trial counts. It returns only the
+> ratified labelled fields—Poisson latent/count-observation, or logit
+> latent/liability plus a numerically integrated observation cell for Bernoulli
+> or common trials. Only varying trials return literal `NaN`, with
+> `varying_trials_no_scalar_estimand`; no trial-count average is a scalar. This is
+> experimental/partial, not a REML/AI-REML, calibration, comparator,
+> promotion, default, or release claim. Any contrary wording below is historical
+> scope or refers to broader deferred work.
+
 **As of `HSquared.jl origin/main` = `4e8ffde`** ("Merge PR #57: BT1 closeout + process
 scaffolding"), verified read-only 2026-06-19. This is the WS2 **Step-0 gate**: it records which
 engine functions are on `origin/main`, their `validation_status()` row + status, the R surface

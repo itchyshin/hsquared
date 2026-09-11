@@ -1061,7 +1061,7 @@ accuracy.hsquared_fit <- function(object, ...) {
 #' interval at the **directional-conservative** claim level under doc-34 §4:
 #' delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
 #' bootstrap **mildly under-covers versus nominal 0.95** at the governing
-#' interior cell (worst Ĉ **0.924** at h²=0.5, still ≥0.90). That is **not**
+#' interior cell (worst Ĉ **0.924** at h²=0.5, still at least 0.90). That is **not**
 #' coverage-calibrated at nominal and **not** "never under-covers." Profile and
 #' bootstrap h² interval legs were measured in the same confirm but are **not**
 #' separately surfaced by this extractor; only the engine-returned interval is
@@ -1122,12 +1122,12 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #' REML-only, and unreliable at small `n` or near a variance-component
 #' boundary (where the AI matrix is ill-conditioned and the fields are
 #' omitted). The 2000-rep C1 coverage confirm (job **47925485**) measured the
-#' **σ²a delta/Wald** interval implied by these SEs to **under-cover**
+#' **additive-variance delta/Wald** interval implied by these SEs to **under-cover**
 #' (0.897 at nominal 0.95, h²=0.5), placing it at **experimental-only**:
 #' the SE is a point-estimate reference only, **not a calibrated and not a
-#' conservative interval**. (A profile σ²a interval is
+#' conservative interval**. (A profile additive-variance interval is
 #' `directional-conservative` by the same run — including the h²=0.3 cell
-#' 0.963 — but is not surfaced by this delta-method extractor. σ²a
+#' 0.963 — but is not surfaced by this delta-method extractor. Additive-variance
 #' bootstrap worst-cell Ĉ 0.918 is the same DC mild-under branch as h²
 #' bootstrap.) Not coverage-calibrated, not a validated capability.
 #'

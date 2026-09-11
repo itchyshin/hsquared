@@ -98,7 +98,40 @@ hs_read_comparator_manifest <- function(path = hs_comparator_manifest_path()) {
   top
 }
 
-hs_sha256_file <- function(path) {
-  out <- system2("shasum", c("-a", "256", path), stdout = TRUE)
-  sub(" .*", "", out[[1]])
+hs_extract_sha256 <- function(output) {
+  output <- tolower(trimws(output))
+  unix_candidates <- sub("^([0-9a-f]{64})[[:space:]].*$", "\\1", output)
+  unix_candidates <- unix_candidates[grepl("^[0-9a-f]{64}$", unix_candidates)]
+  certutil_candidates <- gsub("[[:space:]]", "", output)
+  certutil_candidates <- certutil_candidates[
+    grepl("^[0-9a-f]{64}$", certutil_candidates)
+  ]
+  candidates <- unique(c(unix_candidates, certutil_candidates))
+
+  if (length(candidates) != 1L) {
+    stop("SHA-256 command did not return exactly one digest", call. = FALSE)
+  }
+
+  candidates[[1L]]
+}
+
+hs_sha256_file <- function(path, find_command = Sys.which, run_command = system2) {
+  commands <- list(
+    list(command = "shasum", args = c("-a", "256", path)),
+    list(command = "sha256sum", args = path),
+    list(command = "certutil", args = c("-hashfile", path, "SHA256"))
+  )
+
+  for (candidate in commands) {
+    if (!nzchar(find_command(candidate$command))) next
+    out <- tryCatch(
+      suppressWarnings(run_command(candidate$command, candidate$args, stdout = TRUE, stderr = TRUE)),
+      error = function(...) NULL
+    )
+    if (is.null(out) || (!is.null(attr(out, "status")) && attr(out, "status") != 0L)) next
+    digest <- tryCatch(hs_extract_sha256(out), error = function(...) NULL)
+    if (!is.null(digest)) return(digest)
+  }
+
+  stop("no usable SHA-256 command is available (tried shasum, sha256sum, certutil)", call. = FALSE)
 }
