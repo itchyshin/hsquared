@@ -228,8 +228,8 @@ the multivariate article for the current claim boundary.
 <p class="hs-banner" role="note"><strong>Experimental · opt-in · not coverage-calibrated.</strong>
 The non-Gaussian animal model fits only through <code>engine = "julia"</code> with
 <code>target = "nongaussian"</code>, is limited to an intercept plus one
-<code>animal()</code> term, and has no external same-estimand comparator yet.
-See <a href="current-limits.html">Can I fit and report this?</a> before reporting a value.</p>
+<code>animal()</code> term, and has not yet been checked against another program
+that estimates the same quantity. See <a href="current-limits.html">Can I fit and report this?</a> before reporting a value.</p>
 
 Many traits ecologists and breeders care about are not Gaussian: whether an
 individual survived its first winter (0/1), how many of a clutch fledged
@@ -271,35 +271,37 @@ varying-trials fit like this one it looks like:
 (The numbers are illustrative — `V_A = 0.8` on the logit scale gives
 $0.8 / (0.8 + \pi^2/3) \approx 0.20$; the shape is exact.)
 
-**Which row do you report? The liability-scale one.** Here is what the three
-rows are, in the order a biologist meets them:
+**Which row do you report? The liability-scale one.** All three rows come
+from the same fit on the logit scale; they differ in what goes in the
+denominator. Here is what each is, starting with the two that matter:
 
 - **`h2_liability` — report this.** It is the heritability of the *underlying
-  liability* to fledge: the additive genetic variance on the logit scale
-  divided by that variance plus the logistic link's fixed residual variance,
-  $\pi^2/3 \approx 3.29$. This is the threshold-model convention the field has
-  used since Dempster and Lerner (1950), it is the scale on which published
+  liability* to fledge: the additive genetic variance on the logit scale,
+  divided by that variance plus the logistic distribution's own variance,
+  $\pi^2/3 \approx 3.29$ (the *distribution-specific variance* of Nakagawa and
+  Schielzeth 2010). This is the threshold-model convention the field has used
+  since Dempster and Lerner (1950), it is the scale on which published
   heritabilities of survival, breeding success and disease traits are usually
   given, and it does not depend on how many trials each individual had. State
   the link when you report it: *"liability-scale $h^2$ (logit link)"*.
-- **`h2_latent`** is the share of the *random* latent-scale variance that is
-  additive genetic, with no link-specific residual in the denominator. In the
-  only model this path currently fits — an intercept plus one `animal()` term —
-  the additive variance is the *only* random component, so this row is
-  identically `1` and carries no information; it will become informative once
-  further random terms are admitted. The number to keep from this row's family
-  is `V_A` itself, from `variance_components()`: it is the input every
-  downstream scale conversion starts from.
-- **`h2_observation`** is the heritability on the *data* scale — the 0/1 or
-  proportion you actually recorded. When every individual has the same number
-  of trials (a 0/1 survival trait, or a fixed number of attempts), this is a
-  single number and the package reports it. **When trial sizes vary, it is not
-  a single number**: a female with a clutch of two and one with a clutch of
-  seven have different data-scale variances, so no scalar observation-scale
-  $h^2$ exists for the population. `hsquared` therefore returns `NaN` with the
-  reason `varying_trials_no_scalar_estimand` rather than averaging over clutch
-  sizes and printing something that looks like an estimate. **This is not a
-  failed fit.** The two rows above it are the estimates.
+- **`h2_observation` — the `NaN` row.** This is the heritability on the *data*
+  scale — the 0/1 or proportion you actually recorded. When every individual
+  has the same number of trials (a 0/1 survival trait, or a fixed number of
+  attempts), this is a single number and the package reports it. **When trial
+  sizes vary, it is not a single number**: a female with a clutch of two and
+  one with a clutch of seven have different data-scale variances, so no single
+  observation-scale $h^2$ exists for the population. `hsquared` therefore
+  returns `NaN` with the reason `varying_trials_no_scalar_estimand` rather than
+  averaging over clutch sizes and printing something that looks like an
+  estimate. **This is not a failed fit.** The liability-scale row is the
+  estimate.
+- **`h2_latent` — ignore it for now.** It divides the additive variance by the
+  *random* latent variance only, with no $\pi^2/3$. In the only model this path
+  currently fits — an intercept plus one `animal()` term — the additive variance
+  is the sole random component, so this row is always exactly `1`. It is a
+  bookkeeping row, not an estimate. The number to keep instead is `V_A` itself,
+  from `variance_components()`: it is what every scale conversion, including the
+  liability-scale row, starts from.
 
 If you specifically need a data-scale heritability for a varying-trials trait
 — for example to predict a response to selection on the observed proportion —
@@ -308,11 +310,12 @@ from the latent-scale `V_A` and intercept with the conversions in
 de Villemereuil et al. (2016) (the `QGglmm` package), which integrate over the
 link for a stated trial count, or refit on a subset with a common trial count.
 
-Two more things to know about this path. The default `marginal = "laplace"`
-approximates the marginal likelihood; `marginal = "variational"` (aliases
-`"la"`/`"va"`) maximises an ELBO, which is a *lower bound*, so `logLik()` and
-`AIC()` from the two are not comparable and neither is a REML or AI-REML
-value. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
+Two more things to know about this path. The engine can approximate the
+likelihood in two ways — `marginal = "laplace"` (the default) or
+`marginal = "variational"` (aliases `"la"`/`"va"`, which maximises a lower
+bound on the likelihood) — and their `logLik()` and `AIC()` values are not
+comparable with each other, nor with the REML values from the Gaussian fits
+above. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
 only — there is no liability scale for a count.
 
 *References.* Dempster, E. R. & Lerner, I. M. (1950) Heritability of threshold
