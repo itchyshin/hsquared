@@ -1,5 +1,11 @@
 # 36 — Phase 3→6 Execution Plan (0.6 → 1.0)
 
+> **Current-state amendment (2026-09-11):** the narrow ratified 0.9 programme
+> has now produced an experimental **0.9.0 candidate** with
+> `public_covered_count` **7**. This historical ladder does not authorize a
+> covered flip, tag, registration, CRAN submission, or public release; those
+> remain Gate-B decisions after independent audit and external evidence.
+
 > Durable capture of the 2026-07-11 execution ultra-plan (five per-pillar planners
 > + consolidation) for the capability arc to a capable 1.0. It implements — does
 > not re-open — the release model in `docs/dev-log/decisions.md` ("2026-07-11:
@@ -8,8 +14,8 @@
 
 > **Record status (2026-09-07):** This is the historical scientific/release
 > ladder, not the current documentation milestone. The latter completed the
-> website and named honesty documentation at experimental **0.8.0** / public
-> count **7**, but did not authorize a package number, tag, registration, or
+> website and named honesty documentation at the then-current experimental
+> **0.8.0** / public count **7**, but did not authorize a package number, tag, registration, or
 > release. The 0.9/1.0 science gates below remain planned; H1/H3 are deferred
 > and G10 promotion holds remain in force. See
 > [`2026-09-07-documentation-milestone-release-boundary.md`](../dev-log/decisions/2026-09-07-documentation-milestone-release-boundary.md).

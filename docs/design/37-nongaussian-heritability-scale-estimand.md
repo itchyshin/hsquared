@@ -1,5 +1,12 @@
 # 37 · Non-Gaussian heritability-scale estimand contract (NG-1)
 
+> **Current-state amendment (2026-09-11):** the former 0.8/PR-#173 hold text
+> below is historical. The narrow ratified three-field Poisson/Binomial
+> transport is present in the experimental **0.9.0 candidate** at public count
+> **7**, with its stated NaN varying-trial sentinel and no covered or
+> coverage-calibrated claim. This amendment does not authorize release,
+> promotion, a wider family set, or a changed scientific contract.
+
 > **A3 reconciliation (2026-09-08).** The current narrow ratified 0.9 transport
 > supersedes the former “heritability-free” implementation statement only for
 > an intercept-only `animal(1 | id, pedigree = ped)` Poisson(log) or

@@ -22,8 +22,8 @@ or source was replaced.
 
 ## 4. Files Touched
 
-Only this check record, this after-task report, and the existing append-only
-check log are added to the isolated candidate. Package source, public API,
+Only evidence/check records and current-state documentation clarifications are
+added to the isolated candidate. Package source, public API,
 bridge fields, scientific fixtures, and rendered public files were not edited.
 
 ## 5. Checks Run
