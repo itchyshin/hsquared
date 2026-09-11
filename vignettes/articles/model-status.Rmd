@@ -10,8 +10,8 @@ vignette: >
 <p class="hs-banner" role="note"><strong>Status ledger, not a green checklist.</strong>
 What you may report is on <a href="current-limits.html">Can I fit and report this?</a>.
 Covered-at-validation-scale rows remain experimental packaging
-(<strong>experimental 0.8.0</strong>; <code>public_covered_count</code> is <strong>7</strong>;
-<strong>0.9 is not released</strong>).
+(<strong>experimental 0.9.0 candidate</strong>; <code>public_covered_count</code> is <strong>7</strong>;
+<strong>not submitted to CRAN</strong>).
 Julia engine-covered ≠ R covered: factor-analytic G stays <strong>planned</strong> on R;
 single-step stays <strong>opt-in partial</strong>.</p>
 
@@ -178,7 +178,7 @@ exceptions: both route on the default `engine = "fit"` call.
 - Genomic GREML — `genomic(1 | id, markers = M)` or
   `genomic(1 | id, Ginv = Q)` on the ordinary `hsquared()` call (explicit
   `target = "genomic"` remains an alias). Covered at validation scale;
-  experimental 0.8.0 retained; `public_covered_count` stays **7**. Marker
+  experimental 0.9.0 candidate retained; `public_covered_count` stays **7**. Marker
   input means sample-frequency VanRaden1 with `K_lambda = G + 0.01I`;
   supplied `Ginv` construction is unknown. `heritability()` returns the
   genomic variance-component ratio `sigma_g2 / (sigma_g2 + sigma_e2)` on

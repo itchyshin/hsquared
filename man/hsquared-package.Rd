@@ -25,8 +25,8 @@ planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
 }
 \section{Current limitations}{
 
-This package is \strong{experimental} (0.8.0); \strong{0.9 is not released}; the first CRAN release is not this bump,
-not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
+This package is an \strong{experimental 0.9.0 candidate}; it is \strong{not submitted
+to CRAN} and not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
 and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
 model contract without fitting. Report point estimates only for \code{covered}
 routes; uncertainty intervals are experimental and not coverage-calibrated.

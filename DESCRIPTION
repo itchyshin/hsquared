@@ -1,13 +1,14 @@
 Package: hsquared
 Title: R Interface for Julia-Backed Quantitative-Genetic Models
-Version: 0.8.0
+Version: 0.9.0
 Authors@R: 
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre"))
 Description: Provides the R-facing interface for an open quantitative-genetic
     modelling system backed by the HSquared.jl Julia engine. Experimental
-    0.8.0 package (not production; not CRAN): the version tracks covered
+    0.9.0 experimental release candidate (not production; not submitted to
+    CRAN): the version tracks covered
     capability (public covered count is 7), not maturity; experimental label
-    retained. First CRAN release is not this bump. Version 0.1 fits the univariate Gaussian
+    retained. CRAN submission is separately gated on one frozen artifact. Version 0.1 fits the univariate Gaussian
     animal model (y ~ fixed + animal(1 | id, pedigree = ped)) by restricted
     maximum likelihood and returns heritability, variance components, breeding
     values, and standard extractors. Default fitting requires a local Julia and
@@ -17,12 +18,12 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     a developer evidence table. Uncertainty intervals are experimental and not
     coverage-calibrated. Default-route genomic GREML is covered at validation
     scale (narrow genomic() on the ordinary call; explicit target = "genomic"
-    remains an alias). Experimental 0.8.0 retained; public covered count stays
+    remains an alias). Experimental 0.9.0 retained; public covered count stays
     7. Single-step, SNP-BLUP,
     repeatability, and two-effect animal models fit through opt-in engine paths
     (repeatability/two-effect covered where previously covered; SNP-BLUP
     remains experimental; single-step remains opt-in partial; Julia
-    engine-covered is not R covered; 0.9 is not released); multivariate cbind() animal models route
+    engine-covered is not R covered; this candidate is not a CRAN submission); multivariate cbind() animal models route
     on the default call and are covered at validation scale (t = 2 unstructured;
     k >= 3 and diagonal stay experimental); non-Gaussian
     (poisson(log)/binomial(logit)) models fit through an opt-in experimental

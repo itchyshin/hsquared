@@ -11,6 +11,13 @@ order — not the release schedule. See
 [`docs/dev-log/decisions.md`](docs/dev-log/decisions.md) ("2026-07-11: Release
 Model").
 
+> **Current record (2026-09-11):** the isolated twins carry an experimental
+> **0.9.0 source candidate** after the ratified three-field contract and
+> retained H0/H1/H3 evidence. `public_covered_count` remains **7**; no
+> capability flips are implied. The candidate is not production and has not
+> been submitted to CRAN. A frozen-artifact gate, external platform evidence,
+> and an independent artifact audit must pass before any submission decision.
+
 - **First registration is `0.5.0`, not `1.0`**, shipped with a prominent
   **experimental** label — mirroring the sibling packages (drmTMB, gllvmTMB) and
   the standing rule that lab packages ship experimental on first CRAN until the

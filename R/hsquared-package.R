@@ -18,8 +18,8 @@
 #' planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
 #'
 #' @section Current limitations:
-#' This package is **experimental** (0.8.0); **0.9 is not released**; the first CRAN release is not this bump,
-#' not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
+#' This package is an **experimental 0.9.0 candidate**; it is **not submitted
+#' to CRAN** and not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
 #' and HSquared.jl; use [hs_control()] with `engine = "validate"` to check the
 #' model contract without fitting. Report point estimates only for `covered`
 #' routes; uncertainty intervals are experimental and not coverage-calibrated.

@@ -23,7 +23,7 @@ behind them to report.
 1. Three **default-routed covered** paths exist: the **univariate Gaussian animal
    model**, **t = 2 unstructured multivariate** `cbind()` (validation-scale), and
    **genomic GREML** via narrow `genomic(...)` (validation-scale; experimental
-   0.7.0 at its promotion and 0.8.0 currently). Report their point estimates
+   0.7.0 at its promotion and 0.9.0 in the current source candidate). Report their point estimates
    within the stated scope.
 2. Almost everything else fits through an **opt-in** engine target (some covered
    at validation scale, some experimental). k≥3 and diagonal multivariate stay

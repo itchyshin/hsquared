@@ -1,3 +1,17 @@
+# hsquared 0.9.0 (experimental source candidate)
+
+* **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and
+  Binomial/logit route retains its explicit scale boundaries: observation-scale
+  h² is defined for Bernoulli and common-trial Binomial inputs, while varying
+  trial counts return the named non-scalar sentinel rather than an averaged
+  scalar. This does not increase `public_covered_count`, add a default route,
+  or make a non-Gaussian REML claim.
+
+* **Retained interval evidence, without promotion.** H0, H1, and H3 evidence
+  is reported only at its declared route and claim level; no package-wide
+  nominal-coverage or covered-status claim is created. The candidate remains
+  experimental, not production, and not submitted to CRAN.
+
 # hsquared 0.8.0
 
 * **Interval-coverage claim levels for the univariate animal model (2000-rep
