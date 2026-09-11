@@ -52,8 +52,8 @@ advanced opt-in engine controls.
   normalized pedigree ordering, and Julia target metadata. It does not fit a
   model.
 - Narrow univariate Gaussian REML `genomic()` (supplied `Ginv` or a `markers`
-  matrix) is covered at validation scale and default-routed; explicit
-  `target = "genomic"` remains an alias. `single_step()` (supplied `Hinv`, or constructed `Hinv` from
+  matrix) is covered at validation scale through explicit
+  `engine = "julia", target = "genomic"`; it is not a default route. `single_step()` (supplied `Hinv`, or constructed `Hinv` from
   `pedigree` + `markers`), `permanent()`, `common_env()`, `maternal_genetic()`, and the
   supplied-relationship primaries `relmat()` (dense `K`) and `precision()`
   (supplied inverse `Q`) remain explicit `engine = "julia"` targets — some
@@ -230,9 +230,9 @@ These models are **not** yet comparator/known-truth-validated at the bar above;
 each mirrors a `partial` gate in the `HSquared.jl` twin. They are reached
 through the opt-in `control = hs_control(engine = "julia", ...)` path.
 
-Narrow genomic GREML is covered at validation scale on the default call
-(see the covered section above). SNP-BLUP and single-step remain explicit
-opt-in experimental targets.
+Narrow genomic GREML is covered at validation scale through its explicit
+`target = "genomic"` route. SNP-BLUP and single-step remain explicit opt-in
+experimental targets.
 
 - Repeatability / permanent environment — `animal(1 | id) + permanent(1 | id)`,
   `target = "repeatability"` (needs repeated records per individual).
@@ -298,8 +298,8 @@ the parser names each unsupported form rather than guessing.
 ## Not implemented yet
 
 - General default model fitting beyond the v0.1 univariate Gaussian animal
-  model, the default-routed t=2 unstructured multivariate `cbind()` path,
-  and default-route genomic GREML. Repeatability, SNP-BLUP, single-step, and
+  model and the default-routed t=2 unstructured multivariate `cbind()` path.
+  Genomic GREML, repeatability, SNP-BLUP, single-step, and
   non-Gaussian (`poisson(log)`/`binomial(logit)`, Laplace marginal likelihood
   or variational ELBO, experimental conditional three-field h2 outputs) models
   fit only through explicit `engine = "julia"` targets —
@@ -309,9 +309,8 @@ the parser names each unsupported form rather than guessing.
   `engine = "validate"`; only REML is implemented).
 - R-side `Ainv` construction (the engine builds `Ainv` in Julia).
 - Estimated variance components, heritability, EBVs, or BLUPs as a default for
-  any model other than the v0.1 univariate Gaussian animal model, the
-  default-routed t=2 unstructured multivariate path, or default-route genomic
-  GREML (the explicit models above return them; covered ones are validated at
+  any model other than the v0.1 univariate Gaussian animal model or the
+  default-routed t=2 unstructured multivariate path (the explicit models above return them; covered ones are validated at
   validation scale only).
 - Log-likelihood or information criteria for supplied-variance Henderson MME
   bridge results.
@@ -332,8 +331,8 @@ the parser names each unsupported form rather than guessing.
 - QTL, GWAS, or eQTL result generation, and marker-scan / marker-imputation
   results (the opt-in SNP-BLUP path above does return marker effects via
   `marker_effects()`).
-- Production genomic or single-step workflows; genomic GREML is
-  default-route covered at validation scale only, and single-step remains
+- Production genomic or single-step workflows; genomic GREML is covered at
+  validation scale only through its explicit target, and single-step remains
   **opt-in partial** (explicit `engine = "julia"` target; not R covered).
 - Factor-analytic and structured `cov()` G matrices stay **planned** on the
   R formula (`cov = fa(K)` is not activated). Julia `V4-FA` may be

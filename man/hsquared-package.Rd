@@ -16,9 +16,8 @@ through the HSquared.jl engine: the default \code{hsquared()} call fits when a
 local Julia and \code{HSquared.jl} are available, and otherwise errors with
 install guidance. A \code{cbind()} multivariate Gaussian response also routes on
 that default path; multivariate is covered at validation scale and stays experimental.
-Narrow genomic GREML also routes on the default path (the explicit
-\code{target = "genomic"} spelling remains available) and is covered at validation
-scale. The covered common-environment two-effect, independent multi-effect,
+Narrow genomic GREML is an explicit experimental target (\code{target = "genomic"})
+and is covered at validation scale. The covered common-environment two-effect, independent multi-effect,
 direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
 maternal two-effect, and non-Gaussian (\code{poisson(log)}/\code{binomial(logit)},
 Laplace marginal likelihood or variational ELBO) models are opt-in and

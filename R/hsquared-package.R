@@ -10,9 +10,8 @@
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
 #' install guidance. A `cbind()` multivariate Gaussian response also routes on
 #' that default path; multivariate is covered at validation scale and stays experimental.
-#' Narrow genomic GREML also routes on the default path (the explicit
-#' `target = "genomic"` spelling remains available) and is covered at validation
-#' scale. The covered common-environment two-effect, independent multi-effect,
+#' Narrow genomic GREML is an explicit experimental target (`target = "genomic"`)
+#' and is covered at validation scale. The covered common-environment two-effect, independent multi-effect,
 #' direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
 #' maternal two-effect, and non-Gaussian (`poisson(log)`/`binomial(logit)`,
 #' Laplace marginal likelihood or variational ELBO) models are opt-in and

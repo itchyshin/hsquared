@@ -12,6 +12,12 @@
   nominal-coverage or covered-status claim is created. The candidate remains
   experimental, not production, and not submitted to CRAN.
 
+* **Default genomic route remains deferred.** The covered genomic-GREML
+  estimand remains available only through explicit
+  `engine = "julia", target = "genomic"`; the ordinary call is again the
+  pedigree animal-model route. This restores the 0.9 scope boundary, changes
+  no covered count, and does not alter the scientific fixture or evidence.
+
 # hsquared 0.8.0
 
 * **Interval-coverage claim levels for the univariate animal model (2000-rep
@@ -88,14 +94,15 @@
   (post-G10 pointer). Not covered. `public_covered_count` stays **7**.
   Experimental stays **0.7.0**. No General / CRAN / 1.0.
 
-* **Default genomic GREML activation (honesty-safe; no count bump).**
+* **Historical default genomic GREML activation (superseded for 0.9).**
   Owner YES 2026-09-03. Narrow `genomic(1 | id, markers = M)` /
   `genomic(1 | id, Ginv = Q)` now auto-routes on `engine = "fit"` (and on
   `engine = "julia"` with no explicit target) to the same covered
   validation-scale GREML estimand as `target = "genomic"`. Session warn-once
   keeps relationship-scale / experimental fences. Design-44 nine-cell recovery
   campaign is confirmatory / may still run — not claimed PASS. `public_covered_count`
-  stays **7**. Single-step / SNP-BLUP stay opt-in. No General / CRAN / 1.0.
+  stayed **7**. Single-step / SNP-BLUP stayed opt-in. The 0.9 candidate
+  restores explicit genomic routing. No General / CRAN / 1.0.
 
 * **#7 - R genomic GREML `partial -> covered` (validation-scale, opt-in).**
   Owner ink: overnight approvals #5-#10 (auto-flip #7 when design-41 section 3 + Rose
@@ -104,7 +111,8 @@
   **retained**. Scope: explicit `engine = "julia", target = "genomic"` on
   `genomic(1 | id, markers = M)` / `Ginv = Q`; estimand `genomic_variance_ratio`
   on \(K_\lambda = G + 0.01 I\) (design-51). **A later maintainer decision
-  activated the default route for this same estimand (2026-09-03).** **NOT** single-step / SNP-BLUP /
+  temporarily activated the default route for this same estimand (2026-09-03);
+  the 0.9 candidate restores explicit routing.** **NOT** single-step / SNP-BLUP /
   APY / GPU / intervals. **NO-ANCHOR DISCLOSURE:** no clean Mrode genomic-\(h^2\)
   pin. Evidence: design-53 SUPERSEDE; Totoro exact-`G` PASS; Boole RATIFIED;
   canon VanRaden lock; promotion parity (DP-10 CI caveat). No General / CRAN / 1.0.
