@@ -41,7 +41,7 @@ claims rather than slogans.
 
 ## Genomic syntax
 
-The basic genomic GREML effect above is the eventual default form. Today it
+The basic genomic GREML effect above remains an explicit route. Today it
 fits through an opt-in, experimental control (`engine = "julia"`,
 `target = "genomic"`; a raw `markers = M` matrix and a SNP-BLUP
 `target = "snp_blup"` path are also available) — see the "Fitting models"

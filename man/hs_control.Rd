@@ -127,8 +127,8 @@ marginal phenotypic variance and is not pedigree-, founder-base-,
 population-, or universal narrow-sense heritability. Genomic
 \code{heritability_interval()} and
 \code{heritability_standard_error()} are unavailable. The R capability remains
-\code{partial}/experimental and validation-scale; the explicit route does not
-move \code{public_covered_count} from 7. A fail-closed boundary candidate matched
+covered at validation scale, experimental, and opt-in; the explicit route
+does not move \code{public_covered_count} from 7. A fail-closed boundary candidate matched
 an independent oracle on all 240 sealed holdouts, correcting 30
 classifications with no losses, but one cell had a 5.99x p95 runtime ratio
 against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
