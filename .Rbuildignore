@@ -22,3 +22,7 @@
 ^\.git$
 ^LOOP$
 ^cran-comments\.md$
+^\.cursor$
+^\.mcp\.json$
+^\.ignore$
+^graft$
