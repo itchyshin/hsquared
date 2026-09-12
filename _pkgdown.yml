@@ -5,15 +5,15 @@ destination: pkgdown-site
 home:
   title: How much is genetic?
   description: >-
-    Experimental 0.9.0 candidate R interface for a Julia-backed animal model.
-    public_covered_count is 7. Not production / not submitted to CRAN.
+    Experimental 0.9.0 release R interface for a Julia-backed animal model.
+    public_covered_count is 7. Not production; CRAN availability is tracked separately.
     Fitting needs a local Julia and an HSquared.jl checkout.
     Report point estimates only for covered routes.
   sidebar:
     structure: [experimental, links, license, community, citation, authors, dev]
     components:
       # D-41 channel 3 stays, but as the SHORT form. The full statement
-      # (experimental 0.9.0 candidate / not production / not submitted to CRAN /
+      # (experimental 0.9.0 release / not production / CRAN availability tracked separately /
       # needs a local Julia) is said once, in the body callout a few
       # centimetres to the left of this card; repeating it verbatim here put
       # the same paragraph on screen twice, which is the craft defect the
@@ -23,7 +23,7 @@ home:
       experimental:
         title: Status
         text: >-
-          **Experimental 0.9.0 candidate.** Version tracks covered capability, not
+          **Experimental 0.9.0 release.** Version tracks covered capability, not
           surface area. `public_covered_count` is **7**. Factor-analytic G
           stays **planned** on R; single-step stays **opt-in partial**.
           Julia engine-covered ≠ R covered, and interval coverage is not

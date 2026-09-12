@@ -1,4 +1,4 @@
-# hsquared 0.9.0 (experimental source candidate)
+# hsquared 0.9.0 (experimental release)
 
 * **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and
   Binomial/logit route retains its explicit scale boundaries: observation-scale
@@ -9,8 +9,8 @@
 
 * **Retained interval evidence, without promotion.** H0, H1, and H3 evidence
   is reported only at its declared route and claim level; no package-wide
-  nominal-coverage or covered-status claim is created. The candidate remains
-  experimental, not production, and not submitted to CRAN.
+  nominal-coverage or covered-status claim is created. The release remains
+  experimental and not production; CRAN availability is tracked separately.
 
 * **Default genomic route remains deferred.** The covered genomic-GREML
   estimand remains available only through explicit
