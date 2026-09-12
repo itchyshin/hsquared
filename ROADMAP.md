@@ -12,11 +12,12 @@ order — not the release schedule. See
 Model").
 
 > **Current record (2026-09-11):** the isolated twins carry an experimental
-> **0.9.0 source candidate** after the ratified three-field contract and
+> **0.9.0 release** after the ratified three-field contract and
 > retained H0/H1/H3 evidence. `public_covered_count` remains **7**; no
-> capability flips are implied. The candidate is not production and has not
-> been submitted to CRAN. A frozen-artifact gate, external platform evidence,
-> and an independent artifact audit must pass before any submission decision.
+> capability flips are implied. The release is not production. CRAN submission,
+> acceptance, and public availability are separate states. A frozen-artifact
+> gate, external platform evidence, and an independent artifact audit govern
+> the submitted artifact.
 
 - **First registration is `0.5.0`, not `1.0`**, shipped with a prominent
   **experimental** label — mirroring the sibling packages (drmTMB, gllvmTMB) and

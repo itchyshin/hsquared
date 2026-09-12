@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-<p class="hs-banner" role="note"><strong>Experimental 0.9.0 candidate · explicit GREML target · count stays 7.</strong>
+<p class="hs-banner" role="note"><strong>Experimental 0.9.0 release · explicit GREML target · count stays 7.</strong>
 Narrow <code>genomic()</code> GREML is covered at validation scale only through its explicit Julia target. SNP-BLUP and single-step stay opt-in and experimental. This page does not flip <code>public_covered_count</code> and does not claim the nine-cell recovery campaign as PASS.</p>
 
 This article shows the current genomic prediction surface in `hsquared`.
@@ -366,7 +366,7 @@ single-step blending of pedigree and genomic information. Useful anchors are
 
 For `hsquared`, those papers motivate the roadmap. The package exposes one
 narrow explicit genomic GREML target (covered at validation scale;
-experimental 0.9.0 candidate; count stays 7) while keeping SNP-BLUP, single-step,
+experimental 0.9.0 release; count stays 7) while keeping SNP-BLUP, single-step,
 recovery-campaign PASS, interval, and broad production genomic claims
 behind explicit validation gates.
 
