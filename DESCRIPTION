@@ -5,8 +5,7 @@ Authors@R:
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre", "cph"))
 Description: Provides the R-facing interface for an open quantitative-genetic
     modelling system backed by the HSquared.jl Julia engine. Experimental
-    0.9.0 experimental release candidate (not production; not submitted to
-    CRAN): the version tracks covered
+    0.9.0 experimental release (not production): the version tracks covered
     capability (public covered count is 7), not maturity; experimental label
     retained. CRAN submission is separately gated on one frozen artifact. Version 0.1 fits the univariate Gaussian
     animal model (y ~ fixed + animal(1 | id, pedigree = ped)) by restricted
@@ -23,7 +22,7 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     repeatability, and two-effect animal models fit through opt-in engine paths
     (repeatability/two-effect covered where previously covered; SNP-BLUP
     remains experimental; single-step remains opt-in partial; Julia
-    engine-covered is not R covered; this candidate is not a CRAN submission); multivariate cbind() animal models route
+    engine-covered is not R covered); multivariate cbind() animal models route
     on the default call and are covered at validation scale (t = 2 unstructured;
     k >= 3 and diagonal stay experimental); non-Gaussian
     (poisson(log)/binomial(logit)) models fit through an opt-in experimental

@@ -13,8 +13,8 @@
 
 <p class="hs-pitch">Formula first. The engine returns heritability, variance
 components, and breeding values on the routes that are
-<strong>covered</strong> — experimental 0.9.0 candidate, not production, and
-not submitted to CRAN.</p>
+<strong>covered</strong> — experimental 0.9.0 release, not production. CRAN
+availability is tracked separately.</p>
 
 <p class="hs-cta">
 <a class="hs-btn hs-btn-primary" href="articles/hsquared.html">Get started</a>
@@ -28,8 +28,8 @@ not submitted to CRAN.</p>
      carries the same weight on GitHub and on the site. -->
 > <span class="hs-note-eyebrow">Before you report anything</span>
 >
-> **Warning — experimental 0.9.0 candidate.** Not production / not submitted
-> to CRAN. There are **7** R-public covered routes; fitting needs local Julia
+> **Warning — experimental 0.9.0 release.** Not production. CRAN availability
+> is tracked separately. There are **7** R-public covered routes; fitting needs local Julia
 > and an `HSquared.jl` checkout. Julia engine-covered ≠ R-public covered. Report
 > point estimates only within a covered route. No interval is nominally
 > coverage-calibrated; named univariate pedigree intervals are only classified

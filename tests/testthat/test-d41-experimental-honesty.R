@@ -90,7 +90,7 @@ test_that("README carries the D-41 callout and a validate-first example", {
 
   # channel 4: lifecycle badge + prominent callout
   expect_match(text, "lifecycle-experimental", fixed = TRUE)
-  expect_match(text, "Warning — experimental 0.9.0 candidate", fixed = TRUE)
+  expect_match(text, "Warning — experimental 0.9.0 release", fixed = TRUE)
   expect_match(text, "0.9.0", fixed = TRUE)
   expect_match(text, "No interval is nominally", fixed = TRUE)
 
@@ -111,19 +111,19 @@ test_that("README carries the D-41 callout and a validate-first example", {
 })
 
 
-test_that("README and pkgdown lock 0.9 candidate public honesty fences", {
+test_that("README and pkgdown lock 0.9 release public honesty fences", {
   readme <- testthat::test_path("..", "..", "README.md")
   skip_if_not(file.exists(readme), "README.md not present in the check copy")
   text <- gsub("\\s+", " ", paste(readLines(readme, warn = FALSE), collapse = " "))
 
-  expect_match(text, "experimental 0.9.0 candidate", fixed = TRUE)
-  expect_match(text, "not submitted to CRAN", fixed = TRUE)
+  expect_match(text, "experimental 0.9.0 release", fixed = TRUE)
+  expect_match(text, "CRAN availability is tracked separately", fixed = TRUE)
   expect_match(text, "R-public covered routes", fixed = TRUE)
 
   pkgdown <- testthat::test_path("..", "..", "_pkgdown.yml")
   skip_if_not(file.exists(pkgdown), "_pkgdown.yml not present in the check copy")
   ptext <- gsub("\\s+", " ", paste(readLines(pkgdown, warn = FALSE), collapse = " "))
-  expect_match(ptext, "not submitted to CRAN", fixed = TRUE)
+  expect_match(ptext, "CRAN availability is tracked separately", fixed = TRUE)
   expect_match(ptext, "public_covered_count", fixed = TRUE)
   expect_match(ptext, "**7**", fixed = TRUE)
   expect_match(ptext, "planned", ignore.case = TRUE)
@@ -138,10 +138,10 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
   skip_if_not(file.exists(article), "model-status.Rmd not present in the check copy")
   text <- gsub("\\s+", " ", paste(readLines(article, warn = FALSE), collapse = " "))
 
-  expect_match(text, "experimental 0.9.0 candidate", fixed = TRUE)
+  expect_match(text, "experimental 0.9.0 release", fixed = TRUE)
   expect_no_match(text, "experimental 0.7.0", fixed = TRUE)
   expect_match(text, "public_covered_count", fixed = TRUE)
-  expect_match(text, "not submitted to CRAN", fixed = TRUE)
+  expect_match(text, "CRAN availability is tracked separately", fixed = TRUE)
   expect_match(text, "opt-in partial", fixed = TRUE)
   expect_match(text, "factor-analytic", ignore.case = TRUE)
   expect_match(text, "planned", ignore.case = TRUE)
@@ -196,7 +196,7 @@ test_that("reader articles use canonical Documenter leaf URLs", {
   )
 })
 
-test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 candidate", {
+test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 release", {
   desc <- gsub(
     "\\s+",
     " ",
@@ -206,7 +206,7 @@ test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 candidate", {
   expect_match(desc, "public covered count is 7|public covered count stays 7")
   expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
   expect_match(desc, "opt-in partial", fixed = TRUE)
-  expect_match(desc, "not submitted to CRAN", fixed = TRUE)
+  expect_match(desc, "experimental release", fixed = TRUE)
   expect_match(desc, "engine-covered is not R covered", fixed = TRUE)
   expect_no_match(desc, "0.9 is not released", fixed = TRUE)
 })
