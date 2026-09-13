@@ -81,4 +81,5 @@ twin's corresponding page must state it too, or link to it. A reader should
 not have to cross the language boundary to learn what a value means, what a
 function requires, or which parameters are identified versus rotation- or
 scale-dependent. `HSquared.jl`'s `docs/src/twin-boundary.md` is the sibling
-page for this rule on the Julia side.
+page for this rule on the Julia side and carries the matching paragraph
+(landed in HSquared.jl PR #338).
