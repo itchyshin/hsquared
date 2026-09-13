@@ -459,12 +459,23 @@ test_that("the v0.9 Poisson route carries the three-field result through the liv
   project <- hsquared:::hs_default_julia_project()
   hs_require_bridge("A3 v0.9 non-Gaussian bridge", project = project)
 
+  # Two three-progeny sire families with clearly separated Poisson means
+  # (~6.5 vs ~0.5) so sigma_a2 is genuinely identifiable. The original n = 4,
+  # one-full-sib-pair fixture carried no information for sigma_a2 separate
+  # from Poisson noise, so the fitted value rode the search bracket's lower
+  # rail (HSquared.jl#342 refuses that as a boundary fit); the R bridge
+  # cannot forward a non-default `initial` (hsquared#225), so every live
+  # nongaussian fit starts its search at sigma_a2 = 1. This stays a tiny
+  # deterministic fixture, not a calibration run.
   pedigree <- data.frame(
-    id = c("s", "d", "a", "b"),
-    sire = c(NA, NA, "s", "s"),
-    dam = c(NA, NA, "d", "d")
+    id = c("s1", "d1", "s2", "d2", "a1", "a2", "a3", "b1", "b2", "b3"),
+    sire = c(NA, NA, NA, NA, "s1", "s1", "s1", "s2", "s2", "s2"),
+    dam = c(NA, NA, NA, NA, "d1", "d1", "d1", "d2", "d2", "d2")
   )
-  data <- data.frame(y = c(1, 0, 2, 1), id = pedigree$id)
+  data <- data.frame(
+    y = c(6, 7, 0, 1, 6, 7, 5, 0, 1, 0),
+    id = pedigree$id
+  )
   fit <- hsquared(
     y ~ animal(1 | id, pedigree = pedigree),
     data = data,
@@ -496,6 +507,13 @@ test_that("the v0.9 Poisson route carries the three-field result through the liv
     )
   )
   expect_true(all(is.finite(fit$result$heritability$estimate)))
+  # V_A landing inside the search bracket's interior confirms the fit is not
+  # riding the boundary refusal it would hit at sa0*exp(-+6) (HSquared.jl#342;
+  # hsquared#225 -- the bridge always starts the search at sa0 = 1).
+  vc <- variance_components(fit)
+  sa2 <- vc$estimate[match("V_A", vc$component)]
+  expect_gt(sa2, exp(-5.9))
+  expect_lt(sa2, exp(5.9))
   expect_false("h2_liability" %in% names(fit$result))
   expect_false("n_trials" %in% names(fit$result))
   expect_identical(
@@ -548,10 +566,29 @@ test_that("the v0.9 Binomial route carries A4-1 observation semantics through th
   expect_true(common_fit$result$h2_observation <= 1)
   expect_false("h2_observation_undefined_reason" %in% names(common_fit$result))
 
+  # The original perfect 0/1 alternation had exactly one Bernoulli trial per
+  # animal-random-effect level (8 records, 8 animals): that is genuine
+  # quasi-complete separation -- every 0/1 pattern at that n_animals ==
+  # n_records ratio drives sigma_a2 -> the search bracket's upper rail
+  # (HSquared.jl#342 refuses that as a boundary fit), independent of the
+  # pattern chosen. Give each animal 3 replicate Bernoulli records instead
+  # (still all-ones trials, so the family classification below stays
+  # "bernoulli"), with mixed (not uniformly identical) outcomes within both
+  # full-sib families, so the fit is no longer separable.
+  all_one_succ <- c(
+    1, 1, 0, # s1
+    1, 0, 1, # d1
+    0, 0, 1, # s2
+    0, 1, 0, # d2
+    1, 1, 1, # a1
+    0, 1, 1, # a2
+    0, 0, 1, # b1
+    1, 0, 0 # b2
+  )
   all_one <- data.frame(
-    successes = c(0, 1, 0, 1, 1, 0, 1, 0),
-    failures = c(1, 0, 1, 0, 0, 1, 0, 1),
-    id = pedigree$id
+    successes = all_one_succ,
+    failures = 1L - all_one_succ,
+    id = rep(pedigree$id, each = 3)
   )
   all_one_fit <- hsquared(
     cbind(successes, failures) ~ animal(1 | id, pedigree = pedigree),
@@ -562,6 +599,13 @@ test_that("the v0.9 Binomial route carries A4-1 observation semantics through th
   expect_identical(all_one_fit$result$family, "bernoulli")
   expect_true(is.finite(all_one_fit$result$h2_observation))
   expect_false("h2_observation_undefined_reason" %in% names(all_one_fit$result))
+  # V_A landing inside the search bracket's interior confirms the fit is not
+  # riding the boundary refusal it would hit at sa0*exp(-+6) (HSquared.jl#342;
+  # hsquared#225 -- the bridge always starts the search at sa0 = 1).
+  all_one_vc <- variance_components(all_one_fit)
+  all_one_sa2 <- all_one_vc$estimate[match("V_A", all_one_vc$component)]
+  expect_gt(all_one_sa2, exp(-5.9))
+  expect_lt(all_one_sa2, exp(5.9))
 
   varying <- data.frame(
     successes = c(0, 1, 3, 4, 1, 2, 1, 5),
