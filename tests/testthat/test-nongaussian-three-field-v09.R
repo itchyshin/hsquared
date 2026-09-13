@@ -574,7 +574,7 @@ test_that("the v0.9 Binomial route carries A4-1 observation semantics through th
   # pattern chosen. Give each animal 3 replicate Bernoulli records instead
   # (still all-ones trials, so the family classification below stays
   # "bernoulli"), with mixed (not uniformly identical) outcomes within both
-  # half-sib families, so the fit is no longer separable.
+  # full-sib families, so the fit is no longer separable.
   all_one_succ <- c(
     1, 1, 0, # s1
     1, 0, 1, # d1
