@@ -7751,3 +7751,183 @@ release".
   new-submission NOTE only.
 - Boundary: candidate evidence only; no PR update, push, merge, tag, CRAN
   submission, registry action, promotion, or release.
+
+## 2026-09-13 — H2 fixer campaign: R half merged (#219 #221 #220 #223 #226 #227) [R]
+
+Six PRs landed on `hsquared` `main`, closing the eleven R-side issues the H2 twin
+independent test campaign filed (plus one latent test-only bug it surfaced). Julia-side
+companion work (HSquared.jl #337/#338/#339/#341/#342, closing #331/#327/#212(engine
+half)/#214/#217(engine half)/#333/#334/#210(Julia strings)) is recorded separately in the
+Julia twin's own check-log.
+
+### Merged PRs
+
+- **#219** (`fix: random-regression extractors error on out-of-range covariates instead
+  of clamping (#213)`) — merge SHA `90fab9ff`. Closes #213. `R/conditions.R`
+  (`hs_abort_out_of_range()`), `R/julia-bridge.R` (`hs_legendre_basis()` now errors beyond
+  Julia's `1e-10` tolerance instead of clamping), `R/extractors.R`
+  (`hs_rr_eval_points()` range-checks a user-supplied `at` against the fitted range),
+  `man/random_regression_extractors.Rd`, `NEWS.md` (dropped — see Rose A below),
+  `tests/testthat/test-rr-out-of-range.R` (new), `tests/testthat/test-random-regression.R`
+  (one pre-existing out-of-range fixture value corrected).
+- **#221** (`docs: carry engine contracts into the R surface (#211, #216, #218, #209,
+  #210, #215) + vignette fixtures (#208)`) — merge SHA `f62ce52a`. Closes #211, #216,
+  #218, #209, #210, #215, #208. `R/extractors.R` (PEV/reliability/accuracy/Fisher-z
+  formulas transported from the engine; `sigma_P` → `sigma^2_P`; `metafounder_groups()`
+  `@return` correction), `R/genomic-markers.R` and `R/model-spec.R` (0/1/2 marker
+  convention documented; out-of-range check now `hs_abort_out_of_range()`-classed),
+  `R/julia-bridge.R` (`sigma_P` → `sigma^2_P` at the two direct-maternal
+  `interpretation`-string sites), `R/animal.R` and `R/hs_control.R` (selfing gap on
+  `pedigree =` documented, `relmat(K = )` workaround), six vignette fixture chunks
+  (`fitting-models.Rmd`, `g-matrix-interpretation.Rmd`, `inheritance-systems.Rmd`,
+  `multivariate.Rmd`, `genomic-prediction.Rmd`, `qtl-gwas-eqtl-status.Rmd`),
+  `vignettes/articles/twin-boundary.Rmd` (twin-contract-rule section), `man/*.Rd`
+  regenerated, `tests/testthat/test-genomic.R` and `test-fit-object.R` (pinned wording
+  updated to match corrected text).
+- **#220** (`fix: translate Julia bridge errors + max_dense_cells lever; repeatability
+  dense-cell guard (#214, #217)`) — merge SHA `1a1f4a67`. Closes #214, #217. Depended on
+  HSquared.jl #341. `R/conditions.R` (`hs_julia_fit(expr, hint)` wrapper; two hint
+  constants after repair — `hs_dense_route_hint` at the two guarded sites,
+  `hs_dense_scale_hint` at the other 13 dense-hinted sites), `R/julia-bridge.R` (all 17
+  `hs_fit_julia_*_payload()` fit calls wrapped; `max_dense_cells` forwarded on
+  `hs_fit_julia_payload()` and `hs_fit_julia_repeatability_payload()`), `R/hs_control.R`
+  (`max_dense_cells` validated at construction), `man/hs_control.Rd`,
+  `vignettes/articles/current-limits.Rmd`, `vignettes/articles/model-status.Rmd`,
+  `tests/testthat/test-julia-error-translation.R` (new).
+- **#223** (`fix: forward engine_control initial/iterations on every target; unsupported
+  keys error (#212)`) — merge SHA `35faaa15`. Closes #212. `R/julia-bridge.R`
+  (`hs_engine_control_forwarding()` gate; `hs_validate_multi_effect_initial()`,
+  `hs_validate_direct_maternal_initial()`; `initial`/`iterations` now reach
+  `multi_effect`, `direct_maternal`, `single_step_construct`,
+  `metafounder_single_step`, and the `multi_effect_ratio_interval` refit),
+  `R/hsquared.R` (one `hs_engine_control_forwarding(control, target)` call site gating
+  every builder), `R/hs_control.R` / `man/hs_control.Rd` (per-target honoured-keys
+  table), `tests/testthat/test-212-engine-control-forwarding.R` (new),
+  `tests/testthat/test-validation-fixtures.R` (one pre-existing `iterations=` casualty
+  moved to the side of the comparison it actually affects). Merged `main` in once
+  (commit `768d7f1`) to pick up #219/#221/#220 and reconcile the cross-PR
+  `max_dense_cells` honoured-keys requirement (see below) before its own merge.
+- **#226** (`docs+test: NEWS for the fixer campaign; fix live-test hs_julia_setup() call
+  (#224)`) — merge SHA `06cb78a9`. Closes #224. `NEWS.md` (new `# hsquared (development
+  version)` header consolidating the four bullets deferred by #219/#220/#221/#223),
+  `tests/testthat/test-direct-maternal.R` (`hs_julia_setup()` now passes
+  `hs_default_julia_project()`, reusing the file's own existing pattern).
+- **#227** (`test: non-Gaussian live fixtures carry real additive variance (post
+  HSquared.jl#342 boundary refusal)`) — merge SHA `b788cd4f`. No issue closed (the
+  bridge-contract gap it surfaces is filed separately as #225, left open by design).
+  `tests/testthat/helper-simulation.R` (new `hs_sim_genedrop_bv()`),
+  `tests/testthat/test-binomial-counts.R` and
+  `tests/testthat/test-nongaussian-three-field-v09.R` (five fixture DGPs given real
+  identifiable additive/genetic signal; five interior-boundary regression guards added,
+  each citing HSquared.jl#342 / hsquared#225).
+
+Merge order was **#219 → #221 → #220 → #223 → #226 → #227**, per Rose's measured
+conflict matrix (`git merge-tree`); `main` was merged forward into the next branch
+before each merge (never rebased, never force-pushed), and CI was allowed to re-run
+against each new base before the next PR landed.
+
+### Rose audits (Opus, pre-merge, no repo written to)
+
+- **rose-r-a** — all four builder PRs (#219, #220, #221, #223) audited against a common
+  base (`main` `4ec4cfb`): verdict **CHANGES** on every one (1, 4, 3, and 1 required
+  items respectively), all applied before merge (see repair reports below). Also carried
+  a **mandatory cross-PR merge requirement**: `git merge-tree` on the real #220×#223
+  branches showed `R/hsquared.R` auto-merging clean while
+  `hs_engine_control_honoured_keys` in the merged `R/julia-bridge.R` carried no
+  `max_dense_cells` entry for any target — a merge that CI would show green while
+  silently reverting #220's entire feature (its live tests are `skip_if_not`-gated and
+  do not run in CI). Required: add `max_dense_cells` to the `fit_animal_model` and
+  `repeatability` rows of the honoured-keys table, plus a non-live regression test
+  pinning it. Also specified the **wrapper-vs-forwarding merge rule** for the three
+  function bodies both PRs touch: #223's kwarg-building code stays outside
+  `hs_julia_fit()`; #223's rewritten `julia_command` call goes inside it — so an R-side
+  validation error is never relabelled as an `hsquared_julia_error`.
+- **rose-r-b** — PR #226: verdict **CHANGES** (4 required, all in `NEWS.md` wording —
+  a false issue/PR attribution, a false claim that no other Julia entry point enforces
+  the dense-cell guard when two do but reach it through `fit_payload_v2`'s narrower
+  signature, the "default `animal()` route" phrasing recurring after R3-2 had it
+  removed elsewhere, and a mis-indented closing paragraph). Also independently
+  spot-checked all eight of wave-A's required changes against merged `main` — all eight
+  pass — and confirmed the twin-contract paragraph landed on the Julia side (HSquared.jl
+  PR #338) stronger than required.
+- **rose-r-c** — PR #227: verdict **CHANGES** (2 required, both text-only): the PR
+  body's suite-evidence block was stale on the merge-forward head (the #224 error it
+  named had since been fixed by #226 landing in the branch's history); and the new
+  `all_one` fixture comment/PR-body table called `a1`/`a2` and `b1`/`b2` "half-sib"
+  families when the shared pedigree (`s1`×`d1`, `s2`×`d2`) makes them full-sib.
+
+All three audits ran no R and no Julia themselves; CI (SUCCESS on both legs at review
+time) plus the builders' own recorded runs were the evidence base, cross-checked against
+`git show origin/main:<path>` on both twins for every substantive claim.
+
+### #342 boundary-refusal diagnosis (`diag-boundary.md`)
+
+After #220/#223/#226 merged, the live full suite showed six errors, not the one
+(#224) the campaign had been tracking. Diagnosed (Gauss + Hopper lenses, no repo
+written to): one was #224 (fixed moments later by #226); the other five were a new
+`ArgumentError` from `nongaussian_three_field_payload` refusing a fit whose `sigma_a2`
+landed on its search bracket's boundary — introduced by HSquared.jl #342 (which merged
+#327's `boundary::Bool` field and refusal guard onto Julia `main`). **Verdict A on all
+five sites** (`test-binomial-counts.R:148,206,247`,
+`test-nongaussian-three-field-v09.R` Poisson route and `all_one` Bernoulli route): the
+refusal is correct in every case — the R fixtures had no identifiable additive variance
+by construction (three flat-probability Binomial/Bernoulli draws, one thin
+4-animal Poisson fixture, and one genuine quasi-complete-separation design at
+`n_animals == n_records`), confirmed by sweeping the search bracket at multiple start
+values and by direct probes against `HSquared.jl::fit_laplace_reml`. Root cause: the R
+bridge's `nongaussian` target is the one Julia target whose `engine_control` honoured-
+keys entry omits `initial`, so every live non-Gaussian fit is forced to start its search
+at the engine's hard-coded `sigma_a2 = 1.0`. Fix landed entirely on the R side (#227,
+fixture DGP changes only); no Julia contract change was warranted. The bridge gap itself
+(non-Gaussian's missing `initial` passthrough) was filed as **hsquared#225** (open, not
+required and not sufficient to fix the five tests — for the `all_one` site in
+particular, no `initial` rescues a quasi-complete-separation design). A related,
+Julia-owned follow-on — the R bridge consuming only `converged` and not the new
+`boundary` field off a non-Gaussian Julia result — was filed as **hsquared#222** (open).
+
+### Checks (this worktree, `origin/main` `b788cd4`)
+
+- `Rscript -e 'devtools::document()'` — clean; `git status --porcelain` after — **empty**
+  (no drift between the committed `man/`/`NAMESPACE` and a fresh regeneration).
+- `Rscript -e 'r <- devtools::check(".", document = FALSE, quiet = TRUE, error_on =
+  "never"); cat("errors=", length(r$errors), " warnings=", length(r$warnings), "
+  notes=", length(r$notes), "\n")'` (`OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`, run in
+  the background, polled with an until-loop) — **errors= 0  warnings= 0  notes= 0**.
+- Filtered live run (`HSQUARED_JULIA_TESTS=true HSQUARED_JULIA_PROJECT=<local
+  HSquared.jl checkout, `origin/main` `a4cf08e5`> NOT_CRAN=true Rscript -e
+  'devtools::test(filter = "212|213|julia-error-translation|repeatability|
+  binomial-counts|nongaussian-three-field-v09|direct-maternal", reporter = "summary")'`)
+  — every matched file (`212-engine-control-forwarding`, `binomial-counts`,
+  `direct-maternal`, `julia-error-translation`, `nongaussian-three-field-v09`,
+  `repeatability-interval`, `repeatability`) ran to `══ DONE ══` with no `F`/`E` marker
+  anywhere in the transcript — the #224 fix (`#226`) and the #342-boundary fixture fix
+  (`#227`) both hold on this head.
+- FULL LIVE SUITE (orchestrator, R main b788cd4 vs Julia main a4cf08e5, `HSQUARED_JULIA_TESTS=true NOT_CRAN=true OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`): `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3609`; zero rows with failed>0 or error>0. Before #226/#227 the same run had ERROR=6 (1× #224, 5× the HSquared.jl#342 boundary refusal) — carried in testthat's `error` column, which the earlier gate formula did not sum.
+
+### CI state (`main`, at write time)
+
+`gh run list -R itchyshin/hsquared --branch main -L 4`: R-CMD-check on #226's merge
+commit (`06cb78a9`) — SUCCESS; pkgdown on the same commit — SUCCESS; R-CMD-check on
+#227's merge commit (`b788cd4f`, the current `main` head) — in progress at write time
+(not yet resolved when this entry was written).
+
+### Constraints held
+
+`DESCRIPTION` stays `Version: 0.9.0` across all six PRs — no bump. `NEWS.md` gained
+exactly one new `# hsquared (development version)` header (consolidated in #226, after
+Rose required the four builder PRs drop their own NEWS hunks). No row of
+`docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or any
+other status ledger changed cell value; the only wording-level wording change Rose
+required that touches a status-adjacent page is R3-2's `model-status.Rmd` correction
+(the dense-cell cap applies under `engine = "julia"`, not the default `engine = "fit"`
+route) — a correction to existing prose, not a status flip. `public_covered_count` stays
+**7** (`docs/design/06-public-claims-register.md`).
+
+### Residual (not required by Rose)
+
+`tests/testthat/test-nongaussian-three-field-v09.R:462`'s comment describes the Poisson
+fixture's two families as "two three-progeny sire families"; each sire is paired with
+one distinct dam, so these are full-sib families, not sire/half-sib groups (rose-r-c,
+recorded as lower-stakes alongside the required "half-sib" → "full-sib" fix at the
+`all_one` site). Not fixed here — text-only, non-blocking, flagged for whoever next
+touches that file.
