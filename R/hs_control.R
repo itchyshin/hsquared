@@ -27,13 +27,14 @@
 #'   `julia_project` is honoured by every `target`; supplying a key a given
 #'   `target` does not honour errors (hsquared#212) rather than being
 #'   silently ignored. Per-target honoured keys (besides `julia_project`):
-#'   * `fit_animal_model` (default): `initial`.
+#'   * `fit_animal_model` (default): `initial`, `max_dense_cells`.
 #'   * `henderson_mme`, `metafounder`, `snp_blup`: `variance_components`.
 #'   * `ai_reml`: `initial`, `iterations`, `em_warmup`.
-#'   * `sparse_reml`, `repeatability`, `two_effect`, `direct_maternal`,
+#'   * `sparse_reml`, `two_effect`, `direct_maternal`,
 #'     `genomic`, `single_step`, `single_step_construct`,
 #'     `metafounder_single_step`, `relmat`, `precision`: `initial`,
 #'     `iterations`.
+#'   * `repeatability`: `initial`, `iterations`, `max_dense_cells`.
 #'   * `multi_effect`: `initial`, `iterations`, `scale_method` -- `initial`/
 #'     `iterations` are honoured on the `scale_method = "dense"` (default)
 #'     route only; the opt-in `scale_method = "auto"` route does not yet

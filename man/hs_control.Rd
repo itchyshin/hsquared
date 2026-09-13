@@ -40,13 +40,14 @@ experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{target} does not honour errors (hsquared#212) rather than being
 silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \itemize{
-\item \code{fit_animal_model} (default): \code{initial}.
+\item \code{fit_animal_model} (default): \code{initial}, \code{max_dense_cells}.
 \item \code{henderson_mme}, \code{metafounder}, \code{snp_blup}: \code{variance_components}.
 \item \code{ai_reml}: \code{initial}, \code{iterations}, \code{em_warmup}.
-\item \code{sparse_reml}, \code{repeatability}, \code{two_effect}, \code{direct_maternal},
+\item \code{sparse_reml}, \code{two_effect}, \code{direct_maternal},
 \code{genomic}, \code{single_step}, \code{single_step_construct},
 \code{metafounder_single_step}, \code{relmat}, \code{precision}: \code{initial},
 \code{iterations}.
+\item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells}.
 \item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method} -- \code{initial}/
 \code{iterations} are honoured on the \code{scale_method = "dense"} (default)
 route only; the opt-in \code{scale_method = "auto"} route does not yet

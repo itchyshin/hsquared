@@ -445,3 +445,50 @@ test_that("hs_engine_control_forwarding is a no-op for an empty engine_control",
     list()
   )
 })
+
+test_that("max_dense_cells passes the forwarding gate on its two guarded targets", {
+  expect_silent(hsquared:::hs_engine_control_forwarding(
+    hs_control(engine = "julia",
+               engine_control = list(target = "repeatability", max_dense_cells = 50)),
+    "repeatability"
+  ))
+  expect_silent(hsquared:::hs_engine_control_forwarding(
+    hs_control(engine = "julia", engine_control = list(max_dense_cells = 50)),
+    "fit_animal_model"
+  ))
+  expect_error(
+    hsquared:::hs_engine_control_forwarding(
+      hs_control(engine = "julia",
+                 engine_control = list(target = "random_regression", max_dense_cells = 50)),
+      "random_regression"
+    ),
+    class = "hsquared_unsupported_syntax"
+  )
+})
+
+# R1-1: the PR body claims the two single-step sites are "byte for byte"
+# reproductions of the pre-fix call string, which Rose found false (the
+# validated `iterations` is now forwarded unconditionally). Behaviour is
+# unchanged today only because R's dispatch default (100L) equals the
+# payload functions' own formal default (100L) -- a coincidence, not a
+# guarantee. There is no existing seam in this file that captures or mocks
+# the `julia_command` string, so this pins the two halves of that
+# coincidence directly (both non-live): the dispatch-time default that
+# `hs_engine_control_value()` resolves to when `iterations` is unsupplied,
+# and the payload functions' own formal default. If either drifts from the
+# other, this test catches it before a live Julia run would.
+test_that("single_step_construct/metafounder_single_step default dispatch pins iterations = 100L (R1-1)", {
+  default_control <- hs_control(engine = "julia")
+  expect_identical(
+    hsquared:::hs_engine_control_value(default_control, "iterations", 100L),
+    100L
+  )
+  expect_identical(
+    formals(hsquared:::hs_fit_julia_single_step_construct_payload)$iterations,
+    100L
+  )
+  expect_identical(
+    formals(hsquared:::hs_fit_julia_metafounder_single_step_payload)$iterations,
+    100L
+  )
+})

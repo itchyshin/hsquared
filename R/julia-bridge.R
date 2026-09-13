@@ -3992,12 +3992,12 @@ hs_validate_direct_maternal_initial <- function(initial) {
 # are not repeated in the table below. Call once per `hsquared()` Julia
 # dispatch, before any `hs_fit_julia_*_payload` builder runs.
 hs_engine_control_honoured_keys <- list(
-  fit_animal_model = "initial",
+  fit_animal_model = c("initial", "max_dense_cells"),
   henderson_mme = "variance_components",
   metafounder = "variance_components",
   sparse_reml = c("initial", "iterations"),
   ai_reml = c("initial", "iterations", "em_warmup"),
-  repeatability = c("initial", "iterations"),
+  repeatability = c("initial", "iterations", "max_dense_cells"),
   two_effect = c("initial", "iterations"),
   # multi_effect: initial/iterations are honoured on the `scale_method =
   # "dense"` (default) route only; `scale_method = "auto"` does not forward
