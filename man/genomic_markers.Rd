@@ -39,7 +39,10 @@ qtl_scan(position, genotype_probs = NULL, ...)
 and single-step models.}
 
 \item{markers}{An individual-by-marker numeric dosage matrix with rows named
-by genotyped ID. For \code{genomic()}, the engine uses sample allele frequencies,
+by genotyped ID. Entries must be the biallelic allele count \code{0}/\code{1}/\code{2}
+(or an imputed dosage in the closed interval \verb{[0, 2]}); a matrix in the
+centered \code{-1}/\code{0}/\code{1} convention must be recoded (add \code{1}) before it is
+passed in. For \code{genomic()}, the engine uses sample allele frequencies,
 VanRaden method 1, and ridge \code{0.01}. For \code{single_step()}, this is the
 genotyped-subset marker matrix used to construct the genomic relationship.}
 

@@ -26,9 +26,9 @@ hs_abort_unsupported_syntax <- function(..., call. = FALSE) {
 }
 
 # Raise a structured "out of range" error for a numeric value outside its
-# valid domain -- the normalized-Legendre basis input `t`, or a user-supplied
-# `at` outside the fitted covariate range. Carries a stable, catchable
-# condition class:
+# valid domain -- the normalized-Legendre basis input `t`, a user-supplied
+# `at` outside the fitted covariate range, or a `markers` dosage matrix
+# outside its required interval. Carries a stable, catchable condition class:
 #
 #   c("hsquared_out_of_range", "hsquared_error", "error", "condition")
 hs_abort_out_of_range <- function(...) {

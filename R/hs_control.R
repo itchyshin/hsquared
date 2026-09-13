@@ -148,6 +148,11 @@
 #'   marshals the inverse). `target = "precision"` is the same experimental path
 #'   for `precision(1 | id, Q = Q)` (a supplied precision/inverse). Neither is
 #'   covered or the default; the supplied matrix is provenance, not an estimate.
+#'   The `animal(1 | id, pedigree = ped)` route rejects selfing (rows with the
+#'   same known sire and dam) in v0.1, with no argument that reaches the
+#'   engine's `allow_selfing` flag; `relmat(1 | id, K = A)` with a hand-built
+#'   or `AGHmatrix`-built relationship matrix `A` is the current workaround
+#'   for a selfing or hermaphroditic pedigree.
 #'   `target = "multivariate"` names the experimental multivariate Gaussian
 #'   animal model. Naming it is optional: a `cbind()` Gaussian response with an
 #'   `animal()` term auto-routes to this target on the default path, and under

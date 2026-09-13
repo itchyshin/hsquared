@@ -301,9 +301,12 @@ test_that("reserved factor-analytic extractors fail with rotation-aware scope", 
     "rotation controls are planned, not implemented",
     fixed = TRUE
   )
+  # specific_variance() (Psi) is rotation-INVARIANT and identified, unlike
+  # the loading-based extractors above; its message says so and points at
+  # the bridge-activation gate instead of rotation-nonuniqueness (#218).
   expect_error(
     specific_variance(fit),
-    "planned, not implemented.*rotation-nonunique",
+    "planned, not implemented.*rotation-INVARIANT",
     perl = TRUE
   )
   expect_error(

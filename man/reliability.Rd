@@ -25,4 +25,12 @@ Reliability estimates for \code{hsquared_fit} objects.
 returns values only when an \code{hsquared_fit} object contains a Julia result
 field for reliability estimates. \code{accuracy()} returns the square root of
 reliability for \code{hsquared_fit} objects.
+
+The engine defines reliability as \code{1 - PEV_i / (sigma_a2 * A_ii)}, using the
+dense relationship matrix \code{A = inv(Ainv)} implied by the supplied precision.
+For a genomic spec (\code{Ainv = Ginv}) this \code{A_ii} is `diag(inv(Ginv)) = diag(G)
+\itemize{
+\item ridge\verb{(the regularized genomic self-relationship, often not equal to 1), so the genomic ridge perturbs the reported reliability and accuracy. Reliability values are **not clipped**;}accuracy()` \strong{rejects} a
+reliability value below 0 or above 1 rather than silently clipping it.
+}
 }

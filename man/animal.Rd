@@ -12,7 +12,12 @@ animal(formula, pedigree = NULL, ...)
 
 \item{pedigree}{A pedigree data frame with individual, sire, and dam columns.
 Optional only when the enclosing \code{\link[=hsquared]{hsquared()}} or \code{\link[=model_spec]{model_spec()}} call uses
-\code{data = hs_data(..., pedigree = ...)}.}
+\code{data = hs_data(..., pedigree = ...)}. In v0.1 this route rejects any row
+with the same known sire and dam (selfing); no argument here reaches the
+engine's existing \code{allow_selfing} flag. The current workaround for a
+selfing or hermaphroditic pedigree is \code{relmat(1 | id, K = A)} with a
+hand-built or \code{AGHmatrix}-built relationship matrix \code{A} (an experimental
+route; see \code{?hs_control}).}
 
 \item{...}{Reserved for future syntax such as \verb{cov =}.}
 }
