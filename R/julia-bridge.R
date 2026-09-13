@@ -43,7 +43,8 @@ hs_julia_attach_standard_plot_data <- function() {
 hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
-  initial = c(sigma_a2 = 1, sigma_e2 = 1)
+  initial = c(sigma_a2 = 1, sigma_e2 = 1),
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -59,29 +60,34 @@ hs_fit_julia_payload <- function(
   hs_julia_setup(project)
   initial <- hs_validate_initial_variances(initial)
   hs_julia_assign_payload(payload, initial)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_fit = HSquared.fit_animal_model(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "ids = hsq_ped.ids,",
-    "method = Symbol(hsq_method),",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2)",
-    ");",
-    "hsq_result = HSquared.result_payload(hsq_fit);",
-    # Enrich with PEV/reliability only for older engines whose result_payload
-    # does not already carry them; current engines emit them via :selinv, and
-    # re-merging would clobber that standard field with a redundant :dense solve.
-    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-    "isdefined(HSquared, :prediction_error_variance) &&",
-    "isdefined(HSquared, :reliability);",
-    "hsq_result = merge(hsq_result, (",
-    "prediction_error_variance =",
-    "HSquared.prediction_error_variance(hsq_fit),",
-    "reliability = HSquared.reliability(hsq_fit)));",
-    "end;"
-  ))
+  JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_fit = HSquared.fit_animal_model(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids,",
+      "method = Symbol(hsq_method),",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "max_dense_cells = Int(hsq_mdc)",
+      ");",
+      "hsq_result = HSquared.result_payload(hsq_fit);",
+      # Enrich with PEV/reliability only for older engines whose result_payload
+      # does not already carry them; current engines emit them via :selinv, and
+      # re-merging would clobber that standard field with a redundant :dense solve.
+      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+      "isdefined(HSquared, :prediction_error_variance) &&",
+      "isdefined(HSquared, :reliability);",
+      "hsq_result = merge(hsq_result, (",
+      "prediction_error_variance =",
+      "HSquared.prediction_error_variance(hsq_fit),",
+      "reliability = HSquared.reliability(hsq_fit)));",
+      "end;"
+    )),
+    hint = hs_dense_route_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -126,29 +132,32 @@ hs_fit_julia_henderson_mme_payload <- function(
     "hsq_supplied_sigma_e2",
     unname(variance_components[["sigma_e2"]])
   )
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_spec = HSquared.animal_model_spec(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "ids = hsq_ped.ids, method = Symbol(hsq_method));",
-    "hsq_mme = HSquared.henderson_mme(",
-    "hsq_spec, hsq_supplied_sigma_a2, hsq_supplied_sigma_e2);",
-    "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
-    "hsq_mme_raw = Dict(",
-    "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
-    "\"animal_ids\" => hsq_mme_bv.ids,",
-    "\"animal_effects\" => hsq_mme_bv.values,",
-    "\"fitted\" => HSquared.fitted_values(hsq_mme),",
-    # PEV/reliability are now standard on the Henderson MME result (dense,
-    # validation-scale): prediction_error_variance/reliability default to
-    # method = :dense, so they are attached unconditionally rather than probed.
-    "\"prediction_error_variance\" =>",
-    "HSquared.prediction_error_variance(hsq_mme),",
-    "\"reliability\" => HSquared.reliability(hsq_mme),",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_spec = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids, method = Symbol(hsq_method));",
+      "hsq_mme = HSquared.henderson_mme(",
+      "hsq_spec, hsq_supplied_sigma_a2, hsq_supplied_sigma_e2);",
+      "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
+      "hsq_mme_raw = Dict(",
+      "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
+      "\"animal_ids\" => hsq_mme_bv.ids,",
+      "\"animal_effects\" => hsq_mme_bv.values,",
+      "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+      # PEV/reliability are now standard on the Henderson MME result (dense,
+      # validation-scale): prediction_error_variance/reliability default to
+      # method = :dense, so they are attached unconditionally rather than probed.
+      "\"prediction_error_variance\" =>",
+      "HSquared.prediction_error_variance(hsq_mme),",
+      "\"reliability\" => HSquared.reliability(hsq_mme),",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
   result <- hs_normalize_julia_henderson_mme_result(
@@ -212,28 +221,31 @@ hs_fit_julia_metafounder_payload <- function(
     "hsq_supplied_sigma_e2",
     unname(variance_components[["sigma_e2"]])
   )
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "collect(String, hsq_ped.ids) == hsq_id ||",
-    "error(\"metafounder: engine pedigree order != R order\");",
-    "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
-    "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
-    "hsq_mme = HSquared.metafounder_animal_model(",
-    "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma,",
-    "hsq_supplied_sigma_a2, hsq_supplied_sigma_e2;",
-    "ids = hsq_ped.ids);",
-    "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
-    "hsq_mme_raw = Dict(",
-    "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
-    "\"animal_ids\" => hsq_mme_bv.ids,",
-    "\"animal_effects\" => hsq_mme_bv.values,",
-    "\"fitted\" => HSquared.fitted_values(hsq_mme),",
-    "\"prediction_error_variance\" =>",
-    "HSquared.prediction_error_variance(hsq_mme),",
-    "\"reliability\" => HSquared.reliability(hsq_mme),",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "collect(String, hsq_ped.ids) == hsq_id ||",
+      "error(\"metafounder: engine pedigree order != R order\");",
+      "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
+      "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
+      "hsq_mme = HSquared.metafounder_animal_model(",
+      "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma,",
+      "hsq_supplied_sigma_a2, hsq_supplied_sigma_e2;",
+      "ids = hsq_ped.ids);",
+      "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
+      "hsq_mme_raw = Dict(",
+      "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
+      "\"animal_ids\" => hsq_mme_bv.ids,",
+      "\"animal_effects\" => hsq_mme_bv.values,",
+      "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+      "\"prediction_error_variance\" =>",
+      "HSquared.prediction_error_variance(hsq_mme),",
+      "\"reliability\" => HSquared.reliability(hsq_mme),",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
   result <- hs_normalize_julia_henderson_mme_result(
@@ -286,32 +298,35 @@ hs_fit_julia_sparse_reml_payload <- function(
   hs_julia_setup(project)
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_spec = HSquared.animal_model_spec(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "ids = hsq_ped.ids, method = :REML);",
-    "hsq_fit = HSquared.fit_sparse_reml(",
-    "hsq_spec;",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations);",
-    "hsq_result = HSquared.result_payload(hsq_fit);",
-    # Enrich with PEV/reliability only for older engines whose result_payload
-    # does not already carry them; current engines emit them via :selinv, and
-    # re-merging would clobber that standard field with a redundant :dense solve.
-    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-    "isdefined(HSquared, :prediction_error_variance) &&",
-    "isdefined(HSquared, :reliability) &&",
-    "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
-    "applicable(HSquared.reliability, hsq_fit);",
-    "hsq_result = merge(hsq_result, (",
-    "prediction_error_variance =",
-    "HSquared.prediction_error_variance(hsq_fit),",
-    "reliability = HSquared.reliability(hsq_fit)));",
-    "end;"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_spec = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids, method = :REML);",
+      "hsq_fit = HSquared.fit_sparse_reml(",
+      "hsq_spec;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations);",
+      "hsq_result = HSquared.result_payload(hsq_fit);",
+      # Enrich with PEV/reliability only for older engines whose result_payload
+      # does not already carry them; current engines emit them via :selinv, and
+      # re-merging would clobber that standard field with a redundant :dense solve.
+      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+      "isdefined(HSquared, :prediction_error_variance) &&",
+      "isdefined(HSquared, :reliability) &&",
+      "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
+      "applicable(HSquared.reliability, hsq_fit);",
+      "hsq_result = merge(hsq_result, (",
+      "prediction_error_variance =",
+      "HSquared.prediction_error_variance(hsq_fit),",
+      "reliability = HSquared.reliability(hsq_fit)));",
+      "end;"
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -358,7 +373,8 @@ hs_fit_julia_ai_reml_payload <- function(
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_assign("hsq_em_warmup", em_warmup)
-  JuliaCall::julia_command(paste(
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_spec = HSquared.animal_model_spec(",
@@ -413,7 +429,9 @@ hs_fit_julia_ai_reml_payload <- function(
     "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
     "end;",
     "end;"
-  ))
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -552,11 +570,14 @@ hs_fit_julia_nongaussian_payload <- function(
       JuliaCall::julia_assign("hsq_n_trials", n_trials_int)
     }
   }
-  JuliaCall::julia_command(hs_nongaussian_three_field_julia_command(
-    family_symbol = family_symbol,
-    marginal = marginal,
-    n_trials = n_trials
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(hs_nongaussian_three_field_julia_command(
+      family_symbol = family_symbol,
+      marginal = marginal,
+      n_trials = n_trials
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_ng_raw")
   result <- hs_normalize_nongaussian_three_field_v09(raw, payload)
@@ -1129,7 +1150,8 @@ hs_fit_julia_repeatability_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1),
-  iterations = 200L
+  iterations = 200L,
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -1151,16 +1173,21 @@ hs_fit_julia_repeatability_payload <- function(
     unname(initial[["sigma_pe2"]])
   )
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_fit = HSquared.fit_repeatability_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_pe2 = hsq_initial_sigma_pe2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations, ids = hsq_ped.ids);"
-  ))
+  JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_fit = HSquared.fit_repeatability_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_pe2 = hsq_initial_sigma_pe2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations, ids = hsq_ped.ids,",
+      "max_dense_cells = Int(hsq_mdc));"
+    )),
+    hint = hs_dense_route_hint
+  )
 
   # Experimental, opt-in repeatability-coefficient CI (engine row V3-REPEAT-REML,
   # partial). repeatability_interval() takes the raw matrices (not a fit) and
@@ -1352,19 +1379,22 @@ hs_fit_julia_two_effect_payload <- function(
     ids2_cmd <- "ids2 = hsq_env_levels"
   }
 
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    ainv2_cmd,
-    "hsq_fit = HSquared.fit_two_effect_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
-    "initial = (sigma1 = hsq_initial_sigma_a2,",
-    "sigma2 = hsq_initial_sigma_c2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
-    ids2_cmd,
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      ainv2_cmd,
+      "hsq_fit = HSquared.fit_two_effect_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
+      "initial = (sigma1 = hsq_initial_sigma_a2,",
+      "sigma2 = hsq_initial_sigma_c2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
+      ids2_cmd,
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval(paste(
     "Dict(",
@@ -1544,8 +1574,11 @@ hs_fit_julia_direct_maternal_payload <- function(
   JuliaCall::julia_command(
     "hsq_parsed_dm = HSquared.parse_payload_v2(hsq_payload_dm);"
   )
-  JuliaCall::julia_command(
-    "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm);"
+  hs_julia_fit(
+    JuliaCall::julia_command(
+      "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm);"
+    ),
+    hint = hs_dense_scale_hint
   )
   JuliaCall::julia_command(
     "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
@@ -1825,10 +1858,13 @@ hs_fit_julia_n_effect_payload <- function(
   JuliaCall::julia_command(
     "hsq_parsed = HSquared.parse_payload_v2(hsq_payload);"
   )
-  JuliaCall::julia_command(sprintf(
-    "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
-    scale_method
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(sprintf(
+      "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
+      scale_method
+    )),
+    hint = hs_dense_scale_hint
+  )
   JuliaCall::julia_command(
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
   )
@@ -2230,7 +2266,8 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_genetic_structure",
     as.character(genetic_structure)
   )
-  JuliaCall::julia_command(paste(
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_fit = HSquared.fit_multivariate_reml(",
@@ -2276,7 +2313,9 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_mv_raw[\"se_heritability\"] = collect(Float64, hsq_mvse.heritability);",
     "end;",
     "end;"
-  ))
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_multivariate_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_mv_raw")
@@ -2629,29 +2668,32 @@ hs_fit_julia_random_regression_payload <- function(
   JuliaCall::julia_assign("hsq_age", as.numeric(rr$values))
   JuliaCall::julia_assign("hsq_order", order)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    # Standardize the per-record covariate to [-1, 1] over its observed range and
-    # build the n x k normalized-Legendre design Phi (basis convention fixed to
-    # Kirkpatrick/Meyer/Schaeffer normalized Legendre on standardized t).
-    "hsq_Phi = HSquared.legendre_design(",
-    "HSquared.standardize_covariate(hsq_age), hsq_order);",
-    "hsq_fit = HSquared.fit_random_regression_reml(",
-    "hsq_y, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
-    "iterations = hsq_iterations, ids = hsq_ped.ids);",
-    "hsq_rr_raw = Dict(",
-    "\"K_g\" => Matrix{Float64}(hsq_fit.variance_components.K_g),",
-    "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
-    "\"beta\" => collect(Float64, hsq_fit.beta),",
-    "\"coef_ids\" => string.(collect(hsq_fit.random_coefficients.ids)),",
-    "\"coef_values\" => Matrix{Float64}(hsq_fit.random_coefficients.values),",
-    "\"loglik\" => hsq_fit.loglik,",
-    "\"converged\" => hsq_fit.converged,",
-    "\"iterations\" => hsq_fit.iterations,",
-    "\"ncoef\" => hsq_fit.basis.ncoef",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      # Standardize the per-record covariate to [-1, 1] over its observed range and
+      # build the n x k normalized-Legendre design Phi (basis convention fixed to
+      # Kirkpatrick/Meyer/Schaeffer normalized Legendre on standardized t).
+      "hsq_Phi = HSquared.legendre_design(",
+      "HSquared.standardize_covariate(hsq_age), hsq_order);",
+      "hsq_fit = HSquared.fit_random_regression_reml(",
+      "hsq_y, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
+      "iterations = hsq_iterations, ids = hsq_ped.ids);",
+      "hsq_rr_raw = Dict(",
+      "\"K_g\" => Matrix{Float64}(hsq_fit.variance_components.K_g),",
+      "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
+      "\"beta\" => collect(Float64, hsq_fit.beta),",
+      "\"coef_ids\" => string.(collect(hsq_fit.random_coefficients.ids)),",
+      "\"coef_values\" => Matrix{Float64}(hsq_fit.random_coefficients.values),",
+      "\"loglik\" => hsq_fit.loglik,",
+      "\"converged\" => hsq_fit.converged,",
+      "\"iterations\" => hsq_fit.iterations,",
+      "\"ncoef\" => hsq_fit.basis.ncoef",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_random_regression_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_rr_raw")
@@ -2946,14 +2988,17 @@ hs_fit_julia_genomic_payload <- function(
       "iterations = hsq_iterations);"
     )
   }
-  JuliaCall::julia_command(paste(
-    relinv_cmd,
-    "hsq_spec = HSquared.animal_model_spec(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
-    "ids = hsq_ids, method = :REML);",
-    fit_cmd,
-    "hsq_result = HSquared.result_payload(hsq_fit);"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      relinv_cmd,
+      "hsq_spec = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
+      "ids = hsq_ids, method = :REML);",
+      fit_cmd,
+      "hsq_result = HSquared.result_payload(hsq_fit);"
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -3267,24 +3312,27 @@ hs_fit_julia_single_step_construct_payload <- function(
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    # Guard the genotyped_rows alignment (docs/design/25 section 8): the R-computed
-    # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
-    # must preserve that order. Fail loudly rather than fit a misaligned G.
-    "collect(String, hsq_ped.ids) == hsq_id ||",
-    "error(\"single_step construct: engine pedigree order != R order\");",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_A = HSquared.additive_relationship(hsq_ped);",
-    "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
-    "hsq_fit = HSquared.fit_single_step_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_A, hsq_G, hsq_grows;",
-    "ids = hsq_ped.ids,",
-    "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2));",
-    "hsq_result = HSquared.result_payload(hsq_fit);"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      # Guard the genotyped_rows alignment (docs/design/25 section 8): the R-computed
+      # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
+      # must preserve that order. Fail loudly rather than fit a misaligned G.
+      "collect(String, hsq_ped.ids) == hsq_id ||",
+      "error(\"single_step construct: engine pedigree order != R order\");",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_A = HSquared.additive_relationship(hsq_ped);",
+      "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+      "hsq_fit = HSquared.fit_single_step_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_A, hsq_G, hsq_grows;",
+      "ids = hsq_ped.ids,",
+      "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2));",
+      "hsq_result = HSquared.result_payload(hsq_fit);"
+    )),
+    hint = hs_single_step_ridge_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -3375,21 +3423,24 @@ hs_fit_julia_metafounder_single_step_payload <- function(
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "collect(String, hsq_ped.ids) == hsq_id ||",
-    "error(\"metafounder single_step: engine pedigree order != R order\");",
-    "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
-    "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
-    "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
-    "hsq_fit = HSquared.fit_metafounder_single_step_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma, hsq_G, hsq_grows;",
-    "ids = hsq_ped.ids,",
-    "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2));",
-    "hsq_result = HSquared.result_payload(hsq_fit);"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "collect(String, hsq_ped.ids) == hsq_id ||",
+      "error(\"metafounder single_step: engine pedigree order != R order\");",
+      "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+      "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
+      "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
+      "hsq_fit = HSquared.fit_metafounder_single_step_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma, hsq_G, hsq_grows;",
+      "ids = hsq_ped.ids,",
+      "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2));",
+      "hsq_result = HSquared.result_payload(hsq_fit);"
+    )),
+    hint = hs_single_step_ridge_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -3463,24 +3514,27 @@ hs_fit_julia_snp_blup_payload <- function(
   JuliaCall::julia_assign("hsq_markers_ind", unname(markers_ind))
   JuliaCall::julia_assign("hsq_sigma_g2", sigma_g2)
   JuliaCall::julia_assign("hsq_sigma_e2", sigma_e2)
-  JuliaCall::julia_command(paste(
-    "hsq_snp = HSquared.fit_snp_blup(",
-    "hsq_y, hsq_X, hsq_markers_rec, hsq_sigma_g2, hsq_sigma_e2);",
-    # Per-individual GEBV at the same allele-frequency centering as the fit.
-    "hsq_Wind = HSquared.centered_markers(",
-    "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
-    "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
-    "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
-    "hsq_snp_raw = Dict(",
-    "\"marker_effects\" => hsq_snp.marker_effects,",
-    "\"gebv\" => hsq_gebv_ind,",
-    "\"beta\" => hsq_snp.beta,",
-    "\"p\" => hsq_snp.p,",
-    "\"fitted\" => hsq_fitted,",
-    "\"k\" => hsq_snp.k,",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_snp = HSquared.fit_snp_blup(",
+      "hsq_y, hsq_X, hsq_markers_rec, hsq_sigma_g2, hsq_sigma_e2);",
+      # Per-individual GEBV at the same allele-frequency centering as the fit.
+      "hsq_Wind = HSquared.centered_markers(",
+      "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
+      "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
+      "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
+      "hsq_snp_raw = Dict(",
+      "\"marker_effects\" => hsq_snp.marker_effects,",
+      "\"gebv\" => hsq_gebv_ind,",
+      "\"beta\" => hsq_snp.beta,",
+      "\"p\" => hsq_snp.p,",
+      "\"fitted\" => hsq_fitted,",
+      "\"k\" => hsq_snp.k,",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_snp_raw")
   result <- hs_normalize_julia_snp_blup_result(
@@ -3538,27 +3592,30 @@ hs_fit_julia_snp_blup_reml_payload <- function(
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_markers_rec", markers_rec)
   JuliaCall::julia_assign("hsq_markers_ind", unname(markers_ind))
-  JuliaCall::julia_command(paste(
-    "hsq_snp = HSquared.fit_snp_blup_reml(hsq_y, hsq_X, hsq_markers_rec);",
-    # Per-individual GEBV at the same allele-frequency centering as the fit.
-    "hsq_Wind = HSquared.centered_markers(",
-    "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
-    "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
-    "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
-    "hsq_snp_raw = Dict(",
-    "\"marker_effects\" => hsq_snp.marker_effects,",
-    "\"gebv\" => hsq_gebv_ind,",
-    "\"beta\" => hsq_snp.beta,",
-    "\"p\" => hsq_snp.p,",
-    "\"fitted\" => hsq_fitted,",
-    "\"k\" => hsq_snp.k,",
-    "\"sigma_g2\" => hsq_snp.sigma_g2,",
-    "\"sigma_e2\" => hsq_snp.sigma_e2,",
-    "\"loglik\" => hsq_snp.loglik,",
-    "\"converged\" => hsq_snp.converged,",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_snp = HSquared.fit_snp_blup_reml(hsq_y, hsq_X, hsq_markers_rec);",
+      # Per-individual GEBV at the same allele-frequency centering as the fit.
+      "hsq_Wind = HSquared.centered_markers(",
+      "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
+      "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
+      "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
+      "hsq_snp_raw = Dict(",
+      "\"marker_effects\" => hsq_snp.marker_effects,",
+      "\"gebv\" => hsq_gebv_ind,",
+      "\"beta\" => hsq_snp.beta,",
+      "\"p\" => hsq_snp.p,",
+      "\"fitted\" => hsq_fitted,",
+      "\"k\" => hsq_snp.k,",
+      "\"sigma_g2\" => hsq_snp.sigma_g2,",
+      "\"sigma_e2\" => hsq_snp.sigma_e2,",
+      "\"loglik\" => hsq_snp.loglik,",
+      "\"converged\" => hsq_snp.converged,",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_snp_raw")
   estimated_vc <- c(
@@ -3870,6 +3927,27 @@ hs_validate_em_warmup <- function(em_warmup) {
     stop("`em_warmup` must be a single non-negative integer.", call. = FALSE)
   }
   em_warmup
+}
+
+# max_dense_cells: the R-facing lever for the engine's dense-validation size
+# guard (hsquared#214, #217). Bounds `nobs^2 + nanimals^2` on the dense
+# fitters (the default `animal()` route via `fit_animal_model()` /
+# `fit_variance_components()`, and `target = "repeatability"`); default
+# 1e6 mirrors the engine's own `DEFAULT_MAX_DENSE_CELLS` unchanged.
+hs_validate_max_dense_cells <- function(max_dense_cells) {
+  max_dense_cells <- suppressWarnings(as.numeric(max_dense_cells))
+  if (
+    length(max_dense_cells) != 1L ||
+      is.na(max_dense_cells) ||
+      max_dense_cells != as.integer(max_dense_cells) ||
+      max_dense_cells <= 0
+  ) {
+    stop(
+      "`engine_control$max_dense_cells` must be a single positive integer.",
+      call. = FALSE
+    )
+  }
+  max_dense_cells
 }
 
 # Production fence (0.9): allowed `engine_control$target` values below are
