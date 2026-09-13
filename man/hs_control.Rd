@@ -36,7 +36,27 @@ the advanced opt-in bridge with explicit \code{target} control.}
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
-and \code{max_dense_cells}. \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
+and \code{max_dense_cells}.
+\code{julia_project} is honoured by every \code{target}; supplying a key a given
+\code{target} does not honour errors (hsquared#212) rather than being
+silently ignored. Per-target honoured keys (besides \code{julia_project}):
+\itemize{
+\item \code{fit_animal_model} (default): \code{initial}, \code{max_dense_cells}.
+\item \code{henderson_mme}, \code{metafounder}, \code{snp_blup}: \code{variance_components}.
+\item \code{ai_reml}: \code{initial}, \code{iterations}, \code{em_warmup}.
+\item \code{sparse_reml}, \code{two_effect}, \code{direct_maternal},
+\code{genomic}, \code{single_step}, \code{single_step_construct},
+\code{metafounder_single_step}, \code{relmat}, \code{precision}: \code{initial},
+\code{iterations}.
+\item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells}.
+\item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method} -- \code{initial}/
+\code{iterations} are honoured on the \code{scale_method = "dense"} (default)
+route only; the opt-in \code{scale_method = "auto"} route does not yet
+forward them (HSquared.jl#343, a known remaining gap).
+\item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
+\item \code{random_regression}: \code{iterations} (no \code{initial}).
+\item \code{nongaussian}: \code{marginal}, \code{iterations}.
+\code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
 the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
 \code{fit_variance_components()}) and \code{target = "repeatability"}. Both require
@@ -55,6 +75,8 @@ entry point that exposes no such control and runs at the engine default
 (\code{1e6}), so \strong{raising the cap above \code{1e6} returns the point fit with the
 interval silently absent} (\code{NULL}) rather than with an error. Tracked on the
 engine side; not fixed here.
+}
+
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
@@ -121,13 +143,17 @@ intercepts. It is covered at validation scale (the independent
 generalization of two-effect; not the default path). Random slopes and
 correlated \code{(x || group)} terms remain rejected. The animal-block ratio is
 narrow-sense h2; other blocks are variance-explained proportions, not
-heritabilities.
+heritabilities. \code{initial} is a plain numeric vector of length K + 1 (one
+value per block, in formula order, plus the residual); it and
+\code{iterations} are honoured on the \code{scale_method = "dense"} route (see
+\code{engine_control} above for the \code{"auto"} gap).
 \code{target = "direct_maternal"} is an opt-in path for
 \code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)}. It estimates
 the correlated 2x2 direct-maternal genetic covariance and is covered at
 validation scale (not the default path). \code{heritability()} returns the
 labelled Willham triple (direct h2_d, maternal m2, total h2_T, r_am), never
-a bare scalar.
+a bare scalar. \code{initial} is a list with \code{G_dm} (a 2x2 matrix) and
+\code{sigma_e2} (a positive scalar); it and \code{iterations} are honoured.
 \code{target = "random_regression"} is an opt-in reaction-norm path for
 \code{animal(rr(covariate, order = k) | id, pedigree = ped)}. It is covered at
 \code{k = 2} (linear reaction norm). \code{rr_heritability()} returns h2(t) as a
@@ -162,7 +188,8 @@ single-step is not a default route.
 \code{H^-1} from the pedigree and genotyped-subset markers. \code{target = "metafounder_single_step"} fits
 \code{single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma = Gamma)} through the Julia-owned supplied-\code{Gamma} \code{H^Gamma} path. Both are
 experimental, opt-in, dense/validation-scale, REML-only, and not
-comparator-validated; \code{Gamma} is supplied, not estimated.
+comparator-validated; \code{Gamma} is supplied, not estimated. Both honour
+\code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and \code{iterations}.
 \code{target = "snp_blup"} is an experimental, opt-in path for the SNP-BLUP /
 RR-BLUP marker-effect model. It requires \code{genomic(1 | id, markers = M)} (a
 raw marker matrix) and estimates per-marker effects (\code{marker_effects()}) and
