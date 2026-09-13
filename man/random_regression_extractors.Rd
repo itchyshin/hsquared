@@ -29,7 +29,8 @@ rr_eigenfunctions(object, at = NULL, n = 25L, ...)
 
 \item{at}{Covariate values on the original scale at which to evaluate the
 trajectory. \code{NULL} (the default) uses an evenly spaced grid over the fitted
-covariate range.}
+covariate range. A supplied value outside the fitted covariate range
+errors (see the "Out-of-range \code{at}" section below).}
 
 \item{n}{Number of grid points used when \code{at = NULL}.}
 }
@@ -75,6 +76,15 @@ covariate standardization range; \code{at} is supplied on the ORIGINAL covariate
 scale (defaulting to a grid over the fitted range) and re-standardized to
 \verb{[-1, 1]} internally, matching the Julia engine's basis convention.
 }
+\section{Out-of-range \code{at}}{
+
+\code{at} must lie inside the fitted covariate range (\code{object$result$random_regression$lower}
+to \verb{$upper}); a value outside that range errors with a message naming the
+fitted range, instead of silently returning the nearest endpoint's value.
+This matches the Julia engine (\code{HSquared.legendre_basis}), which refuses a
+standardized covariate outside \verb{[-1, 1]} rather than clamping it (#213).
+}
+
 \examples{
 \dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 fit_rr <- hsquared(

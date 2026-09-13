@@ -2181,8 +2181,11 @@ hs_require_random_regression <- function(object, name) {
 
 # Resolve the covariate points the trajectory is evaluated at. `at = NULL`
 # (the default) builds an evenly spaced grid of `n` points spanning the recorded
-# covariate range; otherwise `at` is taken on the ORIGINAL covariate scale.
-# Returns the original-scale points and the matching standardized t in [-1, 1].
+# covariate range; otherwise `at` is taken on the ORIGINAL covariate scale and
+# validated against that range (#213 -- the Julia engine refuses a
+# standardized t outside [-1, 1], so no R extractor may silently clamp one
+# either). Returns the original-scale points and the matching standardized
+# t in [-1, 1].
 hs_rr_eval_points <- function(object, at, n = 25L) {
   rr <- object$result$random_regression
   if (is.null(rr)) {
@@ -2194,13 +2197,28 @@ hs_rr_eval_points <- function(object, at, n = 25L) {
   }
   if (is.null(at)) {
     at <- seq(rr$lower, rr$upper, length.out = n)
-  } else {
-    at <- as.numeric(at)
-    if (length(at) == 0L || anyNA(at) || any(!is.finite(at))) {
-      stop("`at` must be finite covariate values.", call. = FALSE)
-    }
+    t_std <- hs_standardize_covariate(at, rr$lower, rr$upper)
+    return(list(at = at, t = t_std, covariate = rr$covariate, order = rr$order))
+  }
+  at <- as.numeric(at)
+  if (length(at) == 0L || anyNA(at) || any(!is.finite(at))) {
+    stop("`at` must be finite covariate values.", call. = FALSE)
   }
   t_std <- hs_standardize_covariate(at, rr$lower, rr$upper)
+  out_of_range <- t_std < -1 - 1e-10 | t_std > 1 + 1e-10
+  if (any(out_of_range)) {
+    hs_abort_out_of_range(
+      "`at` must lie inside the fitted covariate range [",
+      format(rr$lower, trim = TRUE),
+      ", ",
+      format(rr$upper, trim = TRUE),
+      "] (covariate `",
+      rr$covariate,
+      "`); got ",
+      paste(format(at[out_of_range], trim = TRUE), collapse = ", "),
+      "."
+    )
+  }
   list(at = at, t = t_std, covariate = rr$covariate, order = rr$order)
 }
 
@@ -2253,10 +2271,18 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #' scale (defaulting to a grid over the fitted range) and re-standardized to
 #' `[-1, 1]` internally, matching the Julia engine's basis convention.
 #'
+#' @section Out-of-range `at`:
+#' `at` must lie inside the fitted covariate range (`object$result$random_regression$lower`
+#' to `$upper`); a value outside that range errors with a message naming the
+#' fitted range, instead of silently returning the nearest endpoint's value.
+#' This matches the Julia engine (`HSquared.legendre_basis`), which refuses a
+#' standardized covariate outside `[-1, 1]` rather than clamping it (#213).
+#'
 #' @param object A random-regression `hsquared_fit` object.
 #' @param at Covariate values on the original scale at which to evaluate the
 #'   trajectory. `NULL` (the default) uses an evenly spaced grid over the fitted
-#'   covariate range.
+#'   covariate range. A supplied value outside the fitted covariate range
+#'   errors (see the "Out-of-range `at`" section below).
 #' @param n Number of grid points used when `at = NULL`.
 #' @param ... Reserved for future arguments.
 #'
