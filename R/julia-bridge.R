@@ -156,7 +156,7 @@ hs_fit_julia_henderson_mme_payload <- function(
       "\"nobs\" => length(hsq_y)",
       ");"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
@@ -244,7 +244,7 @@ hs_fit_julia_metafounder_payload <- function(
       "\"nobs\" => length(hsq_y)",
       ");"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
@@ -325,7 +325,7 @@ hs_fit_julia_sparse_reml_payload <- function(
       "reliability = HSquared.reliability(hsq_fit)));",
       "end;"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   hs_julia_attach_standard_plot_data()
 
@@ -430,7 +430,7 @@ hs_fit_julia_ai_reml_payload <- function(
     "end;",
     "end;"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   hs_julia_attach_standard_plot_data()
 
@@ -576,7 +576,7 @@ hs_fit_julia_nongaussian_payload <- function(
       marginal = marginal,
       n_trials = n_trials
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
 
   raw <- JuliaCall::julia_eval("hsq_ng_raw")
@@ -1393,7 +1393,7 @@ hs_fit_julia_two_effect_payload <- function(
       ids2_cmd,
       ");"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
 
   raw <- JuliaCall::julia_eval(paste(
@@ -1578,7 +1578,7 @@ hs_fit_julia_direct_maternal_payload <- function(
     JuliaCall::julia_command(
       "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm);"
     ),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   JuliaCall::julia_command(
     "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
@@ -1863,7 +1863,7 @@ hs_fit_julia_n_effect_payload <- function(
       "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
       scale_method
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   JuliaCall::julia_command(
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
@@ -2314,7 +2314,7 @@ hs_fit_julia_multivariate_payload <- function(
     "end;",
     "end;"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   hs_julia_attach_multivariate_plot_data()
 
@@ -2692,7 +2692,7 @@ hs_fit_julia_random_regression_payload <- function(
       "\"ncoef\" => hsq_fit.basis.ncoef",
       ");"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   hs_julia_attach_random_regression_plot_data()
 
@@ -2984,7 +2984,7 @@ hs_fit_julia_genomic_payload <- function(
       fit_cmd,
       "hsq_result = HSquared.result_payload(hsq_fit);"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
   hs_julia_attach_standard_plot_data()
 
@@ -3520,7 +3520,7 @@ hs_fit_julia_snp_blup_payload <- function(
       "\"nobs\" => length(hsq_y)",
       ");"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
 
   raw <- JuliaCall::julia_eval("hsq_snp_raw")
@@ -3601,7 +3601,7 @@ hs_fit_julia_snp_blup_reml_payload <- function(
       "\"nobs\" => length(hsq_y)",
       ");"
     )),
-    hint = hs_dense_route_hint
+    hint = hs_dense_scale_hint
   )
 
   raw <- JuliaCall::julia_eval("hsq_snp_raw")

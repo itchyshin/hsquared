@@ -25,11 +25,22 @@ hs_abort_unsupported_syntax <- function(..., call. = FALSE) {
   stop(cond)
 }
 
-# One-line hints appended by `hs_julia_fit()` at the two known numerical-
-# boundary call sites (hsquared#214, #217): dense-validation fitters guarded
-# by the engine's `max_dense_cells` size check, and the single-step H^-1
-# construction path guarded by `ridge`/`blend_weight`.
+# One-line hints appended by `hs_julia_fit()` (hsquared#214, #217). A hint may
+# name only a lever the failing target actually accepts: `max_dense_cells` at
+# the two routes that forward it to a guarded engine entry point,
+# `ridge`/`blend_weight` at the single-step H^-1 construction path, and a
+# lever-free scale note everywhere else.
+
+# Appended only at the two call sites that actually forward `max_dense_cells`
+# to a guarded engine entry point (`fit_variance_components`,
+# `fit_repeatability_reml`). Naming the lever anywhere else would point the
+# user at a control that target does not accept (hsquared#212's defect class).
 hs_dense_route_hint <- "raise max_dense_cells in engine_control or use a sparse route"
+
+# Appended at the remaining dense/validation-scale routes, which enforce no
+# cell cap and expose no lever to raise.
+hs_dense_scale_hint <- "this route is dense and validation-scale (n <= ~1000); reduce the problem size or use a sparse target"
+
 hs_single_step_ridge_hint <- "raise ridge or blend_weight in engine_control"
 
 # Evaluate `expr` (a Julia-bridge fit call) and translate ANY error it raises

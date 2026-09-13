@@ -159,12 +159,13 @@ in the `HSquared.jl` twin). Several remain explicit opt-in
 `control = hs_control(engine = "julia", engine_control = list(target = ...))`
 targets. Multivariate `cbind()` is the exception: it routes on the default
 `engine = "fit"` call. Narrow genomic GREML is covered at validation scale
-only through its explicit target. The default `animal()` route and
-`target = "repeatability"` enforce this scale as an engine-side dense-cell cap
-(default 1e6 = `nobs^2 + nanimals^2`; raise it with `engine_control =
-list(max_dense_cells = ...)`, or switch to a sparse target); the other routes
-below currently enforce no such cap, so their `n ≤ ~1000` stays a
-recommendation only.
+only through its explicit target. Under `engine = "julia"`, the default target
+`"fit_animal_model"` and `target = "repeatability"` enforce this scale as an
+engine-side dense-cell cap (default 1e6 = `nobs^2 + nanimals^2`; raise it with
+`engine_control = list(max_dense_cells = ...)`, or switch to a sparse target).
+The default `engine = "fit"` path routes to the sparse-capable AI-REML fitter
+and enforces no such cap, and neither do the other routes below, so for all of
+those the `n ≤ ~1000` stays a recommendation only.
 
 - Multivariate Gaussian animal model — `cbind(trait1, trait2) ~
   animal(1 | id, pedigree = ped)`, **routed on the default path** (no `target`

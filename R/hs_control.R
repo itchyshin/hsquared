@@ -25,15 +25,24 @@
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
 #'   `iterations`, `em_warmup`, `target`, `variance_components`, `marginal`,
 #'   and `max_dense_cells`. `max_dense_cells` bounds `nobs^2 + nanimals^2` on
-#'   the engine's dense-validation fitters (hsquared#214, #217): the default
-#'   `animal()` route (via `HSquared.fit_animal_model()` /
-#'   `fit_variance_components()`) and `target = "repeatability"`. It must be a
+#'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
+#'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
+#'   `fit_variance_components()`) and `target = "repeatability"`. Both require
+#'   `engine = "julia"`. It has **no effect** under the default `engine = "fit"`
+#'   path, which routes to the sparse-capable `HSquared.fit_ai_reml()` and enforces
+#'   no dense-cell cap at all. It must be a
 #'   single positive integer; the default, `1e6`, mirrors the engine's own
 #'   `DEFAULT_MAX_DENSE_CELLS` unchanged. Raise it to fit a larger dense
 #'   problem at the cost of memory and time, or switch to a sparse route
 #'   (`target = "ai_reml"`/`"sparse_reml"`) instead of raising it indefinitely.
 #'   Exceeding the cap now raises an `hsquared_error` naming the observed cell
 #'   count and the effective cap, rather than a raw Julia trace.
+#'   On `target = "repeatability"`, `max_dense_cells` reaches the point fit only.
+#'   The opt-in repeatability-coefficient interval is computed by a separate engine
+#'   entry point that exposes no such control and runs at the engine default
+#'   (`1e6`), so **raising the cap above `1e6` returns the point fit with the
+#'   interval silently absent** (`NULL`) rather than with an error. Tracked on the
+#'   engine side; not fixed here.
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,

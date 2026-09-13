@@ -37,15 +37,24 @@ the advanced opt-in bridge with explicit \code{target} control.}
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
 and \code{max_dense_cells}. \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
-the engine's dense-validation fitters (hsquared#214, #217): the default
-\code{animal()} route (via \code{HSquared.fit_animal_model()} /
-\code{fit_variance_components()}) and \code{target = "repeatability"}. It must be a
+the engine's dense-validation fitters (hsquared#214, #217): the default Julia
+target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
+\code{fit_variance_components()}) and \code{target = "repeatability"}. Both require
+\code{engine = "julia"}. It has \strong{no effect} under the default \code{engine = "fit"}
+path, which routes to the sparse-capable \code{HSquared.fit_ai_reml()} and enforces
+no dense-cell cap at all. It must be a
 single positive integer; the default, \code{1e6}, mirrors the engine's own
 \code{DEFAULT_MAX_DENSE_CELLS} unchanged. Raise it to fit a larger dense
 problem at the cost of memory and time, or switch to a sparse route
 (\code{target = "ai_reml"}/\code{"sparse_reml"}) instead of raising it indefinitely.
 Exceeding the cap now raises an \code{hsquared_error} naming the observed cell
 count and the effective cap, rather than a raw Julia trace.
+On \code{target = "repeatability"}, \code{max_dense_cells} reaches the point fit only.
+The opt-in repeatability-coefficient interval is computed by a separate engine
+entry point that exposes no such control and runs at the engine default
+(\code{1e6}), so \strong{raising the cap above \code{1e6} returns the point fit with the
+interval silently absent} (\code{NULL}) rather than with an error. Tracked on the
+engine side; not fixed here.
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},

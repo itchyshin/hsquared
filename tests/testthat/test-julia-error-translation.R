@@ -49,6 +49,70 @@ test_that("hs_control() accepts a positive integer max_dense_cells", {
   expect_equal(ctl$engine_control$max_dense_cells, 50)
 })
 
+test_that("the lever-free scale hint names no control (non-guarded routes)", {
+  err <- tryCatch(
+    hsquared:::hs_julia_fit(stop("boom"), hint = hsquared:::hs_dense_scale_hint),
+    error = function(e) e
+  )
+  expect_false(grepl("max_dense_cells", conditionMessage(err), fixed = TRUE))
+})
+
+test_that("the dense route hint names max_dense_cells (guarded routes)", {
+  err <- tryCatch(
+    hsquared:::hs_julia_fit(stop("boom"), hint = hsquared:::hs_dense_route_hint),
+    error = function(e) e
+  )
+  expect_match(conditionMessage(err), "max_dense_cells", fixed = TRUE)
+})
+
+test_that("each hs_fit_julia_*_payload() call site uses the hint matching what it forwards", {
+  # Only the two routes that actually forward `max_dense_cells` to a guarded
+  # engine entry point (`fit_variance_components`, `fit_repeatability_reml`)
+  # may name it; naming it elsewhere points the user at a control that
+  # target does not accept (hsquared#212's defect class, R3-3).
+  body_text_of <- function(fn) {
+    paste(deparse(body(getFromNamespace(fn, "hsquared"))), collapse = "\n")
+  }
+
+  guarded <- c("hs_fit_julia_payload", "hs_fit_julia_repeatability_payload")
+  for (fn in guarded) {
+    txt <- body_text_of(fn)
+    expect_match(txt, "hs_dense_route_hint", fixed = TRUE, info = fn)
+    expect_false(grepl("hs_dense_scale_hint", txt, fixed = TRUE), info = fn)
+  }
+
+  unguarded_dense <- c(
+    "hs_fit_julia_henderson_mme_payload",
+    "hs_fit_julia_metafounder_payload",
+    "hs_fit_julia_sparse_reml_payload",
+    "hs_fit_julia_ai_reml_payload",
+    "hs_fit_julia_nongaussian_payload",
+    "hs_fit_julia_two_effect_payload",
+    "hs_fit_julia_direct_maternal_payload",
+    "hs_fit_julia_n_effect_payload",
+    "hs_fit_julia_multivariate_payload",
+    "hs_fit_julia_random_regression_payload",
+    "hs_fit_julia_genomic_payload",
+    "hs_fit_julia_snp_blup_payload",
+    "hs_fit_julia_snp_blup_reml_payload"
+  )
+  expect_length(unguarded_dense, 13L)
+  for (fn in unguarded_dense) {
+    txt <- body_text_of(fn)
+    expect_match(txt, "hs_dense_scale_hint", fixed = TRUE, info = fn)
+    expect_false(grepl("hs_dense_route_hint", txt, fixed = TRUE), info = fn)
+  }
+
+  single_step <- c(
+    "hs_fit_julia_single_step_construct_payload",
+    "hs_fit_julia_metafounder_single_step_payload"
+  )
+  for (fn in single_step) {
+    txt <- body_text_of(fn)
+    expect_match(txt, "hs_single_step_ridge_hint", fixed = TRUE, info = fn)
+  }
+})
+
 # --- live tests (skip-guarded on the local HSquared.jl bridge) --------------
 
 test_that("single_step_construct at ridge = 0 on an ill-conditioned genotyped block raises a translated hsquared_error [live]", {

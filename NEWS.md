@@ -1,25 +1,3 @@
-# hsquared (development version)
-
-* **Julia bridge errors are translated at the boundary, not left raw
-  (hsquared#214, #217).** Every `hs_fit_julia_*_payload()` fit call now goes
-  through `hs_julia_fit()`, which turns any error the Julia bridge raises
-  into a structured `hsquared_error` (class `hsquared_julia_error`) carrying
-  a one-line hint at the known numerical-boundary sites (`ridge`/
-  `blend_weight` for `single_step()`'s H^-1 construction; `max_dense_cells`
-  for the dense-validation fitters), instead of a bare, untranslated Julia
-  stack trace. This does not change any capability status or
-  `public_covered_count`.
-
-* **`max_dense_cells` engine-control lever; `repeatability` now enforces the
-  dense-cell guard (hsquared#214, #217).** `engine_control$max_dense_cells`
-  (a positive integer, default `1e6`, unchanged from the engine's own
-  default) bounds `nobs^2 + nanimals^2` on the default `animal()` route and
-  on `target = "repeatability"`, which previously had no size guard and no
-  stated scale envelope at all. Exceeding it now raises a translated
-  `hsquared_error` naming the observed cell count and the cap, rather than
-  running unboundedly or crashing with a raw trace. This does not change any
-  capability status or `public_covered_count`.
-
 # hsquared 0.9.0 (experimental release)
 
 * **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and
