@@ -1,7 +1,7 @@
 # hsquared (development version)
 
 * **Random-regression basis and evaluation points now error on out-of-range
-  covariates instead of clamping (#213, #221 / PR #219).** `hs_legendre_basis()`
+  covariates instead of clamping (#213 / PR #219).** `hs_legendre_basis()`
   errors beyond the engine's own `1e-10` tolerance, matching the Julia
   `legendre_basis` boundary exactly (values within tolerance are still
   clamped to `[-1, 1]`, as before). `hs_rr_eval_points()` now validates a
@@ -21,12 +21,18 @@
   `ridge`/`blend_weight` for an ill-conditioned `single_step()` block),
   instead of a raw, untranslated Julia error and stack trace.
   `hs_control(engine_control = list(max_dense_cells = ...))` raises or lowers
-  the dense-validation-size cap (default `1e6`, unchanged) on the default
-  `animal()` route (`engine = "julia"`, `target = "fit_animal_model"`) and on
-  `target = "repeatability"`, which is now guarded by the same cap for the
-  first time; both routes require `engine = "julia"`, and no other target's
-  payload function was given this lever, because no other Julia entry point
-  enforces the guard. Repeatability's caveat: raising `max_dense_cells` above
+  the dense-validation-size cap (default `1e6`, unchanged) on two Julia
+  targets: `target = "fit_animal_model"` (the default target under
+  `engine = "julia"`) and `target = "repeatability"`, which is now guarded by
+  the same cap for the first time. Both require `engine = "julia"`; the lever
+  has **no effect** under the default `engine = "fit"` path, which routes to
+  the sparse-capable `HSquared.fit_ai_reml()` and enforces no dense-cell cap
+  at all. No other target was given the lever: `target = "multi_effect"` and
+  `target = "direct_maternal"` do reach engine fitters that enforce the same
+  guard, but they reach them through `HSquared.fit_payload_v2()`, which
+  accepts no `max_dense_cells` argument, so those routes stay pinned at the
+  engine default `1e6` with no R-side control — their bridge errors therefore
+  carry a lever-free size hint rather than naming `max_dense_cells`. Repeatability's caveat: raising `max_dense_cells` above
   the default disables the repeatability *interval* silently (it returns
   `NULL`) rather than erroring, because `HSquared.repeatability_interval`
   runs the engine default internally and is not itself configurable by this
@@ -69,10 +75,10 @@
   rule" section pointing at the matching paragraph landed in HSquared.jl
   PR #338.
 
-  None of the four entries above changes `DESCRIPTION`, bumps the version,
-  moves a capability-status row, or changes `public_covered_count` (stays
-  **7**). All are R-repo-only bridge/validation/documentation fixes from the
-  H² twin independent test campaign.
+None of the four entries above changes `DESCRIPTION`, bumps the version, moves
+a capability-status row, or changes `public_covered_count` (stays **7**). All
+are R-repo-only bridge/validation/documentation fixes from the H² twin
+independent test campaign.
 
 # hsquared 0.9.0 (experimental release)
 
