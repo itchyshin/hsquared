@@ -1,3 +1,79 @@
+# hsquared (development version)
+
+* **Random-regression basis and evaluation points now error on out-of-range
+  covariates instead of clamping (#213, #221 / PR #219).** `hs_legendre_basis()`
+  errors beyond the engine's own `1e-10` tolerance, matching the Julia
+  `legendre_basis` boundary exactly (values within tolerance are still
+  clamped to `[-1, 1]`, as before). `hs_rr_eval_points()` now validates a
+  user-supplied `at` against the fitted covariate range and errors with the
+  same `hsquared_out_of_range`/`hsquared_error`-classed condition, naming the
+  fitted range and the offending value(s), before any random-regression
+  trajectory extractor (`rr_genetic_variance()`, `rr_heritability()`,
+  `rr_correlation()`, `rr_eigenfunctions()`, the `reaction_norm`/`rr_surface`
+  plot types) can silently return the nearest fitted endpoint labelled with
+  the requested out-of-range value.
+
+* **Julia bridge errors are now translated into classed R conditions, and a
+  new `max_dense_cells` lever raises the dense-validation-size cap on two
+  guarded targets (#214, #217 / PR #220).** Every Julia-bridge fit call now
+  raises an `hsquared_julia_error`/`hsquared_error`-classed condition
+  carrying the original Julia message plus a one-line hint (e.g. pointing at
+  `ridge`/`blend_weight` for an ill-conditioned `single_step()` block),
+  instead of a raw, untranslated Julia error and stack trace.
+  `hs_control(engine_control = list(max_dense_cells = ...))` raises or lowers
+  the dense-validation-size cap (default `1e6`, unchanged) on the default
+  `animal()` route (`engine = "julia"`, `target = "fit_animal_model"`) and on
+  `target = "repeatability"`, which is now guarded by the same cap for the
+  first time; both routes require `engine = "julia"`, and no other target's
+  payload function was given this lever, because no other Julia entry point
+  enforces the guard. Repeatability's caveat: raising `max_dense_cells` above
+  the default disables the repeatability *interval* silently (it returns
+  `NULL`) rather than erroring, because `HSquared.repeatability_interval`
+  runs the engine default internally and is not itself configurable by this
+  lever — see `?hs_control`.
+
+* **`engine_control$initial`/`iterations` are now forwarded on every target
+  that documents them, and an unsupported key now errors (#212 / PR #223).**
+  Five sites previously accepted `initial` and/or `iterations` with no
+  effect: `target = "multi_effect"`, `target = "direct_maternal"`,
+  `single_step_construct()`, `metafounder_single_step()`, and the
+  `multi_effect_ratio_interval()` refit. All five now forward both controls
+  into their Julia calls. A new per-target forwarding check errors with class
+  `hsquared_unsupported_syntax` (naming the key and the target) when a caller
+  supplies an `engine_control` key their chosen target does not honour; the
+  full per-target table is in `?hs_control`. Known engine-side gap, not fixed
+  here: `target = "multi_effect"` with `scale_method = "auto"` still does not
+  forward `initial`/`iterations` (HSquared.jl#343).
+
+* **Documentation family: engine contracts carried into the R surface, plus
+  vignette fixtures (#208, #209, #210, #211, #215, #216, #218 / PR #221).**
+  `?prediction_error_variance`, `?reliability`, and
+  `?covariance_standard_errors` now state the engine's own PEV, reliability,
+  accuracy, and Fisher-z interval-construction formulas, including that
+  reliability/accuracy values are not clipped. `?genomic_markers` and the
+  genomic-prediction vignette document the required 0/1/2 (or `[0, 2]`
+  dosage) marker coding; a centered `-1/0/1` matrix must be recoded, and the
+  out-of-range check now raises a classed `hsquared_error` instead of a bare
+  `stop()`. `?heritability_interval` scopes the cited coverage figures to the
+  design they were measured on (`q = 120`, interior h², level 0.95, DRAC job
+  47925485). `sigma_P` is now written `sigma^2_P` throughout user-visible
+  roxygen prose and interpretation strings, with no arithmetic change.
+  `?animal`/`?hs_control` document that the `pedigree =` route rejects
+  selfing rows in v0.1, with `relmat(1 | id, K = A)` named as the current
+  workaround. `?factor_g_extractors` clarifies that `specific_variance()` is
+  withheld only because `factor_analytic`/`lowrank` are not yet activated on
+  the R-to-Julia bridge, not because `Psi` is unidentified. Six vignette
+  articles gained a fixture chunk so their fit chunks resolve every object
+  and stop only at the expected "requires the HSquared.jl Julia engine"
+  message. `vignettes/articles/twin-boundary.Rmd` gained a "Twin contract
+  rule" section pointing at the matching paragraph landed in HSquared.jl
+  PR #338.
+
+  None of the four entries above changes `DESCRIPTION`, bumps the version,
+  moves a capability-status row, or changes `public_covered_count` (stays
+  **7**). All are R-repo-only bridge/validation/documentation fixes from the
+  H² twin independent test campaign.
+
 # hsquared 0.9.0 (experimental release)
 
 * **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and
