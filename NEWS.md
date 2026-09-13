@@ -1,3 +1,80 @@
+# hsquared (development version)
+
+* **Carried the engine's PEV/reliability/accuracy definitions onto the R man
+  pages (#211).** `?prediction_error_variance` and `?reliability` now state
+  the formulas already documented in the Julia engine: PEV is the animal-block
+  diagonal of the inverse precision-scaled Henderson coefficient matrix;
+  reliability is `1 - PEV_i / (sigma_a2 * A_ii)` on the dense `A = inv(Ainv)`;
+  for a genomic spec the ridge on `A_ii` perturbs reliability/accuracy; values
+  are not clipped and `accuracy()` rejects an out-of-range reliability instead
+  of clipping it. `?covariance_standard_errors` now states that the engine's
+  genetic-correlation interval is built on the Fisher-z scale so it always
+  stays inside `(-1, 1)`, and that a naive `+/- 1.96 * se` on the r scale can
+  leave that range; this is kept distinct from the existing "not
+  coverage-calibrated" sentence. `?repeatability` and `?permanent_effects` now
+  state that separating the additive and permanent-environment variances
+  needs repeated records per individual, pointing at `?hs_control`. No
+  arithmetic change, no capability-status change.
+
+* **Documented the 0/1/2 marker convention and classed its range check
+  (#216).** `?genomic_markers` and the `genomic-prediction.Rmd` intro now
+  state that `markers` must be coded as the biallelic allele count 0/1/2 (or
+  an imputed dosage in `[0, 2]`), and that a centered -1/0/1 matrix must be
+  recoded (add 1) before use. The out-of-range check in
+  `hs_validate_genomic_markers()` now raises a classed `hsquared_error`
+  condition naming the convention, instead of a bare `stop()`. No arithmetic
+  change, no capability-status change.
+
+* **Corrected which factor-analytic quantity is withheld for rotation
+  reasons (#218).** `?factor_g_extractors` and the `specific_variance()`
+  error now say that `Psi` (the specific/unique variances) is
+  rotation-INVARIANT and identified, unlike loading axes and latent breeding
+  values, and that it is withheld only because `factor_analytic`/`lowrank`
+  are not yet activated on the R-to-Julia bridge. No arithmetic change, no
+  capability-status change.
+
+* **Scoped the univariate h2 interval coverage figures to the design they
+  were measured on (#209).** `?heritability_interval` now states that the
+  cited coverage figures were measured on one interpretable small design
+  (`q = 120`), at interior `h2 in {0.3, 0.5, 0.7}`, at the 0.95 level, in DRAC
+  job 47925485, and that unbalanced designs were not in that confirm grid. No
+  arithmetic change, no capability-status change.
+
+* **Corrected a variance/notation mismatch in the Willham triple's
+  user-visible strings, and clarified a metafounder-extractor label (#210).**
+  The phenotypic variance in the Willham direct/maternal/total heritability
+  formulas is now written `sigma^2_P` (was `sigma_P`) wherever it is a
+  variance, in the roxygen prose and the `"interpretation"` attribute
+  strings a user sees. `metafounder_groups()`'s `@return` now states that
+  rows are animals, that `is_metafounder` flags animals carrying a supplied
+  group label (not metafounders themselves), and that the metafounders are
+  the rows/columns of `gamma_matrix()`. No arithmetic change, no rename, no
+  capability-status change.
+
+* **Documented the selfing gap on the `pedigree =` route (#215).** `?animal`
+  and `?hs_control` now state that the `pedigree =` route rejects rows with
+  the same known sire and dam (selfing) in v0.1, that no argument reaches the
+  engine's `allow_selfing` flag, and that the current workaround is
+  `relmat(1 | id, K = A)` with a hand-built or `AGHmatrix`-built relationship
+  matrix (an experimental route). No code change, no capability-status
+  change.
+
+* **Fixed never-defined and used-before-defined fixture objects in six
+  articles (#208).** `fitting-models.Rmd`, `g-matrix-interpretation.Rmd`,
+  `inheritance-systems.Rmd`, `multivariate.Rmd`, `genomic-prediction.Rmd`, and
+  `qtl-gwas-eqtl-status.Rmd` each gained (or, for `multivariate.Rmd`, had
+  relocated) a small fixture chunk defining `dat`/`ped`/`pheno` (and, for the
+  genomic articles, `Ginv`/`M`) before their first fit chunk, so a reader who
+  copy-pastes each article top to bottom no longer hits an "object not found"
+  error before reaching the Julia-engine step. The document-wide
+  `eval = FALSE` setting is unchanged. No capability-status change.
+
+* **Added a twin contract rule to `twin-boundary.Rmd`.** States that where
+  one twin's documentation carries an input contract, an output definition,
+  an identifiability claim, or an exactness claim, the other twin's
+  corresponding page must state it too, or link to it. No capability-status
+  change.
+
 # hsquared 0.9.0 (experimental release)
 
 * **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and

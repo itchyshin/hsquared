@@ -39,4 +39,13 @@ asymptotic, REML-only, \strong{unstructured-only} (the engine refuses structured
 factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
 flat/boundary optimum, not coverage-calibrated, with no external comparator,
 and not a validated capability.
+
+The returned \code{genetic_correlation} SE is on the correlation (\code{r}) scale. A
+naive symmetric interval built as \verb{estimate +/- 1.96 * se} on that scale
+can leave \verb{(-1, 1)} for strong correlations. The engine instead builds its own
+genetic-correlation interval on the \strong{Fisher-z scale}
+(\code{z = atanh(r)}, \code{se_z = se_r / (1 - r^2)}, endpoints
+\code{tanh(z -+ q * se_z)}), which always lands inside \verb{(-1, 1)}. That
+range-respecting endpoint is a separate property from calibration: the
+Fisher-z transform does not make these SEs coverage-calibrated (see above).
 }

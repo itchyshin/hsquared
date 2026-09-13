@@ -22,4 +22,8 @@ Repeatability results for repeatability \code{hsquared_fit} objects.
 opt-in, experimental repeatability (permanent-environment) model. It works
 for \code{hsquared_fit} objects fitted with
 \code{engine_control = list(target = "repeatability")}.
+
+Separating \code{sigma_a2} from \code{sigma_pe2} needs repeated records per
+individual; see \code{?hs_control} (\code{target = "repeatability"}) for that
+identifiability requirement.
 }

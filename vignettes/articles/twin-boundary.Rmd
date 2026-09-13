@@ -72,3 +72,13 @@ When a status row says `covered`, check all three scopes:
 Only the second scope changes `public_covered_count`, and only after the
 cross-twin bridge and R-side evidence are complete. Engine coverage alone is
 not permission to describe an R formula as fitted or production-ready.
+
+## Twin contract rule
+
+Where one twin's documentation states an input contract, an output
+definition, an identifiability claim, or an exactness claim, the other
+twin's corresponding page must state it too, or link to it. A reader should
+not have to cross the language boundary to learn what a value means, what a
+function requires, or which parameters are identified versus rotation- or
+scale-dependent. `HSquared.jl`'s `docs/src/twin-boundary.md` is the sibling
+page for this rule on the Julia side.

@@ -47,7 +47,7 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' Willham fence for the opt-in direct-maternal correlated model
 #' (`target = "direct_maternal"`): `heritability()` returns the **labelled
 #' triple** -- direct h2_d, maternal m2, Willham total h2_T, and r_am -- as a
-#' data frame (Willham 1963, 1972). `sigma_P = sigma_ad + sigma_am + sigma_dm +
+#' data frame (Willham 1963, 1972). `sigma^2_P = sigma_ad + sigma_am + sigma_dm +
 #' sigma_e2 = Var(y_i)` (coefficient 1 on sigma_dm). A warning is issued
 #' because h2 is denominator-dependent under maternal effects and
 #' h2_T < h2_d is expected when r_am < 0. Use [direct_heritability()] or
@@ -114,13 +114,13 @@ heritability.hsquared_fit <- function(object, ...) {
     attr(out, "interpretation") <- paste(
       "Direct-maternal correlated model (target = \"direct_maternal\"):",
       "heritability() returns the labelled triple (Willham 1963, 1972).",
-      "h2_direct = sigma_ad / sigma_P (direct narrow-sense heritability);",
-      "m2_maternal = sigma_am / sigma_P (maternal variance ratio, NOT a",
+      "h2_direct = sigma_ad / sigma^2_P (direct narrow-sense heritability);",
+      "m2_maternal = sigma_am / sigma^2_P (maternal variance ratio, NOT a",
       "heritability); h2_total_willham = (sigma_ad + 1.5*sigma_dm +",
-      "0.5*sigma_am) / sigma_P (Willham total heritability - PREDICTS",
+      "0.5*sigma_am) / sigma^2_P (Willham total heritability - PREDICTS",
       "RESPONSE TO MASS SELECTION; can be LOWER than h2_direct when r_am < 0);",
       "r_am = genetic correlation between direct and maternal effects.",
-      "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972).",
+      "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972).",
       "h2 is denominator-dependent under maternal effects; compare",
       "(co)variance components rather than h2 across software.",
       "Use direct_heritability() or total_heritability() for targeted accessors."
@@ -392,7 +392,10 @@ gamma_matrix.hsquared_fit <- function(object, ...) {
 #' @inheritParams variance_components
 #'
 #' @return A data frame with columns `id`, `metafounder_group`, and
-#'   `is_metafounder`.
+#'   `is_metafounder`. Rows are **animals**, keyed by `id`; `is_metafounder`
+#'   flags animals whose unknown-parent slot carries a supplied group label,
+#'   not metafounders themselves. The metafounders are the pseudo-populations
+#'   that are the rows and columns of [gamma_matrix()].
 #' @export
 metafounder_groups <- function(object, ...) {
   UseMethod("metafounder_groups")
@@ -481,12 +484,25 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #' results. The current package can report invariant covariance and correlation
 #' matrices from multivariate fits, but it does not yet expose
 #' interpreted loadings, uniqueness/specific variance, or latent breeding
-#' values. Loading columns are rotation-nonunique until a rotation or
+#' values. Loading columns (`genetic_loadings()`) and latent breeding values
+#' (`latent_breeding_values()`) are rotation-nonunique until a rotation or
 #' constraint policy is validated. Future `hsquared_fit` methods reserve
 #' `effect` and rotation controls, but these controls currently error rather
 #' than implying that loading axes are interpretable. The **rotation-invariant**
 #' genetic eigenstructure and evolvability geometry are available now via
 #' [eigen_G()] and the [g_matrix_geometry] family.
+#'
+#' `specific_variance()` (`Psi`, the factor-analytic specific/unique
+#' variances) is a **different case**: for `G = Lambda Lambda' + Psi`,
+#' rotating `Lambda -> Lambda Q` with `QQ' = I` leaves `Lambda Q Q' Lambda' =
+#' Lambda Lambda'` unchanged, so `Psi` is rotation-**invariant** and
+#' identified, not rotation-nonunique. The engine payload for structured
+#' multivariate fits carries `Psi` as `genetic_uniqueness`, explicitly marked
+#' identified, alongside the excluded, rotation-nonidentified loadings. This
+#' extractor still errors on the R surface, but for a different reason:
+#' `genetic_structure = "factor_analytic"` (and `"lowrank"`) are planned on
+#' the R surface and are not yet activated on the R-to-Julia bridge, not
+#' because `Psi` is unidentified.
 #'
 #' @inheritParams variance_components
 #'
@@ -616,6 +632,23 @@ hs_factor_g_extractor_planned <- function(
       call. = FALSE
     )
   }
+  if (identical(name, "specific_variance")) {
+    stop(
+      "`",
+      name,
+      "()` for ",
+      quantity,
+      " is planned, not implemented for `hsquared_fit` objects. Unlike ",
+      "loading axes, `Psi` is rotation-INVARIANT and identified (for ",
+      "`G = Lambda Lambda' + Psi`, rotating `Lambda -> Lambda Q` leaves ",
+      "`Psi` unchanged). It is withheld because `genetic_structure = ",
+      "\"factor_analytic\"` (and `\"lowrank\"`) are planned on the R surface ",
+      "and not yet activated on the R-to-Julia bridge, not because `Psi` is ",
+      "unidentified. Current multivariate fits report invariant ",
+      "`genetic_covariance()` and `genetic_correlation()`.",
+      call. = FALSE
+    )
+  }
   stop(
     "`",
     name,
@@ -637,6 +670,10 @@ hs_factor_g_extractor_planned <- function(
 #' opt-in, experimental repeatability (permanent-environment) model. It works
 #' for `hsquared_fit` objects fitted with
 #' `engine_control = list(target = "repeatability")`.
+#'
+#' Separating `sigma_a2` from `sigma_pe2` needs repeated records per
+#' individual; see `?hs_control` (`target = "repeatability"`) for that
+#' identifiability requirement.
 #'
 #' @inheritParams variance_components
 #'
@@ -666,6 +703,10 @@ repeatability.hsquared_fit <- function(object, ...) {
 #'
 #' `permanent_effects()` returns the predicted permanent-environment effects of
 #' the opt-in, experimental repeatability model.
+#'
+#' Separating `sigma_a2` from `sigma_pe2` needs repeated records per
+#' individual; see `?hs_control` (`target = "repeatability"`) for that
+#' identifiability requirement.
 #'
 #' @inheritParams variance_components
 #'
@@ -946,6 +987,11 @@ hs_breeding_values_default <- function(name) {
 #' contract. It returns values only when an `hsquared_fit` object contains a
 #' Julia result field for prediction error variances.
 #'
+#' The engine defines PEV as the animal-block diagonal of the inverse of the
+#' precision-scaled Henderson mixed-model-equation coefficient matrix, so
+#' `diag(C^-1)` is directly the prediction error variance in variance units,
+#' with no separate `sigma_e2` factor to apply.
+#'
 #' @inheritParams variance_components
 #'
 #' @return Prediction error variances for `hsquared_fit` objects.
@@ -980,6 +1026,14 @@ prediction_error_variance.hsquared_fit <- function(object, ...) {
 #' returns values only when an `hsquared_fit` object contains a Julia result
 #' field for reliability estimates. `accuracy()` returns the square root of
 #' reliability for `hsquared_fit` objects.
+#'
+#' The engine defines reliability as `1 - PEV_i / (sigma_a2 * A_ii)`, using the
+#' dense relationship matrix `A = inv(Ainv)` implied by the supplied precision.
+#' For a genomic spec (`Ainv = Ginv`) this `A_ii` is `diag(inv(Ginv)) = diag(G)
+#' + ridge` (the regularized genomic self-relationship, often not equal to 1),
+#' so the genomic ridge perturbs the reported reliability and accuracy.
+#' Reliability values are **not clipped**; `accuracy()` **rejects** a
+#' reliability value below 0 or above 1 rather than silently clipping it.
 #'
 #' @inheritParams variance_components
 #'
@@ -1061,7 +1115,11 @@ accuracy.hsquared_fit <- function(object, ...) {
 #' interval at the **directional-conservative** claim level under doc-34 §4:
 #' delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
 #' bootstrap **mildly under-covers versus nominal 0.95** at the governing
-#' interior cell (worst Ĉ **0.924** at h²=0.5, still at least 0.90). That is **not**
+#' interior cell (worst Ĉ **0.924** at h²=0.5, still at least 0.90). Those
+#' figures were measured on one **interpretable small design** (`q = 120`),
+#' at **interior** `h² in {0.3, 0.5, 0.7}`, at the **0.95** level, in DRAC job
+#' **47925485**; **unbalanced designs were not in the confirm grid**, so
+#' these numbers say nothing about coverage under imbalance. That is **not**
 #' coverage-calibrated at nominal and **not** "never under-covers." Profile and
 #' bootstrap h² interval legs were measured in the same confirm but are **not**
 #' separately surfaced by this extractor; only the engine-returned interval is
@@ -1342,6 +1400,15 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #' factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
 #' flat/boundary optimum, not coverage-calibrated, with no external comparator,
 #' and not a validated capability.
+#'
+#' The returned `genetic_correlation` SE is on the correlation (`r`) scale. A
+#' naive symmetric interval built as `estimate +/- 1.96 * se` on that scale
+#' can leave `(-1, 1)` for strong correlations. The engine instead builds its own
+#' genetic-correlation interval on the **Fisher-z scale**
+#' (`z = atanh(r)`, `se_z = se_r / (1 - r^2)`, endpoints
+#' `tanh(z -+ q * se_z)`), which always lands inside `(-1, 1)`. That
+#' range-respecting endpoint is a separate property from calibration: the
+#' Fisher-z transform does not make these SEs coverage-calibrated (see above).
 #'
 #' @inheritParams variance_components
 #'
@@ -2497,16 +2564,16 @@ hs_require_direct_maternal <- function(object, name) {
 #' additive and maternal additive effects, plus a residual variance.
 #'
 #' Willham fence: the direct-maternal model (Willham 1963, 1972) distinguishes
-#' the **direct** narrow-sense heritability `h2_d = sigma_ad / sigma_P` from
-#' the maternal variance ratio `m2 = sigma_am / sigma_P`, the Willham total
+#' the **direct** narrow-sense heritability `h2_d = sigma_ad / sigma^2_P` from
+#' the maternal variance ratio `m2 = sigma_am / sigma^2_P`, the Willham total
 #' (selection-response) heritability
-#' `h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma_P`, and the
+#' `h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma^2_P`, and the
 #' genetic covariance `sigma_dm`.
-#' `sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)` for a
+#' `sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)` for a
 #' non-inbred base (coefficient 1 on `sigma_dm` because
 #' `2 * A[i,dam] = 2 * (1/2) = 1`). **h2 is denominator-dependent under
 #' maternal effects; compare (co)variance components, not h2 values, across
-#' software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma_P to the
+#' software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma^2_P to the
 #' user).** A **negative** genetic correlation `r_am` is real and biologically
 #' expected in many livestock traits; it reflects an antagonistic
 #' direct-maternal relationship and does NOT indicate a model failure.
@@ -2579,12 +2646,12 @@ direct_heritability.hsquared_fit <- function(object, ...) {
   out <- hs_fit_result(object, "heritability", "direct heritability estimate")
   attr(out, "interpretation") <- paste(
     "Direct narrow-sense heritability from the direct-maternal correlated",
-    "model: h2_d = sigma_ad / sigma_P, where",
-    "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)",
+    "model: h2_d = sigma_ad / sigma^2_P, where",
+    "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)",
     "(Willham 1963, 1972; coefficient 1 on sigma_dm because",
     "2*A[i,dam] = 2*(1/2) = 1 for a non-inbred base).",
     "h2 is denominator-dependent under maternal effects; hsquared defines",
-    "sigma_P to include sigma_dm (Willham 1972). Compare (co)variance",
+    "sigma^2_P to include sigma_dm (Willham 1972). Compare (co)variance",
     "components rather than h2 values across software.",
     "A negative genetic correlation r_am is real and expected in many",
     "livestock traits. Use total_heritability() for Willham's selection-",
@@ -2693,12 +2760,12 @@ total_heritability.hsquared_fit <- function(object, ...) {
   )
   attr(out, "interpretation") <- paste(
     "Willham total (selection-response) heritability:",
-    "h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma_P",
+    "h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma^2_P",
     "(Willham 1963, 1972; coefficients 1, 1.5, 0.5 for direct,",
     "covariance, maternal terms). PREDICTS RESPONSE TO MASS SELECTION.",
     "h2_T CAN BE LOWER than direct h2_d when r_am < 0 (antagonistic",
     "direct-maternal covariance) - this is real and expected.",
-    "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i).",
+    "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i).",
     "Do NOT confuse with 'total heritable variance' (coefficients 1, 2, 1)",
     "which is a different quantity. Use direct_heritability() for h2_d",
     "and genetic_correlation() for r_am."
