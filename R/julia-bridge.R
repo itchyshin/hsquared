@@ -1455,7 +1455,9 @@ hs_fit_julia_two_effect_payload <- function(
 # target = "direct_maternal".
 hs_fit_julia_direct_maternal_payload <- function(
   payload,
-  project = hs_default_julia_project()
+  project = hs_default_julia_project(),
+  initial = NULL,
+  iterations = NULL
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -1486,6 +1488,16 @@ hs_fit_julia_direct_maternal_payload <- function(
       "package, and a local `HSquared.jl` project.",
       call. = FALSE
     )
+  }
+
+  # hsquared#212: `initial`/`iterations` default to NULL (Julia `nothing`) so
+  # an unsupplied control reproduces the exact pre-#212-fix call byte for
+  # byte.
+  if (!is.null(initial)) {
+    initial <- hs_validate_direct_maternal_initial(initial)
+  }
+  if (!is.null(iterations)) {
+    iterations <- hs_validate_iterations(iterations)
   }
 
   hs_julia_setup(project)
@@ -1544,9 +1556,31 @@ hs_fit_julia_direct_maternal_payload <- function(
   JuliaCall::julia_command(
     "hsq_parsed_dm = HSquared.parse_payload_v2(hsq_payload_dm);"
   )
-  JuliaCall::julia_command(
-    "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm);"
-  )
+  # hsquared#212: forward `initial`/`iterations` to `fit_payload_v2` only when
+  # supplied, so the default call (neither supplied) is the exact pre-fix
+  # command string, byte for byte.
+  dm_fit_kwargs <- character(0)
+  if (!is.null(initial)) {
+    JuliaCall::julia_assign("hsq_initial_G_dm", initial$G_dm)
+    JuliaCall::julia_assign("hsq_initial_sigma_e2_dm", unname(initial$sigma_e2))
+    dm_fit_kwargs <- c(
+      dm_fit_kwargs,
+      "initial = (G_dm = hsq_initial_G_dm, sigma_e2 = hsq_initial_sigma_e2_dm)"
+    )
+  }
+  if (!is.null(iterations)) {
+    JuliaCall::julia_assign("hsq_iterations_dm", iterations)
+    dm_fit_kwargs <- c(dm_fit_kwargs, "iterations = hsq_iterations_dm")
+  }
+  dm_kwargs_str <- if (length(dm_fit_kwargs) > 0L) {
+    paste0("; ", paste(dm_fit_kwargs, collapse = ", "))
+  } else {
+    ""
+  }
+  JuliaCall::julia_command(sprintf(
+    "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm%s);",
+    dm_kwargs_str
+  ))
   JuliaCall::julia_command(
     "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
   )
@@ -1720,7 +1754,9 @@ hs_normalize_direct_maternal_result <- function(
 hs_fit_julia_n_effect_payload <- function(
   payload,
   project = hs_default_julia_project(),
-  scale_method = c("dense", "auto")
+  scale_method = c("dense", "auto"),
+  initial = NULL,
+  iterations = NULL
 ) {
   scale_method <- match.arg(scale_method)
   if (!inherits(payload, "hs_bridge_payload")) {
@@ -1740,6 +1776,17 @@ hs_fit_julia_n_effect_payload <- function(
       "package, and a local `HSquared.jl` project.",
       call. = FALSE
     )
+  }
+
+  # hsquared#212: `initial`/`iterations` default to NULL (Julia `nothing`) so
+  # an unsupplied control reproduces the exact pre-#212-fix call byte for
+  # byte. When supplied, `initial` must be a length K+1 vector (one value per
+  # block, in formula order, plus the residual).
+  if (!is.null(initial)) {
+    initial <- hs_validate_multi_effect_initial(initial, length(blocks) + 1L)
+  }
+  if (!is.null(iterations)) {
+    iterations <- hs_validate_iterations(iterations)
   }
 
   hs_julia_setup(project)
@@ -1825,9 +1872,26 @@ hs_fit_julia_n_effect_payload <- function(
   JuliaCall::julia_command(
     "hsq_parsed = HSquared.parse_payload_v2(hsq_payload);"
   )
+  # hsquared#212: forward `initial`/`iterations` to `fit_payload_v2` (and,
+  # below, to the `multi_effect_ratio_interval` refit on the SAME inputs)
+  # only when supplied, so the default call (neither supplied) is the exact
+  # pre-fix command string, byte for byte.
+  ne_extra_kwargs <- character(0)
+  if (!is.null(initial)) {
+    JuliaCall::julia_assign("hsq_initial_ne", initial)
+    ne_extra_kwargs <- c(ne_extra_kwargs, "initial = hsq_initial_ne")
+  }
+  if (!is.null(iterations)) {
+    JuliaCall::julia_assign("hsq_iterations_ne", iterations)
+    ne_extra_kwargs <- c(ne_extra_kwargs, "iterations = hsq_iterations_ne")
+  }
+  ne_fit_kwargs <- c(
+    sprintf("scale_method = :%s", scale_method),
+    ne_extra_kwargs
+  )
   JuliaCall::julia_command(sprintf(
-    "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
-    scale_method
+    "hsq_fit = HSquared.fit_payload_v2(hsq_payload; %s);",
+    paste(ne_fit_kwargs, collapse = ", ")
   ))
   JuliaCall::julia_command(
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
@@ -1874,6 +1938,15 @@ hs_fit_julia_n_effect_payload <- function(
   # non-positive-definite, so the try guard keeps an interval failure from
   # aborting the fit. hsq_has_nci gates the eval so a Julia `nothing` never
   # crosses the bridge. Asymptotic delta-method, NOT coverage-calibrated.
+  # hsquared#212: forward the SAME `initial`/`iterations` used for the main
+  # fit (mirroring `two_effect_ratio_interval`'s pattern above) so the
+  # interval refit is not silently ignoring them independently of the
+  # main-fit defect fixed above.
+  nci_extra_kwargs <- if (length(ne_extra_kwargs) > 0L) {
+    paste0(", ", paste(ne_extra_kwargs, collapse = ", "))
+  } else {
+    ""
+  }
   JuliaCall::julia_command(paste(
     "hsq_nci = if isdefined(HSquared, :multi_effect_ratio_interval);",
     "try;",
@@ -1881,7 +1954,10 @@ hs_fit_julia_n_effect_payload <- function(
     "for b in hsq_parsed.blocks];",
     "hsq_nids = [b.ids for b in hsq_parsed.blocks];",
     "HSquared.multi_effect_ratio_interval(",
-    "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids);",
+    sprintf(
+      "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids%s);",
+      nci_extra_kwargs
+    ),
     "catch; nothing; end; else; nothing; end;",
     "hsq_has_nci = hsq_nci !== nothing;"
   ))
@@ -3269,7 +3345,9 @@ hs_fit_julia_single_step_construct_payload <- function(
     "ids = hsq_ped.ids,",
     "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
     "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2));",
+    # hsquared#212: `iterations` was validated and assigned above but never
+    # reached the fit call -- silently discarded. Forward it now.
+    "sigma_e2 = hsq_initial_sigma_e2), iterations = hsq_iterations);",
     "hsq_result = HSquared.result_payload(hsq_fit);"
   ))
   hs_julia_attach_standard_plot_data()
@@ -3374,7 +3452,9 @@ hs_fit_julia_metafounder_single_step_payload <- function(
     "ids = hsq_ped.ids,",
     "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
     "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2));",
+    # hsquared#212: `iterations` was validated and assigned above but never
+    # reached the fit call -- silently discarded. Forward it now.
+    "sigma_e2 = hsq_initial_sigma_e2), iterations = hsq_iterations);",
     "hsq_result = HSquared.result_payload(hsq_fit);"
   ))
   hs_julia_attach_standard_plot_data()
@@ -3839,6 +3919,131 @@ hs_validate_initial_variances <- function(initial) {
     )
   }
   out
+}
+
+# hsquared#212: `initial` for the multi-effect (K independent random-effect
+# blocks + residual) target is a plain positive numeric vector of length
+# K + 1, in block order (animal first, then each i.i.d. block, then the
+# residual) -- matching `HSquared.fit_multi_effect_reml()`'s own `initial`
+# argument shape (a vector, not a named list; there is no per-block name to
+# attach since K is caller-determined).
+hs_validate_multi_effect_initial <- function(initial, k) {
+  if (!is.numeric(initial) || length(initial) != k) {
+    stop(
+      "`initial` for the multi-effect target must be a numeric vector of ",
+      "length ",
+      k,
+      " (one value per random-effect block, in formula order, plus the ",
+      "residual).",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(initial)) || any(initial <= 0)) {
+    stop(
+      "`initial` variance components must be finite and positive.",
+      call. = FALSE
+    )
+  }
+  as.numeric(initial)
+}
+
+# hsquared#212: `initial` for the direct-maternal (correlated 2x2 G_dm) target
+# is a list with `G_dm` (a 2x2 positive-definite matrix) and `sigma_e2` (a
+# positive scalar) -- matching `HSquared.fit_direct_maternal_reml()`'s own
+# `initial = (G_dm = ..., sigma_e2 = ...)` NamedTuple shape.
+hs_validate_direct_maternal_initial <- function(initial) {
+  if (!is.list(initial) || !all(c("G_dm", "sigma_e2") %in% names(initial))) {
+    stop(
+      "`initial` for the direct-maternal target must be a list with ",
+      "`G_dm` (a 2x2 matrix) and `sigma_e2` (a positive scalar).",
+      call. = FALSE
+    )
+  }
+  G_dm <- as.matrix(initial[["G_dm"]])
+  if (!identical(dim(G_dm), c(2L, 2L)) || any(!is.finite(G_dm))) {
+    stop("`initial$G_dm` must be a finite 2x2 matrix.", call. = FALSE)
+  }
+  storage.mode(G_dm) <- "double"
+  if (
+    !isTRUE(all.equal(G_dm, t(G_dm))) ||
+      eigen(G_dm, only.values = TRUE)$values[2L] <= 0
+  ) {
+    stop(
+      "`initial$G_dm` must be a symmetric positive-definite 2x2 matrix.",
+      call. = FALSE
+    )
+  }
+  sigma_e2 <- as.numeric(initial[["sigma_e2"]])
+  if (length(sigma_e2) != 1L || !is.finite(sigma_e2) || sigma_e2 <= 0) {
+    stop(
+      "`initial$sigma_e2` must be a single positive finite value.",
+      call. = FALSE
+    )
+  }
+  list(G_dm = G_dm, sigma_e2 = sigma_e2)
+}
+
+# hsquared#212: `engine_control` keys silently discarded by a target LOOK
+# accepted (no error, no warning) but never reach the Julia call. This
+# declares, per `target`, which keys the bridge actually forwards, and errors
+# -- naming the key and the target -- when a caller supplies one that is not
+# honoured. `target` (the routing key itself) and `julia_project` (read by
+# every target's dispatch to resolve the Julia project) are always allowed and
+# are not repeated in the table below. Call once per `hsquared()` Julia
+# dispatch, before any `hs_fit_julia_*_payload` builder runs.
+hs_engine_control_honoured_keys <- list(
+  fit_animal_model = "initial",
+  henderson_mme = "variance_components",
+  metafounder = "variance_components",
+  sparse_reml = c("initial", "iterations"),
+  ai_reml = c("initial", "iterations", "em_warmup"),
+  repeatability = c("initial", "iterations"),
+  two_effect = c("initial", "iterations"),
+  # multi_effect: initial/iterations are honoured on the `scale_method =
+  # "dense"` (default) route only; `scale_method = "auto"` does not forward
+  # them (HSquared.jl#343, a known remaining gap, not fixed here).
+  multi_effect = c("initial", "iterations", "scale_method"),
+  direct_maternal = c("initial", "iterations"),
+  genomic = c("initial", "iterations"),
+  single_step = c("initial", "iterations"),
+  single_step_construct = c("initial", "iterations"),
+  metafounder_single_step = c("initial", "iterations"),
+  snp_blup = "variance_components",
+  relmat = c("initial", "iterations"),
+  precision = c("initial", "iterations"),
+  multivariate = c("initial", "iterations", "genetic_structure", "rank"),
+  random_regression = "iterations",
+  nongaussian = c("marginal", "iterations")
+)
+
+hs_engine_control_forwarding <- function(control, target) {
+  honoured <- c(
+    hs_engine_control_honoured_keys[[target]],
+    "target",
+    "julia_project"
+  )
+  supplied <- names(control$engine_control)
+  unsupported <- setdiff(supplied, honoured)
+  if (length(unsupported) > 0L) {
+    forwarded <- setdiff(honoured, c("target", "julia_project"))
+    hs_abort_unsupported_syntax(
+      "`engine_control` key",
+      if (length(unsupported) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unsupported), collapse = ", "),
+      if (length(unsupported) > 1L) " are" else " is",
+      " not honoured by `target = \"",
+      target,
+      "\"`. Supported keys (besides `target`/`julia_project`): ",
+      if (length(forwarded) == 0L) {
+        "(none)"
+      } else {
+        paste(sprintf("`%s`", forwarded), collapse = ", ")
+      },
+      "."
+    )
+  }
+  forwarded <- setdiff(honoured, c("target", "julia_project"))
+  control$engine_control[intersect(supplied, forwarded)]
 }
 
 hs_validate_iterations <- function(iterations) {

@@ -24,6 +24,24 @@
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
 #'   `iterations`, `em_warmup`, `target`, `variance_components`, and `marginal`.
+#'   `julia_project` is honoured by every `target`; supplying a key a given
+#'   `target` does not honour errors (hsquared#212) rather than being
+#'   silently ignored. Per-target honoured keys (besides `julia_project`):
+#'   * `fit_animal_model` (default): `initial`.
+#'   * `henderson_mme`, `metafounder`, `snp_blup`: `variance_components`.
+#'   * `ai_reml`: `initial`, `iterations`, `em_warmup`.
+#'   * `sparse_reml`, `repeatability`, `two_effect`, `direct_maternal`,
+#'     `genomic`, `single_step`, `single_step_construct`,
+#'     `metafounder_single_step`, `relmat`, `precision`: `initial`,
+#'     `iterations`.
+#'   * `multi_effect`: `initial`, `iterations`, `scale_method` -- `initial`/
+#'     `iterations` are honoured on the `scale_method = "dense"` (default)
+#'     route only; the opt-in `scale_method = "auto"` route does not yet
+#'     forward them (HSquared.jl#343, a known remaining gap).
+#'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
+#'   * `random_regression`: `iterations` (no `initial`).
+#'   * `nongaussian`: `marginal`, `iterations`.
+#'
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
@@ -91,13 +109,17 @@
 #'   generalization of two-effect; not the default path). Random slopes and
 #'   correlated `(x || group)` terms remain rejected. The animal-block ratio is
 #'   narrow-sense h2; other blocks are variance-explained proportions, not
-#'   heritabilities.
+#'   heritabilities. `initial` is a plain numeric vector of length K + 1 (one
+#'   value per block, in formula order, plus the residual); it and
+#'   `iterations` are honoured on the `scale_method = "dense"` route (see
+#'   `engine_control` above for the `"auto"` gap).
 #'   `target = "direct_maternal"` is an opt-in path for
 #'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`. It estimates
 #'   the correlated 2x2 direct-maternal genetic covariance and is covered at
 #'   validation scale (not the default path). `heritability()` returns the
 #'   labelled Willham triple (direct h2_d, maternal m2, total h2_T, r_am), never
-#'   a bare scalar.
+#'   a bare scalar. `initial` is a list with `G_dm` (a 2x2 matrix) and
+#'   `sigma_e2` (a positive scalar); it and `iterations` are honoured.
 #'   `target = "random_regression"` is an opt-in reaction-norm path for
 #'   `animal(rr(covariate, order = k) | id, pedigree = ped)`. It is covered at
 #'   `k = 2` (linear reaction norm). `rr_heritability()` returns h2(t) as a
@@ -134,7 +156,8 @@
 #'   `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma =
 #'   Gamma)` through the Julia-owned supplied-`Gamma` `H^Gamma` path. Both are
 #'   experimental, opt-in, dense/validation-scale, REML-only, and not
-#'   comparator-validated; `Gamma` is supplied, not estimated.
+#'   comparator-validated; `Gamma` is supplied, not estimated. Both honour
+#'   `initial` (named `sigma_a2`/`sigma_e2`) and `iterations`.
 #'   `target = "snp_blup"` is an experimental, opt-in path for the SNP-BLUP /
 #'   RR-BLUP marker-effect model. It requires `genomic(1 | id, markers = M)` (a
 #'   raw marker matrix) and estimates per-marker effects (`marker_effects()`) and

@@ -196,6 +196,10 @@ hsquared <- function(
       target <- "multivariate"
     }
     genetic_structure <- hs_validate_genetic_structure_control(control, target)
+    # hsquared#212: error on an `engine_control` key this target does not
+    # honour (named, alongside the target) rather than silently discarding
+    # it, before any target-specific dispatch below runs.
+    hs_engine_control_forwarding(control, target)
     if (
       isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
     ) {
@@ -520,7 +524,13 @@ hsquared <- function(
         # factorization is infeasible; the default "dense" is the covered
         # validation-scale path. See ?hsquared (engine_control) and the engine's
         # `docs/design/25-completion-ultraplan.md` (V8.6).
-        scale_method = hs_engine_control_value(control, "scale_method", "dense")
+        scale_method = hs_engine_control_value(control, "scale_method", "dense"),
+        # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
+        # reproduces the pre-#212-fix default exactly. NOTE: honoured on the
+        # `scale_method = "dense"` route only -- `"auto"` does not forward
+        # them yet (HSquared.jl#343).
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", NULL)
       ))
     }
 
@@ -541,7 +551,11 @@ hsquared <- function(
           control,
           "julia_project",
           hs_default_julia_project()
-        )
+        ),
+        # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
+        # reproduces the pre-#212-fix default exactly.
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", NULL)
       ))
     }
 
