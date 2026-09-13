@@ -586,7 +586,7 @@ test_that("live R<->engine parity: direct_maternal fit returns converged result"
   Zd_mat <- as.matrix(payload$random_effects[[1L]]$Z)
   Zm_mat <- as.matrix(payload$random_effects[[2L]]$Z)
 
-  hsquared:::hs_julia_setup()
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   JuliaCall::julia_assign("hsq_parity_y", payload$y)
   JuliaCall::julia_assign("hsq_parity_X", payload$X)
   JuliaCall::julia_assign("hsq_parity_Zd", Zd_mat)
