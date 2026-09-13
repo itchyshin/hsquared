@@ -1,14 +1,3 @@
-# hsquared (development version)
-
-* **Random-regression extractors error on an out-of-range covariate instead
-  of clamping (#213).** `hs_legendre_basis()` and the `at =` argument of
-  `rr_genetic_variance()`, `rr_heritability()`, `rr_correlation()`,
-  `rr_eigenfunctions()`, and the `reaction_norm`/`rr_surface` plot types now
-  error when the (standardized) covariate falls outside the fitted range,
-  matching the Julia engine's `legendre_basis` tolerance exactly, instead of
-  silently returning the value at the nearest fitted endpoint. This does not
-  change `public_covered_count` or any capability-status row.
-
 # hsquared 0.9.0 (experimental release)
 
 * **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and
