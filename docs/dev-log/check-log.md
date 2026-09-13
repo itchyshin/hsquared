@@ -7903,7 +7903,6 @@ Julia-owned follow-on — the R bridge consuming only `converged` and not the ne
   anywhere in the transcript — the #224 fix (`#226`) and the #342-boundary fixture fix
   (`#227`) both hold on this head.
 - FULL LIVE SUITE (orchestrator, R main b788cd4 vs Julia main a4cf08e5, `HSQUARED_JULIA_TESTS=true NOT_CRAN=true OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`): `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3609`; zero rows with failed>0 or error>0. Before #226/#227 the same run had ERROR=6 (1× #224, 5× the HSquared.jl#342 boundary refusal) — carried in testthat's `error` column, which the earlier gate formula did not sum.
-  filled by orchestrator>.
 
 ### CI state (`main`, at write time)
 
