@@ -23,7 +23,17 @@
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
-#'   `iterations`, `em_warmup`, `target`, `variance_components`, and `marginal`.
+#'   `iterations`, `em_warmup`, `target`, `variance_components`, `marginal`,
+#'   and `max_dense_cells`. `max_dense_cells` bounds `nobs^2 + nanimals^2` on
+#'   the engine's dense-validation fitters (hsquared#214, #217): the default
+#'   `animal()` route (via `HSquared.fit_animal_model()` /
+#'   `fit_variance_components()`) and `target = "repeatability"`. It must be a
+#'   single positive integer; the default, `1e6`, mirrors the engine's own
+#'   `DEFAULT_MAX_DENSE_CELLS` unchanged. Raise it to fit a larger dense
+#'   problem at the cost of memory and time, or switch to a sparse route
+#'   (`target = "ai_reml"`/`"sparse_reml"`) instead of raising it indefinitely.
+#'   Exceeding the cap now raises an `hsquared_error` naming the observed cell
+#'   count and the effective cap, rather than a raw Julia trace.
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
@@ -205,6 +215,9 @@ hs_control <- function(
     if (!names_ok) {
       stop("`engine_control` must be a named list.", call. = FALSE)
     }
+  }
+  if ("max_dense_cells" %in% names(engine_control)) {
+    hs_validate_max_dense_cells(engine_control[["max_dense_cells"]])
   }
 
   structure(

@@ -35,7 +35,17 @@ the advanced opt-in bridge with explicit \code{target} control.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
-\code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, and \code{marginal}.
+\code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
+and \code{max_dense_cells}. \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
+the engine's dense-validation fitters (hsquared#214, #217): the default
+\code{animal()} route (via \code{HSquared.fit_animal_model()} /
+\code{fit_variance_components()}) and \code{target = "repeatability"}. It must be a
+single positive integer; the default, \code{1e6}, mirrors the engine's own
+\code{DEFAULT_MAX_DENSE_CELLS} unchanged. Raise it to fit a larger dense
+problem at the cost of memory and time, or switch to a sparse route
+(\code{target = "ai_reml"}/\code{"sparse_reml"}) instead of raising it indefinitely.
+Exceeding the cap now raises an \code{hsquared_error} naming the observed cell
+count and the effective cap, rather than a raw Julia trace.
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
 it has no effect under the default \code{engine = "fit"} path. The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},

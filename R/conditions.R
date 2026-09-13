@@ -25,6 +25,41 @@ hs_abort_unsupported_syntax <- function(..., call. = FALSE) {
   stop(cond)
 }
 
+# One-line hints appended by `hs_julia_fit()` at the two known numerical-
+# boundary call sites (hsquared#214, #217): dense-validation fitters guarded
+# by the engine's `max_dense_cells` size check, and the single-step H^-1
+# construction path guarded by `ridge`/`blend_weight`.
+hs_dense_route_hint <- "raise max_dense_cells in engine_control or use a sparse route"
+hs_single_step_ridge_hint <- "raise ridge or blend_weight in engine_control"
+
+# Evaluate `expr` (a Julia-bridge fit call) and translate ANY error it raises
+# into a structured condition of class:
+#
+#   c("hsquared_julia_error", "hsquared_error", "error", "condition")
+#
+# instead of letting a raw, untranslated Julia trace cross the bridge
+# (hsquared#214, #217). `hint`, when supplied, is appended on its own line so
+# the R-facing lever (e.g. `ridge`, `max_dense_cells`) is named at the point of
+# failure; the original message is always preserved. A non-error result of
+# `expr` passes through unchanged. Mirrors `hs_abort_unsupported_syntax()`: the
+# raised condition never carries a call.
+hs_julia_fit <- function(expr, hint = NULL) {
+  tryCatch(
+    expr,
+    error = function(e) {
+      msg <- conditionMessage(e)
+      if (!is.null(hint) && nzchar(hint)) {
+        msg <- paste0(msg, "\n", hint)
+      }
+      cond <- errorCondition(
+        msg,
+        class = c("hsquared_julia_error", "hsquared_error")
+      )
+      stop(cond)
+    }
+  )
+}
+
 # Session-scoped flags for warn-once messages. Reset in tests.
 hs_session_flags <- new.env(parent = emptyenv())
 
