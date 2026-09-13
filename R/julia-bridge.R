@@ -1726,9 +1726,9 @@ hs_normalize_direct_maternal_result <- function(
         "livestock traits (antagonistic direct-maternal covariance;",
         "Willham 1963, 1972). Identifiability requires multiple offspring per dam",
         "with sires recorded; shallow pedigrees produce boundary G_dm.",
-        "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
+        "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
         "h2 is denominator-dependent under maternal effects. ASReml/BLUPF90/",
-        "WOMBAT report raw components and leave sigma_P to the user; sommer/",
+        "WOMBAT report raw components and leave sigma^2_P to the user; sommer/",
         "MCMCglmm h2 depends on the user's chosen denominator - compare",
         "(co)variance components, not h2 values, across software.",
         "Use validate = TRUE to inspect the contract before fitting."
@@ -2802,10 +2802,22 @@ hs_normalize_random_regression_result <- function(raw, payload) {
 # standardized covariate t in [-1, 1], mirroring `HSquared.legendre_basis`:
 # phi_n(t) = sqrt((2n+1)/2) * P_n(t), with P_n the ordinary Legendre polynomials
 # via the Bonnet recurrence. Used by the R-side reaction-norm trajectory
-# extractors so they need no live Julia round-trip.
+# extractors so they need no live Julia round-trip. Errors -- does not
+# clamp -- for |t| > 1 + 1e-10, matching the Julia engine's tolerance exactly
+# (#213); within that tolerance t is clamped to [-1, 1] before use, as Julia
+# also does.
 hs_legendre_basis <- function(t, order) {
   order <- as.integer(order)
-  tt <- max(-1, min(1, as.numeric(t)))
+  t <- as.numeric(t)
+  if (t < -1 - 1e-10 || t > 1 + 1e-10) {
+    hs_abort_out_of_range(
+      "`t` must be in [-1, 1]; standardize the covariate first ",
+      "(see `hs_standardize_covariate()`), got t = ",
+      format(t, trim = TRUE),
+      "."
+    )
+  }
+  tt <- max(-1, min(1, t))
   p <- numeric(order)
   p[1L] <- 1
   if (order >= 2L) {
@@ -2824,7 +2836,8 @@ hs_legendre_basis <- function(t, order) {
 }
 
 # n x order normalized-Legendre design over already-standardized points `ts`,
-# mirroring `HSquared.legendre_design`.
+# mirroring `HSquared.legendre_design`. Errors via `hs_legendre_basis()` if any
+# `ts` point is outside [-1 - 1e-10, 1 + 1e-10].
 hs_legendre_design <- function(ts, order) {
   do.call(rbind, lapply(ts, hs_legendre_basis, order = order))
 }

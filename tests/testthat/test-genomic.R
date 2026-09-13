@@ -377,6 +377,14 @@ test_that("marker validation freezes dosage, names, and polymorphism", {
     "[0, 2]",
     fixed = TRUE
   )
+  # The dosage-range guard is a classed hsquared_error (#216), naming the
+  # 0/1/2 convention and the -1/0/1 recode, not a bare stop().
+  cnd <- tryCatch(
+    hsquared:::hs_validate_genomic_markers(bad),
+    error = function(e) e
+  )
+  expect_s3_class(cnd, "hsquared_error")
+  expect_match(cnd$message, "recoded", fixed = TRUE)
   bad <- M
   rownames(bad)[1] <- ""
   expect_error(

@@ -269,8 +269,8 @@ test_that("direct_heritability() returns labelled data frame with fence", {
   expect_equal(out$term, "direct")
   expect_true(is.numeric(out$estimate))
   expect_true(!is.null(attr(out, "interpretation")))
-  # The fence must mention direct and sigma_P
-  expect_match(attr(out, "interpretation"), "sigma_P", fixed = TRUE)
+  # The fence must mention direct and the phenotypic variance sigma^2_P
+  expect_match(attr(out, "interpretation"), "sigma^2_P", fixed = TRUE)
 })
 
 test_that("heritability() on direct_maternal fit warns and returns labelled triple", {

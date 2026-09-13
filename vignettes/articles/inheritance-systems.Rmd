@@ -42,6 +42,20 @@ into a bag of special cases.
 
 The default fit is the v0.1 additive animal model:
 
+```{r fixture}
+ped <- data.frame(
+  id   = c("s1", "s2", "d1", "d2", "o1", "o2", "o3", "o4"),
+  sire = c(NA, NA, NA, NA, "s1", "s1", "s2", "s2"),
+  dam  = c(NA, NA, NA, NA, "d1", "d2", "d1", "d2")
+)
+pheno <- data.frame(
+  id  = ped$id,
+  sex = c("m", "m", "f", "f", "m", "f", "m", "f"),
+  age = c(4, 5, 4, 5, 1, 1, 1, 1),
+  y   = c(72, 75, 65, 68, 31, 33, 35, 30)
+)
+```
+
 ```{r}
 fit <- hsquared(
   y ~ sex + age + animal(1 | id, pedigree = ped),

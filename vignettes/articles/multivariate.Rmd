@@ -73,6 +73,22 @@ fixed-effect values are still rejected before fitting.
 The current live grammar uses a `cbind()` response and the ordinary animal-model
 random intercept. Nothing else is needed:
 
+```{r fixture}
+dat <- data.frame(
+  id = c("sire", "dam", "calf1", "calf2"),
+  sex = c("m", "f", "f", "m"),
+  age = c(4, 4, 1, 1),
+  weight = c(72, 65, 31, 35),
+  length = c(110, NA, 72, 76)
+)
+
+ped <- data.frame(
+  id = c("sire", "dam", "calf1", "calf2"),
+  sire = c(NA, NA, "sire", "sire"),
+  dam = c(NA, NA, "dam", "dam")
+)
+```
+
 ```{r}
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
@@ -121,24 +137,11 @@ installed; what changed is that you no longer have to name it.
 
 ## Missing trait cells
 
-Trait cells may be missing in the `cbind()` response. For example, this is a
-valid data shape for the multivariate target:
+Trait cells may be missing in the `cbind()` response. The `dat` fixture defined
+above already shows a valid data shape for the multivariate target: `dam`'s
+`length` is `NA`, and the fit above still succeeds.
 
 ```{r}
-dat <- data.frame(
-  id = c("sire", "dam", "calf1", "calf2"),
-  sex = c("m", "f", "f", "m"),
-  age = c(4, 4, 1, 1),
-  weight = c(72, 65, 31, 35),
-  length = c(110, NA, 72, 76)
-)
-
-ped <- data.frame(
-  id = c("sire", "dam", "calf1", "calf2"),
-  sire = c(NA, NA, "sire", "sire"),
-  dam = c(NA, NA, "dam", "dam")
-)
-
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,

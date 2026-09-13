@@ -325,11 +325,12 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
     sort(unique(p_consume$data$covariate)),
     c(97, 98, 99)
   )
-  # a custom `at` must BYPASS the payload and recompute on the user's grid.
-  p_bypass <- autoplot(fit_pd, "reaction_norm", at = c(2, 4, 6))
+  # a custom `at` must BYPASS the payload and recompute on the user's grid
+  # (in-range: the fitted covariate range here is [1, 5], see #213).
+  p_bypass <- autoplot(fit_pd, "reaction_norm", at = c(2, 3, 4))
   expect_equal(
     sort(unique(p_bypass$data$covariate)),
-    c(2, 4, 6)
+    c(2, 3, 4)
   )
   # rename precedence: with both fields, `value` wins over `genetic_variance`.
   fit_both <- fit
