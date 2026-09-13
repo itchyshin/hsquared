@@ -120,9 +120,12 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
   r_am — never a bare scalar. Direct h² is **not** the total heritability, and a
   negative r_am is real and expected. Single relationship A only.
 
-Both are opt-in, experimental, REML-only, and dense (n ≲ 1000). They are
-listed here because this page — not `validation_status()` — is what you
-should read before reporting a number. The cards above are generated from
+Both are opt-in, experimental, REML-only, and dense (n ≲ 1000); unlike the
+default `animal()` route and `target = "repeatability"`, neither currently
+accepts `engine_control$max_dense_cells`, so this n is a recommendation here,
+not an engine-enforced cap. They are listed here because this page — not
+`validation_status()` — is what you should read before reporting a number.
+The cards above are generated from
 the evidence table and will not mention them until those rows exist.
 
 ## Where to read next

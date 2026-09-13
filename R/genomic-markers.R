@@ -54,7 +54,10 @@ genomic <- function(formula, G = NULL, Ginv = NULL, markers = NULL, ...) {
 #'   (`single_step(1 | id, pedigree = ped, markers = M)`), in place of a
 #'   precomputed `Hinv`.
 #' @param markers An individual-by-marker numeric dosage matrix with rows named
-#'   by genotyped ID. For `genomic()`, the engine uses sample allele frequencies,
+#'   by genotyped ID. Entries must be the biallelic allele count `0`/`1`/`2`
+#'   (or an imputed dosage in the closed interval `[0, 2]`); a matrix in the
+#'   centered `-1`/`0`/`1` convention must be recoded (add `1`) before it is
+#'   passed in. For `genomic()`, the engine uses sample allele frequencies,
 #'   VanRaden method 1, and ridge `0.01`. For `single_step()`, this is the
 #'   genotyped-subset marker matrix used to construct the genomic relationship.
 #' @param group Animal-to-metafounder group labels for the future `H^Gamma`

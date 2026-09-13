@@ -28,6 +28,11 @@ It is for users who already have a genomic relationship inverse, a marker
 matrix, or a single-step relationship inverse and want to understand which path
 is live today.
 
+`markers = M` must be coded as the biallelic allele count `0`/`1`/`2` (or an
+imputed dosage in `[0, 2]`); a matrix in the centered `-1`/`0`/`1` convention
+(as produced by some external genomic-prediction tools) must be recoded (add
+`1`) before it is passed in.
+
 The genomic GREML paths are experimental, REML-only, and Julia-backed.
 Narrow `genomic(1 | id, markers = M)` / `Ginv = Q` requires
 `engine = "julia", target = "genomic"`; the ordinary `engine = "fit"`
@@ -77,6 +82,26 @@ QTL/eQTL scans remain planned.
 
 Use this path when you already have a genomic relationship inverse whose row and
 column names match the IDs in the phenotype data.
+
+```{r fixture}
+ids <- paste0("id", seq_len(8))
+pheno <- data.frame(
+  id    = ids,
+  batch = rep(c("A", "B"), each = 4),
+  y     = c(72, 75, 65, 68, 31, 33, 35, 30)
+)
+
+set.seed(1)
+M <- matrix(sample(0:2, 8 * 6, replace = TRUE), nrow = 8, ncol = 6)
+rownames(M) <- ids
+
+p <- colMeans(M) / 2
+Z <- M - matrix(2 * p, nrow = 8, ncol = 6, byrow = TRUE)
+k <- 2 * sum(p * (1 - p))
+G <- tcrossprod(Z) / k + diag(0.01, 8)
+dimnames(G) <- list(ids, ids)
+Ginv <- solve(G)
+```
 
 ```{r}
 fit_g <- hsquared(

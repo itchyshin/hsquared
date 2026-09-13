@@ -35,7 +35,8 @@ the advanced opt-in bridge with explicit \code{target} control.}
 
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
-\code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, and \code{marginal}.
+\code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
+and \code{max_dense_cells}.
 \code{julia_project} is honoured by every \code{target}; supplying a key a given
 \code{target} does not honour errors (hsquared#212) rather than being
 silently ignored. Per-target honoured keys (besides \code{julia_project}):
@@ -55,6 +56,25 @@ forward them (HSquared.jl#343, a known remaining gap).
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}.
+\code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
+the engine's dense-validation fitters (hsquared#214, #217): the default Julia
+target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
+\code{fit_variance_components()}) and \code{target = "repeatability"}. Both require
+\code{engine = "julia"}. It has \strong{no effect} under the default \code{engine = "fit"}
+path, which routes to the sparse-capable \code{HSquared.fit_ai_reml()} and enforces
+no dense-cell cap at all. It must be a
+single positive integer; the default, \code{1e6}, mirrors the engine's own
+\code{DEFAULT_MAX_DENSE_CELLS} unchanged. Raise it to fit a larger dense
+problem at the cost of memory and time, or switch to a sparse route
+(\code{target = "ai_reml"}/\code{"sparse_reml"}) instead of raising it indefinitely.
+Exceeding the cap now raises an \code{hsquared_error} naming the observed cell
+count and the effective cap, rather than a raw Julia trace.
+On \code{target = "repeatability"}, \code{max_dense_cells} reaches the point fit only.
+The opt-in repeatability-coefficient interval is computed by a separate engine
+entry point that exposes no such control and runs at the engine default
+(\code{1e6}), so \strong{raising the cap above \code{1e6} returns the point fit with the
+interval silently absent} (\code{NULL}) rather than with an error. Tracked on the
+engine side; not fixed here.
 }
 
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
@@ -183,6 +203,11 @@ supplied-variance solve (\code{HSquared.fit_snp_blup()}), or omit them to have
 marshals the inverse). \code{target = "precision"} is the same experimental path
 for \code{precision(1 | id, Q = Q)} (a supplied precision/inverse). Neither is
 covered or the default; the supplied matrix is provenance, not an estimate.
+The \code{animal(1 | id, pedigree = ped)} route rejects selfing (rows with the
+same known sire and dam) in v0.1, with no argument that reaches the
+engine's \code{allow_selfing} flag; \code{relmat(1 | id, K = A)} with a hand-built
+or \code{AGHmatrix}-built relationship matrix \code{A} is the current workaround
+for a selfing or hermaphroditic pedigree.
 \code{target = "multivariate"} names the experimental multivariate Gaussian
 animal model. Naming it is optional: a \code{cbind()} Gaussian response with an
 \code{animal()} term auto-routes to this target on the default path, and under

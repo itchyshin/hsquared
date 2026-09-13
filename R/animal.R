@@ -12,7 +12,12 @@
 #'   `1 | id`.
 #' @param pedigree A pedigree data frame with individual, sire, and dam columns.
 #'   Optional only when the enclosing [hsquared()] or [model_spec()] call uses
-#'   `data = hs_data(..., pedigree = ...)`.
+#'   `data = hs_data(..., pedigree = ...)`. In v0.1 this route rejects any row
+#'   with the same known sire and dam (selfing); no argument here reaches the
+#'   engine's existing `allow_selfing` flag. The current workaround for a
+#'   selfing or hermaphroditic pedigree is `relmat(1 | id, K = A)` with a
+#'   hand-built or `AGHmatrix`-built relationship matrix `A` (an experimental
+#'   route; see `?hs_control`).
 #' @param ... Reserved for future syntax such as `cov =`.
 #'
 #' @return `NULL`, invisibly. The call is interpreted by [hsquared()] when it

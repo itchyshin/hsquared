@@ -23,7 +23,8 @@
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
-#'   `iterations`, `em_warmup`, `target`, `variance_components`, and `marginal`.
+#'   `iterations`, `em_warmup`, `target`, `variance_components`, `marginal`,
+#'   and `max_dense_cells`.
 #'   `julia_project` is honoured by every `target`; supplying a key a given
 #'   `target` does not honour errors (hsquared#212) rather than being
 #'   silently ignored. Per-target honoured keys (besides `julia_project`):
@@ -42,6 +43,25 @@
 #'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
 #'   * `random_regression`: `iterations` (no `initial`).
 #'   * `nongaussian`: `marginal`, `iterations`.
+#'   `max_dense_cells` bounds `nobs^2 + nanimals^2` on
+#'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
+#'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
+#'   `fit_variance_components()`) and `target = "repeatability"`. Both require
+#'   `engine = "julia"`. It has **no effect** under the default `engine = "fit"`
+#'   path, which routes to the sparse-capable `HSquared.fit_ai_reml()` and enforces
+#'   no dense-cell cap at all. It must be a
+#'   single positive integer; the default, `1e6`, mirrors the engine's own
+#'   `DEFAULT_MAX_DENSE_CELLS` unchanged. Raise it to fit a larger dense
+#'   problem at the cost of memory and time, or switch to a sparse route
+#'   (`target = "ai_reml"`/`"sparse_reml"`) instead of raising it indefinitely.
+#'   Exceeding the cap now raises an `hsquared_error` naming the observed cell
+#'   count and the effective cap, rather than a raw Julia trace.
+#'   On `target = "repeatability"`, `max_dense_cells` reaches the point fit only.
+#'   The opt-in repeatability-coefficient interval is computed by a separate engine
+#'   entry point that exposes no such control and runs at the engine default
+#'   (`1e6`), so **raising the cap above `1e6` returns the point fit with the
+#'   interval silently absent** (`NULL`) rather than with an error. Tracked on the
+#'   engine side; not fixed here.
 #'
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
@@ -172,6 +192,11 @@
 #'   marshals the inverse). `target = "precision"` is the same experimental path
 #'   for `precision(1 | id, Q = Q)` (a supplied precision/inverse). Neither is
 #'   covered or the default; the supplied matrix is provenance, not an estimate.
+#'   The `animal(1 | id, pedigree = ped)` route rejects selfing (rows with the
+#'   same known sire and dam) in v0.1, with no argument that reaches the
+#'   engine's `allow_selfing` flag; `relmat(1 | id, K = A)` with a hand-built
+#'   or `AGHmatrix`-built relationship matrix `A` is the current workaround
+#'   for a selfing or hermaphroditic pedigree.
 #'   `target = "multivariate"` names the experimental multivariate Gaussian
 #'   animal model. Naming it is optional: a `cbind()` Gaussian response with an
 #'   `animal()` term auto-routes to this target on the default path, and under
@@ -229,6 +254,9 @@ hs_control <- function(
     if (!names_ok) {
       stop("`engine_control` must be a named list.", call. = FALSE)
     }
+  }
+  if ("max_dense_cells" %in% names(engine_control)) {
+    hs_validate_max_dense_cells(engine_control[["max_dense_cells"]])
   }
 
   structure(

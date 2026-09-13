@@ -2089,9 +2089,11 @@ hs_validate_genomic_markers <- function(markers) {
     )
   }
   if (any(markers < 0 | markers > 2)) {
-    stop(
-      "`markers` dosages must lie in the closed interval [0, 2].",
-      call. = FALSE
+    hs_abort_out_of_range(
+      "`markers` dosages must lie in the closed interval [0, 2]: the ",
+      "required convention is the biallelic allele count 0/1/2 (or an ",
+      "imputed dosage in [0, 2]). A matrix in the centered -1/0/1 ",
+      "convention must be recoded (add 1) before it is passed in."
     )
   }
   ids <- rownames(markers)
