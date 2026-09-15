@@ -679,7 +679,7 @@ ng225_pedigree <- function() {
   )
 }
 
-test_that("hsquared#225: `initial` moves the live bracket and both starts converge on a healthy fixture", {
+test_that("hsquared#225: supplying `initial` on a healthy fixture fits and agrees with the default", {
   project <- hsquared:::hs_default_julia_project()
   hs_require_bridge("hsquared#225 initial forwarding", project = project)
 
@@ -728,9 +728,11 @@ test_that("hsquared#225: `initial` moves the live bracket and both starts conver
   expect_true(is.finite(sa2_initial))
   expect_false(isTRUE(fit_default$result$boundary))
   expect_false(isTRUE(fit_initial$result$boundary))
-  # Both starts land at (near enough) the same optimum on a well-identified
-  # fixture -- proof `initial` actually reached the Julia call, not proof of a
-  # different answer.
+  # Agreement to 1e-4 shows a supplied `initial` does not perturb a
+  # well-identified fit. It is NOT evidence that `initial` reached the Julia
+  # call -- this assertion also passes if the forwarding is reverted. The
+  # forwarding itself is pinned by the command-string test in
+  # test-nongaussian-boundary-and-initial.R.
   expect_equal(sa2_default, sa2_initial, tolerance = 1e-4)
 })
 

@@ -48,9 +48,11 @@ test_that("hsquared#225: the v0.9 Julia command forwards `initial` and `restart_
     family_symbol = "bernoulli",
     marginal = "laplace"
   )
-  # An unsupplied `initial`/`restart_check` must reproduce the pre-fix command
-  # byte for byte -- no `initial =` or `restart_check =` keyword at all, the
-  # Julia-side defaults (`sigma_a2 = 1.0`, `restart_check = false`) apply.
+  # An unsupplied `initial`/`restart_check` must emit no keyword at all, so the
+  # `fit_laplace_reml(...)` CALL is byte-identical to the pre-fix one and the
+  # Julia-side defaults (`sigma_a2 = 1.0`, `restart_check = false`) apply. The
+  # full command asserted below is NOT byte-identical to pre-fix: the trailing
+  # Dict deliberately gains "boundary"/"restart_estimate" (hsquared#222).
   expect_false(grepl("initial =", baseline, fixed = TRUE))
   expect_false(grepl("restart_check", baseline, fixed = TRUE))
   expect_identical(

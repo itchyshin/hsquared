@@ -822,9 +822,13 @@ hs_ng09_boundary <- function(raw) {
   if (isTRUE(boundary)) {
     hs_abort_boundary_refused(
       "the non-Gaussian fit is at its search boundary (boundary = TRUE): ",
-      "the point estimate is a function of the start value, not the data. ",
-      "Retry with `engine_control = list(target = \"nongaussian\", ",
-      "restart_check = TRUE)` or a different `initial` (HSquared.jl#327)."
+      "the estimate sits on the rail of the engine's log-scale search bracket ",
+      "(log(initial$sigma_a2) +/- 6), so it is a function of the bracket, not ",
+      "the data. Retry with a different `initial` in `engine_control` -- ",
+      "`initial = list(sigma_a2 = <a value near the expected scale>)` recentres ",
+      "the bracket and can move the optimum into its interior. ",
+      "`restart_check = TRUE` only makes this check stricter; it cannot clear a ",
+      "boundary that is already flagged (HSquared.jl#327)."
     )
   }
   FALSE
@@ -4027,8 +4031,9 @@ hs_y_matrix_for_julia <- function(Y) {
 # hsquared#225: `initial` for the non-Gaussian target (`fit_laplace_reml()`'s
 # single-variance-component families -- poisson/bernoulli/binomial) is a list
 # with `sigma_a2` only, matching the engine's `initial = (sigma_a2 = ...,)`
-# NamedTuple shape. `NULL` (the default) means "let Julia use its own
-# hard-coded start value (sigma_a2 = 1.0)".
+# NamedTuple shape. `NULL` (the default) means "let Julia centre its own
+# log-scale search bracket, `log(sigma_a2) +/- 6`, at its hard-coded
+# sigma_a2 = 1.0".
 hs_validate_nongaussian_initial <- function(initial) {
   if (is.null(initial)) {
     return(NULL)
@@ -4180,9 +4185,9 @@ hs_engine_control_honoured_keys <- list(
   precision = c("initial", "iterations"),
   multivariate = c("initial", "iterations", "genetic_structure", "rank"),
   random_regression = "iterations",
-  # initial (hsquared#225): a list with `sigma_a2`, the single-variance-
-  # component start value `HSquared.fit_laplace_reml()` searches from
-  # (default sigma_a2 = 1.0). restart_check (hsquared#225): opt-in two-start
+  # initial (hsquared#225): a list with `sigma_a2`, the centre of the
+  # engine's log-scale search bracket, `log(sigma_a2) +/- 6` (default centre
+  # sigma_a2 = 1.0). restart_check (hsquared#225): opt-in two-start
   # refit that flags `boundary = TRUE` when the estimate moves with the start
   # (HSquared.jl#327).
   nongaussian = c("marginal", "iterations", "initial", "restart_check")

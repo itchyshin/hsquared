@@ -240,10 +240,15 @@ for Bernoulli or common-trial Binomial input. Varying trials return literal
 scalar. The ELBO is a lower bound on the marginal
 log-likelihood, so variational and Laplace \code{logLik}/\code{AIC} are \strong{not}
 comparable. This path remains experimental and not coverage-calibrated.
-\code{initial} (hsquared#225) is a list with \code{sigma_a2}, the single-variance-
-component start value the engine's Brent search runs from; the default,
-unsupplied, is the engine's own hard-coded \code{sigma_a2 = 1.0} (bracket
-\verb{[exp(-6), exp(6)]} around it). \code{restart_check} (hsquared#225, logical,
+\code{initial} (hsquared#225) is a list with \code{sigma_a2}. The engine fits the
+single variance component with a \strong{bracketed} Brent search over
+\code{log(sigma_a2)} on \verb{log(initial$sigma_a2) +/- 6} -- there is no start
+value, and \code{initial} sets the \strong{centre of the bracket}, so supplying it
+moves the whole search window. Unsupplied, the engine's own hard-coded
+\code{sigma_a2 = 1.0} centres it, giving \verb{[exp(-6), exp(6)]}; a true \code{sigma_a2}
+outside that window cannot be reached without an \code{initial} on the scale of
+the data, which is what makes \code{initial} the retry lever for a boundary
+refusal. \code{restart_check} (hsquared#225, logical,
 default \code{FALSE}) opts into the engine's two-start restart
 (HSquared.jl#327): it refits once from a bumped second start and flags
 \code{boundary = TRUE} when the estimate moves with the start, catching a

@@ -2,11 +2,16 @@
 
 * **The non-Gaussian bridge (`target = "nongaussian"`) forwards
   `engine_control$initial`/`$restart_check` and surfaces `boundary`
-  (#222, #225 / HSquared.jl#342).** `initial` (a list with `sigma_a2`) sets
-  the single-variance-component start value `HSquared.fit_laplace_reml()`
-  searches from, instead of always starting at the engine's hard-coded
-  `sigma_a2 = 1.0`; `restart_check` (logical, default `FALSE`) opts into the
-  engine's two-start restart. The R result now carries `boundary` next to
+  (#222, #225 / HSquared.jl#342).** `initial` (a list with `sigma_a2`)
+  recentres the engine's log-scale search bracket for the single variance
+  component: `HSquared.fit_laplace_reml()` runs a bracketed Brent search over
+  `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6`, so supplying `initial`
+  moves the whole search window, not just a starting point. Unsupplied, the
+  engine's hard-coded `sigma_a2 = 1.0` centres it, giving `[exp(-6), exp(6)]`
+  -- a true `sigma_a2` outside that window cannot be reached without an
+  `initial` on the scale of the data; `restart_check` (logical, default
+  `FALSE`) opts into the engine's two-start restart. The R result now
+  carries `boundary` next to
   `converged`: `TRUE` means the fitted `sigma_a2` is a function of the search
   start, not the data. A fit that lands on its search boundary is refused by
   the Julia payload builder and surfaces as a classed

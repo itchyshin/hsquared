@@ -229,10 +229,15 @@
 #'   scalar. The ELBO is a lower bound on the marginal
 #'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
 #'   comparable. This path remains experimental and not coverage-calibrated.
-#'   `initial` (hsquared#225) is a list with `sigma_a2`, the single-variance-
-#'   component start value the engine's Brent search runs from; the default,
-#'   unsupplied, is the engine's own hard-coded `sigma_a2 = 1.0` (bracket
-#'   `[exp(-6), exp(6)]` around it). `restart_check` (hsquared#225, logical,
+#'   `initial` (hsquared#225) is a list with `sigma_a2`. The engine fits the
+#'   single variance component with a **bracketed** Brent search over
+#'   `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` -- there is no start
+#'   value, and `initial` sets the **centre of the bracket**, so supplying it
+#'   moves the whole search window. Unsupplied, the engine's own hard-coded
+#'   `sigma_a2 = 1.0` centres it, giving `[exp(-6), exp(6)]`; a true `sigma_a2`
+#'   outside that window cannot be reached without an `initial` on the scale of
+#'   the data, which is what makes `initial` the retry lever for a boundary
+#'   refusal. `restart_check` (hsquared#225, logical,
 #'   default `FALSE`) opts into the engine's two-start restart
 #'   (HSquared.jl#327): it refits once from a bumped second start and flags
 #'   `boundary = TRUE` when the estimate moves with the start, catching a
