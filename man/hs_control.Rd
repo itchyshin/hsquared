@@ -259,9 +259,10 @@ a function of the search start, not the data. In practice a
 the Julia payload builder raises, translated into a classed
 \code{hsquared_julia_error} naming \code{initial}/\code{restart_check} as the retry
 levers -- so \code{boundary} on a returned fit is \code{FALSE}. Read it as
-\code{fit$result$boundary}; it is not yet a \code{fit_diagnostics()} row
-(hsquared#230), and it is unrelated to that function's \code{at_boundary}
-rows, which flag a variance component at or near zero.}
+\code{fit$result$boundary}, or via \code{fit_diagnostics()}'s \code{search_boundary} /
+\code{search_boundary_condition} rows (hsquared#230); those rows are
+unrelated to that function's \code{at_boundary} rows, which flag a variance
+component at or near zero.}
 }
 \value{
 An object of class \code{"hs_control"}.

@@ -248,9 +248,10 @@
 #'   the Julia payload builder raises, translated into a classed
 #'   `hsquared_julia_error` naming `initial`/`restart_check` as the retry
 #'   levers -- so `boundary` on a returned fit is `FALSE`. Read it as
-#'   `fit$result$boundary`; it is not yet a `fit_diagnostics()` row
-#'   (hsquared#230), and it is unrelated to that function's `at_boundary`
-#'   rows, which flag a variance component at or near zero.
+#'   `fit$result$boundary`, or via `fit_diagnostics()`'s `search_boundary` /
+#'   `search_boundary_condition` rows (hsquared#230); those rows are
+#'   unrelated to that function's `at_boundary` rows, which flag a variance
+#'   component at or near zero.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

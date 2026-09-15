@@ -736,6 +736,39 @@ test_that("hsquared#225: supplying `initial` on a healthy fixture fits and agree
   expect_equal(sa2_default, sa2_initial, tolerance = 1e-4)
 })
 
+# hsquared#230: `fit_diagnostics()` must surface the bridge's `boundary` flag
+# as `search_boundary` for a real non-Gaussian fit, not only via
+# `fit$result$boundary` (the pre-#230 access path documented in ?hs_control).
+test_that("hsquared#230: fit_diagnostics() reports search_boundary = FALSE for a healthy live non-Gaussian fit", {
+  project <- hsquared:::hs_default_julia_project()
+  hs_require_bridge("hsquared#230 search_boundary row", project = project)
+
+  ped <- ng225_pedigree()
+  n <- nrow(ped)
+  a <- hs_sim_genedrop_bv(ped, sigma_a2 = 2, seed = 106)
+  p <- stats::plogis(a)
+  set.seed(106)
+  y01 <- rbinom(n, 1L, p)
+  dat <- data.frame(y = y01, id = ped$id)
+
+  fit <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::binomial(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "nongaussian", julia_project = project)
+    )
+  )
+
+  diag <- fit_diagnostics(fit)
+  expect_false(isTRUE(fit$result$boundary))
+  expect_equal(diag$value[diag$metric == "search_boundary"], "FALSE")
+  condition_value <- diag$value[diag$metric == "search_boundary_condition"]
+  expect_equal(length(condition_value), 1L)
+  expect_true(is.na(condition_value) || identical(condition_value, "interior"))
+})
+
 test_that("hsquared#222/#225: a boundary-riding fixture fails the DEFAULT fit with a classed, actionable error", {
   project <- hsquared:::hs_default_julia_project()
   hs_require_bridge("hsquared#222/#225 boundary refusal", project = project)
