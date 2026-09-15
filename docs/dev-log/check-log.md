@@ -7931,3 +7931,121 @@ one distinct dam, so these are full-sib families, not sire/half-sib groups (rose
 recorded as lower-stakes alongside the required "half-sib" → "full-sib" fix at the
 `all_one` site). Not fixed here — text-only, non-blocking, flagged for whoever next
 touches that file.
+
+## 2026-09-15 — Non-Gaussian bridge: initial/restart_check forwarded, boundary surfaced (#222 #225 / PR #229) [R]
+
+`hsquared` PR #229 (merge SHA `c4dc59266990f7e31cd86bf6534556bc851f5e4b`, base `main`
+`22cfe51`) closed hsquared#222 and hsquared#225: `target = "nongaussian"` was the one
+Julia engine target whose `engine_control` honoured-keys row omitted `initial`, so every
+live non-Gaussian fit was forced to start its search at the engine's hard-coded
+`sigma_a2 = 1.0`; separately, the generic bridge wrapper read only `converged` off the
+Julia v0.9 envelope and never `boundary` (HSquared.jl#342 / HSquared.jl#327's
+search-boundary flag).
+
+- `R/julia-bridge.R`: `hs_engine_control_honoured_keys[["nongaussian"]]` (:4193) gains
+  `"initial"`/`"restart_check"`; `hs_nongaussian_three_field_julia_command()` (:868-936)
+  forwards both *conditionally* into the `HSquared.fit_laplace_reml(...)` call —
+  unsupplied, the keyword is omitted entirely and the `fit_laplace_reml(...)` **call** is
+  byte-identical to pre-fix, while the trailing `Dict(...)` always gains
+  `"boundary" => hsq_fit.boundary` and `"restart_estimate" => hsq_fit.restart_estimate`
+  next to `"converged"`; new `hs_ng09_boundary(raw)` (:817-835) next to
+  `hs_ng09_converged(raw)` (:794-805) — `FALSE` passes through into the result,
+  `TRUE` aborts with a new classed `hsquared_boundary_refused`/`hsquared_error`
+  (`hs_abort_boundary_refused()`, `R/conditions.R:97`) as a defense-in-depth backstop
+  behind the Julia payload builder's own refusal.
+- `R/hs_control.R` (roxygen) + regenerated `man/hs_control.Rd`: per-target honoured-keys
+  list and the `nongaussian` paragraph document `initial`, `restart_check`, and the
+  `boundary` result field (`fit$result$boundary`), distinct from `fit_diagnostics()`'s
+  unrelated `at_boundary`/`at_boundary_condition`.
+- `NEWS.md`: one bullet under the development-version header naming #222, #225, and
+  HSquared.jl#342.
+- Tests: new `tests/testthat/test-nongaussian-boundary-and-initial.R` (forwarding-gate,
+  command-string, validator unit tests, no Julia); `test-nongaussian-three-field-v09.R`
+  extended with `hs_ng09_boundary()`/normalizer tests and three live tests.
+
+No Julia edit, no `DESCRIPTION` change, no capability-status row change.
+
+### Rose audit (rose-r7, pre-merge)
+
+**Verdict: CHANGES (4 required), all text.** Rose independently re-verified the
+forwarding gate, validator style, no-double-wrapping (#220's rule), the kwarg spelling
+against the engine source, the unchanged default command, the classed live error, and
+envelope back-compat — no change requested to any of those. The four required changes,
+all applied on the branch (repair-229.md):
+
+- **C-1** — the `hs_ng09_boundary()` message told the user `restart_check = TRUE` could
+  clear a flagged boundary; the engine's own restart path (`boundary2 = fit_result.boundary
+  || abs(log(sigma_a2) - log(sa2_2)) > 0.01`, `HSquared.jl` `src/nongaussian.jl:1284`) is
+  monotone — `restart_check` can only turn `boundary` from `FALSE` to `TRUE`, never the
+  reverse. Rewritten to name `initial` as the only genuine lever and `restart_check` as
+  strictly a stricter detector.
+- **C-2** — four sites (`NEWS.md`, `R/hs_control.R` roxygen, the honoured-keys row
+  comment, the `hs_validate_nongaussian_initial()` header comment) called `initial` a
+  "start value". For the single-variance families the engine runs a **bracketed** Brent
+  search over `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` (`src/nongaussian.jl:
+  1247-1264`) — there is no start value, and `initial` is the **centre of the bracket**;
+  a true `sigma_a2` outside `[exp(-6), exp(6)]` is unreachable at the default and
+  reachable only by supplying an `initial` on the scale of the data. All four sites
+  corrected; `devtools::document()` regenerated `man/hs_control.Rd` with no stray "start
+  value" surviving (`grep -rn "start value" R/ tests/ NEWS.md man/` returns nothing).
+- **C-3** — the PR body and a test comment claimed an unsupplied control reproduces the
+  pre-fix **command** byte for byte; only the `fit_laplace_reml(...)` **call** is
+  byte-identical — the same PR's own `Dict(...)` deliberately gains `"boundary"`/
+  `"restart_estimate"` (the #222 half of the work). Both corrected to distinguish call
+  from command.
+- **C-4** — a live test titled "`initial` moves the live bracket and both starts
+  converge" asserted only that a supplied `initial` agrees with the default to `1e-4`;
+  that assertion also passes if the forwarding were reverted (both fits become literally
+  the same fit), so it is not evidence the forwarding fired — that is pinned separately
+  by the command-string test. Title and comment corrected to claim only what the
+  assertion shows (no-perturbation agreement).
+
+Optional (rose-r7, not required to merge) applied on this branch's last two commits:
+**O-1** — named the access path (`fit$result$boundary`) and the distinction from
+`at_boundary` in the roxygen; the `fit_diagnostics()` row itself is **not** added here,
+tracked as hsquared#230 (open). **O-2** — `initial$sigma_a2` was silently truncated to
+R's default 7 significant digits by `format()`; command builder now uses
+`format(initial, digits = 15, scientific = FALSE, trim = TRUE)`. **O-3** —
+`restart_estimate` is written to the wire (the `Dict(...)`) but not consumed by the R
+normalizer or surfaced on the result; left as-is, not a user-facing deliverable of this
+PR.
+
+Twin issue **HSquared.jl#347** (open): the engine's own `ArgumentError`
+(`src/nongaussian.jl:907-909`) carries the same wrong "retry with `restart_check = true`"
+advice that C-1 corrected on the R side — filed against the engine, not fixed here.
+
+### Checks (this worktree, branch `claude/h2-boundary-initial-records` from `origin/main`
+`c4dc592`)
+
+- `Rscript -e 'devtools::document()'` — clean; `git status --porcelain` after — **empty**
+  (no drift between the committed `man/`/`NAMESPACE` and a fresh regeneration).
+- `Rscript -e 'r <- devtools::check(".", document = FALSE, quiet = TRUE, error_on =
+  "never"); cat("errors=", length(r$errors), " warnings=", length(r$warnings), "
+  notes=", length(r$notes), "\n")'` (`OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`, run in
+  the background, polled with an until-loop) — **errors= 0  warnings= 0  notes= 0**.
+- Live filtered run (`HSQUARED_JULIA_TESTS=true HSQUARED_JULIA_PROJECT=<local
+  HSquared.jl checkout, `origin/main` `a4cf08e5`> NOT_CRAN=true OPENBLAS_NUM_THREADS=1
+  JULIA_NUM_THREADS=4 Rscript -e 'devtools::test(filter =
+  "nongaussian-three-field-v09|nongaussian-boundary-and-initial", reporter =
+  "summary")'`) — both files fully green (25 + 131 dots), "Your tests deserve a gold
+  medal", exit code 0.
+- FULL LIVE SUITE (orchestrator-reported, R branch head `e3df9062` — i.e. before the
+  final two docs-only commits `db449788`/`ddc5b8313` — vs Julia main `a4cf08e5`,
+  `HSQUARED_JULIA_TESTS=true NOT_CRAN=true OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`):
+  `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3657`. This is the orchestrator's own full-suite
+  measurement (expectation counts, not `test_that`-block counts — see the 2026-09-13
+  entry above for why the two units differ), taken on trust by this entry as it was by
+  rose-r7's own audit; not re-run by this records session.
+
+### CI state (`main`, at write time)
+
+`gh run list -R itchyshin/hsquared --branch main -L 2`: R-CMD-check on the PR #229
+merge commit (`c4dc5926`) — **SUCCESS**; pkgdown on the prior merge commit — SUCCESS.
+
+### Constraints held
+
+`DESCRIPTION` stays `Version: 0.9.0` — no bump. `NEWS.md` gained one bullet under the
+existing `# hsquared (development version)` header — no new header. No row of
+`docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or any
+other status ledger changed cell value; `public_covered_count` stays **7**. No
+`DESCRIPTION` change, no Julia edit.
