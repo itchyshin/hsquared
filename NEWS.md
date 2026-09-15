@@ -1,5 +1,22 @@
 # hsquared (development version)
 
+* **The non-Gaussian bridge (`target = "nongaussian"`) forwards
+  `engine_control$initial`/`$restart_check` and surfaces `boundary`
+  (#222, #225 / HSquared.jl#342).** `initial` (a list with `sigma_a2`) sets
+  the single-variance-component start value `HSquared.fit_laplace_reml()`
+  searches from, instead of always starting at the engine's hard-coded
+  `sigma_a2 = 1.0`; `restart_check` (logical, default `FALSE`) opts into the
+  engine's two-start restart. The R result now carries `boundary` next to
+  `converged`: `TRUE` means the fitted `sigma_a2` is a function of the search
+  start, not the data. A fit that lands on its search boundary is refused by
+  the Julia payload builder and surfaces as a classed
+  `hsquared_julia_error`/`hsquared_error` naming `initial`/`restart_check` as
+  the retry levers (previously the advice named these levers but the R bridge
+  had no way to supply them); the R-side `hs_ng09_boundary()` guard also
+  aborts with an `hsquared_boundary_refused`/`hsquared_error` condition on any
+  future route that returns `boundary = TRUE` without refusing first. No
+  version bump; no capability-status change.
+
 * **Random-regression basis and evaluation points now error on out-of-range
   covariates instead of clamping (#213 / PR #219).** `hs_legendre_basis()`
   errors beyond the engine's own `1e-10` tolerance, matching the Julia

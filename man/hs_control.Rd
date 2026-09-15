@@ -55,7 +55,8 @@ route only; the opt-in \code{scale_method = "auto"} route does not yet
 forward them (HSquared.jl#343, a known remaining gap).
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
-\item \code{nongaussian}: \code{marginal}, \code{iterations}.
+\item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with
+\code{sigma_a2}), \code{restart_check}.
 \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
 the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
@@ -238,7 +239,21 @@ for Bernoulli or common-trial Binomial input. Varying trials return literal
 \code{NaN} with \code{"varying_trials_no_scalar_estimand"}, never a trial-count-averaged
 scalar. The ELBO is a lower bound on the marginal
 log-likelihood, so variational and Laplace \code{logLik}/\code{AIC} are \strong{not}
-comparable. This path remains experimental and not coverage-calibrated.}
+comparable. This path remains experimental and not coverage-calibrated.
+\code{initial} (hsquared#225) is a list with \code{sigma_a2}, the single-variance-
+component start value the engine's Brent search runs from; the default,
+unsupplied, is the engine's own hard-coded \code{sigma_a2 = 1.0} (bracket
+\verb{[exp(-6), exp(6)]} around it). \code{restart_check} (hsquared#225, logical,
+default \code{FALSE}) opts into the engine's two-start restart
+(HSquared.jl#327): it refits once from a bumped second start and flags
+\code{boundary = TRUE} when the estimate moves with the start, catching a
+boundary a single fit can otherwise miss. The result carries \code{boundary}
+(hsquared#222) next to \code{converged}: \code{TRUE} means the fitted \code{sigma_a2} is
+a function of the search start, not the data. In practice a
+\code{boundary = TRUE} fit is refused before it reaches the R result at all --
+the Julia payload builder raises, translated into a classed
+\code{hsquared_julia_error} naming \code{initial}/\code{restart_check} as the retry
+levers -- so \code{boundary} on a returned fit is \code{FALSE}.}
 }
 \value{
 An object of class \code{"hs_control"}.

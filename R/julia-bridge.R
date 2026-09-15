@@ -520,7 +520,9 @@ hs_fit_julia_nongaussian_payload <- function(
   project = hs_default_julia_project(),
   family = stats::binomial(),
   marginal = "laplace",
-  iterations = 200L
+  iterations = 200L,
+  initial = NULL,
+  restart_check = FALSE
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -549,6 +551,8 @@ hs_fit_julia_nongaussian_payload <- function(
   family_symbol <- admission$family
   marginal <- admission$method
   iterations <- hs_validate_iterations(iterations)
+  initial <- hs_validate_nongaussian_initial(initial)
+  restart_check <- hs_validate_restart_check(restart_check)
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
@@ -574,7 +578,9 @@ hs_fit_julia_nongaussian_payload <- function(
     JuliaCall::julia_command(hs_nongaussian_three_field_julia_command(
       family_symbol = family_symbol,
       marginal = marginal,
-      n_trials = n_trials
+      n_trials = n_trials,
+      initial = initial,
+      restart_check = restart_check
     )),
     hint = hs_dense_scale_hint
   )
@@ -798,6 +804,32 @@ hs_ng09_converged <- function(raw) {
   TRUE
 }
 
+# hsquared#222: the R bridge must consume `boundary`, not only `converged`
+# (HSquared.jl#342 / HSquared.jl#327). The Julia payload builder
+# (`nongaussian_three_field_payload`) already refuses a `boundary = true` fit
+# with an `ArgumentError` before this envelope is even built -- that refusal
+# is translated into a classed `hsquared_julia_error` by `hs_julia_fit()` at
+# the call site, and is the intended contract for THIS route. This check is a
+# defense-in-depth backstop: if a future route ever constructs the
+# `nongaussian_three_field_v09` envelope without going through that refusing
+# builder, a `boundary = TRUE` wire value must not silently pass through as a
+# usable point estimate.
+hs_ng09_boundary <- function(raw) {
+  boundary <- hs_ng09_required(raw, "boundary")
+  if (!is.logical(boundary) || length(boundary) != 1L || is.na(boundary)) {
+    hs_ng09_abort("`boundary` must be one non-missing logical value.")
+  }
+  if (isTRUE(boundary)) {
+    hs_abort_boundary_refused(
+      "the non-Gaussian fit is at its search boundary (boundary = TRUE): ",
+      "the point estimate is a function of the start value, not the data. ",
+      "Retry with `engine_control = list(target = \"nongaussian\", ",
+      "restart_check = TRUE)` or a different `initial` (HSquared.jl#327)."
+    )
+  }
+  FALSE
+}
+
 hs_ng09_heritability_table <- function(result) {
   fields <- "h2_latent"
   labels <- result$h2_latent_label
@@ -832,7 +864,9 @@ hs_ng09_heritability_table <- function(result) {
 hs_nongaussian_three_field_julia_command <- function(
   family_symbol,
   marginal,
-  n_trials = NULL
+  n_trials = NULL,
+  initial = NULL,
+  restart_check = FALSE
 ) {
   if (!family_symbol %in% c("poisson", "bernoulli", "binomial")) {
     stop("Invalid v0.9 non-Gaussian engine family.", call. = FALSE)
@@ -847,6 +881,19 @@ hs_nongaussian_three_field_julia_command <- function(
       n_trials_kw <- "n_trials = Vector{Int}(hsq_n_trials), "
     }
   }
+  # hsquared#225: an unsupplied `initial`/`restart_check` omits the keyword
+  # entirely so the pre-fix command is reproduced byte for byte -- Julia's own
+  # defaults (sigma_a2 = 1.0, restart_check = false) apply unchanged.
+  initial_kw <- if (is.null(initial)) {
+    ""
+  } else {
+    paste0(
+      "initial = (sigma_a2 = ",
+      format(initial, scientific = FALSE, trim = TRUE),
+      ",), "
+    )
+  }
+  restart_kw <- if (isTRUE(restart_check)) ", restart_check = true" else ""
   paste0(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped); ",
@@ -854,7 +901,10 @@ hs_nongaussian_three_field_julia_command <- function(
     "hsq_y, hsq_X, hsq_Z, hsq_Ainv; ",
     "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal), ",
     n_trials_kw,
-    "ids = hsq_ped.ids, iterations = hsq_iterations); ",
+    initial_kw,
+    "ids = hsq_ped.ids, iterations = hsq_iterations",
+    restart_kw,
+    "); ",
     "hsq_result = HSquared.nongaussian_three_field_payload(",
     "hsq_fit; predictor_variance = 0.0, response_length = length(hsq_y)); ",
     "hsq_ng_raw = Dict(",
@@ -873,7 +923,9 @@ hs_nongaussian_three_field_julia_command <- function(
     "\"h2_observation\" => hsq_result.h2_observation, ",
     "\"h2_observation_undefined_reason\" => hsq_result.h2_observation_undefined_reason, ",
     "\"n_trials\" => hsq_result.n_trials, ",
-    "\"converged\" => hsq_fit.converged);"
+    "\"converged\" => hsq_fit.converged, ",
+    "\"boundary\" => hsq_fit.boundary, ",
+    "\"restart_estimate\" => hsq_fit.restart_estimate);"
   )
 }
 
@@ -897,6 +949,7 @@ hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
   method <- hs_validate_marginal_method(hs_ng09_required(raw, "method"))
   loglik <- hs_ng09_scalar_number(hs_ng09_required(raw, "loglik"), "loglik")
   converged <- hs_ng09_converged(raw)
+  boundary <- hs_ng09_boundary(raw)
   components <- hs_ng09_components(raw)
   names(components) <- c("V_A", "V_RE", "V_O")
   mu <- hs_ng09_intercept(raw)
@@ -927,6 +980,7 @@ hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
     fixed_effects = stats::setNames(mu, "(Intercept)"),
     nobs = length(payload$y),
     converged = converged,
+    boundary = boundary,
     breeding_values = animal_bv,
     random_effects = list(animal = animal_bv),
     h2_latent = h2_latent,
@@ -3970,6 +4024,49 @@ hs_y_matrix_for_julia <- function(Y) {
   out
 }
 
+# hsquared#225: `initial` for the non-Gaussian target (`fit_laplace_reml()`'s
+# single-variance-component families -- poisson/bernoulli/binomial) is a list
+# with `sigma_a2` only, matching the engine's `initial = (sigma_a2 = ...,)`
+# NamedTuple shape. `NULL` (the default) means "let Julia use its own
+# hard-coded start value (sigma_a2 = 1.0)".
+hs_validate_nongaussian_initial <- function(initial) {
+  if (is.null(initial)) {
+    return(NULL)
+  }
+  if (is.null(names(initial)) || !"sigma_a2" %in% names(initial)) {
+    stop(
+      "`initial` for the non-Gaussian target must be a list with `sigma_a2`.",
+      call. = FALSE
+    )
+  }
+  out <- initial[["sigma_a2"]]
+  out <- suppressWarnings(as.numeric(out))
+  if (length(out) != 1L || !is.finite(out) || out <= 0) {
+    stop(
+      "`initial$sigma_a2` must be a single positive finite value.",
+      call. = FALSE
+    )
+  }
+  out
+}
+
+# hsquared#225: `restart_check` opts into `fit_laplace_reml()`'s two-start
+# restart (HSquared.jl#327), which refits once from a bumped start and flags
+# `boundary = TRUE` when the estimate moves with the start. Default FALSE
+# matches the engine's own default.
+hs_validate_restart_check <- function(restart_check) {
+  if (
+    !is.logical(restart_check) || length(restart_check) != 1L ||
+      is.na(restart_check)
+  ) {
+    stop(
+      "`engine_control$restart_check` must be a single TRUE/FALSE value.",
+      call. = FALSE
+    )
+  }
+  isTRUE(restart_check)
+}
+
 hs_validate_initial_variances <- function(initial) {
   if (
     is.null(names(initial)) ||
@@ -4083,7 +4180,12 @@ hs_engine_control_honoured_keys <- list(
   precision = c("initial", "iterations"),
   multivariate = c("initial", "iterations", "genetic_structure", "rank"),
   random_regression = "iterations",
-  nongaussian = c("marginal", "iterations")
+  # initial (hsquared#225): a list with `sigma_a2`, the single-variance-
+  # component start value `HSquared.fit_laplace_reml()` searches from
+  # (default sigma_a2 = 1.0). restart_check (hsquared#225): opt-in two-start
+  # refit that flags `boundary = TRUE` when the estimate moves with the start
+  # (HSquared.jl#327).
+  nongaussian = c("marginal", "iterations", "initial", "restart_check")
 )
 
 hs_engine_control_forwarding <- function(control, target) {

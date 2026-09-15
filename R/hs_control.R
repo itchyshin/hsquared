@@ -42,7 +42,8 @@
 #'     forward them (HSquared.jl#343, a known remaining gap).
 #'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
 #'   * `random_regression`: `iterations` (no `initial`).
-#'   * `nongaussian`: `marginal`, `iterations`.
+#'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
+#'     `sigma_a2`), `restart_check`.
 #'   `max_dense_cells` bounds `nobs^2 + nanimals^2` on
 #'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 #'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
@@ -228,6 +229,20 @@
 #'   scalar. The ELBO is a lower bound on the marginal
 #'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
 #'   comparable. This path remains experimental and not coverage-calibrated.
+#'   `initial` (hsquared#225) is a list with `sigma_a2`, the single-variance-
+#'   component start value the engine's Brent search runs from; the default,
+#'   unsupplied, is the engine's own hard-coded `sigma_a2 = 1.0` (bracket
+#'   `[exp(-6), exp(6)]` around it). `restart_check` (hsquared#225, logical,
+#'   default `FALSE`) opts into the engine's two-start restart
+#'   (HSquared.jl#327): it refits once from a bumped second start and flags
+#'   `boundary = TRUE` when the estimate moves with the start, catching a
+#'   boundary a single fit can otherwise miss. The result carries `boundary`
+#'   (hsquared#222) next to `converged`: `TRUE` means the fitted `sigma_a2` is
+#'   a function of the search start, not the data. In practice a
+#'   `boundary = TRUE` fit is refused before it reaches the R result at all --
+#'   the Julia payload builder raises, translated into a classed
+#'   `hsquared_julia_error` naming `initial`/`restart_check` as the retry
+#'   levers -- so `boundary` on a returned fit is `FALSE`.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export

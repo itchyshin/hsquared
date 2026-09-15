@@ -85,6 +85,23 @@ hs_abort_out_of_range <- function(...) {
   stop(cond)
 }
 
+# Raise a structured "boundary refused" error: an R-side defense-in-depth
+# guard for the non-Gaussian three-field route (hsquared#222). The Julia
+# payload builder (`nongaussian_three_field_payload`, HSquared.jl#342) already
+# refuses to hand back a `boundary = true` fit, so this guard fires only if a
+# FUTURE bridge route constructs the `nongaussian_three_field_v09` envelope
+# without going through that refusing builder. Carries a stable, catchable
+# condition class:
+#
+#   c("hsquared_boundary_refused", "hsquared_error", "error", "condition")
+hs_abort_boundary_refused <- function(...) {
+  cond <- errorCondition(
+    paste0(...),
+    class = c("hsquared_boundary_refused", "hsquared_error")
+  )
+  stop(cond)
+}
+
 # Session-scoped flags for warn-once messages. Reset in tests.
 hs_session_flags <- new.env(parent = emptyenv())
 

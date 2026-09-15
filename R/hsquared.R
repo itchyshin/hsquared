@@ -354,7 +354,9 @@ hsquared <- function(
         ),
         family = family,
         marginal = hs_engine_control_value(control, "marginal", "laplace"),
-        iterations = hs_engine_control_value(control, "iterations", 200L)
+        iterations = hs_engine_control_value(control, "iterations", 200L),
+        initial = hs_engine_control_value(control, "initial", NULL),
+        restart_check = hs_engine_control_value(control, "restart_check", FALSE)
       ))
     }
     if (identical(target, "henderson_mme")) {

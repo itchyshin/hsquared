@@ -29,6 +29,7 @@ ng09_raw <- function(family = "poisson", method = "laplace", n_trials = NULL) {
     method = method,
     loglik = -12.5,
     converged = TRUE,
+    boundary = FALSE,
     breeding_ids = c("a", "b"),
     breeding_values = c(0.1, -0.1),
     components = components,
@@ -451,6 +452,47 @@ test_that("the legacy non-Gaussian normalizer remains a separate compatibility p
   ))
 })
 
+test_that("hsquared#222: `hs_ng09_boundary` passes FALSE and refuses TRUE with a classed error", {
+  raw <- ng09_raw()
+  expect_false(hsquared:::hs_ng09_boundary(raw))
+
+  boundary_raw <- raw
+  boundary_raw$boundary <- TRUE
+  err <- tryCatch(
+    hsquared:::hs_ng09_boundary(boundary_raw),
+    error = function(e) e
+  )
+  expect_s3_class(err, "hsquared_error")
+  expect_match(conditionMessage(err), "boundary", ignore.case = TRUE)
+  expect_match(conditionMessage(err), "initial")
+  expect_match(conditionMessage(err), "restart_check")
+
+  bad <- raw
+  bad$boundary <- NA
+  expect_error(hsquared:::hs_ng09_boundary(bad), "boundary")
+  bad <- raw
+  bad$boundary <- "true"
+  expect_error(hsquared:::hs_ng09_boundary(bad), "boundary")
+  bad <- raw
+  bad$boundary <- NULL
+  expect_error(hsquared:::hs_ng09_boundary(bad), "missing required `boundary`")
+})
+
+test_that("hsquared#222: the v0.9 normalizer surfaces `boundary` next to `converged` and refuses boundary = TRUE", {
+  raw <- ng09_raw()
+  result <- hsquared:::hs_normalize_nongaussian_three_field_v09(raw, ng09_payload())
+  expect_identical(result$boundary, FALSE)
+
+  bad <- raw
+  bad$boundary <- TRUE
+  err <- tryCatch(
+    hsquared:::hs_normalize_nongaussian_three_field_v09(bad, ng09_payload()),
+    error = function(e) e
+  )
+  expect_s3_class(err, "hsquared_error")
+  expect_match(conditionMessage(err), "boundary", ignore.case = TRUE)
+})
+
 test_that("the v0.9 Poisson route carries the three-field result through the live bridge", {
   # This is deliberately a tiny deterministic integration check, not a
   # calibration run.  Resolve the explicitly configured Julia project so Tier-1
@@ -624,4 +666,130 @@ test_that("the v0.9 Binomial route carries A4-1 observation semantics through th
     varying_fit$result$h2_observation_undefined_reason,
     "varying_trials_no_scalar_estimand"
   )
+})
+
+# hsquared#225: engine_control$initial and $restart_check on target =
+# "nongaussian" -- live evidence that the bridge actually forwards them.
+
+ng225_pedigree <- function() {
+  data.frame(
+    id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
+    sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),
+    dam = c(NA, NA, NA, NA, rep(c("d1", "d2"), 8))
+  )
+}
+
+test_that("hsquared#225: `initial` moves the live bracket and both starts converge on a healthy fixture", {
+  project <- hsquared:::hs_default_julia_project()
+  hs_require_bridge("hsquared#225 initial forwarding", project = project)
+
+  ped <- ng225_pedigree()
+  n <- nrow(ped)
+  # A real pedigree-based breeding value (not a flat-probability draw) so
+  # sigma_a2 is genuinely identifiable and lands well inside the search
+  # bracket's interior at the default start -- the same fixture shape as the
+  # binomial-counts live tests above (hsquared#227).
+  a <- hs_sim_genedrop_bv(ped, sigma_a2 = 2, seed = 106)
+  p <- stats::plogis(a)
+  set.seed(106)
+  y01 <- rbinom(n, 1L, p)
+  dat <- data.frame(y = y01, id = ped$id)
+
+  fit_default <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::binomial(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "nongaussian", julia_project = project)
+    )
+  )
+  fit_initial <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::binomial(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "nongaussian",
+        julia_project = project,
+        initial = list(sigma_a2 = 0.05)
+      )
+    )
+  )
+
+  sa2_default <- variance_components(fit_default)$estimate[
+    match("V_A", variance_components(fit_default)$component)
+  ]
+  sa2_initial <- variance_components(fit_initial)$estimate[
+    match("V_A", variance_components(fit_initial)$component)
+  ]
+  expect_true(is.finite(sa2_default))
+  expect_true(is.finite(sa2_initial))
+  expect_false(isTRUE(fit_default$result$boundary))
+  expect_false(isTRUE(fit_initial$result$boundary))
+  # Both starts land at (near enough) the same optimum on a well-identified
+  # fixture -- proof `initial` actually reached the Julia call, not proof of a
+  # different answer.
+  expect_equal(sa2_default, sa2_initial, tolerance = 1e-4)
+})
+
+test_that("hsquared#222/#225: a boundary-riding fixture fails the DEFAULT fit with a classed, actionable error", {
+  project <- hsquared:::hs_default_julia_project()
+  hs_require_bridge("hsquared#222/#225 boundary refusal", project = project)
+
+  ped <- ng225_pedigree()
+  n <- nrow(ped)
+  # A flat-probability Bernoulli draw carries zero additive genetic signal by
+  # construction -- exactly the pattern hsquared#227 diagnosed and moved the
+  # OTHER live fixtures away from. Kept here deliberately: this is the
+  # boundary-riding case the DEFAULT (initial = NULL, restart_check = FALSE)
+  # fit must still fail on, so #222's translated-error contract and #225's
+  # advice ("retry with restart_check = TRUE or a different initial") are
+  # exercised end to end.
+  set.seed(42)
+  y_flat <- rbinom(n, 1L, 0.4)
+  dat_flat <- data.frame(y = y_flat, id = ped$id)
+  control <- hs_control(
+    engine = "julia",
+    engine_control = list(target = "nongaussian", julia_project = project)
+  )
+
+  err <- tryCatch(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat_flat,
+      family = stats::binomial(),
+      control = control
+    ),
+    error = function(e) e
+  )
+  expect_s3_class(err, "hsquared_julia_error")
+  expect_s3_class(err, "hsquared_error")
+  expect_match(conditionMessage(err), "boundary", ignore.case = TRUE)
+  expect_match(conditionMessage(err), "initial")
+  expect_match(conditionMessage(err), "restart_check")
+
+  # restart_check = TRUE on the SAME healthy fixture from the test above
+  # returns normally -- the lever works without requiring boundary-riding data.
+  a <- hs_sim_genedrop_bv(ped, sigma_a2 = 2, seed = 106)
+  p <- stats::plogis(a)
+  set.seed(106)
+  y01 <- rbinom(n, 1L, p)
+  dat_healthy <- data.frame(y = y01, id = ped$id)
+  fit_restart <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = dat_healthy,
+    family = stats::binomial(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "nongaussian",
+        julia_project = project,
+        restart_check = TRUE
+      )
+    )
+  )
+  expect_s3_class(fit_restart, "hsquared_fit")
+  expect_false(isTRUE(fit_restart$result$boundary))
 })
