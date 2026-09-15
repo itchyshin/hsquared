@@ -11,9 +11,10 @@
   -- a true `sigma_a2` outside that window cannot be reached without an
   `initial` on the scale of the data; `restart_check` (logical, default
   `FALSE`) opts into the engine's two-start restart. The R result now
-  carries `boundary` next to
-  `converged`: `TRUE` means the fitted `sigma_a2` is a function of the search
-  start, not the data. A fit that lands on its search boundary is refused by
+  carries `boundary` next to `converged` (read it as `fit$result$boundary`;
+  a `fit_diagnostics()` row is tracked as #230, distinct from the existing
+  `at_boundary` rows): `TRUE` means the fitted `sigma_a2` is a function of
+  the search start, not the data. A fit that lands on its search boundary is refused by
   the Julia payload builder and surfaces as a classed
   `hsquared_julia_error`/`hsquared_error` naming `initial`/`restart_check` as
   the retry levers (previously the advice named these levers but the R bridge

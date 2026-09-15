@@ -893,7 +893,7 @@ hs_nongaussian_three_field_julia_command <- function(
   } else {
     paste0(
       "initial = (sigma_a2 = ",
-      format(initial, scientific = FALSE, trim = TRUE),
+      format(initial, digits = 15, scientific = FALSE, trim = TRUE),
       ",), "
     )
   }

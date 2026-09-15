@@ -258,7 +258,10 @@ a function of the search start, not the data. In practice a
 \code{boundary = TRUE} fit is refused before it reaches the R result at all --
 the Julia payload builder raises, translated into a classed
 \code{hsquared_julia_error} naming \code{initial}/\code{restart_check} as the retry
-levers -- so \code{boundary} on a returned fit is \code{FALSE}.}
+levers -- so \code{boundary} on a returned fit is \code{FALSE}. Read it as
+\code{fit$result$boundary}; it is not yet a \code{fit_diagnostics()} row
+(hsquared#230), and it is unrelated to that function's \code{at_boundary}
+rows, which flag a variance component at or near zero.}
 }
 \value{
 An object of class \code{"hs_control"}.
