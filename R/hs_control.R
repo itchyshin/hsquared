@@ -42,7 +42,8 @@
 #'     forward them (HSquared.jl#343, a known remaining gap).
 #'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
 #'   * `random_regression`: `iterations` (no `initial`).
-#'   * `nongaussian`: `marginal`, `iterations`.
+#'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
+#'     `sigma_a2`), `restart_check`.
 #'   `max_dense_cells` bounds `nobs^2 + nanimals^2` on
 #'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 #'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
@@ -228,6 +229,28 @@
 #'   scalar. The ELBO is a lower bound on the marginal
 #'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
 #'   comparable. This path remains experimental and not coverage-calibrated.
+#'   `initial` (hsquared#225) is a list with `sigma_a2`. The engine fits the
+#'   single variance component with a **bracketed** Brent search over
+#'   `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` -- there is no start
+#'   value, and `initial` sets the **centre of the bracket**, so supplying it
+#'   moves the whole search window. Unsupplied, the engine's own hard-coded
+#'   `sigma_a2 = 1.0` centres it, giving `[exp(-6), exp(6)]`; a true `sigma_a2`
+#'   outside that window cannot be reached without an `initial` on the scale of
+#'   the data, which is what makes `initial` the retry lever for a boundary
+#'   refusal. `restart_check` (hsquared#225, logical,
+#'   default `FALSE`) opts into the engine's two-start restart
+#'   (HSquared.jl#327): it refits once from a bumped second start and flags
+#'   `boundary = TRUE` when the estimate moves with the start, catching a
+#'   boundary a single fit can otherwise miss. The result carries `boundary`
+#'   (hsquared#222) next to `converged`: `TRUE` means the fitted `sigma_a2` is
+#'   a function of the search start, not the data. In practice a
+#'   `boundary = TRUE` fit is refused before it reaches the R result at all --
+#'   the Julia payload builder raises, translated into a classed
+#'   `hsquared_julia_error` naming `initial`/`restart_check` as the retry
+#'   levers -- so `boundary` on a returned fit is `FALSE`. Read it as
+#'   `fit$result$boundary`; it is not yet a `fit_diagnostics()` row
+#'   (hsquared#230), and it is unrelated to that function's `at_boundary`
+#'   rows, which flag a variance component at or near zero.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export
