@@ -81,7 +81,7 @@ test_that("G-matrix geometry guards inputs, singular G, and non-multivariate fit
 })
 
 test_that("G-matrix geometry matches the engine (live parity)", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live evolvability parity check."

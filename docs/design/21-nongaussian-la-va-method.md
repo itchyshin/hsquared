@@ -1,5 +1,18 @@
 # Non-Gaussian Animal Models: `method = "LA" | "VA"` Surface (Phase 6)
 
+> **A3 reconciliation (2026-09-08).** This method-vocabulary note predates the
+> narrow ratified 0.9 three-field transport. Its current admitted surface is
+> only intercept-only `animal(1 | id, pedigree = ped)` Poisson(log) or
+> Binomial(logit), with binary or `cbind` scalar/varying positive trial counts.
+> The versioned result is Poisson latent/count-observation, or logit
+> latent/liability plus a numerically integrated observation-scale h2 for
+> Bernoulli or common-trial Binomial. Varying trial counts return literal `NaN`
+> with the named reason `varying_trials_no_scalar_estimand`; they are never
+> silently averaged into a scalar. It is experimental/partial and makes no REML/AI-REML, calibration, comparator,
+> promotion, default, or release claim. Statements below about wider methods,
+> payloads, or an h2-free route are historical/deferred unless they match this
+> boundary.
+
 Status: **implementation note plus remaining gates.** `hsquared` now fits
 simple non-Gaussian animal models through the experimental, opt-in
 `target = "nongaussian"` bridge: `poisson(log)` and `binomial(logit)`, with

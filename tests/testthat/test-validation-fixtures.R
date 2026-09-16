@@ -32,6 +32,7 @@ test_that("tiny animal validation fixture matches Julia Ainv when available", {
     "JuliaCall, Julia, and local HSquared.jl are required for live Ainv validation."
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   JuliaCall::julia_assign("hsq_val_id", payload$pedigree$id)
   JuliaCall::julia_assign(
@@ -141,6 +142,7 @@ test_that("Henderson MME fixture matches Julia henderson_mme when available", {
     "JuliaCall, Julia, and local HSquared.jl are required for live Henderson MME validation."
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   hsquared:::hs_julia_assign_payload(
     payload,
@@ -237,6 +239,7 @@ test_that("sparse REML likelihood fixture matches Julia dense REML when availabl
     )
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   hsquared:::hs_julia_assign_payload(
     payload,
@@ -395,6 +398,7 @@ test_that("Mrode-style supplied-variance fixture matches Julia when available", 
     )
   )
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   hsquared:::hs_julia_assign_payload(
     payload,
@@ -515,7 +519,7 @@ test_that("Mrode-style supplied-variance fixture matches Julia when available", 
 })
 
 test_that("sparse REML optimizer reaches the same REML optimum from different starts", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live sparse REML estimate-recovery validation."
@@ -567,7 +571,7 @@ test_that("sparse REML optimizer reaches the same REML optimum from different st
 })
 
 test_that("sparse and dense REML optimizers reach the same REML optimum", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live sparse-vs-dense REML optimizer validation."
@@ -583,7 +587,7 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
       REML = TRUE,
       control = hs_control(
         engine = "julia",
-        engine_control = c(list(initial = init, iterations = 1000L), extra)
+        engine_control = c(list(initial = init), extra)
       )
     )
   }
@@ -593,8 +597,13 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
   # via different linear algebra, so on the same data they must reach the same
   # optimum. This cross-validates the sparse optimizer against the dense one; it
   # is NOT an external comparator, DGP recovery, or production-fitting claim.
+  # hsquared#212: the implicit `target = "fit_animal_model"` dense path has no
+  # `iterations` control (it never did -- `hs_fit_julia_payload()` has no such
+  # formal), so `iterations` is supplied only on the sparse_reml side, which
+  # does honour it; this changes nothing about the dense fit's actual
+  # behaviour, only whether the call passes the new #212 key-forwarding gate.
   dense <- fit_with(list())
-  sparse <- fit_with(list(target = "sparse_reml"))
+  sparse <- fit_with(list(target = "sparse_reml", iterations = 1000L))
 
   expect_equal(dense$spec$target %||% "fit_animal_model", "fit_animal_model")
   expect_equal(sparse$spec$target, "sparse_reml")
@@ -610,7 +619,7 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
 })
 
 test_that("AI-REML and sparse REML optimizers reach the same REML optimum", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live AI-REML-vs-sparse REML optimizer validation."
@@ -681,7 +690,7 @@ test_that("independent pure-R REML optimizer matches the Julia sparse REML estim
 
   # Cross-check: the Julia sparse REML estimate matches the independent pure-R
   # optimum (same estimand, fully independent implementation). Skip-guarded.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live sparse REML cross-check."
@@ -916,7 +925,7 @@ test_that("the Julia engine recovers the published gryphon estimates via supplie
   # (ancestral loops) and the engine correctly rejects it, so the signed-off
   # V1-MRODE-FIT anchor uses supplied A_gryphon. Tolerance = the signed-off
   # comparator band (~1-2% / h2 ~0.01-0.02).
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not_installed("enhancer")
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
@@ -945,6 +954,7 @@ test_that("the Julia engine recovers the published gryphon estimates via supplie
   )
   Ainv <- solve(A)
 
+  hs_skip_live_julia()
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   JuliaCall::julia_assign("gy", y)
   JuliaCall::julia_assign("gX", X)

@@ -153,7 +153,7 @@ test_that("every preregistered mutation turns at least one gate red", {
 })
 
 test_that("raw checksum sealing detects a valid-looking hash mutation", {
-  skip_if(Sys.which("shasum") == "" && Sys.which("sha256sum") == "")
+  skip_if(!v07_has_sha256_command())
   root <- withr::local_tempdir()
   dir.create(file.path(root, "raw", "confirm"), recursive = TRUE)
   dir.create(file.path(root, "raw", "pilot"), recursive = TRUE)
@@ -186,4 +186,15 @@ test_that("raw checksum sealing detects a valid-looking hash mutation", {
   unlink(extra_path)
   unlink(pilot_path)
   expect_error(v07_verify_raw_lock(root, "pilot"), "file set differs")
+})
+
+test_that("raw-lock SHA-256 parser accepts the Windows certutil form", {
+  expected <- "8bc191bf660c0c26d0e51f0f243502fe601c648f3c97a2047fa2c2b62bc3884f"
+  certutil_output <- c(
+    "SHA256 hash of file C:\\raw\\confirm\\1.tsv:",
+    "8b c1 91 bf 66 0c 0c 26 d0 e5 1f 0f 24 35 02 fe 60 1c 64 8f 3c 97 a2 04 7f a2 c2 b6 2b c3 88 4f",
+    "CertUtil: -hashfile command completed successfully."
+  )
+
+  expect_identical(v07_extract_sha256(certutil_output), expected)
 })

@@ -6,39 +6,44 @@
 #' language are parsed today, reserved as syntax markers, or still roadmap-only.
 #' It is a status table, not a model-fitting helper.
 #'
+#' The printed header is derived from the rows being printed, so it cannot
+#' lag the table. Covered-versus-experimental fences live in
+#' `$current_behavior` and are not dumped into the default print.
+#'
 #' @return A data frame of formula grammar records with class
 #'   `"hs_formula_status"`.
 #' @examples
 #' formula_status()
 #' @export
 formula_status <- function() {
-  out <- data.frame(
+  cols <- list(
     term = hs_formula_status_terms(),
     category = hs_formula_status_categories(),
     phase = hs_formula_status_phases(),
     syntax_status = hs_formula_status_syntax(),
     fitting_status = hs_formula_status_fitting(),
-    current_behavior = hs_formula_status_behavior(),
-    stringsAsFactors = FALSE
+    current_behavior = hs_formula_status_behavior()
   )
+  n <- lengths(cols)
+  if (length(unique(n)) != 1L) {
+    stop(
+      "formula_status() helper vectors are different lengths: ",
+      paste(sprintf("%s=%d", names(n), n), collapse = ", "),
+      call. = FALSE
+    )
+  }
+  out <- as.data.frame(cols, stringsAsFactors = FALSE)
   class(out) <- c("hs_formula_status", class(out))
   out
 }
 
 #' @export
 print.hs_formula_status <- function(x, ...) {
-  cat("<hs_formula_status>\n")
-  cat("  parsed today: animal(1 | id, pedigree = ped); ")
-  cat("animal(1 | id) with an hs_data pedigree\n")
-  cat("  fitting: animal(1 | id) fits by default (v0.1 Gaussian REML); ")
-  cat("permanent/common_env/maternal_genetic/genomic/multivariate fit opt-in\n")
-  cat(
-    "  planned grammar: rows marked planned/reserved error before fitting\n"
-  )
+  hs_formula_status_print_header(x)
   out <- x
   class(out) <- setdiff(class(out), "hs_formula_status")
   display_cols <- intersect(
-    c("term", "phase", "syntax_status", "fitting_status"),
+    c("term", "syntax_status", "fitting_status"),
     names(out)
   )
   if (length(display_cols) == 0L) {
@@ -49,6 +54,97 @@ print.hs_formula_status <- function(x, ...) {
     row.names = FALSE
   )
   invisible(x)
+}
+
+hs_formula_status_short_term <- function(terms) {
+  vapply(
+    as.character(terms),
+    function(term) {
+      if (startsWith(term, "cbind(")) {
+        return("cbind()")
+      }
+      if (startsWith(term, "animal(rr(")) {
+        return("animal(rr())")
+      }
+      if (grepl("^animal\\(1 \\|", term)) {
+        return("animal()")
+      }
+      if (grepl("^\\(1 \\|", term)) {
+        return("(1 | group)")
+      }
+      if (grepl("^missing = miss_control", term)) {
+        return("miss_control()")
+      }
+      if (startsWith(term, "mi(")) {
+        return("mi()")
+      }
+      head <- sub("\\(.*", "", term)
+      if (nzchar(head) && !identical(head, term)) {
+        return(paste0(head, "()"))
+      }
+      term
+    },
+    character(1L),
+    USE.NAMES = FALSE
+  )
+}
+
+hs_formula_status_cat_list <- function(label, items) {
+  if (!length(items)) {
+    return(invisible())
+  }
+  body <- paste(unique(items), collapse = "; ")
+  prefix <- paste0("  ", label, ": ")
+  if ((nchar(prefix) + nchar(body)) <= 78L) {
+    cat(prefix, body, "\n", sep = "")
+    return(invisible())
+  }
+  cat(prefix, "\n", sep = "")
+  cat(
+    paste(strwrap(body, width = 70L, prefix = "    "), collapse = "\n"),
+    "\n",
+    sep = ""
+  )
+  invisible()
+}
+
+hs_formula_status_print_header <- function(x) {
+  cat("<hs_formula_status>\n")
+  if (all(c("term", "fitting_status") %in% names(x))) {
+    fit <- x$fitting_status
+    default_idx <- grepl("default", fit, fixed = TRUE)
+    opt_idx <- grepl("opt-in", fit, fixed = TRUE)
+    if (any(default_idx)) {
+      hs_formula_status_cat_list(
+        "default",
+        hs_formula_status_short_term(x$term[default_idx])
+      )
+    }
+    if (any(opt_idx)) {
+      hs_formula_status_cat_list(
+        "opt-in",
+        hs_formula_status_short_term(x$term[opt_idx])
+      )
+    }
+  }
+  if ("syntax_status" %in% names(x)) {
+    n_reserved <- sum(x$syntax_status == "reserved", na.rm = TRUE)
+    n_planned <- sum(x$syntax_status == "planned", na.rm = TRUE)
+    if (n_reserved + n_planned > 0L) {
+      cat(
+        "  reserved/planned: ",
+        n_reserved,
+        " reserved, ",
+        n_planned,
+        " planned (error before fitting)\n",
+        sep = ""
+      )
+    }
+  }
+  if ("current_behavior" %in% names(x)) {
+    cat("  fences: $current_behavior\n")
+  }
+  invisible()
 }
 
 hs_formula_status_terms <- function() {
@@ -132,7 +228,15 @@ hs_formula_status_syntax <- function() {
     rep("parsed", 6L),
     rep("reserved", 3L),
     "parsed",
-    rep("planned", 6L)
+    # cbind() multivariate is parsed; long-format cov=us/diag/lowrank stay
+    # planned; cov=fa is reserved (Julia V4-FA engine-covered, R not fitted);
+    # missing-data rows stay planned.
+    "planned",
+    "planned",
+    "planned",
+    "reserved",
+    "planned",
+    "planned"
   )
 }
 
@@ -149,14 +253,14 @@ hs_formula_status_fitting <- function() {
     rep("not available", 5L),
     "fitted (opt-in supplied relationship, experimental)",
     "fitted (opt-in supplied precision, experimental)",
-    "fitted (opt-in genomic, experimental)",
+    "fitted (opt-in genomic, covered validation-scale)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
     "fitted (opt-in single-step bundle construction)",
     "fitted (opt-in supplied-Gamma H^Gamma)",
     rep("not available", 3L),
-    "fitted (opt-in multivariate)",
+    "fitted (default route, covered multivariate)",
     rep("not available", 6L)
   )
 }
@@ -229,10 +333,11 @@ hs_formula_status_behavior <- function() {
       "of a within-individual covariate; requires repeated records and engine =",
       "\"julia\", target = \"random_regression\". COVERED at k=2 (linear reaction norm,",
       "intercept + ONE slope, K_g 2x2, Gaussian, homogeneous residual, D=I2",
-      "normalized Legendre): engine V3-RR-REML covered via pre-declared 48-seed",
+      "normalized Legendre): random-regression REML validation row covered via pre-declared 48-seed",
       "bias/MCSE gate PASSED + sommer 4.4.5 leg() same-estimand REML comparator",
       "AGREE (<=1.9e-5); live R<->engine parity EXACT (<=1.03e-5); h2(t) <=4.24e-6.",
-      "h2(t) is a CURVE, never scalar (scalar heritability() on this result errors);",
+      "rr_heritability() returns h2(t) as a CURVE, never a scalar; heritability()",
+      "is NOT the RR accessor and errors on this result, naming rr_heritability().",
       "PE-overstatement caveat when no permanent-environment term. POINT-ESTIMATE",
       "only (no interval/CI on the K_g curve). k>=3 experimental; (x|g) raw slopes",
       "rejected; PE term and heterogeneous residual deferred."
@@ -273,34 +378,45 @@ hs_formula_status_behavior <- function() {
       "allele frequencies, ridge, and denominator remain unknown. The explicit",
       "model requires engine = \"julia\", target = \"genomic\". The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. R status stays partial/experimental,",
-      "validation-scale; public_covered_count remains 5."
+      "and SE accessors are unavailable. Covered at validation scale (0.7),",
+      "experimental; public_covered_count remains 7."
     ),
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
       "sample allele frequencies, unweighted VanRaden method 1, ridge 0.01.",
-      "Use target = \"genomic\"; target =",
-      "\"snp_blup\" remains opt-in. The coefficient-scale result is labelled",
-      "`genomic_variance_ratio`; interval and SE accessors are unavailable. R",
-      "status stays partial/experimental, validation-scale;",
-      "public_covered_count remains 5."
+      "Use target = \"genomic\"; target = \"snp_blup\" remains opt-in. The",
+      "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
+      "and SE accessors are unavailable. Covered at validation scale (0.7),",
+      "experimental; public_covered_count remains 7."
     ),
     paste(
-      "Primary single-step effect of the opt-in, experimental model; requires a",
-      "user-supplied `Hinv` and engine = \"julia\", target = \"single_step\"."
+      "Primary single-step effect of the opt-in, experimental supplied-inverse",
+      "route; requires a user-supplied ID-keyed `Hinv` and",
+      "engine = \"julia\", target = \"single_step\". This route consumes the",
+      "relationship precision as supplied: it does not construct H^-1 from",
+      "pedigree and markers. To construct H^-1, use the separate",
+      "`single_step(1 | id, pedigree = ped, markers = M)` route and",
+      "target = \"single_step_construct\"."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental construction path;",
       "requires `pedigree` + `markers` or an hs_data() bundle carrying both, and",
       "engine = \"julia\", target = \"single_step_construct\". The engine builds",
-      "H^-1 from pedigree and genotyped-subset markers at validation scale."
+      "H^-1 from pedigree and genotyped-subset markers at validation scale.",
+      "HSquared.jl #295 records AGHmatrix Hmatrix construction AGREE and an",
+      "n=240 recovery PASS; that is engine evidence, not an R-public covered",
+      "claim. This is separate from the supplied-`Hinv` route, is not a",
+      "default-route promotion, and public_covered_count stays 7."
     ),
     paste(
       "Bundle shorthand for the opt-in, experimental single-step construction",
       "path; when data is an hs_data() object with pedigree and genotypes,",
       "`single_step(1 | id)` resolves both from the bundle. Explicit `pedigree`",
       "or `markers` arguments override the bundle. Requires engine = \"julia\",",
-      "target = \"single_step_construct\"."
+      "target = \"single_step_construct\"; a plain data.frame still needs an",
+      "explicit pedigree and marker matrix. Engine evidence is HSquared.jl #295;",
+      "R is not a default-route / ordinary-path promotion and",
+      "public_covered_count stays 7."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-Gamma",
@@ -311,20 +427,39 @@ hs_formula_status_behavior <- function() {
     ),
     rep(inert_marker_text, 3L),
     paste(
-      "Experimental multivariate Gaussian animal model; requires a `cbind()`",
-      "response, an `animal()` term, and engine = \"julia\", target =",
-      "\"multivariate\". Missing trait cells are allowed as `NA`. Under",
+      "Covered at validation scale (2026-09-02 maintainer sign-off) multivariate Gaussian animal model;",
+      "a `cbind()` response with an `animal()` term routes to the multivariate",
+      "fitter on the DEFAULT path (no engine/target argument needed; the explicit",
+      "engine = \"julia\", target = \"multivariate\" spelling still works).",
+      "Covered numeric claim is scoped to k = 2 unstructured G0/R0;",
+      "k >= 3 traits stay parseable-and-fittable-but-experimental;",
+      "genetic_structure = \"diagonal\" stays experimental at 0.6.",
+      "Missing trait cells are allowed as `NA`. Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
-      "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
-      "required), not a multivariate Gaussian."
+      "binomial-counts GLMM via target = \"nongaussian\" (scalar or varying",
+      "positive row totals admitted), not a multivariate Gaussian."
     ),
-    rep(
-      paste(
-        "Roadmap syntax for long-format structured covariance; the current",
-        "parser rejects trait and `cov` arguments and points users to the",
-        "opt-in `cbind()` multivariate path."
-      ),
-      4L
+    paste(
+      "Roadmap syntax for long-format unstructured covariance; the current",
+      "parser rejects trait and `cov` arguments and points users to the",
+      "`cbind()` multivariate path, which fits on the default path."
+    ),
+    paste(
+      "Roadmap syntax for long-format diagonal covariance; the current",
+      "parser rejects trait and `cov` arguments. Rotation-free diagonal G0 is",
+      "already reachable as engine_control$genetic_structure = \"diagonal\"",
+      "on the cbind() multivariate path."
+    ),
+    paste(
+      "Roadmap syntax for long-format low-rank covariance (Lambda Lambda');",
+      "the current parser rejects trait and `cov` arguments. Not R-activated."
+    ),
+    paste(
+      "Reserved stub for long-format factor-analytic G (Lambda Lambda' + Psi).",
+      "Julia V4-FA is engine-covered (HSquared.jl 60895208 / #300). The R",
+      "parser rejects trait and `cov` arguments and does not fit this form.",
+      "Not an R-public FA claim. Use cbind() unstructured or",
+      "genetic_structure = \"diagonal\". public_covered_count stays 7."
     ),
     paste(
       "Ratified planned missing-response control. Future behavior will keep",

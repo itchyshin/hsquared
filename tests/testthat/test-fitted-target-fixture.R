@@ -44,7 +44,7 @@ test_that("the fitted-target fixture is internally consistent (h2 + reliability 
 })
 
 test_that("the live engine reproduces the serialized fitted-target REML estimates", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live fitted-target reproduction."

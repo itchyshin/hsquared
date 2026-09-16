@@ -14,60 +14,40 @@ hsquared(
 )
 }
 \arguments{
-\item{formula}{A model formula. The first planned v0.1 syntax is
-\code{y ~ fixed + animal(1 | id, pedigree = ped)}, with
-\code{animal(1 | id)} also accepted when \code{data} is an \code{\link[=hs_data]{hs_data()}} object with a
-pedigree component.}
+\item{formula}{A model formula. The default path is
+\code{y ~ fixed + animal(1 | id, pedigree = ped)}. \code{animal(1 | id)} is also
+accepted when \code{data} is an \code{\link[=hs_data]{hs_data()}} object with a pedigree.}
 
-\item{data}{A data frame containing model variables, or an \code{\link[=hs_data]{hs_data()}}
-object whose \code{phenotypes} component contains the model variables. When
-\code{data} is an \code{hs_data} object, formula arguments such as
-\code{pedigree = pedigree} can refer to named components in the bundle, and
-\code{animal(1 | id)} uses the bundle pedigree by default.}
+\item{data}{A data frame of model variables, or an \code{\link[=hs_data]{hs_data()}} object
+whose \code{phenotypes} component holds them. Formula arguments such as
+\code{pedigree = pedigree} can name components of the bundle.}
 
-\item{family}{A response family. The v0.1 parser accepts only
-\code{gaussian()}.}
+\item{family}{A response family. The default path accepts \code{gaussian()}.
+Opt-in experimental paths accept \code{poisson()} and \code{binomial()}; see
+\code{\link[=formula_status]{formula_status()}}.}
 
-\item{REML}{Logical; whether to use REML estimation. The v0.1 fit path
-supports REML only (the default, \code{TRUE}); \code{REML = FALSE} (ML) is not yet
-implemented and is rejected with an error.}
+\item{REML}{Logical; REML estimation. The default path supports REML only
+(\code{TRUE}). \code{REML = FALSE} (ML) is rejected.}
 
 \item{control}{An object created by \code{\link[=hs_control]{hs_control()}}.}
 
 \item{...}{Reserved for future arguments.}
 }
 \value{
-A \code{"hsquared_fit"} object from the fitted v0.1 Gaussian animal model.
-Explicit experimental genomic fits carry their relationship-scale
-provenance; supplied \code{Ginv} construction remains unknown.
-When the Julia engine is unavailable, an informative error. When
-\code{engine = "validate"}, the validated model specification is returned
-invisibly as a named list (after a confirming message), for programmatic
-inspection — for example \code{spec$bridge$target} and \code{spec$response}. This is
-the internal spec list, not the classed object that \code{\link[=model_spec]{model_spec()}} builds.
+A \code{"hsquared_fit"} object from a successful default-path fit.
+Missing Julia produces an install-guidance error. When
+\code{engine = "validate"}, the validated model spec is returned invisibly
+as a named list (not the classed object from \code{\link[=model_spec]{model_spec()}}).
 }
 \description{
-\code{hsquared()} is the R entry point for heritability, breeding-value,
-G-matrix, and inheritance-structured mixed models. v0.1 fits the univariate
-Gaussian animal model \code{y ~ fixed + animal(1 | id, pedigree = ped)} by REML
-through the \code{HSquared.jl} engine. The default \code{control} fits when a local
-Julia and \code{HSquared.jl} are available and otherwise errors with install
-guidance; \code{hs_control(engine = "validate")} validates the contract without
-fitting, then returns the validated model spec invisibly. A narrow Gaussian
-REML \code{genomic(1 | id, markers = M)} or \code{genomic(1 | id, Ginv = Q)} model is
-available only through the explicit experimental Julia \code{target = "genomic"}.
-Marker construction uses sample allele frequencies, unweighted VanRaden
-method 1, and ridge \code{0.01}.
-\code{heritability()} labels its coefficient-scale result
-\code{genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)}: the genomic
-variance-component ratio on the declared relationship scale. It is not
-generally the fraction of average marginal phenotypic variance and is not
-pedigree-, founder-base-, population-, or universal narrow-sense
-heritability. Genomic ratio intervals and standard errors are
-unavailable. Repeatability, two-effect, marker-effect, multivariate, and
-non-Gaussian (\code{poisson}/\code{binomial}, Laplace or variational REML, no
-heritability) models are opt-in experimental paths; factor-analytic models
-remain planned. The non-Gaussian marginal is selected with
-\code{engine_control = list(target = "nongaussian", marginal = "laplace")} (default)
-or \code{"variational"} (the variational/ELBO marginal; aliases \code{"la"}/\code{"va"}).
+The default path fits a univariate Gaussian animal model by REML:
+\code{y ~ sex + age + animal(1 | id, pedigree = ped)}. Fitting needs a local
+Julia and HSquared.jl. Preview the same call with
+\code{control = hs_control(engine = "validate")}.
+}
+\details{
+What you may report is listed on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}
+-- not in \code{\link[=validation_status]{validation_status()}}. Other routes live in \code{\link[=formula_status]{formula_status()}}
+and on that limits page.
 }

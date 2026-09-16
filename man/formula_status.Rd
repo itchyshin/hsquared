@@ -17,6 +17,10 @@ A data frame of formula grammar records with class
 \code{formula_status()} reports which pieces of the planned \code{hsquared()} formula
 language are parsed today, reserved as syntax markers, or still roadmap-only.
 It is a status table, not a model-fitting helper.
+
+The printed header is derived from the rows being printed, so it cannot
+lag the table. Covered-versus-experimental fences live in
+\verb{$current_behavior} and are not dumped into the default print.
 }
 \examples{
 formula_status()

@@ -128,7 +128,7 @@ test_that("the family-symbol mapper distinguishes Bernoulli from Binomial(n_tria
 })
 
 test_that("the live bridge fits a balanced binomial-counts model [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."
@@ -142,7 +142,17 @@ test_that("the live bridge fits a balanced binomial-counts model [live]", {
   )
   n <- nrow(ped)
   trials <- 10L
-  succ <- rbinom(n, trials, 0.4)
+  # A flat-probability rbinom() draw carries zero additive genetic signal by
+  # construction: the fitted sigma_a2 then rides the search bracket's lower
+  # rail instead of estimating anything (HSquared.jl#342 refuses that as a
+  # boundary fit). Draw the success probability from a pedigree-based
+  # breeding value with a real sigma_a2 = 1 instead (hsquared#225 -- the R
+  # bridge cannot forward a non-default `initial`, so every live nongaussian
+  # fit starts its search at sigma_a2 = 1).
+  a <- hs_sim_genedrop_bv(ped, sigma_a2 = 1, seed = 5)
+  p <- stats::plogis(stats::qlogis(0.4) + a)
+  set.seed(5)
+  succ <- rbinom(n, trials, p)
   dat <- data.frame(succ = succ, fail = trials - succ, id = ped$id)
 
   fit <- hsquared(
@@ -157,33 +167,65 @@ test_that("the live bridge fits a balanced binomial-counts model [live]", {
   )
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$result$family, "binomial")
-  expect_true(is.finite(variance_components(fit)$estimate))
+  vc <- variance_components(fit)
+  expect_identical(vc$component, c("V_A", "V_RE", "V_O"))
+  expect_true(all(is.finite(vc$estimate)))
+  # V_A landing inside the search bracket's interior confirms the fit is not
+  # riding the boundary refusal it would hit at sa0*exp(-+6) (HSquared.jl#342;
+  # hsquared#225 -- the bridge always starts the search at sa0 = 1).
+  sa2 <- vc$estimate[match("V_A", vc$component)]
+  expect_gt(sa2, exp(-5.9))
+  expect_lt(sa2, exp(5.9))
+  expect_identical(vc$estimate[match("V_RE", vc$component)], 0)
+  expect_identical(vc$estimate[match("V_O", vc$component)], 0)
   expect_equal(nrow(breeding_values(fit)), n)
-  expect_error(heritability(fit), "heritability") # latent scale, no h2
+  h2 <- heritability(fit)
+  expect_identical(
+    h2$field,
+    c("h2_latent", "h2_liability", "h2_observation")
+  )
+  expect_true(all(is.finite(h2$estimate)))
 
   # parity: the R binomial-counts fit matches a direct engine fit_laplace_reml
   # with family = :binomial and the common n_trials (the bridge left hsq_*).
   direct_sa2 <- JuliaCall::julia_eval(
     "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = Int(hsq_n_trials), ids = hsq_ped.ids).variance_components.sigma_a2"
   )
-  expect_equal(variance_components(fit)$estimate, direct_sa2, tolerance = 1e-6)
+  expect_equal(
+    vc$estimate[match("V_A", vc$component)],
+    direct_sa2,
+    tolerance = 1e-6
+  )
 })
 
 test_that("a cbind binomial with one trial reduces to the Bernoulli fit [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."
   )
 
-  set.seed(6)
+  set.seed(106)
   ped <- data.frame(
     id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
     sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),
     dam = c(NA, NA, NA, NA, rep(c("d1", "d2"), 8))
   )
   n <- nrow(ped)
-  y01 <- rbinom(n, 1L, 0.5)
+  # A flat-probability draw carries zero additive genetic signal by
+  # construction, so the fitted sigma_a2 rides the search bracket's lower
+  # rail instead of estimating anything (HSquared.jl#342 refuses that as a
+  # boundary fit). Draw from a pedigree-based breeding value with a real
+  # sigma_a2 = 2 instead (hsquared#225 -- the R bridge cannot forward a
+  # non-default `initial`, so every live nongaussian fit starts its search
+  # at sigma_a2 = 1). A single Bernoulli trial per animal is only weakly
+  # informative about sigma_a2, so seed 106 was checked directly against
+  # HSquared.jl::fit_laplace_reml to land comfortably interior for both the
+  # cbind and binary routes below (sigma_a2 ~= 0.26, > 100x the lower rail).
+  a <- hs_sim_genedrop_bv(ped, sigma_a2 = 2, seed = 106)
+  p <- stats::plogis(a) # qlogis(0.5) == 0
+  set.seed(106)
+  y01 <- rbinom(n, 1L, p)
   ng_control <- hs_control(
     engine = "julia",
     engine_control = list(target = "nongaussian")
@@ -211,10 +253,17 @@ test_that("a cbind binomial with one trial reduces to the Bernoulli fit [live]",
     variance_components(fit_binary)$estimate,
     tolerance = 1e-8
   )
+  # V_A landing inside the search bracket's interior confirms the fit is not
+  # riding the boundary refusal it would hit at sa0*exp(-+6) (HSquared.jl#342;
+  # hsquared#225 -- the bridge always starts the search at sa0 = 1).
+  vc_cbind <- variance_components(fit_cbind)
+  sa2 <- vc_cbind$estimate[match("V_A", vc_cbind$component)]
+  expect_gt(sa2, exp(-5.9))
+  expect_lt(sa2, exp(5.9))
 })
 
 test_that("the live bridge fits a binomial-counts model with per-record varying trials [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live bridge."
@@ -228,7 +277,17 @@ test_that("the live bridge fits a binomial-counts model with per-record varying 
   )
   n <- nrow(ped)
   trials <- sample(2:12, n, replace = TRUE) # per-record VARYING trials
-  succ <- rbinom(n, trials, 0.4)
+  # A flat-probability draw carries zero additive genetic signal by
+  # construction, so the fitted sigma_a2 rides the search bracket's lower
+  # rail instead of estimating anything (HSquared.jl#342 refuses that as a
+  # boundary fit). Draw from a pedigree-based breeding value with a real
+  # sigma_a2 = 1 instead (hsquared#225 -- the R bridge cannot forward a
+  # non-default `initial`, so every live nongaussian fit starts its search
+  # at sigma_a2 = 1).
+  a <- hs_sim_genedrop_bv(ped, sigma_a2 = 1, seed = 7)
+  p <- stats::plogis(stats::qlogis(0.4) + a)
+  set.seed(7)
+  succ <- rbinom(n, trials, p)
   dat <- data.frame(succ = succ, fail = trials - succ, id = ped$id)
 
   fit <- hsquared(
@@ -243,14 +302,42 @@ test_that("the live bridge fits a binomial-counts model with per-record varying 
   )
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$result$family, "binomial")
-  expect_true(is.finite(variance_components(fit)$estimate))
+  vc <- variance_components(fit)
+  expect_identical(vc$component, c("V_A", "V_RE", "V_O"))
+  expect_true(all(is.finite(vc$estimate)))
+  # V_A landing inside the search bracket's interior confirms the fit is not
+  # riding the boundary refusal it would hit at sa0*exp(-+6) (HSquared.jl#342;
+  # hsquared#225 -- the bridge always starts the search at sa0 = 1).
+  sa2 <- vc$estimate[match("V_A", vc$component)]
+  expect_gt(sa2, exp(-5.9))
+  expect_lt(sa2, exp(5.9))
+  expect_identical(vc$estimate[match("V_RE", vc$component)], 0)
+  expect_identical(vc$estimate[match("V_O", vc$component)], 0)
   expect_equal(nrow(breeding_values(fit)), n)
-  expect_error(heritability(fit), "heritability") # latent scale, no h2
+  h2 <- heritability(fit)
+  expect_identical(
+    h2$field,
+    c("h2_latent", "h2_liability", "h2_observation")
+  )
+  expect_true(all(is.finite(h2$estimate[h2$field != "h2_observation"])))
+  expect_true(is.nan(h2$estimate[h2$field == "h2_observation"]))
+  expect_identical(
+    h2$undefined_reason[h2$field == "h2_observation"],
+    "varying_trials_no_scalar_estimand"
+  )
+  expect_identical(
+    fit$result$h2_observation_undefined_reason,
+    "varying_trials_no_scalar_estimand"
+  )
 
   # parity: matches a direct engine fit with the per-record n_trials VECTOR
   # (the bridge left hsq_* in the Julia session; varying totals -> Vector{Int}).
   direct_sa2 <- JuliaCall::julia_eval(
     "HSquared.fit_laplace_reml(hsq_y, hsq_X, hsq_Z, hsq_Ainv; family = :binomial, n_trials = Vector{Int}(hsq_n_trials), ids = hsq_ped.ids).variance_components.sigma_a2"
   )
-  expect_equal(variance_components(fit)$estimate, direct_sa2, tolerance = 1e-6)
+  expect_equal(
+    vc$estimate[match("V_A", vc$component)],
+    direct_sa2,
+    tolerance = 1e-6
+  )
 })

@@ -14,7 +14,7 @@
 #   ../../HSquared.jl/test/fixtures/payload_v2
 # relative to this file's directory (works if both repos are siblings).
 #
-# CONTRACT: no covered-status change; public_covered_count = 1 unchanged.
+# CONTRACT: no covered-status change; public_covered_count unchanged (5).
 # This script is purely a serialization helper; it contains no Julia calls.
 
 # ---- setup ----------------------------------------------------------------- #

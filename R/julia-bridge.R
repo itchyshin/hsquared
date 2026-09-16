@@ -43,7 +43,8 @@ hs_julia_attach_standard_plot_data <- function() {
 hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
-  initial = c(sigma_a2 = 1, sigma_e2 = 1)
+  initial = c(sigma_a2 = 1, sigma_e2 = 1),
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -59,29 +60,34 @@ hs_fit_julia_payload <- function(
   hs_julia_setup(project)
   initial <- hs_validate_initial_variances(initial)
   hs_julia_assign_payload(payload, initial)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_fit = HSquared.fit_animal_model(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "ids = hsq_ped.ids,",
-    "method = Symbol(hsq_method),",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2)",
-    ");",
-    "hsq_result = HSquared.result_payload(hsq_fit);",
-    # Enrich with PEV/reliability only for older engines whose result_payload
-    # does not already carry them; current engines emit them via :selinv, and
-    # re-merging would clobber that standard field with a redundant :dense solve.
-    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-    "isdefined(HSquared, :prediction_error_variance) &&",
-    "isdefined(HSquared, :reliability);",
-    "hsq_result = merge(hsq_result, (",
-    "prediction_error_variance =",
-    "HSquared.prediction_error_variance(hsq_fit),",
-    "reliability = HSquared.reliability(hsq_fit)));",
-    "end;"
-  ))
+  JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_fit = HSquared.fit_animal_model(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids,",
+      "method = Symbol(hsq_method),",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "max_dense_cells = Int(hsq_mdc)",
+      ");",
+      "hsq_result = HSquared.result_payload(hsq_fit);",
+      # Enrich with PEV/reliability only for older engines whose result_payload
+      # does not already carry them; current engines emit them via :selinv, and
+      # re-merging would clobber that standard field with a redundant :dense solve.
+      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+      "isdefined(HSquared, :prediction_error_variance) &&",
+      "isdefined(HSquared, :reliability);",
+      "hsq_result = merge(hsq_result, (",
+      "prediction_error_variance =",
+      "HSquared.prediction_error_variance(hsq_fit),",
+      "reliability = HSquared.reliability(hsq_fit)));",
+      "end;"
+    )),
+    hint = hs_dense_route_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -126,29 +132,32 @@ hs_fit_julia_henderson_mme_payload <- function(
     "hsq_supplied_sigma_e2",
     unname(variance_components[["sigma_e2"]])
   )
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_spec = HSquared.animal_model_spec(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "ids = hsq_ped.ids, method = Symbol(hsq_method));",
-    "hsq_mme = HSquared.henderson_mme(",
-    "hsq_spec, hsq_supplied_sigma_a2, hsq_supplied_sigma_e2);",
-    "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
-    "hsq_mme_raw = Dict(",
-    "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
-    "\"animal_ids\" => hsq_mme_bv.ids,",
-    "\"animal_effects\" => hsq_mme_bv.values,",
-    "\"fitted\" => HSquared.fitted_values(hsq_mme),",
-    # PEV/reliability are now standard on the Henderson MME result (dense,
-    # validation-scale): prediction_error_variance/reliability default to
-    # method = :dense, so they are attached unconditionally rather than probed.
-    "\"prediction_error_variance\" =>",
-    "HSquared.prediction_error_variance(hsq_mme),",
-    "\"reliability\" => HSquared.reliability(hsq_mme),",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_spec = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids, method = Symbol(hsq_method));",
+      "hsq_mme = HSquared.henderson_mme(",
+      "hsq_spec, hsq_supplied_sigma_a2, hsq_supplied_sigma_e2);",
+      "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
+      "hsq_mme_raw = Dict(",
+      "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
+      "\"animal_ids\" => hsq_mme_bv.ids,",
+      "\"animal_effects\" => hsq_mme_bv.values,",
+      "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+      # PEV/reliability are now standard on the Henderson MME result (dense,
+      # validation-scale): prediction_error_variance/reliability default to
+      # method = :dense, so they are attached unconditionally rather than probed.
+      "\"prediction_error_variance\" =>",
+      "HSquared.prediction_error_variance(hsq_mme),",
+      "\"reliability\" => HSquared.reliability(hsq_mme),",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
   result <- hs_normalize_julia_henderson_mme_result(
@@ -212,28 +221,31 @@ hs_fit_julia_metafounder_payload <- function(
     "hsq_supplied_sigma_e2",
     unname(variance_components[["sigma_e2"]])
   )
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "collect(String, hsq_ped.ids) == hsq_id ||",
-    "error(\"metafounder: engine pedigree order != R order\");",
-    "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
-    "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
-    "hsq_mme = HSquared.metafounder_animal_model(",
-    "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma,",
-    "hsq_supplied_sigma_a2, hsq_supplied_sigma_e2;",
-    "ids = hsq_ped.ids);",
-    "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
-    "hsq_mme_raw = Dict(",
-    "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
-    "\"animal_ids\" => hsq_mme_bv.ids,",
-    "\"animal_effects\" => hsq_mme_bv.values,",
-    "\"fitted\" => HSquared.fitted_values(hsq_mme),",
-    "\"prediction_error_variance\" =>",
-    "HSquared.prediction_error_variance(hsq_mme),",
-    "\"reliability\" => HSquared.reliability(hsq_mme),",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "collect(String, hsq_ped.ids) == hsq_id ||",
+      "error(\"metafounder: engine pedigree order != R order\");",
+      "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
+      "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
+      "hsq_mme = HSquared.metafounder_animal_model(",
+      "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma,",
+      "hsq_supplied_sigma_a2, hsq_supplied_sigma_e2;",
+      "ids = hsq_ped.ids);",
+      "hsq_mme_bv = HSquared.breeding_values(hsq_mme);",
+      "hsq_mme_raw = Dict(",
+      "\"fixed_effects\" => HSquared.fixed_effects(hsq_mme),",
+      "\"animal_ids\" => hsq_mme_bv.ids,",
+      "\"animal_effects\" => hsq_mme_bv.values,",
+      "\"fitted\" => HSquared.fitted_values(hsq_mme),",
+      "\"prediction_error_variance\" =>",
+      "HSquared.prediction_error_variance(hsq_mme),",
+      "\"reliability\" => HSquared.reliability(hsq_mme),",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_mme_raw")
   result <- hs_normalize_julia_henderson_mme_result(
@@ -286,32 +298,35 @@ hs_fit_julia_sparse_reml_payload <- function(
   hs_julia_setup(project)
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_spec = HSquared.animal_model_spec(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "ids = hsq_ped.ids, method = :REML);",
-    "hsq_fit = HSquared.fit_sparse_reml(",
-    "hsq_spec;",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations);",
-    "hsq_result = HSquared.result_payload(hsq_fit);",
-    # Enrich with PEV/reliability only for older engines whose result_payload
-    # does not already carry them; current engines emit them via :selinv, and
-    # re-merging would clobber that standard field with a redundant :dense solve.
-    "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-    "isdefined(HSquared, :prediction_error_variance) &&",
-    "isdefined(HSquared, :reliability) &&",
-    "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
-    "applicable(HSquared.reliability, hsq_fit);",
-    "hsq_result = merge(hsq_result, (",
-    "prediction_error_variance =",
-    "HSquared.prediction_error_variance(hsq_fit),",
-    "reliability = HSquared.reliability(hsq_fit)));",
-    "end;"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_spec = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids, method = :REML);",
+      "hsq_fit = HSquared.fit_sparse_reml(",
+      "hsq_spec;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations);",
+      "hsq_result = HSquared.result_payload(hsq_fit);",
+      # Enrich with PEV/reliability only for older engines whose result_payload
+      # does not already carry them; current engines emit them via :selinv, and
+      # re-merging would clobber that standard field with a redundant :dense solve.
+      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+      "isdefined(HSquared, :prediction_error_variance) &&",
+      "isdefined(HSquared, :reliability) &&",
+      "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
+      "applicable(HSquared.reliability, hsq_fit);",
+      "hsq_result = merge(hsq_result, (",
+      "prediction_error_variance =",
+      "HSquared.prediction_error_variance(hsq_fit),",
+      "reliability = HSquared.reliability(hsq_fit)));",
+      "end;"
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -358,7 +373,8 @@ hs_fit_julia_ai_reml_payload <- function(
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_assign("hsq_em_warmup", em_warmup)
-  JuliaCall::julia_command(paste(
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_spec = HSquared.animal_model_spec(",
@@ -413,7 +429,9 @@ hs_fit_julia_ai_reml_payload <- function(
     "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
     "end;",
     "end;"
-  ))
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -490,22 +508,21 @@ hs_validate_marginal_method <- function(marginal) {
   canon
 }
 
-# Opt-in, experimental non-Gaussian (GLMM) animal model. Surfaces the
-# Julia-owned `HSquared.fit_laplace_reml()` REML optimizer for a
-# `poisson`/`bernoulli` response on the latent scale, over either the Laplace
-# (`marginal = "laplace"`, default) or variational (`marginal = "variational"`)
-# marginal. There is no residual-variance scale for these families, so the result
-# deliberately carries NO heritability. Experimental, REML-only, not
-# coverage-calibrated (mirrors the engine row V6-LAPLACE/VA, partial); the VA
-# objective is the ELBO (a lower bound on the marginal log-likelihood, so VA and
-# Laplace `logLik`/`AIC` are NOT comparable); Bernoulli `sigma_a2` is prone to a
-# search-bound boundary at small scale.
+# Opt-in, experimental non-Gaussian animal model.  The versioned 0.9 transport
+# reports only the ratified conditional three-field contract: Poisson has latent
+# and count-scale observation h2; logit Bernoulli and common-trial Binomial have
+# latent, liability, and observation h2, while heterogeneous trial vectors retain
+# the explicit non-scalar observation-scale sentinel.  The Laplace
+# objective is a marginal likelihood approximation; the variational objective
+# is an ELBO, not a REML or AI-REML claim.
 hs_fit_julia_nongaussian_payload <- function(
   payload,
   project = hs_default_julia_project(),
   family = stats::binomial(),
   marginal = "laplace",
-  iterations = 200L
+  iterations = 200L,
+  initial = NULL,
+  restart_check = FALSE
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -517,6 +534,11 @@ hs_fit_julia_nongaussian_payload <- function(
       call. = FALSE
     )
   }
+  admission <- hs_validate_nongaussian_three_field_v09_admission(
+    payload = payload,
+    family = family,
+    marginal = marginal
+  )
   if (!hs_julia_bridge_available(project)) {
     stop(
       "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
@@ -525,10 +547,12 @@ hs_fit_julia_nongaussian_payload <- function(
     )
   }
 
-  n_trials <- payload$n_trials
-  family_symbol <- hs_nongaussian_family_symbol(family, n_trials)
-  marginal <- hs_validate_marginal_method(marginal)
+  n_trials <- admission$n_trials
+  family_symbol <- admission$family
+  marginal <- admission$method
   iterations <- hs_validate_iterations(iterations)
+  initial <- hs_validate_nongaussian_initial(initial)
+  restart_check <- hs_validate_restart_check(restart_check)
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
@@ -542,53 +566,32 @@ hs_fit_julia_nongaussian_payload <- function(
   JuliaCall::julia_assign("hsq_family", family_symbol)
   JuliaCall::julia_assign("hsq_marginal", marginal)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  # A binomial-counts response carries per-record trial counts; the engine's
-  # BinomialResponse takes them via the n_trials keyword (Bernoulli == all-ones,
-  # so the keyword is omitted for every non-binomial family). When every record
-  # shares one trial count we pass the scalar (the live-verified common-trial
-  # path); a genuinely varying vector is passed as a Vector{Int} (the per-record
-  # path, R-side parsed/tested but verified live separately).
-  n_trials_kw <- ""
   if (identical(family_symbol, "binomial")) {
     n_trials_int <- as.integer(n_trials)
     if (length(unique(n_trials_int)) == 1L) {
       JuliaCall::julia_assign("hsq_n_trials", n_trials_int[[1L]])
-      n_trials_kw <- "n_trials = Int(hsq_n_trials), "
     } else {
       JuliaCall::julia_assign("hsq_n_trials", n_trials_int)
-      n_trials_kw <- "n_trials = Vector{Int}(hsq_n_trials), "
     }
   }
-  JuliaCall::julia_command(paste0(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped); ",
-    "hsq_fit = HSquared.fit_laplace_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv; ",
-    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal), ",
-    n_trials_kw,
-    "ids = hsq_ped.ids, iterations = hsq_iterations);",
-    "hsq_result = HSquared.nongaussian_result_payload(hsq_fit);",
-    "hsq_ng_raw = Dict(",
-    "\"family\" => String(hsq_result.family),",
-    "\"method\" => String(hsq_result.method),",
-    "\"sigma_a2\" => hsq_result.variance_components.sigma_a2,",
-    "\"beta\" => collect(Float64, hsq_result.fixed_effects),",
-    "\"breeding_ids\" => string.(collect(hsq_result.breeding_values.ids)),",
-    "\"breeding_values\" => collect(Float64, hsq_result.breeding_values.values),",
-    "\"n_trials\" => (hasproperty(hsq_result, :n_trials) ? hsq_result.n_trials : nothing),",
-    "\"loglik\" => hsq_result.loglik,",
-    "\"converged\" => hsq_result.converged",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(hs_nongaussian_three_field_julia_command(
+      family_symbol = family_symbol,
+      marginal = marginal,
+      n_trials = n_trials,
+      initial = initial,
+      restart_check = restart_check
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_ng_raw")
-  result <- hs_normalize_nongaussian_result(raw, payload)
-  # The engine echoes the canonical method it actually ran (laplace/variational);
-  # surface it in the user-facing spec method rather than assuming Laplace.
+  result <- hs_normalize_nongaussian_three_field_v09(raw, payload)
+  # The engine echoes the canonical marginal objective it actually ran.
   method_label <- if (identical(result$marginal_method, "variational")) {
-    "Variational-REML"
+    "Variational ELBO"
   } else {
-    "Laplace-REML"
+    "Laplace marginal likelihood"
   }
   hs_new_fit(
     spec = list(
@@ -621,9 +624,9 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
   )
   converged <- isTRUE(raw$converged)
   result <- list(
-    # Latent-scale additive genetic variance; a non-Gaussian family has no
-    # residual-variance scale, so no heritability is reported (surfacing a
-    # liability-scale h2 here would be an unbacked claim).
+    # Legacy envelope only: it reports latent-scale additive variance, but no
+    # h2. The separately versioned three-field route carries the narrow A3
+    # contract after explicit admission validation.
     variance_components = data.frame(
       component = "animal",
       estimate = as.numeric(raw$sigma_a2),
@@ -655,9 +658,9 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
         "laplace marginal loglik"
       },
       heritability_note = paste(
-        "No heritability is reported: a non-Gaussian family has no",
-        "residual-variance scale, so a latent/liability-scale h2 would be an",
-        "unbacked claim."
+        "The legacy non-Gaussian envelope reports no heritability. The",
+        "separately versioned three-field route is available only for its",
+        "explicitly admitted experimental contract."
       )
     )
   )
@@ -676,17 +679,538 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
   result
 }
 
+# Private 0.9 wire-contract helpers.  These are intentionally distinct from
+# `hs_normalize_nongaussian_result()` above: the old experimental payload is a
+# compatibility surface and may not acquire the three-field semantics by
+# accident.  A later, explicitly versioned Julia call will select this
+# normalizer by its `nongaussian_three_field_v09` schema tag.
+hs_ng09_abort <- function(message) {
+  stop("Invalid `nongaussian_three_field_v09` envelope: ", message, call. = FALSE)
+}
+
+hs_ng09_required <- function(raw, name) {
+  if (!is.list(raw) || !name %in% names(raw)) {
+    hs_ng09_abort(paste0("missing required `", name, "` member."))
+  }
+  raw[[name]]
+}
+
+hs_ng09_scalar_number <- function(value, name, nonnegative = FALSE) {
+  ok <- is.numeric(value) && length(value) == 1L && is.finite(value)
+  if (isTRUE(nonnegative)) {
+    ok <- ok && value >= 0
+  }
+  if (!ok) {
+    hs_ng09_abort(paste0("`", name, "` must be a finite numeric scalar",
+      if (isTRUE(nonnegative)) " >= 0." else "."))
+  }
+  as.numeric(value)
+}
+
+hs_ng09_exact_number <- function(actual, expected, name) {
+  actual <- hs_ng09_scalar_number(actual, name)
+  if (!identical(unname(actual), unname(as.numeric(expected)))) {
+    hs_ng09_abort(paste0("`", name, "` does not equal its ratified identity."))
+  }
+  actual
+}
+
+hs_ng09_components <- function(raw) {
+  components <- hs_ng09_required(raw, "components")
+  expected_names <- c("V_A", "V_RE", "V_O")
+  if (
+    is.list(components) && length(components) == 2L &&
+      setequal(names(components), c("names", "values"))
+  ) {
+    components <- stats::setNames(
+      components[["values"]], components[["names"]]
+    )
+  }
+  if (
+    !is.numeric(components) ||
+      !identical(names(components), expected_names) ||
+      length(components) != length(expected_names) ||
+      any(!is.finite(components)) || any(components < 0) ||
+      sum(components) <= 0
+  ) {
+    hs_ng09_abort(
+      "`components` must be named exactly V_A, V_RE, V_O with finite non-negative values and positive total."
+    )
+  }
+  if (components[["V_RE"]] != 0 || components[["V_O"]] != 0) {
+    hs_ng09_abort(
+      "`V_RE` and `V_O` are structural zero in the current 0.9 one-additive-effect model."
+    )
+  }
+  as.numeric(stats::setNames(components, expected_names))
+}
+
+hs_ng09_intercept <- function(raw) {
+  fixed_effects <- hs_ng09_required(raw, "fixed_effects")
+  if (
+    is.list(fixed_effects) && length(fixed_effects) == 2L &&
+      setequal(names(fixed_effects), c("names", "values"))
+  ) {
+    fixed_effects <- stats::setNames(
+      fixed_effects[["values"]],
+      fixed_effects[["names"]]
+    )
+  }
+  if (
+    !is.numeric(fixed_effects) || length(fixed_effects) != 1L ||
+      !identical(names(fixed_effects), "(Intercept)") ||
+      !is.finite(fixed_effects)
+  ) {
+    hs_ng09_abort(
+      "`fixed_effects` must contain exactly one finite named `(Intercept)`; 0.9 does not average predictors."
+    )
+  }
+  as.numeric(fixed_effects[[1L]])
+}
+
+hs_ng09_loglik_kind <- function(method) {
+  if (identical(method, "variational")) {
+    return("elbo (variational lower bound)")
+  }
+  "laplace marginal loglik"
+}
+
+hs_ng09_breeding_values <- function(raw) {
+  ids <- hs_ng09_required(raw, "breeding_ids")
+  values <- hs_ng09_required(raw, "breeding_values")
+  if (!is.character(ids) || !is.numeric(values) || length(ids) < 1L ||
+    length(ids) != length(values) || anyNA(ids) || any(!nzchar(ids)) ||
+    any(!is.finite(values))) {
+    hs_ng09_abort(
+      "`breeding_ids` and `breeding_values` must be non-empty, aligned, finite vectors."
+    )
+  }
+  data.frame(
+    id = as.character(ids), value = as.numeric(values),
+    stringsAsFactors = FALSE
+  )
+}
+
+hs_ng09_converged <- function(raw) {
+  converged <- hs_ng09_required(raw, "converged")
+  if (!is.logical(converged) || length(converged) != 1L || is.na(converged)) {
+    hs_ng09_abort("`converged` must be one non-missing logical value.")
+  }
+  if (!isTRUE(converged)) {
+    hs_ng09_abort(
+      "`converged` is FALSE; no three-field fit is returned from an unconverged optimization."
+    )
+  }
+  TRUE
+}
+
+# hsquared#222: the R bridge must consume `boundary`, not only `converged`
+# (HSquared.jl#342 / HSquared.jl#327). The Julia payload builder
+# (`nongaussian_three_field_payload`) already refuses a `boundary = true` fit
+# with an `ArgumentError` before this envelope is even built -- that refusal
+# is translated into a classed `hsquared_julia_error` by `hs_julia_fit()` at
+# the call site, and is the intended contract for THIS route. This check is a
+# defense-in-depth backstop: if a future route ever constructs the
+# `nongaussian_three_field_v09` envelope without going through that refusing
+# builder, a `boundary = TRUE` wire value must not silently pass through as a
+# usable point estimate.
+hs_ng09_boundary <- function(raw) {
+  boundary <- hs_ng09_required(raw, "boundary")
+  if (!is.logical(boundary) || length(boundary) != 1L || is.na(boundary)) {
+    hs_ng09_abort("`boundary` must be one non-missing logical value.")
+  }
+  if (isTRUE(boundary)) {
+    hs_abort_boundary_refused(
+      "the non-Gaussian fit is at its search boundary (boundary = TRUE): ",
+      "the estimate sits on the rail of the engine's log-scale search bracket ",
+      "(log(initial$sigma_a2) +/- 6), or the two starts disagreed under ",
+      "`restart_check = TRUE`; either way it is a function of the search, not ",
+      "the data. Retry with a different `initial` in `engine_control` -- ",
+      "`initial = list(sigma_a2 = <a value near the expected scale>)` recentres ",
+      "the bracket and can move the optimum into its interior. ",
+      "`restart_check = TRUE` only makes this check stricter; it cannot clear a ",
+      "boundary that is already flagged (HSquared.jl#327)."
+    )
+  }
+  FALSE
+}
+
+hs_ng09_heritability_table <- function(result) {
+  fields <- "h2_latent"
+  labels <- result$h2_latent_label
+  estimates <- result$h2_latent
+  reasons <- NA_character_
+  if ("h2_liability" %in% names(result)) {
+    fields <- c(fields, "h2_liability")
+    labels <- c(labels, result$h2_liability_label)
+    estimates <- c(estimates, result$h2_liability)
+    reasons <- c(reasons, NA_character_)
+  }
+  if ("h2_observation" %in% names(result)) {
+    fields <- c(fields, "h2_observation")
+    labels <- c(labels, result$h2_observation_label)
+    estimates <- c(estimates, result$h2_observation)
+    reasons <- c(reasons, result$h2_observation_undefined_reason %||% NA_character_)
+  }
+  data.frame(
+    field = fields,
+    label = labels,
+    estimate = as.numeric(estimates),
+    undefined_reason = reasons,
+    stringsAsFactors = FALSE
+  )
+}
+
+# Assemble, but do not execute, the versioned Julia transport.  Keeping this
+# string builder pure makes the every-key-present contract testable without a
+# Julia process.  The returned `Dict` deliberately contains explicit `nothing`
+# values, which JuliaCall converts to R NULL; absence is therefore detectable
+# as a schema error by the normalizer.
+hs_nongaussian_three_field_julia_command <- function(
+  family_symbol,
+  marginal,
+  n_trials = NULL,
+  initial = NULL,
+  restart_check = FALSE
+) {
+  if (!family_symbol %in% c("poisson", "bernoulli", "binomial")) {
+    stop("Invalid v0.9 non-Gaussian engine family.", call. = FALSE)
+  }
+  marginal <- hs_validate_marginal_method(marginal)
+  n_trials_kw <- ""
+  if (identical(family_symbol, "binomial")) {
+    n_trials <- as.integer(n_trials)
+    if (length(n_trials) == 1L) {
+      n_trials_kw <- "n_trials = Int(hsq_n_trials), "
+    } else {
+      n_trials_kw <- "n_trials = Vector{Int}(hsq_n_trials), "
+    }
+  }
+  # hsquared#225: an unsupplied `initial`/`restart_check` omits the keyword
+  # entirely so the pre-fix command is reproduced byte for byte -- Julia's own
+  # defaults (sigma_a2 = 1.0, restart_check = false) apply unchanged.
+  initial_kw <- if (is.null(initial)) {
+    ""
+  } else {
+    paste0(
+      "initial = (sigma_a2 = ",
+      format(initial, digits = 15, scientific = FALSE, trim = TRUE),
+      ",), "
+    )
+  }
+  restart_kw <- if (isTRUE(restart_check)) ", restart_check = true" else ""
+  paste0(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam); ",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped); ",
+    "hsq_fit = HSquared.fit_laplace_reml(",
+    "hsq_y, hsq_X, hsq_Z, hsq_Ainv; ",
+    "family = Symbol(hsq_family), marginal = Symbol(hsq_marginal), ",
+    n_trials_kw,
+    initial_kw,
+    "ids = hsq_ped.ids, iterations = hsq_iterations",
+    restart_kw,
+    "); ",
+    "hsq_result = HSquared.nongaussian_three_field_payload(",
+    "hsq_fit; predictor_variance = 0.0, response_length = length(hsq_y)); ",
+    "hsq_ng_raw = Dict(",
+    "\"schema\" => hsq_result.schema, ",
+    "\"family\" => hsq_result.family, ",
+    "\"method\" => hsq_result.method, ",
+    "\"loglik\" => hsq_result.loglik, ",
+    "\"components\" => Dict(\"names\" => [\"V_A\", \"V_RE\", \"V_O\"], ",
+    "\"values\" => [hsq_result.components.V_A, hsq_result.components.V_RE, hsq_result.components.V_O]), ",
+    "\"fixed_effects\" => Dict(\"names\" => hsq_result.fixed_effects.names, ",
+    "\"values\" => hsq_result.fixed_effects.values), ",
+    "\"breeding_ids\" => string.(collect(hsq_fit.ids)), ",
+    "\"breeding_values\" => collect(Float64, hsq_fit.breeding_values), ",
+    "\"h2_latent\" => hsq_result.h2_latent, ",
+    "\"h2_liability\" => hsq_result.h2_liability, ",
+    "\"h2_observation\" => hsq_result.h2_observation, ",
+    "\"h2_observation_undefined_reason\" => hsq_result.h2_observation_undefined_reason, ",
+    "\"n_trials\" => hsq_result.n_trials, ",
+    "\"converged\" => hsq_fit.converged, ",
+    "\"boundary\" => hsq_fit.boundary, ",
+    "\"restart_estimate\" => hsq_fit.restart_estimate);"
+  )
+}
+
+# Normalize a complete v0.9 three-field envelope.  Exact (zero-tolerance)
+# identities are checked at the language boundary, so a transport or formula
+# mutation cannot become a different scientific estimand in the R result.
+hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
+  schema <- hs_ng09_required(raw, "schema")
+  if (!identical(schema, "nongaussian_three_field_v09")) {
+    hs_ng09_abort("`schema` must equal `nongaussian_three_field_v09`.")
+  }
+  if (!is.list(payload) || is.null(payload$y)) {
+    hs_ng09_abort("a payload with response `y` is required for normalization.")
+  }
+
+  family <- hs_ng09_required(raw, "family")
+  if (!is.character(family) || length(family) != 1L ||
+    !family %in% c("poisson", "bernoulli", "binomial")) {
+    hs_ng09_abort("`family` must be one of poisson, bernoulli, or binomial.")
+  }
+  method <- hs_validate_marginal_method(hs_ng09_required(raw, "method"))
+  loglik <- hs_ng09_scalar_number(hs_ng09_required(raw, "loglik"), "loglik")
+  converged <- hs_ng09_converged(raw)
+  boundary <- hs_ng09_boundary(raw)
+  components <- hs_ng09_components(raw)
+  names(components) <- c("V_A", "V_RE", "V_O")
+  mu <- hs_ng09_intercept(raw)
+  animal_bv <- hs_ng09_breeding_values(raw)
+  v_eta_random <- sum(components)
+  h2_latent <- hs_ng09_exact_number(
+    hs_ng09_required(raw, "h2_latent"),
+    components[["V_A"]] / v_eta_random,
+    "h2_latent"
+  )
+  h2_liability <- hs_ng09_required(raw, "h2_liability")
+  h2_observation <- hs_ng09_required(raw, "h2_observation")
+  undefined_reason <- hs_ng09_required(
+    raw,
+    "h2_observation_undefined_reason"
+  )
+  n_trials <- hs_ng09_required(raw, "n_trials")
+
+  result <- list(
+    family = family,
+    marginal_method = method,
+    loglik = loglik,
+    loglik_kind = hs_ng09_loglik_kind(method),
+    variance_components = data.frame(
+      component = names(components), estimate = as.numeric(components),
+      stringsAsFactors = FALSE
+    ),
+    fixed_effects = stats::setNames(mu, "(Intercept)"),
+    nobs = length(payload$y),
+    converged = converged,
+    boundary = boundary,
+    breeding_values = animal_bv,
+    random_effects = list(animal = animal_bv),
+    h2_latent = h2_latent,
+    h2_latent_label = "latent-scale h2 (conditional)"
+  )
+
+  if (identical(family, "poisson")) {
+    if (!is.null(h2_liability) || !is.null(undefined_reason) || !is.null(n_trials)) {
+      hs_ng09_abort(
+        "Poisson requires present `nothing` for liability, observation reason, and n_trials."
+      )
+    }
+    expected_observation <- components[["V_A"]] / (
+      expm1(v_eta_random) + exp(-(mu + v_eta_random / 2))
+    )
+    result$h2_observation <- hs_ng09_exact_number(
+      h2_observation,
+      expected_observation,
+      "h2_observation"
+    )
+    result$h2_observation_label <- "count-scale observation h2 (conditional)"
+    result$heritability <- hs_ng09_heritability_table(result)
+    return(result)
+  }
+
+  expected_liability <- components[["V_A"]] /
+    (v_eta_random + pi^2 / 3)
+  result$h2_liability <- hs_ng09_exact_number(
+    h2_liability,
+    expected_liability,
+    "h2_liability"
+  )
+  result$h2_liability_label <- "liability-scale h2 (conditional)"
+
+  if (identical(family, "bernoulli")) {
+    if (!is.null(n_trials)) {
+      hs_ng09_abort("Bernoulli requires present `nothing` for n_trials.")
+    }
+    varying_trials <- FALSE
+  } else {
+    n_trials <- hs_ng09_validate_trials(n_trials, length(payload$y))
+    varying_trials <- length(n_trials) > 1L && length(unique(n_trials)) > 1L
+  }
+
+  if (isTRUE(varying_trials)) {
+    if (!is.numeric(h2_observation) || length(h2_observation) != 1L ||
+      !is.nan(h2_observation)) {
+      hs_ng09_abort(
+        "varying-trial logit `h2_observation` must be literal NaN."
+      )
+    }
+    if (!identical(undefined_reason, "varying_trials_no_scalar_estimand")) {
+      hs_ng09_abort(
+        paste0(
+          "varying-trial `h2_observation_undefined_reason` must equal ",
+          "`varying_trials_no_scalar_estimand`."
+        )
+      )
+    }
+    result$h2_observation <- NaN
+    result$h2_observation_label <- "observation-scale h2 (no scalar estimand)"
+    result$h2_observation_undefined_reason <- undefined_reason
+  } else {
+    if (!is.null(undefined_reason)) {
+      hs_ng09_abort(
+        "defined logit observation h2 requires present `nothing` for its reason."
+      )
+    }
+    h2_observation <- hs_ng09_scalar_number(
+      h2_observation,
+      "h2_observation",
+      nonnegative = TRUE
+    )
+    if (h2_observation > 1) {
+      hs_ng09_abort("logit `h2_observation` must lie in [0, 1].")
+    }
+    result$h2_observation <- h2_observation
+    result$h2_observation_label <- "observation-scale h2 (conditional)"
+  }
+  result$heritability <- hs_ng09_heritability_table(result)
+
+  if (!identical(family, "bernoulli")) {
+    result$n_trials <- n_trials
+  }
+  result
+}
+
+hs_ng09_validate_trials <- function(n_trials, nobs) {
+  if (!is.numeric(n_trials) || length(n_trials) < 1L ||
+    any(!is.finite(n_trials)) || any(n_trials != round(n_trials)) ||
+    any(n_trials < 1)) {
+    hs_ng09_abort("Binomial `n_trials` must be positive integer scalar or vector.")
+  }
+  n_trials <- as.integer(n_trials)
+  if (length(n_trials) == 1L) {
+    if (n_trials <= 1L) {
+      hs_ng09_abort("Binomial scalar `n_trials` must be greater than one.")
+    }
+    return(n_trials)
+  }
+  if (length(n_trials) != nobs) {
+    hs_ng09_abort("Binomial `n_trials` vector must have response length.")
+  }
+  if (all(n_trials == 1L)) {
+    hs_ng09_abort("All-one trials are Bernoulli and must not carry n_trials.")
+  }
+  n_trials
+}
+
+# Validate the narrow 0.9 admission boundary before any Julia marshalling.
+# This helper has no side effects and intentionally does not select an engine
+# target; dispatch stays unavailable until the paired Julia entrypoint exists.
+hs_validate_nongaussian_three_field_v09_admission <- function(
+  payload,
+  family,
+  marginal = "laplace",
+  predictor_variance = 0,
+  weights = NULL,
+  dots = list()
+) {
+  if (!is.list(payload) || is.null(payload$y) || is.null(payload$X)) {
+    stop("The v0.9 non-Gaussian admission helper requires payload y and X.", call. = FALSE)
+  }
+  y <- payload$y
+  X <- payload$X
+  fixed_names <- payload$metadata$fixed_colnames
+  if (!is.matrix(X) || nrow(X) != length(y) || ncol(X) != 1L ||
+    !identical(fixed_names, "(Intercept)")) {
+    stop(
+      "The v0.9 non-Gaussian contract permits exactly one intercept and no fixed predictors.",
+      call. = FALSE
+    )
+  }
+  if (!is.numeric(predictor_variance) || length(predictor_variance) != 1L ||
+    !is.finite(predictor_variance) || predictor_variance != 0) {
+    stop("`predictor_variance` must be exactly zero in the v0.9 contract.", call. = FALSE)
+  }
+  if (!is.null(weights)) {
+    stop("The v0.9 non-Gaussian contract does not accept weights.", call. = FALSE)
+  }
+  if (!is.list(dots) || length(dots) > 0L) {
+    stop("The v0.9 non-Gaussian contract does not accept ... controls.", call. = FALSE)
+  }
+  if (!inherits(family, "family")) {
+    stop("`family` must be an R family object.", call. = FALSE)
+  }
+  method <- hs_validate_marginal_method(marginal)
+  if (!is.numeric(y) || anyNA(y) || any(!is.finite(y))) {
+    stop("The v0.9 non-Gaussian response must be numeric and finite.", call. = FALSE)
+  }
+
+  if (identical(family$family, "poisson") && identical(family$link, "log")) {
+    if (any(y < 0) || any(y != round(y)) || !is.null(payload$n_trials)) {
+      stop(
+        "Poisson(log) requires non-negative integer counts and no n_trials.",
+        call. = FALSE
+      )
+    }
+    return(list(family = "poisson", method = method, n_trials = NULL))
+  }
+  if (!identical(family$family, "binomial") || !identical(family$link, "logit")) {
+    stop(
+      "The v0.9 non-Gaussian contract admits only poisson(log) and binomial(logit).",
+      call. = FALSE
+    )
+  }
+
+  n_trials <- payload$n_trials
+  if (is.null(n_trials)) {
+    if (any(!y %in% c(0, 1))) {
+      stop("A one-column binomial response must be binary 0/1, not proportions.", call. = FALSE)
+    }
+    return(list(family = "bernoulli", method = method, n_trials = NULL))
+  }
+  if (
+    is.numeric(n_trials) && length(n_trials) == length(y) &&
+      all(is.finite(n_trials)) && all(n_trials == round(n_trials)) &&
+      all(n_trials == 1)
+  ) {
+    if (any(!y %in% c(0, 1))) {
+      stop("All-one binomial trials require binary 0/1 successes.", call. = FALSE)
+    }
+    return(list(family = "bernoulli", method = method, n_trials = NULL))
+  }
+  n_trials <- hs_ng09_validate_trials(n_trials, length(y))
+  if (any(y < 0) || any(y != round(y)) || any(y > rep(n_trials, length.out = length(y)))) {
+    stop(
+      "Binomial successes must be non-negative integers no greater than n_trials.",
+      call. = FALSE
+    )
+  }
+  if (length(n_trials) == 1L) {
+    return(list(family = "binomial", method = method, n_trials = n_trials))
+  }
+  if (length(unique(n_trials)) == 1L) {
+    return(list(
+      family = "binomial", method = method,
+      n_trials = n_trials[[1L]]
+    ))
+  }
+  list(family = "binomial", method = method, n_trials = n_trials)
+}
+
+hs_validate_nongaussian_three_field_v09_dots <- function(dots) {
+  if (!is.list(dots) || length(dots) == 0L) {
+    return(invisible(TRUE))
+  }
+  if (!is.null(names(dots)) && "weights" %in% names(dots)) {
+    stop("The v0.9 non-Gaussian contract does not accept weights.", call. = FALSE)
+  }
+  stop("The v0.9 non-Gaussian contract does not accept ... controls.", call. = FALSE)
+}
+
 # Opt-in, experimental repeatability (permanent-environment) estimator. Surfaces
 # the Julia-owned `HSquared.fit_repeatability_reml()` REML-only optimizer through
 # the bridge. The permanent-environment effect shares the animal incidence `Z`
 # (the engine carries an identity relationship for it), so the existing payload
-# is sufficient. Variance components σ²a and σ²pe are only identifiable with
+# is sufficient. Variance components sigma^2_a and sigma^2_pe are only identifiable with
 # repeated records per individual.
 hs_fit_julia_repeatability_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1),
-  iterations = 200L
+  iterations = 200L,
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -708,16 +1232,21 @@ hs_fit_julia_repeatability_payload <- function(
     unname(initial[["sigma_pe2"]])
   )
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_fit = HSquared.fit_repeatability_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_pe2 = hsq_initial_sigma_pe2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations, ids = hsq_ped.ids);"
-  ))
+  JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_fit = HSquared.fit_repeatability_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_pe2 = hsq_initial_sigma_pe2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations, ids = hsq_ped.ids,",
+      "max_dense_cells = Int(hsq_mdc));"
+    )),
+    hint = hs_dense_route_hint
+  )
 
   # Experimental, opt-in repeatability-coefficient CI (engine row V3-REPEAT-REML,
   # partial). repeatability_interval() takes the raw matrices (not a fit) and
@@ -909,19 +1438,22 @@ hs_fit_julia_two_effect_payload <- function(
     ids2_cmd <- "ids2 = hsq_env_levels"
   }
 
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    ainv2_cmd,
-    "hsq_fit = HSquared.fit_two_effect_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
-    "initial = (sigma1 = hsq_initial_sigma_a2,",
-    "sigma2 = hsq_initial_sigma_c2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
-    ids2_cmd,
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      ainv2_cmd,
+      "hsq_fit = HSquared.fit_two_effect_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_Z2, hsq_Ainv2;",
+      "initial = (sigma1 = hsq_initial_sigma_a2,",
+      "sigma2 = hsq_initial_sigma_c2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
+      ids2_cmd,
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval(paste(
     "Dict(",
@@ -1012,7 +1544,9 @@ hs_fit_julia_two_effect_payload <- function(
 # target = "direct_maternal".
 hs_fit_julia_direct_maternal_payload <- function(
   payload,
-  project = hs_default_julia_project()
+  project = hs_default_julia_project(),
+  initial = NULL,
+  iterations = NULL
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -1020,7 +1554,7 @@ hs_fit_julia_direct_maternal_payload <- function(
   # The generic payload from hs_build_bridge_payload will have TWO blocks for a
   # maternal_genetic formula: block1 = animal (pedigree), block2 = maternal
   # (pedigree). We reassemble them as a SINGLE correlated block here, mirroring
-  # the engine's payload-v2 §2 correlated-block schema:
+  # the engine's payload-v2 section 2 correlated-block schema:
   #   type="correlated", Z=Zd (block1), partner_incidence=Zm (block2), pedigree.
   blocks <- payload$random_effects
   if (
@@ -1045,14 +1579,24 @@ hs_fit_julia_direct_maternal_payload <- function(
     )
   }
 
+  # hsquared#212: `initial`/`iterations` default to NULL (Julia `nothing`) so
+  # an unsupplied control reproduces the exact pre-#212-fix call byte for
+  # byte.
+  if (!is.null(initial)) {
+    initial <- hs_validate_direct_maternal_initial(initial)
+  }
+  if (!is.null(iterations)) {
+    iterations <- hs_validate_iterations(iterations)
+  }
+
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_method", payload$method)
 
-  # block1: animal pedigree block — Z = Zd (record->animal)
+  # block1: animal pedigree block -- Z = Zd (record->animal)
   b_animal <- blocks[[1L]]
-  # block2: maternal pedigree block — Z = Zm (record->dam)
+  # block2: maternal pedigree block -- Z = Zm (record->dam)
   b_maternal <- blocks[[2L]]
 
   # Zd: record->animal (direct effect incidence)
@@ -1101,8 +1645,33 @@ hs_fit_julia_direct_maternal_payload <- function(
   JuliaCall::julia_command(
     "hsq_parsed_dm = HSquared.parse_payload_v2(hsq_payload_dm);"
   )
-  JuliaCall::julia_command(
-    "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm);"
+  # hsquared#212: forward `initial`/`iterations` to `fit_payload_v2` only when
+  # supplied, so the default call (neither supplied) is the exact pre-fix
+  # command string, byte for byte.
+  dm_fit_kwargs <- character(0)
+  if (!is.null(initial)) {
+    JuliaCall::julia_assign("hsq_initial_G_dm", initial$G_dm)
+    JuliaCall::julia_assign("hsq_initial_sigma_e2_dm", unname(initial$sigma_e2))
+    dm_fit_kwargs <- c(
+      dm_fit_kwargs,
+      "initial = (G_dm = hsq_initial_G_dm, sigma_e2 = hsq_initial_sigma_e2_dm)"
+    )
+  }
+  if (!is.null(iterations)) {
+    JuliaCall::julia_assign("hsq_iterations_dm", iterations)
+    dm_fit_kwargs <- c(dm_fit_kwargs, "iterations = hsq_iterations_dm")
+  }
+  dm_kwargs_str <- if (length(dm_fit_kwargs) > 0L) {
+    paste0("; ", paste(dm_fit_kwargs, collapse = ", "))
+  } else {
+    ""
+  }
+  hs_julia_fit(
+    JuliaCall::julia_command(sprintf(
+      "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm%s);",
+      dm_kwargs_str
+    )),
+    hint = hs_dense_scale_hint
   )
   JuliaCall::julia_command(
     "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
@@ -1185,7 +1754,7 @@ hs_normalize_direct_maternal_result <- function(
   # sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i) for a
   # non-inbred base (2*A[i,dam] = 2*(1/2) = 1, so the covariance contributes
   # coefficient 1 to phenotypic variance; Willham 1963, 1972).  sigma_dm is
-  # included because it is a legitimate part of Var(y) — dropping it would
+  # included because it is a legitimate part of Var(y) -- dropping it would
   # misstate the denominator.  h2 is denominator-dependent under maternal
   # effects; see the conditioning_caveat and total_heritability().
   h2_direct <- if (sigma_P > 0) sigma_ad / sigma_P else NA_real_
@@ -1250,9 +1819,9 @@ hs_normalize_direct_maternal_result <- function(
         "livestock traits (antagonistic direct-maternal covariance;",
         "Willham 1963, 1972). Identifiability requires multiple offspring per dam",
         "with sires recorded; shallow pedigrees produce boundary G_dm.",
-        "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
+        "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
         "h2 is denominator-dependent under maternal effects. ASReml/BLUPF90/",
-        "WOMBAT report raw components and leave sigma_P to the user; sommer/",
+        "WOMBAT report raw components and leave sigma^2_P to the user; sommer/",
         "MCMCglmm h2 depends on the user's chosen denominator - compare",
         "(co)variance components, not h2 values, across software.",
         "Use validate = TRUE to inspect the contract before fitting."
@@ -1277,7 +1846,9 @@ hs_normalize_direct_maternal_result <- function(
 hs_fit_julia_n_effect_payload <- function(
   payload,
   project = hs_default_julia_project(),
-  scale_method = c("dense", "auto")
+  scale_method = c("dense", "auto"),
+  initial = NULL,
+  iterations = NULL
 ) {
   scale_method <- match.arg(scale_method)
   if (!inherits(payload, "hs_bridge_payload")) {
@@ -1299,13 +1870,24 @@ hs_fit_julia_n_effect_payload <- function(
     )
   }
 
+  # hsquared#212: `initial`/`iterations` default to NULL (Julia `nothing`) so
+  # an unsupplied control reproduces the exact pre-#212-fix call byte for
+  # byte. When supplied, `initial` must be a length K+1 vector (one value per
+  # block, in formula order, plus the residual).
+  if (!is.null(initial)) {
+    initial <- hs_validate_multi_effect_initial(initial, length(blocks) + 1L)
+  }
+  if (!is.null(iterations)) {
+    iterations <- hs_validate_iterations(iterations)
+  }
+
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_method", payload$method)
 
   # Assign each block's engine inputs and build a Julia Dict per block, matching
-  # the payload-v2 §2 field table read by `parse_payload_v2`:
+  # the payload-v2 section 2 field table read by `parse_payload_v2`:
   #   pedigree block: type="pedigree", relmat_status="build_in_julia",
   #                   pedigree=(id,sire,dam), ids
   #   iid block:      type="iid",      relmat_status="identity", ids
@@ -1382,10 +1964,30 @@ hs_fit_julia_n_effect_payload <- function(
   JuliaCall::julia_command(
     "hsq_parsed = HSquared.parse_payload_v2(hsq_payload);"
   )
-  JuliaCall::julia_command(sprintf(
-    "hsq_fit = HSquared.fit_payload_v2(hsq_payload; scale_method = :%s);",
-    scale_method
-  ))
+  # hsquared#212: forward `initial`/`iterations` to `fit_payload_v2` (and,
+  # below, to the `multi_effect_ratio_interval` refit on the SAME inputs)
+  # only when supplied, so the default call (neither supplied) is the exact
+  # pre-fix command string, byte for byte.
+  ne_extra_kwargs <- character(0)
+  if (!is.null(initial)) {
+    JuliaCall::julia_assign("hsq_initial_ne", initial)
+    ne_extra_kwargs <- c(ne_extra_kwargs, "initial = hsq_initial_ne")
+  }
+  if (!is.null(iterations)) {
+    JuliaCall::julia_assign("hsq_iterations_ne", iterations)
+    ne_extra_kwargs <- c(ne_extra_kwargs, "iterations = hsq_iterations_ne")
+  }
+  ne_fit_kwargs <- c(
+    sprintf("scale_method = :%s", scale_method),
+    ne_extra_kwargs
+  )
+  hs_julia_fit(
+    JuliaCall::julia_command(sprintf(
+      "hsq_fit = HSquared.fit_payload_v2(hsq_payload; %s);",
+      paste(ne_fit_kwargs, collapse = ", ")
+    )),
+    hint = hs_dense_scale_hint
+  )
   JuliaCall::julia_command(
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
   )
@@ -1431,6 +2033,15 @@ hs_fit_julia_n_effect_payload <- function(
   # non-positive-definite, so the try guard keeps an interval failure from
   # aborting the fit. hsq_has_nci gates the eval so a Julia `nothing` never
   # crosses the bridge. Asymptotic delta-method, NOT coverage-calibrated.
+  # hsquared#212: forward the SAME `initial`/`iterations` used for the main
+  # fit (mirroring `two_effect_ratio_interval`'s pattern above) so the
+  # interval refit is not silently ignoring them independently of the
+  # main-fit defect fixed above.
+  nci_extra_kwargs <- if (length(ne_extra_kwargs) > 0L) {
+    paste0(", ", paste(ne_extra_kwargs, collapse = ", "))
+  } else {
+    ""
+  }
   JuliaCall::julia_command(paste(
     "hsq_nci = if isdefined(HSquared, :multi_effect_ratio_interval);",
     "try;",
@@ -1438,7 +2049,10 @@ hs_fit_julia_n_effect_payload <- function(
     "for b in hsq_parsed.blocks];",
     "hsq_nids = [b.ids for b in hsq_parsed.blocks];",
     "HSquared.multi_effect_ratio_interval(",
-    "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids);",
+    sprintf(
+      "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids%s);",
+      nci_extra_kwargs
+    ),
     "catch; nothing; end; else; nothing; end;",
     "hsq_has_nci = hsq_nci !== nothing;"
   ))
@@ -1533,7 +2147,7 @@ hs_normalize_two_effect_result <- function(raw, payload) {
 # `re_values` are the ragged per-block BLUP ids/values.
 #
 # Falconer fence: `heritability` is the narrow-sense h2 of the ANIMAL (pedigree)
-# block only — its additive-genetic variance over the TOTAL phenotypic variance
+# block only -- its additive-genetic variance over the TOTAL phenotypic variance
 # (the sum of ALL block variances plus the residual). Every other block's
 # variance ratio (`block_variance / total`) is a variance-explained proportion,
 # NOT a heritability. This normalizes the POINT ESTIMATES; the caller attaches
@@ -1766,7 +2380,11 @@ hs_fit_julia_multivariate_payload <- function(
   }
 
   hs_julia_setup(project)
-  JuliaCall::julia_assign("hsq_Y", payload$Y)
+  # JuliaCall 0.17.6 / R 4.6 delivers R NA_real_ as Julia Missing, not NaN.
+  # Convert here so the engine receives the documented NaN missing-trait
+  # sentinel (it also accepts Missing, but isnan-based round-trips through
+  # julia_eval segfault inside Rcpp precious-preserve on Missing arrays).
+  JuliaCall::julia_assign("hsq_Y", hs_y_matrix_for_julia(payload$Y))
   JuliaCall::julia_assign("hsq_X", payload$X)
   hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
@@ -1783,7 +2401,8 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_genetic_structure",
     as.character(genetic_structure)
   )
-  JuliaCall::julia_command(paste(
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_fit = HSquared.fit_multivariate_reml(",
@@ -1814,7 +2433,7 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_mv_raw[\"n_genetic_params\"] = hsq_fit.n_genetic_params;",
     "end;",
     # Experimental covariance standard errors (engine row V4-MV-REML, partial;
-    # :unstructured only — the engine throws for structured / factor-analytic
+    # :unstructured only -- the engine throws for structured / factor-analytic
     # fits, and the observed information can be non-positive-definite at a
     # flat/boundary optimum, hence the try guard).
     "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
@@ -1829,7 +2448,9 @@ hs_fit_julia_multivariate_payload <- function(
     "hsq_mv_raw[\"se_heritability\"] = collect(Float64, hsq_mvse.heritability);",
     "end;",
     "end;"
-  ))
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_multivariate_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_mv_raw")
@@ -2182,29 +2803,32 @@ hs_fit_julia_random_regression_payload <- function(
   JuliaCall::julia_assign("hsq_age", as.numeric(rr$values))
   JuliaCall::julia_assign("hsq_order", order)
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    # Standardize the per-record covariate to [-1, 1] over its observed range and
-    # build the n x k normalized-Legendre design Phi (basis convention fixed to
-    # Kirkpatrick/Meyer/Schaeffer normalized Legendre on standardized t).
-    "hsq_Phi = HSquared.legendre_design(",
-    "HSquared.standardize_covariate(hsq_age), hsq_order);",
-    "hsq_fit = HSquared.fit_random_regression_reml(",
-    "hsq_y, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
-    "iterations = hsq_iterations, ids = hsq_ped.ids);",
-    "hsq_rr_raw = Dict(",
-    "\"K_g\" => Matrix{Float64}(hsq_fit.variance_components.K_g),",
-    "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
-    "\"beta\" => collect(Float64, hsq_fit.beta),",
-    "\"coef_ids\" => string.(collect(hsq_fit.random_coefficients.ids)),",
-    "\"coef_values\" => Matrix{Float64}(hsq_fit.random_coefficients.values),",
-    "\"loglik\" => hsq_fit.loglik,",
-    "\"converged\" => hsq_fit.converged,",
-    "\"iterations\" => hsq_fit.iterations,",
-    "\"ncoef\" => hsq_fit.basis.ncoef",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      # Standardize the per-record covariate to [-1, 1] over its observed range and
+      # build the n x k normalized-Legendre design Phi (basis convention fixed to
+      # Kirkpatrick/Meyer/Schaeffer normalized Legendre on standardized t).
+      "hsq_Phi = HSquared.legendre_design(",
+      "HSquared.standardize_covariate(hsq_age), hsq_order);",
+      "hsq_fit = HSquared.fit_random_regression_reml(",
+      "hsq_y, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
+      "iterations = hsq_iterations, ids = hsq_ped.ids);",
+      "hsq_rr_raw = Dict(",
+      "\"K_g\" => Matrix{Float64}(hsq_fit.variance_components.K_g),",
+      "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
+      "\"beta\" => collect(Float64, hsq_fit.beta),",
+      "\"coef_ids\" => string.(collect(hsq_fit.random_coefficients.ids)),",
+      "\"coef_values\" => Matrix{Float64}(hsq_fit.random_coefficients.values),",
+      "\"loglik\" => hsq_fit.loglik,",
+      "\"converged\" => hsq_fit.converged,",
+      "\"iterations\" => hsq_fit.iterations,",
+      "\"ncoef\" => hsq_fit.basis.ncoef",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_random_regression_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_rr_raw")
@@ -2313,10 +2937,22 @@ hs_normalize_random_regression_result <- function(raw, payload) {
 # standardized covariate t in [-1, 1], mirroring `HSquared.legendre_basis`:
 # phi_n(t) = sqrt((2n+1)/2) * P_n(t), with P_n the ordinary Legendre polynomials
 # via the Bonnet recurrence. Used by the R-side reaction-norm trajectory
-# extractors so they need no live Julia round-trip.
+# extractors so they need no live Julia round-trip. Errors -- does not
+# clamp -- for |t| > 1 + 1e-10, matching the Julia engine's tolerance exactly
+# (#213); within that tolerance t is clamped to [-1, 1] before use, as Julia
+# also does.
 hs_legendre_basis <- function(t, order) {
   order <- as.integer(order)
-  tt <- max(-1, min(1, as.numeric(t)))
+  t <- as.numeric(t)
+  if (t < -1 - 1e-10 || t > 1 + 1e-10) {
+    hs_abort_out_of_range(
+      "`t` must be in [-1, 1]; standardize the covariate first ",
+      "(see `hs_standardize_covariate()`), got t = ",
+      format(t, trim = TRUE),
+      "."
+    )
+  }
+  tt <- max(-1, min(1, t))
   p <- numeric(order)
   p[1L] <- 1
   if (order >= 2L) {
@@ -2335,7 +2971,8 @@ hs_legendre_basis <- function(t, order) {
 }
 
 # n x order normalized-Legendre design over already-standardized points `ts`,
-# mirroring `HSquared.legendre_design`.
+# mirroring `HSquared.legendre_design`. Errors via `hs_legendre_basis()` if any
+# `ts` point is outside [-1 - 1e-10, 1 + 1e-10].
 hs_legendre_design <- function(ts, order) {
   do.call(rbind, lapply(ts, hs_legendre_basis, order = order))
 }
@@ -2486,14 +3123,17 @@ hs_fit_julia_genomic_payload <- function(
       "iterations = hsq_iterations);"
     )
   }
-  JuliaCall::julia_command(paste(
-    relinv_cmd,
-    "hsq_spec = HSquared.animal_model_spec(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
-    "ids = hsq_ids, method = :REML);",
-    fit_cmd,
-    "hsq_result = HSquared.result_payload(hsq_fit);"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      relinv_cmd,
+      "hsq_spec = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
+      "ids = hsq_ids, method = :REML);",
+      fit_cmd,
+      "hsq_result = HSquared.result_payload(hsq_fit);"
+    )),
+    hint = hs_dense_scale_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -2807,24 +3447,29 @@ hs_fit_julia_single_step_construct_payload <- function(
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    # Guard the genotyped_rows alignment (docs/design/25 §8): the R-computed
-    # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
-    # must preserve that order. Fail loudly rather than fit a misaligned G.
-    "collect(String, hsq_ped.ids) == hsq_id ||",
-    "error(\"single_step construct: engine pedigree order != R order\");",
-    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-    "hsq_A = HSquared.additive_relationship(hsq_ped);",
-    "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
-    "hsq_fit = HSquared.fit_single_step_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_A, hsq_G, hsq_grows;",
-    "ids = hsq_ped.ids,",
-    "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2));",
-    "hsq_result = HSquared.result_payload(hsq_fit);"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      # Guard the genotyped_rows alignment (docs/design/25 section 8): the R-computed
+      # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
+      # must preserve that order. Fail loudly rather than fit a misaligned G.
+      "collect(String, hsq_ped.ids) == hsq_id ||",
+      "error(\"single_step construct: engine pedigree order != R order\");",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_A = HSquared.additive_relationship(hsq_ped);",
+      "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+      "hsq_fit = HSquared.fit_single_step_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv, hsq_A, hsq_G, hsq_grows;",
+      "ids = hsq_ped.ids,",
+      "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      # hsquared#212: `iterations` was validated and assigned above but never
+      # reached the fit call -- silently discarded. Forward it now.
+      "sigma_e2 = hsq_initial_sigma_e2), iterations = hsq_iterations);",
+      "hsq_result = HSquared.result_payload(hsq_fit);"
+    )),
+    hint = hs_single_step_ridge_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -2915,21 +3560,26 @@ hs_fit_julia_metafounder_single_step_payload <- function(
   JuliaCall::julia_assign("hsq_initial_sigma_a2", unname(initial[["sigma_a2"]]))
   JuliaCall::julia_assign("hsq_initial_sigma_e2", unname(initial[["sigma_e2"]]))
   JuliaCall::julia_assign("hsq_iterations", iterations)
-  JuliaCall::julia_command(paste(
-    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-    "collect(String, hsq_ped.ids) == hsq_id ||",
-    "error(\"metafounder single_step: engine pedigree order != R order\");",
-    "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
-    "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
-    "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
-    "hsq_fit = HSquared.fit_metafounder_single_step_reml(",
-    "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma, hsq_G, hsq_grows;",
-    "ids = hsq_ped.ids,",
-    "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_e2 = hsq_initial_sigma_e2));",
-    "hsq_result = HSquared.result_payload(hsq_fit);"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "collect(String, hsq_ped.ids) == hsq_id ||",
+      "error(\"metafounder single_step: engine pedigree order != R order\");",
+      "hsq_G = HSquared.genomic_relationship_matrix(hsq_markers);",
+      "hsq_Gamma = reshape(collect(Float64, hsq_Gamma_vec),",
+      "Int(hsq_Gamma_n), Int(hsq_Gamma_n));",
+      "hsq_fit = HSquared.fit_metafounder_single_step_reml(",
+      "hsq_y, hsq_X, hsq_Z, hsq_ped, hsq_group_of, hsq_Gamma, hsq_G, hsq_grows;",
+      "ids = hsq_ped.ids,",
+      "tau = hsq_tau, omega = hsq_omega, blend_weight = hsq_bw, ridge = hsq_ssridge,",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      # hsquared#212: `iterations` was validated and assigned above but never
+      # reached the fit call -- silently discarded. Forward it now.
+      "sigma_e2 = hsq_initial_sigma_e2), iterations = hsq_iterations);",
+      "hsq_result = HSquared.result_payload(hsq_fit);"
+    )),
+    hint = hs_single_step_ridge_hint
+  )
   hs_julia_attach_standard_plot_data()
 
   raw <- JuliaCall::julia_eval(
@@ -3003,24 +3653,27 @@ hs_fit_julia_snp_blup_payload <- function(
   JuliaCall::julia_assign("hsq_markers_ind", unname(markers_ind))
   JuliaCall::julia_assign("hsq_sigma_g2", sigma_g2)
   JuliaCall::julia_assign("hsq_sigma_e2", sigma_e2)
-  JuliaCall::julia_command(paste(
-    "hsq_snp = HSquared.fit_snp_blup(",
-    "hsq_y, hsq_X, hsq_markers_rec, hsq_sigma_g2, hsq_sigma_e2);",
-    # Per-individual GEBV at the same allele-frequency centering as the fit.
-    "hsq_Wind = HSquared.centered_markers(",
-    "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
-    "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
-    "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
-    "hsq_snp_raw = Dict(",
-    "\"marker_effects\" => hsq_snp.marker_effects,",
-    "\"gebv\" => hsq_gebv_ind,",
-    "\"beta\" => hsq_snp.beta,",
-    "\"p\" => hsq_snp.p,",
-    "\"fitted\" => hsq_fitted,",
-    "\"k\" => hsq_snp.k,",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_snp = HSquared.fit_snp_blup(",
+      "hsq_y, hsq_X, hsq_markers_rec, hsq_sigma_g2, hsq_sigma_e2);",
+      # Per-individual GEBV at the same allele-frequency centering as the fit.
+      "hsq_Wind = HSquared.centered_markers(",
+      "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
+      "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
+      "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
+      "hsq_snp_raw = Dict(",
+      "\"marker_effects\" => hsq_snp.marker_effects,",
+      "\"gebv\" => hsq_gebv_ind,",
+      "\"beta\" => hsq_snp.beta,",
+      "\"p\" => hsq_snp.p,",
+      "\"fitted\" => hsq_fitted,",
+      "\"k\" => hsq_snp.k,",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_snp_raw")
   result <- hs_normalize_julia_snp_blup_result(
@@ -3078,27 +3731,30 @@ hs_fit_julia_snp_blup_reml_payload <- function(
   JuliaCall::julia_assign("hsq_X", payload$X)
   JuliaCall::julia_assign("hsq_markers_rec", markers_rec)
   JuliaCall::julia_assign("hsq_markers_ind", unname(markers_ind))
-  JuliaCall::julia_command(paste(
-    "hsq_snp = HSquared.fit_snp_blup_reml(hsq_y, hsq_X, hsq_markers_rec);",
-    # Per-individual GEBV at the same allele-frequency centering as the fit.
-    "hsq_Wind = HSquared.centered_markers(",
-    "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
-    "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
-    "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
-    "hsq_snp_raw = Dict(",
-    "\"marker_effects\" => hsq_snp.marker_effects,",
-    "\"gebv\" => hsq_gebv_ind,",
-    "\"beta\" => hsq_snp.beta,",
-    "\"p\" => hsq_snp.p,",
-    "\"fitted\" => hsq_fitted,",
-    "\"k\" => hsq_snp.k,",
-    "\"sigma_g2\" => hsq_snp.sigma_g2,",
-    "\"sigma_e2\" => hsq_snp.sigma_e2,",
-    "\"loglik\" => hsq_snp.loglik,",
-    "\"converged\" => hsq_snp.converged,",
-    "\"nobs\" => length(hsq_y)",
-    ");"
-  ))
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_snp = HSquared.fit_snp_blup_reml(hsq_y, hsq_X, hsq_markers_rec);",
+      # Per-individual GEBV at the same allele-frequency centering as the fit.
+      "hsq_Wind = HSquared.centered_markers(",
+      "hsq_markers_ind; allele_frequencies = hsq_snp.p).W;",
+      "hsq_gebv_ind = hsq_Wind * hsq_snp.marker_effects;",
+      "hsq_fitted = hsq_X * hsq_snp.beta .+ hsq_snp.gebv;",
+      "hsq_snp_raw = Dict(",
+      "\"marker_effects\" => hsq_snp.marker_effects,",
+      "\"gebv\" => hsq_gebv_ind,",
+      "\"beta\" => hsq_snp.beta,",
+      "\"p\" => hsq_snp.p,",
+      "\"fitted\" => hsq_fitted,",
+      "\"k\" => hsq_snp.k,",
+      "\"sigma_g2\" => hsq_snp.sigma_g2,",
+      "\"sigma_e2\" => hsq_snp.sigma_e2,",
+      "\"loglik\" => hsq_snp.loglik,",
+      "\"converged\" => hsq_snp.converged,",
+      "\"nobs\" => length(hsq_y)",
+      ");"
+    )),
+    hint = hs_dense_scale_hint
+  )
 
   raw <- JuliaCall::julia_eval("hsq_snp_raw")
   estimated_vc <- c(
@@ -3360,6 +4016,63 @@ hs_parent_for_julia <- function(x) {
   x
 }
 
+# R-side NA -> Julia NaN sentinel for multivariate Y.
+# Keeps the R payload's NA cells intact; only the Julia assign copy is rewritten.
+# Needed because JuliaCall 0.17.6 marshals NA_real_ to Missing, not NaN.
+hs_y_matrix_for_julia <- function(Y) {
+  if (!is.matrix(Y)) {
+    stop("`Y` must be a matrix.", call. = FALSE)
+  }
+  out <- Y
+  storage.mode(out) <- "double"
+  out[is.na(out)] <- NaN
+  out
+}
+
+# hsquared#225: `initial` for the non-Gaussian target (`fit_laplace_reml()`'s
+# single-variance-component families -- poisson/bernoulli/binomial) is a list
+# with `sigma_a2` only, matching the engine's `initial = (sigma_a2 = ...,)`
+# NamedTuple shape. `NULL` (the default) means "let Julia centre its own
+# log-scale search bracket, `log(sigma_a2) +/- 6`, at its hard-coded
+# sigma_a2 = 1.0".
+hs_validate_nongaussian_initial <- function(initial) {
+  if (is.null(initial)) {
+    return(NULL)
+  }
+  if (is.null(names(initial)) || !"sigma_a2" %in% names(initial)) {
+    stop(
+      "`initial` for the non-Gaussian target must be a list with `sigma_a2`.",
+      call. = FALSE
+    )
+  }
+  out <- initial[["sigma_a2"]]
+  out <- suppressWarnings(as.numeric(out))
+  if (length(out) != 1L || !is.finite(out) || out <= 0) {
+    stop(
+      "`initial$sigma_a2` must be a single positive finite value.",
+      call. = FALSE
+    )
+  }
+  out
+}
+
+# hsquared#225: `restart_check` opts into `fit_laplace_reml()`'s two-start
+# restart (HSquared.jl#327), which refits once from a bumped start and flags
+# `boundary = TRUE` when the estimate moves with the start. Default FALSE
+# matches the engine's own default.
+hs_validate_restart_check <- function(restart_check) {
+  if (
+    !is.logical(restart_check) || length(restart_check) != 1L ||
+      is.na(restart_check)
+  ) {
+    stop(
+      "`engine_control$restart_check` must be a single TRUE/FALSE value.",
+      call. = FALSE
+    )
+  }
+  isTRUE(restart_check)
+}
+
 hs_validate_initial_variances <- function(initial) {
   if (
     is.null(names(initial)) ||
@@ -3381,6 +4094,136 @@ hs_validate_initial_variances <- function(initial) {
   out
 }
 
+# hsquared#212: `initial` for the multi-effect (K independent random-effect
+# blocks + residual) target is a plain positive numeric vector of length
+# K + 1, in block order (animal first, then each i.i.d. block, then the
+# residual) -- matching `HSquared.fit_multi_effect_reml()`'s own `initial`
+# argument shape (a vector, not a named list; there is no per-block name to
+# attach since K is caller-determined).
+hs_validate_multi_effect_initial <- function(initial, k) {
+  if (!is.numeric(initial) || length(initial) != k) {
+    stop(
+      "`initial` for the multi-effect target must be a numeric vector of ",
+      "length ",
+      k,
+      " (one value per random-effect block, in formula order, plus the ",
+      "residual).",
+      call. = FALSE
+    )
+  }
+  if (any(!is.finite(initial)) || any(initial <= 0)) {
+    stop(
+      "`initial` variance components must be finite and positive.",
+      call. = FALSE
+    )
+  }
+  as.numeric(initial)
+}
+
+# hsquared#212: `initial` for the direct-maternal (correlated 2x2 G_dm) target
+# is a list with `G_dm` (a 2x2 positive-definite matrix) and `sigma_e2` (a
+# positive scalar) -- matching `HSquared.fit_direct_maternal_reml()`'s own
+# `initial = (G_dm = ..., sigma_e2 = ...)` NamedTuple shape.
+hs_validate_direct_maternal_initial <- function(initial) {
+  if (!is.list(initial) || !all(c("G_dm", "sigma_e2") %in% names(initial))) {
+    stop(
+      "`initial` for the direct-maternal target must be a list with ",
+      "`G_dm` (a 2x2 matrix) and `sigma_e2` (a positive scalar).",
+      call. = FALSE
+    )
+  }
+  G_dm <- as.matrix(initial[["G_dm"]])
+  if (!identical(dim(G_dm), c(2L, 2L)) || any(!is.finite(G_dm))) {
+    stop("`initial$G_dm` must be a finite 2x2 matrix.", call. = FALSE)
+  }
+  storage.mode(G_dm) <- "double"
+  if (
+    !isTRUE(all.equal(G_dm, t(G_dm))) ||
+      eigen(G_dm, only.values = TRUE)$values[2L] <= 0
+  ) {
+    stop(
+      "`initial$G_dm` must be a symmetric positive-definite 2x2 matrix.",
+      call. = FALSE
+    )
+  }
+  sigma_e2 <- as.numeric(initial[["sigma_e2"]])
+  if (length(sigma_e2) != 1L || !is.finite(sigma_e2) || sigma_e2 <= 0) {
+    stop(
+      "`initial$sigma_e2` must be a single positive finite value.",
+      call. = FALSE
+    )
+  }
+  list(G_dm = G_dm, sigma_e2 = sigma_e2)
+}
+
+# hsquared#212: `engine_control` keys silently discarded by a target LOOK
+# accepted (no error, no warning) but never reach the Julia call. This
+# declares, per `target`, which keys the bridge actually forwards, and errors
+# -- naming the key and the target -- when a caller supplies one that is not
+# honoured. `target` (the routing key itself) and `julia_project` (read by
+# every target's dispatch to resolve the Julia project) are always allowed and
+# are not repeated in the table below. Call once per `hsquared()` Julia
+# dispatch, before any `hs_fit_julia_*_payload` builder runs.
+hs_engine_control_honoured_keys <- list(
+  fit_animal_model = c("initial", "max_dense_cells"),
+  henderson_mme = "variance_components",
+  metafounder = "variance_components",
+  sparse_reml = c("initial", "iterations"),
+  ai_reml = c("initial", "iterations", "em_warmup"),
+  repeatability = c("initial", "iterations", "max_dense_cells"),
+  two_effect = c("initial", "iterations"),
+  # multi_effect: initial/iterations are honoured on the `scale_method =
+  # "dense"` (default) route only; `scale_method = "auto"` does not forward
+  # them (HSquared.jl#343, a known remaining gap, not fixed here).
+  multi_effect = c("initial", "iterations", "scale_method"),
+  direct_maternal = c("initial", "iterations"),
+  genomic = c("initial", "iterations"),
+  single_step = c("initial", "iterations"),
+  single_step_construct = c("initial", "iterations"),
+  metafounder_single_step = c("initial", "iterations"),
+  snp_blup = "variance_components",
+  relmat = c("initial", "iterations"),
+  precision = c("initial", "iterations"),
+  multivariate = c("initial", "iterations", "genetic_structure", "rank"),
+  random_regression = "iterations",
+  # initial (hsquared#225): a list with `sigma_a2`, the centre of the
+  # engine's log-scale search bracket, `log(sigma_a2) +/- 6` (default centre
+  # sigma_a2 = 1.0). restart_check (hsquared#225): opt-in two-start
+  # refit that flags `boundary = TRUE` when the estimate moves with the start
+  # (HSquared.jl#327).
+  nongaussian = c("marginal", "iterations", "initial", "restart_check")
+)
+
+hs_engine_control_forwarding <- function(control, target) {
+  honoured <- c(
+    hs_engine_control_honoured_keys[[target]],
+    "target",
+    "julia_project"
+  )
+  supplied <- names(control$engine_control)
+  unsupported <- setdiff(supplied, honoured)
+  if (length(unsupported) > 0L) {
+    forwarded <- setdiff(honoured, c("target", "julia_project"))
+    hs_abort_unsupported_syntax(
+      "`engine_control` key",
+      if (length(unsupported) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unsupported), collapse = ", "),
+      if (length(unsupported) > 1L) " are" else " is",
+      " not honoured by `target = \"",
+      target,
+      "\"`. Supported keys (besides `target`/`julia_project`): ",
+      if (length(forwarded) == 0L) {
+        "(none)"
+      } else {
+        paste(sprintf("`%s`", forwarded), collapse = ", ")
+      },
+      "."
+    )
+  }
+  forwarded <- setdiff(honoured, c("target", "julia_project"))
+  control$engine_control[intersect(supplied, forwarded)]
+}
+
 hs_validate_iterations <- function(iterations) {
   iterations <- suppressWarnings(as.integer(iterations))
   if (length(iterations) != 1L || is.na(iterations) || iterations <= 0L) {
@@ -3399,6 +4242,33 @@ hs_validate_em_warmup <- function(em_warmup) {
   em_warmup
 }
 
+# max_dense_cells: the R-facing lever for the engine's dense-validation size
+# guard (hsquared#214, #217). Bounds `nobs^2 + nanimals^2` on the dense
+# fitters (the default `animal()` route via `fit_animal_model()` /
+# `fit_variance_components()`, and `target = "repeatability"`); default
+# 1e6 mirrors the engine's own `DEFAULT_MAX_DENSE_CELLS` unchanged.
+hs_validate_max_dense_cells <- function(max_dense_cells) {
+  max_dense_cells <- suppressWarnings(as.numeric(max_dense_cells))
+  if (
+    length(max_dense_cells) != 1L ||
+      is.na(max_dense_cells) ||
+      max_dense_cells != as.integer(max_dense_cells) ||
+      max_dense_cells <= 0
+  ) {
+    stop(
+      "`engine_control$max_dense_cells` must be a single positive integer.",
+      call. = FALSE
+    )
+  }
+  max_dense_cells
+}
+
+# Production fence (0.9): allowed `engine_control$target` values below are
+# validation-scale live routes only — not production sparse fitting. Default
+# `engine = "fit"` auto-selects ai_reml / genomic / multivariate without listing
+# them here. payload_v2 block routing is separate (direct_maternal, multi_effect).
+# FA/lowrank stay blocked in hs_validate_genetic_structure_control(). PATH_ONLY
+# interval smoke (C1-ext) is not a target here. See design-45 DRAFT.
 hs_validate_julia_target <- function(target) {
   if (!is.character(target) || length(target) != 1L || is.na(target)) {
     stop(
@@ -3469,14 +4339,22 @@ hs_validate_genetic_structure_control <- function(control, target) {
       "`target = \"multivariate\"` with a `cbind(...)` response."
     )
   }
-  if (value %in% c("lowrank", "factor_analytic")) {
+  if (identical(value, "factor_analytic")) {
     hs_abort_unsupported_syntax(
-      "Structured multivariate genetic covariance controls ",
-      "(`genetic_structure = \"lowrank\"` or \"factor_analytic\") are planned, ",
-      "not implemented in the R bridge: they are gated on a validated ",
-      "rotation/interpretation convention for the loadings. The opt-in ",
-      "multivariate path estimates `\"unstructured\"` or `\"diagonal\"` G0; use ",
-      "one of those."
+      "`genetic_structure = \"factor_analytic\"` is planned on the R ",
+      "surface and not activated on the R bridge. Julia V4-FA is ",
+      "engine-covered (HSquared.jl 60895208 / #300); that is not an ",
+      "R-public factor-analytic fit. The rotation convention is already ",
+      "ratified (rotation-invariant functionals only, never loadings). ",
+      "Use `genetic_structure = \"unstructured\"` or `\"diagonal\"`. ",
+      "public_covered_count stays 7."
+    )
+  }
+  if (identical(value, "lowrank")) {
+    hs_abort_unsupported_syntax(
+      "`genetic_structure = \"lowrank\"` is planned, not activated on ",
+      "the R bridge. The opt-in multivariate path estimates ",
+      "`\"unstructured\"` or `\"diagonal\"` G0; use one of those."
     )
   }
   # "unstructured" (default) and "diagonal" are both reachable. "diagonal" has
@@ -3545,9 +4423,10 @@ hs_second_effect_target <- function(type) {
     type,
     permanent = "repeatability",
     common_env = "two_effect",
-    # maternal_genetic default suggestion is two_effect (INDEPENDENT model);
-    # the correlated model (direct_maternal) is the second allowed target,
-    # reached only by explicit opt-in.
+    # Routing map only: two_effect stays the single suggested *name* for
+    # callers that interpolate one target. Default-path user copy must use
+    # hs_maternal_genetic_default_path_message() so the covered
+    # direct_maternal sibling is named. Do not auto-route.
     maternal_genetic = "two_effect",
     iid_effects = "multi_effect",
     metafounder = "metafounder",
@@ -3556,6 +4435,40 @@ hs_second_effect_target <- function(type) {
     relmat = "relmat",
     precision = "precision",
     stop("Unknown random effect type: ", type, call. = FALSE)
+  )
+}
+
+# Default-path copy for maternal_genetic(). Names the covered correlated
+# sibling first, then the experimental independent two_effect path. Does
+# not change routing: neither target is auto-selected on engine = "fit".
+hs_maternal_genetic_default_path_message <- function() {
+  paste0(
+    "`maternal_genetic()` is not on the default path. ",
+    "Two opt-in targets fit this formula; neither is auto-routed.\n\n",
+    "Closest working call (covered correlated 2x2 G / Willham triple, ",
+    "not a scalar h2):\n\n",
+    "  control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"direct_maternal\"))\n\n",
+    "Experimental alternative (independent maternal):\n\n",
+    "  control = hs_control(engine = \"julia\", engine_control = list(",
+    "target = \"two_effect\"))\n\n",
+    "See formula_status() and the current-limits article."
+  )
+}
+
+hs_abort_maternal_genetic_default_path <- function() {
+  hs_abort_unsupported_syntax(
+    hs_maternal_genetic_default_path_message(),
+    call. = FALSE
+  )
+}
+
+# Extra clause for a wrong-target maternal_genetic() formula on engine = "julia".
+hs_maternal_genetic_allowed_targets_note <- function() {
+  paste0(
+    " `target = \"direct_maternal\"` is covered (correlated 2x2 G / Willham ",
+    "triple, not a scalar h2); `target = \"two_effect\"` is experimental ",
+    "(independent maternal)."
   )
 }
 

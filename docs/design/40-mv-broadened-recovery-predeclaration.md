@@ -1,12 +1,25 @@
 # 40 — Multivariate broadened-recovery pre-declaration (MV-5)
 
-> **Status: PRE-REGISTRATION — PROPOSAL awaiting maintainer compute-go.** This is
-> the pre-declared gate for the broadened multivariate recovery campaign (MV-5 in
-> `docs/design/36-phase3-6-execution-plan.md`). Per the no-post-hoc-relaxation rule
-> (2026-06-14 / 2026-06-22 precedent; `docs/design/34-interval-recovery-pre-registration.md`),
-> the design and the PASS gate are fixed **before any run**, committed at a SHA,
-> and the numbers are not moved after seeing results. **Nothing runs until the
-> maintainer approves the Totoro compute and this pre-declaration is committed.**
+> **Status: SUPERSEDED (2026-09-02) — do not run.** Owner disposition A25:
+> the live R broadened driver is **not** required for the 0.6 evidence path.
+> Banked engine full-sib + 3-trait 48-seed gates
+> (`HSquared.jl` `docs/dev-log/recovery-checkpoints/2026-06-30-mv-fullsib-48seed.md`,
+> `…/2026-06-30-mv-3trait-48seed.md`; results `71d2da14` / Rose fix `b14defd2`)
+> plus C8 broader-DGP confirm (DRAC job `47925486`; R
+> `…/2026-07-10-coverage-recovery-results.md`; Julia reconciliation
+> `…/2026-07-12-coverage-recovery-evidence-reconciliation.md`) already cover
+> this pre-declaration’s three axes at higher replication. Same-day doc 38 §H
+> (RATIFIED 2026-07-11) scoped the 0.6 covered numeric claim to **k = 2**, so
+> the t = 3 primary axis here is out of covered scope. The frozen driver
+> `data-raw/multivariate-recovery-broadened-study.R` stays in-tree as
+> historical pre-registration (gate env `HSQUARED_RUN_MV_BROADENED`); **do not
+> delete**; **do not launch** unless a later owner explicitly re-opens a
+> post-0.6 R-owned recovery narrative. Twin discipline unchanged: engine
+> evidence ≠ R covered flip; A26 local parity + DP-10 honesty remain separate.
+> `public_covered_count` stays **5**.
+>
+> Historical ADEMP text below is retained for the record. It is **not** a live
+> compute-go proposal.
 
 ## Purpose
 
@@ -90,5 +103,6 @@ to `HSquared.jl` (twin-discipline; engine fit only).
 
 ## Runs only after
 
-The maintainer approves the Totoro compute **and** this pre-declaration is
-committed. — PROPOSAL (MV-5).
+**SUPERSEDED.** No Totoro/DRAC launch from this file. Re-opening requires a
+fresh owner compute-go **and** a new pre-declaration SHA (this file stays the
+historical gate record). — SUPERSEDED (MV-5 / A25).

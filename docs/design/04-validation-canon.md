@@ -134,8 +134,11 @@ confirm the DGP, fitted model, estimator, scale, and missing-data handling.
 Per the 2026-07-09 Standard-Tier Covered-Flip Gate
 (`docs/dev-log/decisions.md`), a derived estimand flips `covered` only with a
 within-package identity test asserting it equals its defining function of the
-covered components, plus a locked, pinned citation for that identity. The pinned
-multivariate (0.6) identities:
+covered components, plus a locked, pinned citation for that identity. This
+section is that citation lock. It does **not** flip any status, add a
+`validation_status()` row, or change `public_covered_count` (stays **5**).
+
+### Multivariate (0.6) identities
 
 - **Genetic correlation** `r_g[i,j] = σ_g,ij / sqrt(σ²_g,i · σ²_g,j)` =
   `cov2cor(G0)`. Identity test:
@@ -149,7 +152,99 @@ multivariate (0.6) identities:
   the engine's serialized `phase4_multitrait_parity` values). Locked citation:
   Falconer & Mackay (1996), ch. 8, 10; Lynch & Walsh (1998), ch. 4, 7.
 
-These are the R-lane derived-estimand identity gates for the 0.6 multivariate
-covered flip; the component estimands `G0`/`R0` are external-same-estimand-
-comparator gated (`sommer` in-suite MV-1 + executed `blupf90+` MV-2). The flip
-itself remains twin-gated + Darwin biology sign-off + Rose.
+These two are the R-lane derived-estimand identity gates for the 0.6
+multivariate covered flip; the component estimands `G0`/`R0` are
+external-same-estimand-comparator gated (`sommer` in-suite MV-1 + executed
+`blupf90+` MV-2). The flip itself remains twin-gated + Darwin biology
+sign-off + Rose.
+
+### Direct–maternal Willham identities (A21 C5)
+
+These three already sit under the covered validation-scale
+`target = "direct_maternal"` route (the 5th of `public_covered_count`).
+A21 C5 locks the identities and the full Willham citations that the
+in-surface "Willham 1963, 1972" year-only attribution did not pin. This
+is a **retrospective citation lock**, not a covered flip.
+
+Phenotypic variance on this route is
+`σ_P = σ²_ad + σ²_am + σ_dm + σ²_e` (coefficient 1 on `σ_dm` for a
+non-inbred base: `2 · A[i,dam] = 2 · (1/2) = 1`). The 2×2 `G_dm`
+formulation is Willham's, not Falconer's 1965 single-`m` model (that
+model fixes `r_am = ±1` and is the special case).
+
+Locked Willham pair (journal, volume, pages):
+
+- Willham, R. L. (1963). The covariance between relatives for characters
+  composed of components contributed by related individuals.
+  *Biometrics* **19**(1): 18–27. doi:10.2307/2527570
+- Willham, R. L. (1972). The role of maternal effects in animal breeding:
+  III. Biometrical aspects of maternal effects in animals.
+  *Journal of Animal Science* **35**(6): 1288–1293.
+  doi:10.2527/jas1972.3561288x
+
+1963 supplies the 2×2 direct–maternal genetic covariance and the
+correlation between the two effects. 1972 supplies the biometrical
+partition of `σ_P` and the selection-response total.
+
+- **Willham total heritability**
+  `h2_T = (σ²_ad + 1.5 · σ_dm + 0.5 · σ²_am) / σ_P`.
+  Coefficients `(1, 1.5, 0.5)` predict response to mass selection;
+  they are not "total heritable variance" `(1, 2, 1) = Var(A_d + A_m)`.
+  `h2_T` can be lower than direct `h2_d = σ²_ad / σ_P` when `r_am < 0`.
+  Identity test: `tests/testthat/test-direct-maternal.R` (labelled-triple
+  `h2_total_willham` row and `total_heritability()`). Locked citation:
+  Willham (1963) *Biometrics* 19(1): 18–27; Willham (1972) *J. Anim. Sci.*
+  35(6): 1288–1293.
+- **Maternal variance ratio** `m2 = σ²_am / σ_P`. This is a variance
+  ratio, not a heritability. The locked denominator **includes** `σ_dm`
+  — the covered direct–maternal estimand — and is not the experimental
+  two-effect `maternal_proportion()` ratio
+  `σ²_m / (σ²_a + σ²_m + σ²_e)`. Identity test:
+  `tests/testthat/test-direct-maternal.R` (`m2_maternal`). Locked
+  citation: the same Willham pair.
+- **Direct–maternal genetic correlation**
+  `r_am = σ_dm / sqrt(σ²_ad · σ²_am)`. Implemented correctly in the
+  engine as `G_dm[1, 2] / sqrt(G_dm[1, 1] * G_dm[2, 2])`; the R bridge
+  surfaces that engine value. A negative `r_am` is real and expected.
+  Identity test: **owed** (A21 C4, a separate lease). This lock pins
+  the identity and the citation; it does **not** discharge C4 and does
+  not claim the test exists. Locked citation: the same Willham pair.
+
+`R` (breeder's equation `R = h²S`) has no surface in either lane; none
+is owed (A21 C8). If a selection-response extractor lands, the identity
+is `R = h²_T · S` on the Willham scale, not `h²_d · S`.
+
+### Genomic GREML identities (0.7 candidate)
+
+These lock the derived estimand for the **opt-in** R-public genomic GREML
+surface (`target = "genomic"`). They do **not** flip status; live count stays
+**6** until a separate Rose CLEAN tip audit and lockstep flip. Component
+\(\sigma_g^2/\sigma_e^2\) stay external-comparator gated (Totoro exact-`G`
+sommer/rrBLUP; engine `blupf90+` on supplied `Ginv`). Recovery for the opt-in
+claim is carried by design-53 SUPERSEDE (engine V2-GREML 48-seed + marker≡Q
+identity), not by a fresh R 48-seed campaign.
+
+Locked construction citation (relationship scale, not a Mrode genomic-\(h^2\)
+pin):
+
+- VanRaden, P. M. (2008). Efficient methods to compute genomic predictions.
+  *Journal of Dairy Science* **91**(11): 4414–4423.
+  doi:10.3168/jds.2007-0980 (method 1; sample allele frequencies; \(G = WW'/k\)).
+- Scale honesty retained from design-43 §1 / design-51 (Legarra 2016 base-
+  population discussion as secondary scale literature, not a textbook \(h^2\)
+  anchor).
+
+- **Genomic variance ratio**
+  \(r_G = \sigma_g^2 / (\sigma_g^2 + \sigma_e^2)\) =
+  `genomic_variance_ratio` on the declared kernel
+  \(K_\lambda = G + 0.01\,I\). This is a **variance-component ratio on the
+  genomic relationship scale**, not pedigree narrow-sense \(h^2\), not a
+  founder-base additive heritability, and not generally the fraction of average
+  marginal phenotypic variance under ridge. Identity tests:
+  `tests/testthat/test-genomic-greml-s0-identity.R` (N2 label pin; julia-free
+  mock + optional live) and live `heritability(fit)$component ==
+  "genomic_variance_ratio"` on the genomic route
+  (`tests/testthat/test-genomic.R`). Locked citation: VanRaden (2008) for \(G\);
+  Falconer & Mackay (1996) ch. 8/10 for the two-component variance-ratio form
+  (applied here on the genomic scale, with the explicit no-anchor disclosure
+  that no clean Mrode genomic-\(h^2\) pin exists).

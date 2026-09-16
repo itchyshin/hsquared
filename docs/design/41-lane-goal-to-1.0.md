@@ -1,11 +1,32 @@
 # 41 — Lane Goal: hsquared / HSquared.jl through Phase 6 to a capable 1.0
 
+> **Current-state amendment (2026-09-11):** the live target for this lane is
+> an experimental **0.9.0 candidate** with `public_covered_count` **7** after
+> the ratified narrow three-field contract and retained H0/H1/H3 evidence.
+> The historical 0.8.0 descriptions below remain provenance, not current
+> release state. Gate B (independent audit, external evidence, and maintainer
+> decision) remains unexecuted.
+
 > The standing goal for this lane. Any session or agent may execute against it
 > without re-opening the strategy. It operationalises the release model
 > (`docs/dev-log/decisions.md`, 2026-07-11) and the execution plan
 > (`docs/design/36-phase3-6-execution-plan.md`). Progress is measured by the
 > milestone ladder (§2) under the success gate (§3); the guardrails (§4) and the
 > autonomy boundary (§5) are what make it safe to leave running.
+
+**Current position (2026-09-04; R `origin/main` `08fa6f1`).** Live
+experimental number is **0.8.0**; `public_covered_count` is **7**; the
+experimental label is **retained**. That is the tip. It is **not** Phase 6
+done and **not** 1.0. Block 1 / first-registration **0.5.0** / MV-4 evidence
+assembly are historical or paused owner debt — they are **not** the active
+spine. The north star below is unchanged.
+
+> **Record status (2026-09-07):** A later documentation/usability milestone is
+> complete, but it changes neither this scientific goal nor the release ladder:
+> package numbering and release authorization remain undecided. The 0.9 and 1.0
+> rows below are still planned; H1/H3 are deferred and G10 promotion holds are
+> not released. See
+> [`2026-09-07-documentation-milestone-release-boundary.md`](../dev-log/decisions/2026-09-07-documentation-milestone-release-boundary.md).
 
 ## 1. The goal (north star)
 
@@ -29,19 +50,21 @@ complete).
 
 | Milestone | Pillar | State |
 |---|---|---|
-| **0.5.0** | Covered Gaussian core (Phase 1–2) — first registration, experimental label | near-done: needs twin parity (#267/#268), the three release decisions, `cran-comments.md`, the version bump |
-| **0.6.0** | Multivariate Gaussian → R-public covered (Phase 3) | engine already covered; R-surface promotion |
-| **0.7.0** | Genomic GREML covered (Phase 5a) | engine covered; free comparators exist |
-| **0.8.0** | Factor-analytic G + single-step (Phase 4) | first real engine fix (FA calibration) |
-| **0.9.0** | Non-Gaussian bundle 1 (Poisson/Binomial) + interval-coverage calibration across covered pillars (Phase 6a) | estimand ratified first (NG-1) |
-| **1.0.0** | Non-Gaussian family set + production sparse + calibrated intervals + committed-stable API + **maintainer's maturity declaration** | the maturity milestone |
+| **0.5.0** | Covered Gaussian core (Phase 1–2) — first registration, experimental label | historical first-registration rung — experimental number superseded by **0.8.0**; twin parity (#267/#268), CRAN decisions, and `cran-comments.md` remain paused owner debt, **not** the live tip |
+| **0.6.0** | Multivariate Gaussian → R-public covered (Phase 3) | **landed 2026-09-02 (G10)** — experimental label retained; number superseded by **0.8.0** |
+| **0.7.0** | Genomic GREML covered (Phase 5a) | **landed 2026-09-02** (engine + R-public at validation scale; G5 default-route later) — number superseded by **0.8.0** |
+| **0.8.0** | Factor-analytic G + single-step (Phase 4) | **live tip** (experimental number; label retained) — engine FA + SS covered; R FA planned; R SS opt-in partial; count **7**. Not Phase 6. Not 1.0. |
+| **0.9.0** | Non-Gaussian bundle 1 (Poisson/Binomial) + interval-coverage calibration across covered pillars (Phase 6a) | **planned** — next spine after 0.8.0; estimand ratified first (NG-1). Not claimed. |
+| **1.0.0** | Non-Gaussian family set + production sparse + calibrated intervals + committed-stable API + **maintainer's maturity declaration** | the maturity milestone (**unchanged end state**) |
 
 "Finished really well **up to Phase 6**" (this lane's headline target) = the
 **0.6 → 0.9** rungs are all covered under §3, the interval-calibration campaign
 has banked coverage for the covered pillars, and the non-Gaussian estimand is
 ratified with its first families covered — leaving only the production sparse
 kernel, the full family set, and the maturity declaration between the lane and
-1.0.
+1.0. Today: 0.6 and 0.7 are covered at validation scale; the experimental
+**number** is **0.8.0** with count **7**; 0.9 and 1.0 remain planned. Do not
+read the live number as Phase 6 or 1.0.
 
 ## 3. Success gate (a pillar is "done well" only when ALL hold)
 
@@ -62,7 +85,9 @@ made concrete for this lane:
 7. **Interval coverage** pre-registered; and for the 1.0 gate, calibrated by a
    coverage simulation — not only point-estimate bias/MCSE.
 8. **R↔engine element-wise parity + Rose clean audit + twin-discipline**
-   (engine-covered ≠ R-public-covered).
+   (engine-covered ≠ R-public-covered). Parity is verified at a recorded
+   commit with pre-declared tolerances; it is not implied by a Julia-free
+   R-CMD-check.
 9. **Definition of Done** (`AGENTS.md`): local checks pass; `check-log`,
    after-task report, and coordination board updated.
 
@@ -114,8 +139,15 @@ estimand contract (in NG-2 sign-off now), the interval-calibration campaign
 (H0 bank → H1/H3 harness), the WOMBAT FA-comparator build, and the MV broadened
 recovery. Each pillar closes with an after-task report + coordination-board row.
 At every §5 boundary the lane pauses with a crisp decision packet for the
-maintainer and continues once cleared. First slice on the spine: **MV-4**
-(`cbind()` auto-routing + Boole freeze) toward 0.6.
+maintainer and continues once cleared.
+
+**Historical slice on the spine — honesty 2026-09-04.** This paragraph used to
+present Block 1 / 0.5.0 registration or MV-4 evidence assembly as the live
+tip. Those are done or paused. The then-live position was experimental **0.8.0** /
+count **7**. Reversible next work is **0.9 prep** (NG-1 remaining
+ratification; interval-calibration Layer B / H1–H3) under §5 — drafts and
+inventories only. That is not a 0.9 claim, not a covered flip, and not a
+smaller replacement for Phase 6 / 1.0.
 
 ## 7. Definition of done for this goal
 

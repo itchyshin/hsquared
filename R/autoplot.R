@@ -249,7 +249,7 @@ hs_autoplot_variance <- function(object, ...) {
         }
         if (length(hsev) == nrow(h_df)) {
           # Surface the RAW asymptotic bounds and annotate when they cross [0, 1];
-          # do not silently clamp (plotting standard 24 §2; mirrors the engine's
+          # do not silently clamp (plotting standard 24 section 2; mirrors the engine's
           # boundary-throw discipline). A whisker crossing 0/1 is the honest signal
           # that h^2 is imprecise.
           h_df$lo <- h_df$estimate - 1.96 * hsev
@@ -485,7 +485,7 @@ hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
   )])
   df$label <- formatC(df$value, format = "f", digits = 2)
 
-  # Low-h^2 flag (plotting standard 24 §2): an off-diagonal correlation that
+  # Low-h^2 flag (plotting standard 24 section 2): an off-diagonal correlation that
   # involves a low-h^2 trait is imprecise -> mark it. The diagonal (==1) is
   # definitional, so it is never flagged. `intToUtf8` builds the glyphs from code
   # points (ASCII source, no backslash-escape ambiguity).
@@ -556,7 +556,7 @@ hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
 # Scree of the genetic eigenstructure: rotation-invariant eigenvalues (variance
 # per genetic axis) with variance-explained labels. Axis DIRECTIONS / loadings are
 # never drawn -- they are rotation-arbitrary and span-ambiguous under repeated
-# eigenvalues (plotting standard 24 §2 g_geometry; the cataloged figure is the
+# eigenvalues (plotting standard 24 section 2 g_geometry; the cataloged figure is the
 # scree, not a loadings biplot).
 hs_autoplot_g_geometry <- function(object, ...) {
   # Auto-detect the engine `genetic_pca_plot_data` payload; else recompute from
@@ -569,7 +569,7 @@ hs_autoplot_g_geometry <- function(object, ...) {
     !is.null(pd) &&
       !is.null(pd$eigenvalues) &&
       !isFALSE(pd$rotation_invariant) &&
-      # §3-enforced for g_geometry: a payload that disclaims eigenstructure status
+      # section 3-enforced for g_geometry: a payload that disclaims eigenstructure status
       # (i.e. carries loadings/directions) must NOT be drawn as a scree.
       !isFALSE(pd$is_eigenstructure_not_loadings)
   ) {
@@ -670,7 +670,7 @@ hs_autoplot_g_geometry <- function(object, ...) {
 # Reaction-norm eigenfunctions psi_j(t): the rotation-invariant eigen-decomposition
 # of K_g drawn as covariate functions, faceted by axis with each curve's genetic
 # variance share. Eigenfunction SIGNS are arbitrary and the curves are span-ambiguous
-# under repeated eigenvalues (plotting standard 24 §2) — caveated, never over-read.
+# under repeated eigenvalues (plotting standard 24 section 2) -- caveated, never over-read.
 hs_rr_use_default_payload_grid <- function(at, n) {
   nn <- suppressWarnings(as.integer(n))
   is.null(at) && length(nn) == 1L && !is.na(nn) && identical(nn, 25L)
@@ -1124,7 +1124,7 @@ hs_require_ggplot2 <- function() {
   invisible(TRUE)
 }
 
-# Attach the cross-lane honest-status meta (the `13-plotting-layer.md` §3
+# Attach the cross-lane honest-status meta (the `13-plotting-layer.md` section 3
 # contract, mirroring gllvmTMB/drmTMB): machine-readable type / source /
 # interval / rotation status + caveat notes, alongside the human-readable
 # subtitle, so the honest-status guardrails are inspectable, not just printed.

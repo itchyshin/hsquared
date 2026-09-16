@@ -3,9 +3,18 @@
 Status: **ratified (R lane), 2026-06-22.** This is the R-lane acknowledgement that
 the Julia engine may widen `multivariate_result_payload` to accept
 `:lowrank`/`:factor_analytic` fits and expose the eigenbasis + rotation-invariant
-functionals below. It does **not** promote any capability: structured
-factor-analytic/low-rank fits remain `partial`, and the `cov = lowrank()/fa()`
-formula grammar remains planned.
+functionals below. It does **not** promote any R-public capability.
+
+**Cross-link (2026-09-05):** Julia `V4-FA` is now **engine-covered**
+(HSquared.jl `60895208` / #300; validation-scale). That engine row is recorded
+in Julia
+[`capability-status.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/capability-status.md)
+and
+[`12-bridge-compatibility.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/12-bridge-compatibility.md).
+R `factor-analytic G matrices` stays **planned** (no activated `cov = fa(K)`
+grammar; `hs_validate_genetic_structure_control()` still rejects
+`"factor_analytic"`). Diagonal structured control remains the only R-surfaced
+structured path. Engine-covered ≠ R-public; `public_covered_count` stays **7**.
 
 ## Purpose
 
@@ -109,7 +118,8 @@ twin gates:
 
 - the engine payload-widening commits on `HSquared.jl` `main`;
 - signed-off known-truth recovery for the structured fit — the twin's per-seed
-  calibration has **not** passed (FA ~8/10, low-rank ~9/10 at last record), so
+  calibration has **not** passed (FA: 8 of 10 scenarios passed; low-rank: 9 of
+  10 passed at the last record), so
   the row stays `partial`;
 - an external structured-`G` comparator (WOMBAT/ASReml `xfa`, Kirkpatrick & Meyer
   reduced-rank parity);

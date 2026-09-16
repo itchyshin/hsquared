@@ -11,6 +11,14 @@ order — not the release schedule. See
 [`docs/dev-log/decisions.md`](docs/dev-log/decisions.md) ("2026-07-11: Release
 Model").
 
+> **Current record (2026-09-11):** the isolated twins carry an experimental
+> **0.9.0 release** after the ratified three-field contract and
+> retained H0/H1/H3 evidence. `public_covered_count` remains **7**; no
+> capability flips are implied. The release is not production. CRAN submission,
+> acceptance, and public availability are separate states. A frozen-artifact
+> gate, external platform evidence, and an independent artifact audit govern
+> the submitted artifact.
+
 - **First registration is `0.5.0`, not `1.0`**, shipped with a prominent
   **experimental** label — mirroring the sibling packages (drmTMB, gllvmTMB) and
   the standing rule that lab packages ship experimental on first CRAN until the
@@ -27,9 +35,12 @@ Model").
   every pillar to be **covered + production + interval-coverage-calibrated**, a
   committed-stable public API, and the maintainer's explicit declaration.
   Interval-coverage calibration exists for no model today, so `1.0` is materially
-  later than Phase 6. Non-Gaussian (Phase 6) is the longest pole — blocked on an
-  undefined non-Gaussian-scale heritability estimand and comparator scarcity, not
-  compute — so it is sequenced last and kept off the release critical path.
+  later than Phase 6. The broader non-Gaussian programme (Phase 6) remains the
+  longest pole — its general-scale estimands and comparator evidence are still
+  incomplete. That historical statement does not undo the narrow ratified 0.9
+  three-field contract, which is experimental/partial and separately fenced
+  from calibration or promotion — so the broader work stays sequenced last and
+  off the release critical path.
 
 ## Phase 0: Team Operating System And Public Scaffold
 
@@ -154,7 +165,7 @@ twin adds committed recovery/comparator evidence. See
 
 ## Phase 4: Factor-Analytic G Matrices
 
-Status: partial (diagonal) / planned (lowrank, fa). The R-side expert-control
+Status: partial (diagonal) / planned (lowrank, fa) at the R public layer. HSquared.jl has engine-side V4-FA validation evidence, but R has no activated FA grammar or bridge. The R phase remains gated on a rotation-invariant payload contract, R activation, same-estimand comparator evidence, and declared calibration/recovery evidence. The R-side expert-control
 contract for the first structured multivariate bridge is recorded in
 [`docs/design/18-structured-covariance-r-control.md`](docs/design/18-structured-covariance-r-control.md).
 It keeps the current `cbind(...)` response grammar. The rotation-free
@@ -171,10 +182,10 @@ against the twin `structured_covariance_parity` target (live fit skip-guarded).
 
 ## Phase 5: Genomic And Single-Step Models
 
-Status: partial (opt-in). Genomic GREML, SNP-BLUP / RR-BLUP marker effects,
+Status: partial (opt-in) at the R public layer. Genomic GREML, SNP-BLUP / RR-BLUP marker effects,
 constructed single-step `H^-1`, supplied-`Gamma` metafounder `A^Gamma`, and
 supplied-`Gamma` single-step `H^Gamma` are surfaced experimentally through the
-Julia bridge. The R lane now also carries Julia-free target/payload fixtures for
+Julia bridge. The Julia engine's V2-SSHINV coverage is engine evidence only; it does not make the R single-step row covered. R-public promotion remains separately gated by bridge/result parity, external comparator and scale evidence, and maintainer authorization. The R lane now also carries Julia-free target/payload fixtures for
 genomic GBLUP/SNP-BLUP and marker-scan result payloads. Production-scale genomic
 workflows and external same-estimand comparator validation remain planned.
 
@@ -199,11 +210,19 @@ workflows and external same-estimand comparator validation remain planned.
 
 Status: partial for simple non-Gaussian animal models, planned for GLLVM/omics.
 
-- Poisson and binomial animal-model fits are surfaced experimentally through the
-  Julia-owned Laplace/variational marginal path (`target = "nongaussian"`),
-  including Bernoulli and equal-total binomial-count responses. No heritability
-  is reported on the non-Gaussian scale. Negative binomial, beta-binomial,
-  ordinal, zero-inflated, hurdle, and broader family extensions remain planned.
+- Poisson(log) and binomial(logit) animal-model fits are surfaced
+  experimentally through the Julia-owned Laplace marginal-likelihood or
+  variational-ELBO path (`target = "nongaussian"`), with one intercept and
+  animal effect. The ratified conditional three-field output supplies Poisson
+  latent/count-scale observation h2 and Binomial-logit latent/liability h2.
+  Its logit observation-scale h2 is finite for Bernoulli and common-trial
+  Binomial data; varying binomial trial totals return the explicit `NaN`
+  sentinel `varying_trials_no_scalar_estimand`, because no scalar estimand is
+  defined. Bernoulli and scalar or varying binomial-count trial totals are
+  admitted. This remains partial:
+  no coverage calibration, external same-estimand comparator, or promotion.
+  Negative binomial, beta-binomial, ordinal, zero-inflated, hurdle, and broader
+  family extensions remain planned.
 - Wide response matrices, latent genetic axes, ordination, and community
   ecology examples.
 - Estimation by **both Laplace approximation (LA) and variational

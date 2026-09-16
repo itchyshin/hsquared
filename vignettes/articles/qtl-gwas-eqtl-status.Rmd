@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>GWAS p-values: nominal · not genome-wide calibrated.</strong>
+Bonferroni on a Manhattan is a reference line, not a validated genome-wide threshold. A scoped permutation cutoff exists only for <code>method = "single", genome_wide = TRUE</code>.</p>
+
 This article is a status page for marker scans, QTL, GWAS, and eQTL in
 `hsquared`.
 
@@ -44,6 +47,23 @@ whether a scan engine is already hidden somewhere.
 
 For marker-level output, the current fitted path is SNP-BLUP at supplied
 variance components:
+
+```{r fixture}
+ids <- paste0("id", seq_len(8))
+ped <- data.frame(
+  id   = ids,
+  sire = c(NA, NA, NA, NA, "id1", "id1", "id2", "id2"),
+  dam  = c(NA, NA, NA, NA, "id3", "id4", "id3", "id4")
+)
+pheno <- data.frame(
+  id    = ids,
+  batch = rep(c("A", "B"), each = 4),
+  y     = c(72, 75, 65, 68, 31, 33, 35, 30)
+)
+set.seed(1)
+M <- matrix(sample(0:2, 8 * 6, replace = TRUE), nrow = 8, ncol = 6)
+rownames(M) <- ids
+```
 
 ```{r}
 fit_snp <- hsquared(

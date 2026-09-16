@@ -110,6 +110,7 @@ test_that("the default fit path keeps genomic() opt-in", {
     fixed = TRUE
   )
 
+  # REML = FALSE stays rejected on the explicit genomic route (design-44).
   expect_error(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
@@ -120,6 +121,7 @@ test_that("the default fit path keeps genomic() opt-in", {
     "REML = FALSE",
     fixed = TRUE
   )
+
 })
 
 test_that("the genomic bridge requires an internal payload", {
@@ -131,7 +133,7 @@ test_that("the genomic bridge requires an internal payload", {
 })
 
 test_that("the explicit supplied-Ginv route fits [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
@@ -195,7 +197,7 @@ test_that("the explicit supplied-Ginv route fits [live]", {
 })
 
 test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live boundary GREML."
@@ -375,6 +377,14 @@ test_that("marker validation freezes dosage, names, and polymorphism", {
     "[0, 2]",
     fixed = TRUE
   )
+  # The dosage-range guard is a classed hsquared_error (#216), naming the
+  # 0/1/2 convention and the -1/0/1 recode, not a bare stop().
+  cnd <- tryCatch(
+    hsquared:::hs_validate_genomic_markers(bad),
+    error = function(e) e
+  )
+  expect_s3_class(cnd, "hsquared_error")
+  expect_match(cnd$message, "recoded", fixed = TRUE)
   bad <- M
   rownames(bad)[1] <- ""
   expect_error(
@@ -539,7 +549,11 @@ test_that("genomic provenance normalizer enforces the frozen contract", {
   )
   for (field in c("relationship_source", "relationship_method", "ridge")) {
     mutated <- marker
-    mutated[[field]] <- if (identical(field, "ridge")) NA_real_ else NA_character_
+    mutated[[field]] <- if (identical(field, "ridge")) {
+      NA_real_
+    } else {
+      NA_character_
+    }
     expect_error(
       hsquared:::hs_normalize_genomic_provenance(mutated),
       "Internal bridge error",
@@ -807,7 +821,7 @@ test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", 
 })
 
 test_that("explicit marker and exact supplied-Q routes agree [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for live marker GREML."
@@ -902,7 +916,7 @@ test_that("explicit marker and exact supplied-Q routes agree [live]", {
 })
 
 test_that("frozen activation fixture matches base R and both public routes [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   project <- hsquared:::hs_default_julia_project()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(project),

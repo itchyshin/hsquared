@@ -143,7 +143,7 @@ test_that("R consumes the shared diagonal-G multivariate parity fixture", {
 })
 
 test_that("the live Julia bridge fits diagonal G and the structure LRT end-to-end", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live diagonal multivariate bridge."

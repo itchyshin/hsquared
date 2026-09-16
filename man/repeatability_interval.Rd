@@ -28,7 +28,7 @@ It mirrors the engine row \code{V3-REPEAT-REML} (\code{partial}): the engine's
 repeatability REML estimator and this interval are engine-internal
 self-consistency tested (recovery of \code{t} and interval bracketing / range /
 level-nesting / point-estimate match on seeded fixtures), but there is no
-external comparator, no \verb{h²} interval, and no deep-pedigree validation. It is
+external comparator, no \code{h^2} interval, and no deep-pedigree validation. It is
 asymptotic, REML-only, unreliable at small \code{n} or near the (0, 1) boundary
 (where the engine throws and the field is omitted), and not a validated
 capability.

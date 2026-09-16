@@ -30,7 +30,7 @@ names, then to sequential ids.}
 \item{method}{\code{"mixed"} (default) for the relatedness-corrected mixed-model
 (GLS) scan with one whole-pedigree relationship correction across all
 markers; \code{"single"} for the relatedness-\strong{un}corrected single-marker (OLS)
-scan (a naive screen useful mainly as a contrast — it is more inflated by
+scan (a naive screen useful mainly as a contrast -- it is more inflated by
 relatedness than the mixed scan); or \code{"loco"} for a leave-one-group-out scan
 with a per-group \strong{genomic} relationship correction (requires
 \code{marker_groups}). The LOCO scan reuses the pedigree fit's variance components
@@ -69,7 +69,7 @@ restates the uncalibrated-significance caveat for the nominal columns (and, for
 \details{
 \code{gwas()} runs a dense, supplied-variance, relatedness-corrected mixed-model
 (GLS) Wald marker scan on a fitted Gaussian animal model, reusing the fit's
-estimated variance components \verb{(σ²a, σ²e)} and pedigree relationship. It is an
+estimated variance components \verb{(sigma^2_a, sigma^2_e)} and pedigree relationship. It is an
 experimental, validation-scale screen that surfaces the Julia-owned
 \code{HSquared.mixed_model_marker_scan()}.
 
@@ -99,6 +99,6 @@ A leave-one-group-out (LOCO) scan is available with \code{method = "loco"} and a
 correction is built from the markers \strong{not} in that marker's group (e.g. its
 chromosome), so the marker's own signal does not leak into the background
 relationship. The LOCO relationship is \strong{genomic} (VanRaden) while the reused
-variance components are \strong{pedigree}-estimated — a scale mismatch that keeps
+variance components are \strong{pedigree}-estimated -- a scale mismatch that keeps
 this validation-scale (see \code{method}).
 }

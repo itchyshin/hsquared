@@ -1,5 +1,165 @@
 # Check Log
 
+## 2026-09-11 (R 0.9 explicit genomic route — isolated candidate)
+
+- Candidate `d15bbaf`: default `engine = "fit"` and targetless
+  `engine = "julia"` no longer select genomic GREML. The existing covered
+  validation-scale genomic claim is explicit `target = "genomic"` only; count
+  stays **7**. No estimand, fixture, or evidence change.
+- Focused genomic tests **PASS** (220 passes / 0 failures); full
+  `devtools::test()` **PASS** (2,867 passes / 0 failures / 0 warnings / 75
+  explicit skips); `pkgdown::check_pkgdown()` **PASS**.
+- Fresh source archive
+  `/private/tmp/hsq09-r-090-current/hsquared_0.9.0.tar.gz` SHA-256
+  `8bc86b6a371ddaff8a38c519c69586179d2997b3988cd54349d72aeabea7bfca`;
+  direct `R CMD check --as-cran --run-donttest` completed with only the expected
+  **New submission** NOTE. Unlazy **10/10 met** after a measured 900-second
+  full-suite ceiling replaced the false 120-second timeout.
+- Boundary: isolated local candidate only. No promotion, version/tag action,
+  merge, registry/CRAN action, or publication. Exact-head independent artifact
+  audit remains a required Gate B prerequisite.
+
+## 2026-09-08 (A4-1 Binomial observation-scale contract — not a promotion)
+
+- Isolated R candidate `82df320` atop `354f6bd`: Bernoulli and common-trial
+  Binomial now require a finite numerically integrated logit observation-scale
+  h2; heterogeneous trial vectors require literal `NaN` plus
+  `varying_trials_no_scalar_estimand`. No trial-count averaging occurs.
+- Focused versioned normalizer and broader non-Gaussian tests: **PASS**.
+  Configured live R-to-Julia exact-candidate parent check: **104 passing
+  expectations**, including finite Bernoulli/common-trial fields and the
+  heterogeneous-trial sentinel. A4-1 Unlazy re-verification: **3/3 met**;
+  `git diff --check`: **PASS**.
+- The all-one `cbind()` control initially exposed the producer's Bernoulli
+  reduction; its repaired assertion is retained as a regression check.
+- Post-closure repair: the live `binomial-counts` test exposed **six stale A3
+  expectations** (scalar variance-component comparison and obsolete
+  heritability-error expectations). It now passes **42/0** against the paired
+  candidate, explicitly checking `V_A`, structural `V_RE`/`V_O` zeros, all
+  finite common-trial scale fields, and the exact heterogeneous-trial sentinel.
+  The A4 leaf is **4/4 met**. Normal full `devtools::test()` under explicit
+  CRAN-safe routing and one BLAS/OpenMP thread is **PASS / exit 0**;
+  `pkgdown::check_pkgdown()` is **PASS**; and constrained
+  `R CMD check --no-manual` (`_R_CHECK_FORCE_SUGGESTS_=false`) is **0 errors /
+  0 warnings / 0 notes**, including examples, tests, and vignette rebuild.
+  The strict local check still stops before code on unavailable optional
+  `pedigreemm`, so no cross-Suggests release inference is made. Earlier
+  unconstrained attempts that activated stale Julia session state are retained
+  for test hardening, not reported as A4 failures. A direct capped replay of
+  all 25 recovery seeds completed in **17.332 s** (max **0.824 s**, zero
+  errors), confirming the denominator itself is healthy.
+- Boundary: experimental/partial only. No varying-trial scalar, calibration,
+  comparator, claim-bearing compute, covered flip, version, tag, registry, or
+  release. The local timing replays above are not campaign evidence.
+  Current version remains **0.8.0** and public covered count remains **7**.
+
+## 2026-09-08 (A3 paired three-field contract — not a promotion)
+
+- See `docs/dev-log/check-log.d/2026-09-08-a3-three-field-contract.md` and
+  `docs/dev-log/after-task/2026-09-08-a3-three-field-contract.md`.
+- Isolated R/Julia candidate only: R bridge and Julia private envelope tested;
+  both A3 Unlazy ledgers **8/8 met**. R ordinary source-tar `R CMD check`
+  **Status: OK**; Julia `Pkg.test()` includes A3 **43/43**. Experimental/partial
+  only: no calibration, comparator, covered flip, version, tag, registry, or
+  release. Current version remains **0.8.0**, public covered count **7**.
+
+## 2026-09-07 (Gate-6 Rose audit — not 0.9.0)
+
+- See `docs/dev-log/check-log.d/2026-09-07-gate6-rose-audit.md` and
+  `docs/dev-log/after-task/2026-09-07-gate6-rose-audit.md`.
+- Verdict **CLEAN WITH NITS** on merged public surfaces @ R `fc7230c` ·
+  Julia `b571184`. Count **7**. Version **0.8.0**. **0.9.0 NOT
+  authorized.** No covered flip.
+
+## 2026-09-07 (Layer B #191 merge + H0 ratification — not a covered flip)
+
+- See `docs/dev-log/check-log.d/2026-09-07-layerb-191-merge.md` and
+  `docs/dev-log/after-task/2026-09-07-layerb-191-merge.md`.
+- R #191 merged @ `06bce492`; Rose Layer B **CLEAN WITH NITS** @
+  `8a3f597`; owner `ratify H0 Layer B` banked. Count **7**. Version
+  **0.8.0**. R #192 L-4 merged @ `fc7230c` (post-ratification nit).
+
+## 2026-09-04 (R FA S0 honesty — not R-public)
+
+- See `docs/dev-log/check-log.d/2026-09-04-v08-fa-r-catchup-honesty.md` and
+  `docs/dev-log/after-task/2026-09-04-v08-fa-r-catchup-honesty.md`.
+- Julia `V4-FA` engine-covered at `60895208`. R FA stays **planned**.
+  Count stays **7**. No `cov = fa`. No version bump. No G10.
+
+## 2026-09-04 (experimental version 0.7.0 → 0.8.0 — count stays 7)
+
+- See `docs/dev-log/check-log.d/2026-09-04-v08-experimental-080-bump.md` and
+  `docs/dev-log/after-task/2026-09-04-v08-experimental-080-bump.md`.
+- Lockstep with HSquared.jl. `public_covered_count` stays **7**.
+  Experimental label **retained**. R FA stays **planned**. R SS stays
+  **opt-in partial**. No tag / CRAN / 1.0.
+
+## 2026-09-04 (R pointer after Julia V2-SSHINV G10 — not an R-public flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-ss-v2-sshinv-r-pointer.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-ss-v2-sshinv-r-pointer.md`.
+- Julia `V2-SSHINV` engine-covered at `cf2a9bbf`. R SS stays **opt-in
+  partial**. Count stays **7**. No 0.8.0.
+
+## 2026-09-03 (R single-step partial / experimental honesty — no flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-ss-r-partial.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-ss-r-partial.md`.
+- Julia #295 cited. Count stays **7**. Darwin UNSIGNED. No ordinary-route
+  promotion. No General/CRAN/1.0.
+
+## 2026-09-03 (R pointer after Julia V4-FA G10 — not an R-public flip)
+
+- See `docs/dev-log/check-log.d/2026-09-03-v08-fa-v4-fa-r-pointer.md` and
+  `docs/dev-log/after-task/2026-09-03-v08-fa-v4-fa-r-pointer.md`.
+- Julia `V4-FA` engine-covered at `60895208`. R FA stays **planned**.
+  Count stays **7**. No 0.8.0.
+
+
+## 2026-09-02 (0.7 genomic GREML covered + experimental 0.7.0)
+
+- See `docs/dev-log/check-log.d/2026-09-02-07-greml-covered-flip.md` and
+  `docs/dev-log/after-task/2026-09-02-07-greml-covered-flip.md`.
+- Rose CLEAN tip audit; owner #7 auto-flip. Count **6→7**. No General/CRAN/1.0.
+
+
+## 2026-09-02 (0.7 GREML Rose gap-clear G1–G6 — no flip)
+
+- See `docs/dev-log/check-log.d/2026-09-02-07-totoro-exactG-pass.md`,
+  `docs/dev-log/check-log.d/2026-09-02-07-greml-promotion-parity-predeclaration.md`,
+  `docs/dev-log/check-log.d/2026-09-02-07-greml-promotion-parity.md`, and
+  `docs/dev-log/after-task/2026-09-02-07-greml-gapclear.md`.
+- design-53 SUPERSEDE · design-51 Boole RATIFIED · canon genomic citation lock ·
+  claim-surface NO-ANCHOR · DoD ink. **Count stays 6.** No covered flip.
+
+
+## 2026-09-02 (Florence P1 twin-bridge + G0/r_g + banners)
+
+- See `docs/dev-log/check-log.d/2026-09-02-docs-quality-florence-p1.md` and `docs/dev-log/after-task/2026-09-02-florence-p1-figures.md`.
+- Draft PR #150. No covered flip.
+
+
+## 2026-09-02 (G10 R multivariate covered + experimental 0.6.0)
+
+- **G10 AUTHORIZE applied** — see `docs/dev-log/check-log.d/2026-09-02-g10-r-mv-covered-060.md`
+  (commands + outcomes) and `docs/dev-log/check-log.d/2026-09-02-g10-r-multivariate-authorize.md`
+  (ink echo). Owner: Shinichi; source: chat `"G10 - you keep going"` (2026-09-02).
+- Flip: R multivariate `partial → covered (validation-scale)`; `public_covered_count`
+  **5 → 6**; experimental **0.6.0** (label retained). A29 CLEAN followed (not forged).
+- Local: `devtools::test()` FAIL 0 / PASS 2591 (73 live-Julia SKIPs);
+  `pkgdown::check_pkgdown()` no problems. PR #148.
+
+## 2026-09-02 (A27 Darwin SIGN + Wave B DP-10 C / A25 SUPERSEDE — MV-4 evidence-ink)
+
+- **A27 Darwin SIGN recorded** — see `docs/dev-log/check-log.d/2026-09-02-a27-darwin-sign.md`
+  and `docs/dev-log/a27-darwin-g0-rg-hold.md` (SIGNED). **Not** a covered flip;
+  `public_covered_count` stays **5**. Owner: Shinichi (Darwin); source: chat "go ahead" (Shinichi, 2026-09-02).
+- **DP-10 C honesty + A25 SUPERSEDE applied** — see
+  `docs/dev-log/check-log.d/2026-09-02-mv4-waveB-dp10C-a25.md`. Stub stays
+  `if: false`. Doc 40 SUPERSEDED / do not run. Multivariate row stays `partial`.
+- Docs-only on `cursor/mv4-060-20260902`. No G10. No Totoro/DRAC.
+
+
 Append exact commands and outcomes here. Do not replace repository evidence
 with private memory.
 
@@ -7615,3 +7775,436 @@ release".
 - Checks: `Rscript --vanilla -e 'pkgdown::check_pkgdown()'` clean;
   `git diff --check` clean; boundary grep over the edited articles and
   after-task report confirms the fixed-panel-smoke/no-R-threshold wording.
+## 2026-09-11 — 0.9 Gate-B R exact-artifact candidate [R]
+
+- Source basis: clean `a1bd525e8594ccc346f43d7741eb37b1e7e112d2`; frozen
+  `hsquared_0.9.0.tar.gz` SHA-256
+  `1934c4526279ba8a7e6f0e2cdb204d797a4a33e290028e2e1ed0f5dca745ed32`.
+- Package tests, exact-head bridge cell, pkgdown/URL checks, artifact scan,
+  and as-CRAN tarball check passed. The tarball check has one expected
+  new-submission NOTE only.
+- Boundary: candidate evidence only; no PR update, push, merge, tag, CRAN
+  submission, registry action, promotion, or release.
+
+## 2026-09-13 — H2 fixer campaign: R half merged (#219 #221 #220 #223 #226 #227) [R]
+
+Six PRs landed on `hsquared` `main`, closing the eleven R-side issues the H2 twin
+independent test campaign filed (plus one latent test-only bug it surfaced). Julia-side
+companion work (HSquared.jl #337/#338/#339/#341/#342, closing #331/#327/#212(engine
+half)/#214/#217(engine half)/#333/#334/#210(Julia strings)) is recorded separately in the
+Julia twin's own check-log.
+
+### Merged PRs
+
+- **#219** (`fix: random-regression extractors error on out-of-range covariates instead
+  of clamping (#213)`) — merge SHA `90fab9ff`. Closes #213. `R/conditions.R`
+  (`hs_abort_out_of_range()`), `R/julia-bridge.R` (`hs_legendre_basis()` now errors beyond
+  Julia's `1e-10` tolerance instead of clamping), `R/extractors.R`
+  (`hs_rr_eval_points()` range-checks a user-supplied `at` against the fitted range),
+  `man/random_regression_extractors.Rd`, `NEWS.md` (dropped — see Rose A below),
+  `tests/testthat/test-rr-out-of-range.R` (new), `tests/testthat/test-random-regression.R`
+  (one pre-existing out-of-range fixture value corrected).
+- **#221** (`docs: carry engine contracts into the R surface (#211, #216, #218, #209,
+  #210, #215) + vignette fixtures (#208)`) — merge SHA `f62ce52a`. Closes #211, #216,
+  #218, #209, #210, #215, #208. `R/extractors.R` (PEV/reliability/accuracy/Fisher-z
+  formulas transported from the engine; `sigma_P` → `sigma^2_P`; `metafounder_groups()`
+  `@return` correction), `R/genomic-markers.R` and `R/model-spec.R` (0/1/2 marker
+  convention documented; out-of-range check now `hs_abort_out_of_range()`-classed),
+  `R/julia-bridge.R` (`sigma_P` → `sigma^2_P` at the two direct-maternal
+  `interpretation`-string sites), `R/animal.R` and `R/hs_control.R` (selfing gap on
+  `pedigree =` documented, `relmat(K = )` workaround), six vignette fixture chunks
+  (`fitting-models.Rmd`, `g-matrix-interpretation.Rmd`, `inheritance-systems.Rmd`,
+  `multivariate.Rmd`, `genomic-prediction.Rmd`, `qtl-gwas-eqtl-status.Rmd`),
+  `vignettes/articles/twin-boundary.Rmd` (twin-contract-rule section), `man/*.Rd`
+  regenerated, `tests/testthat/test-genomic.R` and `test-fit-object.R` (pinned wording
+  updated to match corrected text).
+- **#220** (`fix: translate Julia bridge errors + max_dense_cells lever; repeatability
+  dense-cell guard (#214, #217)`) — merge SHA `1a1f4a67`. Closes #214, #217. Depended on
+  HSquared.jl #341. `R/conditions.R` (`hs_julia_fit(expr, hint)` wrapper; two hint
+  constants after repair — `hs_dense_route_hint` at the two guarded sites,
+  `hs_dense_scale_hint` at the other 13 dense-hinted sites), `R/julia-bridge.R` (all 17
+  `hs_fit_julia_*_payload()` fit calls wrapped; `max_dense_cells` forwarded on
+  `hs_fit_julia_payload()` and `hs_fit_julia_repeatability_payload()`), `R/hs_control.R`
+  (`max_dense_cells` validated at construction), `man/hs_control.Rd`,
+  `vignettes/articles/current-limits.Rmd`, `vignettes/articles/model-status.Rmd`,
+  `tests/testthat/test-julia-error-translation.R` (new).
+- **#223** (`fix: forward engine_control initial/iterations on every target; unsupported
+  keys error (#212)`) — merge SHA `35faaa15`. Closes #212. `R/julia-bridge.R`
+  (`hs_engine_control_forwarding()` gate; `hs_validate_multi_effect_initial()`,
+  `hs_validate_direct_maternal_initial()`; `initial`/`iterations` now reach
+  `multi_effect`, `direct_maternal`, `single_step_construct`,
+  `metafounder_single_step`, and the `multi_effect_ratio_interval` refit),
+  `R/hsquared.R` (one `hs_engine_control_forwarding(control, target)` call site gating
+  every builder), `R/hs_control.R` / `man/hs_control.Rd` (per-target honoured-keys
+  table), `tests/testthat/test-212-engine-control-forwarding.R` (new),
+  `tests/testthat/test-validation-fixtures.R` (one pre-existing `iterations=` casualty
+  moved to the side of the comparison it actually affects). Merged `main` in once
+  (commit `768d7f1`) to pick up #219/#221/#220 and reconcile the cross-PR
+  `max_dense_cells` honoured-keys requirement (see below) before its own merge.
+- **#226** (`docs+test: NEWS for the fixer campaign; fix live-test hs_julia_setup() call
+  (#224)`) — merge SHA `06cb78a9`. Closes #224. `NEWS.md` (new `# hsquared (development
+  version)` header consolidating the four bullets deferred by #219/#220/#221/#223),
+  `tests/testthat/test-direct-maternal.R` (`hs_julia_setup()` now passes
+  `hs_default_julia_project()`, reusing the file's own existing pattern).
+- **#227** (`test: non-Gaussian live fixtures carry real additive variance (post
+  HSquared.jl#342 boundary refusal)`) — merge SHA `b788cd4f`. No issue closed (the
+  bridge-contract gap it surfaces is filed separately as #225, left open by design).
+  `tests/testthat/helper-simulation.R` (new `hs_sim_genedrop_bv()`),
+  `tests/testthat/test-binomial-counts.R` and
+  `tests/testthat/test-nongaussian-three-field-v09.R` (five fixture DGPs given real
+  identifiable additive/genetic signal; five interior-boundary regression guards added,
+  each citing HSquared.jl#342 / hsquared#225).
+
+Merge order was **#219 → #221 → #220 → #223 → #226 → #227**, per Rose's measured
+conflict matrix (`git merge-tree`); `main` was merged forward into the next branch
+before each merge (never rebased, never force-pushed), and CI was allowed to re-run
+against each new base before the next PR landed.
+
+### Rose audits (Opus, pre-merge, no repo written to)
+
+- **rose-r-a** — all four builder PRs (#219, #220, #221, #223) audited against a common
+  base (`main` `4ec4cfb`): verdict **CHANGES** on every one (1, 4, 3, and 1 required
+  items respectively), all applied before merge (see repair reports below). Also carried
+  a **mandatory cross-PR merge requirement**: `git merge-tree` on the real #220×#223
+  branches showed `R/hsquared.R` auto-merging clean while
+  `hs_engine_control_honoured_keys` in the merged `R/julia-bridge.R` carried no
+  `max_dense_cells` entry for any target — a merge that CI would show green while
+  silently reverting #220's entire feature (its live tests are `skip_if_not`-gated and
+  do not run in CI). Required: add `max_dense_cells` to the `fit_animal_model` and
+  `repeatability` rows of the honoured-keys table, plus a non-live regression test
+  pinning it. Also specified the **wrapper-vs-forwarding merge rule** for the three
+  function bodies both PRs touch: #223's kwarg-building code stays outside
+  `hs_julia_fit()`; #223's rewritten `julia_command` call goes inside it — so an R-side
+  validation error is never relabelled as an `hsquared_julia_error`.
+- **rose-r-b** — PR #226: verdict **CHANGES** (4 required, all in `NEWS.md` wording —
+  a false issue/PR attribution, a false claim that no other Julia entry point enforces
+  the dense-cell guard when two do but reach it through `fit_payload_v2`'s narrower
+  signature, the "default `animal()` route" phrasing recurring after R3-2 had it
+  removed elsewhere, and a mis-indented closing paragraph). Also independently
+  spot-checked all eight of wave-A's required changes against merged `main` — all eight
+  pass — and confirmed the twin-contract paragraph landed on the Julia side (HSquared.jl
+  PR #338) stronger than required.
+- **rose-r-c** — PR #227: verdict **CHANGES** (2 required, both text-only): the PR
+  body's suite-evidence block was stale on the merge-forward head (the #224 error it
+  named had since been fixed by #226 landing in the branch's history); and the new
+  `all_one` fixture comment/PR-body table called `a1`/`a2` and `b1`/`b2` "half-sib"
+  families when the shared pedigree (`s1`×`d1`, `s2`×`d2`) makes them full-sib.
+
+All three audits ran no R and no Julia themselves; CI (SUCCESS on both legs at review
+time) plus the builders' own recorded runs were the evidence base, cross-checked against
+`git show origin/main:<path>` on both twins for every substantive claim.
+
+### #342 boundary-refusal diagnosis (`diag-boundary.md`)
+
+After #220/#223/#226 merged, the live full suite showed six errors, not the one
+(#224) the campaign had been tracking. Diagnosed (Gauss + Hopper lenses, no repo
+written to): one was #224 (fixed moments later by #226); the other five were a new
+`ArgumentError` from `nongaussian_three_field_payload` refusing a fit whose `sigma_a2`
+landed on its search bracket's boundary — introduced by HSquared.jl #342 (which merged
+#327's `boundary::Bool` field and refusal guard onto Julia `main`). **Verdict A on all
+five sites** (`test-binomial-counts.R:148,206,247`,
+`test-nongaussian-three-field-v09.R` Poisson route and `all_one` Bernoulli route): the
+refusal is correct in every case — the R fixtures had no identifiable additive variance
+by construction (three flat-probability Binomial/Bernoulli draws, one thin
+4-animal Poisson fixture, and one genuine quasi-complete-separation design at
+`n_animals == n_records`), confirmed by sweeping the search bracket at multiple start
+values and by direct probes against `HSquared.jl::fit_laplace_reml`. Root cause: the R
+bridge's `nongaussian` target is the one Julia target whose `engine_control` honoured-
+keys entry omits `initial`, so every live non-Gaussian fit is forced to start its search
+at the engine's hard-coded `sigma_a2 = 1.0`. Fix landed entirely on the R side (#227,
+fixture DGP changes only); no Julia contract change was warranted. The bridge gap itself
+(non-Gaussian's missing `initial` passthrough) was filed as **hsquared#225** (open, not
+required and not sufficient to fix the five tests — for the `all_one` site in
+particular, no `initial` rescues a quasi-complete-separation design). A related,
+Julia-owned follow-on — the R bridge consuming only `converged` and not the new
+`boundary` field off a non-Gaussian Julia result — was filed as **hsquared#222** (open).
+
+### Checks (this worktree, `origin/main` `b788cd4`)
+
+- `Rscript -e 'devtools::document()'` — clean; `git status --porcelain` after — **empty**
+  (no drift between the committed `man/`/`NAMESPACE` and a fresh regeneration).
+- `Rscript -e 'r <- devtools::check(".", document = FALSE, quiet = TRUE, error_on =
+  "never"); cat("errors=", length(r$errors), " warnings=", length(r$warnings), "
+  notes=", length(r$notes), "\n")'` (`OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`, run in
+  the background, polled with an until-loop) — **errors= 0  warnings= 0  notes= 0**.
+- Filtered live run (`HSQUARED_JULIA_TESTS=true HSQUARED_JULIA_PROJECT=<local
+  HSquared.jl checkout, `origin/main` `a4cf08e5`> NOT_CRAN=true Rscript -e
+  'devtools::test(filter = "212|213|julia-error-translation|repeatability|
+  binomial-counts|nongaussian-three-field-v09|direct-maternal", reporter = "summary")'`)
+  — every matched file (`212-engine-control-forwarding`, `binomial-counts`,
+  `direct-maternal`, `julia-error-translation`, `nongaussian-three-field-v09`,
+  `repeatability-interval`, `repeatability`) ran to `══ DONE ══` with no `F`/`E` marker
+  anywhere in the transcript — the #224 fix (`#226`) and the #342-boundary fixture fix
+  (`#227`) both hold on this head.
+- FULL LIVE SUITE (orchestrator, R main b788cd4 vs Julia main a4cf08e5, `HSQUARED_JULIA_TESTS=true NOT_CRAN=true OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`): `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3609`; zero rows with failed>0 or error>0. Before #226/#227 the same run had ERROR=6 (1× #224, 5× the HSquared.jl#342 boundary refusal) — carried in testthat's `error` column, which the earlier gate formula did not sum.
+
+### CI state (`main`, at write time)
+
+`gh run list -R itchyshin/hsquared --branch main -L 4`: R-CMD-check on #226's merge
+commit (`06cb78a9`) — SUCCESS; pkgdown on the same commit — SUCCESS; R-CMD-check on
+#227's merge commit (`b788cd4f`, the current `main` head) — in progress at write time
+(not yet resolved when this entry was written).
+
+### Constraints held
+
+`DESCRIPTION` stays `Version: 0.9.0` across all six PRs — no bump. `NEWS.md` gained
+exactly one new `# hsquared (development version)` header (consolidated in #226, after
+Rose required the four builder PRs drop their own NEWS hunks). No row of
+`docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or any
+other status ledger changed cell value; the only wording-level wording change Rose
+required that touches a status-adjacent page is R3-2's `model-status.Rmd` correction
+(the dense-cell cap applies under `engine = "julia"`, not the default `engine = "fit"`
+route) — a correction to existing prose, not a status flip. `public_covered_count` stays
+**7** (`docs/design/06-public-claims-register.md`).
+
+### Residual (not required by Rose)
+
+`tests/testthat/test-nongaussian-three-field-v09.R:462`'s comment describes the Poisson
+fixture's two families as "two three-progeny sire families"; each sire is paired with
+one distinct dam, so these are full-sib families, not sire/half-sib groups (rose-r-c,
+recorded as lower-stakes alongside the required "half-sib" → "full-sib" fix at the
+`all_one` site). Not fixed here — text-only, non-blocking, flagged for whoever next
+touches that file.
+
+## 2026-09-15 — Non-Gaussian bridge: initial/restart_check forwarded, boundary surfaced (#222 #225 / PR #229) [R]
+
+`hsquared` PR #229 (merge SHA `c4dc59266990f7e31cd86bf6534556bc851f5e4b`, base `main`
+`22cfe51`) closed hsquared#222 and hsquared#225: `target = "nongaussian"` was the one
+Julia engine target whose `engine_control` honoured-keys row omitted `initial`, so every
+live non-Gaussian fit was forced to start its search at the engine's hard-coded
+`sigma_a2 = 1.0`; separately, the generic bridge wrapper read only `converged` off the
+Julia v0.9 envelope and never `boundary` (HSquared.jl#342 / HSquared.jl#327's
+search-boundary flag).
+
+- `R/julia-bridge.R`: `hs_engine_control_honoured_keys[["nongaussian"]]` (:4193) gains
+  `"initial"`/`"restart_check"`; `hs_nongaussian_three_field_julia_command()` (:868-936)
+  forwards both *conditionally* into the `HSquared.fit_laplace_reml(...)` call —
+  unsupplied, the keyword is omitted entirely and the `fit_laplace_reml(...)` **call** is
+  byte-identical to pre-fix, while the trailing `Dict(...)` always gains
+  `"boundary" => hsq_fit.boundary` and `"restart_estimate" => hsq_fit.restart_estimate`
+  next to `"converged"`; new `hs_ng09_boundary(raw)` (:817-835) next to
+  `hs_ng09_converged(raw)` (:794-805) — `FALSE` passes through into the result,
+  `TRUE` aborts with a new classed `hsquared_boundary_refused`/`hsquared_error`
+  (`hs_abort_boundary_refused()`, `R/conditions.R:97`) as a defense-in-depth backstop
+  behind the Julia payload builder's own refusal.
+- `R/hs_control.R` (roxygen) + regenerated `man/hs_control.Rd`: per-target honoured-keys
+  list and the `nongaussian` paragraph document `initial`, `restart_check`, and the
+  `boundary` result field (`fit$result$boundary`), distinct from `fit_diagnostics()`'s
+  unrelated `at_boundary`/`at_boundary_condition`.
+- `NEWS.md`: one bullet under the development-version header naming #222, #225, and
+  HSquared.jl#342.
+- Tests: new `tests/testthat/test-nongaussian-boundary-and-initial.R` (forwarding-gate,
+  command-string, validator unit tests, no Julia); `test-nongaussian-three-field-v09.R`
+  extended with `hs_ng09_boundary()`/normalizer tests and three live tests.
+
+No Julia edit, no `DESCRIPTION` change, no capability-status row change.
+
+### Rose audit (rose-r7, pre-merge)
+
+**Verdict: CHANGES (4 required), all text.** Rose independently re-verified the
+forwarding gate, validator style, no-double-wrapping (#220's rule), the kwarg spelling
+against the engine source, the unchanged default command, the classed live error, and
+envelope back-compat — no change requested to any of those. The four required changes,
+all applied on the branch (repair-229.md):
+
+- **C-1** — the `hs_ng09_boundary()` message told the user `restart_check = TRUE` could
+  clear a flagged boundary; the engine's own restart path (`boundary2 = fit_result.boundary
+  || abs(log(sigma_a2) - log(sa2_2)) > 0.01`, `HSquared.jl` `src/nongaussian.jl:1284`) is
+  monotone — `restart_check` can only turn `boundary` from `FALSE` to `TRUE`, never the
+  reverse. Rewritten to name `initial` as the only genuine lever and `restart_check` as
+  strictly a stricter detector.
+- **C-2** — four sites (`NEWS.md`, `R/hs_control.R` roxygen, the honoured-keys row
+  comment, the `hs_validate_nongaussian_initial()` header comment) called `initial` a
+  "start value". For the single-variance families the engine runs a **bracketed** Brent
+  search over `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` (`src/nongaussian.jl:
+  1247-1264`) — there is no start value, and `initial` is the **centre of the bracket**;
+  a true `sigma_a2` outside `[exp(-6), exp(6)]` is unreachable at the default and
+  reachable only by supplying an `initial` on the scale of the data. All four sites
+  corrected; `devtools::document()` regenerated `man/hs_control.Rd` with no stray "start
+  value" surviving (`grep -rn "start value" R/ tests/ NEWS.md man/` returns nothing).
+- **C-3** — the PR body and a test comment claimed an unsupplied control reproduces the
+  pre-fix **command** byte for byte; only the `fit_laplace_reml(...)` **call** is
+  byte-identical — the same PR's own `Dict(...)` deliberately gains `"boundary"`/
+  `"restart_estimate"` (the #222 half of the work). Both corrected to distinguish call
+  from command.
+- **C-4** — a live test titled "`initial` moves the live bracket and both starts
+  converge" asserted only that a supplied `initial` agrees with the default to `1e-4`;
+  that assertion also passes if the forwarding were reverted (both fits become literally
+  the same fit), so it is not evidence the forwarding fired — that is pinned separately
+  by the command-string test. Title and comment corrected to claim only what the
+  assertion shows (no-perturbation agreement).
+
+Optional (rose-r7, not required to merge) applied on this branch's last two commits:
+**O-1** — named the access path (`fit$result$boundary`) and the distinction from
+`at_boundary` in the roxygen; the `fit_diagnostics()` row itself is **not** added here,
+tracked as hsquared#230 (open). **O-2** — `initial$sigma_a2` was silently truncated to
+R's default 7 significant digits by `format()`; command builder now uses
+`format(initial, digits = 15, scientific = FALSE, trim = TRUE)`. **O-3** —
+`restart_estimate` is written to the wire (the `Dict(...)`) but not consumed by the R
+normalizer or surfaced on the result; left as-is, not a user-facing deliverable of this
+PR.
+
+Twin issue **HSquared.jl#347** (open): the engine's own `ArgumentError`
+(`src/nongaussian.jl:907-909`) carries the same wrong "retry with `restart_check = true`"
+advice that C-1 corrected on the R side — filed against the engine, not fixed here.
+
+### Checks (this worktree, branch `claude/h2-boundary-initial-records` from `origin/main`
+`c4dc592`)
+
+- `Rscript -e 'devtools::document()'` — clean; `git status --porcelain` after — **empty**
+  (no drift between the committed `man/`/`NAMESPACE` and a fresh regeneration).
+- `Rscript -e 'r <- devtools::check(".", document = FALSE, quiet = TRUE, error_on =
+  "never"); cat("errors=", length(r$errors), " warnings=", length(r$warnings), "
+  notes=", length(r$notes), "\n")'` (`OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`, run in
+  the background, polled with an until-loop) — **errors= 0  warnings= 0  notes= 0**.
+- Live filtered run (`HSQUARED_JULIA_TESTS=true HSQUARED_JULIA_PROJECT=<local
+  HSquared.jl checkout, `origin/main` `a4cf08e5`> NOT_CRAN=true OPENBLAS_NUM_THREADS=1
+  JULIA_NUM_THREADS=4 Rscript -e 'devtools::test(filter =
+  "nongaussian-three-field-v09|nongaussian-boundary-and-initial", reporter =
+  "summary")'`) — both files fully green (25 + 131 dots), "Your tests deserve a gold
+  medal", exit code 0.
+- FULL LIVE SUITE (orchestrator-reported, R branch head `e3df9062` — i.e. before the
+  final two docs-only commits `db449788`/`ddc5b8313` — vs Julia main `a4cf08e5`,
+  `HSQUARED_JULIA_TESTS=true NOT_CRAN=true OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`):
+  `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3657`. This is the orchestrator's own full-suite
+  measurement (expectation counts, not `test_that`-block counts — see the 2026-09-13
+  entry above for why the two units differ), taken on trust by this entry as it was by
+  rose-r7's own audit; not re-run by this records session.
+
+### CI state (`main`, at write time)
+
+`gh run list -R itchyshin/hsquared --branch main -L 2`: R-CMD-check on the PR #229
+merge commit (`c4dc5926`) — **SUCCESS**; pkgdown on the prior merge commit — SUCCESS.
+
+### Constraints held
+
+`DESCRIPTION` stays `Version: 0.9.0` — no bump. `NEWS.md` gained one bullet under the
+existing `# hsquared (development version)` header — no new header. No row of
+`docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or any
+other status ledger changed cell value; `public_covered_count` stays **7**. No
+`DESCRIPTION` change, no Julia edit.
+
+## 2026-09-15 — fit_diagnostics() gains search_boundary / search_boundary_condition for non-Gaussian fits (#230 / PR #232) [R]
+
+Records-only entry for PR #232 (merged `e28ba19c`, two commits `fba0d8e1` +
+`8d9b2a4`), closing #230: a follow-on from rose-r7's audit of PR #229 (optional
+item O-1), which found that `fit$result$boundary` (surfaced by #229) had no
+`fit_diagnostics()` row, while `fit_diagnostics()` already emits an unrelated
+`at_boundary`/`at_boundary_condition` pair derived from fitted variance-component
+estimates, not the optimizer's search state.
+
+### What changed
+
+- `R/extractors.R`: `fit_diagnostics.hsquared_fit()` gains two new rows,
+  `search_boundary` (`hs_fit_search_boundary_flag()`, line 1745) and
+  `search_boundary_condition` (`hs_fit_search_boundary_condition_label()`, line
+  1759), gated on `object$result$boundary` being a present, non-`NA`, length-1
+  logical — true only for the non-Gaussian bridge route. Both names are added to
+  the `already_reported` vector (line 1610) so a `result$diagnostics$search_boundary`
+  key cannot double up into `extras`. A `NULL` gate (the pre-existing
+  `rows <- rows[!vapply(rows, is.null, ...)]` filter) means a Gaussian
+  `engine = "fit"` fit gains **no** row at all, not even `NA` — asserted by a
+  dedicated test, not inferred from the code alone.
+- Roxygen for `fit_diagnostics()` (`R/extractors.R`) states the `at_boundary` vs
+  `search_boundary` distinction plainly: `at_boundary` reads fitted **estimates**
+  (a variance share at/near zero or an inadmissible negative value); `search_boundary`
+  reads the non-Gaussian bridge's **optimizer** state (whether the single-variance
+  Brent search stopped on the rail of its `log(initial$sigma_a2) +/- 6` bracket, or
+  the two-start gap fence fired under `restart_check = TRUE`). The condition string
+  itself now names both mechanisms, not just the bracket rail — and the identical
+  wording was mirrored into `hs_abort_boundary_refused()`'s message in
+  `R/julia-bridge.R` (the boundary-refusal error a caller actually sees), so the two
+  user-facing surfaces describing the same field no longer disagree.
+- `R/hs_control.R` / `man/hs_control.Rd`: the `boundary` paragraph no longer says
+  "not yet a `fit_diagnostics()` row (hsquared#230)"; it now points at the
+  `search_boundary`/`search_boundary_condition` rows.
+- `NEWS.md`: one bullet under the existing development-version header, corrected
+  (Rose O-2) to say the condition row reads `"interior"` when `FALSE`, not only that
+  it "explains the bracket rail when `TRUE`".
+- Tests: `tests/testthat/test-fit-object.R` — a hand-built non-Gaussian-shaped fit
+  with `boundary = TRUE`/`FALSE` (the `TRUE` branch is only reachable this way; the
+  public bridge refuses a `boundary = TRUE` fit before an `hsquared_fit` object
+  exists) and a hand-built Gaussian fit asserting no `search_boundary`/
+  `search_boundary_condition` row at all. `tests/testthat/test-nongaussian-three-field-v09.R`
+  — a live fit via the `ng225_pedigree()`/`hs_sim_genedrop_bv()` fixture asserts
+  `fit_diagnostics()$search_boundary == "FALSE"`. Both files' `"interior"` assertions
+  were tightened (Rose O-3) from `is.na(x) || identical(x, "interior")` to
+  `expect_equal(x, "interior")`, removing an `NA` escape hatch the roxygen says
+  cannot occur.
+- `man/fit_diagnostics.Rd`, `man/hs_control.Rd` regenerated via `devtools::document()`.
+
+### Rose audit (rose-r8.md)
+
+**VERDICT: APPROVE** (merge when green). Confirmed by reading code at exact lines,
+not by running the suite: the Gaussian no-row gate (§1), value-type parity with
+`at_boundary` via the shared `hs_diagnostic_value()` stringifier (§2),
+`already_reported` suppression (§3), the exactness of the `log(initial$sigma_a2)
++/- 6` bracket for the three engine families the R bridge admits — poisson,
+bernoulli, binomial, all single-variance Brent in `HSquared.jl` (§4), and docs/man/
+NEWS accuracy (§5). **`man/` was proven regenerated, not hand-edited**: Rose copied
+`DESCRIPTION`/`NAMESPACE`/`R/`/`man/` to a scratch directory, ran
+`roxygen2::roxygenise(roclets = "rd")`, and got all **49** `.Rd` files back
+byte-identical to the PR's tree (`man/fit_diagnostics.Rd` and `man/hs_control.Rd`
+included), with `RoxygenNote` unchanged at `7.3.2`. Three optional items, all
+applied on this branch's touch-up commit `8d9b2a4` before merge: **O-1** (condition
+text and roxygen name the `restart_check` two-start fence, not only the bracket
+rail — mirrored into `hs_abort_boundary_refused()` too), **O-2** (NEWS states the
+`"interior"` `FALSE` reading), **O-3** (both `"interior"` assertions tightened,
+no `NA` escape hatch). Rose's own NOT-COVERED: no suite was run in the audit;
+`search_boundary = TRUE` on a genuine engine fit is untested and untestable through
+the public API by design (the bridge refuses such a fit before it can be returned).
+
+### Twin context
+
+`HSquared.jl` PR #348 (`fix: :auto multi_effect path forwards initial/iterations;
+boundary refusal names the real lever (#343, #347)`) merged the same day
+(2026-09-15T23:12:29Z), on the Julia side of the same boundary/initial thread. Open
+on the Julia twin, not this repo's to close: **HSquared.jl#344** (`laplace_reml_interval`
+does not consume `NonGaussianFit.boundary`), **HSquared.jl#345** (R bridge consumes
+only `converged`, not `boundary` — pre-existing/stale relative to #229's
+`hs_ng09_boundary()`, not re-litigated here), **HSquared.jl#340**
+(`fit_multivariate_reml` optimizer parameter count does not remove FA/low-rank
+rotational indeterminacy — unrelated thread).
+
+### Checks (this worktree, branch `claude/h2-search-boundary-records` from
+`origin/main` `e28ba19c`)
+
+- `Rscript -e 'devtools::document()'` — clean; `git status --porcelain` after —
+  **empty** (no drift between the committed `man/`/`NAMESPACE` and a fresh
+  regeneration on this branch head).
+- `Rscript -e 'r <- devtools::check(".", document = FALSE, quiet = TRUE, error_on =
+  "never"); cat("errors=", length(r$errors), " warnings=", length(r$warnings), "
+  notes=", length(r$notes), "\n")'` (`OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`,
+  run via the harness's own background facility, no bare `&`, no sleep chain) —
+  **errors= 0  warnings= 0  notes= 0**. (First pass returned 1 NOTE, "hidden files
+  and directories: `.check_log.txt`" — a stray, untracked, zero-byte artifact from
+  this session's own earlier aborted background attempt, not a PR defect; removed
+  and the check re-run clean. See after-task §9 for the full account.)
+- Live filtered run (`HSQUARED_JULIA_TESTS=true HSQUARED_JULIA_PROJECT=<local
+  HSquared.jl checkout, `origin/main` `a0a0059a`> NOT_CRAN=true
+  OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4 Rscript -e 'devtools::test(filter =
+  "fit-object|nongaussian-three-field-v09", reporter = "summary")'`) — both files
+  fully green, "Your tests deserve a gold
+  medal"; a second run with `reporter = "silent"` tallied against the returned
+  results object: **FAIL= 0  PASS= 263** (this session's own measurement, matches
+  the number carried forward from PR #232's own reported post-touch-up filtered
+  rerun).
+- FULL LIVE SUITE (orchestrator-reported, PR #232 head before the O-1..O-3
+  touch-up commit): `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3669`. Not re-run by this
+  records session; cited as the orchestrator's own measurement, as the 2026-09-15
+  non-Gaussian-boundary-initial entry above cited the equivalent number for PR #229.
+
+### CI state (`main`, at write time)
+
+`gh run list -R itchyshin/hsquared --branch main -L 4`: R-CMD-check on the PR #232
+merge commit (`e28ba19c`) — **SUCCESS** (6m12s); pkgdown on the PR #232 merge —
+SUCCESS; R-CMD-check and pkgdown on the prior (#229 records) merge commit — both
+SUCCESS.
+
+### Constraints held
+
+`DESCRIPTION` stays `Version: 0.9.0` — no bump. `NEWS.md` gained one bullet under
+the existing `# hsquared (development version)` header — no new header. No row of
+`docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or
+any other status ledger changed cell value; `public_covered_count` stays **7**. No
+Julia edit from this repo.
