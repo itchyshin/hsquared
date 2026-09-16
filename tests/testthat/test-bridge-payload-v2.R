@@ -271,3 +271,47 @@ test_that("payload-v2 animal + maternal_genetic: two pedigree blocks", {
 
   expect_equal(payload$payload_version, 2L)
 })
+
+test_that("payload-v2 preserves the frozen bridge schema", {
+  ped <- make_ped()
+  dat <- make_dat_single()
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ sex + animal(1 | id, pedigree = ped),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+
+  # These names are the R-to-Julia contract, not an incidental list shape.
+  # Keep this Julia-free guard close to the emitter so a new public route
+  # cannot silently bypass the declared payload schema.
+  expect_setequal(
+    names(payload),
+    c(
+      "payload_version", "y", "Y", "X", "Z", "Z2", "effect2",
+      "random_effects", "random_regression", "Ainv", "group_of",
+      "Gamma", "gamma_labels", "relationship_source", "method", "family",
+      "n_trials", "ids", "pedigree", "metadata"
+    )
+  )
+  expect_equal(payload$payload_version, 2L)
+  expect_setequal(
+    names(payload$metadata),
+    c(
+      "response", "response_type", "trait_names", "random_regression",
+      "fixed_colnames", "animal_id_column", "observed_ids",
+      "observed_id_index", "relationship", "gamma_source", "fixed_terms",
+      "contrasts", "ainv_status", "ainv_target", "julia_spec_target",
+      "julia_fit_target"
+    )
+  )
+  expect_setequal(
+    names(payload$random_effects[[1L]]),
+    c("name", "type", "Z", "relmat_inverse", "relmat_status", "pedigree", "ids")
+  )
+  expect_equal(payload$random_effects[[1L]]$type, "pedigree")
+  expect_equal(payload$random_effects[[1L]]$relmat_status, "build_in_julia")
+  expect_match(payload$metadata$julia_spec_target, "animal_model_spec", fixed = TRUE)
+  expect_match(payload$metadata$julia_fit_target, "fit_animal_model", fixed = TRUE)
+})

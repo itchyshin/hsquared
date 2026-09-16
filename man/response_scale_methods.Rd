@@ -25,7 +25,7 @@ univariate \code{hsquared_fit} objects.
 \description{
 \code{predict()}, \code{fitted()}, and \code{residuals()} are part of the planned v0.1
 fitted-object contract for univariate \code{hsquared_fit} objects. They are
-univariate-only: the opt-in multivariate target (\code{target = "multivariate"})
+univariate-only: the multivariate model (a \code{cbind()} response)
 fits multiple traits jointly and is intentionally out of v0.1 response-scale
 scope, so these methods stop with a scope message pointing to
 \code{breeding_values()}, \code{genetic_covariance()}, and \code{residual_covariance()}.

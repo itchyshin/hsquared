@@ -20,11 +20,52 @@ knitr::opts_chunk$set(
 )
 ```
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in multivariate.</strong>
+Rotation-invariant G and r_g only — loadings are never shown. No interval ribbons on cells unless the payload carries them, and today you should treat this as a point display.</p>
+
+```{r g0-rg-teaching, echo = FALSE, results = "asis", eval = TRUE}
+cat(sprintf(
+  '<p><img src="../reference/figures/g0-rg-teaching.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Teaching panel of an illustrative two-trait genetic covariance matrix G0 beside its genetic-correlation triangle r_g. Mass and length show a positive correlation; values are illustrative. Experimental opt-in multivariate; rotation-invariant; loadings not shown; point display only."
+))
+```
+
+<p class="hs-caption"><em>G0 is trait-scale genetic covariance; r_g is the standardized triangle you usually read first.
+Illustrative numbers — not a published anchor. Prefer
+<code>autoplot(fit, "g_matrix")</code> on a real fit (same product figure).</em></p>
+
+```{r g-matrix-autoplot-setup, include = FALSE, eval = TRUE}
+library(hsquared)
+g <- matrix(
+  c(1, 0.42, -0.18, 0.42, 1, 0.27, -0.18, 0.27, 1), 3, 3,
+  dimnames = list(c("mass", "length", "horn"), c("mass", "length", "horn"))
+)
+sds <- c(1.1, 0.9, 0.6)
+g_cov <- outer(sds, sds) * g
+fit_mv_plot <- structure(
+  list(result = list(
+    genetic_correlation = g,
+    genetic_covariance = g_cov,
+    heritability = data.frame(
+      term = c("mass", "length", "horn"),
+      estimate = c(0.31, 0.24, 0.06)
+    )
+  )),
+  class = "hsquared_fit"
+)
+```
+
+```{r g-matrix-autoplot, eval = TRUE, fig.width = 5.2, fig.height = 4.4, fig.cap = "Illustrative data. Experimental / opt-in multivariate genetic-correlation triangle from autoplot(); rotation-invariant; loadings not shown; low-h2 cells flagged imprecise.", fig.alt = "Correlation heatmap of three traits with numeric cell labels. Off-diagonal cells involving the low-heritability horn trait are marked imprecise. Experimental opt-in multivariate; not a production multi-trait claim."}
+autoplot(fit_mv_plot, "g_matrix")
+```
+
 This article is for the applied moment after a multivariate animal model has
 fit: you want to know what the genetic covariance matrix says, what the
 residual matrix says, and where the current evidence boundary is.
 
-The current `hsquared` multivariate path is experimental and opt-in. It
+The current `hsquared` multivariate path fits on the default call — a `cbind()`
+Gaussian response with an `animal()` term needs no `engine` or `target`
+argument — but it remains experimental. It
 estimates an unstructured additive-genetic covariance matrix `G` and residual
 covariance matrix `R` for Gaussian animal models. It is not yet production
 multi-trait software, and it does not yet provide standard errors, confidence
@@ -48,16 +89,27 @@ trait-by-trait additive-genetic covariance matrix. `R` is the trait-by-trait
 residual covariance matrix. The two matrices are on the scale of the response
 traits after the fixed effects in the formula.
 
+```{r fixture}
+ped <- data.frame(
+  id   = c("s1", "s2", "d1", "d2", "o1", "o2", "o3", "o4"),
+  sire = c(NA, NA, NA, NA, "s1", "s1", "s2", "s2"),
+  dam  = c(NA, NA, NA, NA, "d1", "d2", "d1", "d2")
+)
+dat <- data.frame(
+  id     = ped$id,
+  sex    = c("m", "m", "f", "f", "m", "f", "m", "f"),
+  age    = c(4, 5, 4, 5, 1, 1, 1, 1),
+  weight = c(72, 75, 65, 68, 31, 33, 35, 30),
+  length = c(110, 112, 105, 107, 72, 76, 78, 70)
+)
+```
+
 ```{r}
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,
   family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "multivariate")
-  )
+  REML = TRUE
 )
 ```
 
@@ -167,7 +219,10 @@ geometry as the stable interpretation layer.
 
 ## Current evidence boundary
 
-The current multivariate surface is `partial`.
+The current multivariate surface is **covered at validation scale** for t=2
+unstructured G0/R0 (experimental label retained). k≥3 and
+`genetic_structure = "diagonal"` stay experimental. G-geometry extractors remain
+descriptive (no standard errors).
 
 Covered in the R lane:
 
@@ -185,15 +240,10 @@ Covered in the R lane:
 
 Still planned:
 
-- acceptance or broadening of the current `t >= 2` recovery gate;
-- a second independent same-estimand comparator beyond `sommer` for
-  unstructured `G` and full `R`;
 - *validated*, coverage-calibrated standard errors and confidence intervals for
   G/R entries, correlations, and heritabilities (experimental, asymptotic SEs are
   already available via `covariance_standard_errors()` for an unstructured fit —
-  `V4-MV-REML`, partial: the strict per-seed recovery gate is still a non-pass
-  (7/12 seeds), though the 12-seed bias/MCSE study (twin `HSquared.jl#78`/`#79`)
-  shows no detectable bias; unstructured-only, not coverage-calibrated);
+  unstructured-only, not coverage-calibrated);
 - production sparse multivariate fitting;
 - `cov = diag()`, `cov = lowrank(K)`, and `cov = fa(K)` R grammar;
 - a general `P_matrix()` extractor with a model-specific estimand.

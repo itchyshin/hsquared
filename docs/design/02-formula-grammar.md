@@ -111,6 +111,13 @@ Definitions:
 - `lowrank(K)` is `Lambda Lambda'`.
 - `fa(K)` is `Lambda Lambda' + Psi`.
 
+The long-format `cov =` grammar is not parsed. `cov = us()`, `cov = diag()`,
+and `cov = lowrank(K)` stay planned. `cov = fa(K)` is a **reserved stub**:
+HSquared.jl draft #292 records an experimental engine FA recovery (S4
+`d4-k1` 8/10 PASS), but the R formula does not fit it and
+`genetic_structure = "factor_analytic"` still errors on the R bridge.
+Engine-covered ≠ R-public; `public_covered_count` stays 7.
+
 Avoid naming the reduced-rank form `rr()` because that often suggests random
 regression in quantitative genetics.
 

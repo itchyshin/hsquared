@@ -645,7 +645,7 @@ test_that("single_step construction is invariant to marker row order [live]", {
   # THE alignment guard (docs/design/25 §6.3): shuffling the marker rows (same
   # underlying genotypes) must give an identical fit -- a missing/wrong reorder
   # would place G at the wrong H^-1 rows and change the fit.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live single-step test."
@@ -683,7 +683,7 @@ test_that("single_step construction is invariant to marker row order [live]", {
 })
 
 test_that("metafounder single-step Gamma = 0 reduces to ordinary construction [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live metafounder single-step test."
@@ -750,7 +750,7 @@ test_that("metafounder single-step Gamma = 0 reduces to ordinary construction [l
 })
 
 test_that("metafounder single-step nonzero Gamma changes predictions [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live metafounder single-step test."
@@ -836,7 +836,7 @@ test_that("metafounder single-step nonzero Gamma changes predictions [live]", {
 })
 
 test_that("single_step construction labels + covers all pedigree animals [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live single-step test."
@@ -874,7 +874,7 @@ test_that("single_step construction uses the genomic info (differs from the pedi
   # Independent correctness anchor: the single-step GEBVs must TRACK the pedigree
   # animal-model GEBVs (same signal) but DIFFER from them (the genomic info is
   # actually used) -- not a self-referential check.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live single-step test."
@@ -918,7 +918,7 @@ test_that("single_step construction uses the genomic info (differs from the pedi
 test_that("single_step construction ridge fits a rank-deficient G [live]", {
   # singular-G path (docs/design/25 §6.4): more genotyped animals than markers ->
   # raw G is rank-deficient; a positive ridge makes H^-1 PD and the fit succeed.
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live single-step test."
@@ -948,7 +948,7 @@ test_that("single_step construction ridge fits a rank-deficient G [live]", {
 })
 
 test_that("the single_step(1 | id) bundle shorthand fits like the explicit call [live]", {
-  testthat::skip_on_cran()
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live single-step test."

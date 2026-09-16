@@ -3,6 +3,7 @@
 ^\.codex$
 ^\.claude$
 ^\.mission-control$
+^\.unlazy$
 ^CLAUDE\.md$
 ^\.gitignore$
 ^\.Rproj\.user$
@@ -17,3 +18,11 @@
 ^pkgdown$
 ^sim$
 ^vignettes/articles$
+
+^\.git$
+^LOOP$
+^cran-comments\.md$
+^\.cursor$
+^\.mcp\.json$
+^\.ignore$
+^graft$

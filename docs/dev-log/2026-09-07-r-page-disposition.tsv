@@ -1,0 +1,79 @@
+source_path	title	reader_stage	disposition	review_note
+README.md	hsquared home	Start here	corrected	Public landing route; concise experimental caveat plus the ordered five-stage journey.
+generated:index.html	hsquared home	Start here	retain	Rendered README route; intentionally public and audited through its source.
+generated:404.html	Not found	Utility	retain	Intentional pkgdown fallback route; no reader claim.
+generated:authors.html	Authors	About	retain	Intentional pkgdown metadata route.
+generated:LICENSE-text.html	License	About	retain	Intentional pkgdown legal route.
+generated:articles/index.html	Articles	Browse	corrected	Intentional pkgdown article index, reorganized through _pkgdown.yml by reader stage.
+generated:reference/index.html	Reference	Reference	corrected	Intentional pkgdown reference index, regrouped by reader stage.
+generated:news/index.html	Changelog	Progression	retain	Intentional pkgdown history route; separate from evidence progression.
+vignettes/hsquared.Rmd	Getting started with hsquared	Get started	corrected	Canonical validation-to-fit entry; now links through the five-stage journey.
+vignettes/articles/progression-evidence.Rmd	Progression & evidence	Progression	new	Dated 0.1–0.8 evidence milestones with verified v0.1.0 GitHub release, later 0.5 policy, and historical counts explicitly separated from current status.
+vignettes/articles/current-limits.Rmd	Can I fit and report this?	Choose a model	corrected	Current reporting permission; current 0.8 versus historical 0.7 wording clarified.
+vignettes/articles/fitting-models.Rmd	Fitting quantitative-genetic models	Fit	corrected	Default and opt-in workflows retained; now directs to diagnose and report stages.
+vignettes/articles/gryphon-worked-example.Rmd	A worked animal-model analysis (gryphon)	Fit	corrected	Concrete default workflow retained; diagnosis and reporting destinations added.
+vignettes/articles/visualizing-models.Rmd	Visualizing an animal model	Diagnose	corrected	Illustrative plots retained; diagnostic-before-reporting role made explicit.
+vignettes/articles/model-status.Rmd	Model status	Diagnose	corrected	Status remains diagnostic; default Gaussian scope is now distinguished from opt-in non-Gaussian routes.
+vignettes/articles/validation-evidence.Rmd	Validation evidence	Report	retain	Route-specific recovery and comparator evidence remains the report-depth source.
+vignettes/articles/benchmark-comparators.Rmd	Benchmark: hsquared vs sommer and pedigreemm	Report	retain	Bounded external evidence remains a report destination rather than first-step navigation.
+vignettes/articles/two-effect-comparator.Rmd	Two-effect comparator	Report	retain	Named comparator evidence remains route-specific.
+vignettes/articles/multi-effect-comparator.Rmd	Multi-effect comparator	Report	corrected	Historical count 6 is now labelled as historical rather than current.
+vignettes/articles/rr-comparator.Rmd	Random-regression comparator	Report	retain	Named comparator evidence remains route-specific.
+vignettes/articles/function-map-cheatsheet.Rmd	Function map and cheat sheet	Reference	retain	Compact verb map remains post-journey reference.
+vignettes/articles/multivariate.Rmd	Multivariate Gaussian animal models	Choose a model	corrected	Historical promotion count 6 is labelled; current R-public count 7 stated.
+vignettes/articles/genomic-prediction.Rmd	Genomic prediction	Choose a model	corrected	Current 0.8/count 7 and covered-GREML versus partial-single-step distinction repaired.
+vignettes/articles/g-matrix-interpretation.Rmd	Reading G matrices	Report	retain	Interpretation and scope belong after a fitted result.
+vignettes/articles/twin-boundary.Rmd	Twin boundary	Report	retain	R-public versus engine evidence boundary remains reporting-critical.
+vignettes/articles/formula-grammar.Rmd	Formula grammar roadmap	Developer	retain	Technical grammar and refusals remain developer depth.
+vignettes/articles/inheritance-systems.Rmd	Inheritance systems roadmap	Developer	retain	Future systems remain explicitly outside default reporting.
+vignettes/articles/genomics-gpu-roadmap.Rmd	Genomics QTL and CPU/GPU roadmap	Developer	retain	Roadmap remains developer-only.
+vignettes/articles/qtl-gwas-eqtl-status.Rmd	QTL GWAS and eQTL status	Developer	retain	Experimental and planned status remains developer depth.
+man/animal.Rd	Animal-model formula marker	Reference	retain	Formula marker reference.
+man/backend_info.Rd	Inspect planned compute backends	Developer	retain	Planned-backend inspection is not an applied entry point.
+man/breeding_values.Rd	Extract breeding values	Report	retain	Post-fit reporting extractor.
+man/common_env_effects.Rd	Extract common-environment effects	Report	retain	Route-specific post-fit extractor.
+man/common_env_proportion.Rd	Extract common-environment variance ratio	Report	retain	Route-specific post-fit ratio.
+man/common_env_proportion_interval.Rd	Experimental common-environment interval	Report	retain	Explicitly bounded uncertainty reference.
+man/covariance_standard_errors.Rd	Experimental covariance standard errors	Report	retain	Experimental uncertainty reference.
+man/covariance_structure_lrt.Rd	Covariance-structure likelihood-ratio test	Diagnose	retain	Post-fit diagnostic.
+man/data_status.Rd	Inspect data-container status	Get started	retain	Setup validation reference.
+man/direct_maternal_extractors.Rd	Extract direct and maternal estimates	Report	retain	Named post-fit route extractor.
+man/factor_g_extractors.Rd	Extract factor-analytic G results	Report	retain	Specialist reference; not a permission for planned R FA fitting.
+man/fit_diagnostics.Rd	Inspect fitted-model diagnostics	Diagnose	retain	Required pre-report diagnostic.
+man/fixef.Rd	Extract fixed effects	Report	retain	Post-fit reporting extractor.
+man/formula_status.Rd	Inspect formula grammar status	Choose a model	retain	Pre-fit route-choice reference.
+man/g_matrix_geometry.Rd	Extract G-matrix geometry	Report	retain	Post-fit interpretation reference.
+man/gamma_matrix.Rd	Extract supplied metafounder Gamma matrix	Reference	retain	Low-level provenance reference.
+man/genomic_markers.Rd	Genomic and marker formula markers	Choose a model	retain	Pre-fit genomic route reference.
+man/gwas.Rd	Post-fit GWAS	Diagnose	retain	Exploratory diagnostic; not a genome-wide reporting permission.
+man/heritability.Rd	Extract heritability estimates	Report	retain	Core post-fit extractor.
+man/heritability_interval.Rd	Experimental heritability interval	Report	retain	Explicitly bounded uncertainty reference.
+man/hs_control.Rd	Create hsquared control options	Fit	retain	Fitting-control reference.
+man/hs_data.Rd	Create an hsquared data container	Get started	retain	Primary setup constructor.
+man/hs_recovery_forest.Rd	Recovery-study forest plot	Report	retain	Evidence visualization, not default fitting.
+man/hsquared-autoplot.Rd	hsquared ggplot2 visualizations	Diagnose	retain	Diagnostic plot reference.
+man/hsquared-package.Rd	hsquared package overview	Get started	retain	Generated public package entry.
+man/hsquared.Rd	Fit a quantitative-genetic model	Fit	retain	Core fitting function reference.
+man/inference_blocks.Rd	Extract inference blocks	Report	retain	Post-fit inference reference.
+man/marker_extractors.Rd	Extract marker and QTL results	Report	retain	Specialist post-fit reference.
+man/maternal_effects.Rd	Extract maternal genetic effects	Report	retain	Post-fit extractor.
+man/maternal_proportion.Rd	Extract maternal variance ratio	Report	retain	Post-fit ratio extractor.
+man/metafounder_effects.Rd	Reserved metafounder effect extractor	Reference	retain	Reserved API, not reporting permission.
+man/metafounder_groups.Rd	Extract supplied metafounder groups	Reference	retain	Supplied metadata reference.
+man/model_spec.Rd	Inspect parsed model specification	Choose a model	retain	Pre-fit contract inspection.
+man/multivariate_extractors.Rd	Extract multivariate results	Report	retain	Specialist post-fit reference.
+man/permanent_effects.Rd	Extract permanent-environment effects	Report	retain	Post-fit extractor.
+man/plot.hsquared_fit.Rd	Diagnostic plots for a fitted model	Diagnose	retain	Post-fit diagnostic reference.
+man/prediction_error_variance.Rd	Extract prediction error variances	Report	retain	Post-fit uncertainty interpretation.
+man/qg_effect_markers.Rd	Quantitative-genetic effect markers	Choose a model	retain	Pre-fit formula markers.
+man/random_regression_extractors.Rd	Extract random-regression results	Report	retain	Specialist post-fit reference.
+man/ranef.Rd	Extract random effects	Report	retain	Post-fit extractor.
+man/reexports.Rd	Reexported objects	Reference	retain	Generated import reference.
+man/reliability.Rd	Extract reliability and accuracy	Report	retain	Post-fit reporting metric.
+man/repeatability.Rd	Extract repeatability estimates	Report	retain	Named post-fit route extractor.
+man/repeatability_interval.Rd	Experimental repeatability interval	Report	retain	Explicitly bounded uncertainty reference.
+man/response_scale_methods.Rd	Response-scale methods	Report	retain	Post-fit interpretation reference.
+man/theme_hsquared.Rd	hsquared plotting theme	Reference	retain	Presentation helper.
+man/validation_status.Rd	Inspect validation evidence status	Diagnose	retain	Developer diagnostic distinct from user reporting permissions.
+man/variance_component_standard_errors.Rd	Experimental variance-component standard errors	Report	retain	Explicitly bounded uncertainty reference.
+man/variance_components.Rd	Extract variance components	Report	retain	Core post-fit extractor.

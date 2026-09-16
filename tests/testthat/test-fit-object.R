@@ -301,9 +301,12 @@ test_that("reserved factor-analytic extractors fail with rotation-aware scope", 
     "rotation controls are planned, not implemented",
     fixed = TRUE
   )
+  # specific_variance() (Psi) is rotation-INVARIANT and identified, unlike
+  # the loading-based extractors above; its message says so and points at
+  # the bridge-activation gate instead of rotation-nonuniqueness (#218).
   expect_error(
     specific_variance(fit),
-    "planned, not implemented.*rotation-nonunique",
+    "planned, not implemented.*rotation-INVARIANT",
     perl = TRUE
   )
   expect_error(
@@ -336,13 +339,23 @@ test_that("unsupported inference helpers fail with explicit scope", {
 
   expect_error(
     stats::confint(fit),
-    "confidence intervals.*planned, not implemented",
-    perl = TRUE
+    "Validated confidence intervals for `hsquared_fit` quantities are not implemented",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::confint(fit),
+    "heritability_interval()",
+    fixed = TRUE
   )
   expect_error(
     stats::vcov(fit),
-    "standard-error surface.*planned, not implemented",
-    perl = TRUE
+    "variance-covariance matrix is not implemented",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::vcov(fit),
+    "heritability_interval()",
+    fixed = TRUE
   )
   expect_error(
     stats::profile(fit),
@@ -381,6 +394,11 @@ test_that("hsquared_fit extractors fail loudly when a result field is absent", {
   expect_error(
     qtl_table(fit),
     "does not contain QTL table",
+    fixed = TRUE
+  )
+  expect_error(
+    qtl_table(fit),
+    "gwas(fit, markers)",
     fixed = TRUE
   )
   expect_error(
@@ -492,6 +510,72 @@ test_that("fit_diagnostics flags a variance-component boundary solution", {
   )
 })
 
+# hsquared#230: `search_boundary` (the non-Gaussian bridge's optimizer-bracket
+# flag) is a distinct concept from `at_boundary` (an estimated variance share
+# at/near zero). It is keyed off `result$boundary`, which only the non-Gaussian
+# bridge route populates -- a Gaussian `engine = "fit"` result never carries a
+# `boundary` field, so it must get no `search_boundary` row at all (not even
+# NA), unlike `at_boundary`, which IS derived from Gaussian variance estimates.
+test_that("fit_diagnostics reports search_boundary for a non-Gaussian-shaped result", {
+  at_rail <- hsquared:::hs_new_fit(
+    spec = list(method = "laplace", family = list(family = "binomial")),
+    payload = list(y = 1:3),
+    result = list(
+      converged = TRUE,
+      boundary = TRUE
+    )
+  )
+  diag <- fit_diagnostics(at_rail)
+  expect_equal(diag$value[diag$metric == "search_boundary"], "TRUE")
+  expect_match(
+    diag$value[diag$metric == "search_boundary_condition"],
+    "log(initial$sigma_a2)",
+    fixed = TRUE
+  )
+  expect_match(
+    diag$value[diag$metric == "search_boundary_condition"],
+    "HSquared.jl#327",
+    fixed = TRUE
+  )
+
+  interior_ng <- hsquared:::hs_new_fit(
+    spec = list(method = "laplace", family = list(family = "binomial")),
+    payload = list(y = 1:3),
+    result = list(
+      converged = TRUE,
+      boundary = FALSE
+    )
+  )
+  diag_interior <- fit_diagnostics(interior_ng)
+  expect_equal(
+    diag_interior$value[diag_interior$metric == "search_boundary"],
+    "FALSE"
+  )
+  condition_value <- diag_interior$value[
+    diag_interior$metric == "search_boundary_condition"
+  ]
+  expect_equal(length(condition_value), 1L)
+  expect_equal(condition_value, "interior")
+})
+
+test_that("fit_diagnostics gains no search_boundary row for a Gaussian fit without `boundary`", {
+  gaussian_fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.5, 0.5)
+      ),
+      converged = TRUE
+    ),
+    engine = "fit"
+  )
+  diag <- fit_diagnostics(gaussian_fit)
+  expect_false("search_boundary" %in% diag$metric)
+  expect_false("search_boundary_condition" %in% diag$metric)
+})
+
 test_that("accuracy requires reliability values on [0, 1]", {
   fit <- hsquared:::hs_new_fit(
     spec = list(method = "REML", family = list(family = "gaussian")),
@@ -547,4 +631,185 @@ test_that("hsquared_fit residuals check fitted length", {
     "same length",
     fixed = TRUE
   )
+})
+
+test_that("hs_fit_result names the fit target and does not say planned v0.1 contract", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "two_effect"
+    ),
+    payload = list(y = 1:2),
+    result = list(converged = TRUE)
+  )
+  msg <- conditionMessage(
+    tryCatch(variance_components(fit), error = function(e) e)
+  )
+  expect_match(msg, 'target = "two_effect"', fixed = TRUE)
+  expect_match(msg, "does not contain variance components", fixed = TRUE)
+  expect_false(grepl("planned v0.1 contract", msg, fixed = TRUE))
+})
+
+test_that("confint and vcov name live experimental interval extractors when present", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:3),
+    result = list(
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      heritability_interval = data.frame(
+        estimate = 0.4,
+        lower = 0.1,
+        upper = 0.7,
+        level = 0.95,
+        method = "delta"
+      ),
+      variance_component_se = data.frame(component = "animal", se = 0.1),
+      converged = TRUE
+    )
+  )
+  expect_error(
+    stats::confint(fit),
+    "Use the experimental `heritability_interval()`",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::confint(fit),
+    "variance_component_standard_errors()",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::confint(fit),
+    "not coverage-calibrated",
+    fixed = TRUE
+  )
+  expect_error(
+    stats::vcov(fit),
+    "heritability_interval()",
+    fixed = TRUE
+  )
+  expect_false(grepl(
+    "planned v0.1 contract",
+    conditionMessage(tryCatch(stats::confint(fit), error = function(e) e)),
+    fixed = TRUE
+  ))
+})
+
+test_that("confint does not offer heritability_interval() on genomic fits", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "genomic"
+    ),
+    payload = list(y = 1:3),
+    result = list(converged = TRUE)
+  )
+  msg <- conditionMessage(
+    tryCatch(stats::confint(fit), error = function(e) e)
+  )
+  expect_match(msg, "not available for genomic", fixed = TRUE)
+  expect_false(grepl(
+    "Use the experimental `heritability_interval()`",
+    msg,
+    fixed = TRUE
+  ))
+})
+
+test_that("print.hsquared_fit shows target, formula, and heritability peek", {
+  fit <- hsquared:::hs_new_fit(
+    call = quote(hsquared(y ~ animal(1 | id, pedigree = ped), data = dat)),
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.4, 0.6)
+      ),
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      converged = TRUE
+    )
+  )
+  out <- paste(utils::capture.output(print(fit)), collapse = "\n")
+  expect_match(out, "target: ai_reml", fixed = TRUE)
+  expect_match(out, "formula: y ~ animal", fixed = TRUE)
+  expect_match(out, "heritability: animal=0.4", fixed = TRUE)
+})
+
+test_that("heritability() and print() warn when the fit did not converge", {
+  failed <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:4),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(1e-16, 1.2)
+      ),
+      heritability = data.frame(term = "animal", estimate = 9.48e-17),
+      diagnostics = list(
+        optimizer_status = "not_converged",
+        iterations = 27L
+      ),
+      converged = FALSE
+    )
+  )
+
+  expect_warning(
+    h2 <- heritability(failed),
+    "This `hsquared_fit` object did not converge. The heritability number is not an estimate; do not report it.",
+    fixed = TRUE
+  )
+  expect_warning(
+    heritability(failed),
+    "failed-fit artefact, not evidence that heritability is zero",
+    fixed = TRUE
+  )
+  expect_equal(h2$estimate, 9.48e-17)
+
+  expect_warning(
+    printed <- paste(utils::capture.output(print(failed)), collapse = "\n"),
+    "This `hsquared_fit` object did not converge. The heritability number is not an estimate; do not report it.",
+    fixed = TRUE
+  )
+  expect_match(printed, "converged: FALSE", fixed = TRUE)
+  expect_match(
+    printed,
+    "heritability: not reportable (fit did not converge)",
+    fixed = TRUE
+  )
+  expect_false(grepl("9.48", printed, fixed = TRUE))
+})
+
+test_that("heritability() and print() stay quiet on a converged interior fit", {
+  ok <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:4),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.4, 0.6)
+      ),
+      heritability = data.frame(term = "animal", estimate = 0.4),
+      diagnostics = list(optimizer_status = "converged"),
+      converged = TRUE
+    )
+  )
+  expect_silent(heritability(ok))
+  expect_silent(invisible(utils::capture.output(print(ok))))
 })

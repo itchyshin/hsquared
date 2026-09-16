@@ -23,15 +23,15 @@ them.
 \details{
 \code{covariance_standard_errors()} returns \strong{experimental} large-sample
 (delta-method) standard errors for the multivariate genetic/residual
-covariance and correlation matrices and per-trait \verb{h²}, for an opt-in
+covariance and correlation matrices and per-trait \code{h^2}, for an opt-in
 \strong{unstructured} multivariate fit, when the engine returned them.
 
-Heavy caveats (engine row \code{V4-MV-REML}, \code{partial}): the strict per-seed
+Heavy caveats (engine multivariate REML validation row, \code{partial}): the strict per-seed
 recovery gate is still a non-pass (7/12 unstructured seeds in the updated
 study), but a 12-seed bias/MCSE study (twin \code{HSquared.jl#78}) shows \strong{no
-detectable bias} — all six covariance parameters have \verb{|bias| ≤ 2·MCSE}
-(largest 0.84·MCSE), a low-power non-rejection consistent with an unbiased
-estimator (not a proof), with EBV accuracy ≈ 0.90 in both traits; a cold-start
+detectable bias} -- all six covariance parameters have \verb{|bias| <= 2*MCSE}
+(largest 0.84*MCSE), a low-power non-rejection consistent with an unbiased
+estimator (not a proof), with EBV accuracy ~ 0.90 in both traits; a cold-start
 replication (#79) reaches the same optimum on all 12 seeds, so it is not a
 warm-start artifact. The per-seed gate failures reflect sampling variance of
 the estimated \code{G} at this design, not a detected bias. These SEs remain
@@ -39,4 +39,13 @@ asymptotic, REML-only, \strong{unstructured-only} (the engine refuses structured
 factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
 flat/boundary optimum, not coverage-calibrated, with no external comparator,
 and not a validated capability.
+
+The returned \code{genetic_correlation} SE is on the correlation (\code{r}) scale. A
+naive symmetric interval built as \verb{estimate +/- 1.96 * se} on that scale
+can leave \verb{(-1, 1)} for strong correlations. The engine instead builds its own
+genetic-correlation interval on the \strong{Fisher-z scale}
+(\code{z = atanh(r)}, \code{se_z = se_r / (1 - r^2)}, endpoints
+\code{tanh(z -+ q * se_z)}), which always lands inside \verb{(-1, 1)}. That
+range-respecting endpoint is a separate property from calibration: the
+Fisher-z transform does not make these SEs coverage-calibrated (see above).
 }

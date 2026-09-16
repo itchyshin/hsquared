@@ -35,7 +35,7 @@ This mirrors the engine row \code{V3-TWOEFFECT-REML}: the interval is the asympt
 delta-method CI built from the two-effect REML observed information (the
 finite-difference Hessian of the two-effect REML log-likelihood at the
 optimum). It is \strong{asymptotic, delta-method, REML only, and NOT
-coverage-calibrated} — on small samples the REML surface is flat and the
+coverage-calibrated} -- on small samples the REML surface is flat and the
 interval is unreliable (the parametric bootstrap is the only finite-sample-
 aware path). No calibrated coverage is claimed.
 

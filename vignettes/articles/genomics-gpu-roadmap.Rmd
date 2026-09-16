@@ -7,6 +7,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit.</strong>
+This page is a roadmap. Production genomics, QTL/eQTL, GLLVM/omics, and CPU/GPU acceleration remain gated — it does not flip <code>public_covered_count</code>.</p>
+
 This page is a roadmap and status map. Some genomic building blocks now exist
 as opt-in experimental paths, while production genomics, QTL/eQTL, GLLVM/omics,
 and CPU/GPU acceleration remain gated roadmap work.
@@ -38,7 +41,7 @@ claims rather than slogans.
 
 ## Genomic syntax
 
-The basic genomic GREML effect above is the eventual default form. Today it
+The basic genomic GREML effect above remains an explicit route. Today it
 fits through an opt-in, experimental control (`engine = "julia"`,
 `target = "genomic"`; a raw `markers = M` matrix and a SNP-BLUP
 `target = "snp_blup"` path are also available) — see the "Fitting models"

@@ -1,54 +1,33 @@
 #' Fit a quantitative-genetic model
 #'
-#' `hsquared()` is the R entry point for heritability, breeding-value,
-#' G-matrix, and inheritance-structured mixed models. v0.1 fits the univariate
-#' Gaussian animal model `y ~ fixed + animal(1 | id, pedigree = ped)` by REML
-#' through the `HSquared.jl` engine. The default `control` fits when a local
-#' Julia and `HSquared.jl` are available and otherwise errors with install
-#' guidance; `hs_control(engine = "validate")` validates the contract without
-#' fitting, then returns the validated model spec invisibly. A narrow Gaussian
-#' REML `genomic(1 | id, markers = M)` or `genomic(1 | id, Ginv = Q)` model is
-#' available only through the explicit experimental Julia `target = "genomic"`.
-#' Marker construction uses sample allele frequencies, unweighted VanRaden
-#' method 1, and ridge `0.01`.
-#' `heritability()` labels its coefficient-scale result
-#' `genomic_variance_ratio = sigma_g2 / (sigma_g2 + sigma_e2)`: the genomic
-#' variance-component ratio on the declared relationship scale. It is not
-#' generally the fraction of average marginal phenotypic variance and is not
-#' pedigree-, founder-base-, population-, or universal narrow-sense
-#' heritability. Genomic ratio intervals and standard errors are
-#' unavailable. Repeatability, two-effect, marker-effect, multivariate, and
-#' non-Gaussian (`poisson`/`binomial`, Laplace or variational REML, no
-#' heritability) models are opt-in experimental paths; factor-analytic models
-#' remain planned. The non-Gaussian marginal is selected with
-#' `engine_control = list(target = "nongaussian", marginal = "laplace")` (default)
-#' or `"variational"` (the variational/ELBO marginal; aliases `"la"`/`"va"`).
+#' The default path fits a univariate Gaussian animal model by REML:
+#' `y ~ sex + age + animal(1 | id, pedigree = ped)`. Fitting needs a local
+#' Julia and HSquared.jl. Preview the same call with
+#' `control = hs_control(engine = "validate")`.
 #'
-#' @param formula A model formula. The first planned v0.1 syntax is
-#'   `y ~ fixed + animal(1 | id, pedigree = ped)`, with
-#'   `animal(1 | id)` also accepted when `data` is an [hs_data()] object with a
-#'   pedigree component.
-#' @param data A data frame containing model variables, or an [hs_data()]
-#'   object whose `phenotypes` component contains the model variables. When
-#'   `data` is an `hs_data` object, formula arguments such as
-#'   `pedigree = pedigree` can refer to named components in the bundle, and
-#'   `animal(1 | id)` uses the bundle pedigree by default.
-#' @param family A response family. The v0.1 parser accepts only
-#'   `gaussian()`.
-#' @param REML Logical; whether to use REML estimation. The v0.1 fit path
-#'   supports REML only (the default, `TRUE`); `REML = FALSE` (ML) is not yet
-#'   implemented and is rejected with an error.
+#' What you may report is listed on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
+#' -- not in [validation_status()]. Other routes live in [formula_status()]
+#' and on that limits page.
+#'
+#' @param formula A model formula. The default path is
+#'   `y ~ fixed + animal(1 | id, pedigree = ped)`. `animal(1 | id)` is also
+#'   accepted when `data` is an [hs_data()] object with a pedigree.
+#' @param data A data frame of model variables, or an [hs_data()] object
+#'   whose `phenotypes` component holds them. Formula arguments such as
+#'   `pedigree = pedigree` can name components of the bundle.
+#' @param family A response family. The default path accepts `gaussian()`.
+#'   Opt-in experimental paths accept `poisson()` and `binomial()`; see
+#'   [formula_status()].
+#' @param REML Logical; REML estimation. The default path supports REML only
+#'   (`TRUE`). `REML = FALSE` (ML) is rejected.
 #' @param control An object created by [hs_control()].
 #' @param ... Reserved for future arguments.
 #'
-#' @return A `"hsquared_fit"` object from the fitted v0.1 Gaussian animal model.
-#'   Explicit experimental genomic fits carry their relationship-scale
-#'   provenance; supplied `Ginv` construction remains unknown.
-#'   When the Julia engine is unavailable, an informative error. When
-#'   `engine = "validate"`, the validated model specification is returned
-#'   invisibly as a named list (after a confirming message), for programmatic
-#'   inspection — for example `spec$bridge$target` and `spec$response`. This is
-#'   the internal spec list, not the classed object that [model_spec()] builds.
+#' @return A `"hsquared_fit"` object from a successful default-path fit.
+#'   Missing Julia produces an install-guidance error. When
+#'   `engine = "validate"`, the validated model spec is returned invisibly
+#'   as a named list (not the classed object from [model_spec()]).
 #' @export
 hsquared <- function(
   formula,
@@ -64,6 +43,7 @@ hsquared <- function(
   if (missing(data)) {
     stop("`data` is required.", call. = FALSE)
   }
+  data_name <- hs_deparse_user_expr(substitute(data))
   if (!inherits(control, "hs_control")) {
     stop("`control` must be created by `hs_control()`.", call. = FALSE)
   }
@@ -77,6 +57,9 @@ hsquared <- function(
     hs_engine_control_value(control, "target", "fit_animal_model")
   } else {
     NA_character_
+  }
+  if (identical(julia_target, "nongaussian")) {
+    hs_validate_nongaussian_three_field_v09_dots(dots)
   }
   allow_families <- if (identical(julia_target, "nongaussian")) {
     c("gaussian", "poisson", "binomial")
@@ -100,13 +83,10 @@ hsquared <- function(
     # guarantees an animal-only, single-effect, random-intercept multivariate
     # response, so clauses (4)-(7) of the frozen dispatch key hold here.
     if (identical(spec$random$animal$design, "random_regression")) {
-      hs_abort_unsupported_syntax(
-        "The random-regression (reaction-norm) animal model is experimental ",
-        "and opt-in; the default `engine = \"fit\"` path fits the ",
-        "random-intercept Gaussian animal model only. Use `control = ",
-        "hs_control(engine = \"julia\", engine_control = list(target = ",
-        "\"random_regression\"))`.",
-        call. = FALSE
+      hs_abort_opt_in_next_call(
+        "random_regression",
+        formula,
+        data_name
       )
     }
     if (!isTRUE(REML)) {
@@ -119,12 +99,27 @@ hsquared <- function(
     }
     opt_in_effect <- setdiff(names(spec$random), "animal")
     if (length(opt_in_effect) > 0L) {
+      effect_type <- opt_in_effect[[1L]]
+      # Boole: maternal_genetic has two opt-in targets. Name the covered
+      # direct_maternal sibling first. Do not auto-route. common_env /
+      # permanent paste stays on the sibling helper.
+      if (identical(effect_type, "maternal_genetic")) {
+        hs_abort_maternal_genetic_default_path()
+      }
+      if (identical(effect_type, "single_step")) {
+        hs_abort_single_step_default_path()
+      }
+      # Pat UX: the natural second-effect formulas print a pasteable next
+      # call. Other opt-in primaries keep the existing knob-name abort.
+      if (effect_type %in% c("common_env", "permanent")) {
+        hs_abort_opt_in_next_call(effect_type, formula, data_name)
+      }
       # Bare `(1 | group)` i.i.d. effects live under the `iid_effects` list slot;
       # name them honestly rather than printing the internal slot name.
-      model_label <- if (identical(opt_in_effect[[1L]], "iid_effects")) {
+      model_label <- if (identical(effect_type, "iid_effects")) {
         "bare `(1 | group)` i.i.d. random-effect (multi-effect)"
       } else {
-        paste0("`", opt_in_effect[[1L]], "`")
+        paste0("`", effect_type, "`")
       }
       hs_abort_unsupported_syntax(
         "The ",
@@ -133,7 +128,7 @@ hsquared <- function(
         "path fits the single-effect Gaussian animal model only. Use ",
         "`control = hs_control(engine = \"julia\", engine_control = list(",
         "target = \"",
-        hs_second_effect_target(opt_in_effect[[1L]]),
+        hs_second_effect_target(effect_type),
         "\"))`.",
         call. = FALSE
       )
@@ -159,6 +154,7 @@ hsquared <- function(
       )
     }
     if (isTRUE(spec$response$multivariate)) {
+      hs_warn_cbind_experimental_once()
       return(hs_fit_julia_multivariate_payload(
         payload,
         project = project,
@@ -189,7 +185,7 @@ hsquared <- function(
       "target",
       "fit_animal_model"
     ))
-    # MV-4 (doc 38 §H2): a multivariate `cbind(...)` response under
+    # MV-4 (doc 38 section H2): a multivariate `cbind(...)` response under
     # `engine = "julia"` with no explicit target auto-selects the multivariate
     # target, mirroring the default-path auto-route. An explicit
     # non-multivariate target with a multivariate response still errors below.
@@ -200,6 +196,10 @@ hsquared <- function(
       target <- "multivariate"
     }
     genetic_structure <- hs_validate_genetic_structure_control(control, target)
+    # hsquared#212: error on an `engine_control` key this target does not
+    # honour (named, alongside the target) rather than silently discarding
+    # it, before any target-specific dispatch below runs.
+    hs_engine_control_forwarding(control, target)
     if (
       isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
     ) {
@@ -243,7 +243,7 @@ hsquared <- function(
     # (`sparse_reml`/`ai_reml`, which would otherwise silently ignore the ML
     # request). Reject `REML = FALSE` for all of them. `henderson_mme` solves at
     # supplied variances, so its method label is cosmetic and it is exempt;
-    # `snp_blup` is exempt ONLY when variances are supplied — without them it
+    # `snp_blup` is exempt ONLY when variances are supplied -- without them it
     # genuinely REML-estimates `sigma_g2`/`sigma_e2` (`fit_snp_blup_reml`), so
     # `REML = FALSE` must not be silently accepted there.
     snp_blup_supplied <- identical(target, "snp_blup") &&
@@ -285,6 +285,21 @@ hsquared <- function(
           ". The `",
           target,
           "` target fits the single additive-genetic effect only.",
+          if (identical(second_effect[[1L]], "maternal_genetic")) {
+            hs_maternal_genetic_allowed_targets_note()
+          } else {
+            ""
+          },
+          "\n\nClosest working call:\n\n",
+          hs_format_next_call(
+            formula,
+            data_name,
+            if (identical(second_effect[[1L]], "maternal_genetic")) {
+              "direct_maternal"
+            } else {
+              allowed[[1L]]
+            }
+          ),
           call. = FALSE
         )
       }
@@ -339,7 +354,9 @@ hsquared <- function(
         ),
         family = family,
         marginal = hs_engine_control_value(control, "marginal", "laplace"),
-        iterations = hs_engine_control_value(control, "iterations", 200L)
+        iterations = hs_engine_control_value(control, "iterations", 200L),
+        initial = hs_engine_control_value(control, "initial", NULL),
+        restart_check = hs_engine_control_value(control, "restart_check", FALSE)
       ))
     }
     if (identical(target, "henderson_mme")) {
@@ -449,6 +466,11 @@ hsquared <- function(
           control,
           "iterations",
           200L
+        ),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
         )
       ))
     }
@@ -509,7 +531,13 @@ hsquared <- function(
         # factorization is infeasible; the default "dense" is the covered
         # validation-scale path. See ?hsquared (engine_control) and the engine's
         # `docs/design/25-completion-ultraplan.md` (V8.6).
-        scale_method = hs_engine_control_value(control, "scale_method", "dense")
+        scale_method = hs_engine_control_value(control, "scale_method", "dense"),
+        # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
+        # reproduces the pre-#212-fix default exactly. NOTE: honoured on the
+        # `scale_method = "dense"` route only -- `"auto"` does not forward
+        # them yet (HSquared.jl#343).
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", NULL)
       ))
     }
 
@@ -530,7 +558,11 @@ hsquared <- function(
           control,
           "julia_project",
           hs_default_julia_project()
-        )
+        ),
+        # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
+        # reproduces the pre-#212-fix default exactly.
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", NULL)
       ))
     }
 
@@ -722,6 +754,11 @@ hsquared <- function(
         control,
         "initial",
         c(sigma_a2 = 1, sigma_e2 = 1)
+      ),
+      max_dense_cells = hs_engine_control_value(
+        control,
+        "max_dense_cells",
+        1e6
       )
     ))
   }

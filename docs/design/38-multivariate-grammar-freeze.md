@@ -438,9 +438,12 @@ recovery/comparator gate).
    experimental** (option (a)); no k≥3 opt-in gate.
 2. **`engine = "julia"` with no explicit target** — **auto-selects
    `"multivariate"`** for symmetry with the default path.
-3. **Residual structure** — unstructured `R0` is the frozen surface; whether the
-   in-suite comparator must be promoted to full-unstructured before the flip is a
-   **gate** decision (0.6 flip), not part of this freeze.
+3. **Residual structure** — unstructured `R0` is the frozen surface. The in-suite
+   comparator **was promoted to full-unstructured** as MV-1
+   (`tests/testthat/test-multivariate.R`, classic `sommer::mmer` +
+   `vsr(..., Gtc = unsm(2))`), discharging this gate decision for the 0.6
+   flip packet. (A26b hardens MV-1 so missing Suggests fail loudly under
+   `NOT_CRAN=true` rather than silent-skip.)
 4. **`diagonal` genetic structure** — stays **experimental** at 0.6.
 
 The default-path auto-route (MV-4) is now authorised to implement against this

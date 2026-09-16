@@ -11,6 +11,12 @@ vignette: >
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
+<p class="hs-banner" role="note"><strong>Default path vs opt-in targets.</strong>
+<code>engine = "fit"</code> is the v0.1 univariate Gaussian REML path. Other models below use
+<code>engine = "julia"</code> with an explicit <code>target</code> (experimental / opt-in), except
+multivariate <code>cbind()</code>, which routes on the default call but keeps the experimental
+label. See <a href="current-limits.html">Can I fit and report this?</a>.</p>
+
 This article shows the models `hsquared` can fit. Fitting is computed in the
 sibling `HSquared.jl` engine, so every example needs a local Julia, the
 `JuliaCall` package, and an `HSquared.jl` checkout. Register the checkout with
@@ -19,13 +25,41 @@ sibling `HSquared.jl` engine, so every example needs a local Julia, the
 see the README or "Getting started" article for full setup. The code chunks are
 not run when this page is built (the build host has no Julia).
 
-All fits are by REML. ML is not implemented; `REML = FALSE` is rejected on the
-fit path.
+Gaussian fits use REML. ML is not implemented for that route: `REML = FALSE`
+is rejected, and `REML = TRUE` is the default. That rule applies to the default
+fit and to `engine = "validate"`; the opt-in non-Gaussian route below instead
+uses a Laplace marginal likelihood or variational ELBO.
+
+```{r twin-bridge, echo = FALSE, results = "asis", eval = TRUE}
+cat(sprintf(
+  '<p><img src="../reference/figures/twin-bridge.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Two-column diagram of the R to Julia twin bridge. Formula language stays in R; y, X, Z CSC, pedigree indices, and target metadata cross the bridge; solvers stay in Julia; result_payload returns variance components, heritability, and breeding values. Default engine equals fit for v0.1; other targets are opt-in experimental."
+))
+```
+
+<p class="hs-caption"><em>What crosses the bridge vs what stays lane-local. Default
+<code>engine = "fit"</code> is the v0.1 path; opt-in targets need
+<code>engine = "julia"</code> and an explicit <code>target</code>. This figure does not imply
+production bridge coverage for every model.</em></p>
 
 ## The default: a univariate Gaussian animal model
 
 This is the v0.1 model, fitted by the default `hsquared()` call. It estimates the
 additive-genetic and residual variances, heritability, and breeding values.
+
+```{r fixture}
+ped <- data.frame(
+  id   = c("s1", "s2", "d1", "d2", "o1", "o2", "o3", "o4"),
+  sire = c(NA, NA, NA, NA, "s1", "s1", "s2", "s2"),
+  dam  = c(NA, NA, NA, NA, "d1", "d2", "d1", "d2")
+)
+dat <- data.frame(
+  id     = ped$id,
+  sex    = c("m", "m", "f", "f", "m", "f", "m", "f"),
+  age    = c(4, 5, 4, 5, 1, 1, 1, 1),
+  weight = c(72, 75, 65, 68, 31, 33, 35, 30)
+)
+```
 
 ```{r}
 library(hsquared)
@@ -43,9 +77,13 @@ breeding_values(fit)   # EBVs (aliases: EBV(), BLUP())
 summary(fit)
 ```
 
-The remaining models below are **opt-in**: they are reached through
-`engine = "julia"` with an explicit `target`. They are all REML-only, experimental,
-and not the public default. Four of them are **covered at validation scale** —
+Most of the remaining models below are **opt-in**: they are reached through
+`engine = "julia"` with an explicit `target`. The one exception is the
+multivariate `cbind()` model, which routes on the default call — being reachable
+by default does not make it any less experimental. The Gaussian opt-in routes
+are REML-only; the non-Gaussian route has its own marginal-likelihood methods.
+All remain experimental, and none is a covered public default. Four are
+**covered at validation scale** —
 each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
 comparator: the common-environment two-effect model, arbitrary-N multi-effect,
 random regression k = 2, and the direct–maternal 2×2 G model. Covered at
@@ -177,8 +215,10 @@ breeding_values(fit_snp)             # per-individual GEBVs
 
 ## Multivariate Gaussian animal model
 
-The opt-in multivariate path uses a `cbind()` response and estimates
+The multivariate path uses a `cbind()` response and estimates
 trait-by-trait genetic and residual covariance matrices for the animal effect.
+It fits on the default call — no `engine` or `target` argument — while the
+capability itself stays `partial` and experimental.
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 
 ```{r}
@@ -186,11 +226,7 @@ fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
   data = dat,
   family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "multivariate")
-  )
+  REML = TRUE
 )
 
 genetic_covariance(fit_mv)
@@ -203,7 +239,117 @@ The future long-format grammar
 `animal(trait | id, pedigree = ped, cov = us())` is planned, not fitted yet. See
 the multivariate article for the current claim boundary.
 
+## Binary and count traits (experimental): which heritability to report
+
+<p class="hs-banner" role="note"><strong>Experimental · opt-in · not coverage-calibrated.</strong>
+The non-Gaussian animal model fits only through <code>engine = "julia"</code> with
+<code>target = "nongaussian"</code>, is limited to an intercept plus one
+<code>animal()</code> term, and has not yet been checked against another program
+that estimates the same quantity. See <a href="current-limits.html">Can I fit and report this?</a> before reporting a value.</p>
+
+Many traits ecologists and breeders care about are not Gaussian: whether an
+individual survived its first winter (0/1), how many of a clutch fledged
+(successes out of a known number of trials), how many offspring were sired
+(a count). `hsquared()` accepts `binomial(logit)` and `poisson(log)` for these,
+and `heritability()` returns **more than one number**, because a
+heritability for a non-Gaussian trait depends on the scale you state it on.
+
+Take fledging success in a wild bird population. Each female has a clutch of
+between two and seven eggs, and some number of those fledge:
+
+```{r}
+# dat: one row per breeding attempt; fledged + failed = clutch size, which varies
+fit_fledge <- hsquared(
+  cbind(fledged, failed) ~ animal(1 | id, pedigree = ped),
+  data = dat,
+  family = binomial(),           # logit link
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "nongaussian")   # marginal = "laplace" (default)
+  )
+)
+
+variance_components(fit_fledge)  # V_A on the latent (logit) scale
+heritability(fit_fledge)
+```
+
+`REML = TRUE` is the R front door's current required default, so it is omitted
+above. It does **not** make this non-Gaussian fit a REML fit: this route uses a
+Laplace marginal likelihood (or variational ELBO when selected), as stated
+below.
+
+`heritability()` returns a small table rather than a single value. For a
+varying-trials fit like this one it looks like:
+
+```
+#>            field                                     label estimate                    undefined_reason
+#> 1      h2_latent            latent-scale h2 (conditional)     1.00                                <NA>
+#> 2   h2_liability         liability-scale h2 (conditional)     0.20                                <NA>
+#> 3 h2_observation observation-scale h2 (no scalar estimand)      NaN varying_trials_no_scalar_estimand
+```
+
+(The numbers are illustrative — `V_A = 0.8` on the logit scale gives
+$0.8 / (0.8 + \pi^2/3) \approx 0.20$; the shape is exact.)
+
+**Which row do you report? The liability-scale one.** All three rows come
+from the same fit on the logit scale; they differ in what goes in the
+denominator. Here is what each is, starting with the two that matter:
+
+- **`h2_liability` — report this.** It is the heritability of the *underlying
+  liability* to fledge: the additive genetic variance on the logit scale,
+  divided by that variance plus the logistic distribution's own variance,
+  $\pi^2/3 \approx 3.29$ (the *distribution-specific variance* of Nakagawa and
+  Schielzeth 2010). This is the threshold-model convention the field has used
+  since Dempster and Lerner (1950), it is the scale on which published
+  heritabilities of survival, breeding success and disease traits are usually
+  given, and it does not depend on how many trials each individual had. State
+  the link when you report it: *"liability-scale $h^2$ (logit link)"*.
+- **`h2_observation` — the `NaN` row.** This is the heritability on the *data*
+  scale — the 0/1 or proportion you actually recorded. When every individual
+  has the same number of trials (a 0/1 survival trait, or a fixed number of
+  attempts), this is a single number and the package reports it. **When trial
+  sizes vary, it is not a single number**: a female with a clutch of two and
+  one with a clutch of seven have different data-scale variances, so no single
+  observation-scale $h^2$ exists for the population. `hsquared` therefore
+  returns `NaN` with the reason `varying_trials_no_scalar_estimand` rather than
+  averaging over clutch sizes and printing something that looks like an
+  estimate. **This is not a failed fit.** The liability-scale row is the
+  estimate.
+- **`h2_latent` — ignore it for now.** It divides the additive variance by the
+  *random* latent variance only, with no $\pi^2/3$. In the only model this path
+  currently fits — an intercept plus one `animal()` term — the additive variance
+  is the sole random component, so this row is always exactly `1`. It is a
+  bookkeeping row, not an estimate. The number to keep instead is `V_A` itself,
+  from `variance_components()`: it is what every scale conversion, including the
+  liability-scale row, starts from.
+
+If you specifically need a data-scale heritability for a varying-trials trait
+— for example to predict a response to selection on the observed proportion —
+the answer is a per-individual quantity, not a population scalar. Compute it
+from the latent-scale `V_A` and intercept with the conversions in
+de Villemereuil et al. (2016) (the `QGglmm` package), which integrate over the
+link for a stated trial count, or refit on a subset with a common trial count.
+
+Two more things to know about this path. The engine can approximate the
+likelihood in two ways — `marginal = "laplace"` (the default) or
+`marginal = "variational"` (aliases `"la"`/`"va"`, which maximises a lower
+bound on the likelihood) — and their `logLik()` and `AIC()` values are not
+comparable with each other, nor with the REML values from the Gaussian fits
+above. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
+only — there is no liability scale for a count.
+
+*References.* Dempster, E. R. & Lerner, I. M. (1950) Heritability of threshold
+characters. *Genetics* 35, 212–236. Nakagawa, S. & Schielzeth, H. (2010)
+Repeatability for Gaussian and non-Gaussian data: a practical guide for
+biologists. *Biological Reviews* 85, 935–956. de Villemereuil, P., Schielzeth,
+H., Nakagawa, S. & Morrissey, M. (2016) General methods for evolutionary
+quantitative genetic inference from generalized mixed models. *Genetics* 204,
+1281–1294.
+
 ## What is fitted, and what is planned
+
+Before extracting an estimate, read [fit diagnostics and plots](visualizing-models.html).
+Before reporting one, return to [Can I fit and report this?](current-limits.html).
 
 `formula_status()` and `validation_status()` report, from R, exactly which terms
 fit and how each capability is validated.
@@ -217,11 +363,15 @@ formula_status()
 validation_status()
 ```
 
-Only rows marked `covered` in `validation_status()` may be relied on as working.
+What you may report is listed on [Can I fit and report this?](current-limits.html),
+not in `validation_status()`. That function is a developer evidence table;
+an absent row is not an absent covered route.
 The four opt-in models listed as covered above (`two_effect` common-env leg,
 `multi_effect`, `random_regression`, `direct_maternal`) are covered at
 validation scale. The remaining opt-in models (`repeatability`, the maternal
-two-effect leg, genomic, SNP-BLUP, single-step, multivariate) remain `partial`
-until their `HSquared.jl` gates and external comparators are signed off.
-Structured/factor-analytic multivariate covariance, non-Gaussian/GLLVM,
-unusual-inheritance, and GPU models remain on the roadmap.
+two-effect leg, genomic, SNP-BLUP, single-step) remain `partial` until their
+`HSquared.jl` gates and external comparators are signed off, and so does the
+multivariate `cbind()` model even though it now routes by default.
+Structured/factor-analytic multivariate covariance, further non-Gaussian
+families (negative binomial, ordinal, zero-inflated, hurdle), unusual-inheritance,
+and GPU models remain on the roadmap.

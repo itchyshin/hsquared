@@ -6,7 +6,6 @@
 *.Rcheck/
 *.tar.gz
 tests/testthat/testthat-problems.rds
-cran-comments.md
 revdep/
 Meta/
 pkgdown-site/
@@ -14,3 +13,6 @@ doc/
 .mission-control/
 .claude/launch.json
 settings.json
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

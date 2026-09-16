@@ -23,14 +23,58 @@
 #'   `"full"`, or `"tiny"`.
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
-#'   `iterations`, `em_warmup`, `target`, `variance_components`, and `marginal`.
+#'   `iterations`, `em_warmup`, `target`, `variance_components`, `marginal`,
+#'   and `max_dense_cells`.
+#'   `julia_project` is honoured by every `target`; supplying a key a given
+#'   `target` does not honour errors (hsquared#212) rather than being
+#'   silently ignored. Per-target honoured keys (besides `julia_project`):
+#'   * `fit_animal_model` (default): `initial`, `max_dense_cells`.
+#'   * `henderson_mme`, `metafounder`, `snp_blup`: `variance_components`.
+#'   * `ai_reml`: `initial`, `iterations`, `em_warmup`.
+#'   * `sparse_reml`, `two_effect`, `direct_maternal`,
+#'     `genomic`, `single_step`, `single_step_construct`,
+#'     `metafounder_single_step`, `relmat`, `precision`: `initial`,
+#'     `iterations`.
+#'   * `repeatability`: `initial`, `iterations`, `max_dense_cells`.
+#'   * `multi_effect`: `initial`, `iterations`, `scale_method` -- `initial`/
+#'     `iterations` are honoured on the `scale_method = "dense"` (default)
+#'     route only; the opt-in `scale_method = "auto"` route does not yet
+#'     forward them (HSquared.jl#343, a known remaining gap).
+#'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
+#'   * `random_regression`: `iterations` (no `initial`).
+#'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
+#'     `sigma_a2`), `restart_check`.
+#'   `max_dense_cells` bounds `nobs^2 + nanimals^2` on
+#'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
+#'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
+#'   `fit_variance_components()`) and `target = "repeatability"`. Both require
+#'   `engine = "julia"`. It has **no effect** under the default `engine = "fit"`
+#'   path, which routes to the sparse-capable `HSquared.fit_ai_reml()` and enforces
+#'   no dense-cell cap at all. It must be a
+#'   single positive integer; the default, `1e6`, mirrors the engine's own
+#'   `DEFAULT_MAX_DENSE_CELLS` unchanged. Raise it to fit a larger dense
+#'   problem at the cost of memory and time, or switch to a sparse route
+#'   (`target = "ai_reml"`/`"sparse_reml"`) instead of raising it indefinitely.
+#'   Exceeding the cap now raises an `hsquared_error` naming the observed cell
+#'   count and the effective cap, rather than a raw Julia trace.
+#'   On `target = "repeatability"`, `max_dense_cells` reaches the point fit only.
+#'   The opt-in repeatability-coefficient interval is computed by a separate engine
+#'   entry point that exposes no such control and runs at the engine default
+#'   (`1e6`), so **raising the cap above `1e6` returns the point fit with the
+#'   interval silently absent** (`NULL`) rather than with an error. Tracked on the
+#'   engine side; not fixed here.
+#'
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
 #'   it has no effect under the default `engine = "fit"` path. The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
-#'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"genomic"`,
+#'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"multi_effect"`,
+#'   `"direct_maternal"`, `"random_regression"`, `"genomic"`,
 #'   `"single_step"`, `"single_step_construct"`, `"metafounder"`,
-#'   `"metafounder_single_step"`, `"snp_blup"`, `"multivariate"`, and
-#'   `"nongaussian"`, described below. `marginal` applies only to
+#'   `"metafounder_single_step"`, `"snp_blup"`, `"relmat"`, `"precision"`,
+#'   `"multivariate"`, and `"nongaussian"`, described below. Covered opt-in
+#'   routes (validation scale; not the default path) include `"two_effect"`
+#'   (`common_env()`), `"direct_maternal"`, `"multi_effect"`, and
+#'   `"random_regression"` at `k = 2`. `marginal` applies only to
 #'   `target = "nongaussian"`.
 #'   With `engine = "julia"` and no `target`, the bridge defaults to
 #'   `target = "fit_animal_model"`: it surfaces the Julia-owned
@@ -73,12 +117,36 @@
 #'   variances are identifiable only with repeated records per individual.
 #'   `target = "two_effect"` is an experimental, opt-in path for two-effect
 #'   models. It requires `animal(1 | id, pedigree = ped)` plus a second random
-#'   effect — `common_env(1 | group)` (an IID common-environment effect) or
+#'   effect -- `common_env(1 | group)` (an IID common-environment effect) or
 #'   `maternal_genetic(1 | dam)` (a maternal genetic effect carrying the pedigree
-#'   relationship) — and surfaces the Julia-owned
+#'   relationship) -- and surfaces the Julia-owned
 #'   `HSquared.fit_two_effect_reml()` REML-only optimizer (three-component
 #'   `initial` with `sigma_a2`/`sigma_c2`/`sigma_e2`). It is REML only and not
-#'   the default.
+#'   the default. The `common_env()` leg is covered at validation scale; the
+#'   `maternal_genetic()` leg on this same target stays experimental. The
+#'   covered correlated sibling is `target = "direct_maternal"`.
+#'   `target = "multi_effect"` is an opt-in path for
+#'   `animal(1 | id, pedigree = ped)` plus one or more bare `(1 | group)` IID
+#'   intercepts. It is covered at validation scale (the independent
+#'   generalization of two-effect; not the default path). Random slopes and
+#'   correlated `(x || group)` terms remain rejected. The animal-block ratio is
+#'   narrow-sense h2; other blocks are variance-explained proportions, not
+#'   heritabilities. `initial` is a plain numeric vector of length K + 1 (one
+#'   value per block, in formula order, plus the residual); it and
+#'   `iterations` are honoured on the `scale_method = "dense"` route (see
+#'   `engine_control` above for the `"auto"` gap).
+#'   `target = "direct_maternal"` is an opt-in path for
+#'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`. It estimates
+#'   the correlated 2x2 direct-maternal genetic covariance and is covered at
+#'   validation scale (not the default path). `heritability()` returns the
+#'   labelled Willham triple (direct h2_d, maternal m2, total h2_T, r_am), never
+#'   a bare scalar. `initial` is a list with `G_dm` (a 2x2 matrix) and
+#'   `sigma_e2` (a positive scalar); it and `iterations` are honoured.
+#'   `target = "random_regression"` is an opt-in reaction-norm path for
+#'   `animal(rr(covariate, order = k) | id, pedigree = ped)`. It is covered at
+#'   `k = 2` (linear reaction norm). `rr_heritability()` returns h2(t) as a
+#'   curve; `heritability()` errors on this result and names
+#'   `rr_heritability()`. `k >= 3` stays experimental.
 #'   `target = "genomic"` is the explicit experimental narrow Gaussian REML
 #'   genomic route. It accepts
 #'   `genomic(1 | id, markers = M)`, using sample allele frequencies,
@@ -92,8 +160,8 @@
 #'   population-, or universal narrow-sense heritability. Genomic
 #'   `heritability_interval()` and
 #'   `heritability_standard_error()` are unavailable. The R capability remains
-#'   `partial`/experimental and validation-scale; the explicit route does not
-#'   move `public_covered_count` from 5. A fail-closed boundary candidate matched
+#'   covered at validation scale, experimental, and opt-in; the explicit route
+#'   does not move `public_covered_count` from 7. A fail-closed boundary candidate matched
 #'   an independent oracle on all 240 sealed holdouts, correcting 30
 #'   classifications with no losses, but one cell had a 5.99x p95 runtime ratio
 #'   against the frozen 3x cap. The seeds are spent, the nine-cell campaign did
@@ -110,7 +178,8 @@
 #'   `single_step(1 | id, pedigree = ped, markers = M, group = mf_group, Gamma =
 #'   Gamma)` through the Julia-owned supplied-`Gamma` `H^Gamma` path. Both are
 #'   experimental, opt-in, dense/validation-scale, REML-only, and not
-#'   comparator-validated; `Gamma` is supplied, not estimated.
+#'   comparator-validated; `Gamma` is supplied, not estimated. Both honour
+#'   `initial` (named `sigma_a2`/`sigma_e2`) and `iterations`.
 #'   `target = "snp_blup"` is an experimental, opt-in path for the SNP-BLUP /
 #'   RR-BLUP marker-effect model. It requires `genomic(1 | id, markers = M)` (a
 #'   raw marker matrix) and estimates per-marker effects (`marker_effects()`) and
@@ -119,32 +188,70 @@
 #'   supplied-variance solve (`HSquared.fit_snp_blup()`), or omit them to have
 #'   `hsquared()` **estimate** `sigma_g2`/`sigma_e2` by REML from the markers
 #'   (`HSquared.fit_snp_blup_reml()`). Not the default.
-#'   `target = "multivariate"` is an experimental, opt-in path for the
-#'   multivariate Gaussian animal model. It requires a
+#'   `target = "relmat"` is an experimental, opt-in path for
+#'   `relmat(1 | id, K = K)` (a supplied dense relationship matrix; the parser
+#'   marshals the inverse). `target = "precision"` is the same experimental path
+#'   for `precision(1 | id, Q = Q)` (a supplied precision/inverse). Neither is
+#'   covered or the default; the supplied matrix is provenance, not an estimate.
+#'   The `animal(1 | id, pedigree = ped)` route rejects selfing (rows with the
+#'   same known sire and dam) in v0.1, with no argument that reaches the
+#'   engine's `allow_selfing` flag; `relmat(1 | id, K = A)` with a hand-built
+#'   or `AGHmatrix`-built relationship matrix `A` is the current workaround
+#'   for a selfing or hermaphroditic pedigree.
+#'   `target = "multivariate"` names the experimental multivariate Gaussian
+#'   animal model. Naming it is optional: a `cbind()` Gaussian response with an
+#'   `animal()` term auto-routes to this target on the default path, and under
+#'   `engine = "julia"` with no `target`. The t = 2 unstructured capability is
+#'   covered at validation scale, while remaining experimental. It requires a
 #'   `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ped)`,
 #'   surfaces the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
 #'   optimizer, and returns G/R covariance matrices, genetic and residual
-#'   correlations, per-trait heritability, and cross-trait breeding values. It is
-#'   not the default and remains a `partial` validation claim until t>=2
-#'   known-truth recovery and external-comparator evidence are committed. The
+#'   correlations, per-trait heritability, and cross-trait breeding values.
+#'   Three or more traits and structured covariance are experimental. The
 #'   reserved `genetic_structure` control currently accepts `"unstructured"` and
 #'   `"diagonal"` on the R bridge. `"diagonal"` is the rotation-free structured
-#'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"` and
-#'   `"factor_analytic"` remain planned until the loading rotation and
-#'   interpretation contract is validated. The future `rank` control is also
+#'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"`
+#'   remains planned. `"factor_analytic"` is planned on the R surface (Julia
+#'   `V4-FA` is engine-covered at HSquared.jl `60895208` / #300) and is not
+#'   activated on the R bridge; not covered. The future `rank` control is also
 #'   reserved and currently errors instead of being ignored.
 #'
-#'   `target = "nongaussian"` is an experimental, opt-in latent-scale GLMM for
-#'   `family = poisson()`/`binomial()` (binary 0/1) on `animal(1 | id, pedigree =
-#'   ped)`, surfacing the Julia-owned `HSquared.fit_laplace_reml()` REML
-#'   optimizer. The `marginal` control selects the approximation: `"laplace"`
-#'   (the Laplace approximation, default) or `"variational"` (the variational/ELBO
-#'   marginal; aliases `"la"`/`"va"`). Because a non-Gaussian family has no
-#'   residual-variance scale, **no heritability** is reported. The variational
-#'   objective is the ELBO (a lower bound on the marginal log-likelihood), so a
-#'   variational fit's `logLik`/`AIC` are **not** comparable with a Laplace fit's.
-#'   Experimental, REML-only, not coverage-calibrated (twin gate `V6-LAPLACE`/`VA`,
-#'   partial).
+#'   `target = "nongaussian"` is an experimental, opt-in conditional GLMM for
+#'   `poisson(log)` or `binomial(logit)` (binary 0/1 or
+#'   `cbind(successes, failures)` counts) with one intercept and
+#'   `animal(1 | id, pedigree = ped)`. The `marginal` control selects a Laplace
+#'   marginal likelihood approximation (`"laplace"`, default) or a variational
+#'   ELBO (`"variational"`; aliases `"la"`/`"va"`). It reports the ratified
+#'   conditional three-field contract: Poisson latent and count-scale observation
+#'   h2; logit latent, liability, and numerically integrated observation-scale h2
+#'   for Bernoulli or common-trial Binomial input. Varying trials return literal
+#'   `NaN` with `"varying_trials_no_scalar_estimand"`, never a trial-count-averaged
+#'   scalar. The ELBO is a lower bound on the marginal
+#'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
+#'   comparable. This path remains experimental and not coverage-calibrated.
+#'   `initial` (hsquared#225) is a list with `sigma_a2`. The engine fits the
+#'   single variance component with a **bracketed** Brent search over
+#'   `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` -- there is no start
+#'   value, and `initial` sets the **centre of the bracket**, so supplying it
+#'   moves the whole search window. Unsupplied, the engine's own hard-coded
+#'   `sigma_a2 = 1.0` centres it, giving `[exp(-6), exp(6)]`; a true `sigma_a2`
+#'   outside that window cannot be reached without an `initial` on the scale of
+#'   the data, which is what makes `initial` the retry lever for a boundary
+#'   refusal. `restart_check` (hsquared#225, logical,
+#'   default `FALSE`) opts into the engine's two-start restart
+#'   (HSquared.jl#327): it refits once from a bumped second start and flags
+#'   `boundary = TRUE` when the estimate moves with the start, catching a
+#'   boundary a single fit can otherwise miss. The result carries `boundary`
+#'   (hsquared#222) next to `converged`: `TRUE` means the fitted `sigma_a2` is
+#'   a function of the search start, not the data. In practice a
+#'   `boundary = TRUE` fit is refused before it reaches the R result at all --
+#'   the Julia payload builder raises, translated into a classed
+#'   `hsquared_julia_error` naming `initial`/`restart_check` as the retry
+#'   levers -- so `boundary` on a returned fit is `FALSE`. Read it as
+#'   `fit$result$boundary`, or via `fit_diagnostics()`'s `search_boundary` /
+#'   `search_boundary_condition` rows (hsquared#230); those rows are
+#'   unrelated to that function's `at_boundary` rows, which flag a variance
+#'   component at or near zero.
 #'
 #' @return An object of class `"hs_control"`.
 #' @export
@@ -171,6 +278,9 @@ hs_control <- function(
     if (!names_ok) {
       stop("`engine_control` must be a named list.", call. = FALSE)
     }
+  }
+  if ("max_dense_cells" %in% names(engine_control)) {
+    hs_validate_max_dense_cells(engine_control[["max_dense_cells"]])
   }
 
   structure(

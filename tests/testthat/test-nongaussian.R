@@ -202,8 +202,9 @@ test_that("the non-Gaussian normalizer consumes the Julia parity fixture", {
   }
 })
 
-test_that("the live Julia bridge fits a non-Gaussian (Poisson + Bernoulli) animal model", {
-  testthat::skip_on_cran()
+test_that("legacy pre-A3 non-Gaussian live-bridge behavior is not public A3 evidence", {
+  skip("Legacy envelope only: A3 evidence is in test-nongaussian-three-field-v09.R.")
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live non-Gaussian bridge."
@@ -252,8 +253,9 @@ test_that("the live Julia bridge fits a non-Gaussian (Poisson + Bernoulli) anima
   expect_equal(nrow(breeding_values(fb)), n)
 })
 
-test_that("the live bridge fits the variational (VA) non-Gaussian marginal", {
-  testthat::skip_on_cran()
+test_that("legacy pre-A3 variational live-bridge behavior is not public A3 evidence", {
+  skip("Legacy envelope only: A3 evidence is in test-nongaussian-three-field-v09.R.")
+  hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "JuliaCall, Julia, and local HSquared.jl are required for the live non-Gaussian bridge."

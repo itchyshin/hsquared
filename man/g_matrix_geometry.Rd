@@ -29,7 +29,7 @@ variance_along_gradient(object, direction, normalize = TRUE, ...)
 eigen_G(object, ...)
 }
 \arguments{
-\item{object}{An \code{hsquared_fit} from the opt-in multivariate target.}
+\item{object}{An \code{hsquared_fit} from the multivariate model.}
 
 \item{direction}{A numeric vector of selection gradients, one per trait. It
 is normalised to unit length internally; only its direction matters.}
@@ -39,7 +39,7 @@ is normalised to unit length internally; only its direction matters.}
 \item{normalize}{For \code{variance_along_gradient()}, whether to scale
 \code{direction} to unit length first (\code{TRUE}, the default, which then equals
 \code{evolvability()}); \code{FALSE} uses \code{direction} as given, returning the genetic
-variance in the raw (un-normalised) selection gradient \verb{β'Gβ}.}
+variance in the raw (un-normalised) selection gradient \verb{beta'G beta}.}
 }
 \value{
 A scalar for the directional metrics; a list for \code{eigen_G()}
@@ -50,11 +50,12 @@ A scalar for the directional metrics; a list for \code{eigen_G()}
 }
 \details{
 These extractors summarise the genetic variance-covariance matrix \code{G} of an
-opt-in multivariate \code{hsquared_fit} (\code{target = "multivariate"}) through its
+multivariate \code{hsquared_fit} (a \code{cbind()} response, which fits on the default
+path) through its
 \strong{rotation-invariant} geometry, following Hansen & Houle (2008). They are
 defined on \code{G} itself (not on factor loadings), so they are well defined for
-any multivariate fit — unstructured, diagonal, or (when bridged) low-rank /
-factor-analytic — and do not depend on a loading rotation convention.
+any multivariate fit -- unstructured, diagonal, or (when bridged) low-rank /
+factor-analytic -- and do not depend on a loading rotation convention.
 \itemize{
 \item \code{eigen_G()} returns the genetic eigenstructure: \code{values} (the variance along
 each genetic principal axis, descending) and \code{vectors} (the genetic
@@ -64,13 +65,13 @@ each is positive).
 \code{eigenvector} (the direction of maximum evolvability).
 \item \code{mean_evolvability()} is the average evolvability over random selection
 directions, \code{tr(G) / t}.
-\item \code{evolvability(fit, direction)} is \verb{e(β) = β'Gβ} (unit \code{β}): the additive
+\item \code{evolvability(fit, direction)} is \verb{e(beta) = beta'G beta} (unit \code{beta}): the additive
 genetic variance available to directional selection along \code{direction}.
-\item \code{variance_along_gradient(fit, direction, normalize)} is \verb{β'Gβ} for a unit
+\item \code{variance_along_gradient(fit, direction, normalize)} is \verb{beta'G beta} for a unit
 \code{direction} (\code{normalize = TRUE}, equal to \code{evolvability()}) or for the raw
 \code{direction} (\code{normalize = FALSE}).
-\item \code{respondability(fit, direction)} is \verb{‖Gβ‖}: the length of the response.
-\item \code{conditional_evolvability(fit, direction)} is \verb{1 / (β'G⁻¹β)}: evolvability
+\item \code{respondability(fit, direction)} is \verb{||G beta||}: the length of the response.
+\item \code{conditional_evolvability(fit, direction)} is \verb{1 / (beta' G^-1 beta)}: evolvability
 when all other directions are held under stabilising selection (requires a
 positive-definite \code{G}).
 \item \code{autonomy(fit, direction)} is \code{conditional_evolvability / evolvability}

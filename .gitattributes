@@ -1,0 +1,4 @@
+# Frozen validation fixtures are byte-hashed; keep their checkout bytes identical
+# on every supported GitHub Actions platform.
+*.csv text eol=lf
+*.tsv text eol=lf

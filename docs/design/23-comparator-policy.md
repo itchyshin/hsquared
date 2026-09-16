@@ -21,10 +21,11 @@ is policy/design, not a capability claim. The live source of truth for status is
 4. **CI vs local.** Pure-R reference + external-R-package comparators run in public CI (given
    Suggests); the live Julia engine legs are skip-guarded and run only locally. State which is which
    wherever a number is shown.
-5. **Fixture manifests are indexes, not evidence.** A machine-readable target
-   manifest such as `HSquared.jl/test/fixtures/comparator_targets.toml` helps R
-   and external scripts find fixture files, required comparators, and claim
-   boundaries. It does not count as an external comparator run.
+5. **Fixture manifests are indexes, not evidence.** Machine-readable target
+   manifests (`HSquared.jl/test/fixtures/comparator_targets.toml` on the engine
+   lane; `tests/fixtures/comparator_targets.toml` on the R lane) help runners find
+   fixture files, required comparators, and claim boundaries. They do not count
+   as an external comparator run.
 
 ## Comparator → capability map
 
@@ -86,6 +87,9 @@ for the open gates.
 - `docs/design/12-multivariate-comparator-plan.md` — the multivariate comparator ladder.
 - `HSquared.jl/test/fixtures/comparator_targets.toml` — the Julia-owned target
   fixture index for cross-lane comparator handoffs.
+- `tests/fixtures/comparator_targets.toml` — the symmetric R-lane index (mirrored
+  semantics; `tests/fixtures/comparator_fixture_shas.csv` freezes mirrored CSV
+  bytes).
 - `vignettes/articles/validation-evidence.html` + `vignettes/articles/benchmark-comparators.html`
   — the narrative + the executed benchmark.
 - `validation_status()` — the live per-row source of truth.
