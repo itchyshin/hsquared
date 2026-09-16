@@ -510,6 +510,72 @@ test_that("fit_diagnostics flags a variance-component boundary solution", {
   )
 })
 
+# hsquared#230: `search_boundary` (the non-Gaussian bridge's optimizer-bracket
+# flag) is a distinct concept from `at_boundary` (an estimated variance share
+# at/near zero). It is keyed off `result$boundary`, which only the non-Gaussian
+# bridge route populates -- a Gaussian `engine = "fit"` result never carries a
+# `boundary` field, so it must get no `search_boundary` row at all (not even
+# NA), unlike `at_boundary`, which IS derived from Gaussian variance estimates.
+test_that("fit_diagnostics reports search_boundary for a non-Gaussian-shaped result", {
+  at_rail <- hsquared:::hs_new_fit(
+    spec = list(method = "laplace", family = list(family = "binomial")),
+    payload = list(y = 1:3),
+    result = list(
+      converged = TRUE,
+      boundary = TRUE
+    )
+  )
+  diag <- fit_diagnostics(at_rail)
+  expect_equal(diag$value[diag$metric == "search_boundary"], "TRUE")
+  expect_match(
+    diag$value[diag$metric == "search_boundary_condition"],
+    "log(initial$sigma_a2)",
+    fixed = TRUE
+  )
+  expect_match(
+    diag$value[diag$metric == "search_boundary_condition"],
+    "HSquared.jl#327",
+    fixed = TRUE
+  )
+
+  interior_ng <- hsquared:::hs_new_fit(
+    spec = list(method = "laplace", family = list(family = "binomial")),
+    payload = list(y = 1:3),
+    result = list(
+      converged = TRUE,
+      boundary = FALSE
+    )
+  )
+  diag_interior <- fit_diagnostics(interior_ng)
+  expect_equal(
+    diag_interior$value[diag_interior$metric == "search_boundary"],
+    "FALSE"
+  )
+  condition_value <- diag_interior$value[
+    diag_interior$metric == "search_boundary_condition"
+  ]
+  expect_equal(length(condition_value), 1L)
+  expect_equal(condition_value, "interior")
+})
+
+test_that("fit_diagnostics gains no search_boundary row for a Gaussian fit without `boundary`", {
+  gaussian_fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.5, 0.5)
+      ),
+      converged = TRUE
+    ),
+    engine = "fit"
+  )
+  diag <- fit_diagnostics(gaussian_fit)
+  expect_false("search_boundary" %in% diag$metric)
+  expect_false("search_boundary_condition" %in% diag$metric)
+})
+
 test_that("accuracy requires reliability values on [0, 1]", {
   fit <- hsquared:::hs_new_fit(
     spec = list(method = "REML", family = list(family = "gaussian")),

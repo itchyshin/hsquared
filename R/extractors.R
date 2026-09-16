@@ -1530,6 +1530,33 @@ covariance_structure_lrt <- function(constrained, full, ...) {
 #' payload: it does not refit the model, rerun validation checks, or promote an
 #' experimental bridge target to production support.
 #'
+#' Two rows share the word "boundary" but report unrelated things
+#' (hsquared#230):
+#'
+#' * `at_boundary` / `at_boundary_condition` derive from the fitted
+#'   **estimates**: a variance component at or near zero, or an inadmissible
+#'   negative estimate (`hs_fit_boundary_class()`). Emitted for the Gaussian
+#'   animal-model / genomic / single-step routes that report one primary
+#'   variance-share layout; the `_condition` row is dropped (not `NA`) when
+#'   the fit is interior, since there is nothing extra to say.
+#' * `search_boundary` / `search_boundary_condition` mirror the non-Gaussian
+#'   bridge's **optimizer** state: `result$boundary` (documented as
+#'   `fit$result$boundary` in `?hs_control`) reports whether
+#'   `HSquared.jl`'s single-variance Brent search stopped on the rail of its
+#'   log-scale bracket (`log(initial$sigma_a2) +/- 6`, HSquared.jl#327) or,
+#'   under `restart_check = TRUE`, whether the two-start gap fence fired;
+#'   either way the estimate is a function of the search, not the data.
+#'   Only fits whose result carries a `boundary` field (the non-Gaussian
+#'   route) gain this pair; a Gaussian `engine = "fit"` fit gains neither row
+#'   (not even `NA`). Unlike `at_boundary_condition`, `search_boundary_condition`
+#'   is always emitted alongside a present `search_boundary` flag, reading
+#'   `"interior"` rather than disappearing when the flag is `FALSE` -- the
+#'   search-bracket rail is a binary optimizer state with no benign-vs-
+#'   inadmissible split to only sometimes report. In practice a
+#'   `search_boundary = TRUE` fit is refused before it reaches an
+#'   `hsquared_fit` object at all, so a returned fit's `search_boundary` is
+#'   always `FALSE`; `TRUE` is reachable only on a hand-built `result` object.
+#'
 #' @inheritParams variance_components
 #'
 #' @return A data frame with `metric` and `value` columns and class
@@ -1572,6 +1599,10 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     at_boundary = hs_fit_boundary_flag(object),
     at_boundary_condition = hs_fit_boundary_condition_label(
       hs_fit_boundary_class(object)
+    ),
+    search_boundary = hs_fit_search_boundary_flag(object),
+    search_boundary_condition = hs_fit_search_boundary_condition_label(
+      hs_fit_search_boundary_flag(object)
     )
   )
 
@@ -1583,7 +1614,9 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     "optimizer_status",
     "iterations",
     "dense_validation_path",
-    "variance_components"
+    "variance_components",
+    "search_boundary",
+    "search_boundary_condition"
   )
   extras <- diagnostics[setdiff(diagnostic_names, already_reported)]
   rows <- c(base, extras)
@@ -1696,6 +1729,46 @@ hs_fit_boundary_condition_label <- function(cls) {
     negative = "negative (inadmissible variance)",
     NULL
   )
+}
+
+# Logical flag for the `search_boundary` diagnostics row (hsquared#230).
+# Unrelated to `at_boundary`/`hs_fit_boundary_class()`: `at_boundary` is
+# derived from the ESTIMATED variance shares, while `search_boundary` mirrors
+# the non-Gaussian bridge's `result$boundary` field (`hs_ng09_boundary()` in
+# R/julia-bridge.R), which reports whether HSquared.jl's single-variance Brent
+# search stopped on the rail of its log-scale bracket
+# (log(initial$sigma_a2) +/- 6, HSquared.jl#327) -- an optimizer-search state,
+# not a property of the estimates themselves. Gaussian animal-model fits
+# (`engine = "fit"`) never carry a `boundary` field, so this returns NULL for
+# them and both `search_boundary` rows are dropped by the same NULL filter
+# that drops every other absent diagnostic (no NA row either).
+hs_fit_search_boundary_flag <- function(object) {
+  boundary <- object$result$boundary
+  if (!is.logical(boundary) || length(boundary) != 1L || is.na(boundary)) {
+    return(NULL)
+  }
+  boundary
+}
+
+# Map the `search_boundary` flag to the `search_boundary_condition` value.
+# Unlike `at_boundary_condition` (only emitted for the at/near-zero and
+# negative cases, dropped otherwise), this row is always emitted alongside a
+# present `search_boundary` flag: the search-bracket rail is a binary
+# optimizer state with no benign-vs-inadmissible split to only-sometimes
+# report, so the FALSE case reads "interior" rather than disappearing.
+hs_fit_search_boundary_condition_label <- function(flag) {
+  if (is.null(flag)) {
+    return(NULL)
+  }
+  if (isTRUE(flag)) {
+    return(paste0(
+      "single-variance search stopped on the rail of the log-scale bracket ",
+      "log(initial$sigma_a2) +/- 6, or (with restart_check = TRUE) the two ",
+      "starts disagreed; either way the estimate is a function of the search, ",
+      "not the data (HSquared.jl#327)"
+    ))
+  }
+  "interior"
 }
 
 hs_diagnostic_value <- function(x) {

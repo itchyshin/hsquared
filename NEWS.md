@@ -1,5 +1,18 @@
 # hsquared (development version)
 
+* **`fit_diagnostics()` reports `search_boundary` for non-Gaussian fits,
+  distinct from `at_boundary` (#230 / HSquared.jl#327).** Fits whose result
+  carries a `boundary` field (the non-Gaussian bridge route) now gain a
+  `search_boundary` row (mirroring `result$boundary`) and a
+  `search_boundary_condition` row, which explains the bracket rail when
+  `TRUE` and reads `"interior"` when `FALSE`.
+  Gaussian animal-model fits (`engine = "fit"`) never carry a `boundary`
+  field, so they gain neither row. `search_boundary` is unrelated to the
+  existing `at_boundary` rows, which flag an estimated variance component at
+  or near zero; `search_boundary` instead reports whether the optimizer's
+  single-variance search stopped on the rail of its log-scale bracket. No
+  version bump; no capability-status change.
+
 * **The non-Gaussian bridge (`target = "nongaussian"`) forwards
   `engine_control$initial`/`$restart_check` and surfaces `boundary`
   (#222, #225 / HSquared.jl#342).** `initial` (a list with `sigma_a2`)

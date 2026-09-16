@@ -823,7 +823,8 @@ hs_ng09_boundary <- function(raw) {
     hs_abort_boundary_refused(
       "the non-Gaussian fit is at its search boundary (boundary = TRUE): ",
       "the estimate sits on the rail of the engine's log-scale search bracket ",
-      "(log(initial$sigma_a2) +/- 6), so it is a function of the bracket, not ",
+      "(log(initial$sigma_a2) +/- 6), or the two starts disagreed under ",
+      "`restart_check = TRUE`; either way it is a function of the search, not ",
       "the data. Retry with a different `initial` in `engine_control` -- ",
       "`initial = list(sigma_a2 = <a value near the expected scale>)` recentres ",
       "the bracket and can move the optimum into its interior. ",
