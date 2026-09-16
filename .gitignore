@@ -13,3 +13,4 @@ pkgdown-site/
 doc/
 .mission-control/
 .claude/launch.json
+settings.json
