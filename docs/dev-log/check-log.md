@@ -8049,3 +8049,128 @@ existing `# hsquared (development version)` header — no new header. No row of
 `docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or any
 other status ledger changed cell value; `public_covered_count` stays **7**. No
 `DESCRIPTION` change, no Julia edit.
+
+## 2026-09-15 — fit_diagnostics() gains search_boundary / search_boundary_condition for non-Gaussian fits (#230 / PR #232) [R]
+
+Records-only entry for PR #232 (merged `e28ba19c`, two commits `fba0d8e1` +
+`8d9b2a4`), closing #230: a follow-on from rose-r7's audit of PR #229 (optional
+item O-1), which found that `fit$result$boundary` (surfaced by #229) had no
+`fit_diagnostics()` row, while `fit_diagnostics()` already emits an unrelated
+`at_boundary`/`at_boundary_condition` pair derived from fitted variance-component
+estimates, not the optimizer's search state.
+
+### What changed
+
+- `R/extractors.R`: `fit_diagnostics.hsquared_fit()` gains two new rows,
+  `search_boundary` (`hs_fit_search_boundary_flag()`, line 1745) and
+  `search_boundary_condition` (`hs_fit_search_boundary_condition_label()`, line
+  1759), gated on `object$result$boundary` being a present, non-`NA`, length-1
+  logical — true only for the non-Gaussian bridge route. Both names are added to
+  the `already_reported` vector (line 1610) so a `result$diagnostics$search_boundary`
+  key cannot double up into `extras`. A `NULL` gate (the pre-existing
+  `rows <- rows[!vapply(rows, is.null, ...)]` filter) means a Gaussian
+  `engine = "fit"` fit gains **no** row at all, not even `NA` — asserted by a
+  dedicated test, not inferred from the code alone.
+- Roxygen for `fit_diagnostics()` (`R/extractors.R`) states the `at_boundary` vs
+  `search_boundary` distinction plainly: `at_boundary` reads fitted **estimates**
+  (a variance share at/near zero or an inadmissible negative value); `search_boundary`
+  reads the non-Gaussian bridge's **optimizer** state (whether the single-variance
+  Brent search stopped on the rail of its `log(initial$sigma_a2) +/- 6` bracket, or
+  the two-start gap fence fired under `restart_check = TRUE`). The condition string
+  itself now names both mechanisms, not just the bracket rail — and the identical
+  wording was mirrored into `hs_abort_boundary_refused()`'s message in
+  `R/julia-bridge.R` (the boundary-refusal error a caller actually sees), so the two
+  user-facing surfaces describing the same field no longer disagree.
+- `R/hs_control.R` / `man/hs_control.Rd`: the `boundary` paragraph no longer says
+  "not yet a `fit_diagnostics()` row (hsquared#230)"; it now points at the
+  `search_boundary`/`search_boundary_condition` rows.
+- `NEWS.md`: one bullet under the existing development-version header, corrected
+  (Rose O-2) to say the condition row reads `"interior"` when `FALSE`, not only that
+  it "explains the bracket rail when `TRUE`".
+- Tests: `tests/testthat/test-fit-object.R` — a hand-built non-Gaussian-shaped fit
+  with `boundary = TRUE`/`FALSE` (the `TRUE` branch is only reachable this way; the
+  public bridge refuses a `boundary = TRUE` fit before an `hsquared_fit` object
+  exists) and a hand-built Gaussian fit asserting no `search_boundary`/
+  `search_boundary_condition` row at all. `tests/testthat/test-nongaussian-three-field-v09.R`
+  — a live fit via the `ng225_pedigree()`/`hs_sim_genedrop_bv()` fixture asserts
+  `fit_diagnostics()$search_boundary == "FALSE"`. Both files' `"interior"` assertions
+  were tightened (Rose O-3) from `is.na(x) || identical(x, "interior")` to
+  `expect_equal(x, "interior")`, removing an `NA` escape hatch the roxygen says
+  cannot occur.
+- `man/fit_diagnostics.Rd`, `man/hs_control.Rd` regenerated via `devtools::document()`.
+
+### Rose audit (rose-r8.md)
+
+**VERDICT: APPROVE** (merge when green). Confirmed by reading code at exact lines,
+not by running the suite: the Gaussian no-row gate (§1), value-type parity with
+`at_boundary` via the shared `hs_diagnostic_value()` stringifier (§2),
+`already_reported` suppression (§3), the exactness of the `log(initial$sigma_a2)
++/- 6` bracket for the three engine families the R bridge admits — poisson,
+bernoulli, binomial, all single-variance Brent in `HSquared.jl` (§4), and docs/man/
+NEWS accuracy (§5). **`man/` was proven regenerated, not hand-edited**: Rose copied
+`DESCRIPTION`/`NAMESPACE`/`R/`/`man/` to a scratch directory, ran
+`roxygen2::roxygenise(roclets = "rd")`, and got all **49** `.Rd` files back
+byte-identical to the PR's tree (`man/fit_diagnostics.Rd` and `man/hs_control.Rd`
+included), with `RoxygenNote` unchanged at `7.3.2`. Three optional items, all
+applied on this branch's touch-up commit `8d9b2a4` before merge: **O-1** (condition
+text and roxygen name the `restart_check` two-start fence, not only the bracket
+rail — mirrored into `hs_abort_boundary_refused()` too), **O-2** (NEWS states the
+`"interior"` `FALSE` reading), **O-3** (both `"interior"` assertions tightened,
+no `NA` escape hatch). Rose's own NOT-COVERED: no suite was run in the audit;
+`search_boundary = TRUE` on a genuine engine fit is untested and untestable through
+the public API by design (the bridge refuses such a fit before it can be returned).
+
+### Twin context
+
+`HSquared.jl` PR #348 (`fix: :auto multi_effect path forwards initial/iterations;
+boundary refusal names the real lever (#343, #347)`) merged the same day
+(2026-09-15T23:12:29Z), on the Julia side of the same boundary/initial thread. Open
+on the Julia twin, not this repo's to close: **HSquared.jl#344** (`laplace_reml_interval`
+does not consume `NonGaussianFit.boundary`), **HSquared.jl#345** (R bridge consumes
+only `converged`, not `boundary` — pre-existing/stale relative to #229's
+`hs_ng09_boundary()`, not re-litigated here), **HSquared.jl#340**
+(`fit_multivariate_reml` optimizer parameter count does not remove FA/low-rank
+rotational indeterminacy — unrelated thread).
+
+### Checks (this worktree, branch `claude/h2-search-boundary-records` from
+`origin/main` `e28ba19c`)
+
+- `Rscript -e 'devtools::document()'` — clean; `git status --porcelain` after —
+  **empty** (no drift between the committed `man/`/`NAMESPACE` and a fresh
+  regeneration on this branch head).
+- `Rscript -e 'r <- devtools::check(".", document = FALSE, quiet = TRUE, error_on =
+  "never"); cat("errors=", length(r$errors), " warnings=", length(r$warnings), "
+  notes=", length(r$notes), "\n")'` (`OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4`,
+  run via the harness's own background facility, no bare `&`, no sleep chain) —
+  **errors= 0  warnings= 0  notes= 0**. (First pass returned 1 NOTE, "hidden files
+  and directories: `.check_log.txt`" — a stray, untracked, zero-byte artifact from
+  this session's own earlier aborted background attempt, not a PR defect; removed
+  and the check re-run clean. See after-task §9 for the full account.)
+- Live filtered run (`HSQUARED_JULIA_TESTS=true HSQUARED_JULIA_PROJECT=<local
+  HSquared.jl checkout, `origin/main` `a0a0059a`> NOT_CRAN=true
+  OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4 Rscript -e 'devtools::test(filter =
+  "fit-object|nongaussian-three-field-v09", reporter = "summary")'`) — both files
+  fully green, "Your tests deserve a gold
+  medal"; a second run with `reporter = "silent"` tallied against the returned
+  results object: **FAIL= 0  PASS= 263** (this session's own measurement, matches
+  the number carried forward from PR #232's own reported post-touch-up filtered
+  rerun).
+- FULL LIVE SUITE (orchestrator-reported, PR #232 head before the O-1..O-3
+  touch-up commit): `FAIL= 0  ERROR= 0  SKIP= 3  PASS= 3669`. Not re-run by this
+  records session; cited as the orchestrator's own measurement, as the 2026-09-15
+  non-Gaussian-boundary-initial entry above cited the equivalent number for PR #229.
+
+### CI state (`main`, at write time)
+
+`gh run list -R itchyshin/hsquared --branch main -L 4`: R-CMD-check on the PR #232
+merge commit (`e28ba19c`) — **SUCCESS** (6m12s); pkgdown on the PR #232 merge —
+SUCCESS; R-CMD-check and pkgdown on the prior (#229 records) merge commit — both
+SUCCESS.
+
+### Constraints held
+
+`DESCRIPTION` stays `Version: 0.9.0` — no bump. `NEWS.md` gained one bullet under
+the existing `# hsquared (development version)` header — no new header. No row of
+`docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or
+any other status ledger changed cell value; `public_covered_count` stays **7**. No
+Julia edit from this repo.
