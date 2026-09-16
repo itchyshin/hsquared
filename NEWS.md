@@ -4,7 +4,8 @@
   distinct from `at_boundary` (#230 / HSquared.jl#327).** Fits whose result
   carries a `boundary` field (the non-Gaussian bridge route) now gain a
   `search_boundary` row (mirroring `result$boundary`) and a
-  `search_boundary_condition` row explaining the bracket rail when `TRUE`.
+  `search_boundary_condition` row, which explains the bracket rail when
+  `TRUE` and reads `"interior"` when `FALSE`.
   Gaussian animal-model fits (`engine = "fit"`) never carry a `boundary`
   field, so they gain neither row. `search_boundary` is unrelated to the
   existing `at_boundary` rows, which flag an estimated variance component at

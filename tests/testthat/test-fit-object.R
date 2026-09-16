@@ -555,7 +555,7 @@ test_that("fit_diagnostics reports search_boundary for a non-Gaussian-shaped res
     diag_interior$metric == "search_boundary_condition"
   ]
   expect_equal(length(condition_value), 1L)
-  expect_true(is.na(condition_value) || identical(condition_value, "interior"))
+  expect_equal(condition_value, "interior")
 })
 
 test_that("fit_diagnostics gains no search_boundary row for a Gaussian fit without `boundary`", {

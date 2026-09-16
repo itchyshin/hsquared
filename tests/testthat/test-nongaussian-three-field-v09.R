@@ -766,7 +766,7 @@ test_that("hsquared#230: fit_diagnostics() reports search_boundary = FALSE for a
   expect_equal(diag$value[diag$metric == "search_boundary"], "FALSE")
   condition_value <- diag$value[diag$metric == "search_boundary_condition"]
   expect_equal(length(condition_value), 1L)
-  expect_true(is.na(condition_value) || identical(condition_value, "interior"))
+  expect_equal(condition_value, "interior")
 })
 
 test_that("hsquared#222/#225: a boundary-riding fixture fails the DEFAULT fit with a classed, actionable error", {

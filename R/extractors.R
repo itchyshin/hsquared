@@ -1543,8 +1543,9 @@ covariance_structure_lrt <- function(constrained, full, ...) {
 #'   bridge's **optimizer** state: `result$boundary` (documented as
 #'   `fit$result$boundary` in `?hs_control`) reports whether
 #'   `HSquared.jl`'s single-variance Brent search stopped on the rail of its
-#'   log-scale bracket (`log(initial$sigma_a2) +/- 6`, HSquared.jl#327),
-#'   i.e. the estimate is a function of the search bracket, not the data.
+#'   log-scale bracket (`log(initial$sigma_a2) +/- 6`, HSquared.jl#327) or,
+#'   under `restart_check = TRUE`, whether the two-start gap fence fired;
+#'   either way the estimate is a function of the search, not the data.
 #'   Only fits whose result carries a `boundary` field (the non-Gaussian
 #'   route) gain this pair; a Gaussian `engine = "fit"` fit gains neither row
 #'   (not even `NA`). Unlike `at_boundary_condition`, `search_boundary_condition`
@@ -1762,7 +1763,8 @@ hs_fit_search_boundary_condition_label <- function(flag) {
   if (isTRUE(flag)) {
     return(paste0(
       "single-variance search stopped on the rail of the log-scale bracket ",
-      "log(initial$sigma_a2) +/- 6; estimate is a function of the bracket, ",
+      "log(initial$sigma_a2) +/- 6, or (with restart_check = TRUE) the two ",
+      "starts disagreed; either way the estimate is a function of the search, ",
       "not the data (HSquared.jl#327)"
     ))
   }

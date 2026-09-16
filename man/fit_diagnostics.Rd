@@ -37,8 +37,9 @@ the fit is interior, since there is nothing extra to say.
 bridge's \strong{optimizer} state: \code{result$boundary} (documented as
 \code{fit$result$boundary} in \code{?hs_control}) reports whether
 \code{HSquared.jl}'s single-variance Brent search stopped on the rail of its
-log-scale bracket (\verb{log(initial$sigma_a2) +/- 6}, HSquared.jl#327),
-i.e. the estimate is a function of the search bracket, not the data.
+log-scale bracket (\verb{log(initial$sigma_a2) +/- 6}, HSquared.jl#327) or,
+under \code{restart_check = TRUE}, whether the two-start gap fence fired;
+either way the estimate is a function of the search, not the data.
 Only fits whose result carries a \code{boundary} field (the non-Gaussian
 route) gain this pair; a Gaussian \code{engine = "fit"} fit gains neither row
 (not even \code{NA}). Unlike \code{at_boundary_condition}, \code{search_boundary_condition}
