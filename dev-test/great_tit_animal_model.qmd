@@ -168,6 +168,9 @@ dat_cs <- dat |>
 dat_ld <- dat |>
   filter(!is.na(laydate)) |>
   droplevels()
+
+dat_cs$animal2 <- dat_cs$animal
+dat_ld$animal2 <- dat_ld$animal
 ```
 
 # Animal model — clutch size
@@ -346,10 +349,18 @@ heritabilities against the ASReml reference.
 #| label: hs-setup
 # Point the bridge at the local HSquared.jl checkout.
 # The engine reads this before JuliaCall starts.
-# Sys.setenv(
-#   HSQUARED_JULIA_PROJECT =
-#     "/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl"
-# )
+Sys.setenv(
+  HSQUARED_JULIA_PROJECT =
+    "/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl"
+)
+
+Sys.setenv(
+  PATH = paste(
+    "/Users/szymek/.juliaup/bin",
+    Sys.getenv("PATH"),
+    sep = .Platform$path.sep
+  )
+)
 
 # Load hsquared from the local development checkout
 # devtools::load_all()
@@ -361,10 +372,33 @@ library(hsquared)
 `hs_data()` pairs the phenotype table with the prepared pedigree. The pedigree
 must have columns `id`, `dam`, `sire` — exactly the output of `prepPed()`.
 
+The full pedigree includes many individuals unrelated to the females retained
+for these two analyses. Keep those females and every known ancestor before
+passing the data to the Julia engine.
+
 ```{r}
 #| label: hs-bundle
-bundle_cs <- hs_data(phenotypes = dat_cs, pedigree = ped, id = "animal")
-bundle_ld <- hs_data(phenotypes = dat_ld, pedigree = ped, id = "animal")
+analysis_ids <- unique(c(as.character(dat_cs$animal), as.character(dat_ld$animal)))
+pedigree_ids <- analysis_ids
+
+repeat {
+  pedigree_rows <- match(pedigree_ids, ped$id)
+  parent_ids <- unique(c(ped$dam[pedigree_rows], ped$sire[pedigree_rows]))
+  expanded_ids <- unique(c(pedigree_ids, parent_ids[!is.na(parent_ids)]))
+
+  if (length(expanded_ids) == length(pedigree_ids)) {
+    break
+  }
+  pedigree_ids <- expanded_ids
+}
+
+ped_analysis <- ped[ped$id %in% pedigree_ids, c("id", "dam", "sire")]
+stopifnot(all(analysis_ids %in% ped_analysis$id))
+
+cat("Pedigree rows for hsquared:", nrow(ped_analysis), "\n")
+
+bundle_cs <- hs_data(phenotypes = dat_cs, pedigree = ped_analysis, id = "animal")
+bundle_ld <- hs_data(phenotypes = dat_ld, pedigree = ped_analysis, id = "animal")
 
 data_status(bundle_cs)
 ```
@@ -375,13 +409,21 @@ data_status(bundle_cs)
 #| label: hs-fit-cs
 #| results: hide
 time_hs_cs <- system.time({
-  hs_fit_cs <- hsquared(
-    clutch_size ~ year_f + round_f + exp_manip + female.age +
-      animal(1 | animal),
-    data   = bundle_cs,
-    family = gaussian(),
-    REML   = TRUE
-  )
+    hs_fit_cs <- hsquared(
+        clutch_size ~ year_f + round_f + exp_manip + female.age +
+            animal(1|animal),
+        data = bundle_cs,
+        family = gaussian(),
+        # control = hs_control(engine = "validate"),
+        # control = hs_control(
+        #     engine = "julia",
+        #     engine_control = list(
+        #         julia_project = "/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl"
+        #     )
+        # ),
+        # control = hs_control(engine = "julia", engine_control = list(target = "multi_effect")),
+        REML = TRUE
+    )
 })
 ```
 
@@ -434,26 +476,79 @@ heritability(hs_fit_ld) |>
 ## ASReml vs hsquared comparison
 
 ```{r}
-#| label: compare
-hs_h2_cs <- heritability(hs_fit_cs)
-hs_h2_ld <- heritability(hs_fit_ld)
+#| label: compare-runtime
+runtime_comparison <- tibble(
+  Trait = rep(c("Clutch size", "Laying date"), each = 2),
+  Engine = rep(c("ASReml", "hsquared"), times = 2),
+  `Elapsed (s)` = c(
+    time_cs[["elapsed"]], time_hs_cs[["elapsed"]],
+    time_ld[["elapsed"]], time_hs_ld[["elapsed"]]
+  )
+)
 
-tibble(
-  Trait        = c("Clutch size", "Laying date"),
-  Engine       = "hsquared",
-  `h²`         = c(hs_h2_cs$estimate, hs_h2_ld$estimate),
-  `h² SE`      = c(hs_h2_cs$se,       hs_h2_ld$se),
-  `elapsed (s)` = c(time_hs_cs["elapsed"], time_hs_ld["elapsed"])
-) |>
-  bind_rows(
-    tibble(
-      Trait        = c("Clutch size", "Laying date"),
-      Engine       = "ASReml",
-      `h²`         = c(h2_cs[["Estimate"]], h2_ld[["Estimate"]]),
-      `h² SE`      = c(h2_cs[["SE"]],       h2_ld[["SE"]]),
-      `elapsed (s)` = c(time_cs["elapsed"],  time_ld["elapsed"])
+runtime_comparison |>
+  mutate(`Elapsed (s)` = round(`Elapsed (s)`, 3)) |>
+  kable(caption = "Runtime comparison")
+```
+
+```{r}
+#| label: compare-variance-components
+asreml_variance_components <- function(fit, trait) {
+  summary(fit)$varcomp |>
+    as.data.frame() |>
+    tibble::rownames_to_column("Component") |>
+    transmute(
+      Trait = trait,
+      Engine = "ASReml",
+      Component,
+      Estimate = component,
+      `SE` = std.error
     )
-  ) |>
-  mutate(across(where(is.numeric), ~ round(., 4))) |>
-  kable(caption = "Heritability and timing: hsquared (Julia AI-REML) vs ASReml")
+}
+
+hsquared_variance_components <- function(fit, trait) {
+  variance_components(fit) |>
+    transmute(
+      Trait = trait,
+      Engine = "hsquared",
+      Component = component,
+      Estimate = estimate,
+      `SE` = NA_real_
+    )
+}
+
+variance_component_comparison <- bind_rows(
+  asreml_variance_components(fit_cs, "Clutch size"),
+  hsquared_variance_components(hs_fit_cs, "Clutch size"),
+  asreml_variance_components(fit_ld, "Laying date"),
+  hsquared_variance_components(hs_fit_ld, "Laying date")
+)
+
+variance_component_comparison |>
+  mutate(across(c(Estimate, `SE`), ~ round(., 4))) |>
+  kable(caption = "Variance-component comparison")
+```
+
+```{r}
+#| label: compare-heritability
+heritability_comparison <- bind_rows(
+  tibble(
+    Trait = c("Clutch size", "Laying date"),
+    Engine = "ASReml",
+    Heritability = c(h2_cs[["Estimate"]], h2_ld[["Estimate"]]),
+    `SE` = c(h2_cs[["SE"]], h2_ld[["SE"]])
+  ),
+  bind_rows(
+    heritability(hs_fit_cs) |>
+      transmute(Trait = "Clutch size", Engine = "hsquared",
+                Heritability = estimate, `SE` = NA_real_),
+    heritability(hs_fit_ld) |>
+      transmute(Trait = "Laying date", Engine = "hsquared",
+                Heritability = estimate, `SE` = NA_real_)
+  )
+)
+
+heritability_comparison |>
+  mutate(across(c(Heritability, `SE`), ~ round(., 4))) |>
+  kable(caption = "Heritability comparison")
 ```
