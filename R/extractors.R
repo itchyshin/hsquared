@@ -1174,7 +1174,10 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #' from the REML average-information matrix. They are available only when an
 #' `hsquared_fit` object contains them; the default Gaussian animal-model fit
 #' populates them from the engine when a local Julia engine is present and the
-#' AI matrix is invertible.
+#' AI matrix is invertible. When the engine could not compute them, `hsquared()`
+#' warns once at fit time and keeps the engine's reason in
+#' `attr(fit, "bridge_errors")`, a character vector named by the engine
+#' function that failed (HSquared.jl#351); the field is then absent, not `NA`.
 #'
 #' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic,
 #' REML-only, and unreliable at small `n` or near a variance-component
