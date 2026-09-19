@@ -1,5 +1,23 @@
 # hsquared (development version)
 
+* **Post-fit engine failures now surface instead of vanishing
+  (HSquared.jl#351).** The bridge computes the experimental standard errors,
+  intervals, and plot data inside Julia `try` blocks so a failure there never
+  aborts the fit; previously the `catch` swallowed the error, so a fit whose
+  `variance_component_standard_errors()` or `heritability_standard_error()`
+  threw came back with those fields silently absent and no message, and
+  nobody could tell "undefined here" from "the engine threw". Every such
+  block (the SE trio, the multivariate covariance SEs, the repeatability /
+  two-effect / n-effect ratio intervals, and all plot-data attachments,
+  including an `OutOfMemoryError` there) now records the engine's message.
+  After the fit, `hsquared()` raises ONE warning naming each engine function
+  that failed with the first 200 characters of its message, and attaches the
+  full record as `attr(fit, "bridge_errors")` (a named character vector).
+  What is computed is unchanged; a clean fit carries no attribute and no
+  warning. The underlying throw on the reported real-data fit is a separate
+  engine question. No version bump; no capability-status change.
+  Credit: Szymon Drobniak (finding).
+
 * **`fit_diagnostics()` reports `search_boundary` for non-Gaussian fits,
   distinct from `at_boundary` (#230 / HSquared.jl#327).** Fits whose result
   carries a `boundary` field (the non-Gaussian bridge route) now gain a

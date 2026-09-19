@@ -28,7 +28,10 @@ return \strong{experimental} large-sample (delta-method) standard errors derived
 from the REML average-information matrix. They are available only when an
 \code{hsquared_fit} object contains them; the default Gaussian animal-model fit
 populates them from the engine when a local Julia engine is present and the
-AI matrix is invertible.
+AI matrix is invertible. When the engine could not compute them, \code{hsquared()}
+warns once at fit time and keeps the engine's reason in
+\code{attr(fit, "bridge_errors")}, a character vector named by the engine
+function that failed (HSquared.jl#351); the field is then absent, not \code{NA}.
 
 These mirror the engine row \code{V1-HERIT-CI} (\code{partial}): asymptotic,
 REML-only, and unreliable at small \code{n} or near a variance-component
