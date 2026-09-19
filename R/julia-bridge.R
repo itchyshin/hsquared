@@ -1301,6 +1301,7 @@ hs_fit_julia_repeatability_payload <- function(
   JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       "hsq_fit = HSquared.fit_repeatability_reml(",
@@ -1329,7 +1330,8 @@ hs_fit_julia_repeatability_payload <- function(
     "sigma_pe2 = hsq_initial_sigma_pe2,",
     "sigma_e2 = hsq_initial_sigma_e2),",
     "iterations = hsq_iterations, ids = hsq_ped.ids);",
-    "catch; nothing; end; else; nothing; end;",
+    hs_julia_catch_record("repeatability_interval"),
+    "else; nothing; end;",
     "hsq_has_ri = hsq_ri !== nothing;"
   ))
 
@@ -1361,7 +1363,7 @@ hs_fit_julia_repeatability_payload <- function(
     ))
     result$repeatability_interval <- hs_normalize_repeatability_interval(raw_ri)
   }
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -1371,6 +1373,7 @@ hs_fit_julia_repeatability_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_repeatability_result <- function(raw, payload) {
@@ -1506,6 +1509,7 @@ hs_fit_julia_two_effect_payload <- function(
 
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       ainv2_cmd,
@@ -1556,7 +1560,8 @@ hs_fit_julia_two_effect_payload <- function(
     "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
     ids2_cmd,
     ");",
-    "catch; nothing; end; else; nothing; end;",
+    hs_julia_catch_record("two_effect_ratio_interval"),
+    "else; nothing; end;",
     "hsq_has_ci = hsq_ci !== nothing;"
   ))
 
@@ -1582,7 +1587,7 @@ hs_fit_julia_two_effect_payload <- function(
     ))
     result <- hs_attach_two_effect_intervals(result, raw_ci, payload)
   }
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -1592,6 +1597,7 @@ hs_fit_julia_two_effect_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 # ---------------------------------------------------------------------------
@@ -2054,9 +2060,10 @@ hs_fit_julia_n_effect_payload <- function(
     )),
     hint = hs_dense_scale_hint
   )
-  JuliaCall::julia_command(
+  JuliaCall::julia_command(paste(
+    hs_julia_bridge_errors_reset,
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
-  )
+  ))
 
   raw <- JuliaCall::julia_eval(paste(
     "Dict(",
@@ -2119,7 +2126,8 @@ hs_fit_julia_n_effect_payload <- function(
       "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids%s);",
       nci_extra_kwargs
     ),
-    "catch; nothing; end; else; nothing; end;",
+    hs_julia_catch_record("multi_effect_ratio_interval"),
+    "else; nothing; end;",
     "hsq_has_nci = hsq_nci !== nothing;"
   ))
   if (isTRUE(JuliaCall::julia_eval("hsq_has_nci"))) {
@@ -2138,7 +2146,7 @@ hs_fit_julia_n_effect_payload <- function(
     result <- hs_attach_n_effect_intervals(result, raw_nci, raw)
   }
 
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -2148,6 +2156,7 @@ hs_fit_julia_n_effect_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_two_effect_result <- function(raw, payload) {
