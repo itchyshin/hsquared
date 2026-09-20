@@ -386,12 +386,33 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
   if (n_records <= n_ids) {
     return(invisible(FALSE))
   }
-  warning(
+  preamble <- paste0(
     "The data have repeated records per individual (", n_records,
     " records for ", n_ids, " individuals), but the model has no ",
     "`permanent(1 | ...)` term. The additive variance will ABSORB the ",
     "permanent-environment variance, so `animal` and the heritability derived ",
-    "from it are inflated -- they are not narrow-sense quantities here.\n",
+    "from it are inflated -- they are not narrow-sense quantities here.\n"
+  )
+  # A multivariate `cbind()` response reaches an animal-only fitter: the spec
+  # fence admits a single random-intercept animal effect and nothing else, so
+  # `permanent()` is NOT accepted there. Printing the univariate recipe would
+  # name a term the target rejects -- hsquared#212's defect class -- so the
+  # multivariate branch states the consequence and stops, rather than handing
+  # out a call that cannot run.
+  if (isTRUE(spec$response$multivariate)) {
+    warning(
+      preamble,
+      "A multivariate `cbind()` response cannot carry a `permanent()` term ",
+      "on the current multivariate route, so there is no in-model fix here: ",
+      "fit the traits univariately with `permanent(1 | <id>)` if you need the ",
+      "additive and permanent-environment variances separated.\n",
+      "Suppress with suppressWarnings() if this is intended.",
+      call. = FALSE
+    )
+    return(invisible(TRUE))
+  }
+  warning(
+    preamble,
     "To separate them, add a permanent-environment effect:\n",
     "  hsquared(\n",
     "    <response> ~ <fixed> + animal(1 | <id>, pedigree = ped) + ",

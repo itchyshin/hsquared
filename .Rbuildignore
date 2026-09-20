@@ -2,6 +2,7 @@
 ^\.agents$
 ^\.codex$
 ^\.claude$
+^\.vscode$
 ^\.mission-control$
 ^\.unlazy$
 ^CLAUDE\.md$

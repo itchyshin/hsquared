@@ -12,7 +12,13 @@ pkgdown-site/
 doc/
 .mission-control/
 .claude/launch.json
-settings.json
+# Machine-local Claude settings and editor config. NOT a blanket
+# `settings.json` rule: .claude/settings.json is deliberately TRACKED (it
+# carries the shared hook configuration), and a blanket rule nominally
+# covering a tracked file is a trap for anyone who later runs
+# `git rm --cached`.
+.claude/settings.local.json
+.vscode/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/

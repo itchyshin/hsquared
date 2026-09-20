@@ -253,7 +253,9 @@ export(validation_status)
 export(variance_along_gradient)
 export(variance_component_standard_errors)
 export(variance_components)
-importFrom(ggplot2,.data)
-importFrom(ggplot2,autoplot)
+importFrom(ggplot2,
+  .data,
+  autoplot
+)
 importFrom(lifecycle,deprecated)
 importFrom(stats,nobs)

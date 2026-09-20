@@ -541,15 +541,25 @@ test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
     id = ped$id
   )
 
-  fit <- hsquared(
-    cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
-    data = dat,
-    family = stats::gaussian(),
-    REML = TRUE,
-    control = hs_control(
-      engine = "julia",
-      engine_control = list(target = "multivariate", iterations = 400L)
-    )
+  # PINNED (hsquared#235): this fixture's optimum is flat/boundary, so the
+  # engine's observed information is not positive definite and
+  # multivariate_covariance_standard_errors() refuses. The bridge surfaces
+  # that as one warning rather than a silent NA -- asserting it keeps the
+  # surfacing from regressing to silence. One record per animal here, so the
+  # repeated-records warning does NOT apply. If the engine later makes these
+  # SEs computable this FAILS on purpose: update it deliberately.
+  expect_warning(
+    fit <- hsquared(
+      cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "multivariate", iterations = 400L)
+      )
+    ),
+    "multivariate_covariance_standard_errors\\(\\).*observed information is not finite positive-definite"
   )
 
   expect_s3_class(fit, "hsquared_fit")

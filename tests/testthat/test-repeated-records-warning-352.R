@@ -107,3 +107,32 @@ test_that("formula_status() points repeated-measures users at the right route", 
   expect_match(row$current_behavior, "scale_method", fixed = TRUE)
   expect_match(row$current_behavior, "ABSORB", fixed = TRUE)
 })
+
+test_that("a multivariate response is not told to add a term it cannot accept", {
+  # hsquared#212's defect class: naming a lever the target does not accept. The
+  # multivariate route admits a single random-intercept animal effect and
+  # nothing else, so the univariate `permanent()` recipe would be rejected if a
+  # reader followed it. The absorption is still real and still reported.
+  ped <- hs_rr_ped()
+  set.seed(5)
+  dat <- data.frame(
+    id = rep(c("a", "b", "c", "d", "e"), each = 3),
+    t1 = stats::rnorm(15),
+    t2 = stats::rnorm(15),
+    stringsAsFactors = FALSE
+  )
+  w <- tryCatch(
+    hsquared(
+      cbind(t1, t2) ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      control = hs_control(engine = "validate")
+    ),
+    warning = conditionMessage
+  )
+  expect_match(w, "15 records for 5 individuals", fixed = TRUE)
+  expect_match(w, "ABSORB", fixed = TRUE)
+  expect_match(w, "cannot carry a `permanent()` term", fixed = TRUE)
+  # It must NOT hand out the univariate call.
+  expect_false(grepl("target = \"repeatability\"", w, fixed = TRUE))
+  expect_false(grepl("scale_method", w, fixed = TRUE))
+})
