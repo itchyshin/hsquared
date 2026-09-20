@@ -410,18 +410,27 @@ data_status(bundle_cs)
 #| results: hide
 time_hs_cs <- system.time({
     hs_fit_cs <- hsquared(
+        # MATCHES THE ASReml MODEL: `~ vm(animal, Ainv) + ide(animal)` is the
+        # additive genetic effect PLUS a permanent-environment effect. Fitting
+        # `animal(1 | animal)` alone here made the comparison structurally
+        # mismatched -- with 11,856 records on 7,340 females, the additive
+        # variance absorbed the permanent-environment variance and came back as
+        # a single 1.110 against ASReml's 0.595 + 0.525.
+        #
+        # `scale_method = "auto"` is required, not optional: the dense
+        # estimator is capped at nobs^2 + nanimals^2 <= max_dense_cells, and
+        # this problem needs ~2.6e8 cells against a 1e6 cap.
         clutch_size ~ year_f + round_f + exp_manip + female.age +
-            animal(1|animal),
+            animal(1 | animal) + permanent(1 | animal),
         data = bundle_cs,
         family = gaussian(),
-        # control = hs_control(engine = "validate"),
-        # control = hs_control(
-        #     engine = "julia",
-        #     engine_control = list(
-        #         julia_project = "/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl"
-        #     )
-        # ),
-        # control = hs_control(engine = "julia", engine_control = list(target = "multi_effect")),
+        control = hs_control(
+            engine = "julia",
+            engine_control = list(
+                target = "repeatability",
+                scale_method = "auto"
+            )
+        ),
         REML = TRUE
     )
 })
@@ -450,9 +459,13 @@ heritability(hs_fit_cs) |>
 time_hs_ld <- system.time({
   hs_fit_ld <- hsquared(
     laydate ~ year_f + round_f + exp_manip + female.age +
-      animal(1 | animal),
+      animal(1 | animal) + permanent(1 | animal),
     data   = bundle_ld,
     family = gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "repeatability", scale_method = "auto")
+    ),
     REML   = TRUE
   )
 })

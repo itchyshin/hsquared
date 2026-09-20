@@ -8321,3 +8321,50 @@ recovery campaign, no coverage calibration — the standard errors are asymptoti
 and explicitly not coverage-calibrated. `public_covered_count` stays **7**;
 version stays **0.9.0**. No tag, registry, or release action. `#138` (ASReml
 comparison) remains open and ASReml remains forbidden as a covered leg.
+
+## 2026-09-20 (later) — #351 root cause, repeated-records warning, real-data check [R]
+
+- **`4b338d6`.** Three things: the `HSquared.jl#351` root cause, the
+  `HSquared.jl#352` item-3 warning, and the real-data animal+PE check.
+- **#351 root cause: NOT an engine failure.** Reproduced both great tit fits on
+  current `main` (notebook pipeline, `nadiv::prepPed`, same fixed effects).
+  clutch size animal **1.110092 ± 0.04292823**, residual **1.440083 ±
+  0.02872833**, h² **0.4353 ± 0.0127**; laying date animal **8.783314 ±
+  0.5538355**, residual **29.079317 ± 0.5399498**, h² **0.2320 ± 0.0133**.
+  `attr(fit, "bridge_errors")` **NULL** on every fit. Tried the pruned pedigree
+  (10,937) and the **full** 111,645-row one — identical, 10.6 s / 16.2 s. The
+  `NA`s came from `dev-test/great_tit_animal_model.qmd`, which hardcoded
+  `SE = NA_real_` for the `hsquared` rows in BOTH comparison tables and never
+  called the SE extractors. Fixed in the notebook; reported on
+  `HSquared.jl#351`. The try/catch defect that issue names was real and is
+  fixed by PR #235, but it was not the cause of these `NA`s.
+- **Repeated-records warning.** `hs_warn_unmodelled_repeated_records()` fires
+  when the animal effect is alone on its ids and records outnumber individuals;
+  it reports the counts and the exact call that separates the components,
+  including `scale_method = "auto"`. The issue asked the R side to REFUSE;
+  this warns instead (refusing would reject legitimately-specified models, and
+  a warning can name a reachable alternative). Suppressible.
+  `formula_status()`'s `permanent(1 | id)` row now names the repeated-measures
+  model, the absorption failure, and the scale lever.
+- **Contract fix from the previous commit:** the sparse repeatability route
+  stored `heritability_se` as a data frame while the documented contract (and
+  the animal-model route) is a single numeric. Corrected; the extractor's
+  return type must not depend on the target.
+- **Real-data check (development evidence only).** `animal + permanent` on the
+  great tit data, `scale_method = "auto"` (dense would need ~2.6e8 cells
+  against the 1e6 cap): clutch size **V_A 0.59540 ± 0.069573 / V_PE 0.52523 ±
+  0.067677** vs ASReml **0.595 / 0.525**; laying date **V_A 6.2653 ± 0.84325 /
+  V_PE 3.0154 ± 0.84902** vs ASReml **6.27 / 3.02**. Both converged. h² for
+  clutch size **0.2388 ± 0.0269**, against the inflated **0.4353** the
+  animal-only model gave. Recorded in
+  `dev-test/RESULTS-animal-pe-vs-asreml.md`.
+- **Checks.** `devtools::test()` **FAIL=0 ERROR=2 SKIP=101 PASS=3017** (both
+  errors the pre-existing absent-`sommer` gate); `pkgdown::check_pkgdown()`
+  **PASS**; `devtools::check()` **2/0/1**, unchanged from baseline. New file
+  `test-repeated-records-warning-352.R` (12 tests). `document()`
+  `NAMESPACE`/`DESCRIPTION` roxygen-version churn reverted, not committed.
+- **Boundary.** ASReml is licence-absent and **forbidden as a covered
+  comparator leg**; the agreement above is development evidence, NOT a
+  comparator gate, and **#138 stays open**. No capability row flipped;
+  repeatability stays **partial**; `public_covered_count` stays **7**; version
+  stays **0.9.0**.
