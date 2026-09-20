@@ -450,6 +450,32 @@ hsquared <- function(
           call. = FALSE
         )
       }
+      # `initial`/`iterations` reach the dense estimator but NOT the sparse one
+      # (HSquared.jl#343). Say so rather than accepting them and quietly
+      # ignoring them -- a start value the user tuned to rescue convergence,
+      # silently dropped, is the worst of both behaviours.
+      if (
+        identical(
+          hs_engine_control_value(control, "scale_method", "dense"),
+          "auto"
+        )
+      ) {
+        inert <- c("initial", "iterations")[
+          c(
+            !is.null(hs_engine_control_value(control, "initial", NULL)),
+            !is.null(hs_engine_control_value(control, "iterations", NULL))
+          )
+        ]
+        if (length(inert) > 0L) {
+          warning(
+            "`target = \"repeatability\"` with `scale_method = \"auto\"` ",
+            "ignores ", paste0("`", inert, "`", collapse = " and "),
+            ": the sparse route picks its own start and iteration count ",
+            "(HSquared.jl#343). Use `scale_method = \"dense\"` to control them.",
+            call. = FALSE
+          )
+        }
+      }
       return(hs_fit_julia_repeatability_payload(
         payload,
         project = hs_engine_control_value(
@@ -471,6 +497,15 @@ hsquared <- function(
           control,
           "max_dense_cells",
           1e6
+        ),
+        # "dense" (default) keeps the covered validation-scale estimator.
+        # "auto" routes the SAME model through the engine's sparse K-effect
+        # AI-REML, which is the only way a real repeated-measures pedigree
+        # clears the dense nobs^2 + nanimals^2 ceiling.
+        scale_method = hs_engine_control_value(
+          control,
+          "scale_method",
+          "dense"
         )
       ))
     }
@@ -508,6 +543,12 @@ hsquared <- function(
     }
 
     if (identical(target, "multi_effect")) {
+      # A `permanent(1 | id)` formula is deliberately NOT accepted here: the
+      # term-to-target router above already sends it to `target =
+      # "repeatability"` with the closest working call spelled out, and that
+      # target keeps the PE-specific labels, `repeatability()` and
+      # `permanent_effects()`. Accepting it here too would give the same model
+      # a second, worse-labelled surface.
       if (
         is.null(spec$random$iid_effects) ||
           length(spec$random$iid_effects) == 0L

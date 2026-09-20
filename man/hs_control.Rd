@@ -48,7 +48,8 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \code{genomic}, \code{single_step}, \code{single_step_construct},
 \code{metafounder_single_step}, \code{relmat}, \code{precision}: \code{initial},
 \code{iterations}.
-\item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells}.
+\item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells},
+\code{scale_method}.
 \item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method} -- \code{initial}/
 \code{iterations} are honoured on the \code{scale_method = "dense"} (default)
 route only; the opt-in \code{scale_method = "auto"} route does not yet
@@ -128,6 +129,21 @@ surfaces the Julia-owned \code{HSquared.fit_repeatability_reml()} REML-only
 optimizer (three-component \code{initial} with \code{sigma_a2}/\code{sigma_pe2}/\code{sigma_e2}).
 It is REML only, not the default, and the additive and permanent-environment
 variances are identifiable only with repeated records per individual.
+\code{scale_method} selects the estimator. \code{"dense"} (the default) is the
+covered validation-scale \code{fit_repeatability_reml()} above, which the engine
+refuses once \code{nobs^2 + nanimals^2} exceeds \code{max_dense_cells} -- a ceiling
+any field-scale repeated-measures pedigree passes easily.
+\code{scale_method = "auto"} fits the SAME model through the engine's sparse
+K-effect AI-REML (\verb{fit_multi_effect(method = :auto)}), expressing it as the
+animal block plus an identity-relationship permanent-environment block, and
+so has no dense ceiling. Below the ceiling the two agree to REML tolerance.
+Three differences are deliberate on the sparse route: \code{initial} and
+\code{iterations} are NOT honoured (the engine picks its own; a supplied value
+warns), no repeatability-coefficient interval is returned (the engine's
+interval refits densely), and \code{loglik} carries the REML normalising
+constant \code{-(n - p)/2 * log(2 * pi)} that the dense route omits -- so
+log-likelihoods, AIC, or likelihood-ratio tests must NOT be compared
+across \code{scale_method}.
 \code{target = "two_effect"} is an experimental, opt-in path for two-effect
 models. It requires \code{animal(1 | id, pedigree = ped)} plus a second random
 effect -- \code{common_env(1 | group)} (an IID common-environment effect) or

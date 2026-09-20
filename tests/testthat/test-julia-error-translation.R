@@ -74,12 +74,35 @@ test_that("each hs_fit_julia_*_payload() call site uses the hint matching what i
     paste(deparse(body(getFromNamespace(fn, "hsquared"))), collapse = "\n")
   }
 
-  guarded <- c("hs_fit_julia_payload", "hs_fit_julia_repeatability_payload")
-  for (fn in guarded) {
+  # Each guarded route names ITS OWN dense hint. The repeatability route has a
+  # named sparse escape (`scale_method = "auto"`), so it carries a specific
+  # hint rather than the generic "use a sparse route" wording; the invariant
+  # that matters is that whatever hint it uses still names `max_dense_cells`,
+  # which is asserted on the constants directly below.
+  guarded <- c(
+    hs_fit_julia_payload = "hs_dense_route_hint",
+    hs_fit_julia_repeatability_payload = "hs_repeatability_dense_route_hint"
+  )
+  for (fn in names(guarded)) {
     txt <- body_text_of(fn)
-    expect_match(txt, "hs_dense_route_hint", fixed = TRUE, info = fn)
+    expect_match(txt, guarded[[fn]], fixed = TRUE, info = fn)
     expect_false(grepl("hs_dense_scale_hint", txt, fixed = TRUE), info = fn)
   }
+
+  # The actual user-facing contract: every dense hint names the control that
+  # lifts the ceiling, and the repeatability one also names the sparse route.
+  expect_match(
+    hsquared:::hs_dense_route_hint, "max_dense_cells",
+    fixed = TRUE
+  )
+  expect_match(
+    hsquared:::hs_repeatability_dense_route_hint, "max_dense_cells",
+    fixed = TRUE
+  )
+  expect_match(
+    hsquared:::hs_repeatability_dense_route_hint, "scale_method",
+    fixed = TRUE
+  )
 
   unguarded_dense <- c(
     "hs_fit_julia_henderson_mme_payload",

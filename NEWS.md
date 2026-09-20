@@ -1,5 +1,27 @@
 # hsquared (development version)
 
+* **The animal + permanent-environment model now fits at real pedigree scale
+  (HSquared.jl#352).** `target = "repeatability"` gains
+  `scale_method`. The default `"dense"` is unchanged; `scale_method = "auto"`
+  fits the same `animal(1 | id, pedigree = ped) + permanent(1 | id)` model
+  through the engine's sparse K-effect AI-REML, which has no
+  `nobs^2 + nanimals^2` dense ceiling. Previously any field-scale
+  repeated-measures dataset was refused by that ceiling, so users fell back to
+  a single animal effect and `V_A` silently absorbed `V_PE`. Below the ceiling
+  the two estimators agree to REML tolerance. On the sparse route `initial` and
+  `iterations` are not honoured (a supplied value now warns), no
+  repeatability-coefficient interval is returned, and `loglik` carries the REML
+  normalising constant the dense route omits, so log-likelihoods must not be
+  compared across `scale_method`. The dense route's refusal now names
+  `scale_method = "auto"` instead of saying only "use a sparse route".
+  (Szymon Drobniak.)
+
+* **`animal(...)` plus a single `(1 | group)` effect now fits
+  (HSquared.jl#352).** The multi-effect bridge required at least three
+  random-effect blocks, an R-side accident — every engine entry point accepts
+  `K >= 1`. The floor is now two, so `target = "multi_effect"` reaches the
+  two-block model instead of erroring. (Szymon Drobniak.)
+
 * Fixed stale documentation: `R/julia-bridge.R` comments described the Julia
   `prediction_error_variance()`/`reliability()` extractor defaults as
   `:dense`, which HSquared.jl#355 made false (the default is now `:auto`,

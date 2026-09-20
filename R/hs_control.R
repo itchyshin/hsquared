@@ -35,7 +35,8 @@
 #'     `genomic`, `single_step`, `single_step_construct`,
 #'     `metafounder_single_step`, `relmat`, `precision`: `initial`,
 #'     `iterations`.
-#'   * `repeatability`: `initial`, `iterations`, `max_dense_cells`.
+#'   * `repeatability`: `initial`, `iterations`, `max_dense_cells`,
+#'     `scale_method`.
 #'   * `multi_effect`: `initial`, `iterations`, `scale_method` -- `initial`/
 #'     `iterations` are honoured on the `scale_method = "dense"` (default)
 #'     route only; the opt-in `scale_method = "auto"` route does not yet
@@ -115,6 +116,21 @@
 #'   optimizer (three-component `initial` with `sigma_a2`/`sigma_pe2`/`sigma_e2`).
 #'   It is REML only, not the default, and the additive and permanent-environment
 #'   variances are identifiable only with repeated records per individual.
+#'   `scale_method` selects the estimator. `"dense"` (the default) is the
+#'   covered validation-scale `fit_repeatability_reml()` above, which the engine
+#'   refuses once `nobs^2 + nanimals^2` exceeds `max_dense_cells` -- a ceiling
+#'   any field-scale repeated-measures pedigree passes easily.
+#'   `scale_method = "auto"` fits the SAME model through the engine's sparse
+#'   K-effect AI-REML (`fit_multi_effect(method = :auto)`), expressing it as the
+#'   animal block plus an identity-relationship permanent-environment block, and
+#'   so has no dense ceiling. Below the ceiling the two agree to REML tolerance.
+#'   Three differences are deliberate on the sparse route: `initial` and
+#'   `iterations` are NOT honoured (the engine picks its own; a supplied value
+#'   warns), no repeatability-coefficient interval is returned (the engine's
+#'   interval refits densely), and `loglik` carries the REML normalising
+#'   constant `-(n - p)/2 * log(2 * pi)` that the dense route omits -- so
+#'   log-likelihoods, AIC, or likelihood-ratio tests must NOT be compared
+#'   across `scale_method`.
 #'   `target = "two_effect"` is an experimental, opt-in path for two-effect
 #'   models. It requires `animal(1 | id, pedigree = ped)` plus a second random
 #'   effect -- `common_env(1 | group)` (an IID common-environment effect) or

@@ -37,6 +37,17 @@ hs_abort_unsupported_syntax <- function(..., call. = FALSE) {
 # user at a control that target does not accept (hsquared#212's defect class).
 hs_dense_route_hint <- "raise max_dense_cells in engine_control or use a sparse route"
 
+# The repeatability target's own hint. Unlike the generic one above, this route
+# HAS a named sparse escape, so the message says which control to set instead of
+# leaving "use a sparse route" as an instruction the reader cannot act on. The
+# dense ceiling scales as nobs^2 + nanimals^2, so any real repeated-measures
+# pedigree hits it long before the model is the problem.
+hs_repeatability_dense_route_hint <- paste0(
+  "set engine_control = list(target = \"repeatability\", ",
+  "scale_method = \"auto\") to fit the same model through the sparse route, ",
+  "or raise max_dense_cells in engine_control"
+)
+
 # Appended at the remaining dense/validation-scale routes, which enforce no
 # cell cap and expose no lever to raise.
 hs_dense_scale_hint <- "this route is dense and validation-scale (n <= ~1000); reduce the problem size or use a sparse target"

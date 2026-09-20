@@ -1278,8 +1278,10 @@ hs_fit_julia_repeatability_payload <- function(
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1),
   iterations = 200L,
-  max_dense_cells = 1e6
+  max_dense_cells = 1e6,
+  scale_method = c("dense", "auto")
 ) {
+  scale_method <- match.arg(scale_method)
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
   }
@@ -1301,21 +1303,48 @@ hs_fit_julia_repeatability_payload <- function(
   )
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
-  hs_julia_fit(
-    JuliaCall::julia_command(paste(
-      hs_julia_bridge_errors_reset,
-      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-      "hsq_fit = HSquared.fit_repeatability_reml(",
-      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-      "sigma_pe2 = hsq_initial_sigma_pe2,",
-      "sigma_e2 = hsq_initial_sigma_e2),",
-      "iterations = hsq_iterations, ids = hsq_ped.ids,",
-      "max_dense_cells = Int(hsq_mdc));"
-    )),
-    hint = hs_dense_route_hint
-  )
+  if (identical(scale_method, "dense")) {
+    # Covered validation-scale route, unchanged: the dense three-component
+    # optimizer, gated by the engine on nobs^2 + nanimals^2 <= max_dense_cells.
+    hs_julia_fit(
+      JuliaCall::julia_command(paste(
+        hs_julia_bridge_errors_reset,
+        "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+        "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+        "hsq_fit = HSquared.fit_repeatability_reml(",
+        "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+        "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+        "sigma_pe2 = hsq_initial_sigma_pe2,",
+        "sigma_e2 = hsq_initial_sigma_e2),",
+        "iterations = hsq_iterations, ids = hsq_ped.ids,",
+        "max_dense_cells = Int(hsq_mdc));"
+      )),
+      hint = hs_repeatability_dense_route_hint
+    )
+  } else {
+    # `scale_method = "auto"`: the SAME animal + permanent-environment model,
+    # expressed as the K = 2 independent-block problem the engine already
+    # solves, so `fit_multi_effect(:auto)` can take the SPARSE-exact AI-REML
+    # route (`sparse_multi_effect_aireml`) and escape the dense ceiling. Block 1
+    # is the animal effect carrying A^-1; block 2 is the permanent-environment
+    # effect on the SAME incidence `Z` with an identity relationship.
+    #
+    # `initial`/`iterations` are NOT forwarded here: `fit_multi_effect` does not
+    # accept them on this route (HSquared.jl#343). The engine picks its own
+    # start, so a supplied `initial` is silently inert -- the R dispatch warns
+    # rather than letting the user believe it was honoured.
+    hs_julia_fit(
+      JuliaCall::julia_command(paste(
+        hs_julia_bridge_errors_reset,
+        "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+        "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+        "hsq_Ipe = spdiagm(0 => ones(size(hsq_Ainv, 1)));",
+        "hsq_fit = HSquared.fit_multi_effect(",
+        "hsq_y, hsq_X, [(hsq_Z, hsq_Ainv), (hsq_Z, hsq_Ipe)];",
+        "method = :auto, verbose = false);"
+      ))
+    )
+  }
 
   # Experimental, opt-in repeatability-coefficient CI (engine row V3-REPEAT-REML,
   # partial). repeatability_interval() takes the raw matrices (not a fit) and
@@ -1323,37 +1352,75 @@ hs_fit_julia_repeatability_payload <- function(
   # (flat/boundary optimum) or a boundary t, so the try guard keeps an interval
   # failure from aborting the fit. hsq_has_ri gates the eval so a Julia `nothing`
   # never crosses the bridge.
-  JuliaCall::julia_command(paste(
-    "hsq_ri = if isdefined(HSquared, :repeatability_interval) &&",
-    "applicable(HSquared.repeatability_interval, hsq_y, hsq_X, hsq_Z, hsq_Ainv);",
-    "try; HSquared.repeatability_interval(",
-    "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-    "initial = (sigma_a2 = hsq_initial_sigma_a2,",
-    "sigma_pe2 = hsq_initial_sigma_pe2,",
-    "sigma_e2 = hsq_initial_sigma_e2),",
-    "iterations = hsq_iterations, ids = hsq_ped.ids);",
-    hs_julia_catch_record("repeatability_interval"),
-    "else; nothing; end;",
-    "hsq_has_ri = hsq_ri !== nothing;"
-  ))
+  # NOT run on the sparse route: repeatability_interval() refits INTERNALLY with
+  # the dense estimator, so calling it for a fit that only succeeded because it
+  # escaped the dense ceiling would re-impose exactly the ceiling we just
+  # escaped. The sparse route therefore carries no repeatability interval.
+  if (identical(scale_method, "dense")) {
+    JuliaCall::julia_command(paste(
+      "hsq_ri = if isdefined(HSquared, :repeatability_interval) &&",
+      "applicable(HSquared.repeatability_interval, hsq_y, hsq_X, hsq_Z, hsq_Ainv);",
+      "try; HSquared.repeatability_interval(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_pe2 = hsq_initial_sigma_pe2,",
+      "sigma_e2 = hsq_initial_sigma_e2),",
+      "iterations = hsq_iterations, ids = hsq_ped.ids);",
+      hs_julia_catch_record("repeatability_interval"),
+      "else; nothing; end;",
+      "hsq_has_ri = hsq_ri !== nothing;"
+    ))
+  } else {
+    JuliaCall::julia_command("hsq_ri = nothing; hsq_has_ri = false;")
+  }
 
-  raw <- JuliaCall::julia_eval(paste(
-    "Dict(",
-    "\"sigma_a2\" => hsq_fit.variance_components.sigma_a2,",
-    "\"sigma_pe2\" => hsq_fit.variance_components.sigma_pe2,",
-    "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
-    "\"repeatability\" => hsq_fit.repeatability,",
-    "\"heritability\" => hsq_fit.heritability,",
-    "\"beta\" => collect(Float64, hsq_fit.beta),",
-    "\"animal_ids\" => string.(collect(hsq_fit.animal_effects.ids)),",
-    "\"animal_values\" => collect(Float64, hsq_fit.animal_effects.values),",
-    "\"pe_ids\" => string.(collect(hsq_fit.permanent_effects.ids)),",
-    "\"pe_values\" => collect(Float64, hsq_fit.permanent_effects.values),",
-    "\"loglik\" => hsq_fit.loglik,",
-    "\"converged\" => hsq_fit.converged)"
-  ))
+  raw <- if (identical(scale_method, "dense")) {
+    JuliaCall::julia_eval(paste(
+      "Dict(",
+      "\"sigma_a2\" => hsq_fit.variance_components.sigma_a2,",
+      "\"sigma_pe2\" => hsq_fit.variance_components.sigma_pe2,",
+      "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
+      "\"repeatability\" => hsq_fit.repeatability,",
+      "\"heritability\" => hsq_fit.heritability,",
+      "\"beta\" => collect(Float64, hsq_fit.beta),",
+      "\"animal_ids\" => string.(collect(hsq_fit.animal_effects.ids)),",
+      "\"animal_values\" => collect(Float64, hsq_fit.animal_effects.values),",
+      "\"pe_ids\" => string.(collect(hsq_fit.permanent_effects.ids)),",
+      "\"pe_values\" => collect(Float64, hsq_fit.permanent_effects.values),",
+      "\"loglik\" => hsq_fit.loglik,",
+      "\"converged\" => hsq_fit.converged)"
+    ))
+  } else {
+    # `fit_multi_effect` returns a DIFFERENT shape: variance_components.sigmas
+    # is a length-K vector in block order (1 = animal, 2 = permanent) and the
+    # per-block effects carry INTEGER row indices into the normalized pedigree,
+    # not id strings -- hence the `hsq_ped.ids[...]` lookups. h2 and the
+    # repeatability coefficient are not returned by this estimator, so they are
+    # formed here from the same components the dense route reports, using the
+    # identical definitions (h2 = Va/(Va+Vpe+Ve), R = (Va+Vpe)/(Va+Vpe+Ve)).
+    JuliaCall::julia_eval(paste(
+      "let s = hsq_fit.variance_components.sigmas,",
+      "e = hsq_fit.variance_components.sigma_e2,",
+      "tot = hsq_fit.variance_components.sigmas[1] +",
+      "hsq_fit.variance_components.sigmas[2] +",
+      "hsq_fit.variance_components.sigma_e2;",
+      "Dict(",
+      "\"sigma_a2\" => s[1],",
+      "\"sigma_pe2\" => s[2],",
+      "\"sigma_e2\" => e,",
+      "\"repeatability\" => (s[1] + s[2]) / tot,",
+      "\"heritability\" => s[1] / tot,",
+      "\"beta\" => collect(Float64, hsq_fit.beta),",
+      "\"animal_ids\" => string.(hsq_ped.ids[collect(hsq_fit.effects[1].ids)]),",
+      "\"animal_values\" => collect(Float64, hsq_fit.effects[1].values),",
+      "\"pe_ids\" => string.(hsq_ped.ids[collect(hsq_fit.effects[2].ids)]),",
+      "\"pe_values\" => collect(Float64, hsq_fit.effects[2].values),",
+      "\"loglik\" => hsq_fit.loglik,",
+      "\"converged\" => hsq_fit.converged) end"
+    ))
+  }
 
-  result <- hs_normalize_repeatability_result(raw, payload)
+  result <- hs_normalize_repeatability_result(raw, payload, scale_method)
   if (isTRUE(JuliaCall::julia_eval("hsq_has_ri"))) {
     raw_ri <- JuliaCall::julia_eval(paste(
       "Dict(",
@@ -1378,7 +1445,7 @@ hs_fit_julia_repeatability_payload <- function(
   hs_julia_surface_bridge_errors(fit)
 }
 
-hs_normalize_repeatability_result <- function(raw, payload) {
+hs_normalize_repeatability_result <- function(raw, payload, scale_method = "dense") {
   fixed_effects <- as.numeric(raw$beta)
   fixed_names <- payload$metadata$fixed_colnames
   if (length(fixed_effects) == length(fixed_names)) {
@@ -1425,7 +1492,18 @@ hs_normalize_repeatability_result <- function(raw, payload) {
     loglik = as.numeric(raw$loglik),
     nobs = length(payload$y),
     converged = isTRUE(raw$converged),
-    diagnostics = list(variance_components = "estimated_repeatability_reml")
+    # Provenance names the estimator that ACTUALLY ran. The sparse route is not
+    # `fit_repeatability_reml`, so it must not claim that estimator's label --
+    # a reader checking `variance_components_source` is checking which code
+    # produced the numbers, not which model was requested.
+    diagnostics = list(
+      variance_components = if (identical(scale_method, "dense")) {
+        "estimated_repeatability_reml"
+      } else {
+        "estimated_repeatability_sparse_multi_effect_aireml"
+      },
+      scale_method = scale_method
+    )
   )
 }
 
@@ -1929,10 +2007,17 @@ hs_fit_julia_n_effect_payload <- function(
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
   }
   blocks <- payload$random_effects
-  if (is.null(blocks) || length(blocks) < 3L) {
+  # K >= 2, not K >= 3. The old three-block floor was an R-side accident, not a
+  # design: every engine entry point (`fit_multi_effect_reml`,
+  # `fit_sparse_multi_effect_aireml`, `fit_multi_effect`) asserts only K >= 1.
+  # The floor made `animal + ONE i.i.d. effect` unreachable, which is the
+  # standard repeated-measures animal model, so users saw "one random effect,
+  # or at least three" and V_A silently absorbed the second component
+  # (HSquared.jl#352).
+  if (is.null(blocks) || length(blocks) < 2L) {
     stop(
-      "Internal bridge error: the multi-effect payload needs at least three ",
-      "random-effect blocks (animal + two or more i.i.d. effects).",
+      "Internal bridge error: the multi-effect payload needs at least two ",
+      "random-effect blocks (animal + one or more i.i.d. effects).",
       call. = FALSE
     )
   }
@@ -4258,7 +4343,7 @@ hs_engine_control_honoured_keys <- list(
   metafounder = "variance_components",
   sparse_reml = c("initial", "iterations"),
   ai_reml = c("initial", "iterations", "em_warmup"),
-  repeatability = c("initial", "iterations", "max_dense_cells"),
+  repeatability = c("initial", "iterations", "max_dense_cells", "scale_method"),
   two_effect = c("initial", "iterations"),
   # multi_effect: initial/iterations are honoured on the `scale_method =
   # "dense"` (default) route only; `scale_method = "auto"` does not forward
