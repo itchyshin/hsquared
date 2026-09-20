@@ -233,9 +233,42 @@ test_that("provenance names the estimator that actually ran", {
     "estimated_repeatability_sparse_multi_effect_aireml"
   )
   expect_equal(fa$result$diagnostics$scale_method, "auto")
-  # The sparse route carries no repeatability interval: the engine's interval
-  # refits DENSELY, so computing it would re-impose the ceiling just escaped.
-  expect_null(fa$result$repeatability_interval)
+  # The sparse route DOES carry a repeatability interval now, formed from the
+  # already-fitted components via multi_effect_sum_ratio_interval() rather than
+  # by refitting densely.
+  expect_s3_class(fa$result$repeatability_interval, "data.frame")
+})
+
+test_that("the sparse route's repeatability interval matches the dense one", {
+  # Two different interval code paths -- the dense one REFITS from the raw
+  # matrices, the sparse one differentiates the sparse loglik at the fitted
+  # components. Below the ceiling both can run and must agree.
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required."
+  )
+  fx <- hs_rep_fixture(n_per_gen = 60, n_gen = 2, reps = 3)
+  rid <- repeatability_interval(hs_rep_fit(fx, "dense"))
+  ria <- repeatability_interval(hs_rep_fit(fx, "auto"))
+  expect_equal(ria$estimate, rid$estimate, tolerance = 1e-3)
+  expect_equal(ria$se, rid$se, tolerance = 1e-3)
+  expect_equal(ria$lower, rid$lower, tolerance = 1e-3)
+  expect_equal(ria$upper, rid$upper, tolerance = 1e-3)
+  expect_true(ria$lower < ria$estimate && ria$estimate < ria$upper)
+  expect_true(ria$lower > 0 && ria$upper < 1)
+})
+
+test_that("the sparse interval survives the above-ceiling fit", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required."
+  )
+  fx <- hs_rep_fixture(n_per_gen = 120, n_gen = 3, reps = 4)
+  ri <- repeatability_interval(hs_rep_fit(fx, "auto"))
+  expect_true(is.finite(ri$estimate) && is.finite(ri$se))
+  expect_true(ri$lower < ri$estimate && ri$estimate < ri$upper)
 })
 
 test_that("animal + ONE bare (1 | group) effect now fits via multi_effect", {

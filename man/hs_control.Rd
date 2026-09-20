@@ -76,7 +76,9 @@ The opt-in repeatability-coefficient interval is computed by a separate engine
 entry point that exposes no such control and runs at the engine default
 (\code{1e6}), so \strong{raising the cap above \code{1e6} returns the point fit with the
 interval silently absent} (\code{NULL}) rather than with an error. Tracked on the
-engine side; not fixed here.
+engine side; not fixed here. This applies to \code{scale_method = "dense"} only:
+the sparse route forms its interval from the fitted components and never
+reaches that entry point, so it is unaffected by \code{max_dense_cells}.
 }
 
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
@@ -137,13 +139,16 @@ any field-scale repeated-measures pedigree passes easily.
 K-effect AI-REML (\verb{fit_multi_effect(method = :auto)}), expressing it as the
 animal block plus an identity-relationship permanent-environment block, and
 so has no dense ceiling. Below the ceiling the two agree to REML tolerance.
-Three differences are deliberate on the sparse route: \code{initial} and
+Two differences are deliberate on the sparse route: \code{initial} and
 \code{iterations} are NOT honoured (the engine picks its own; a supplied value
-warns), no repeatability-coefficient interval is returned (the engine's
-interval refits densely), and \code{loglik} carries the REML normalising
-constant \code{-(n - p)/2 * log(2 * pi)} that the dense route omits -- so
+warns), and \code{loglik} carries the REML normalising constant
+\code{-(n - p)/2 * log(2 * pi)} that the dense route omits -- so
 log-likelihoods, AIC, or likelihood-ratio tests must NOT be compared
-across \code{scale_method}.
+across \code{scale_method}. \code{repeatability_interval()} IS available on both
+routes and agrees between them; the sparse one is formed from the fitted
+components (\code{multi_effect_sum_ratio_interval()}) rather than by refitting
+densely, and both are asymptotic logit-scale delta intervals that are NOT
+coverage-calibrated.
 \code{target = "two_effect"} is an experimental, opt-in path for two-effect
 models. It requires \code{animal(1 | id, pedigree = ped)} plus a second random
 effect -- \code{common_env(1 | group)} (an IID common-environment effect) or

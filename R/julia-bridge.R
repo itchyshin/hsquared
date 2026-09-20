@@ -1395,7 +1395,22 @@ hs_fit_julia_repeatability_payload <- function(
       "hsq_has_ri = hsq_ri !== nothing;"
     ))
   } else {
-    JuliaCall::julia_command("hsq_ri = nothing; hsq_has_ri = false;")
+    # The sparse route CANNOT call repeatability_interval(): that refits
+    # densely, so it would re-impose the ceiling this route exists to escape.
+    # multi_effect_sum_ratio_interval() instead forms the same logit-scale
+    # delta interval for t = (sigma_a2 + sigma_pe2) / sigma_P from the
+    # components already fitted, differentiating the SPARSE loglik. It returns
+    # NaN endpoints with boundary = TRUE rather than throwing on a rail, so the
+    # `boundary` check below decides whether an interval exists at all.
+    JuliaCall::julia_command(paste(
+      "hsq_ri = if isdefined(HSquared, :multi_effect_sum_ratio_interval);",
+      "try; HSquared.multi_effect_sum_ratio_interval(",
+      "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
+      "hsq_fit.variance_components.sigma_e2; which = 1:2);",
+      hs_julia_catch_record("repeatability_interval"),
+      "else; nothing; end;",
+      "hsq_has_ri = hsq_ri !== nothing && !hsq_ri.boundary;"
+    ))
   }
 
   raw <- if (identical(scale_method, "dense")) {
@@ -1476,14 +1491,30 @@ hs_fit_julia_repeatability_payload <- function(
     }
   }
   if (isTRUE(JuliaCall::julia_eval("hsq_has_ri"))) {
-    raw_ri <- JuliaCall::julia_eval(paste(
-      "Dict(",
-      "\"repeatability\" => hsq_ri.repeatability,",
-      "\"lower\" => hsq_ri.lower,",
-      "\"upper\" => hsq_ri.upper,",
-      "\"level\" => hsq_ri.level,",
-      "\"se\" => hsq_ri.se)"
-    ))
+    # The two routes' interval objects differ: the dense one names the point
+    # `repeatability` and carries its own `level`; the sparse one names it
+    # `estimate` and takes `level` as an argument (default 0.95). Both are
+    # normalized to the SAME R-facing one-row frame, so the extractor does not
+    # have to know which estimator produced the fit.
+    raw_ri <- if (identical(scale_method, "dense")) {
+      JuliaCall::julia_eval(paste(
+        "Dict(",
+        "\"repeatability\" => hsq_ri.repeatability,",
+        "\"lower\" => hsq_ri.lower,",
+        "\"upper\" => hsq_ri.upper,",
+        "\"level\" => hsq_ri.level,",
+        "\"se\" => hsq_ri.se)"
+      ))
+    } else {
+      JuliaCall::julia_eval(paste(
+        "Dict(",
+        "\"repeatability\" => hsq_ri.estimate,",
+        "\"lower\" => hsq_ri.lower,",
+        "\"upper\" => hsq_ri.upper,",
+        "\"level\" => 0.95,",
+        "\"se\" => hsq_ri.se)"
+      ))
+    }
     result$repeatability_interval <- hs_normalize_repeatability_interval(raw_ri)
   }
   fit <- hs_new_fit(

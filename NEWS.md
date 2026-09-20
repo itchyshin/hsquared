@@ -28,9 +28,10 @@
   a single animal effect and `V_A` silently absorbed `V_PE`. Below the ceiling
   the two estimators agree to REML tolerance. On the sparse route `initial` and
   `iterations` are not honoured (a supplied value now warns), no
-  repeatability-coefficient interval is returned, and `loglik` carries the REML
+  `loglik` carries the REML
   normalising constant the dense route omits, so log-likelihoods must not be
-  compared across `scale_method`. The dense route's refusal now names
+  compared across `scale_method`. `repeatability_interval()` works on both
+  routes and they agree. The dense route's refusal now names
   `scale_method = "auto"` instead of saying only "use a sparse route".
   (Szymon Drobniak.)
 
