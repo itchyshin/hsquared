@@ -124,7 +124,7 @@ hs_fit_julia_payload <- function(
       "hsq_result = HSquared.result_payload(hsq_fit);",
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
-      # re-merging would clobber that standard field with a redundant :dense solve.
+      # re-merging would clobber that standard field with a redundant :auto solve.
       "if !hasproperty(hsq_result, :prediction_error_variance) &&",
       "isdefined(HSquared, :prediction_error_variance) &&",
       "isdefined(HSquared, :reliability);",
@@ -196,9 +196,11 @@ hs_fit_julia_henderson_mme_payload <- function(
       "\"animal_ids\" => hsq_mme_bv.ids,",
       "\"animal_effects\" => hsq_mme_bv.values,",
       "\"fitted\" => HSquared.fitted_values(hsq_mme),",
-      # PEV/reliability are now standard on the Henderson MME result (dense,
-      # validation-scale): prediction_error_variance/reliability default to
-      # method = :dense, so they are attached unconditionally rather than probed.
+      # PEV/reliability are now standard on the Henderson MME result
+      # (validation-scale): prediction_error_variance/reliability default to
+      # method = :auto (selected inverse by storage; :dense remains the
+      # explicit validation oracle), so they are attached unconditionally
+      # rather than probed.
       "\"prediction_error_variance\" =>",
       "HSquared.prediction_error_variance(hsq_mme),",
       "\"reliability\" => HSquared.reliability(hsq_mme),",
@@ -363,7 +365,7 @@ hs_fit_julia_sparse_reml_payload <- function(
       "hsq_result = HSquared.result_payload(hsq_fit);",
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
-      # re-merging would clobber that standard field with a redundant :dense solve.
+      # re-merging would clobber that standard field with a redundant :auto solve.
       "if !hasproperty(hsq_result, :prediction_error_variance) &&",
       "isdefined(HSquared, :prediction_error_variance) &&",
       "isdefined(HSquared, :reliability) &&",
@@ -442,7 +444,7 @@ hs_fit_julia_ai_reml_payload <- function(
     "hsq_result = HSquared.result_payload(hsq_fit);",
     # Enrich with PEV/reliability only for older engines whose result_payload
     # does not already carry them; current engines emit them via :selinv, and
-    # re-merging would clobber that standard field with a redundant :dense solve.
+    # re-merging would clobber that standard field with a redundant :auto solve.
     "if !hasproperty(hsq_result, :prediction_error_variance) &&",
     "isdefined(HSquared, :prediction_error_variance) &&",
     "isdefined(HSquared, :reliability) &&",

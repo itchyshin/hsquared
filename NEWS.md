@@ -1,5 +1,11 @@
 # hsquared (development version)
 
+* Fixed stale documentation: `R/julia-bridge.R` comments described the Julia
+  `prediction_error_variance()`/`reliability()` extractor defaults as
+  `:dense`, which HSquared.jl#355 made false (the default is now `:auto`,
+  selecting the inverse by storage; `:dense` remains the explicit validation
+  oracle). No code or behaviour change. (HSquared.jl#364, Szymon Drobniak.)
+
 * **Post-fit engine failures now surface instead of vanishing
   (HSquared.jl#351).** The bridge computes the experimental standard errors,
   intervals, and plot data inside Julia `try` blocks so a failure there never
