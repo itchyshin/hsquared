@@ -8208,3 +8208,44 @@ the existing `# hsquared (development version)` header — no new header. No row
 `docs/design/capability-status.md`, `docs/design/validation-debt-register.md`, or
 any other status ledger changed cell value; `public_covered_count` stays **7**. No
 Julia edit from this repo.
+
+## 2026-09-20 — `asreml_test` merged into `main` (PR #234) [R]
+
+- Merge commit `e29b0a7` (no-ff) over `ec5d684`. Brings `dev-test/`: the great tit
+  ASReml-vs-`hsquared` Quarto notebook (clutch size, laying date), its two source
+  CSVs (12,030-row breeding data; 111,637-row pedigree), `simulate-animal-data.R`,
+  `test.R`, plus the two 2026-07-24 check-log entries and after-task reports.
+- **Three resolutions applied over the branch as pushed.** (1)
+  `docs/dev-log/coordination-board.md` kept at `main`'s version: the branch's own
+  merge commit `14536ec` (parents `9e2fec4` / `15770b6`) resolved the board to its
+  stale copy, so a plain merge deleted **21 rows** (2026-09-02 → 2026-09-11) with
+  **no conflict** and with PR status `MERGEABLE`/`CLEAN`. (2) `.claude/settings.json`
+  kept tracked (branch deleted it; maintainer decision). (3) `^dev-test$` added to
+  `.Rbuildignore`. The branch's duplicate `settings.json` `.gitignore` line was
+  dropped, leaving `.gitignore` byte-identical to `main`.
+- `R CMD build --no-build-vignettes --no-manual .` → `hsquared_0.9.0.tar.gz`
+  **885 KB**; `tar tzf | grep -c dev-test` = **0** (fence verified by consequence).
+- `devtools::test()`: `FAIL= 0  ERROR= 2  SKIP= 88  PASS= 2975`. Both errors are the
+  `sommer` Suggests gate failing closed at `test-multivariate.R:728` and `:819`
+  (`sommer` NOT INSTALLED on this host).
+- `pkgdown::check_pkgdown()`: **PASS**.
+- `devtools::check(args = c("--no-manual","--no-build-vignettes"))` with
+  `_R_CHECK_FORCE_SUGGESTS_=false`: `errors= 2  warnings= 0  notes= 1`.
+- **Baseline counterfactual, measured this session:** a detached worktree at the
+  pre-merge commit `ec5d684` run with the identical command gave
+  `errors= 2  warnings= 0  notes= 0`, error titles `checking tests ...` and
+  `checking running R code from vignettes ...`, `animal-model-path.svg` present in
+  the errors; `devtools::test(filter="multivariate")` there gave
+  `FAIL= 0  ERROR= 2  PASS= 119`. **The merge adds zero new check findings.** The
+  one NOTE difference is `.vscode`, an untracked local directory in the working
+  checkout, absent from the fresh worktree — it cannot reach CI.
+- `devtools::document()` churn on `NAMESPACE`/`DESCRIPTION` was **reverted**, not
+  committed: roxygen2 8.1.0 installed vs `Config/roxygen2/version: 8.0.0` pinned.
+  Pre-existing drift on `main`; the merge touches no `R/` file. Recorded as a
+  residual. `air` unavailable on this host (not run, not substituted).
+- Boundary: development material only. ASReml is licence-absent and **forbidden as
+  a covered comparator leg** (`docs/design/52-v07-exact-G-comparator-recipe.md:21`),
+  so nothing in `dev-test/` is covered-flip evidence and **#138 stays open**. No
+  `R/`, `NAMESPACE`, `man/`, `DESCRIPTION`, or `tests/` change; no capability-status,
+  claims-register, or validation-debt row change. `public_covered_count` stays **7**;
+  version stays **0.9.0**. No tag, registry, or release action.
