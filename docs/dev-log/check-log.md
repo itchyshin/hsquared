@@ -8368,3 +8368,38 @@ comparison) remains open and ASReml remains forbidden as a covered leg.
   comparator gate, and **#138 stays open**. No capability row flipped;
   repeatability stays **partial**; `public_covered_count` stays **7**; version
   stays **0.9.0**.
+
+## 2026-09-20 (cleanup + sparse interval + Rose audit) [R + Julia]
+
+- **`4b4c08c`** — roxygen pin 8.0.0 → 8.1.0 (`RoxygenNote: 7.3.2` dropped);
+  `^\.vscode$` in `.Rbuildignore`; `.gitignore` blanket `settings.json` replaced
+  by `.claude/settings.local.json` + `.vscode/`; `sommer` **4.4.7** installed
+  locally; the two PR #235 warnings pinned by engine message
+  (`test-repeatability.R`, `test-multivariate.R`); a defect fix in the new
+  repeated-records warning, which had printed the univariate `permanent()`
+  recipe on a multivariate response that rejects it (hsquared#212 class).
+  NAMESPACE semantic equality proved with `parseNamespaceFile()`: exports, S3
+  methods, and the package → symbol import map all identical.
+- **`4dfad4b9` (Julia) + `35f9150` (R)** — `multi_effect_sum_ratio_interval()`
+  gives the sparse route a repeatability interval, formed from the fitted
+  components instead of refitting densely. Matches the independent dense
+  `repeatability_interval()` to **~1e-6** on estimate, SE, and both endpoints.
+  Real data (11,856 records / 10,937 pedigree): repeatability **0.44944
+  [0.42555, 0.47356]**, SE **0.012257**. Three claims I had written while the
+  interval was absent were corrected in the same commit.
+- **Checks.** `devtools::test()` **FAIL=0 ERROR=0 SKIP=102 PASS=3040**.
+  `devtools::check()` **0 errors / 0 warnings / 0 notes** — the FULL check, no
+  `--no-manual`, no `--no-build-vignettes`, no `_R_CHECK_FORCE_SUGGESTS_=false`.
+  First clean check of the session; the vignette "error" reported earlier was an
+  artifact of my own `--no-build-vignettes` flag, and the `.vscode` NOTE and
+  `sommer` errors are now genuinely gone. `pkgdown::check_pkgdown()` **PASS**;
+  `preamble_cap.sh` **CAP OK**; Julia `Pkg.test()` **PASS** (new block 14/14).
+- **Rose audit of the arc (`ec5d684..35f9150`): CLEAN, no blockers.**
+  `docs/design/` diff is ONE line; repeatability row still **partial**;
+  `public_covered_count` **7**; version **0.9.0**; `R/validation-status.R` and
+  `validation-debt-register.md` untouched; **zero** new "covered" occurrences in
+  the design diff; every new ASReml mention is a fence, and the capability row
+  does not cite ASReml as evidence.
+- **Boundary.** SEs and intervals are asymptotic and **NOT coverage-calibrated**.
+  Repeatability stays **partial** on both lanes. ASReml stays forbidden as a
+  covered leg; **#138** open. No tag, registry, or release action.
