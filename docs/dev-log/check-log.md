@@ -8249,3 +8249,75 @@ Julia edit from this repo.
   `R/`, `NAMESPACE`, `man/`, `DESCRIPTION`, or `tests/` change; no capability-status,
   claims-register, or validation-debt row change. `public_covered_count` stays **7**;
   version stays **0.9.0**. No tag, registry, or release action.
+
+## 2026-09-20 — animal + permanent-environment at scale, and K-effect SEs (HSquared.jl#351, #352) [R + Julia]
+
+Both lanes assigned by the owner for this arc. Three R commits and one Julia
+commit, all on `main`.
+
+- **`cc9e040` — PR #235 merged** (HSquared.jl#351 R half). Post-fit engine
+  failures now surface as one warning + `attr(fit, "bridge_errors")` instead of a
+  silent `NA`. Carries `6dbfab7`, the `HSquared.jl#364` Ask-4 fix for stale
+  `:dense` extractor wording (three `:auto` corrections; the stale text is gone
+  from `main`). Live Julia-gated bridge-error suite **56/56**.
+- **`fd10dca` — scalable animal + PE** (HSquared.jl#352). `target =
+  "repeatability"` gains `scale_method`; `"auto"` routes the same model through
+  `fit_multi_effect(method = :auto)` → `sparse_multi_effect_aireml`, escaping the
+  dense `nobs² + nanimals² ≤ max_dense_cells` ceiling. Multi-effect block floor
+  lowered 3 → 2 (an R-side accident; every engine entry asserts only `K >= 1`).
+  Dense refusal now names `scale_method = "auto"`.
+- **`5135a92e` (HSquared.jl) + `bb2e89e` (R) — K-effect standard errors.**
+  `multi_effect_variance_component_covariance` / `..._standard_errors` /
+  `multi_effect_ratio_standard_errors`, differentiating the SPARSE
+  `sparse_multi_reml_loglik` so they work at the scale the fit works at.
+  Surfaced in R as `variance_component_se` / `heritability_se`.
+
+**Measurements (this session's own runs).**
+
+- Dense↔sparse parity below the ceiling (750 rows / 250 animals): animal
+  1.212744 vs 1.212729, permanent 0.709858 vs 0.709851, residual 0.716527 vs
+  0.716531; **max rel diff 1.24e-05**. h² and R agree to the same order.
+- Above the ceiling (2,400 rows / 600 animals, 6,120,000 cells vs the 1e6 cap):
+  dense **refuses** with the actionable hint; sparse converges. A direct Julia
+  run at 9,600 rows / 2,400 animals (**97,920,000 cells, 98× the cap**)
+  converged in **4.4 s**, `dispatch = exact`,
+  `estimator = sparse_multi_effect_aireml`, Va 0.980 / Vpe 0.613 / Ve 0.809
+  against truth 1.0 / 0.6 / 0.8.
+- SEs on a 400-animal × 4-record fixture: Va 1.239 ± 0.189, Vpe 0.556 ± 0.110,
+  Ve 0.821 ± 0.027, h² 0.474 ± 0.054 (truth 1.0 / 0.6 / 0.8 / 0.417).
+- SE validation: sparse-based SEs vs an **independent dense-path** FD
+  computation (`_multi_effect_dense`, densified `Ainv` — a different code path
+  end to end) agree to **rel diff 1.8e-04 / 2.9e-04 / 5.1e-06**, far inside the
+  univariate row's own ~8% AI-vs-FD standard.
+- **REML-constant finding:** the two routes' `loglik` differ by exactly
+  `(n-p)/2·log(2π)` (observed 688.2852 vs predicted 688.2850 at n=750, p=1;
+  residual 2.4e-04). Filed as **HSquared.jl#365**, and corrected there after
+  reading `sparse_multi_reml_loglik`'s docstring, which already documents the
+  convention split internally — the new part is that it now leaks to a
+  user-reachable `scale_method` choice. Pinned by a live test on the R side.
+
+**Checks.** R: `devtools::test()` **FAIL=0 ERROR=2 SKIP=101 PASS=3005** (up from
+2975 pre-arc; both errors are the pre-existing absent-`sommer` Suggests gate at
+`test-multivariate.R:728/819`, identical before and after — verified against a
+pre-change worktree baseline earlier in this session).
+`pkgdown::check_pkgdown()` **PASS**. `devtools::check()` (`--no-manual
+--no-build-vignettes`, `_R_CHECK_FORCE_SUGGESTS_=false`) **2 errors / 0 warnings
+/ 1 note**, byte-identical to the established baseline (errors = the `sommer`
+gate + the `animal-model-path.svg` vignette path; note = untracked local
+`.vscode`). New test files: `test-repeatability-sparse-352.R` (**44/44** live).
+Julia: full `Pkg.test()` **PASS**, new block
+`K-effect variance-component standard errors (#352)` **20/20**.
+`devtools::document()` `NAMESPACE`/`DESCRIPTION` churn from the roxygen 8.1.0 vs
+pinned 8.0.0 mismatch was reverted, not committed (pre-existing; `man/*.Rd`
+regenerated normally). `air` unavailable on this host.
+
+**CI.** R-CMD-check **SUCCESS** on `cc9e040`, `fd10dca`, `bb2e89e`; pkgdown
+**SUCCESS**. Julia Documenter **SUCCESS** on `5135a92e`; the Julia `CI` workflow
+is `workflow_dispatch`-only and does not fire on push, so it was dispatched
+manually for this head rather than inferred from the local run.
+
+**Boundary.** Repeatability stays **partial** on both lanes. No comparator, no
+recovery campaign, no coverage calibration — the standard errors are asymptotic
+and explicitly not coverage-calibrated. `public_covered_count` stays **7**;
+version stays **0.9.0**. No tag, registry, or release action. `#138` (ASReml
+comparison) remains open and ASReml remains forbidden as a covered leg.
