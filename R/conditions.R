@@ -71,6 +71,41 @@ hs_julia_fit <- function(expr, hint = NULL) {
   )
 }
 
+# Post-fit quantities (SEs, intervals, plot data) are computed inside Julia
+# `try` blocks so a failure there never aborts the fit. The bridge records each
+# failure as `sprint(showerror, err)` under the engine function's name
+# (hsquared / HSquared.jl#351; before that the `catch` swallowed it, and a
+# missing SE was indistinguishable from an undefined one).
+# `hs_attach_bridge_errors()` stores the record as `attr(fit, "bridge_errors")`
+# (a named character vector) and raises ONE consolidated warning naming what
+# failed; the warning shows the first 200 characters of each message, the
+# attribute keeps them whole.
+hs_format_bridge_errors <- function(errors) {
+  n <- length(errors)
+  shown <- substr(unname(errors), 1L, 200L)
+  paste0(
+    "The fit succeeded, but ",
+    n,
+    " post-fit ",
+    ngettext(n, "quantity", "quantities"),
+    " could not be computed and ",
+    ngettext(n, "is", "are"),
+    " absent from the fit. The engine threw:\n",
+    paste0("  - ", names(errors), "(): ", shown, collapse = "\n"),
+    "\nFull messages: attr(fit, \"bridge_errors\")."
+  )
+}
+
+hs_attach_bridge_errors <- function(fit, errors) {
+  errors <- errors[nzchar(errors)]
+  if (length(errors) == 0L) {
+    return(fit)
+  }
+  attr(fit, "bridge_errors") <- errors
+  warning(hs_format_bridge_errors(errors), call. = FALSE)
+  fit
+}
+
 # Raise a structured "out of range" error for a numeric value outside its
 # valid domain -- the normalized-Legendre basis input `t`, a user-supplied
 # `at` outside the fitted covariate range, or a `markers` dosage matrix

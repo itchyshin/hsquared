@@ -19,19 +19,66 @@ hs_julia_bridge_available <- function(project = hs_default_julia_project()) {
     file.exists(file.path(project, "Project.toml"))
 }
 
+# Post-fit engine calls the bridge guards with a Julia `try` (SEs, intervals,
+# plot data) record their failure in `hsq_bridge_errors` instead of swallowing
+# it (hsquared / HSquared.jl#351). A route with a recording catch opens its
+# fit command with `hs_julia_bridge_errors_reset` and returns through
+# `hs_julia_surface_bridge_errors()`, which attaches the record as
+# `attr(fit, "bridge_errors")` and warns once (see R/conditions.R).
+hs_julia_bridge_errors_reset <- "hsq_bridge_errors = Dict{String,String}();"
+
+# The recording `catch` of one guarded post-fit call; `name` is the engine
+# function that threw, as the warning reports it:
+#   catch err; hsq_bridge_errors["<name>"] = sprint(showerror, err); nothing; end;
+hs_julia_catch_record <- function(name) {
+  paste0(
+    "catch err; hsq_bridge_errors[\"",
+    name,
+    "\"] = sprint(showerror, err); nothing; end;"
+  )
+}
+
+# One guarded single-line call: `<slot> = try; <call>; <recording catch>`.
+hs_julia_try_slot <- function(slot, call, name) {
+  paste0(slot, " = try; ", call, "; ", hs_julia_catch_record(name))
+}
+
+hs_julia_read_bridge_errors <- function() {
+  keys <- as.character(unlist(JuliaCall::julia_eval(
+    "sort!(collect(keys(hsq_bridge_errors)))"
+  )))
+  if (length(keys) == 0L) {
+    return(character())
+  }
+  values <- as.character(unlist(JuliaCall::julia_eval(
+    "[hsq_bridge_errors[k] for k in sort!(collect(keys(hsq_bridge_errors)))]"
+  )))
+  stats::setNames(values, keys)
+}
+
+hs_julia_surface_bridge_errors <- function(fit) {
+  hs_attach_bridge_errors(fit, hs_julia_read_bridge_errors())
+}
+
 hs_julia_attach_standard_plot_data <- function() {
   JuliaCall::julia_command(paste(
     "if isdefined(HSquared, :variance_components_plot_data);",
-    "hsq_vcpd = try; HSquared.variance_components_plot_data(hsq_fit);",
-    "catch; nothing; end;",
+    hs_julia_try_slot(
+      "hsq_vcpd",
+      "HSquared.variance_components_plot_data(hsq_fit)",
+      "variance_components_plot_data"
+    ),
     "if hsq_vcpd !== nothing;",
     "hsq_result = merge(hsq_result, (",
     "variance_components_plot_data = hsq_vcpd,));",
     "end;",
     "end;",
     "if isdefined(HSquared, :breeding_values_plot_data);",
-    "hsq_bvpd = try; HSquared.breeding_values_plot_data(hsq_fit);",
-    "catch; nothing; end;",
+    hs_julia_try_slot(
+      "hsq_bvpd",
+      "HSquared.breeding_values_plot_data(hsq_fit)",
+      "breeding_values_plot_data"
+    ),
     "if hsq_bvpd !== nothing;",
     "hsq_result = merge(hsq_result, (breeding_values_plot_data = hsq_bvpd,));",
     "end;",
@@ -63,6 +110,7 @@ hs_fit_julia_payload <- function(
   JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       "hsq_fit = HSquared.fit_animal_model(",
@@ -76,7 +124,7 @@ hs_fit_julia_payload <- function(
       "hsq_result = HSquared.result_payload(hsq_fit);",
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
-      # re-merging would clobber that standard field with a redundant :dense solve.
+      # re-merging would clobber that standard field with a redundant :auto solve.
       "if !hasproperty(hsq_result, :prediction_error_variance) &&",
       "isdefined(HSquared, :prediction_error_variance) &&",
       "isdefined(HSquared, :reliability);",
@@ -94,7 +142,7 @@ hs_fit_julia_payload <- function(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
   result <- hs_normalize_julia_result(raw, payload)
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = payload$method,
       family = list(family = payload$family, link = "identity")
@@ -103,6 +151,7 @@ hs_fit_julia_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_fit_julia_henderson_mme_payload <- function(
@@ -147,9 +196,11 @@ hs_fit_julia_henderson_mme_payload <- function(
       "\"animal_ids\" => hsq_mme_bv.ids,",
       "\"animal_effects\" => hsq_mme_bv.values,",
       "\"fitted\" => HSquared.fitted_values(hsq_mme),",
-      # PEV/reliability are now standard on the Henderson MME result (dense,
-      # validation-scale): prediction_error_variance/reliability default to
-      # method = :dense, so they are attached unconditionally rather than probed.
+      # PEV/reliability are now standard on the Henderson MME result
+      # (validation-scale): prediction_error_variance/reliability default to
+      # method = :auto (selected inverse by storage; :dense remains the
+      # explicit validation oracle), so they are attached unconditionally
+      # rather than probed.
       "\"prediction_error_variance\" =>",
       "HSquared.prediction_error_variance(hsq_mme),",
       "\"reliability\" => HSquared.reliability(hsq_mme),",
@@ -300,6 +351,7 @@ hs_fit_julia_sparse_reml_payload <- function(
   JuliaCall::julia_assign("hsq_iterations", iterations)
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       "hsq_spec = HSquared.animal_model_spec(",
@@ -313,7 +365,7 @@ hs_fit_julia_sparse_reml_payload <- function(
       "hsq_result = HSquared.result_payload(hsq_fit);",
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
-      # re-merging would clobber that standard field with a redundant :dense solve.
+      # re-merging would clobber that standard field with a redundant :auto solve.
       "if !hasproperty(hsq_result, :prediction_error_variance) &&",
       "isdefined(HSquared, :prediction_error_variance) &&",
       "isdefined(HSquared, :reliability) &&",
@@ -334,7 +386,7 @@ hs_fit_julia_sparse_reml_payload <- function(
   )
   result <- hs_normalize_julia_result(raw, payload)
   result$diagnostics$variance_components <- "estimated_sparse_reml"
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       # fit_sparse_reml is a REML-only optimizer; stamp what was computed
       # rather than echoing the requested method.
@@ -346,6 +398,7 @@ hs_fit_julia_sparse_reml_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_fit_julia_ai_reml_payload <- function(
@@ -375,6 +428,7 @@ hs_fit_julia_ai_reml_payload <- function(
   JuliaCall::julia_assign("hsq_em_warmup", em_warmup)
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+    hs_julia_bridge_errors_reset,
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_spec = HSquared.animal_model_spec(",
@@ -390,7 +444,7 @@ hs_fit_julia_ai_reml_payload <- function(
     "hsq_result = HSquared.result_payload(hsq_fit);",
     # Enrich with PEV/reliability only for older engines whose result_payload
     # does not already carry them; current engines emit them via :selinv, and
-    # re-merging would clobber that standard field with a redundant :dense solve.
+    # re-merging would clobber that standard field with a redundant :auto solve.
     "if !hasproperty(hsq_result, :prediction_error_variance) &&",
     "isdefined(HSquared, :prediction_error_variance) &&",
     "isdefined(HSquared, :reliability) &&",
@@ -403,10 +457,14 @@ hs_fit_julia_ai_reml_payload <- function(
     "end;",
     # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
     # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
-    # which must not abort the fit.
+    # which must not abort the fit (the throw is recorded and warned, #351).
     "if isdefined(HSquared, :heritability_interval) &&",
     "applicable(HSquared.heritability_interval, hsq_fit);",
-    "hsq_hi = try; HSquared.heritability_interval(hsq_fit); catch; nothing; end;",
+    hs_julia_try_slot(
+      "hsq_hi",
+      "HSquared.heritability_interval(hsq_fit)",
+      "heritability_interval"
+    ),
     "if hsq_hi !== nothing;",
     "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
     "end;",
@@ -414,17 +472,26 @@ hs_fit_julia_ai_reml_payload <- function(
     # Experimental, opt-in variance-component and heritability standard errors
     # (engine row V1-HERIT-CI, partial). variance_component_covariance() can
     # throw on a singular/ill-conditioned AI matrix, so each call is wrapped in
-    # a try so an SE failure never aborts the fit.
+    # a try so an SE failure never aborts the fit; the throw is recorded and
+    # surfaced as a warning rather than a silent absence (#351).
     "if isdefined(HSquared, :variance_component_standard_errors) &&",
     "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
-    "hsq_vcse = try; HSquared.variance_component_standard_errors(hsq_fit); catch; nothing; end;",
+    hs_julia_try_slot(
+      "hsq_vcse",
+      "HSquared.variance_component_standard_errors(hsq_fit)",
+      "variance_component_standard_errors"
+    ),
     "if hsq_vcse !== nothing;",
     "hsq_result = merge(hsq_result, (variance_component_se = hsq_vcse,));",
     "end;",
     "end;",
     "if isdefined(HSquared, :heritability_standard_error) &&",
     "applicable(HSquared.heritability_standard_error, hsq_fit);",
-    "hsq_h2se = try; HSquared.heritability_standard_error(hsq_fit); catch; nothing; end;",
+    hs_julia_try_slot(
+      "hsq_h2se",
+      "HSquared.heritability_standard_error(hsq_fit)",
+      "heritability_standard_error"
+    ),
     "if hsq_h2se !== nothing;",
     "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
     "end;",
@@ -439,7 +506,7 @@ hs_fit_julia_ai_reml_payload <- function(
   )
   result <- hs_normalize_julia_result(raw, payload)
   result$diagnostics$variance_components <- "estimated_ai_reml"
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       # fit_ai_reml is a REML-only (average-information) optimizer; stamp what
       # was computed rather than echoing the requested method.
@@ -451,6 +518,7 @@ hs_fit_julia_ai_reml_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 # Map an R `family` object to the engine's non-Gaussian family symbol:
@@ -1235,6 +1303,7 @@ hs_fit_julia_repeatability_payload <- function(
   JuliaCall::julia_assign("hsq_mdc", hs_validate_max_dense_cells(max_dense_cells))
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       "hsq_fit = HSquared.fit_repeatability_reml(",
@@ -1263,7 +1332,8 @@ hs_fit_julia_repeatability_payload <- function(
     "sigma_pe2 = hsq_initial_sigma_pe2,",
     "sigma_e2 = hsq_initial_sigma_e2),",
     "iterations = hsq_iterations, ids = hsq_ped.ids);",
-    "catch; nothing; end; else; nothing; end;",
+    hs_julia_catch_record("repeatability_interval"),
+    "else; nothing; end;",
     "hsq_has_ri = hsq_ri !== nothing;"
   ))
 
@@ -1295,7 +1365,7 @@ hs_fit_julia_repeatability_payload <- function(
     ))
     result$repeatability_interval <- hs_normalize_repeatability_interval(raw_ri)
   }
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -1305,6 +1375,7 @@ hs_fit_julia_repeatability_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_repeatability_result <- function(raw, payload) {
@@ -1440,6 +1511,7 @@ hs_fit_julia_two_effect_payload <- function(
 
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       ainv2_cmd,
@@ -1490,7 +1562,8 @@ hs_fit_julia_two_effect_payload <- function(
     "iterations = hsq_iterations, ids1 = hsq_ped.ids,",
     ids2_cmd,
     ");",
-    "catch; nothing; end; else; nothing; end;",
+    hs_julia_catch_record("two_effect_ratio_interval"),
+    "else; nothing; end;",
     "hsq_has_ci = hsq_ci !== nothing;"
   ))
 
@@ -1516,7 +1589,7 @@ hs_fit_julia_two_effect_payload <- function(
     ))
     result <- hs_attach_two_effect_intervals(result, raw_ci, payload)
   }
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -1526,6 +1599,7 @@ hs_fit_julia_two_effect_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 # ---------------------------------------------------------------------------
@@ -1988,9 +2062,10 @@ hs_fit_julia_n_effect_payload <- function(
     )),
     hint = hs_dense_scale_hint
   )
-  JuliaCall::julia_command(
+  JuliaCall::julia_command(paste(
+    hs_julia_bridge_errors_reset,
     "hsq_result = HSquared.result_payload_v2(hsq_fit, hsq_parsed);"
-  )
+  ))
 
   raw <- JuliaCall::julia_eval(paste(
     "Dict(",
@@ -2053,7 +2128,8 @@ hs_fit_julia_n_effect_payload <- function(
       "hsq_parsed.y, hsq_parsed.X, hsq_neff; ids = hsq_nids%s);",
       nci_extra_kwargs
     ),
-    "catch; nothing; end; else; nothing; end;",
+    hs_julia_catch_record("multi_effect_ratio_interval"),
+    "else; nothing; end;",
     "hsq_has_nci = hsq_nci !== nothing;"
   ))
   if (isTRUE(JuliaCall::julia_eval("hsq_has_nci"))) {
@@ -2072,7 +2148,7 @@ hs_fit_julia_n_effect_payload <- function(
     result <- hs_attach_n_effect_intervals(result, raw_nci, raw)
   }
 
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -2082,6 +2158,7 @@ hs_fit_julia_n_effect_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_two_effect_result <- function(raw, payload) {
@@ -2403,6 +2480,7 @@ hs_fit_julia_multivariate_payload <- function(
   )
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+    hs_julia_bridge_errors_reset,
     "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
     "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
     "hsq_fit = HSquared.fit_multivariate_reml(",
@@ -2439,7 +2517,8 @@ hs_fit_julia_multivariate_payload <- function(
     "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
     "hsq_fit.genetic_structure == :unstructured;",
     "hsq_mvse = try; HSquared.multivariate_covariance_standard_errors(",
-    "hsq_fit, hsq_Y, hsq_X, hsq_Z, hsq_Ainv); catch; nothing; end;",
+    "hsq_fit, hsq_Y, hsq_X, hsq_Z, hsq_Ainv);",
+    hs_julia_catch_record("multivariate_covariance_standard_errors"),
     "if hsq_mvse !== nothing;",
     "hsq_mv_raw[\"se_genetic_covariance\"] = Matrix{Float64}(hsq_mvse.genetic_covariance);",
     "hsq_mv_raw[\"se_residual_covariance\"] = Matrix{Float64}(hsq_mvse.residual_covariance);",
@@ -2455,7 +2534,7 @@ hs_fit_julia_multivariate_payload <- function(
 
   raw <- JuliaCall::julia_eval("hsq_mv_raw")
   result <- hs_normalize_multivariate_result(raw, payload)
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -2465,6 +2544,7 @@ hs_fit_julia_multivariate_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_multivariate_result <- function(raw, payload) {
@@ -2690,7 +2770,7 @@ hs_julia_attach_multivariate_plot_data <- function() {
     "hsq_fit.genetic_covariance;",
     "traits = string.(collect(hsq_fit.traits)),",
     "heritabilities = collect(Float64, hsq_fit.heritability));",
-    "catch; nothing; end;",
+    hs_julia_catch_record("genetic_correlation_plot_data"),
     "if hsq_gcpd !== nothing;",
     "hsq_mv_raw[\"genetic_correlation_plot_data\"] = hsq_gcpd;",
     "end;",
@@ -2698,7 +2778,7 @@ hs_julia_attach_multivariate_plot_data <- function() {
     "if isdefined(HSquared, :genetic_pca_plot_data);",
     "hsq_gppd = try;",
     "HSquared.genetic_pca_plot_data(hsq_fit.genetic_covariance);",
-    "catch; nothing; end;",
+    hs_julia_catch_record("genetic_pca_plot_data"),
     "if hsq_gppd !== nothing;",
     "hsq_mv_raw[\"genetic_pca_plot_data\"] = hsq_gppd;",
     "end;",
@@ -2715,7 +2795,7 @@ hs_julia_attach_random_regression_plot_data <- function() {
     "HSquared.rr_genetic_variance_plot_data(",
     "hsq_fit.variance_components.K_g, hsq_rr_plot_ts;",
     "residual = hsq_fit.variance_components.sigma_e2);",
-    "catch; nothing; end;",
+    hs_julia_catch_record("rr_genetic_variance_plot_data"),
     "if hsq_rr_gvpd !== nothing;",
     "hsq_rr_raw[\"rr_genetic_variance_plot_data\"] = hsq_rr_gvpd;",
     "end;",
@@ -2724,7 +2804,7 @@ hs_julia_attach_random_regression_plot_data <- function() {
     "hsq_rr_efpd = try;",
     "HSquared.rr_eigenfunctions_plot_data(",
     "hsq_fit.variance_components.K_g, hsq_rr_plot_ts);",
-    "catch; nothing; end;",
+    hs_julia_catch_record("rr_eigenfunctions_plot_data"),
     "if hsq_rr_efpd !== nothing;",
     "hsq_rr_raw[\"rr_eigenfunctions_plot_data\"] = hsq_rr_efpd;",
     "end;",
@@ -2733,7 +2813,7 @@ hs_julia_attach_random_regression_plot_data <- function() {
     "hsq_rr_sfpd = try;",
     "HSquared.rr_covariance_surface_plot_data(",
     "hsq_fit.variance_components.K_g, hsq_rr_plot_ts);",
-    "catch; nothing; end;",
+    hs_julia_catch_record("rr_covariance_surface_plot_data"),
     "if hsq_rr_sfpd !== nothing;",
     "hsq_rr_raw[\"rr_covariance_surface_plot_data\"] = hsq_rr_sfpd;",
     "end;",
@@ -2805,6 +2885,7 @@ hs_fit_julia_random_regression_payload <- function(
   JuliaCall::julia_assign("hsq_iterations", iterations)
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       # Standardize the per-record covariate to [-1, 1] over its observed range and
@@ -2833,7 +2914,7 @@ hs_fit_julia_random_regression_payload <- function(
 
   raw <- JuliaCall::julia_eval("hsq_rr_raw")
   result <- hs_normalize_random_regression_result(raw, payload)
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -2843,6 +2924,7 @@ hs_fit_julia_random_regression_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_random_regression_result <- function(raw, payload) {
@@ -3125,6 +3207,7 @@ hs_fit_julia_genomic_payload <- function(
   }
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       relinv_cmd,
       "hsq_spec = HSquared.animal_model_spec(",
       "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
@@ -3210,7 +3293,7 @@ hs_fit_julia_genomic_payload <- function(
       ] <- "genomic"
     }
   }
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -3220,6 +3303,7 @@ hs_fit_julia_genomic_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_normalize_genomic_boundary <- function(raw) {
@@ -3449,6 +3533,7 @@ hs_fit_julia_single_step_construct_payload <- function(
   JuliaCall::julia_assign("hsq_iterations", iterations)
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       # Guard the genotyped_rows alignment (docs/design/25 section 8): the R-computed
       # genotyped_rows index R's pedigree order, so the engine's normalize_pedigree
@@ -3485,7 +3570,7 @@ hs_fit_julia_single_step_construct_payload <- function(
     names(result$random_effects) == "animal"
   ] <- rel
   result$diagnostics$variance_components <- "estimated_single_step_construct_ai_reml"
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -3495,6 +3580,7 @@ hs_fit_julia_single_step_construct_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 # Opt-in, experimental supplied-Gamma H^Gamma single-step bridge. This mirrors
@@ -3562,6 +3648,7 @@ hs_fit_julia_metafounder_single_step_payload <- function(
   JuliaCall::julia_assign("hsq_iterations", iterations)
   hs_julia_fit(
     JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "collect(String, hsq_ped.ids) == hsq_id ||",
       "error(\"metafounder single_step: engine pedigree order != R order\");",
@@ -3598,7 +3685,7 @@ hs_fit_julia_metafounder_single_step_payload <- function(
   result$diagnostics$variance_components <-
     "estimated_metafounder_single_step_ai_reml"
   result$diagnostics$gamma_source <- "supplied"
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -3608,6 +3695,7 @@ hs_fit_julia_metafounder_single_step_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_fit_julia_snp_blup_payload <- function(
