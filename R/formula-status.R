@@ -282,7 +282,14 @@ hs_formula_status_behavior <- function() {
     paste(
       "Permanent-environment effect of the opt-in, experimental repeatability",
       "model; requires an animal() term, repeated records, and",
-      "engine = \"julia\", target = \"repeatability\"."
+      "engine = \"julia\", target = \"repeatability\". THIS IS THE STANDARD",
+      "REPEATED-MEASURES ANIMAL MODEL: with more than one record per individual",
+      "and no permanent() term, sigma^2_a ABSORBS the permanent-environment",
+      "variance and both it and h2 are inflated (the fit warns). Add",
+      "scale_method = \"auto\" to engine_control for any real pedigree -- the",
+      "default dense estimator is capped at nobs^2 + nanimals^2 <=",
+      "max_dense_cells. Returns variance-component and h2 standard errors on",
+      "the sparse route; experimental, REML only, not coverage-calibrated."
     ),
     paste(
       "Common-environment effect of the opt-in two-effect model (additive",

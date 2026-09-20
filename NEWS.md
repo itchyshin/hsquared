@@ -1,5 +1,23 @@
 # hsquared (development version)
 
+* **Fitting repeated records without a `permanent()` term now warns
+  (HSquared.jl#352).** With more than one record per individual and only the
+  additive effect in the model, the additive variance absorbs the
+  permanent-environment variance and both it and the heritability are inflated
+  — silently, until now. The warning names the counts that triggered it and the
+  exact call that separates the two components, and is suppressible with
+  `suppressWarnings()` when the single-effect model is intended.
+  `formula_status()`'s `permanent(1 | id)` row now names the repeated-measures
+  model and the `scale_method` lever. (Szymon Drobniak.)
+
+* **Fixed the great tit development notebook's standard-error columns.**
+  `dev-test/great_tit_animal_model.qmd` hardcoded `SE = NA_real_` for the
+  `hsquared` rows in both the variance-component and heritability comparison
+  tables and never called `variance_component_standard_errors()` or
+  `heritability_standard_error()`. That, not an engine failure, is where the
+  "hsquared produces no standard errors" report came from; the engine returns
+  them on this route and always did. (Szymon Drobniak.)
+
 * **The animal + permanent-environment model now fits at real pedigree scale
   (HSquared.jl#352).** `target = "repeatability"` gains
   `scale_method`. The default `"dense"` is unchanged; `scale_method = "auto"`

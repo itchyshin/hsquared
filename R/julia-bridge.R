@@ -1464,16 +1464,15 @@ hs_fit_julia_repeatability_payload <- function(
       # Block 1 is the animal block, so its ratio SE is the h2 SE. Block 2's
       # ratio is the permanent-environment proportion, which is NOT a
       # heritability and is reported separately rather than as an h2 row.
-      result$heritability_se <- data.frame(
-        term = "animal",
-        se = rse[[1L]],
-        stringsAsFactors = FALSE
-      )
-      result$permanent_proportion_se <- data.frame(
-        term = "permanent",
-        se = rse[[2L]],
-        stringsAsFactors = FALSE
-      )
+      # A SINGLE NUMERIC, matching the documented contract of
+      # `heritability_standard_error()` and what the animal-model route stores
+      # (`hs_normalize_*`: `as.numeric(raw$heritability_se)`). Returning a data
+      # frame here would make the extractor's return type depend on the target.
+      result$heritability_se <- rse[[1L]]
+      # The permanent block's ratio is the PE proportion of phenotypic
+      # variance, not a heritability, so it gets its own name rather than a
+      # second row under h2.
+      result$permanent_proportion_se <- rse[[2L]]
     }
   }
   if (isTRUE(JuliaCall::julia_eval("hsq_has_ri"))) {

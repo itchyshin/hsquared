@@ -75,6 +75,7 @@ hsquared <- function(
     allow_families = allow_families
   )
   payload <- hs_build_bridge_payload(spec)
+  hs_warn_unmodelled_repeated_records(spec)
 
   if (identical(control$engine, "fit")) {
     # MV-4 (doc 38): a multivariate `cbind(...)` Gaussian response auto-routes to

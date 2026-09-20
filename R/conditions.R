@@ -347,3 +347,61 @@ hs_abort_reml_false_on_public_path <- function(REML) {
   }
   invisible(FALSE)
 }
+
+# Repeated records per individual with NO permanent-environment term
+# (HSquared.jl#352 item 3).
+#
+# With more than one record per animal and only the additive effect in the
+# model, sigma^2_a is not narrow-sense additive variance: it absorbs the
+# permanent-environment variance too, because nothing else in the model can
+# explain why repeated records on the same individual resemble each other. The
+# estimate is silently inflated and h^2 with it -- on the great tit data this
+# returned a single animal = 1.110 where ASReml's vm(animal) + ide(animal) was
+# 0.595 + 0.525.
+#
+# The upstream issue asked the R side to REFUSE this design. It warns instead:
+# refusing would reject models that are legitimately specified this way (a
+# deliberately repeatability-free analysis, or a design where the second
+# component is known to be unidentifiable), and at the time the issue was filed
+# there was no reachable alternative to point at. There is now, so the warning
+# names it.
+hs_warn_unmodelled_repeated_records <- function(spec) {
+  animal <- spec$random$animal
+  if (is.null(animal) || !is.null(spec$random$permanent)) {
+    return(invisible(FALSE))
+  }
+  # Any other id-level random effect can absorb the between-record correlation
+  # too, so only warn when the animal effect is genuinely alone on these ids.
+  others <- spec$random[!names(spec$random) %in% "animal"]
+  if (length(others) > 0L) {
+    return(invisible(FALSE))
+  }
+  values <- animal$values
+  if (is.null(values)) {
+    return(invisible(FALSE))
+  }
+  values <- as.character(values)
+  n_records <- length(values)
+  n_ids <- length(unique(values))
+  if (n_records <= n_ids) {
+    return(invisible(FALSE))
+  }
+  warning(
+    "The data have repeated records per individual (", n_records,
+    " records for ", n_ids, " individuals), but the model has no ",
+    "`permanent(1 | ...)` term. The additive variance will ABSORB the ",
+    "permanent-environment variance, so `animal` and the heritability derived ",
+    "from it are inflated -- they are not narrow-sense quantities here.\n",
+    "To separate them, add a permanent-environment effect:\n",
+    "  hsquared(\n",
+    "    <response> ~ <fixed> + animal(1 | <id>, pedigree = ped) + ",
+    "permanent(1 | <id>),\n",
+    "    data = <data>,\n",
+    "    control = hs_control(engine = \"julia\", engine_control = list(\n",
+    "      target = \"repeatability\", scale_method = \"auto\"))\n",
+    "  )\n",
+    "Suppress with suppressWarnings() if the single-effect model is intended.",
+    call. = FALSE
+  )
+  invisible(TRUE)
+}

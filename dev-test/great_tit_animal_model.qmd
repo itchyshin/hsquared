@@ -507,13 +507,18 @@ asreml_variance_components <- function(fit, trait) {
 }
 
 hsquared_variance_components <- function(fit, trait) {
+  # hsquared DOES return asymptotic variance-component standard errors on this
+  # route -- this function previously hardcoded `SE = NA_real_` and never asked
+  # for them, which is where the "hsquared produces no SEs" report came from.
+  se <- variance_component_standard_errors(fit)
   variance_components(fit) |>
+    left_join(se, by = "component") |>
     transmute(
       Trait = trait,
       Engine = "hsquared",
       Component = component,
       Estimate = estimate,
-      `SE` = NA_real_
+      `SE` = se
     )
 }
 
@@ -539,12 +544,16 @@ heritability_comparison <- bind_rows(
     `SE` = c(h2_cs[["SE"]], h2_ld[["SE"]])
   ),
   bind_rows(
+    # heritability_standard_error() returns a single numeric (see
+    # ?variance_component_standard_errors), not a data frame.
     heritability(hs_fit_cs) |>
       transmute(Trait = "Clutch size", Engine = "hsquared",
-                Heritability = estimate, `SE` = NA_real_),
+                Heritability = estimate,
+                `SE` = as.numeric(heritability_standard_error(hs_fit_cs))),
     heritability(hs_fit_ld) |>
       transmute(Trait = "Laying date", Engine = "hsquared",
-                Heritability = estimate, `SE` = NA_real_)
+                Heritability = estimate,
+                `SE` = as.numeric(heritability_standard_error(hs_fit_ld)))
   )
 )
 
