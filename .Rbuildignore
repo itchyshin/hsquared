@@ -12,6 +12,7 @@
 ^ROADMAP\.md$
 ^docs$
 ^data-raw$
+^dev-test$
 ^hsquared\.Rproj$
 ^README\.Rmd$
 ^pkgdown-site$
