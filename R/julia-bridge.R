@@ -1339,11 +1339,35 @@ hs_fit_julia_repeatability_payload <- function(
         "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
         "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
         "hsq_Ipe = spdiagm(0 => ones(size(hsq_Ainv, 1)));",
+        "hsq_eff = [(hsq_Z, hsq_Ainv), (hsq_Z, hsq_Ipe)];",
         "hsq_fit = HSquared.fit_multi_effect(",
-        "hsq_y, hsq_X, [(hsq_Z, hsq_Ainv), (hsq_Z, hsq_Ipe)];",
+        "hsq_y, hsq_X, hsq_eff;",
         "method = :auto, verbose = false);"
       ))
     )
+
+    # K-effect asymptotic standard errors (HSquared.jl#352). The engine refuses
+    # at a flat/boundary optimum rather than returning NaN, so this is guarded
+    # the same way as every other post-fit quantity: the error is RECORDED and
+    # surfaced as one warning by hs_julia_surface_bridge_errors(), never
+    # swallowed into a silent NA (HSquared.jl#351).
+    JuliaCall::julia_command(paste(
+      "hsq_vcse = if isdefined(",
+      "HSquared, :multi_effect_variance_component_standard_errors);",
+      "try; HSquared.multi_effect_variance_component_standard_errors(",
+      "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
+      "hsq_fit.variance_components.sigma_e2);",
+      hs_julia_catch_record("variance_component_standard_errors"),
+      "else; nothing; end;",
+      "hsq_has_vcse = hsq_vcse !== nothing;",
+      "hsq_rse = if isdefined(HSquared, :multi_effect_ratio_standard_errors);",
+      "try; HSquared.multi_effect_ratio_standard_errors(",
+      "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
+      "hsq_fit.variance_components.sigma_e2);",
+      hs_julia_catch_record("heritability_standard_error"),
+      "else; nothing; end;",
+      "hsq_has_rse = hsq_rse !== nothing;"
+    ))
   }
 
   # Experimental, opt-in repeatability-coefficient CI (engine row V3-REPEAT-REML,
@@ -1421,6 +1445,37 @@ hs_fit_julia_repeatability_payload <- function(
   }
 
   result <- hs_normalize_repeatability_result(raw, payload, scale_method)
+  if (!identical(scale_method, "dense")) {
+    # Three components, in the SAME order the variance_components table uses,
+    # so a reader can bind the two side by side.
+    if (isTRUE(JuliaCall::julia_eval("hsq_has_vcse"))) {
+      vcse <- JuliaCall::julia_eval(
+        "Dict(\"sigmas\" => collect(Float64, hsq_vcse.sigmas),
+         \"sigma_e2\" => hsq_vcse.sigma_e2)"
+      )
+      result$variance_component_se <- data.frame(
+        component = c("animal", "permanent", "residual"),
+        se = c(as.numeric(vcse$sigmas), as.numeric(vcse$sigma_e2)),
+        stringsAsFactors = FALSE
+      )
+    }
+    if (isTRUE(JuliaCall::julia_eval("hsq_has_rse"))) {
+      rse <- as.numeric(JuliaCall::julia_eval("collect(Float64, hsq_rse)"))
+      # Block 1 is the animal block, so its ratio SE is the h2 SE. Block 2's
+      # ratio is the permanent-environment proportion, which is NOT a
+      # heritability and is reported separately rather than as an h2 row.
+      result$heritability_se <- data.frame(
+        term = "animal",
+        se = rse[[1L]],
+        stringsAsFactors = FALSE
+      )
+      result$permanent_proportion_se <- data.frame(
+        term = "permanent",
+        se = rse[[2L]],
+        stringsAsFactors = FALSE
+      )
+    }
+  }
   if (isTRUE(JuliaCall::julia_eval("hsq_has_ri"))) {
     raw_ri <- JuliaCall::julia_eval(paste(
       "Dict(",

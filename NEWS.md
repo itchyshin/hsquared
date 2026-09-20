@@ -16,6 +16,20 @@
   `scale_method = "auto"` instead of saying only "use a sparse route".
   (Szymon Drobniak.)
 
+* **The sparse repeatability route returns standard errors
+  (HSquared.jl#352).** `variance_component_standard_errors()` and
+  `heritability_standard_error()` now resolve on a
+  `scale_method = "auto"` repeatability fit, backed by new K-effect engine
+  functions (`multi_effect_variance_component_standard_errors()`,
+  `multi_effect_ratio_standard_errors()`). Previously the engine defined
+  standard errors only for a single-animal-effect fit and for the multivariate
+  fit, so every multi-effect model had none. The engine refuses at a flat or
+  boundary optimum rather than returning `NaN`, and that refusal surfaces
+  through the usual one-warning path rather than as a silent `NA`. The
+  permanent block's ratio is reported as a variance-explained proportion, not
+  as a heritability. The `"dense"` route still has no standard errors and still
+  says so. (Szymon Drobniak.)
+
 * **`animal(...)` plus a single `(1 | group)` effect now fits
   (HSquared.jl#352).** The multi-effect bridge required at least three
   random-effect blocks, an R-side accident — every engine entry point accepts

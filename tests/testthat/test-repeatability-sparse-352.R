@@ -299,3 +299,53 @@ test_that("scale_method = auto says it ignores initial and iterations", {
     "ignores `initial`"
   )
 })
+
+test_that("the sparse route returns variance-component and h2 standard errors", {
+  # Before HSquared.jl#352's engine half, `variance_component_standard_errors`
+  # had exactly one method (`fit::AnimalModelFit`), so EVERY multi-effect fit
+  # had no SEs at all. Fitting the PE model correctly but losing the SEs would
+  # have traded one reported problem for the other.
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required."
+  )
+  fx <- hs_rep_fixture(n_per_gen = 120, n_gen = 3, reps = 4)
+  fit <- hs_rep_fit(fx, "auto")
+
+  se <- variance_component_standard_errors(fit)
+  expect_s3_class(se, "data.frame")
+  # Same components, in the same order as variance_components(), so the two
+  # tables bind side by side.
+  expect_equal(se$component, c("animal", "permanent", "residual"))
+  expect_equal(se$component, variance_components(fit)$component)
+  expect_true(all(is.finite(se$se)))
+  expect_true(all(se$se > 0))
+
+  h2se <- heritability_standard_error(fit)
+  expect_equal(h2se$term, "animal")
+  expect_true(is.finite(h2se$se) && h2se$se > 0)
+  # A sane SE keeps the +/- 1 SE band inside (0, 1).
+  h2 <- heritability(fit)$estimate
+  expect_gt(h2 - h2se$se, 0)
+  expect_lt(h2 + h2se$se, 1)
+
+  # The permanent block's ratio is a variance-explained proportion, NOT a
+  # heritability, so it is reported under its own name rather than as an h2 row.
+  expect_equal(fit$result$permanent_proportion_se$term, "permanent")
+})
+
+test_that("the dense route still has no standard errors, and says so", {
+  # Unchanged behaviour on the covered route: an honest refusal naming the
+  # missing field, NOT a silent NA.
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required."
+  )
+  fx <- hs_rep_fixture(n_per_gen = 60, n_gen = 2, reps = 3)
+  expect_error(
+    variance_component_standard_errors(hs_rep_fit(fx, "dense")),
+    "does not contain"
+  )
+})
