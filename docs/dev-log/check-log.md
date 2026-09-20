@@ -8403,3 +8403,37 @@ comparison) remains open and ASReml remains forbidden as a covered leg.
 - **Boundary.** SEs and intervals are asymptotic and **NOT coverage-calibrated**.
   Repeatability stays **partial** on both lanes. ASReml stays forbidden as a
   covered leg; **#138** open. No tag, registry, or release action.
+
+## 2026-09-20 (issue ledger for the arc) [coordinator]
+
+Remaining work from the #351/#352 arc converted from prose residuals into
+tracked issues, so nothing depends on a session summary being re-read.
+
+- **HSquared.jl#369** — handover to Shinichi. Four dispositions are his: #352
+  closure (all three asks addressed; ask 3 implemented as a WARNING not a
+  refusal, deliberately), #351 disposition (symptom was a notebook defect; the
+  try/catch defect is fixed), #365 loglik convention, #366 coverage calibration.
+- **HSquared.jl#366** — the new K-effect SEs and summed-ratio intervals are
+  correctness-validated against independent code paths but **uncalibrated**.
+  Since ASReml cannot serve as a covered leg, a pre-declared coverage study is
+  the ONLY route off `partial` for this capability.
+- **HSquared.jl#367** — `CI.yml` triggers on `pull_request` and
+  `workflow_dispatch` only, so a direct push to `main` runs no tests; both
+  engine commits this session needed a manual dispatch. The R twin runs
+  per-push.
+- **HSquared.jl#368** — seven findings that generalise beyond this package
+  (sparse-objective variance-component SEs; summed-ratio ICC/repeatability
+  intervals; the finite-difference boundary guard; the REML-constant cross-path
+  trap; public-dispatch floors drifting tighter than their kernels;
+  repeated-measures absorption detection; refusals naming their lever).
+  **Nothing was filed in any third-party repository** — what to upstream, and
+  under whose name, is the owner's decision; #275 is the natural first contact.
+- **hsquared#236** — `heritability_standard_error()` returns a bare numeric
+  while `variance_component_standard_errors()` returns a data frame.
+- **hsquared#237** — repeated-measures MULTIVARIATE is still unfittable: the
+  `cbind()` route's spec fence rejects `permanent()`, so `V_A` absorbs `V_PE`
+  in `G0`. The repo's own MV fixtures carry 4 records per animal, so the new
+  warning fires there and is correct. This is #352 one dimension up.
+
+No code, claim, or status change in this entry. `public_covered_count` stays
+**7**; version stays **0.9.0**.
