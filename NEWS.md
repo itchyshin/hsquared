@@ -1,5 +1,22 @@
 # hsquared (development version)
 
+* **The sparse repeatability route asks the engine for its uncertainty once,
+  not three times (HSquared.jl#370).** `target = "repeatability"` with
+  `scale_method = "auto"` wanted three post-fit quantities — the
+  variance-component standard errors, the ratio standard errors, and the
+  repeatability interval — and called a separate engine function for each. All
+  three are derived from the same asymptotic covariance, and that covariance is
+  a finite-difference Hessian of the REML log-likelihood, the most expensive
+  post-fit quantity in the engine, so it was being built three times. The route
+  now calls `multi_effect_uncertainty()` once and reads all three from it.
+  Measured on the great tit development data (11,856 records, 10,937 pedigree
+  rows), end to end in R including the bridge: **6.15 s to 1.26 s**, with every
+  reported number unchanged to the last printed digit — variance components,
+  all three standard errors, the heritability standard error, and the
+  repeatability interval and its endpoints. `hsquared` still works against an
+  engine checkout that predates `multi_effect_uncertainty()`: it falls back to
+  the three separate calls when the function is absent. (Szymon Drobniak.)
+
 * **Fitting repeated records without a `permanent()` term now warns
   (HSquared.jl#352).** With more than one record per individual and only the
   additive effect in the model, the additive variance absorbs the
