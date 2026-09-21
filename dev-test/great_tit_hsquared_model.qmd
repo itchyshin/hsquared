@@ -1,0 +1,234 @@
+---
+title: "Great Tit Animal Model — hsquared (Julia engine)"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    number-sections: true
+    self-contained: true
+execute:
+  warning: false
+  message: false
+  cache: false
+---
+
+<!--
+This notebook is the hsquared/Julia-engine leg of the great tit comparison.
+Do not add `library(asreml)` here: asreml's bundled libomp.dylib and Julia's
+OpenBLAS/MKL libomp.dylib both initialize LLVM's OpenMP runtime, which crashes
+the R session with "OMP: Error #15" when loaded together. Render
+dev-test/great_tit_asreml_model.qmd first (it saves
+dev-test/asreml_results.rds), then this notebook, then
+dev-test/great_tit_model_summary.qmd for the combined comparison.
+-->
+
+```{r}
+#| label: packages
+library(tidyverse)   # data wrangling
+library(knitr)       # table rendering
+library(devtools)    # load_all() for hsquared development checkout
+library(JuliaCall)
+
+# remotes::install_github("itchyshin/hsquared")
+```
+
+## Setup
+
+```{r}
+#| label: hs-setup
+# Point the bridge at the local HSquared.jl checkout.
+# The engine reads this before JuliaCall starts.
+Sys.setenv(
+  HSQUARED_JULIA_PROJECT =
+    "/Users/szymek/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl"
+)
+
+Sys.setenv(
+  PATH = paste(
+    "/Users/szymek/.juliaup/bin",
+    Sys.getenv("PATH"),
+    sep = .Platform$path.sep
+  )
+)
+
+# Load hsquared from the local development checkout
+# devtools::load_all()
+library(hsquared)
+```
+
+## Load the ASReml leg's saved data and pedigree
+
+```{r}
+#| label: load-asreml-results
+asreml_results <- readRDS("dev-test/asreml_results.rds")
+dat_cs <- asreml_results$dat_cs
+dat_ld <- asreml_results$dat_ld
+ped    <- asreml_results$ped
+```
+
+## Bundle phenotypes and pedigree
+
+`hs_data()` pairs the phenotype table with the prepared pedigree. The pedigree
+must have columns `id`, `dam`, `sire` — exactly the output of `prepPed()`.
+
+The full pedigree includes many individuals unrelated to the females retained
+for these two analyses. Keep those females and every known ancestor before
+passing the data to the Julia engine.
+
+```{r}
+#| label: hs-bundle
+analysis_ids <- unique(c(as.character(dat_cs$animal), as.character(dat_ld$animal)))
+pedigree_ids <- analysis_ids
+
+repeat {
+  pedigree_rows <- match(pedigree_ids, ped$id)
+  parent_ids <- unique(c(ped$dam[pedigree_rows], ped$sire[pedigree_rows]))
+  expanded_ids <- unique(c(pedigree_ids, parent_ids[!is.na(parent_ids)]))
+
+  if (length(expanded_ids) == length(pedigree_ids)) {
+    break
+  }
+  pedigree_ids <- expanded_ids
+}
+
+ped_analysis <- ped[ped$id %in% pedigree_ids, c("id", "dam", "sire")]
+stopifnot(all(analysis_ids %in% ped_analysis$id))
+
+cat("Pedigree rows for hsquared:", nrow(ped_analysis), "\n")
+
+bundle_cs <- hs_data(phenotypes = dat_cs, pedigree = ped_analysis, id = "animal")
+bundle_ld <- hs_data(phenotypes = dat_ld, pedigree = ped_analysis, id = "animal")
+
+data_status(bundle_cs)
+```
+
+## Animal model — clutch size
+
+```{r}
+#| label: hs-fit-cs
+#| results: hide
+time_hs_cs <- system.time({
+    hs_fit_cs <- hsquared(
+        # MATCHES THE ASReml MODEL: `~ vm(animal, Ainv) + ide(animal)` is the
+        # additive genetic effect PLUS a permanent-environment effect. Fitting
+        # `animal(1 | animal)` alone here made the comparison structurally
+        # mismatched -- with 11,856 records on 7,340 females, the additive
+        # variance absorbed the permanent-environment variance and came back as
+        # a single 1.110 against ASReml's 0.595 + 0.525.
+        #
+        # `scale_method = "auto"` is required, not optional: the dense
+        # estimator is capped at nobs^2 + nanimals^2 <= max_dense_cells, and
+        # this problem needs ~2.6e8 cells against a 1e6 cap.
+        clutch_size ~ year_f + round_f + exp_manip + female.age +
+            animal(1 | animal) + permanent(1 | animal),
+        data = bundle_cs,
+        family = gaussian(),
+        control = hs_control(
+            engine = "julia",
+            engine_control = list(
+                target = "repeatability",
+                scale_method = "auto"
+            )
+        ),
+        REML = TRUE
+    )
+})
+```
+
+```{r}
+#| label: time-hs-cs
+cat(sprintf("hsquared clutch size — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_hs_cs["elapsed"], time_hs_cs["user.self"], time_hs_cs["sys.self"]))
+```
+
+```{r}
+#| label: hs-vc-cs
+variance_components(hs_fit_cs) |>
+  kable(digits = 4, caption = "Variance components — clutch size (hsquared)")
+
+heritability(hs_fit_cs) |>
+  kable(digits = 4, caption = "Heritability — clutch size (hsquared)")
+```
+
+## Animal model — laying date
+
+```{r}
+#| label: hs-fit-ld
+#| results: hide
+time_hs_ld <- system.time({
+  hs_fit_ld <- hsquared(
+    laydate ~ year_f + round_f + exp_manip + female.age +
+      animal(1 | animal) + permanent(1 | animal),
+    data   = bundle_ld,
+    family = gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "repeatability", scale_method = "auto")
+    ),
+    REML   = TRUE
+  )
+})
+```
+
+```{r}
+#| label: time-hs-ld
+cat(sprintf("hsquared laying date — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_hs_ld["elapsed"], time_hs_ld["user.self"], time_hs_ld["sys.self"]))
+```
+
+```{r}
+#| label: hs-vc-ld
+variance_components(hs_fit_ld) |>
+  kable(digits = 4, caption = "Variance components — laying date (hsquared)")
+
+heritability(hs_fit_ld) |>
+  kable(digits = 4, caption = "Heritability — laying date (hsquared)")
+```
+
+## Save results for the cross-engine summary
+
+```{r}
+#| label: save-results
+hsquared_vc_table <- function(fit) {
+  # hsquared DOES return asymptotic variance-component standard errors on this
+  # route -- an earlier report hardcoded `SE = NA_real_` and never asked for
+  # them, which is where the "hsquared produces no SEs" claim came from.
+  se <- variance_component_standard_errors(fit)
+  variance_components(fit) |>
+    left_join(se, by = "component") |>
+    transmute(Component = component, Estimate = estimate, SE = se)
+}
+
+hs_vc_cs <- hsquared_vc_table(hs_fit_cs)
+hs_vc_ld <- hsquared_vc_table(hs_fit_ld)
+
+hs_h2_cs <- heritability(hs_fit_cs) |>
+  transmute(Estimate = estimate,
+            SE = as.numeric(heritability_standard_error(hs_fit_cs)))
+hs_h2_ld <- heritability(hs_fit_ld) |>
+  transmute(Estimate = estimate,
+            SE = as.numeric(heritability_standard_error(hs_fit_ld)))
+
+saveRDS(
+  list(
+    vc_cs   = hs_vc_cs,
+    vc_ld   = hs_vc_ld,
+    h2_cs   = hs_h2_cs,
+    h2_ld   = hs_h2_ld,
+    time_cs = time_hs_cs,
+    time_ld = time_hs_ld
+  ),
+  file = "dev-test/hsquared_results.rds"
+)
+```
+
+# Session info
+
+```{r}
+#| label: session
+sessionInfo()
+```

@@ -1,0 +1,372 @@
+---
+title: "Great Tit Animal Model — ASReml (clutch size and laying date)"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    number-sections: true
+    self-contained: true
+execute:
+  warning: false
+  message: false
+  cache: false
+---
+
+<!--
+This notebook is the ASReml-only leg of the great tit comparison. Do not add
+`library(JuliaCall)` or `library(hsquared)` here: asreml's bundled libomp.dylib
+and Julia's OpenBLAS/MKL libomp.dylib both initialize LLVM's OpenMP runtime,
+which crashes the R session with "OMP: Error #15" when loaded together. See
+dev-test/great_tit_hsquared_model.qmd for the Julia-engine leg and
+dev-test/great_tit_model_summary.qmd for the combined comparison — both are
+rendered as separate R sessions and exchange results via saved .rds files.
+-->
+
+```{r}
+#| label: packages
+library(asreml)      # REML mixed-model engine with animal-model support
+library(nadiv)       # pedigree sorting and founder completion (prepPed)
+library(MCMCglmm)    # inverseA(): robust Ainv with inbreeding + logDet
+library(Matrix)      # tril() / dgTMatrix for lower-triangle extraction
+library(tidyverse)   # data wrangling and plotting
+library(knitr)       # table rendering
+```
+
+# Data
+
+## Load
+
+```{r}
+#| label: load-data
+pheno <- read_csv(
+  "dev-test/great_tit_breeding_data.csv",
+  show_col_types = FALSE
+)
+
+# Pedigree has 8 columns; only the first three (id, dam, sire) are populated.
+ped_raw <- read.csv(
+  "dev-test/great_tit_pedigree.csv", header = TRUE, na.strings = NA)
+```
+
+## Inspect
+
+```{r}
+#| label: inspect-pheno
+glimpse(pheno)
+```
+
+```{r}
+#| label: inspect-ped
+glimpse(ped_raw)
+cat("Pedigree rows:", nrow(ped_raw), "\n")
+cat("Unique IDs:   ", n_distinct(ped_raw$id), "\n")
+```
+
+```{r}
+#| label: trait-summaries
+pheno |>
+  select(clutch_size, laydate) |>
+  summary()
+```
+
+```{r}
+#| label: trait-distributions
+#| fig-width: 8
+#| fig-height: 4
+pheno |>
+  select(clutch_size, laydate) |>
+  pivot_longer(everything(), names_to = "trait", values_to = "value") |>
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 30, fill = "steelblue", colour = "white") +
+  facet_wrap(~trait, scales = "free") +
+  labs(x = NULL, y = "Count") +
+  theme_bw()
+```
+
+# Pedigree
+
+## Prepare with `nadiv`
+
+`nadiv::prepPed()` sorts the pedigree so that parents always precede offspring,
+adds any animals referenced as parents but absent as founders, and converts
+`NA` unknowns to `0` (the convention ASReml expects is NA, but `prepPed` keeps
+them as NA — `nadiv::makeAinv` handles both).
+
+```{r}
+#| label: prep-ped
+# Replace "NA" strings with true NA in case any slipped through as character
+ped_raw <- ped_raw |>
+  mutate(across(everything(), ~ na_if(as.character(.), "NA")))
+
+# prepPed requires a data.frame with columns id, dam, sire
+ped <- prepPed(as.data.frame(ped_raw))
+
+cat("Pedigree rows after prepPed:", nrow(ped), "\n")
+```
+
+## Build the inverse numerator relationship matrix
+
+All attempts to coerce `nadiv`/`spam`/Matrix S4 objects into the format
+`vm()` accepts failed. Instead we use `MCMCglmm::inverseA()` to obtain a
+clean `dgCMatrix` plus inbreeding coefficients and a log-determinant, then
+assemble these into an ASReml `ginv`-class object directly from its published
+specification:
+
+- 3-column numeric matrix: row index, column index, value (lower triangle,
+  sorted row-wise)
+- `class = "ginv"`
+- attributes: `rowNames`, `inbreeding`, `geneticGroups`, `logdet`
+
+```{r}
+#| label: build-ainv
+# Compute Ainv via MCMCglmm (handles pedigree prep internally)
+Ainv <- ainverse(ped)
+```
+
+# Data preparation
+
+## Link phenotypes to pedigree
+
+The animal identifier in the phenotype file is `female_ID`.  We keep only
+females whose ID appears in the pedigree.
+
+```{r}
+#| label: prep-pheno
+dat <- pheno |>
+  # Rename to 'animal' — the conventional name that ASReml looks for
+  rename(animal = female_ID) |>
+  # Keep records where the animal is in the pedigree
+  filter(animal %in% ped$id) |>
+  mutate(
+    animal   = factor(animal),
+    year_f   = factor(year),
+    round_f  = factor(round),
+    exp_manip = factor(experimental_manipulation)
+  )
+
+cat("Records after pedigree filter:", nrow(dat), "\n")
+cat("Unique females:               ", n_distinct(dat$animal), "\n")
+```
+
+```{r}
+#| label: missing-traits
+dat |>
+  summarise(
+    n_clutch_size = sum(!is.na(clutch_size)),
+    n_laydate     = sum(!is.na(laydate))
+  ) |>
+  kable(caption = "Records with non-missing trait values")
+```
+
+## Prepare per-trait analysis frames
+
+We drop rows with `NA` in the response before passing to ASReml, because
+ASReml can handle missing data but it is cleaner to be explicit here.
+
+```{r}
+#| label: dat-cs
+dat_cs <- dat |>
+  filter(!is.na(clutch_size)) |>
+  droplevels()
+
+dat_ld <- dat |>
+  filter(!is.na(laydate)) |>
+  droplevels()
+
+dat_cs$animal2 <- dat_cs$animal
+dat_ld$animal2 <- dat_ld$animal
+```
+
+# Animal model — clutch size
+
+## Model specification
+
+Fixed effects: `year_f` (accounts for annual mean differences), `round_f`
+(first vs replacement clutch), `exp_manip` (experimental manipulation flag),
+`female.age` (linear age effect).
+
+Random effects: `vm(animal, Ainv)` — the additive genetic effect fitted
+against the pedigree-derived inverse relationship matrix built by
+`asreml::ainverse()`. `ide(animal)` is the permanent environmental effect
+for repeated measures (a female can appear in multiple years).
+
+```{r}
+#| label: fit-cs
+#| results: hide
+asreml.options(workspace = "1gb", maxit = 50, trace = TRUE)
+
+time_cs <- system.time({
+  fit_cs <- asreml(
+    fixed    = clutch_size ~ year_f + round_f + exp_manip + female.age,
+    random   = ~ vm(animal, Ainv) + ide(animal),
+    data     = dat_cs,
+    na.action = na.method(x = "include", y = "omit")
+  )
+  # fit_cs <- update(fit_cs)
+})
+```
+
+```{r}
+#| label: time-cs
+cat(sprintf("ASReml clutch size  — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_cs["elapsed"], time_cs["user.self"], time_cs["sys.self"]))
+```
+
+## Convergence check
+
+```{r}
+#| label: convergence-cs
+cat("Converged:", fit_cs$converge, "\n")
+summary(fit_cs)$varcomp |>
+  kable(digits = 4, caption = "Variance components — clutch size")
+```
+
+## Heritability
+
+$$
+h^2 = \frac{\sigma^2_A}{\sigma^2_A + \sigma^2_{PE} + \sigma^2_e}
+$$
+
+`vpredict()` computes the estimate and its standard error via the delta method.
+
+```{r}
+#| label: h2-cs
+vc_cs <- summary(fit_cs)$varcomp
+
+# ASReml component names: vm(animal, Ainv)!vm, ide(animal)!ide, units!R
+h2_cs <- vpredict(
+  fit_cs,
+  h2 ~ V1 / (V1 + V2 + V3)
+)
+
+cat("h² clutch size:", round(h2_cs[["Estimate"]], 3),
+    "±", round(h2_cs[["SE"]], 3), "(SE)\n")
+```
+
+## Wald statistics for fixed effects
+
+```{r}
+#| label: wald-cs
+wald(fit_cs, denDF = "numeric", ssType = "conditional") |>
+  kable(digits = 3, caption = "Wald F-statistics — clutch size")
+```
+
+# Animal model — laying date
+
+## Model specification
+
+Same fixed and random structure as the clutch size model.
+
+```{r}
+#| label: fit-ld
+#| results: hide
+time_ld <- system.time({
+  fit_ld <- asreml(
+    fixed    = laydate ~ year_f + round_f + exp_manip + female.age,
+    random   = ~ vm(animal, Ainv) + ide(animal),
+    data     = dat_ld,
+    na.action = na.method(x = "include", y = "omit")
+  )
+  fit_ld <- update(fit_ld)
+})
+```
+
+```{r}
+#| label: time-ld
+cat(sprintf("ASReml laying date  — elapsed: %.1f s  (user: %.1f s, sys: %.1f s)\n",
+            time_ld["elapsed"], time_ld["user.self"], time_ld["sys.self"]))
+```
+
+## Convergence check
+
+```{r}
+#| label: convergence-ld
+cat("Converged:", fit_ld$converge, "\n")
+summary(fit_ld)$varcomp |>
+  kable(digits = 4, caption = "Variance components — laying date")
+```
+
+## Heritability
+
+```{r}
+#| label: h2-ld
+h2_ld <- vpredict(
+  fit_ld,
+  h2 ~ V1 / (V1 + V2 + V3)
+)
+
+cat("h² laying date:", round(h2_ld[["Estimate"]], 3),
+    "±", round(h2_ld[["SE"]], 3), "(SE)\n")
+```
+
+## Wald statistics for fixed effects
+
+```{r}
+#| label: wald-ld
+wald(fit_ld, denDF = "numeric", ssType = "conditional") |>
+  kable(digits = 3, caption = "Wald F-statistics — laying date")
+```
+
+# Summary
+
+```{r}
+#| label: summary-table
+asreml_vc_table <- function(fit) {
+  summary(fit)$varcomp |>
+    as.data.frame() |>
+    tibble::rownames_to_column("Component") |>
+    transmute(Component, Estimate = component, SE = std.error)
+}
+
+vc_cs_df <- asreml_vc_table(fit_cs)
+vc_ld_df <- asreml_vc_table(fit_ld)
+
+tibble(
+  Trait            = c("Clutch size", "Laying date"),
+  `σ²_A`           = c(vc_cs_df$Estimate[vc_cs_df$Component == "vm(animal, Ainv)"],
+                        vc_ld_df$Estimate[vc_ld_df$Component == "vm(animal, Ainv)"]),
+  `σ²_PE`          = c(vc_cs_df$Estimate[vc_cs_df$Component == "ide(animal)"],
+                        vc_ld_df$Estimate[vc_ld_df$Component == "ide(animal)"]),
+  `σ²_e`           = c(vc_cs_df$Estimate[vc_cs_df$Component == "units!R"],
+                        vc_ld_df$Estimate[vc_ld_df$Component == "units!R"]),
+  `h² (estimate)`  = c(h2_cs[["Estimate"]], h2_ld[["Estimate"]]),
+  `h² (SE)`        = c(h2_cs[["SE"]],       h2_ld[["SE"]])
+) |>
+  mutate(across(where(is.numeric), ~ round(., 3))) |>
+  kable(caption = "Heritability summary — great tit Wytham Woods population")
+```
+
+## Save results for the cross-engine summary
+
+Persist everything the `hsquared` leg and the combined summary notebook need,
+so neither has to load `asreml` (and therefore never loads in the same R
+session as `JuliaCall`).
+
+```{r}
+#| label: save-results
+saveRDS(
+  list(
+    dat_cs   = dat_cs,
+    dat_ld   = dat_ld,
+    ped      = ped,
+    vc_cs    = vc_cs_df,
+    vc_ld    = vc_ld_df,
+    h2_cs    = h2_cs,
+    h2_ld    = h2_ld,
+    time_cs  = time_cs,
+    time_ld  = time_ld
+  ),
+  file = "dev-test/asreml_results.rds"
+)
+```
+
+# Session info
+
+```{r}
+#| label: session
+sessionInfo()
+```
