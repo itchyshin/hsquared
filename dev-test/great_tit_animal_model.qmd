@@ -26,6 +26,8 @@ library(tidyverse)   # data wrangling and plotting
 library(knitr)       # table rendering
 library(devtools)     # load_all() for hsquared development checkout
 library(JuliaCall)
+
+# remotes::install_github("itchyshin/hsquared")
 ```
 
 # Data
