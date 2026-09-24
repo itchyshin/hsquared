@@ -35,6 +35,7 @@ test_that("SG1: cbind + permanent names repeatability and MV-without-PE tips (D3
   expect_match(msg, "target = \"repeatability\"", fixed = TRUE)
   expect_match(msg, "drop `permanent()`", fixed = TRUE)
   expect_match(msg, "public_covered_count stays 7", fixed = TRUE)
+  expect_match(msg, "not implemented", fixed = TRUE)
 })
 
 test_that("SG2: matrix_free target is engine-only named abort (D2)", {

@@ -16,7 +16,7 @@ Owner defaults for this arc (decide tickets D1–D3):
 | --- | --- |
 | D1 | Factor-analytic / lowrank stay **named planned errors** on the R bridge (Julia V4-FA engine-covered is not R-public). |
 | D2 | Matrix-free REML (`fit_matrix_free_reml` / V1-MATFREE-REML) stays **engine-only**; R must not grow a matfree `target`. Related large-scale path is `multi_effect` / `repeatability` with `scale_method = "auto"` (experimental, not a new target). |
-| D3 | `cbind(...)` + `permanent()` is **honest-error quality** only (issue #237); full MV+PE fit is DEFER. |
+| D3 | `cbind(...)` + `permanent()` is **honest-error quality** only (issue #237); full MV+PE fit is DEFER. Banked as `docs/design/57-mv-pe-cbind-permanent-237.md` (engine inventory + R fence contracts). |
 
 Class vocabulary:
 
