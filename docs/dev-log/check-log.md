@@ -1,5 +1,16 @@
 # Check Log
 
+## 2026-09-24 (post-#366 T3 genomic ordinary-call honesty; no flip)
+
+- See `docs/dev-log/check-log.d/2026-09-24-post366-t3-genomic-ordinary.md` and
+  `docs/dev-log/after-task/2026-09-24-post366-t3-genomic-ordinary.md`.
+- Branch `cursor/post366-t3-genomic-ordinary`: default-path `genomic()` refusal
+  names held ordinary activation (design-44 G5; `BOUNDARY_HOLDOUT_FAIL`) and
+  prints a pasteable `target = "genomic"` next call. Focused genomic + ledger
+  + phase0 tests **PASS**. Version **0.9.0**; `public_covered_count` **7**.
+  No covered flip, no version bump, no Julia twin edit. Rebased onto main
+  after T5 `#244`, T4 `#243`, T1 `#241`, and T2 `#240`.
+
 ## 2026-09-24 (post-#366 T5 CRAN hygiene: Julia-free readiness; no upload)
 
 - See `docs/dev-log/check-log.d/2026-09-24-post366-t5-cran-hygiene.md` and
@@ -14,7 +25,7 @@
   `d5e40bfb44d7fe0e3048754a027af321160d29965ae871ef455b79adfa44d024`
   (913650 bytes). Version **0.9.0**; `public_covered_count` **7**. No upload.
 
-## 2026-09-24 (post-#366 T2 FA/SS honesty: count stays 7)
+## 2026-09-24 (post-#366 T2 FA/SS honesty — count stays 7)
 
 - Branch: `cursor/post366-t2-fa-ss-honesty` (clean worktree from `origin/main`)
 - Scope: R FA planned / SS ordinary hold honesty; no flip; no version bump

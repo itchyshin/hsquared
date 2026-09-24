@@ -384,8 +384,10 @@ hs_formula_status_behavior <- function() {
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML route; a",
       "supplied `Ginv` is used without alteration and its construction method,",
-      "allele frequencies, ridge, and denominator remain unknown. The explicit",
-      "model requires engine = \"julia\", target = \"genomic\". The",
+      "allele frequencies, ridge, and denominator remain unknown. NOT on the",
+      "default `engine = \"fit\"` path: ordinary-call / default-route genomic",
+      "activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL). The",
+      "explicit model requires engine = \"julia\", target = \"genomic\". The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
       "and SE accessors are unavailable. Covered at validation scale (0.7),",
       "experimental; public_covered_count remains 7."
@@ -393,10 +395,12 @@ hs_formula_status_behavior <- function() {
     paste(
       "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
       "sample allele frequencies, unweighted VanRaden method 1, ridge 0.01.",
-      "Use target = \"genomic\"; target = \"snp_blup\" remains opt-in. The",
-      "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. Covered at validation scale (0.7),",
-      "experimental; public_covered_count remains 7."
+      "NOT on the default `engine = \"fit\"` path: ordinary-call genomic",
+      "activation remains held. Use target = \"genomic\"; target = \"snp_blup\"",
+      "remains opt-in. The coefficient-scale result is labelled",
+      "`genomic_variance_ratio`; interval and SE accessors are unavailable.",
+      "Covered at validation scale (0.7), experimental; public_covered_count",
+      "remains 7."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-inverse",

@@ -308,6 +308,28 @@ hs_abort_single_step_default_path <- function() {
   )
 }
 
+# Default-path copy for genomic(). Covered GREML stays explicit
+# target = "genomic"; ordinary-call / default-route activation remains held
+# (design-44 G5; sealed BOUNDARY_HOLDOUT_FAIL). Do not silent-route.
+hs_abort_genomic_default_path <- function(formula, data_name) {
+  hs_abort_unsupported_syntax(
+    "`genomic()` is not on the default `engine = \"fit\"` path.\n\n",
+    "Ordinary-call / default-route genomic activation remains held ",
+    "(design-44 G5; sealed BOUNDARY_HOLDOUT_FAIL). Covered genomic GREML ",
+    "stays explicit opt-in only; this is not a silent ordinary-route ",
+    "promotion and public_covered_count stays 7.\n\n",
+    "Closest working call (validation-scale GREML; report ",
+    "`genomic_variance_ratio`, not a bare pedigree h2):\n\n",
+    hs_format_next_call(formula, data_name, "genomic"),
+    "\n\n",
+    "For marker-effect SNP-BLUP use the same `genomic(1 | id, markers = M)` ",
+    "formula with `target = \"snp_blup\"` instead. Intervals and SE accessors ",
+    "remain unavailable on the genomic GREML route.\n\n",
+    "See: current-limits article, formula_status().",
+    call. = FALSE
+  )
+}
+
 # One rule for the public hsquared() door: ML is not a live path.
 # REML = TRUE is the nearest working call. Internal spec builders and
 # model_spec() may still construct an ML-labelled spec; engine = "julia"
