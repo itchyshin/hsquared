@@ -274,13 +274,27 @@ hs_abort_opt_in_next_call <- function(
   )
 }
 
+
+# Extra clause when engine = "julia" has a single_step() formula but the wrong
+# target (or the default fit_animal_model). Names the opt-in fence explicitly.
+hs_single_step_allowed_targets_note <- function() {
+  paste0(
+    " Ordinary/default single-step stays held. Julia `V2-SSHINV` is ",
+    "engine-covered; that is not an R-public ordinary-path promotion. ",
+    "public_covered_count stays 7."
+  )
+}
+
 # Default-path copy for single_step(). The supplied-Hinv and engine-built
 # construction routes are distinct, so a generic target-only suggestion would
 # leave users unsure which formula arguments they need.
 hs_abort_single_step_default_path <- function() {
   hs_abort_unsupported_syntax(
     "`single_step()` is not on the default `engine = \"fit\"` path. ",
-    "R single-step remains experimental and opt-in.\n\n",
+    "R single-step remains experimental and opt-in. Ordinary/default ",
+    "single-step stays held. Julia `V2-SSHINV` is engine-covered ",
+    "(HSquared.jl cf2a9bbf / #301); that is not an R-public ordinary-path ",
+    "promotion. public_covered_count stays 7.\n\n",
     "For a supplied inverse, use `single_step(1 | id, Hinv = Hinv)` with ",
     "`control = hs_control(engine = \"julia\", engine_control = list(",
     "target = \"single_step\"))`.\n\n",
@@ -387,8 +401,11 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
     return(invisible(FALSE))
   }
   preamble <- paste0(
-    "The data have repeated records per individual (", n_records,
-    " records for ", n_ids, " individuals), but the model has no ",
+    "The data have repeated records per individual (",
+    n_records,
+    " records for ",
+    n_ids,
+    " individuals), but the model has no ",
     "`permanent(1 | ...)` term. The additive variance will ABSORB the ",
     "permanent-environment variance, so `animal` and the heritability derived ",
     "from it are inflated -- they are not narrow-sense quantities here.\n"
