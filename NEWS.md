@@ -1,5 +1,14 @@
 # hsquared (development version)
 
+* **R↔Julia `engine = "julia"` parity inventory at experimental 0.9.0 (parity-09).**
+  Durable matrix `docs/design/55-r-julia-engine-julia-parity-09.md` classifies every
+  Julia-fittable surface as REACHABLE / HONEST-ERROR / SILENT-GAP. SILENT-GAPs SG1–SG3
+  closed with named unsupported-syntax tips (`cbind`+`permanent` #237; matfree
+  engine-only; FA/lowrank stay planned). Skip-guarded smoke
+  `tests/testthat/test-engine-julia-parity-smoke.R` names every REACHABLE target.
+  **No promotion** — `public_covered_count` stays **7**; version stays **0.9.0**.
+  Twin pointer: HSquared.jl `docs/design/12-bridge-compatibility.md`.
+
 * **The sparse repeatability route asks the engine for its uncertainty once,
   not three times (HSquared.jl#370).** `target = "repeatability"` with
   `scale_method = "auto"` wanted three post-fit quantities — the

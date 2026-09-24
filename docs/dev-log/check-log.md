@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-09-24 (R↔Julia engine=julia parity-09; no promotion)
+
+- See `docs/dev-log/check-log.d/2026-09-24-r-julia-parity-09.md` and
+  `docs/dev-log/after-task/2026-09-24-r-julia-parity-09.md`.
+- Branch `cursor/r-julia-parity-09-inventory`: S2 `4ed37d4`, S3 `c392a5a`,
+  S4 `44d5410`; Julia pointer `b68e8dd8`. Unsupported **28/0**; smoke
+  **16 live / 3 skips / 0 fail**. Unlazy leaf-S4 **ALL MET**. Version
+  **0.9.0**; `public_covered_count` **7**. No covered flip, push, merge,
+  or tag from this lane.
+
 ## 2026-09-11 (R 0.9 explicit genomic route — isolated candidate)
 
 - Candidate `d15bbaf`: default `engine = "fit"` and targetless

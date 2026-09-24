@@ -1,5 +1,7 @@
 # Capability Status
 
+> **Parity-09 (2026-09-24):** R↔Julia `engine = "julia"` reachability matrix is `docs/design/55-r-julia-engine-julia-parity-09.md` (smoke + error audit; **no promotion**; count stays **7**; version **0.9.0**). FA/lowrank stay planned named errors; matfree stays engine-only; `cbind`+`permanent` is honest-error quality only.
+
 | Capability | Status | Evidence | Notes |
 | --- | --- | --- | --- |
 | R package scaffold | covered | local and GitHub Actions R-CMD-check passed after Phase 0 edits | Package identity and operating memory exist. |
