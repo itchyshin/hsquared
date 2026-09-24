@@ -327,6 +327,20 @@ hs_build_model_spec <- function(
         !is.null(second_spec) ||
         length(iid_effects) > 0L
     ) {
+      # D3 / hsquared#237: name closest live paths rather than a bare planned
+      # fence when the blocker is a permanent-environment second effect.
+      if (!is.null(second_spec) && identical(second_spec$type, "permanent")) {
+        hs_abort_unsupported_syntax(
+          "`cbind(...)` with `permanent()` is not implemented (hsquared#237). ",
+          "Closest live paths: (1) univariate repeatability — drop `cbind` and ",
+          "use `control = hs_control(engine = \"julia\", engine_control = list(",
+          "target = \"repeatability\"))` with `animal(...) + permanent(1 | id)`; ",
+          "(2) multivariate without PE — keep `cbind(...) ~ fixed + animal(1 | ",
+          "id, pedigree = ped)` and drop `permanent()`. Full MV+PE fit is ",
+          "deferred; public_covered_count stays 7.",
+          call. = FALSE
+        )
+      }
       hs_abort_unsupported_syntax(
         "The multivariate path currently supports only ",
         "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",

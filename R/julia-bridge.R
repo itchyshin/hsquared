@@ -4571,6 +4571,26 @@ hs_validate_julia_target <- function(target) {
       call. = FALSE
     )
   }
+  # D2: matrix-free REML is engine-only (V1-MATFREE-REML). Do not add an R
+  # target; name the closest live large-scale siblings instead of a bare
+  # allowlist dump.
+  if (
+    target %in%
+      c("matrix_free", "matrix_free_reml", "matfree", "matrix_free_mc_em_reml")
+  ) {
+    hs_abort_unsupported_syntax(
+      "`engine_control$target = \"",
+      target,
+      "\"` is not an R bridge target. HSquared.jl `fit_matrix_free_reml` ",
+      "(V1-MATFREE-REML) stays engine-only for experimental 0.9.0. Closest ",
+      "live R paths: `target = \"ai_reml\"` / `\"sparse_reml\"` for the ",
+      "univariate animal model, or `target = \"multi_effect\"` / ",
+      "`\"repeatability\"` with `scale_method = \"auto\"` for the related ",
+      "experimental large-scale Monte-Carlo route. public_covered_count ",
+      "stays 7.",
+      call. = FALSE
+    )
+  }
   if (
     !target %in%
       c(
