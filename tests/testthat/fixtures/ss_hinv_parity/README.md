@@ -63,7 +63,7 @@ Copied files: `A.csv`, `G.csv`, `engine_hinv.csv`, `metadata.csv`.
 - **Is not:** AGHmatrix construction AGREE re-badged as REML / fit parity.
 - **Is not:** n=240 recovery GATE PASS (`8e6e038b` / `0533e9da`).
 - **Is not:** preGSf90 / blupf90+ numbers.
-- **Is not:** R-public covered, ordinary-route activation, count 8, 0.8.0.
+- **Is not:** R-public covered, ordinary-route activation, count 8, or a version bump.
 
 ## Test
 

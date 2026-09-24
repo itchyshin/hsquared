@@ -4669,7 +4669,8 @@ hs_validate_genetic_structure_control <- function(control, target) {
     hs_abort_unsupported_syntax(
       "`genetic_structure = \"lowrank\"` is planned, not activated on ",
       "the R bridge. The opt-in multivariate path estimates ",
-      "`\"unstructured\"` or `\"diagonal\"` G0; use one of those."
+      "`\"unstructured\"` or `\"diagonal\"` G0; use one of those. ",
+      "public_covered_count stays 7."
     )
   }
   # "unstructured" (default) and "diagonal" are both reachable. "diagonal" has
