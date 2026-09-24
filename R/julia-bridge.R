@@ -1351,8 +1351,36 @@ hs_fit_julia_repeatability_payload <- function(
     # the same way as every other post-fit quantity: the error is RECORDED and
     # surfaced as one warning by hs_julia_surface_bridge_errors(), never
     # swallowed into a silent NA (HSquared.jl#351).
+    # ONE information matrix, not three. Each of the three post-fit quantities
+    # this route wants -- the variance-component SEs, the ratio (h2 / PE
+    # proportion) SEs, and the summed-ratio (repeatability) interval -- is
+    # derived from the same asymptotic covariance, and that covariance is a
+    # finite-difference Hessian of the REML log-likelihood: the single most
+    # expensive post-fit quantity in the engine. Calling the three functions
+    # separately built it THREE times. Measured on the great tit animal +
+    # permanent-environment fit (11,856 records, 10,937 pedigree): 4.37 s for
+    # the three separate calls against 0.17 s through multi_effect_uncertainty,
+    # with identical returned values (HSquared.jl#370).
+    #
+    # The engine function is NEW, so this falls back to the three separate calls
+    # when it is absent -- hsquared must keep working against an engine checkout
+    # that predates it. The fallback is keyed on the function being UNDEFINED,
+    # not on the combined call returning nothing: when it exists and fails, all
+    # three quantities are unavailable for the SAME reason (a flat or boundary
+    # optimum makes the covariance itself unavailable), so re-calling the three
+    # would re-pay the cost only to record the same failure twice more.
     JuliaCall::julia_command(paste(
-      "hsq_vcse = if isdefined(",
+      "hsq_unc_avail = isdefined(HSquared, :multi_effect_uncertainty);",
+      "hsq_unc = if hsq_unc_avail;",
+      "try; HSquared.multi_effect_uncertainty(",
+      "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
+      "hsq_fit.variance_components.sigma_e2; which = 1:2);",
+      hs_julia_catch_record("post_fit_uncertainty"),
+      "else; nothing; end;",
+      "hsq_has_unc = hsq_unc !== nothing;",
+      "hsq_vcse = if hsq_has_unc; hsq_unc.variance_component_se;",
+      "elseif hsq_unc_avail; nothing;",
+      "elseif isdefined(",
       "HSquared, :multi_effect_variance_component_standard_errors);",
       "try; HSquared.multi_effect_variance_component_standard_errors(",
       "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
@@ -1360,7 +1388,9 @@ hs_fit_julia_repeatability_payload <- function(
       hs_julia_catch_record("variance_component_standard_errors"),
       "else; nothing; end;",
       "hsq_has_vcse = hsq_vcse !== nothing;",
-      "hsq_rse = if isdefined(HSquared, :multi_effect_ratio_standard_errors);",
+      "hsq_rse = if hsq_has_unc; hsq_unc.ratio_se;",
+      "elseif hsq_unc_avail; nothing;",
+      "elseif isdefined(HSquared, :multi_effect_ratio_standard_errors);",
       "try; HSquared.multi_effect_ratio_standard_errors(",
       "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
       "hsq_fit.variance_components.sigma_e2);",
@@ -1402,8 +1432,15 @@ hs_fit_julia_repeatability_payload <- function(
     # components already fitted, differentiating the SPARSE loglik. It returns
     # NaN endpoints with boundary = TRUE rather than throwing on a rail, so the
     # `boundary` check below decides whether an interval exists at all.
+    #
+    # When the combined multi_effect_uncertainty() call above ran, this interval
+    # is already in it (computed from the SAME covariance, over which = 1:2), so
+    # it is read rather than recomputed. Same value, same fields, one less
+    # finite-difference Hessian.
     JuliaCall::julia_command(paste(
-      "hsq_ri = if isdefined(HSquared, :multi_effect_sum_ratio_interval);",
+      "hsq_ri = if hsq_has_unc; hsq_unc.sum_ratio_interval;",
+      "elseif hsq_unc_avail; nothing;",
+      "elseif isdefined(HSquared, :multi_effect_sum_ratio_interval);",
       "try; HSquared.multi_effect_sum_ratio_interval(",
       "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
       "hsq_fit.variance_components.sigma_e2; which = 1:2);",
