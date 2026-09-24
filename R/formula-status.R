@@ -289,7 +289,9 @@ hs_formula_status_behavior <- function() {
       "scale_method = \"auto\" to engine_control for any real pedigree -- the",
       "default dense estimator is capped at nobs^2 + nanimals^2 <=",
       "max_dense_cells. Returns variance-component and h2 standard errors on",
-      "the sparse route; experimental, REML only, not coverage-calibrated."
+      "the sparse route; experimental, REML only, not coverage-calibrated.",
+      "cbind(...) + permanent() is a named reject (hsquared#237); see",
+      "docs/design/57-mv-pe-cbind-permanent-237.md -- no multi-trait PE fitter yet."
     ),
     paste(
       "Common-environment effect of the opt-in two-effect model (additive",

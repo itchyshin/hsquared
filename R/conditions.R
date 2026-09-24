@@ -412,17 +412,22 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
   )
   # A multivariate `cbind()` response reaches an animal-only fitter: the spec
   # fence admits a single random-intercept animal effect and nothing else, so
-  # `permanent()` is NOT accepted there. Printing the univariate recipe would
-  # name a term the target rejects -- hsquared#212's defect class -- so the
-  # multivariate branch states the consequence and stops, rather than handing
-  # out a call that cannot run.
+  # `permanent()` is NOT accepted on this call (hsquared#237). Naming
+  # `permanent()` *on the cbind formula* would be hsquared#212's defect class.
+  # Point instead at separate live routes (univariate repeatability, or
+  # cbind without PE) and keep the engine-debt note explicit.
   if (isTRUE(spec$response$multivariate)) {
     warning(
       preamble,
       "A multivariate `cbind()` response cannot carry a `permanent()` term ",
-      "on the current multivariate route, so there is no in-model fix here: ",
-      "fit the traits univariately with `permanent(1 | <id>)` if you need the ",
-      "additive and permanent-environment variances separated.\n",
+      "on the current route (hsquared#237): the engine has no multi-trait PE ",
+      "fitter yet (G0 x A + P0 x I). Closest live paths: (1) fit each trait ",
+      "univariately with `animal(...) + permanent(1 | <id>)` and ",
+      "`control = hs_control(engine = \"julia\", engine_control = list(",
+      "target = \"repeatability\"))`; (2) keep `cbind(...)` without ",
+      "`permanent()` and treat animal/G0 as absorbing PE (not narrow-sense). ",
+      "Full MV+PE remains deferred; public_covered_count stays 7. See ",
+      "docs/design/57-mv-pe-cbind-permanent-237.md.\n",
       "Suppress with suppressWarnings() if this is intended.",
       call. = FALSE
     )

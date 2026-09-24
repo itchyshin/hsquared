@@ -1,5 +1,14 @@
 # hsquared (development version)
 
+* **hsquared#237 T1 close: `cbind` + `permanent` stays an honest fence, with a
+  design note.** The engine still has no multi-trait permanent-environment
+  fitter (`G0 ⊗ A + P0 ⊗ I`), so the named reject from parity-09 remains the
+  live path. This slice banks `docs/design/57-mv-pe-cbind-permanent-237.md`,
+  strengthens the multivariate repeated-records ABSORB warning to cite #237 and
+  the two closest live routes (univariate `target = "repeatability"`, or
+  `cbind` without `permanent()`), and adds capability / validation-debt rows.
+  **No promotion** — `public_covered_count` stays **7**; version stays **0.9.0**.
+
 * **R↔Julia `engine = "julia"` parity inventory at experimental 0.9.0 (parity-09).**
   Durable matrix `docs/design/55-r-julia-engine-julia-parity-09.md` classifies every
   Julia-fittable surface as REACHABLE / HONEST-ERROR / SILENT-GAP. SILENT-GAPs SG1–SG3
