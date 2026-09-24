@@ -1,10 +1,11 @@
 # Check Log
 
-## 2026-09-24 (post-#366 T5 CRAN hygiene — Julia-free readiness; no upload)
+## 2026-09-24 (post-#366 T5 CRAN hygiene: Julia-free readiness; no upload)
 
 - See `docs/dev-log/check-log.d/2026-09-24-post366-t5-cran-hygiene.md` and
   `docs/dev-log/after-task/2026-09-24-post366-t5-cran-hygiene.md`.
-- Branch `cursor/post366-t5-cran-hygiene` from `origin/main` @ `c77fc05`.
+- Branch `cursor/post366-t5-cran-hygiene` from `origin/main` @ `c77fc05`
+  (rebased onto #240).
 - Hygiene: `cran-comments.md` frozen-artifact steps; `.Rbuildignore` adds
   `tools/` + `.gitattributes`; Suggests drops unused `pkgdown`.
 - Julia-free `R CMD check --as-cran --run-donttest` on
@@ -12,6 +13,18 @@
   submission` only). SHA-256
   `d5e40bfb44d7fe0e3048754a027af321160d29965ae871ef455b79adfa44d024`
   (913650 bytes). Version **0.9.0**; `public_covered_count` **7**. No upload.
+
+## 2026-09-24 (post-#366 T2 FA/SS honesty: count stays 7)
+
+- Branch: `cursor/post366-t2-fa-ss-honesty` (clean worktree from `origin/main`)
+- Scope: R FA planned / SS ordinary hold honesty; no flip; no version bump
+- Commands:
+  - `Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-fa-planned-surface.R")'` → PASS 15
+  - `test_file("tests/testthat/test-single-step.R")` → PASS 18 / SKIP 1 (live Julia)
+  - `test_file("tests/testthat/test-bridge-engine-status-crosslinks.R")` → PASS 24
+- Outcome: FA/SS live claim surfaces pin experimental **0.9.0**; ordinary SS
+  default-path error names `V2-SSHINV` engine-covered ≠ R-public and count **7**.
+- Version **0.9.0**; `public_covered_count` **7**; no covered flip.
 
 ## 2026-09-24 (R↔Julia engine=julia parity-09; no promotion)
 

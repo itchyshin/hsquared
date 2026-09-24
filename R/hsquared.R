@@ -288,6 +288,8 @@ hsquared <- function(
           "` target fits the single additive-genetic effect only.",
           if (identical(second_effect[[1L]], "maternal_genetic")) {
             hs_maternal_genetic_allowed_targets_note()
+          } else if (identical(second_effect[[1L]], "single_step")) {
+            hs_single_step_allowed_targets_note()
           } else {
             ""
           },
@@ -470,7 +472,8 @@ hsquared <- function(
         if (length(inert) > 0L) {
           warning(
             "`target = \"repeatability\"` with `scale_method = \"auto\"` ",
-            "ignores ", paste0("`", inert, "`", collapse = " and "),
+            "ignores ",
+            paste0("`", inert, "`", collapse = " and "),
             ": the sparse route picks its own start and iteration count ",
             "(HSquared.jl#343). Use `scale_method = \"dense\"` to control them.",
             call. = FALSE
@@ -573,7 +576,11 @@ hsquared <- function(
         # factorization is infeasible; the default "dense" is the covered
         # validation-scale path. See ?hsquared (engine_control) and the engine's
         # `docs/design/25-completion-ultraplan.md` (V8.6).
-        scale_method = hs_engine_control_value(control, "scale_method", "dense"),
+        scale_method = hs_engine_control_value(
+          control,
+          "scale_method",
+          "dense"
+        ),
         # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
         # reproduces the pre-#212-fix default exactly. NOTE: honoured on the
         # `scale_method = "dense"` route only -- `"auto"` does not forward
