@@ -407,7 +407,7 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
       preamble,
       "A multivariate `cbind()` response cannot carry a `permanent()` term ",
       "on the current route (hsquared#237): the engine has no multi-trait PE ",
-      "fitter yet (G0 ⊗ A + P0 ⊗ I). Closest live paths: (1) fit each trait ",
+      "fitter yet (G0 x A + P0 x I). Closest live paths: (1) fit each trait ",
       "univariately with `animal(...) + permanent(1 | <id>)` and ",
       "`control = hs_control(engine = \"julia\", engine_control = list(",
       "target = \"repeatability\"))`; (2) keep `cbind(...)` without ",
