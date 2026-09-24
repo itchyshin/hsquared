@@ -1195,8 +1195,11 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #' @inheritParams variance_components
 #'
 #' @return `variance_component_standard_errors()` returns a data frame with
-#'   `component` and `se`; `heritability_standard_error()` returns a single
-#'   numeric. Only for `hsquared_fit` objects that contain them.
+#'   `component` and `se`. `heritability_standard_error()` returns a one-row
+#'   data frame with `term` and `se`, matching [heritability()] so the two
+#'   merge on `term` (hsquared#236). Only for `hsquared_fit` objects that
+#'   contain them. The fit object may still store `heritability_se` as a bare
+#'   numeric internally; this extractor is the public shape.
 #' @export
 variance_component_standard_errors <- function(object, ...) {
   UseMethod("variance_component_standard_errors")
@@ -1244,10 +1247,47 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  hs_fit_result(
+  se <- hs_fit_result(
     object,
     "heritability_se",
     "an experimental heritability standard error"
+  )
+  hs_as_heritability_se_frame(object, se)
+}
+
+# Public SE shape for heritability (hsquared#236): always `data.frame(term, se)`,
+# matching `heritability()` so `merge(..., by = "term")` works. Internal storage
+# may still be a bare numeric (animal-model and sparse-repeatability bridges).
+hs_as_heritability_se_frame <- function(object, se) {
+  if (is.data.frame(se)) {
+    if (!all(c("term", "se") %in% names(se))) {
+      stop(
+        "`heritability_se` on the fit must be a numeric or a data frame with ",
+        "columns `term` and `se`.",
+        call. = FALSE
+      )
+    }
+    out <- se[, c("term", "se"), drop = FALSE]
+    out$term <- as.character(out$term)
+    out$se <- as.numeric(out$se)
+    rownames(out) <- NULL
+    return(out)
+  }
+  term <- "animal"
+  h2 <- object$result$heritability
+  if (is.data.frame(h2) && "term" %in% names(h2) && nrow(h2) >= 1L) {
+    if (nrow(h2) == 1L) {
+      term <- as.character(h2$term[[1L]])
+    } else if ("animal" %in% h2$term) {
+      term <- "animal"
+    } else {
+      term <- as.character(h2$term[[1L]])
+    }
+  }
+  data.frame(
+    term = term,
+    se = as.numeric(se)[[1L]],
+    stringsAsFactors = FALSE
   )
 }
 

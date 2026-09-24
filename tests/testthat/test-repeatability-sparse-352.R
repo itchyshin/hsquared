@@ -355,16 +355,17 @@ test_that("the sparse route returns variance-component and h2 standard errors", 
   expect_true(all(is.finite(se$se)))
   expect_true(all(se$se > 0))
 
-  # A SINGLE numeric, matching the documented contract and the animal-model
-  # route -- the extractor's return type must not depend on the target.
+  # Public shape is data.frame(term, se) matching heritability() (hsquared#236).
+  # Internal storage stays a bare numeric; the extractor normalizes.
   h2se <- heritability_standard_error(fit)
-  expect_true(is.numeric(h2se))
-  expect_length(h2se, 1L)
-  expect_true(is.finite(h2se) && h2se > 0)
+  expect_s3_class(h2se, "data.frame")
+  expect_equal(names(h2se), c("term", "se"))
+  expect_equal(h2se$term, heritability(fit)$term)
+  expect_true(is.finite(h2se$se) && h2se$se > 0)
   # A sane SE keeps the +/- 1 SE band inside (0, 1).
   h2 <- heritability(fit)$estimate
-  expect_gt(h2 - h2se, 0)
-  expect_lt(h2 + h2se, 1)
+  expect_gt(h2 - h2se$se, 0)
+  expect_lt(h2 + h2se$se, 1)
 
   # The permanent block's ratio is a variance-explained proportion, NOT a
   # heritability, so it is carried under its own name rather than as an h2 row.

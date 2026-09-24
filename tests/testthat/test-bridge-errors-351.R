@@ -153,7 +153,7 @@ test_that("a throwing SE call surfaces one warning and attr(fit, 'bridge_errors'
   # the failed quantity is absent, not a silent NA; its siblings are untouched
   expect_null(fit$result$variance_component_se)
   expect_error(variance_component_standard_errors(fit), "does not contain")
-  expect_true(is.finite(heritability_standard_error(fit)))
+  expect_true(is.finite(heritability_standard_error(fit)$se))
   expect_s3_class(heritability_interval(fit), "data.frame")
 })
 
