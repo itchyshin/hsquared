@@ -131,7 +131,12 @@
 #'   warns), and `loglik` carries the REML normalising constant
 #'   `-(n - p)/2 * log(2 * pi)` that the dense route omits -- so
 #'   log-likelihoods, AIC, or likelihood-ratio tests must NOT be compared
-#'   across `scale_method`. `repeatability_interval()` IS available on both
+#'   across `scale_method` on the raw `loglik` (HSquared.jl #365). Fit
+#'   `diagnostics` expose `loglik_convention`, `loglik_full_constant_offset`
+#'   (add to `loglik` for the full-constant scale), and
+#'   `loglik_comparable_across_routes` when the linked engine is new enough;
+#'   the engine helper `comparable_loglik(fit)` does the same conversion.
+#'   `repeatability_interval()` IS available on both
 #'   routes and agrees between them; the sparse one is formed from the fitted
 #'   components (`multi_effect_sum_ratio_interval()`) rather than by refitting
 #'   densely, and both are asymptotic logit-scale delta intervals that are NOT

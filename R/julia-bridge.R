@@ -1464,6 +1464,9 @@ hs_fit_julia_repeatability_payload <- function(
       "\"pe_ids\" => string.(collect(hsq_fit.permanent_effects.ids)),",
       "\"pe_values\" => collect(Float64, hsq_fit.permanent_effects.values),",
       "\"loglik\" => hsq_fit.loglik,",
+      "\"loglik_convention\" => hasproperty(hsq_fit, :loglik_convention) ? String(hsq_fit.loglik_convention) : \"unknown\",",
+      "\"loglik_full_constant_offset\" => hasproperty(hsq_fit, :loglik_full_constant_offset) ? Float64(hsq_fit.loglik_full_constant_offset) : NaN,",
+      "\"loglik_comparable_across_routes\" => hasproperty(hsq_fit, :loglik_comparable_across_routes) ? hsq_fit.loglik_comparable_across_routes : false,",
       "\"converged\" => hsq_fit.converged)"
     ))
   } else {
@@ -1492,6 +1495,9 @@ hs_fit_julia_repeatability_payload <- function(
       "\"pe_ids\" => string.(hsq_ped.ids[collect(hsq_fit.effects[2].ids)]),",
       "\"pe_values\" => collect(Float64, hsq_fit.effects[2].values),",
       "\"loglik\" => hsq_fit.loglik,",
+      "\"loglik_convention\" => hasproperty(hsq_fit, :loglik_convention) ? String(hsq_fit.loglik_convention) : \"unknown\",",
+      "\"loglik_full_constant_offset\" => hasproperty(hsq_fit, :loglik_full_constant_offset) ? Float64(hsq_fit.loglik_full_constant_offset) : NaN,",
+      "\"loglik_comparable_across_routes\" => hasproperty(hsq_fit, :loglik_comparable_across_routes) ? hsq_fit.loglik_comparable_across_routes : false,",
       "\"converged\" => hsq_fit.converged) end"
     ))
   }
@@ -1624,7 +1630,20 @@ hs_normalize_repeatability_result <- function(raw, payload, scale_method = "dens
       } else {
         "estimated_repeatability_sparse_multi_effect_aireml"
       },
-      scale_method = scale_method
+      scale_method = scale_method,
+      # HSquared.jl #365: dense omit-2π vs sparse full-constant. Present when
+      # the linked engine exposes the fields; otherwise "unknown"/NA/FALSE.
+      loglik_convention = if (!is.null(raw$loglik_convention)) {
+        as.character(raw$loglik_convention)
+      } else {
+        "unknown"
+      },
+      loglik_full_constant_offset = if (!is.null(raw$loglik_full_constant_offset)) {
+        as.numeric(raw$loglik_full_constant_offset)
+      } else {
+        NA_real_
+      },
+      loglik_comparable_across_routes = isTRUE(raw$loglik_comparable_across_routes)
     )
   )
 }

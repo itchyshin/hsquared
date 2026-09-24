@@ -144,7 +144,12 @@ Two differences are deliberate on the sparse route: \code{initial} and
 warns), and \code{loglik} carries the REML normalising constant
 \code{-(n - p)/2 * log(2 * pi)} that the dense route omits -- so
 log-likelihoods, AIC, or likelihood-ratio tests must NOT be compared
-across \code{scale_method}. \code{repeatability_interval()} IS available on both
+across \code{scale_method} on the raw \code{loglik} (HSquared.jl #365). Fit
+\code{diagnostics} expose \code{loglik_convention}, \code{loglik_full_constant_offset}
+(add to \code{loglik} for the full-constant scale), and
+\code{loglik_comparable_across_routes} when the linked engine is new enough;
+the engine helper \code{comparable_loglik(fit)} does the same conversion.
+\code{repeatability_interval()} IS available on both
 routes and agrees between them; the sparse one is formed from the fitted
 components (\code{multi_effect_sum_ratio_interval()}) rather than by refitting
 densely, and both are asymptotic logit-scale delta intervals that are NOT
