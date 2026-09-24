@@ -10,6 +10,11 @@ test_that("SE extractors return the fields when present", {
       se = c(0.12, 0.18),
       stringsAsFactors = FALSE
     ),
+    heritability = data.frame(
+      term = "animal",
+      estimate = 0.4,
+      stringsAsFactors = FALSE
+    ),
     heritability_se = 0.07
   )
   fit <- hsquared:::hs_new_fit(
@@ -24,7 +29,17 @@ test_that("SE extractors return the fields when present", {
     variance_component_standard_errors(fit),
     result$variance_component_se
   )
-  expect_equal(heritability_standard_error(fit), 0.07)
+  # Public shape is data.frame(term, se) so it merges with heritability()
+  # (hsquared#236). Internal storage may still be a bare numeric.
+  h2se <- heritability_standard_error(fit)
+  expect_s3_class(h2se, "data.frame")
+  expect_equal(names(h2se), c("term", "se"))
+  expect_equal(h2se$term, "animal")
+  expect_equal(h2se$se, 0.07)
+  expect_equal(
+    merge(heritability(fit), h2se, by = "term")$se,
+    0.07
+  )
 })
 
 test_that("SE extractors error clearly without the field or object", {
@@ -59,4 +74,26 @@ test_that("hs_normalize_variance_component_se() builds a component/se data frame
   )
   expect_equal(out$component, c("animal", "residual"))
   expect_equal(out$se, c(0.12, 0.18))
+})
+
+test_that("heritability_standard_error accepts a term/se frame already on the fit", {
+  result <- list(
+    heritability = data.frame(
+      term = "animal",
+      estimate = 0.35,
+      stringsAsFactors = FALSE
+    ),
+    heritability_se = data.frame(
+      term = "animal",
+      se = 0.05,
+      stringsAsFactors = FALSE
+    )
+  )
+  fit <- hsquared:::hs_new_fit(
+    call = quote(hsquared(y ~ animal(1 | id, pedigree = ped), data = dat)),
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = seq_len(10)),
+    result = result
+  )
+  expect_equal(heritability_standard_error(fit), result$heritability_se)
 })

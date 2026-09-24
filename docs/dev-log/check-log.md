@@ -1,5 +1,20 @@
 # Check Log
 
+## 2026-09-24 (post-#366 T6 extractor shape #236; count stays 7)
+
+- Branch: `cursor/post366-t6-extractor-236` (clean worktree from `origin/main`
+  @ `8fd4900`; rebased onto main after T3 `#242`).
+- Scope: `heritability_standard_error()` → `data.frame(term, se)`; estimands
+  unchanged; no bridge rewrite.
+- Commands:
+  - `devtools::document()` → man page updated
+  - `testthat::test_file("tests/testthat/test-variance-component-se.R")` →
+    PASS 14
+  - `testthat::test_file("tests/testthat/test-summary-uncertainty.R")` →
+    PASS 9
+- Version **0.9.0**; `public_covered_count` **7**; no covered flip.
+- See `docs/dev-log/after-task/2026-09-24-post366-t6-extractor-236.md`.
+
 ## 2026-09-24 (post-#366 T3 genomic ordinary-call honesty; no flip)
 
 - See `docs/dev-log/check-log.d/2026-09-24-post366-t3-genomic-ordinary.md` and

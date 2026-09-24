@@ -1,5 +1,15 @@
 # hsquared (development version)
 
+* **hsquared#236: `heritability_standard_error()` returns `data.frame(term, se)`.**
+  Same public table shape as [heritability()], so
+  `merge(heritability(fit), heritability_standard_error(fit), by = "term")`
+  works. Sibling `variance_component_standard_errors()` stays
+  `data.frame(component, se)`. Estimands and internal storage are unchanged
+  (fits may still carry a bare numeric `heritability_se`); only the extractor
+  return shape is aligned. **Breaking** for callers that treated the return as a
+  length-1 numeric (use `$se`). No covered flip; `public_covered_count` stays
+  **7**; version stays **0.9.0**.
+
 * **Genomic ordinary-call honesty (T3).** Default-path `genomic()` now refuses
   with a pasteable `target = "genomic"` next call and names the held ordinary
   activation (design-44 G5; sealed `BOUNDARY_HOLDOUT_FAIL`). No silent default

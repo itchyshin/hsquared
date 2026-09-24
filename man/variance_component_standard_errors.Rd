@@ -16,8 +16,11 @@ heritability_standard_error(object, ...)
 }
 \value{
 \code{variance_component_standard_errors()} returns a data frame with
-\code{component} and \code{se}; \code{heritability_standard_error()} returns a single
-numeric. Only for \code{hsquared_fit} objects that contain them.
+\code{component} and \code{se}. \code{heritability_standard_error()} returns a one-row
+data frame with \code{term} and \code{se}, matching \code{\link[=heritability]{heritability()}} so the two
+merge on \code{term} (hsquared#236). Only for \code{hsquared_fit} objects that
+contain them. The fit object may still store \code{heritability_se} as a bare
+numeric internally; this extractor is the public shape.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
