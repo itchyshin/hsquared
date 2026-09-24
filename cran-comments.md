@@ -1,9 +1,10 @@
 ## Submission summary
 
 This is the first-CRAN submission comment file for hsquared version **0.9.0**
-(experimental). The submission is made only from the frozen artifact identified
-in the release-gate evidence. Upload, confirmation, acceptance, and public
-CRAN availability are separate states and are recorded with that artifact.
+(experimental). It is maintained ahead of any upload so the frozen-artifact
+gate has current comment text. **No CRAN upload is performed from this file
+alone.** Upload, confirmation, acceptance, and public CRAN availability are
+separate states and are recorded only with one identified frozen artifact.
 
 hsquared is the R-facing twin of the Julia engine HSquared.jl. It provides
 formula syntax, validation, summaries, and extractors for quantitative-genetic
@@ -11,39 +12,64 @@ animal models. Default fitting requires a local Julia and HSquared.jl; CRAN
 checks must not invoke live Julia setup. Use `hs_control(engine = "validate")`
 to preview the model contract without fitting.
 
-Package status: **experimental**. Version is intentionally
-`0.9.0`, not `1.0.0`. Report point estimates only for rows marked `covered` in
+Package status: **experimental**. Version is intentionally `0.9.0`, not
+`1.0.0`. Report point estimates only for rows marked `covered` in
 `validation_status()`; uncertainty intervals are experimental and not
 coverage-calibrated. The 0.9.0 release retains a public covered count of 7;
 its opt-in Poisson/log and Binomial/logit path has a narrow three-field engine
 contract and makes no covered or coverage-calibrated claim.
 
-## Frozen artifact gate
+## Frozen-artifact steps (maintainer; no upload)
 
-* a fresh `hsquared_0.9.0.tar.gz` is built only from a clean, isolated release
-  commit;
-* its SHA-256, byte size, source commit, inventory, and direct `R CMD check
-  --as-cran --run-donttest` output are retained as gate evidence;
-* an earlier failed portable-manual artifact is retained as a failed attempt,
-  rather than overwritten;
-* HSquared.jl publication is separately recorded and is not evidence for any
-  additional R capability.
+Bank a Julia-free readiness receipt before any submit decision:
 
-## R CMD check results (local gate)
+1. Clean isolated worktree at the intended release commit
+   (`git status --porcelain` empty).
+2. Confirm `DESCRIPTION` Version `0.9.0` and public covered count **7**; do not
+   bump version in a hygiene-only pass.
+3. Confirm `.Rbuildignore` excludes maintainer trees (`docs/`, `tools/`,
+   `data-raw/`, agent dirs, `cran-comments.md`, site sources).
+4. Build: `R CMD build .` (or `devtools::build()`).
+5. Record tarball path, byte size, `shasum -a 256`, and `tar -tzf` inventory;
+   reject any forbidden path (`.git`, `.Rhistory`, `.RData`, `.unlazy`,
+   agent dirs).
+6. Julia-free check on that exact tarball:
+   `env -u NOT_CRAN R CMD check --as-cran --run-donttest hsquared_0.9.0.tar.gz`
+   (do not set `NOT_CRAN=true` or `HSQUARED_JULIA_TESTS=true`).
+7. Retain the check log beside the SHA receipt; expected first-submission
+   NOTE only when still unarchived. Do **not** treat this as CRAN acceptance.
+8. Only after Gate-1 rights, independent Rose/Grace/Pat audit, and platform
+   evidence may a maintainer upload; Registrator / twin Julia register steps
+   remain separately gated.
 
-Local macOS normal package checks and the direct frozen-artifact `R CMD check
---as-cran` are run on the isolated release commit. Their exact receipt is part
-the independent gate; it is not a claim that CRAN has accepted the package.
+## R CMD check results (local Julia-free gate)
+
+Post-#366 Theme T5 banked a Julia-free readiness receipt on macOS (R 4.6.0,
+aarch64-apple-darwin23). Full command log:
+`docs/dev-log/check-log.d/2026-09-24-post366-t5-cran-hygiene.md`.
+
+Hygiene tarball (predecessor evidence only; not a submission artifact):
+
+* file `hsquared_0.9.0.tar.gz`
+* SHA-256 `220a0ba2f5764a358a54f69da5e0a18d9b63a22fe01a45a9474855deb81daeed`
+* size 913647 bytes
+* inventory 278 paths; forbidden-path scan clean
 
 ```
-Status: see the immutable release-gate receipt for the submitted artifact
+Status: 1 NOTE
 ```
 
-Expected first-submission NOTE when submitted:
+0 errors, 0 warnings. The NOTE is the expected first-submission feasibility
+note:
 
 ```
+Maintainer: 'Shinichi Nakagawa <itchyshin@gmail.com>'
+
 New submission
 ```
+
+Re-freeze SHA / size / inventory on the exact release commit before any
+upload; do not treat this hygiene receipt as CRAN acceptance.
 
 ## Test-suite design
 

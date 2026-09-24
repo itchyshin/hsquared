@@ -1,5 +1,18 @@
 # Check Log
 
+## 2026-09-24 (post-#366 T5 CRAN hygiene — Julia-free readiness; no upload)
+
+- See `docs/dev-log/check-log.d/2026-09-24-post366-t5-cran-hygiene.md` and
+  `docs/dev-log/after-task/2026-09-24-post366-t5-cran-hygiene.md`.
+- Branch `cursor/post366-t5-cran-hygiene` from `origin/main` @ `c77fc05`.
+- Hygiene: `cran-comments.md` frozen-artifact steps; `.Rbuildignore` adds
+  `tools/` + `.gitattributes`; Suggests drops unused `pkgdown`.
+- Julia-free `R CMD check --as-cran --run-donttest` on
+  `hsquared_0.9.0.tar.gz`: **0 errors / 0 warnings / 1 NOTE** (`New
+  submission` only). SHA-256
+  `220a0ba2f5764a358a54f69da5e0a18d9b63a22fe01a45a9474855deb81daeed`
+  (913647 bytes). Version **0.9.0**; `public_covered_count` **7**. No upload.
+
 ## 2026-09-24 (R↔Julia engine=julia parity-09; no promotion)
 
 - See `docs/dev-log/check-log.d/2026-09-24-r-julia-parity-09.md` and

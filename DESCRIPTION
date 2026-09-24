@@ -51,7 +51,6 @@ Suggests:
     lme4,
     nadiv,
     pedigreemm,
-    pkgdown,
     rmarkdown,
     sommer,
     testthat (>= 3.0.0),

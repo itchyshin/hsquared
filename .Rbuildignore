@@ -19,9 +19,11 @@
 ^pkgdown-site$
 ^pkgdown$
 ^sim$
+^tools$
 ^vignettes/articles$
 
 ^\.git$
+^\.gitattributes$
 ^LOOP$
 ^cran-comments\.md$
 ^\.cursor$
