@@ -3,7 +3,7 @@
 Theme T5: Julia-free `--as-cran` readiness receipt.
 Lane: `cursor/post366-t5-cran-hygiene` at
 `~/local-scratch/lanes/hsquared-post366-t5`.
-Base: `origin/main` at `c77fc05` (Merge #239).
+Base: `origin/main` at `c77fc05`; hygiene commit `ee323c6` (Merge #239).
 Boundary: experimental **0.9.0** / `public_covered_count` **7**; no
 version bump; no CRAN upload; no Registrator; avoids #237 FA /
 genomic ordinary / #365 engine themes.
@@ -39,8 +39,8 @@ Artifact retained under
 | Check | Outcome |
 | --- | --- |
 | `R CMD build .` | `hsquared_0.9.0.tar.gz` |
-| SHA-256 | `220a0ba2f5764a358a54f69da5e0a18d9b63a22fe01a45a9474855deb81daeed` |
-| Size | 913647 bytes |
+| SHA-256 | `d5e40bfb44d7fe0e3048754a027af321160d29965ae871ef455b79adfa44d024` |
+| Size | 913650 bytes |
 | Inventory | 278 paths; forbidden-path scan **CLEAN** |
 | `R CMD check --as-cran --run-donttest` | **Status: 1 NOTE** (0 errors, 0 warnings) |
 | NOTE content | expected `New submission` only |

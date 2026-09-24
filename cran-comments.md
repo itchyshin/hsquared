@@ -51,8 +51,8 @@ aarch64-apple-darwin23). Full command log:
 Hygiene tarball (predecessor evidence only; not a submission artifact):
 
 * file `hsquared_0.9.0.tar.gz`
-* SHA-256 `220a0ba2f5764a358a54f69da5e0a18d9b63a22fe01a45a9474855deb81daeed`
-* size 913647 bytes
+* SHA-256 `d5e40bfb44d7fe0e3048754a027af321160d29965ae871ef455b79adfa44d024`
+* size 913650 bytes
 * inventory 278 paths; forbidden-path scan clean
 
 ```

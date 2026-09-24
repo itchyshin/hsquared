@@ -32,8 +32,8 @@ Rejected merging conflicting release candidate #202 as part of overnight T5.
 
 ## 5. Checks Run
 
-- `R CMD build .` → `hsquared_0.9.0.tar.gz` (913647 bytes)
-- SHA-256 `220a0ba2f5764a358a54f69da5e0a18d9b63a22fe01a45a9474855deb81daeed`
+- `R CMD build .` → `hsquared_0.9.0.tar.gz` (913650 bytes)
+- SHA-256 `d5e40bfb44d7fe0e3048754a027af321160d29965ae871ef455b79adfa44d024`
 - Forbidden-path inventory scan: CLEAN (278 paths)
 - `env` without `NOT_CRAN` / `HSQUARED_JULIA_TESTS`:
   `R CMD check --as-cran --run-donttest` → **1 NOTE** (`New submission` only)
