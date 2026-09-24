@@ -1,5 +1,11 @@
 # hsquared (development version)
 
+* **Genomic ordinary-call honesty (T3).** Default-path `genomic()` now refuses
+  with a pasteable `target = "genomic"` next call and names the held ordinary
+  activation (design-44 G5; sealed `BOUNDARY_HOLDOUT_FAIL`). No silent default
+  route, no covered flip, `public_covered_count` stays **7**, experimental
+  **0.9.0** unchanged. Activation remains an owner science ticket.
+
 * **hsquared#237 T1 close: `cbind` + `permanent` stays an honest fence, with a
   design note.** The engine still has no multi-trait permanent-environment
   fitter (`G0 ⊗ A + P0 ⊗ I`), so the named reject from parity-09 remains the

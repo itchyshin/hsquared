@@ -100,14 +100,69 @@ test_that("the default fit path keeps genomic() opt-in", {
   ))
   expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
 
-  expect_error(
+  err <- tryCatch(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
       data = dat,
       family = stats::gaussian()
     ),
-    "experimental and opt-in",
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`genomic()` is not on the default",
+    err,
     fixed = TRUE
+  ))
+  expect_true(grepl("Ordinary-call / default-route", err, fixed = TRUE))
+  expect_true(grepl("BOUNDARY_HOLDOUT_FAIL", err, fixed = TRUE))
+  expect_true(grepl("Closest working call", err, fixed = TRUE))
+  expect_true(grepl("target = \"genomic\"", err, fixed = TRUE))
+  expect_true(grepl("genomic_variance_ratio", err, fixed = TRUE))
+  expect_true(grepl("public_covered_count stays 7", err, fixed = TRUE))
+  expect_true(grepl("y ~ genomic(1 | id, Ginv = Ginv)", err, fixed = TRUE))
+  expect_true(grepl("data = dat", err, fixed = TRUE))
+  expect_true(grepl(
+    "not a silent ordinary-route promotion",
+    err,
+    fixed = TRUE
+  ))
+
+  # Marker form gets the same ordinary-call hold (no silent default route).
+  markers <- matrix(
+    c(0, 1, 2, 1, 0, 2, 2, 1, 0),
+    nrow = 3L,
+    dimnames = list(ids, paste0("m", 1:3))
+  )
+  err_m <- tryCatch(
+    hsquared(
+      y ~ genomic(1 | id, markers = markers),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`genomic()` is not on the default",
+    err_m,
+    fixed = TRUE
+  ))
+  expect_true(grepl("target = \"genomic\"", err_m, fixed = TRUE))
+  expect_true(grepl("snp_blup", err_m, fixed = TRUE))
+
+  # Targetless engine = "julia" also refuses silent genomic routing.
+  err_j <- tryCatch(
+    hsquared(
+      y ~ genomic(1 | id, Ginv = Ginv),
+      data = dat,
+      family = stats::gaussian(),
+      control = hs_control(engine = "julia")
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl("target = \"genomic\"", err_j, fixed = TRUE))
+  expect_true(
+    grepl("fit_animal_model", err_j, fixed = TRUE) ||
+      grepl("single additive-genetic", err_j, fixed = TRUE)
   )
 
   # REML = FALSE stays rejected on the explicit genomic route (design-44).
@@ -121,7 +176,43 @@ test_that("the default fit path keeps genomic() opt-in", {
     "REML = FALSE",
     fixed = TRUE
   )
+})
 
+test_that("formula_status names the ordinary-call genomic hold", {
+  status <- formula_status()
+  ginv_row <- status[
+    status$term == "genomic(1 | id, Ginv = Ginv)",
+    ,
+    drop = FALSE
+  ]
+  expect_length(ginv_row$current_behavior, 1L)
+  expect_match(
+    ginv_row$current_behavior,
+    "NOT on the default",
+    fixed = TRUE
+  )
+  expect_match(
+    ginv_row$current_behavior,
+    "BOUNDARY_HOLDOUT_FAIL",
+    fixed = TRUE
+  )
+  expect_match(
+    ginv_row$current_behavior,
+    "public_covered_count remains 7",
+    fixed = TRUE
+  )
+
+  markers_row <- status[
+    status$term == "genomic(1 | id, markers = M)",
+    ,
+    drop = FALSE
+  ]
+  expect_length(markers_row$current_behavior, 1L)
+  expect_match(
+    markers_row$current_behavior,
+    "ordinary-call genomic activation remains held",
+    fixed = TRUE
+  )
 })
 
 test_that("the genomic bridge requires an internal payload", {

@@ -96,7 +96,7 @@ hsquared(y ~ genomic(1 | id, markers = M), data = dat,
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** 0.7 covered claim is opt-in genomic GREML only (target = "genomic"; genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Default activation is held for 0.9. Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
+**Exact scope and caveat.** 0.7 covered claim is opt-in genomic GREML only (target = "genomic"; genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Ordinary-call / default-route activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL). Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
 
 **Concrete fallback.** Report genomic_variance_ratio on the declared kernel with the no-anchor and scale disclosures. Do not treat single-step or default genomic routing as covered.
 

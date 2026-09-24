@@ -118,11 +118,11 @@ hs_route_table <- function() {
       scope = paste(
         "0.7 covered claim is opt-in genomic GREML only (target = \"genomic\";",
         "genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied",
-        "Ginv or builds VanRaden1 G from markers. Default activation is held",
-        "for 0.9. Single-step /",
-        "metafounder paths in this combined validation_status row remain",
-        "exploratory (not the 0.7 covered claim). APY / production / intervals",
-        "out of scope."
+        "Ginv or builds VanRaden1 G from markers. Ordinary-call / default-route",
+        "activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL).",
+        "Single-step / metafounder paths in this combined validation_status",
+        "row remain exploratory (not the 0.7 covered claim). APY / production",
+        "/ intervals out of scope."
       ),
       point = "yes",
       interval = "no",
