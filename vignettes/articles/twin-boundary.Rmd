@@ -83,3 +83,21 @@ function requires, or which parameters are identified versus rotation- or
 scale-dependent. `HSquared.jl`'s `docs/src/twin-boundary.md` is the sibling
 page for this rule on the Julia side and carries the matching paragraph
 (landed in HSquared.jl PR #338).
+
+## Documentation map (applied journey)
+
+Both sites use the same five-step reader journey. This pkgdown article set owns
+formula examples and reporting fences; Documenter owns engine utilities and the
+live status table regenerated at build time.
+
+| Step | hsquared (here) | HSquared.jl (Documenter) |
+| --- | --- | --- |
+| Get started | [Getting started](../hsquared.html) | [Quick start](https://itchyshin.github.io/HSquared.jl/dev/quickstart.html) |
+| Choose a model | [Fitting models](fitting-models.html), [Formula grammar](formula-grammar.html), [Multivariate](multivariate.html), [Genomic prediction](genomic-prediction.html) | [Standard QG models](https://itchyshin.github.io/HSquared.jl/dev/standard-qg-models.html), [Model spec grammar](https://itchyshin.github.io/HSquared.jl/dev/model-spec-grammar.html), [Multivariate models](https://itchyshin.github.io/HSquared.jl/dev/multivariate-models.html), [Genomic models](https://itchyshin.github.io/HSquared.jl/dev/genomic-models.html) |
+| Fit | [Fitting models](fitting-models.html) | [Quick start](https://itchyshin.github.io/HSquared.jl/dev/quickstart.html#Fit-Variance-Components-Experimentally), [Fitting at scale](https://itchyshin.github.io/HSquared.jl/dev/fitting-at-scale.html) |
+| Diagnose | [Visualizing models](visualizing-models.html), [`validation_status()`](../reference/validation_status.html) | [Validation status](https://itchyshin.github.io/HSquared.jl/dev/validation-status.html) |
+| Report | [Can I fit and report this?](current-limits.html), this article | [Twin boundary](https://itchyshin.github.io/HSquared.jl/dev/twin-boundary.html), [Progression and evidence](https://itchyshin.github.io/HSquared.jl/dev/progression-evidence.html) |
+
+Intentional asymmetry: comparator vignettes, Gryphon, QTL/GWAS status, inheritance
+systems, and GPU roadmap articles have no Julia mirror yet. Julia Developer pages
+hold backend roadmap detail that R-first readers can skip initially.
