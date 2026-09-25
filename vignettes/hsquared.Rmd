@@ -144,3 +144,9 @@ R formula + data
 ```
 
 R owns the friendly interface. Julia owns the fit.
+
+Engine-side walkthrough (pedigree utilities, bridge-shaped specs, experimental
+fitters):
+[HSquared.jl Quick start](https://itchyshin.github.io/HSquared.jl/dev/quickstart.html).
+Status before reporting:
+[engine validation status](https://itchyshin.github.io/HSquared.jl/dev/validation-status.html).

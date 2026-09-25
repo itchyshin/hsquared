@@ -42,6 +42,17 @@ cat(sprintf(
 <code>engine = "julia"</code> and an explicit <code>target</code>. This figure does not imply
 production bridge coverage for every model.</em></p>
 
+**Engine twin (Documenter):** runnable Julia `@example` blocks and bridge-shaped
+utilities are on
+[Quick start](https://itchyshin.github.io/HSquared.jl/dev/quickstart.html).
+Sections below map to
+[Standard QG models](https://itchyshin.github.io/HSquared.jl/dev/standard-qg-models.html),
+[Genomic models](https://itchyshin.github.io/HSquared.jl/dev/genomic-models.html),
+and
+[Multivariate models](https://itchyshin.github.io/HSquared.jl/dev/multivariate-models.html).
+Live engine evidence:
+[validation status](https://itchyshin.github.io/HSquared.jl/dev/validation-status.html).
+
 ## The default: a univariate Gaussian animal model
 
 This is the v0.1 model, fitted by the default `hsquared()` call. It estimates the
