@@ -1,5 +1,10 @@
 # hsquared (development version)
 
+* **Authorship.** Added co-authors Yefeng Yang (ORCID 0000-0002-8610-4016) and
+  Szymon Drobniak (ORCID 0000-0001-8101-6247) across `DESCRIPTION`, `inst/CITATION`,
+  and `CITATION.cff`; Shinichi Nakagawa remains maintainer and corresponding author.
+  No version bump; experimental **0.9.0** unchanged.
+
 * **hsquared#236: `heritability_standard_error()` returns `data.frame(term, se)`.**
   Same public table shape as [heritability()], so
   `merge(heritability(fit), heritability_standard_error(fit), by = "term")`
