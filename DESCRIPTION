@@ -4,9 +4,9 @@ Version: 0.9.0
 Authors@R: c(
     person("Shinichi", "Nakagawa", , "itchyshin@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-7765-5182")),
-    person("Yefeng", "Yang", role = "aut",
+    person("Yefeng", "Yang", role = c("aut", "cph"),
            comment = c(ORCID = "0000-0002-8610-4016")),
-    person("Szymon", "Drobniak", role = "aut",
+    person("Szymon", "Drobniak", role = c("aut", "cph"),
            comment = c(ORCID = "0000-0001-8101-6247"))
     )
 Description: Provides the R-facing interface for an open quantitative-genetic

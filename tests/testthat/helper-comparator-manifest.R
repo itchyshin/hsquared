@@ -115,17 +115,35 @@ hs_extract_sha256 <- function(output) {
   candidates[[1L]]
 }
 
-hs_sha256_file <- function(path, find_command = Sys.which, run_command = system2) {
+hs_sha256_file <- function(
+  path,
+  find_command = Sys.which,
+  run_command = system2,
+  windows_directory = Sys.getenv("WINDIR")
+) {
   commands <- list(
     list(command = "shasum", args = c("-a", "256", path)),
     list(command = "sha256sum", args = path),
     list(command = "certutil", args = c("-hashfile", path, "SHA256"))
   )
 
+  if (nzchar(windows_directory)) {
+    commands[[length(commands) + 1L]] <- list(
+      command = file.path(windows_directory, "System32", "certutil.exe"),
+      args = c("-hashfile", path, "SHA256"),
+      system_path = TRUE
+    )
+  }
+
   for (candidate in commands) {
-    if (!nzchar(find_command(candidate$command))) next
+    command <- if (isTRUE(candidate$system_path)) {
+      candidate$command
+    } else {
+      find_command(candidate$command)
+    }
+    if (!nzchar(command)) next
     out <- tryCatch(
-      suppressWarnings(run_command(candidate$command, candidate$args, stdout = TRUE, stderr = TRUE)),
+      suppressWarnings(run_command(command, candidate$args, stdout = TRUE, stderr = TRUE)),
       error = function(...) NULL
     )
     if (is.null(out) || (!is.null(attr(out, "status")) && attr(out, "status") != 0L)) next
