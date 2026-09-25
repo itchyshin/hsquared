@@ -1,6 +1,12 @@
 url: https://itchyshin.github.io/hsquared/
 destination: pkgdown-site
 
+# Legacy article slugs (bookmarks / external links). Unlike ROADMAP.html, these
+# do not recreate hidden internal pages — see pkgdown workflow verify step.
+redirects:
+  - ["articles/can-i-fit-and-report-this.html", "articles/current-limits.html"]
+  - ["articles/progression-and-evidence.html", "articles/progression-evidence.html"]
+
 # D-41: prominent site-wide EXPERIMENTAL callout on the home sidebar (channel 3).
 home:
   title: How much is genetic?
@@ -79,6 +85,8 @@ navbar:
       menu:
         - text: Getting started with hsquared
           href: articles/hsquared.html
+        - text: Julia engine docs (HSquared.jl)
+          href: https://itchyshin.github.io/HSquared.jl/dev/
         - text: Can I fit and report this?
           href: articles/current-limits.html
         - text: Function map and cheat sheet
@@ -92,6 +100,8 @@ navbar:
           href: articles/current-limits.html
         - text: Model status and route scope
           href: articles/model-status.html
+        - text: Standard routes (fitting tour)
+          href: articles/fitting-models.html
         - text: Multivariate Gaussian animal models
           href: articles/multivariate.html
         - text: Genomic prediction
@@ -279,6 +289,7 @@ articles:
     contents:
       - articles/current-limits
       - articles/model-status
+      - articles/fitting-models
       - articles/multivariate
       - articles/genomic-prediction
 
@@ -305,8 +316,8 @@ articles:
       Route-scoped reporting permission and comparator evidence. Comparator
       agreement does not certify interval coverage.
     contents:
-      - articles/current-limits
       - articles/twin-boundary
+      - articles/current-limits
       - articles/benchmark-comparators
       - articles/two-effect-comparator
       - articles/multi-effect-comparator
