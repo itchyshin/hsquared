@@ -35,8 +35,8 @@
 
 * Maintainer and corresponding author: Shinichi Nakagawa `<itchyshin@gmail.com>`.
 * Co-authors Yefeng Yang and Szymon Drobniak are listed with ORCIDs in `DESCRIPTION`, `inst/CITATION`,
-  `CITATION.cff`, and README. **Maintainer confirms co-author consent for CRAN `aut` roles** (record
-  kept outside the tarball).
+  `CITATION.cff`, and README. **Maintainer confirms co-author consent for CRAN `aut` and `cph` roles**
+  (record kept outside the tarball).
 
 ## Method references
 
