@@ -55,11 +55,13 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com} [copyright holder]
+\strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com} (\href{https://orcid.org/0000-0002-7765-5182}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item Shinichi Nakagawa \email{itchyshin@gmail.com} [copyright holder]
+  \item Shinichi Nakagawa \email{itchyshin@gmail.com} (\href{https://orcid.org/0000-0002-7765-5182}{ORCID}) [copyright holder]
+  \item Yefeng Yang (\href{https://orcid.org/0000-0002-8610-4016}{ORCID})
+  \item Szymon Drobniak (\href{https://orcid.org/0000-0001-8101-6247}{ORCID})
 }
 
 }

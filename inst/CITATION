@@ -7,7 +7,16 @@ bibentry(
   author = c(
     person(
       "Shinichi", "Nakagawa",
+      email = "itchyshin@gmail.com",
       comment = c(ORCID = "0000-0002-7765-5182")
+    ),
+    person(
+      "Yefeng", "Yang",
+      comment = c(ORCID = "0000-0002-8610-4016")
+    ),
+    person(
+      "Szymon", "Drobniak",
+      comment = c(ORCID = "0000-0001-8101-6247")
     )
   ),
   year = "2026",
@@ -23,7 +32,7 @@ bibentry(
   ),
   url = "https://github.com/itchyshin/hsquared",
   textVersion = paste(
-    "Nakagawa S (2026).",
+    "Nakagawa S, Yang Y, Drobniak S (2026).",
     "hsquared: R Interface for Julia-Backed Quantitative-Genetic Models.",
     "R package; Julia twin HSquared.jl; twin DOI pending (D-23).",
     "https://github.com/itchyshin/hsquared"
