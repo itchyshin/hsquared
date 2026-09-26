@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-09-26 (Cursor handover resume; classify only; count stays 7)
+
+- See `docs/dev-log/check-log.d/2026-09-26-cursor-handover-resume.md` and
+  `docs/dev-log/after-task/2026-09-26-cursor-handover-resume.md`.
+- Rehydrated handover on clean WT at `origin/main` @ `984d368`; classified
+  Landing State vs live git. Version **0.9.0**; `public_covered_count` **7**;
+  **SUBMITTED=no**. No package/code change.
+
 ## 2026-09-24 (post-#366 T6 extractor shape #236; count stays 7)
 
 - Branch: `cursor/post366-t6-extractor-236` (clean worktree from `origin/main`
