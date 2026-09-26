@@ -23,6 +23,7 @@
 ^vignettes/articles$
 
 ^\.git$
+^CITATION\.cff$
 ^\.gitattributes$
 ^LOOP$
 ^cran-comments\.md$
