@@ -22,3 +22,6 @@ doc/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Unlazy acceptance ledgers (local only; never commit).
+.unlazy/

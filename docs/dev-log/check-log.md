@@ -1,5 +1,18 @@
 # Check Log
 
+## 2026-09-26 (hsquared#237 R-lane cbind + permanent; count stays 7)
+
+- See `docs/dev-log/check-log.d/2026-09-26-237-mv-permanent-r.md` and
+  `docs/dev-log/after-task/2026-09-26-237-mv-permanent-r.md`.
+- Branch `cursor/237-mv-permanent-r` on clean WT
+  `~/local-scratch/lanes/hsquared-237-mv-permanent` from `origin/main` @
+  `c36244b`. Parser accepts `cbind()` + `permanent()`; distinct
+  `multivariate_repeatability` dispatch; no absorb into `fit_multivariate_reml`.
+- R consumes frozen HSquared.jl#398 `fit_multivariate_repeatability_reml`
+  (`410f7efd`); does not merge that PR. Focused tests **FAIL 0 / PASS 176**
+  (3 unrelated live skips); live #237 fit passed against the sibling WT.
+  Version **0.9.0**; `public_covered_count` **7**; no covered flip.
+
 ## 2026-09-26 (Cursor handover resume; classify only; count stays 7)
 
 - See `docs/dev-log/check-log.d/2026-09-26-cursor-handover-resume.md` and

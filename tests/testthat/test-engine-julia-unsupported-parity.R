@@ -11,7 +11,7 @@ hs_parity09_tiny_ped <- function() {
   )
 }
 
-test_that("SG1: cbind + permanent names repeatability and MV-without-PE tips (D3)", {
+test_that("SG1: cbind + permanent now parses (hsquared#237 lift)", {
   ped <- hs_parity09_tiny_ped()
   dat <- data.frame(
     y1 = c(1, 2, 3, 1.5, 2.5),
@@ -20,22 +20,19 @@ test_that("SG1: cbind + permanent names repeatability and MV-without-PE tips (D3
     stringsAsFactors = FALSE
   )
 
-  err <- tryCatch(
-    hsquared:::hs_build_model_spec(
-      cbind(y1, y2) ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
-      data = dat,
-      family = stats::gaussian(),
-      REML = TRUE
-    ),
-    error = function(e) e
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(y1, y2) ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
   )
-  expect_s3_class(err, "hsquared_unsupported_syntax")
-  msg <- conditionMessage(err)
-  expect_match(msg, "hsquared#237", fixed = TRUE)
-  expect_match(msg, "target = \"repeatability\"", fixed = TRUE)
-  expect_match(msg, "drop `permanent()`", fixed = TRUE)
-  expect_match(msg, "public_covered_count stays 7", fixed = TRUE)
-  expect_match(msg, "not implemented", fixed = TRUE)
+  expect_true(spec$response$multivariate)
+  expect_false(is.null(spec$random$permanent))
+  expect_match(
+    spec$bridge$target,
+    "fit_multivariate_repeatability_reml",
+    fixed = TRUE
+  )
 })
 
 test_that("SG2: matrix_free target is engine-only named abort (D2)", {

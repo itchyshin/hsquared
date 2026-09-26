@@ -55,6 +55,7 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 route only; the opt-in \code{scale_method = "auto"} route does not yet
 forward them (HSquared.jl#343, a known remaining gap).
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
+\item \code{multivariate_repeatability}: \code{initial}, \code{iterations}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with
 \code{sigma_a2}), \code{restart_check}.
@@ -88,7 +89,8 @@ targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"direct_maternal"}, \code{"random_regression"}, \code{"genomic"},
 \code{"single_step"}, \code{"single_step_construct"}, \code{"metafounder"},
 \code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"relmat"}, \code{"precision"},
-\code{"multivariate"}, and \code{"nongaussian"}, described below. Covered opt-in
+\code{"multivariate"}, \code{"multivariate_repeatability"}, and \code{"nongaussian"},
+described below. Covered opt-in
 routes (validation scale; not the default path) include \code{"two_effect"}
 (\code{common_env()}), \code{"direct_maternal"}, \code{"multi_effect"}, and
 \code{"random_regression"} at \code{k = 2}. \code{marginal} applies only to
@@ -252,6 +254,16 @@ remains planned. \code{"factor_analytic"} is planned on the R surface (Julia
 \code{V4-FA} is engine-covered at HSquared.jl \code{60895208} / #300) and is not
 activated on the R bridge; not covered. The future \code{rank} control is also
 reserved and currently errors instead of being ignored.
+\code{target = "multivariate_repeatability"} is the experimental
+\code{cbind(...) + permanent(1 | id)} route (hsquared#237). Naming it is
+optional: that formula auto-routes on the default path and under
+\code{engine = "julia"} with no \code{target}. It identifies unstructured trait
+x trait \code{G0} (pedigree) from \code{P0} (iid permanent environment) and \code{R0}.
+It is experimental, REML-only, not covered, and does not change
+\code{public_covered_count} (stays 7). R consumes
+\code{HSquared.fit_multivariate_repeatability_reml} (HSquared.jl#398);
+the result target is \code{multivariate_repeatability_reml}. R will not
+fall back to animal-only \code{fit_multivariate_reml}.
 
 \code{target = "nongaussian"} is an experimental, opt-in conditional GLMM for
 \code{poisson(log)} or \code{binomial(logit)} (binary 0/1 or
