@@ -432,25 +432,27 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
     "permanent-environment variance, so `animal` and the heritability derived ",
     "from it are inflated -- they are not narrow-sense quantities here.\n"
   )
-  # A multivariate `cbind()` response reaches an animal-only fitter: the spec
-  # fence admits a single random-intercept animal effect and nothing else, so
-  # `permanent()` is NOT accepted on this call (hsquared#237). Naming
-  # `permanent()` *on the cbind formula* would be hsquared#212's defect class.
-  # Point instead at separate live routes (univariate repeatability, or
-  # cbind without PE) and keep the engine-debt note explicit.
+  # After hsquared#237 the cbind + permanent() grammar is live on the default
+  # route. Name that lever here (it is no longer a #212 false tip). The
+  # animal-only cbind fitter still absorbs PE into G0 when the term is absent.
   if (isTRUE(spec$response$multivariate)) {
     warning(
       preamble,
-      "A multivariate `cbind()` response cannot carry a `permanent()` term ",
-      "on the current route (hsquared#237): the engine has no multi-trait PE ",
-      "fitter yet (G0 x A + P0 x I). Closest live paths: (1) fit each trait ",
-      "univariately with `animal(...) + permanent(1 | <id>)` and ",
-      "`control = hs_control(engine = \"julia\", engine_control = list(",
-      "target = \"repeatability\"))`; (2) keep `cbind(...)` without ",
-      "`permanent()` and treat animal/G0 as absorbing PE (not narrow-sense). ",
-      "Full MV+PE remains deferred; public_covered_count stays 7. See ",
+      "To identify Va vs Vpe on a multi-trait repeated-measures model, add ",
+      "`permanent(1 | <id>)` to the cbind() formula (hsquared#237; ",
+      "experimental; public_covered_count stays 7):\n",
+      "  hsquared(\n",
+      "    cbind(<t1>, <t2>) ~ <fixed> + animal(1 | <id>, pedigree = ped) + ",
+      "permanent(1 | <id>),\n",
+      "    data = <data>\n",
+      "  )\n",
+      "That route calls HSquared.fit_multivariate_repeatability_reml ",
+      "(HSquared.jl#398). If this checkout lacks the export, the call names ",
+      "the missing fitter instead of absorbing PE into G0. Univariate ",
+      "`target = \"repeatability\"` remains the covered-scale PE path. See ",
       "docs/design/57-mv-pe-cbind-permanent-237.md.\n",
-      "Suppress with suppressWarnings() if this is intended.",
+      "Suppress with suppressWarnings() if the animal-only cbind model is ",
+      "intended.",
       call. = FALSE
     )
     return(invisible(TRUE))

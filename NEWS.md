@@ -1,5 +1,16 @@
 # hsquared (development version)
 
+* **hsquared#237: `cbind()` + `permanent(1 | id)` parses on the default
+  multivariate route.** Repeated-measures multi-trait formulas no longer hit
+  the T1 named reject. The call auto-routes to experimental
+  `target = "multivariate_repeatability"` and will not fall back to
+  animal-only `fit_multivariate_reml` (that path absorbs V_PE into G0).
+  R consumes HSquared.jl#398 `fit_multivariate_repeatability_reml`
+  (result target `multivariate_repeatability_reml`; status experimental).
+  Absent that export, R names the missing fitter rather than absorbing
+  PE into G0. Experimental only; **no covered flip**;
+  `public_covered_count` stays **7**; version stays **0.9.0**.
+
 * **Authorship.** Added co-authors Yefeng Yang (ORCID 0000-0002-8610-4016) and
   Szymon Drobniak (ORCID 0000-0001-8101-6247) across `DESCRIPTION`, `inst/CITATION`,
   and `CITATION.cff`; Shinichi Nakagawa remains maintainer and corresponding author.

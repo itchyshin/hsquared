@@ -290,8 +290,14 @@ hs_formula_status_behavior <- function() {
       "default dense estimator is capped at nobs^2 + nanimals^2 <=",
       "max_dense_cells. Returns variance-component and h2 standard errors on",
       "the sparse route; experimental, REML only, not coverage-calibrated.",
-      "cbind(...) + permanent() is a named reject (hsquared#237); see",
-      "docs/design/57-mv-pe-cbind-permanent-237.md -- no multi-trait PE fitter yet."
+      "cbind(...) + permanent(1 | id) now parses on the default multivariate",
+      "route (hsquared#237; experimental; target",
+      "\"multivariate_repeatability\"). It does not silently call the",
+      "animal-only multivariate fitter. The Julia sibling exports",
+      "fit_multivariate_repeatability_reml (HSquared.jl#398); R consumes",
+      "that frozen API. Experimental; no covered flip;",
+      "public_covered_count stays 7. See",
+      "docs/design/57-mv-pe-cbind-permanent-237.md."
     ),
     paste(
       "Common-environment effect of the opt-in two-effect model (additive",
@@ -447,7 +453,10 @@ hs_formula_status_behavior <- function() {
       "Covered numeric claim is scoped to k = 2 unstructured G0/R0;",
       "k >= 3 traits stay parseable-and-fittable-but-experimental;",
       "genetic_structure = \"diagonal\" stays experimental at 0.6.",
-      "Missing trait cells are allowed as `NA`. Under",
+      "Missing trait cells are allowed as `NA`. Adding `permanent(1 | id)`",
+      "parses on this default route as experimental multivariate PE",
+      "(hsquared#237; target \"multivariate_repeatability\"; no covered flip;",
+      "public_covered_count stays 7). Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
       "binomial-counts GLMM via target = \"nongaussian\" (scalar or varying",
       "positive row totals admitted), not a multivariate Gaussian."

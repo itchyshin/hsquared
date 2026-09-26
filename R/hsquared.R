@@ -80,9 +80,8 @@ hsquared <- function(
   if (identical(control$engine, "fit")) {
     # MV-4 (doc 38): a multivariate `cbind(...)` Gaussian response auto-routes to
     # the multivariate REML fitter (dispatched below), no longer requiring the
-    # opt-in `target = "multivariate"`. The spec fence (`R/model-spec.R`) already
-    # guarantees an animal-only, single-effect, random-intercept multivariate
-    # response, so clauses (4)-(7) of the frozen dispatch key hold here.
+    # opt-in `target = "multivariate"`. Animal-only cbind stays on that fitter.
+    # cbind + permanent() is the #237 exception and uses a distinct target.
     if (identical(spec$random$animal$design, "random_regression")) {
       hs_abort_opt_in_next_call(
         "random_regression",
@@ -99,11 +98,14 @@ hsquared <- function(
       )
     }
     opt_in_effect <- setdiff(names(spec$random), "animal")
-    if (length(opt_in_effect) > 0L) {
+    mv_permanent <- hs_is_multivariate_permanent(spec)
+    if (length(opt_in_effect) > 0L && !isTRUE(mv_permanent)) {
       effect_type <- opt_in_effect[[1L]]
       # Boole: maternal_genetic has two opt-in targets. Name the covered
       # direct_maternal sibling first. Do not auto-route. common_env /
-      # permanent paste stays on the sibling helper.
+      # permanent paste stays on the sibling helper. cbind + permanent is
+      # the #237 default-route exception: do not send users to univariate
+      # target = "repeatability".
       if (identical(effect_type, "maternal_genetic")) {
         hs_abort_maternal_genetic_default_path()
       }
@@ -159,6 +161,14 @@ hsquared <- function(
     }
     if (isTRUE(spec$response$multivariate)) {
       hs_warn_cbind_experimental_once()
+      if (isTRUE(mv_permanent)) {
+        return(hs_fit_julia_multivariate_repeatability_payload(
+          payload,
+          project = project,
+          initial = hs_engine_control_value(control, "initial", NULL),
+          iterations = hs_engine_control_value(control, "iterations", 2000L)
+        ))
+      }
       return(hs_fit_julia_multivariate_payload(
         payload,
         project = project,
@@ -197,7 +207,19 @@ hsquared <- function(
       isTRUE(spec$response$multivariate) &&
         identical(target, "fit_animal_model")
     ) {
-      target <- "multivariate"
+      target <- if (hs_is_multivariate_permanent(spec)) {
+        "multivariate_repeatability"
+      } else {
+        "multivariate"
+      }
+    }
+    # Never send cbind + permanent to the animal-only multivariate fitter:
+    # that would absorb V_PE into G0 (the #237 defect).
+    if (
+      hs_is_multivariate_permanent(spec) &&
+        identical(target, "multivariate")
+    ) {
+      target <- "multivariate_repeatability"
     }
     genetic_structure <- hs_validate_genetic_structure_control(control, target)
     # hsquared#212: error on an `engine_control` key this target does not
@@ -205,7 +227,8 @@ hsquared <- function(
     # it, before any target-specific dispatch below runs.
     hs_engine_control_forwarding(control, target)
     if (
-      isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
+      isTRUE(spec$response$multivariate) &&
+        !target %in% c("multivariate", "multivariate_repeatability")
     ) {
       hs_abort_unsupported_syntax(
         "A `cbind(...)` multivariate response requires the multivariate Julia ",
@@ -216,11 +239,26 @@ hsquared <- function(
       )
     }
     if (
-      identical(target, "multivariate") && !isTRUE(spec$response$multivariate)
+      target %in%
+        c("multivariate", "multivariate_repeatability") &&
+        !isTRUE(spec$response$multivariate)
     ) {
       hs_abort_unsupported_syntax(
-        "`target = \"multivariate\"` requires a `cbind(trait1, trait2, ...)` ",
+        "`target = \"",
+        target,
+        "\"` requires a `cbind(trait1, trait2, ...)` ",
         "response with `animal(1 | id, pedigree = ped)`.",
+        call. = FALSE
+      )
+    }
+    if (
+      identical(target, "multivariate_repeatability") &&
+        is.null(spec$random$permanent)
+    ) {
+      hs_abort_unsupported_syntax(
+        "`target = \"multivariate_repeatability\"` requires ",
+        "`cbind(...) ~ ... + animal(1 | id, pedigree = ped) + ",
+        "permanent(1 | id)`.",
         call. = FALSE
       )
     }
@@ -325,6 +363,22 @@ hsquared <- function(
           2000L
         ),
         genetic_structure = genetic_structure
+      ))
+    }
+    if (identical(target, "multivariate_repeatability")) {
+      return(hs_fit_julia_multivariate_repeatability_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          2000L
+        )
       ))
     }
     if (identical(target, "random_regression")) {

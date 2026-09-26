@@ -51,7 +51,10 @@ test_that("hs_control() accepts a positive integer max_dense_cells", {
 
 test_that("the lever-free scale hint names no control (non-guarded routes)", {
   err <- tryCatch(
-    hsquared:::hs_julia_fit(stop("boom"), hint = hsquared:::hs_dense_scale_hint),
+    hsquared:::hs_julia_fit(
+      stop("boom"),
+      hint = hsquared:::hs_dense_scale_hint
+    ),
     error = function(e) e
   )
   expect_false(grepl("max_dense_cells", conditionMessage(err), fixed = TRUE))
@@ -59,7 +62,10 @@ test_that("the lever-free scale hint names no control (non-guarded routes)", {
 
 test_that("the dense route hint names max_dense_cells (guarded routes)", {
   err <- tryCatch(
-    hsquared:::hs_julia_fit(stop("boom"), hint = hsquared:::hs_dense_route_hint),
+    hsquared:::hs_julia_fit(
+      stop("boom"),
+      hint = hsquared:::hs_dense_route_hint
+    ),
     error = function(e) e
   )
   expect_match(conditionMessage(err), "max_dense_cells", fixed = TRUE)
@@ -92,15 +98,18 @@ test_that("each hs_fit_julia_*_payload() call site uses the hint matching what i
   # The actual user-facing contract: every dense hint names the control that
   # lifts the ceiling, and the repeatability one also names the sparse route.
   expect_match(
-    hsquared:::hs_dense_route_hint, "max_dense_cells",
+    hsquared:::hs_dense_route_hint,
+    "max_dense_cells",
     fixed = TRUE
   )
   expect_match(
-    hsquared:::hs_repeatability_dense_route_hint, "max_dense_cells",
+    hsquared:::hs_repeatability_dense_route_hint,
+    "max_dense_cells",
     fixed = TRUE
   )
   expect_match(
-    hsquared:::hs_repeatability_dense_route_hint, "scale_method",
+    hsquared:::hs_repeatability_dense_route_hint,
+    "scale_method",
     fixed = TRUE
   )
 
@@ -114,12 +123,13 @@ test_that("each hs_fit_julia_*_payload() call site uses the hint matching what i
     "hs_fit_julia_direct_maternal_payload",
     "hs_fit_julia_n_effect_payload",
     "hs_fit_julia_multivariate_payload",
+    "hs_fit_julia_multivariate_repeatability_payload",
     "hs_fit_julia_random_regression_payload",
     "hs_fit_julia_genomic_payload",
     "hs_fit_julia_snp_blup_payload",
     "hs_fit_julia_snp_blup_reml_payload"
   )
-  expect_length(unguarded_dense, 13L)
+  expect_length(unguarded_dense, 14L)
   for (fn in unguarded_dense) {
     txt <- body_text_of(fn)
     expect_match(txt, "hs_dense_scale_hint", fixed = TRUE, info = fn)
@@ -239,7 +249,12 @@ test_that("the default animal() route honours max_dense_cells [live]", {
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
 
   ped <- hs_sim_pedigree(n_founder = 10, n_per_gen = 5, n_gen = 2, seed = 1)
-  dat <- hs_sim_genedrop_phenotypes(ped, sigma_a2 = 0.4, sigma_e2 = 0.6, seed = 1)
+  dat <- hs_sim_genedrop_phenotypes(
+    ped,
+    sigma_a2 = 0.4,
+    sigma_e2 = 0.6,
+    seed = 1
+  )
   expect_equal(nrow(ped), 20L)
 
   err <- tryCatch(

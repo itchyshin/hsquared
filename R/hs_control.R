@@ -42,6 +42,7 @@
 #'     route only; the opt-in `scale_method = "auto"` route does not yet
 #'     forward them (HSquared.jl#343, a known remaining gap).
 #'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
+#'   * `multivariate_repeatability`: `initial`, `iterations`.
 #'   * `random_regression`: `iterations` (no `initial`).
 #'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
 #'     `sigma_a2`), `restart_check`.
@@ -74,7 +75,8 @@
 #'   `"direct_maternal"`, `"random_regression"`, `"genomic"`,
 #'   `"single_step"`, `"single_step_construct"`, `"metafounder"`,
 #'   `"metafounder_single_step"`, `"snp_blup"`, `"relmat"`, `"precision"`,
-#'   `"multivariate"`, and `"nongaussian"`, described below. Covered opt-in
+#'   `"multivariate"`, `"multivariate_repeatability"`, and `"nongaussian"`,
+#'   described below. Covered opt-in
 #'   routes (validation scale; not the default path) include `"two_effect"`
 #'   (`common_env()`), `"direct_maternal"`, `"multi_effect"`, and
 #'   `"random_regression"` at `k = 2`. `marginal` applies only to
@@ -241,6 +243,16 @@
 #'   `V4-FA` is engine-covered at HSquared.jl `60895208` / #300) and is not
 #'   activated on the R bridge; not covered. The future `rank` control is also
 #'   reserved and currently errors instead of being ignored.
+#'   `target = "multivariate_repeatability"` is the experimental
+#'   `cbind(...) + permanent(1 | id)` route (hsquared#237). Naming it is
+#'   optional: that formula auto-routes on the default path and under
+#'   `engine = "julia"` with no `target`. It identifies unstructured trait
+#'   x trait `G0` (pedigree) from `P0` (iid permanent environment) and `R0`.
+#'   It is experimental, REML-only, not covered, and does not change
+#'   `public_covered_count` (stays 7). R consumes
+#'   `HSquared.fit_multivariate_repeatability_reml` (HSquared.jl#398);
+#'   the result target is `multivariate_repeatability_reml`. R will not
+#'   fall back to animal-only `fit_multivariate_reml`.
 #'
 #'   `target = "nongaussian"` is an experimental, opt-in conditional GLMM for
 #'   `poisson(log)` or `binomial(logit)` (binary 0/1 or

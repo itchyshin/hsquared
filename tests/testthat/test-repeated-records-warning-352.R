@@ -108,11 +108,9 @@ test_that("formula_status() points repeated-measures users at the right route", 
   expect_match(row$current_behavior, "ABSORB", fixed = TRUE)
 })
 
-test_that("a multivariate response is not told to add permanent() on cbind", {
-  # hsquared#212's defect class: naming a lever the target does not accept.
-  # The multivariate route admits a single random-intercept animal effect and
-  # nothing else. The ABSORB warning must still fire, cite #237, and name
-  # separate live routes -- never "add permanent() to this cbind call".
+test_that("a multivariate response is told to add permanent() on cbind", {
+  # After #237 the cbind + permanent() lever is live, so the ABSORB warning
+  # may name it (no longer a #212 false tip).
   ped <- hs_rr_ped()
   set.seed(5)
   dat <- data.frame(
@@ -131,22 +129,25 @@ test_that("a multivariate response is not told to add permanent() on cbind", {
   )
   expect_match(w, "15 records for 5 individuals", fixed = TRUE)
   expect_match(w, "ABSORB", fixed = TRUE)
-  expect_match(w, "cannot carry a `permanent()` term", fixed = TRUE)
   expect_match(w, "hsquared#237", fixed = TRUE)
-  expect_match(w, "target = \"repeatability\"", fixed = TRUE)
+  expect_match(w, "permanent(1 | <id>)", fixed = TRUE)
   expect_match(w, "public_covered_count stays 7", fixed = TRUE)
   expect_match(w, "57-mv-pe-cbind-permanent-237", fixed = TRUE)
-  # Must not suggest permanent() as a term on the cbind formula itself.
-  expect_false(grepl(
-    "add a permanent-environment effect:\n  hsquared\\(\n    <response>",
-    w
-  ))
 })
 
-test_that("formula_status permanent row names the cbind+permanent reject", {
+test_that("formula_status permanent row names the cbind+permanent route", {
   fs <- formula_status()
   row <- fs[fs$term == "permanent(1 | id)", ]
   expect_equal(nrow(row), 1L)
   expect_match(row$current_behavior, "hsquared#237", fixed = TRUE)
   expect_match(row$current_behavior, "cbind", fixed = TRUE)
+  expect_match(row$current_behavior, "multivariate_repeatability", fixed = TRUE)
+})
+
+test_that("formula_status cbind row names experimental PE", {
+  fs <- formula_status()
+  row <- fs[startsWith(fs$term, "cbind("), ]
+  expect_true(nrow(row) >= 1L)
+  expect_match(row$current_behavior[[1L]], "hsquared#237", fixed = TRUE)
+  expect_match(row$current_behavior[[1L]], "permanent(1 | id)", fixed = TRUE)
 })

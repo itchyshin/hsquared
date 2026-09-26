@@ -322,29 +322,19 @@ hs_build_model_spec <- function(
     )
   }
   if (isTRUE(response$multivariate)) {
+    mv_permanent <- !is.null(second_spec) &&
+      identical(second_spec$type, "permanent")
     if (
       !identical(primary_type, "animal") ||
-        !is.null(second_spec) ||
+        (!is.null(second_spec) && !mv_permanent) ||
         length(iid_effects) > 0L
     ) {
-      # D3 / hsquared#237: name closest live paths rather than a bare planned
-      # fence when the blocker is a permanent-environment second effect.
-      if (!is.null(second_spec) && identical(second_spec$type, "permanent")) {
-        hs_abort_unsupported_syntax(
-          "`cbind(...)` with `permanent()` is not implemented (hsquared#237). ",
-          "Closest live paths: (1) univariate repeatability -- drop `cbind` and ",
-          "use `control = hs_control(engine = \"julia\", engine_control = list(",
-          "target = \"repeatability\"))` with `animal(...) + permanent(1 | id)`; ",
-          "(2) multivariate without PE -- keep `cbind(...) ~ fixed + animal(1 | ",
-          "id, pedigree = ped)` and drop `permanent()`. Full MV+PE fit is ",
-          "deferred; public_covered_count stays 7.",
-          call. = FALSE
-        )
-      }
       hs_abort_unsupported_syntax(
-        "The multivariate path currently supports only ",
-        "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)`. ",
-        "Multivariate genomic, single-step, second-effect, and multi-effect ",
+        "The multivariate path currently supports ",
+        "`cbind(...) ~ fixed + animal(1 | id, pedigree = ped)` and the ",
+        "experimental repeated-measures extension ",
+        "`+ permanent(1 | id)` (hsquared#237). Multivariate genomic, ",
+        "single-step, common-environment, maternal, and multi-effect ",
         "models are planned, not implemented.",
         call. = FALSE
       )
@@ -357,7 +347,14 @@ hs_build_model_spec <- function(
         call. = FALSE
       )
     }
-    bridge_target <- "fit_multivariate_reml(Y, X, Z, Ainv; method = :REML)"
+    bridge_target <- if (isTRUE(mv_permanent)) {
+      paste0(
+        "fit_multivariate_repeatability_reml(Y, X, Z, Ainv; ",
+        "method = :REML)"
+      )
+    } else {
+      "fit_multivariate_reml(Y, X, Z, Ainv; method = :REML)"
+    }
   }
 
   list(
