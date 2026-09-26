@@ -1,13 +1,10 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 3 notes
+0 errors | 0 warnings | 1 note
 
 * Local Julia-free check on the frozen tarball (macOS, R 4.6.0):
-  `env -u NOT_CRAN -u HSQUARED_JULIA_TESTS R CMD check --as-cran --no-manual hsquared_0.9.0.tar.gz`
+  `env -u NOT_CRAN -u HSQUARED_JULIA_TESTS R CMD check --as-cran --run-donttest hsquared_0.9.0.tar.gz`
 * **NOTE — CRAN incoming:** first submission for this package name at version 0.9.0.
-* **NOTE — `CITATION.cff`:** shipped at the repository root for GitHub/software citation
-  (CodeMeta/CFF). It is not an R `inst/CITATION` bibliographic file; there is no competing
-  `inst/CITATION` entry for the same work.
 
 ## Test environment
 
@@ -35,7 +32,8 @@
 
 * Maintainer and corresponding author: Shinichi Nakagawa `<itchyshin@gmail.com>`.
 * Co-authors Yefeng Yang and Szymon Drobniak are listed with ORCIDs in `DESCRIPTION`, `inst/CITATION`,
-  `CITATION.cff`, and README. **Maintainer confirms co-author consent for CRAN `aut` and `cph` roles**
+  `CITATION.cff`, and README. `CITATION.cff` is retained for GitHub citation but excluded from the R source
+  tarball; `inst/CITATION` is the package citation record. **Maintainer confirms co-author consent for CRAN `aut` and `cph` roles**
   (record kept outside the tarball).
 
 ## Method references
