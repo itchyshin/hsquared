@@ -3,7 +3,7 @@
 0 errors | 0 warnings | 1 note
 
 * Local Julia-free check on the frozen tarball (macOS, R 4.6.0):
-  `env -u NOT_CRAN -u HSQUARED_JULIA_TESTS R CMD check --as-cran --no-manual hsquared_0.9.0.tar.gz`
+  `env -u NOT_CRAN -u HSQUARED_JULIA_TESTS R CMD check --as-cran --run-donttest hsquared_0.9.0.tar.gz`
 * **NOTE — CRAN incoming:** first submission for this package name at version 0.9.0.
 
 ## Test environment
