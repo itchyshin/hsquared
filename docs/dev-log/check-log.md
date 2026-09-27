@@ -8533,3 +8533,17 @@ This candidate is based on `origin/main` `86f40f41f6adc2aead6627bef9d2e7d341d747
 Broad recovery, interval coverage, automatic rank selection, non-Gaussian uniqueness, and release eligibility remain open. CI and the final Rose audit are pending at this receipt.
 
 Post-audit correction on 2026-09-27: Rose found and repaired public VA wording that had treated the fixed-effect non-Gaussian variational-plus-Laplace objective as a general ELBO lower bound. The historical numeric `elbo` field remains for compatibility, with the hybrid objective identified in the user-facing text. Focused non-Gaussian tests passed **186**, with **7 skips**, zero failures and warnings. A fresh `_R_CHECK_FORCE_SUGGESTS_=false` `rcmdcheck::rcmdcheck('.', args = '--no-manual')` returned **Status: OK** after the corrections (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-postrose.log`). `pkgdown::check_pkgdown()` again found no problems (`/private/tmp/hsquared-fa-gllvm-pkgdown-check-20260927-postrose.log`). Live `fa-optin` and `gllvm-optin` tests passed against the candidate Julia worktree (`/private/tmp/hsquared-fa-gllvm-live-parity-20260927-final.log`); the fixed FA receipt is **50 assertions**, and the separate GLLVM direct-parity receipt is **49 assertions**. Rose's repo-visible verdict is clean with limitations for these bounded partial claims; broad covered or release-readiness claims remain blocked. The public covered count stays seven. Both preamble-cap checks passed. CI and independent fitted comparators remain open.
+
+Bridge-order follow-up on 2026-09-27: the direct multivariate R bridge now checks
+Julia's normalized pedigree IDs against R's incidence-column IDs before fitting.
+An unsorted pedigree with parentage passed a no-fit live R/Julia ordering probe
+(`FA_UNSORTED_PEDIGREE_ID_PARITY_OK`); the live `fa-optin` test file then passed
+against the candidate Julia worktree with no failures or skips. The first no-fit
+probe was blocked by JuliaCall's compiled-cache pidfile under the sandbox; the
+approved local-cache rerun passed. A fresh local `rcmdcheck` returned Status: OK,
+zero errors, warnings, or notes (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-idguard.log`).
+This adds one tested ordering cell, not broad pedigree or FA calibration coverage.
+The independent fitted same-model FA comparison is now recorded in the Julia
+twin's `docs/dev-log/scout/2026-09-27-fa-same-model-reference.md`; wider
+ordinary-start and external-package comparisons remain open. Draft PR #259 CI
+was queued at the last poll, so this receipt does not claim CI success.

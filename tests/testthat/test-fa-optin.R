@@ -170,6 +170,48 @@ test_that("FA bridge cell rejects incomplete and wider models before Julia", {
   ), "`loadings` would otherwise be silently ignored", fixed = TRUE)
 })
 
+test_that("FA bridge keeps unsorted pedigree labels aligned with incidence", {
+  ped <- data.frame(
+    id = c("offspring", "dam", "sire", "founder"),
+    sire = c("sire", NA, NA, NA), dam = c("dam", NA, NA, NA)
+  )
+  dat <- data.frame(
+    id = rep(c("offspring", "sire", "dam", "founder"), each = 2L),
+    t1 = 1:8, t2 = 2:9, t3 = 3:10, t4 = 4:11
+  )
+  spec <- hsquared:::hs_build_model_spec(
+    cbind(t1, t2, t3, t4) ~ animal(1 | id, pedigree = ped),
+    dat, stats::gaussian(), TRUE
+  )
+  payload <- hsquared:::hs_build_bridge_payload(spec)
+  expect_identical(payload$ids, payload$pedigree$id)
+  expect_identical(
+    as.character(payload$ids[max.col(as.matrix(payload$Z))]),
+    as.character(dat$id)
+  )
+
+  hs_skip_live_julia()
+  project <- hsquared:::hs_default_julia_project()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(project),
+    "JuliaCall and a local HSquared.jl project are required for ID parity."
+  )
+  hsquared:::hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_fa_probe_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_fa_probe_sire", hsquared:::hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign(
+    "hsq_fa_probe_dam", hsquared:::hs_parent_for_julia(payload$pedigree$dam)
+  )
+  expect_identical(
+    as.character(JuliaCall::julia_eval(
+      "string.(HSquared.normalize_pedigree(hsq_fa_probe_id, hsq_fa_probe_sire, hsq_fa_probe_dam).ids)"
+    )),
+    as.character(payload$ids)
+  )
+})
+
 test_that("live four-trait FA opt-in returns G, correlations, and Psi", {
   hs_skip_live_julia()
   project <- hsquared:::hs_default_julia_project()

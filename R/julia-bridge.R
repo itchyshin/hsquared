@@ -2792,6 +2792,7 @@ hs_fit_julia_multivariate_payload <- function(
   JuliaCall::julia_assign("hsq_Y", hs_y_matrix_for_julia(payload$Y))
   JuliaCall::julia_assign("hsq_X", payload$X)
   hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_mv_ids", as.character(payload$ids))
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
   JuliaCall::julia_assign(
     "hsq_sire",
@@ -2823,6 +2824,7 @@ hs_fit_julia_multivariate_payload <- function(
     JuliaCall::julia_command(paste(
       hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "string.(hsq_ped.ids) == hsq_mv_ids || error(\"Multivariate pedigree ID order changed across bridge\");",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       "hsq_fit = HSquared.fit_multivariate_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
