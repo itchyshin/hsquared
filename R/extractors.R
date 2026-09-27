@@ -59,6 +59,9 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' fit and names the implemented accessor. Use [rr_heritability()] for the
 #' `h2(t)` curve.
 #'
+#' The bounded genetic GLLVM route does not define heritability; this
+#' extractor errors because its G and trait genetic modes are on the link scale.
+#'
 #' A non-converged fit still returns the engine number so you can inspect it,
 #' but **warns**: that number is not an estimate. A near-zero value from a
 #' failed fit is not evidence that heritability is zero. Use
@@ -84,6 +87,9 @@ heritability.default <- function(object, ...) {
 
 #' @export
 heritability.hsquared_fit <- function(object, ...) {
+  if (identical(object$spec$target, "genetic_gllvm")) {
+    stop("Heritability is not defined by this genetic GLLVM route. G and trait genetic conditional modes are on the link scale; no response-scale heritability is supplied.", call. = FALSE)
+  }
   hs_warn_if_unusable_fit(object)
   # Willham fence for the direct-maternal correlated model: heritability() on
   # a direct_maternal fit returns the LABELLED TRIPLE -- direct h2_d, maternal
@@ -480,11 +486,9 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' These extractor names are reserved for future factor-analytic G-matrix
-#' results. The current package can report invariant covariance and correlation
-#' matrices from multivariate fits, but it does not yet expose
-#' interpreted loadings, uniqueness/specific variance, or latent breeding
-#' values. Loading columns (`genetic_loadings()`) and latent breeding values
+#' The bounded four-trait rank-one factor-analytic opt-in reports G, genetic
+#' correlations, and `specific_variance()` (`Psi`). Loading columns
+#' (`genetic_loadings()`) and latent breeding values
 #' (`latent_breeding_values()`) are rotation-nonunique until a rotation or
 #' constraint policy is validated. Future `hsquared_fit` methods reserve
 #' `effect` and rotation controls, but these controls currently error rather
@@ -492,21 +496,17 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #' genetic eigenstructure and evolvability geometry are available now via
 #' [eigen_G()] and the [g_matrix_geometry] family.
 #'
-#' `specific_variance()` (`Psi`, the factor-analytic specific/unique
-#' variances) is a **different case**: for `G = Lambda Lambda' + Psi`,
-#' rotating `Lambda -> Lambda Q` with `QQ' = I` leaves `Lambda Q Q' Lambda' =
-#' Lambda Lambda'` unchanged, so `Psi` is rotation-**invariant** and
-#' identified, not rotation-nonunique. The engine payload for structured
-#' multivariate fits carries `Psi` as `genetic_uniqueness`, explicitly marked
-#' identified, alongside the excluded, rotation-nonidentified loadings. This
-#' extractor still errors on the R surface, but for a different reason:
-#' `genetic_structure = "factor_analytic"` (and `"lowrank"`) are planned on
-#' the R surface and are not yet activated on the R-to-Julia bridge, not
-#' because `Psi` is unidentified.
+#' For `G = Lambda Lambda' + diag(Psi)`, rotating `Lambda` leaves `Psi`
+#' unchanged. The four-trait rank-one FA parameterization is locally
+#' identifiable up to a sign change only with a regular, sufficiently nonzero
+#' loading pattern. Sparse or weak loadings and boundary fits can leave `Psi`
+#' poorly identified. `specific_variance()`
+#' returns the named `Psi` vector for this opt-in fit and errors for other fits.
 #'
 #' @inheritParams variance_components
 #'
-#' @return These reserved extractors currently error for `hsquared_fit` objects.
+#' @return `specific_variance()` returns named `Psi` for the bounded FA fit;
+#'   the other factor extractors error for `hsquared_fit` objects.
 #' @name factor_g_extractors
 NULL
 
@@ -549,6 +549,13 @@ specific_variance.default <- function(object, ...) {
 
 #' @export
 specific_variance.hsquared_fit <- function(object, effect = "animal", ...) {
+  if (!identical(effect, "animal")) {
+    stop("`specific_variance()` currently supports only `effect = \"animal\"`.", call. = FALSE)
+  }
+  if (identical(object$result$genetic_structure, "factor_analytic") &&
+      !is.null(object$result$genetic_uniqueness)) {
+    return(object$result$genetic_uniqueness)
+  }
   hs_factor_g_extractor_planned(
     "specific_variance",
     "factor-analytic G-matrix uniqueness / specific variance",
@@ -636,16 +643,9 @@ hs_factor_g_extractor_planned <- function(
     stop(
       "`",
       name,
-      "()` for ",
-      quantity,
-      " is planned, not implemented for `hsquared_fit` objects. Unlike ",
-      "loading axes, `Psi` is rotation-INVARIANT and identified (for ",
-      "`G = Lambda Lambda' + Psi`, rotating `Lambda -> Lambda Q` leaves ",
-      "`Psi` unchanged). It is withheld because `genetic_structure = ",
-      "\"factor_analytic\"` (and `\"lowrank\"`) are planned on the R surface ",
-      "and not yet activated on the R-to-Julia bridge, not because `Psi` is ",
-      "unidentified. Current multivariate fits report invariant ",
-      "`genetic_covariance()` and `genetic_correlation()`.",
+      "()` for ", quantity,
+      " requires a fitted rank-one `factor_analytic` G object with reported ",
+      "`Psi`; it is unavailable for this fit. Loadings remain unreported.",
       call. = FALSE
     )
   }
@@ -2099,6 +2099,9 @@ ranef.hsquared_fit <- function(object, ...) {
 
 #' @export
 logLik.hsquared_fit <- function(object, ...) {
+  if (identical(object$spec$target, "genetic_gllvm")) {
+    stop("The genetic GLLVM Laplace objective integrates fixed effects under flat measure and is not ordinary non-Gaussian ML. Inspect fit_diagnostics(); logLik() and AIC() are unavailable.", call. = FALSE)
+  }
   if (identical(object$result$converged, FALSE)) {
     stop(
       "Log-likelihood is unavailable because this `hsquared_fit` object did ",

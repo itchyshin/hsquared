@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 ```
 
 <p class="hs-banner" role="note"><strong>Experimental · validation-scale · dense · REML-only.</strong>
-The experimental label is retained. Intervals are asymptotic and not coverage-calibrated. Whether this <code>cbind()</code> route is covered or partial is on <a href="current-limits.html">Can I fit and report this?</a> — this banner does not flip it.</p>
+The experimental label is retained. Intervals are asymptotic and not coverage-calibrated. Whether this <code>cbind()</code> route is covered or partial is on <a href="current-limits.html">Can I fit and report this?</a>; this banner does not flip it.</p>
 
 Use the multivariate path when the same animals have two or more quantitative
 traits and the question is about genetic covariance: which traits share
@@ -42,7 +42,7 @@ The validation ledger records cold-start recovery, one full-unstructured
 `sommer` REML comparator, a published supplied-covariance Mrode anchor, and a
 `MCMCglmm` Bayesian agreement probe. Note what the Mrode anchor does and does
 not do: it is a **supplied-covariance** BLUP/MME target, so it checks fixed
-effects and breeding values *given* known `G0` and `R0` — it is not a textbook
+effects and breeding values *given* known `G0` and `R0`; it is not a textbook
 check on the estimated covariances themselves, and no such textbook number
 exists (see "Claim boundary" below). That is still not an ASReml-style
 production multi-trait claim. Report point estimates within the t=2
@@ -108,7 +108,7 @@ cat(sprintf(
 ))
 ```
 
-<p class="hs-caption"><em>After a multivariate fit, read G0 then the r_g triangle — see
+<p class="hs-caption"><em>After a multivariate fit, read G0 then the r_g triangle; see
 <a href="g-matrix-interpretation.html">Reading G matrices</a> for extractors and
 <code>autoplot(fit, "g_matrix")</code>.</em></p>
 
@@ -185,7 +185,7 @@ per-trait h², when a local engine provides them. It mirrors the engine
 multivariate REML validation row (`partial`): unstructured-only, REML-only, not coverage-calibrated. The strict
 per-seed recovery gate is still a non-pass (7/12 seeds), but the 12-seed
 bias/MCSE study (twin `HSquared.jl#78`/`#79`) shows no detectable bias
-(`|bias| ≤ 2·MCSE` for all six covariance parameters) — reported, not validated.
+(`|bias| ≤ 2·MCSE` for all six covariance parameters); reported, not validated.
 
 ## Initial values
 
@@ -228,23 +228,60 @@ y ~ trait + sex + age +
 
 Use the `cbind()` path above for the current multivariate model. Expert
 users can select the current rotation-free diagonal-G bridge through
-`engine_control = list(genetic_structure = "diagonal")` — that control is still
-opt-in and still experimental, on the default path as anywhere else — but the formula grammar
-shown here remains reserved for later unstructured, diagonal, low-rank, and
-factor-analytic covariance models.
+`engine_control = list(genetic_structure = "diagonal")`. That control is still
+opt-in and experimental. The formula grammar shown here remains reserved for
+later unstructured, diagonal, low-rank, and factor-analytic covariance models.
+
+## Bounded factor-analytic G fit
+
+An explicit expert-control route fits exactly four complete Gaussian traits,
+one genetic factor, a known pedigree, and trait intercepts. It estimates an
+unstructured residual covariance. The phenotype data must have a complete
+four-trait row for every included record.
+
+```{r}
+fit_fa <- hsquared(
+  cbind(t1, t2, t3, t4) ~ animal(1 | id, pedigree = ped),
+  data = dat,
+  family = gaussian(),
+  control = hs_control(engine = "julia", engine_control = list(
+    target = "multivariate",
+    genetic_structure = "factor_analytic",
+    rank = 1L,
+    julia_project = "/path/to/HSquared.jl",
+    iterations = 5000L
+  ))
+)
+G_matrix(fit_fa)
+R_matrix(fit_fa)
+genetic_correlation(fit_fa)
+specific_variance(fit_fa)
+fit_diagnostics(fit_fa)
+```
+
+The `iterations = 5000L` value matches the small live parity fixture; its
+convergence at the default iteration cap was not established. Inspect
+`fit_diagnostics()` on your data. The reported per-trait uniqueness values
+depend on the fitted loading pattern for separate identification. A fixed
+rank of one does not guarantee that every uniqueness is identified. This
+route does not provide structured covariance standard errors or raw-loading
+inference. It is experimental and partial; the public covered count remains
+seven. The `cov = fa()` formula grammar above is still reserved.
 
 ## Claim boundary
 
 This page describes a **covered (validation-scale)** capability for t=2
 unstructured G0/R0 (2026-09-02). The experimental label is retained.
-k≥3 and `genetic_structure = "diagonal"` stay experimental. Interval
+k≥3 unstructured fits, diagonal G, and the bounded four-trait FA cell stay
+experimental/partial. Interval
 calibration is not claimed.
 
-- reached on the default path — a `cbind()` Gaussian response with an
+- reached on the default path: a `cbind()` Gaussian response with an
   `animal()` term needs no `engine` or `target` argument; the explicit
   `engine = "julia"`, `target = "multivariate"` spelling remains accepted;
-- **covered at validation scale** for t=2 unstructured; `public_covered_count`
-  is **6**. Default routing was reachability; the 2026-09-02 sign-off is the promotion;
+- **covered at validation scale** for t=2 unstructured; that promotion moved
+  `public_covered_count` to **6**, and the current count is **7**. Default
+  routing was reachability; the 2026-09-02 sign-off is the promotion;
 - Gaussian and REML-only;
 - animal-model-only;
 - dense validation-scale;
@@ -263,7 +300,7 @@ calibration is not claimed.
   the estimated covariances is comparator- and recovery-based (`sommer` 4.4.5,
   `blupf90+` 2.60, cold-start recovery) rather than textbook-anchored;
 - R↔engine element-wise parity through the bridge has been **verified locally**
-  at pre-declared tolerances, but **not in continuous integration** — the CI
+  at pre-declared tolerances, but **not in continuous integration**; the CI
   runner has no Julia, so the parity checks skip there rather than run;
 - `MCMCglmm` is Bayesian/MCMC agreement evidence, not same-estimand REML
   parity.

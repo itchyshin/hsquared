@@ -176,7 +176,7 @@ test_that("the non-Gaussian normalizer consumes the Julia parity fixture", {
     expect_equal(
       result$loglik_kind,
       if (identical(method, "variational")) {
-        "elbo (variational lower bound)"
+        "hybrid variational-Laplace objective"
       } else {
         "laplace marginal loglik"
       }
@@ -281,17 +281,17 @@ test_that("legacy pre-A3 variational live-bridge behavior is not public A3 evide
     )
   )
   # the variational marginal is honestly surfaced everywhere it appears
-  expect_equal(fit_va$spec$method, "Variational-REML")
+  expect_equal(fit_va$spec$method, "Hybrid variational-Laplace objective")
   expect_equal(fit_va$result$marginal_method, "variational")
   expect_equal(
     fit_va$result$diagnostics$variance_components,
-    "estimated_variational_reml"
+    "estimated_variational_laplace"
   )
   expect_true(is.finite(variance_components(fit_va)$estimate))
-  expect_output(print(fit_va), "Variational-REML")
-  # the VA objective is the ELBO (a lower bound), surfaced honestly so it is not
-  # mistaken for a marginal log-likelihood comparable to a Laplace fit
-  expect_equal(fit_va$result$loglik_kind, "elbo (variational lower bound)")
+  expect_output(print(fit_va), "Hybrid variational-Laplace objective", fixed = TRUE)
+  # With integrated fixed effects, the VA value has no general lower-bound
+  # guarantee and is not comparable to the Laplace marginal likelihood.
+  expect_equal(fit_va$result$loglik_kind, "hybrid variational-Laplace objective")
 
   # parity: the R VA fit matches a direct engine variational fit_laplace_reml
   va_sa2 <- JuliaCall::julia_eval(

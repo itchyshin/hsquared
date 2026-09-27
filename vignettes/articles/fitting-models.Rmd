@@ -28,7 +28,9 @@ not run when this page is built (the build host has no Julia).
 Gaussian fits use REML. ML is not implemented for that route: `REML = FALSE`
 is rejected, and `REML = TRUE` is the default. That rule applies to the default
 fit and to `engine = "validate"`; the opt-in non-Gaussian route below instead
-uses a Laplace marginal likelihood or variational ELBO.
+uses a Laplace marginal likelihood or a hybrid variational-plus-Laplace
+objective. The latter is not generally a lower bound after fixed effects
+are integrated.
 
 ```{r twin-bridge, echo = FALSE, results = "asis", eval = TRUE}
 cat(sprintf(
@@ -90,11 +92,11 @@ summary(fit)
 
 Most of the remaining models below are **opt-in**: they are reached through
 `engine = "julia"` with an explicit `target`. The one exception is the
-multivariate `cbind()` model, which routes on the default call — being reachable
+multivariate `cbind()` model, which routes on the default call. Being reachable
 by default does not make it any less experimental. The Gaussian opt-in routes
 are REML-only; the non-Gaussian route has its own marginal-likelihood methods.
 All remain experimental, and none is a covered public default. Four are
-**covered at validation scale** —
+**covered at validation scale**:
 each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
 comparator: the common-environment two-effect model, arbitrary-N multi-effect,
 random regression k = 2, and the direct–maternal 2×2 G model. Covered at
@@ -152,7 +154,7 @@ genetic effect expressed through the dam. Both carry the pedigree relationship
 (the maternal effect uses `A₂ = pedigree A`), and the dams must be animals in the
 `animal()` pedigree. This is the independent (uncorrelated) direct–maternal
 model; the correlated 2×2 G version is covered at validation scale (opt-in,
-`target = "direct_maternal"` — see below).
+`target = "direct_maternal"`; see below).
 
 ```{r}
 fit_mat <- hsquared(
@@ -228,7 +230,7 @@ breeding_values(fit_snp)             # per-individual GEBVs
 
 The multivariate path uses a `cbind()` response and estimates
 trait-by-trait genetic and residual covariance matrices for the animal effect.
-It fits on the default call — no `engine` or `target` argument — while the
+It fits on the default call without an `engine` or `target` argument, while the
 capability itself stays `partial` and experimental.
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 
@@ -286,7 +288,8 @@ heritability(fit_fledge)
 
 `REML = TRUE` is the R front door's current required default, so it is omitted
 above. It does **not** make this non-Gaussian fit a REML fit: this route uses a
-Laplace marginal likelihood (or variational ELBO when selected), as stated
+Laplace marginal likelihood (or a hybrid variational-plus-Laplace objective
+when selected), as stated
 below.
 
 `heritability()` returns a small table rather than a single value. For a
@@ -299,14 +302,14 @@ varying-trials fit like this one it looks like:
 #> 3 h2_observation observation-scale h2 (no scalar estimand)      NaN varying_trials_no_scalar_estimand
 ```
 
-(The numbers are illustrative — `V_A = 0.8` on the logit scale gives
+(The numbers are illustrative: `V_A = 0.8` on the logit scale gives
 $0.8 / (0.8 + \pi^2/3) \approx 0.20$; the shape is exact.)
 
 **Which row do you report? The liability-scale one.** All three rows come
 from the same fit on the logit scale; they differ in what goes in the
 denominator. Here is what each is, starting with the two that matter:
 
-- **`h2_liability` — report this.** It is the heritability of the *underlying
+- **`h2_liability`: report this.** It is the heritability of the *underlying
   liability* to fledge: the additive genetic variance on the logit scale,
   divided by that variance plus the logistic distribution's own variance,
   $\pi^2/3 \approx 3.29$ (the *distribution-specific variance* of Nakagawa and
@@ -315,8 +318,8 @@ denominator. Here is what each is, starting with the two that matter:
   heritabilities of survival, breeding success and disease traits are usually
   given, and it does not depend on how many trials each individual had. State
   the link when you report it: *"liability-scale $h^2$ (logit link)"*.
-- **`h2_observation` — the `NaN` row.** This is the heritability on the *data*
-  scale — the 0/1 or proportion you actually recorded. When every individual
+- **`h2_observation`: the `NaN` row.** This is the heritability on the *data*
+  scale, the 0/1 or proportion you actually recorded. When every individual
   has the same number of trials (a 0/1 survival trait, or a fixed number of
   attempts), this is a single number and the package reports it. **When trial
   sizes vary, it is not a single number**: a female with a clutch of two and
@@ -326,28 +329,30 @@ denominator. Here is what each is, starting with the two that matter:
   averaging over clutch sizes and printing something that looks like an
   estimate. **This is not a failed fit.** The liability-scale row is the
   estimate.
-- **`h2_latent` — ignore it for now.** It divides the additive variance by the
+- **`h2_latent`: ignore it for now.** It divides the additive variance by the
   *random* latent variance only, with no $\pi^2/3$. In the only model this path
-  currently fits — an intercept plus one `animal()` term — the additive variance
+  currently fits, an intercept plus one `animal()` term, the additive variance
   is the sole random component, so this row is always exactly `1`. It is a
   bookkeeping row, not an estimate. The number to keep instead is `V_A` itself,
   from `variance_components()`: it is what every scale conversion, including the
   liability-scale row, starts from.
 
 If you specifically need a data-scale heritability for a varying-trials trait
-— for example to predict a response to selection on the observed proportion —
+, for example to predict a response to selection on the observed proportion,
 the answer is a per-individual quantity, not a population scalar. Compute it
 from the latent-scale `V_A` and intercept with the conversions in
 de Villemereuil et al. (2016) (the `QGglmm` package), which integrate over the
 link for a stated trial count, or refit on a subset with a common trial count.
 
 Two more things to know about this path. The engine can approximate the
-likelihood in two ways — `marginal = "laplace"` (the default) or
-`marginal = "variational"` (aliases `"la"`/`"va"`, which maximises a lower
-bound on the likelihood) — and their `logLik()` and `AIC()` values are not
+likelihood in two ways: `marginal = "laplace"` (the default) or
+`marginal = "variational"` (aliases `"la"`/`"va"`, which uses a Gaussian
+variational approximation for genetic effects and a Laplace correction for
+fixed effects). The latter is not guaranteed to be a lower bound on the
+integrated likelihood. Their `logLik()` and `AIC()` values are not
 comparable with each other, nor with the REML values from the Gaussian fits
 above. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
-only — there is no liability scale for a count.
+only; there is no liability scale for a count.
 
 *References.* Dempster, E. R. & Lerner, I. M. (1950) Heritability of threshold
 characters. *Genetics* 35, 212–236. Nakagawa, S. & Schielzeth, H. (2010)
@@ -383,6 +388,10 @@ validation scale. The remaining opt-in models (`repeatability`, the maternal
 two-effect leg, genomic, SNP-BLUP, single-step) remain `partial` until their
 `HSquared.jl` gates and external comparators are signed off, and so does the
 multivariate `cbind()` model even though it now routes by default.
-Structured/factor-analytic multivariate covariance, further non-Gaussian
-families (negative binomial, ordinal, zero-inflated, hurdle), unusual-inheritance,
-and GPU models remain on the roadmap.
+Structured multivariate formula grammar and broad factor-analytic covariance
+remain on the roadmap. A bounded four-trait Gaussian FA fit and a bounded
+Poisson genetic GLLVM fit are available through explicit expert controls; see
+[Multivariate Gaussian animal models](multivariate.html) and
+[Genetic GLLVM opt-in](genetic-gllvm.html). Further non-Gaussian families
+(negative binomial, ordinal, zero-inflated, hurdle), unusual-inheritance, and
+GPU models remain on the roadmap.

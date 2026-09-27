@@ -267,50 +267,19 @@ test_that("multivariate genetic_structure control is fenced", {
     ),
     "diagonal"
   )
-  # "lowrank" / "factor_analytic" stay rejected; FA names the engine-covered
-  # twin without becoming an R-public fit.
-  for (gs in c("lowrank", "factor_analytic")) {
-    expect_error(
-      hsquared:::hs_validate_genetic_structure_control(
-        hs_control(
-          engine = "julia",
-          engine_control = list(
-            target = "multivariate",
-            genetic_structure = gs
-          )
-        ),
-        "multivariate"
-      ),
-      "not activated on the R bridge",
-      fixed = TRUE
-    )
-  }
+  # Lowrank remains closed. FA has a separate four-trait rank-one opt-in test.
   expect_error(
     hsquared:::hs_validate_genetic_structure_control(
       hs_control(
         engine = "julia",
         engine_control = list(
           target = "multivariate",
-          genetic_structure = "factor_analytic"
+          genetic_structure = "lowrank"
         )
       ),
       "multivariate"
     ),
-    "60895208",
-    fixed = TRUE
-  )
-  expect_error(
-    hsquared:::hs_validate_genetic_structure_control(
-      hs_control(
-        engine = "julia",
-        engine_control = list(
-          target = "multivariate",
-          genetic_structure = "factor_analytic"
-        )
-      ),
-      "multivariate"
-    ),
-    "planned on the R surface",
+    "not activated on the R bridge",
     fixed = TRUE
   )
   expect_error(
@@ -341,7 +310,7 @@ test_that("multivariate genetic_structure control is fenced", {
         )
       )
     ),
-    "reserved for future `lowrank` and `factor_analytic`",
+    "only used with the bounded",
     fixed = TRUE
   )
 })

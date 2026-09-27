@@ -17,7 +17,8 @@
 #'   whose `phenotypes` component holds them. Formula arguments such as
 #'   `pedigree = pedigree` can name components of the bundle.
 #' @param family A response family. The default path accepts `gaussian()`.
-#'   Opt-in experimental paths accept `poisson()` and `binomial()`; see
+#'   Opt-in experimental paths accept `poisson()` and `binomial()`; the
+#'   bounded genetic GLLVM route accepts three complete Poisson traits. See
 #'   [formula_status()].
 #' @param REML Logical; REML estimation. The default path supports REML only
 #'   (`TRUE`). `REML = FALSE` (ML) is rejected.
@@ -61,7 +62,13 @@ hsquared <- function(
   if (identical(julia_target, "nongaussian")) {
     hs_validate_nongaussian_three_field_v09_dots(dots)
   }
-  allow_families <- if (identical(julia_target, "nongaussian")) {
+  if (identical(control$engine_control$target, "genetic_gllvm") &&
+      !identical(control$engine, "julia")) {
+    hs_abort_unsupported_syntax("Genetic GLLVM requires explicit engine = \"julia\".")
+  }
+  allow_families <- if (identical(julia_target, "genetic_gllvm")) {
+    "poisson"
+  } else if (identical(julia_target, "nongaussian")) {
     c("gaussian", "poisson", "binomial")
   } else {
     "gaussian"
@@ -75,6 +82,18 @@ hsquared <- function(
     allow_families = allow_families
   )
   payload <- hs_build_bridge_payload(spec)
+  if (identical(julia_target, "genetic_gllvm")) {
+    row_order <- hs_validate_gllvm_optin_spec(control, spec, payload)
+    payload$method <- "Laplace integrated fixed-effects objective"
+    payload$metadata$julia_spec_target <- NULL
+    payload$metadata$julia_fit_target <- paste0(
+      "HSquared.fit_gllvm_laplace_reml(Y, Ainv, PoissonResponse(); ",
+      "rank = 2, structure = :lowrank, X = X)")
+    return(hs_fit_julia_gllvm_payload(payload,
+      project = control$engine_control$julia_project, row_order = row_order,
+      iterations = hs_engine_control_value(control, "iterations", 1000L)))
+  }
+  hs_validate_fa_optin_spec(control, julia_target, spec, payload)
   hs_warn_unmodelled_repeated_records(spec)
 
   if (identical(control$engine, "fit")) {
@@ -362,7 +381,8 @@ hsquared <- function(
           "iterations",
           2000L
         ),
-        genetic_structure = genetic_structure
+        genetic_structure = genetic_structure,
+        rank = hs_engine_control_value(control, "rank", NULL)
       ))
     }
     if (identical(target, "multivariate_repeatability")) {

@@ -14,10 +14,12 @@
 #' and is covered at validation scale. The covered common-environment two-effect, independent multi-effect,
 #' direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
 #' maternal two-effect, and non-Gaussian (`poisson(log)`/`binomial(logit)`,
-#' Laplace marginal likelihood or variational ELBO) models are opt-in and
-#' experimental; single-step stays **opt-in partial**. Factor-analytic G is
-#' engine-covered on the Julia engine (`V4-FA`) and planned, not fitted, on the
-#' R formula (Julia engine-covered is not R covered).
+#' Laplace marginal likelihood or hybrid variational-Laplace objective) models are opt-in and
+#' experimental; single-step stays **opt-in partial**. Factor-analytic G has
+#' a bounded experimental four-trait rank-one R control route; `cov = fa()`
+#' formula grammar stays planned. Genetic GLLVM has a bounded experimental
+#' three-trait, two-factor Poisson-log expert route. Neither R route is covered;
+#' see [hs_control()] for the required explicit controls and limits.
 #'
 #' @section Current limitations:
 #' This package is an **experimental 0.9.0 release**; it is not production or

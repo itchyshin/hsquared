@@ -235,14 +235,21 @@
 #'   surfaces the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
 #'   optimizer, and returns G/R covariance matrices, genetic and residual
 #'   correlations, per-trait heritability, and cross-trait breeding values.
-#'   Three or more traits and structured covariance are experimental. The
-#'   reserved `genetic_structure` control currently accepts `"unstructured"` and
-#'   `"diagonal"` on the R bridge. `"diagonal"` is the rotation-free structured
-#'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"`
-#'   remains planned. `"factor_analytic"` is planned on the R surface (Julia
-#'   `V4-FA` is engine-covered at HSquared.jl `60895208` / #300) and is not
-#'   activated on the R bridge; not covered. The future `rank` control is also
-#'   reserved and currently errors instead of being ignored.
+#'   Three or more traits and structured covariance are experimental.
+#'   `genetic_structure` accepts `"unstructured"`, `"diagonal"`, and a bounded
+#'   `"factor_analytic"` opt-in. `"diagonal"` fixes off-diagonal genetic
+#'   covariances at zero. FA requires exactly four complete Gaussian traits,
+#'   pedigree `animal()` only, trait intercepts only, unstructured estimated
+#'   residual covariance, and an explicit `engine = "julia"`,
+#'   `target = "multivariate"`, `genetic_structure = "factor_analytic"`,
+#'   `rank = 1L`, and `julia_project` path. It reports G, genetic correlations,
+#'   and specific variances (`Psi`), with local-identifiability and boundary
+#'   cautions; no loadings or covariance standard errors. `initial = NULL`
+#'   uses Julia's phenotype-scale start; a supplied `initial` may contain only
+#'   validated `G0` and `R0` matrices. FA `loadings` and `uniqueness` starts
+#'   are rejected rather than silently dropped. This does not activate
+#'   `cov = fa()` formula grammar, a default route, or a covered status.
+#'   `"lowrank"` remains refused on this Gaussian multivariate target.
 #'   `target = "multivariate_repeatability"` is the experimental
 #'   `cbind(...) + permanent(1 | id)` route (hsquared#237). Naming it is
 #'   optional: that formula auto-routes on the default path and under
@@ -254,19 +261,35 @@
 #'   the result target is `multivariate_repeatability_reml`. R will not
 #'   fall back to animal-only `fit_multivariate_reml`.
 #'
+#'   `target = "genetic_gllvm"` is a bounded experimental Poisson-log route.
+#'   It requires exactly three complete traits, one row per pedigree animal
+#'   (including ancestors), trait intercepts, `REML = TRUE`, and explicit
+#'   `engine = "julia"`, `julia_project`, `genetic_structure = "lowrank"`,
+#'   `rank = 2L`, and `experimental_gllvm = TRUE`. `iterations` controls the
+#'   outer optimizer (default 1000). It returns link-scale G, genetic
+#'   correlations, and trait genetic conditional modes via [breeding_values()]
+#'   (also a pedigree-by-trait matrix in `fit$result$trait_genetic_modes`).
+#'   Check [fit_diagnostics()] before interpretation. Its Laplace objective
+#'   integrates fixed effects under flat measure; it is available only in
+#'   diagnostics, and `logLik()` / `AIC()` are unavailable. No heritability,
+#'   posterior means, loading inference, FA uniqueness, missing records,
+#'   Bernoulli traits, or automatic rank selection are supplied.
+#'
 #'   `target = "nongaussian"` is an experimental, opt-in conditional GLMM for
 #'   `poisson(log)` or `binomial(logit)` (binary 0/1 or
 #'   `cbind(successes, failures)` counts) with one intercept and
 #'   `animal(1 | id, pedigree = ped)`. The `marginal` control selects a Laplace
-#'   marginal likelihood approximation (`"laplace"`, default) or a variational
-#'   ELBO (`"variational"`; aliases `"la"`/`"va"`). It reports the ratified
+#'   marginal likelihood approximation (`"laplace"`, default) or a hybrid
+#'   variational-plus-Laplace objective (`"variational"`; aliases
+#'   `"la"`/`"va"`). It reports the ratified
 #'   conditional three-field contract: Poisson latent and count-scale observation
 #'   h2; logit latent, liability, and numerically integrated observation-scale h2
 #'   for Bernoulli or common-trial Binomial input. Varying trials return literal
 #'   `NaN` with `"varying_trials_no_scalar_estimand"`, never a trial-count-averaged
-#'   scalar. The ELBO is a lower bound on the marginal
-#'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
-#'   comparable. This path remains experimental and not coverage-calibrated.
+#'   scalar. The historical engine field `elbo` remains for compatibility; with
+#'   integrated fixed effects this hybrid value has no general lower-bound
+#'   guarantee. Variational and Laplace `logLik`/`AIC` are **not** comparable.
+#'   This path remains experimental and not coverage-calibrated.
 #'   `initial` (hsquared#225) is a list with `sigma_a2`. The engine fits the
 #'   single variance component with a **bracketed** Brent search over
 #'   `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` -- there is no start

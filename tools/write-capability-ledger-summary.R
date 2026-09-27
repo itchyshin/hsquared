@@ -305,12 +305,13 @@ hs_render_planned <- function(status_tbl) {
     return(character())
   }
   c(
-    "## Not available (syntax reservations and planned lanes)",
+    "## Planned validation lanes and grammar",
     "",
     paste(
-      "These rows are `planned` in `validation_status()`. The formula vocabulary",
-      "may parse, but the fit aborts as planned, not implemented - and there is no",
-      "reporting permission of any kind."
+      "These rows are `planned` validation tasks in `validation_status()`,",
+      "not a blanket statement that every related fit aborts. Check the partial",
+      "routes on this page for bounded FA and genetic GLLVM fits. A planned row",
+      "by itself gives no reporting permission."
     ),
     "",
     paste0("- ", planned$capability, " *(", planned$phase, ")*"),

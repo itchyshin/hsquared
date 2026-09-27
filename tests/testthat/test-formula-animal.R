@@ -112,7 +112,7 @@ test_that("formula parser rejects unsupported animal syntax", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "not an R-public fit",
+    "`cov = fa(K = 1)` is also reserved and does not parse",
     fixed = TRUE
   )
   expect_error(

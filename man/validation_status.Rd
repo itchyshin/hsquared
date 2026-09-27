@@ -51,7 +51,8 @@ opt-in targets, but \strong{not production-complete}. Infrastructure capabilitie
 \strong{partial} even when individual targets are covered. Targets split into:
 default live (\code{engine = "fit"}), opt-in live (\code{engine_control$target}),
 \strong{PATH_ONLY} smoke (C1-ext intervals — not a fit bridge), and \strong{blocked}
-planned grammar (for example \code{genetic_structure = "factor_analytic"}).
+planned grammar (for example \code{animal(cov = fa(...))}). The explicit
+four-trait rank-one FA \code{engine_control} cell is partial and opt-in.
 \code{payload_v2} routing is limited to \code{direct_maternal} and \code{multi_effect}.
 See \code{docs/design/45-bridge-production-fences-DRAFT.md}.
 }

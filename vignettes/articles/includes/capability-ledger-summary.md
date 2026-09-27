@@ -135,9 +135,9 @@ hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat)
 
 **Concrete fallback.** For k>=3 or a diagonal genetic structure, treat the fit as experimental. For a single-trait question, use the covered univariate model.
 
-## Not available (syntax reservations and planned lanes)
+## Planned validation lanes and grammar
 
-These rows are `planned` in `validation_status()`. The formula vocabulary may parse, but the fit aborts as planned, not implemented - and there is no reporting permission of any kind.
+These rows are `planned` validation tasks in `validation_status()`, not a blanket statement that every related fit aborts. Check the partial routes on this page for bounded FA and genetic GLLVM fits. A planned row by itself gives no reporting permission.
 
 - Mrode fitted animal-model outputs *(Phase 1)*
 - ASReml comparison policy *(Phase 1)*

@@ -44,6 +44,9 @@ over the covariate, not a scalar, so \code{heritability()} \strong{errors} on su
 fit and names the implemented accessor. Use \code{\link[=rr_heritability]{rr_heritability()}} for the
 \code{h2(t)} curve.
 
+The bounded genetic GLLVM route does not define heritability; this
+extractor errors because its G and trait genetic modes are on the link scale.
+
 A non-converged fit still returns the engine number so you can inspect it,
 but \strong{warns}: that number is not an estimate. A near-zero value from a
 failed fit is not evidence that heritability is zero. Use

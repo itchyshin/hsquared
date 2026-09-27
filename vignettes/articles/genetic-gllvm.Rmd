@@ -1,0 +1,86 @@
+---
+title: "Experimental genetic GLLVM for three count traits"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Experimental genetic GLLVM for three count traits}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+This experimental route fits three complete Poisson count traits with two
+pedigree-linked genetic factors. Use it only when every pedigree animal has
+exactly one row with all three responses. The animal ID in `dat` must match
+the pedigree; the bridge aligns phenotype rows to pedigree order.
+
+## Model and scale
+
+For animal `i` and trait `t`, the conditional mean is
+`exp(beta[t] + u[i,t])`, with `u = F %*% t(Lambda)` and genetic covariance
+`G = Lambda %*% t(Lambda)`. The two factors share the pedigree relationship
+matrix. The reported trait effects are conditional modes `u` on the **log
+rate** scale. They are not factor scores, posterior means, or response-scale
+heritabilities.
+
+## Fit and read the result
+
+Replace `dat`, `ped`, and `julia_project` with your complete count table,
+pedigree, and local `HSquared.jl` checkout:
+
+```{r}
+fit_gllvm <- hsquared(
+  cbind(t1, t2, t3) ~ animal(1 | id, pedigree = ped),
+  data = dat,
+  family = poisson(link = "log"),
+  control = hs_control(engine = "julia", engine_control = list(
+    target = "genetic_gllvm",
+    genetic_structure = "lowrank",
+    rank = 2L,
+    experimental_gllvm = TRUE,
+    julia_project = "/path/to/HSquared.jl",
+    iterations = 3000L
+  ))
+)
+
+fit_diagnostics(fit_gllvm)
+G_matrix(fit_gllvm)
+genetic_correlation(fit_gllvm)
+breeding_values(fit_gllvm)
+fixef(fit_gllvm)
+```
+
+Check convergence and the diagnostic message before interpreting the
+covariance or trait effects. `breeding_values()` returns animal and trait
+labels with `scale = "link"`; the underlying fit stores a `q × 3` matrix of
+trait genetic modes. Genetic correlations describe the fitted covariance on
+the link scale. Raw loadings depend on factor rotation and are withheld.
+
+The diagnostic objective integrates both fixed effects, under a flat
+measure, and pedigree genetic effects using a Laplace approximation. It is
+not ordinary non-Gaussian maximum likelihood or Gaussian REML, so this fit
+does not expose generic `logLik()` or `AIC()` values. The route also does not
+report response-scale heritability.
+
+## Current boundary
+
+This is one complete, balanced, three-trait, rank-two, pure low-rank Poisson
+cell. It does not fit missing records, repeated records, other response
+families, factor-analytic uniqueness, or arbitrary ranks. Automatic rank
+selection from the `gllvmTMB` and `GLLVModels.jl` work is a separate follow-on
+that needs pedigree-specific validation. A live 12-animal R fit matched a
+direct same-input Julia fit for the covariance, correlations, fixed effects,
+trait modes, and objective within `1e-8`; this does not establish broad
+recovery, calibration, or an external same-objective comparison. The public
+covered count remains seven.

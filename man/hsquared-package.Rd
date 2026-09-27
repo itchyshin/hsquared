@@ -20,10 +20,12 @@ Narrow genomic GREML is an explicit experimental target (\code{target = "genomic
 and is covered at validation scale. The covered common-environment two-effect, independent multi-effect,
 direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
 maternal two-effect, and non-Gaussian (\code{poisson(log)}/\code{binomial(logit)},
-Laplace marginal likelihood or variational ELBO) models are opt-in and
-experimental; single-step stays \strong{opt-in partial}. Factor-analytic G is
-engine-covered on the Julia engine (\code{V4-FA}) and planned, not fitted, on the
-R formula (Julia engine-covered is not R covered).
+Laplace marginal likelihood or hybrid variational-Laplace objective) models are opt-in and
+experimental; single-step stays \strong{opt-in partial}. Factor-analytic G has
+a bounded experimental four-trait rank-one R control route; \code{cov = fa()}
+formula grammar stays planned. Genetic GLLVM has a bounded experimental
+three-trait, two-factor Poisson-log expert route. Neither R route is covered;
+see \code{\link[=hs_control]{hs_control()}} for the required explicit controls and limits.
 }
 \section{Current limitations}{
 

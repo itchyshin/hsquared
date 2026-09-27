@@ -270,7 +270,7 @@ test_that("the v0.9 normalizer distinguishes defined and non-scalar logit observ
   )
 
   expect_equal(result$marginal_method, "variational")
-  expect_equal(result$loglik_kind, "elbo (variational lower bound)")
+  expect_equal(result$loglik_kind, "hybrid variational-Laplace objective")
   expect_identical(result$h2_liability, raw$h2_liability)
   expect_identical(result$h2_observation, 0.125)
   expect_identical(result$h2_observation_label, "observation-scale h2 (conditional)")
@@ -304,6 +304,25 @@ test_that("the v0.9 normalizer distinguishes defined and non-scalar logit observ
     ),
     "literal NaN"
   )
+})
+
+test_that("hybrid variational objective labels reach diagnostics and print", {
+  method <- hsquared:::hs_ng09_method_label("variational")
+  kind <- hsquared:::hs_ng09_loglik_kind("variational")
+  expect_equal(method, "Hybrid variational-Laplace objective")
+  expect_equal(kind, "hybrid variational-Laplace objective")
+
+  fit <- hsquared:::hs_new_fit(
+    spec = list(method = method, family = list(family = "poisson"),
+                target = "nongaussian"),
+    payload = list(y = 1:3),
+    result = list(converged = TRUE, loglik_kind = kind),
+    version = "0.9.0"
+  )
+  expect_output(print(fit), "Hybrid variational-Laplace objective", fixed = TRUE)
+  diagnostics <- fit_diagnostics(fit)
+  expect_equal(diagnostics$value[diagnostics$metric == "method"], method)
+  expect_equal(fit$result$loglik_kind, kind)
 })
 
 test_that("the v0.9 normalizer rejects schema and estimand mutations exactly", {
