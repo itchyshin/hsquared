@@ -36,7 +36,8 @@ the advanced opt-in bridge with explicit \code{target} control.}
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
-and \code{max_dense_cells}.
+\code{max_dense_cells}, \code{scale_method}, \code{genetic_structure}, \code{rank}, and
+\code{experimental_gllvm}.
 \code{julia_project} is honoured by every \code{target}; supplying a key a given
 \code{target} does not honour errors (hsquared#212) rather than being
 silently ignored. Per-target honoured keys (besides \code{julia_project}):
@@ -50,11 +51,12 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \code{iterations}.
 \item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells},
 \code{scale_method}.
-\item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method} -- \code{initial}/
-\code{iterations} are honoured on the \code{scale_method = "dense"} (default)
-route only; the opt-in \code{scale_method = "auto"} route does not yet
-forward them (HSquared.jl#343, a known remaining gap).
+\item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method}. Both the
+default dense route and the opt-in \code{scale_method = "auto"} route
+forward \code{initial} and \code{iterations} to the Julia fitter.
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
+\item \code{genetic_gllvm}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank},
+\code{experimental_gllvm}.
 \item \code{multivariate_repeatability}: \code{initial}, \code{iterations}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with
@@ -89,7 +91,8 @@ targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"direct_maternal"}, \code{"random_regression"}, \code{"genomic"},
 \code{"single_step"}, \code{"single_step_construct"}, \code{"metafounder"},
 \code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"relmat"}, \code{"precision"},
-\code{"multivariate"}, \code{"multivariate_repeatability"}, and \code{"nongaussian"},
+\code{"multivariate"}, \code{"multivariate_repeatability"}, \code{"nongaussian"}, and
+\code{"genetic_gllvm"},
 described below. Covered opt-in
 routes (validation scale; not the default path) include \code{"two_effect"}
 (\code{common_env()}), \code{"direct_maternal"}, \code{"multi_effect"}, and
@@ -174,8 +177,7 @@ correlated \code{(x || group)} terms remain rejected. The animal-block ratio is
 narrow-sense h2; other blocks are variance-explained proportions, not
 heritabilities. \code{initial} is a plain numeric vector of length K + 1 (one
 value per block, in formula order, plus the residual); it and
-\code{iterations} are honoured on the \code{scale_method = "dense"} route (see
-\code{engine_control} above for the \code{"auto"} gap).
+\code{iterations} are forwarded on both the dense and opt-in \code{"auto"} routes.
 \code{target = "direct_maternal"} is an opt-in path for
 \code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)}. It estimates
 the correlated 2x2 direct-maternal genetic covariance and is covered at

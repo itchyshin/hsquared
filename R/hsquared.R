@@ -658,10 +658,8 @@ hsquared <- function(
           "scale_method",
           "dense"
         ),
-        # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
-        # reproduces the pre-#212-fix default exactly. NOTE: honoured on the
-        # `scale_method = "dense"` route only -- `"auto"` does not forward
-        # them yet (HSquared.jl#343).
+        # hsquared#212: forward `initial`/`iterations` on both dense and
+        # opt-in auto routes. NULL leaves each fitter's default unchanged.
         initial = hs_engine_control_value(control, "initial", NULL),
         iterations = hs_engine_control_value(control, "iterations", NULL)
       ))

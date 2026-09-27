@@ -338,29 +338,19 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
     "JuliaCall, Julia, and local HSquared.jl are required for a live fit."
   )
 
-  # Founders a-d plus offspring e-h; two independent environmental factors (nest
-  # and year) assigned INDEPENDENTLY of the pedigree, plus the additive-genetic
-  # animal effect -> three independent blocks -> fit_multi_effect_reml.
+  # This deterministic K=3 fixture converges before its point and interval
+  # estimates are read. The earlier random fixture did not converge.
   ped <- data.frame(
-    id = c("a", "b", "c", "d", "e", "f", "g", "h"),
-    sire = c(NA, NA, NA, NA, "a", "a", "c", "c"),
-    dam = c(NA, NA, NA, NA, "b", "b", "d", "d"),
+    id = paste0("a", 1:4),
+    sire = c(NA, NA, "a1", "a1"),
+    dam = c(NA, NA, "a2", "a2"),
     stringsAsFactors = FALSE
   )
-  set.seed(11)
-  ids <- ped$id
-  nest <- c("nst1", "nst1", "nst2", "nst2", "nst3", "nst3", "nst4", "nst4")
-  year <- c("y1", "y2", "y1", "y2", "y1", "y2", "y1", "y2")
-  nest_e <- stats::setNames(
-    stats::rnorm(4, 0, 0.6),
-    c("nst1", "nst2", "nst3", "nst4")
-  )
-  year_e <- stats::setNames(stats::rnorm(2, 0, 0.5), c("y1", "y2"))
   dat <- data.frame(
-    y = 3 + nest_e[nest] + year_e[year] + stats::rnorm(8, 0, 0.7),
-    id = ids,
-    nest = nest,
-    year = year,
+    y = c(14, 13, 6.9, 6.1, 12.1, 11.5, 8.9, 8.5),
+    id = rep(ped$id, each = 2),
+    nest = c("n1", "n1", "n2", "n2", "n1", "n2", "n1", "n2"),
+    year = c("y1", "y2", "y1", "y2", "y1", "y2", "y2", "y1"),
     stringsAsFactors = FALSE
   )
 
@@ -376,6 +366,7 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
 
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "multi_effect")
+  expect_true(isTRUE(fit$result$converged))
 
   vc <- variance_components(fit)
   # component/estimate over ALL blocks + residual, in block order.
@@ -398,7 +389,7 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
   # skips the live-bridge test without Julia).
   re <- ranef(fit)
   expect_true(all(c("animal", "nest", "year") %in% names(re)))
-  expect_equal(nrow(re$nest), 4L)
+  expect_equal(nrow(re$nest), 2L)
   expect_equal(nrow(re$year), 2L)
 
   # Experimental per-component ratio intervals attach on the live bridge
@@ -431,48 +422,26 @@ test_that("hsquared fits the opt-in multi-effect model (K >= 3 blocks)", {
 })
 
 test_that("multi_effect engine_control scale_method = 'auto' agrees with the dense default (V8.6)", {
-  # V8.6 connection: routing the multi_effect surface through the engine's
-  # fit_multi_effect(:auto) (scale_method = "auto") gives the SAME covered result at
-  # validation scale (:auto picks the sparse-exact AI-REML, which reduces exactly to the
-  # dense fit_multi_effect_reml), and enables the experimental matrix-free path for large
-  # problems the dense factorization cannot reach. Well-identified fixture (needs enough
-  # data; an 8-record K=3 fit is under-identified and the two estimators land on different
-  # boundary optima).
+  # A deterministic K=3 reduction fixture. Both routes must report convergence
+  # before their variance estimates are compared. The earlier random fixture
+  # reached both iteration caps and did not establish this comparison.
   hs_skip_live_julia()
   testthat::skip_if_not(
     hsquared:::hs_julia_bridge_available(),
     "Julia bridge (Julia + JuliaCall + HSquared.jl project) not available"
   )
-  set.seed(7)
-  nf <- 16L
-  noff <- 120L
-  fid <- paste0("f", seq_len(nf))
-  sires <- fid[1:8]
-  dams <- fid[9:16]
-  oid <- paste0("o", seq_len(noff))
+  ids <- paste0("a", 1:4)
   ped <- data.frame(
-    id = c(fid, oid),
-    sire = c(rep(NA, nf), sires[((seq_len(noff) - 1L) %% 8L) + 1L]),
-    dam = c(rep(NA, nf), dams[((seq_len(noff) - 1L) %% 8L) + 1L]),
+    id = ids,
+    sire = c(NA, NA, "a1", "a1"),
+    dam = c(NA, NA, "a2", "a2"),
     stringsAsFactors = FALSE
   )
-  n <- nf + noff
-  nestlev <- paste0("nst", 1:10)
-  yearlev <- paste0("y", 1:5)
-  nest <- sample(nestlev, n, replace = TRUE)
-  year <- sample(yearlev, n, replace = TRUE)
-  nest_e <- stats::setNames(stats::rnorm(10, 0, sqrt(0.5)), nestlev)
-  year_e <- stats::setNames(stats::rnorm(5, 0, sqrt(0.5)), yearlev)
-  a_e <- stats::setNames(stats::rnorm(n, 0, 1), c(fid, oid))
   dat <- data.frame(
-    y = 3 +
-      a_e[c(fid, oid)] +
-      nest_e[nest] +
-      year_e[year] +
-      stats::rnorm(n, 0, 1),
-    id = c(fid, oid),
-    nest = nest,
-    year = year,
+    y = c(14, 13, 6.9, 6.1, 12.1, 11.5, 8.9, 8.5),
+    id = rep(ids, each = 2),
+    nest = c("n1", "n1", "n2", "n2", "n1", "n2", "n1", "n2"),
+    year = c("y1", "y2", "y1", "y2", "y1", "y2", "y2", "y1"),
     stringsAsFactors = FALSE
   )
   f <- y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year)
@@ -483,7 +452,7 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
-      engine_control = list(target = "multi_effect")
+      engine_control = list(target = "multi_effect", iterations = 400L)
     )
   )
   fit_auto <- hsquared(
@@ -492,19 +461,30 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
-      engine_control = list(target = "multi_effect", scale_method = "auto")
+      engine_control = list(target = "multi_effect", scale_method = "auto",
+                            iterations = 400L)
     )
   )
 
   expect_s3_class(fit_auto, "hsquared_fit")
   vc_d <- variance_components(fit_dense)
   vc_a <- variance_components(fit_auto)
+  expect_true(isTRUE(fit_dense$result$converged))
+  expect_true(isTRUE(fit_auto$result$converged))
+  expect_identical(fit_dense$result$df, 5L)
+  expect_identical(fit_auto$result$df, 5L)
+  expect_identical(fit_dense$result$nobs, 8L)
+  expect_identical(fit_auto$result$nobs, 8L)
+  expect_identical(fit_dense$result$diagnostics$method, "REML")
+  expect_identical(fit_auto$result$diagnostics$method, "REML")
+  expect_identical(fit_dense$result$diagnostics$loglik_convention,
+                   "reml_omit_2pi")
+  expect_identical(fit_auto$result$diagnostics$loglik_convention,
+                   "reml_full_constant")
+  expect_error(stats::AIC(fit_dense), "not comparable")
+  expect_true(is.finite(stats::AIC(fit_auto)))
   expect_equal(vc_a$component, vc_d$component)
-  # dense vs auto agree at validation scale. The tolerance accommodates the dense
-  # NelderMead's convergence slack (~1e-2): :auto uses the sparse AI-REML, which finds the
-  # optimum more precisely than the dense NelderMead oracle (the ~2e-4-to-1e-2 VC gap the
-  # engine's V3-NEFFECT-SPARSE reduction documents), so it is at least as accurate as dense.
-  expect_equal(vc_a$estimate, vc_d$estimate, tolerance = 0.05)
+  expect_equal(vc_a$estimate, vc_d$estimate, tolerance = 1e-3)
   expect_true(all(is.finite(vc_a$estimate)) && all(vc_a$estimate >= 0))
 
   # an invalid scale_method is rejected before hitting the engine

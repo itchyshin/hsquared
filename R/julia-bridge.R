@@ -2078,7 +2078,15 @@ hs_fit_julia_direct_maternal_payload <- function(
     "\"correlation\"      => Float64(hsq_fit_dm.genetic_correlation),",
     "\"residual\"         => Float64(hsq_res_dm.variance_components.residual),",
     "\"loglik\"           => Float64(hsq_res_dm.loglik),",
-    "\"converged\"        => hsq_res_dm.converged)",
+    "\"converged\"        => hsq_res_dm.converged,",
+    "\"df\"               => Int(hsq_res_dm.df),",
+    "\"nobs\"             => Int(hsq_res_dm.nobs),",
+    "\"method\"           => string(hsq_res_dm.diagnostics.method),",
+    "\"optimizer_status\" => hsq_res_dm.diagnostics.optimizer_status,",
+    "\"loglik_convention\" => string(hsq_res_dm.diagnostics.loglik_convention),",
+    "\"loglik_full_constant_offset\" => Float64(hsq_res_dm.diagnostics.loglik_full_constant_offset),",
+    "\"loglik_comparable_across_routes\" => hsq_res_dm.diagnostics.loglik_comparable_across_routes,",
+    "\"loglik_stochastic\" => hsq_res_dm.diagnostics.loglik_stochastic)",
     "end"
   ))
   # BLUPs: direct (animal) and maternal (dam) effects, pulled per-block.
@@ -2118,6 +2126,77 @@ hs_fit_julia_direct_maternal_payload <- function(
   )
 }
 
+hs_validate_v2_result_metadata <- function(raw, payload, expected_df, target) {
+  scalar_integer <- function(name, expected) {
+    value <- raw[[name]]
+    if (!is.numeric(value) || length(value) != 1L || is.na(value) ||
+        !is.finite(value) || value != floor(value) || value != expected) {
+      stop("Julia `", target, "` result has invalid `", name, "`.", call. = FALSE)
+    }
+    as.integer(value)
+  }
+  df <- scalar_integer("df", expected_df)
+  nobs <- scalar_integer("nobs", length(payload$y))
+  method <- raw$method
+  if (!is.character(method) || length(method) != 1L ||
+      is.na(method) || !identical(method, "REML")) {
+    stop("Julia `", target, "` result has invalid `method`.", call. = FALSE)
+  }
+  optimizer_status <- raw$optimizer_status
+  expected_status <- if (isTRUE(raw$converged)) "converged" else "not_converged"
+  if (!is.character(optimizer_status) || length(optimizer_status) != 1L ||
+      is.na(optimizer_status) || !identical(optimizer_status, expected_status)) {
+    stop("Julia `", target, "` result has invalid `optimizer_status`.", call. = FALSE)
+  }
+  convention <- raw$loglik_convention
+  if (!is.character(convention) || length(convention) != 1L ||
+      is.na(convention) ||
+      !convention %in% c("reml_omit_2pi", "reml_full_constant")) {
+    stop("Julia `", target, "` result has invalid `loglik_convention`.", call. = FALSE)
+  }
+  offset <- raw$loglik_full_constant_offset
+  if (!is.numeric(offset) || length(offset) != 1L ||
+      is.na(offset) || !is.finite(offset)) {
+    stop("Julia `", target, "` result has invalid `loglik_full_constant_offset`.", call. = FALSE)
+  }
+  expected_offset <- if (identical(convention, "reml_omit_2pi")) {
+    -(nobs - ncol(payload$X)) * log(2 * pi) / 2
+  } else {
+    0
+  }
+  if (!isTRUE(all.equal(as.numeric(offset), expected_offset,
+                        tolerance = 1e-10))) {
+    stop("Julia `", target, "` result has invalid `loglik_full_constant_offset`.", call. = FALSE)
+  }
+  comparable <- raw$loglik_comparable_across_routes
+  stochastic <- raw$loglik_stochastic
+  if (!is.logical(comparable) || length(comparable) != 1L || is.na(comparable)) {
+    stop("Julia `", target, "` result has invalid `loglik_comparable_across_routes`.", call. = FALSE)
+  }
+  if (!is.logical(stochastic) || length(stochastic) != 1L || is.na(stochastic)) {
+    stop("Julia `", target, "` result has invalid `loglik_stochastic`.", call. = FALSE)
+  }
+  if (comparable && (stochastic || !identical(convention, "reml_full_constant"))) {
+    stop("Julia `", target, "` result claims incomparable log-likelihood values are comparable.", call. = FALSE)
+  }
+  diagnostics <- list(
+    method = method, optimizer_status = optimizer_status,
+    loglik_convention = convention,
+    loglik_full_constant_offset = as.numeric(offset),
+    loglik_comparable_across_routes = comparable,
+    loglik_stochastic = stochastic
+  )
+  if (stochastic) {
+    mcse <- raw$loglik_mcse
+    if (!is.numeric(mcse) || length(mcse) != 1L ||
+        is.na(mcse) || !is.finite(mcse) || mcse < 0) {
+      stop("Julia `", target, "` stochastic result has invalid `loglik_mcse`.", call. = FALSE)
+    }
+    diagnostics$loglik_mcse <- as.numeric(mcse)
+  }
+  list(df = df, nobs = nobs, diagnostics = diagnostics)
+}
+
 hs_normalize_direct_maternal_result <- function(
   raw,
   direct_ids,
@@ -2139,6 +2218,10 @@ hs_normalize_direct_maternal_result <- function(
   sigma_e2 <- as.numeric(raw$residual)
   r_am <- as.numeric(raw$correlation)
   converged <- isTRUE(raw$converged)
+  metadata <- hs_validate_v2_result_metadata(
+    raw, payload, expected_df = ncol(payload$X) + 4L,
+    target = "direct_maternal"
+  )
 
   sigma_P <- sigma_ad + sigma_am + sigma_dm + sigma_e2
   # Direct narrow-sense heritability: h2_d = sigma_ad / sigma_P
@@ -2197,9 +2280,10 @@ hs_normalize_direct_maternal_result <- function(
     maternal_effects = maternal_bv,
     fixed_effects = fe,
     loglik = if (converged) as.numeric(raw$loglik) else NA_real_,
-    nobs = length(payload$y),
+    df = metadata$df,
+    nobs = metadata$nobs,
     converged = converged,
-    diagnostics = list(
+    diagnostics = utils::modifyList(list(
       target = "direct_maternal",
       variance_components = "estimated_direct_maternal_reml",
       optimizer_status = if (converged) "converged" else "not_converged",
@@ -2217,7 +2301,7 @@ hs_normalize_direct_maternal_result <- function(
         "(co)variance components, not h2 values, across software.",
         "Use validate = TRUE to inspect the contract before fitting."
       )
-    )
+    ), metadata$diagnostics)
   )
 }
 
@@ -2401,8 +2485,21 @@ hs_fit_julia_n_effect_payload <- function(
     "\"re_names\" => [r.name for r in hsq_result.random_effects],",
     "\"beta\" => collect(Float64, hsq_fit.beta),",
     "\"loglik\" => hsq_result.loglik,",
-    "\"converged\" => hsq_result.converged)"
+    "\"converged\" => hsq_result.converged,",
+    "\"df\" => Int(hsq_result.df),",
+    "\"nobs\" => Int(hsq_result.nobs),",
+    "\"method\" => string(hsq_result.diagnostics.method),",
+    "\"optimizer_status\" => hsq_result.diagnostics.optimizer_status,",
+    "\"loglik_convention\" => string(hsq_result.diagnostics.loglik_convention),",
+    "\"loglik_full_constant_offset\" => Float64(hsq_result.diagnostics.loglik_full_constant_offset),",
+    "\"loglik_comparable_across_routes\" => hsq_result.diagnostics.loglik_comparable_across_routes,",
+    "\"loglik_stochastic\" => hsq_result.diagnostics.loglik_stochastic)"
   ))
+  if (isTRUE(raw$loglik_stochastic)) {
+    raw$loglik_mcse <- as.numeric(JuliaCall::julia_eval(
+      "hsq_result.diagnostics.loglik_mcse"
+    ))
+  }
   # Per-block BLUP ids/values (ragged), pulled one block at a time so JuliaCall
   # returns clean per-block vectors rather than a jagged nested structure.
   n_blocks <- length(raw$block_names)
@@ -2554,6 +2651,42 @@ hs_normalize_two_effect_result <- function(raw, payload) {
 # NOT a heritability. This normalizes the POINT ESTIMATES; the caller attaches
 # the experimental ratio interval separately via `hs_attach_n_effect_intervals`.
 hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
+  expected_blocks <- payload$random_effects
+  expected_names <- vapply(expected_blocks, function(block) {
+    as.character(block$name)
+  }, character(1))
+  if (!identical(as.character(raw$block_names), expected_names)) {
+    stop(
+      "Internal bridge error: the Julia result block names or order do ",
+      "not match the R payload.",
+      call. = FALSE
+    )
+  }
+  if (length(raw$block_variances) != length(expected_names) ||
+      length(re_ids) != length(expected_names) ||
+      length(re_values) != length(expected_names)) {
+    stop(
+      "Internal bridge error: the Julia result block values do not match ",
+      "the R payload block count.",
+      call. = FALSE
+    )
+  }
+  for (i in seq_along(expected_names)) {
+    if (!identical(as.character(re_ids[[i]]),
+                   as.character(expected_blocks[[i]]$ids)) ||
+        length(re_values[[i]]) != length(re_ids[[i]])) {
+      stop(
+        "Internal bridge error: the Julia result random-effect IDs or ",
+        "values do not match the R payload block order.",
+        call. = FALSE
+      )
+    }
+  }
+  metadata <- hs_validate_v2_result_metadata(
+    raw, payload,
+    expected_df = ncol(payload$X) + length(expected_names) + 1L,
+    target = "multi_effect"
+  )
   fixed_effects <- as.numeric(raw$beta)
   fixed_names <- payload$metadata$fixed_colnames
   if (length(fixed_effects) == length(fixed_names)) {
@@ -2613,9 +2746,13 @@ hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
     random_effects = random_effects,
     fixed_effects = fixed_effects,
     loglik = as.numeric(raw$loglik),
-    nobs = length(payload$y),
+    df = metadata$df,
+    nobs = metadata$nobs,
     converged = isTRUE(raw$converged),
-    diagnostics = list(variance_components = "estimated_multi_effect_reml")
+    diagnostics = utils::modifyList(
+      list(variance_components = "estimated_multi_effect_reml"),
+      metadata$diagnostics
+    )
   )
 }
 
@@ -5004,9 +5141,7 @@ hs_engine_control_honoured_keys <- list(
   ai_reml = c("initial", "iterations", "em_warmup"),
   repeatability = c("initial", "iterations", "max_dense_cells", "scale_method"),
   two_effect = c("initial", "iterations"),
-  # multi_effect: initial/iterations are honoured on the `scale_method =
-  # "dense"` (default) route only; `scale_method = "auto"` does not forward
-  # them (HSquared.jl#343, a known remaining gap, not fixed here).
+  # multi_effect forwards initial/iterations on both dense and auto routes.
   multi_effect = c("initial", "iterations", "scale_method"),
   direct_maternal = c("initial", "iterations"),
   genomic = c("initial", "iterations"),
@@ -5059,21 +5194,25 @@ hs_engine_control_forwarding <- function(control, target) {
 }
 
 hs_validate_iterations <- function(iterations) {
-  iterations <- suppressWarnings(as.integer(iterations))
-  if (length(iterations) != 1L || is.na(iterations) || iterations <= 0L) {
+  if (!is.numeric(iterations) || length(iterations) != 1L ||
+      !is.null(dim(iterations)) || !is.finite(iterations) ||
+      iterations <= 0 || iterations > .Machine$integer.max ||
+      iterations != floor(iterations)) {
     stop("`iterations` must be a single positive integer.", call. = FALSE)
   }
-  iterations
+  as.integer(iterations)
 }
 
 # em_warmup: opt-in EM-REML warm-start iterations before the AI/Newton step (engine
 # `fit_ai_reml`, V1-AI-REML). 0 (default) = off / byte-identical to the pre-warm-start path.
 hs_validate_em_warmup <- function(em_warmup) {
-  em_warmup <- suppressWarnings(as.integer(em_warmup))
-  if (length(em_warmup) != 1L || is.na(em_warmup) || em_warmup < 0L) {
+  if (!is.numeric(em_warmup) || length(em_warmup) != 1L ||
+      !is.null(dim(em_warmup)) || !is.finite(em_warmup) ||
+      em_warmup < 0 || em_warmup > .Machine$integer.max ||
+      em_warmup != floor(em_warmup)) {
     stop("`em_warmup` must be a single non-negative integer.", call. = FALSE)
   }
-  em_warmup
+  as.integer(em_warmup)
 }
 
 # max_dense_cells: the R-facing lever for the engine's dense-validation size

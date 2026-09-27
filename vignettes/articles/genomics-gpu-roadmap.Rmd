@@ -8,11 +8,11 @@ vignette: >
 ---
 
 <p class="hs-banner" role="note"><strong>Experimental · opt-in · not the default fit.</strong>
-This page is a roadmap. Production genomics, QTL/eQTL, GLLVM/omics, and CPU/GPU acceleration remain gated — it does not flip <code>public_covered_count</code>.</p>
+This page is a roadmap. Production genomics, QTL/eQTL, broad GLLVM/omics, and CPU/GPU acceleration remain gated — it does not flip <code>public_covered_count</code>.</p>
 
 This page is a roadmap and status map. Some genomic building blocks now exist
-as opt-in experimental paths, while production genomics, QTL/eQTL, GLLVM/omics,
-and CPU/GPU acceleration remain gated roadmap work.
+as opt-in experimental paths, while production genomics, QTL/eQTL, broad
+GLLVM/omics, and CPU/GPU acceleration remain gated roadmap work.
 
 `hsquared` is designed to grow from a simple animal-model interface into a
 coherent modelling language for phenotypes, pedigrees, genotypes, QTL/eQTL,
@@ -143,6 +143,7 @@ ordination, latent breeding values, and high-dimensional G matrices.
 ## Evidence gate
 
 The package will not claim ASReml-level performance, GPU speedup, production
-genomic support, QTL/eQTL support, or GLLVM support until code, tests, docs,
-and validation evidence exist. Current genomic and marker-scan paths are
-experimental, opt-in, and partial.
+genomic support, QTL/eQTL support, or broad GLLVM support until code, tests,
+docs, and validation evidence exist. Current genomic and marker-scan paths are
+experimental and opt-in. A separate, bounded Poisson genetic GLLVM fit is
+[partial and opt-in](genetic-gllvm.html).

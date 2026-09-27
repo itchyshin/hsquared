@@ -8547,3 +8547,21 @@ The independent fitted same-model FA comparison is now recorded in the Julia
 twin's `docs/dev-log/scout/2026-09-27-fa-same-model-reference.md`; wider
 ordinary-start and external-package comparisons remain open. Draft PR #259 CI
 was queued at the last poll, so this receipt does not claim CI success.
+
+Source-review bridge follow-up on 2026-09-27: synthetic tests first caught a
+multi-fit AIC convention bypass, truncated/permuted result blocks that
+self-validated, and fractional/string integer controls. The repaired focused
+tests passed (`/private/tmp/hsquared-fa-gllvm-v2-shape-aic-green.log`,
+`/private/tmp/hsquared-boole-validators-green.log`). Live three-block and
+direct-maternal tests then passed with no failures or skips
+(`/private/tmp/hsquared-fa-gllvm-final-live-bridge-escalated.log`). `devtools::document()`
+updated `man/hs_control.Rd`; `pkgdown::check_pkgdown()` found no problems.
+The local R package check returned Status: OK with zero errors, warnings, or
+notes (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-final-current.log`).
+Rose corrected two broad-FA calibration statements: 8 of 10 scenarios met
+their criterion, so the broad protocol did not pass. A second package check
+after this prose correction returned Status: OK with zero errors, warnings,
+or notes (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-final-rose.log`).
+The Julia twin's final local
+package suite and docs build passed, while all source-review waves remain
+HOLD. Totoro was down; no DRAC, GPU, release, or long simulation was used.

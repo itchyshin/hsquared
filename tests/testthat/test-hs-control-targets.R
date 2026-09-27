@@ -29,6 +29,7 @@ test_that("?hs_control lists live targets including covered opt-in routes", {
     "multivariate_repeatability",
     "random_regression",
     "nongaussian",
+    "genetic_gllvm",
     "direct_maternal"
   )
   for (target in live) {
@@ -82,5 +83,6 @@ test_that("DESCRIPTION does not call non-Gaussian models planned", {
   expect_match(desc, "non-Gaussian")
   expect_match(desc, "opt-in")
   expect_match(desc, "experimental")
-  expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
+  expect_match(desc, "partial expert-control routes", fixed = TRUE)
+  expect_match(desc, "broader models and covariance formula grammar remain planned", fixed = TRUE)
 })

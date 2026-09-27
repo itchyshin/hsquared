@@ -2109,17 +2109,76 @@ logLik.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
+  if (isTRUE(object$result$diagnostics$loglik_stochastic)) {
+    stop(
+      "Log-likelihood is a stochastic approximation for this fit. Inspect ",
+      "fit_diagnostics(); logLik() and AIC() are unavailable.",
+      call. = FALSE
+    )
+  }
   value <- hs_fit_result(object, "loglik", "log-likelihood")
   out <- value
   class(out) <- "logLik"
   attr(out, "df") <- object$result$df %||% NA_integer_
   attr(out, "nobs") <- object$result$nobs %||% length(object$payload$y)
+  if (!is.null(object$result$diagnostics$loglik_convention)) {
+    attr(out, "loglik_convention") <-
+      object$result$diagnostics$loglik_convention
+  }
   out
 }
 
 #' @export
 AIC.hsquared_fit <- function(object, ..., k = 2) {
-  stats::AIC(stats::logLik(object), ..., k = k)
+  others <- list(...)
+  fits <- c(list(object), others)
+  if (length(others) > 0L &&
+      !all(vapply(others, inherits, logical(1), "hsquared_fit"))) {
+    stop(
+      "AIC comparison through `hsquared_fit` requires every model to be an ",
+      "`hsquared_fit` object with a checked likelihood convention.",
+      call. = FALSE
+    )
+  }
+  likelihoods <- lapply(fits, stats::logLik)
+  for (fit in fits) {
+    if (identical(fit$result$diagnostics$loglik_comparable_across_routes,
+                  FALSE)) {
+      stop(
+        "AIC is unavailable for this fit: its log-likelihood convention is ",
+        "not comparable across routes. Inspect fit_diagnostics() for the ",
+        "constant and method.",
+        call. = FALSE
+      )
+    }
+  }
+  if (length(fits) > 1L) {
+    reference <- fits[[1L]]
+    same_contract <- vapply(fits[-1L], function(fit) {
+      identical(fit$result$diagnostics$method,
+                reference$result$diagnostics$method) &&
+        identical(fit$result$diagnostics$loglik_convention,
+                  reference$result$diagnostics$loglik_convention) &&
+        identical(fit$spec$family, reference$spec$family) &&
+        identical(fit$payload$y, reference$payload$y) &&
+        identical(fit$payload$X, reference$payload$X)
+    }, logical(1))
+    if (!all(same_contract)) {
+      stop(
+        "AIC comparison requires matching data, fixed-effect design, ",
+        "family, method, and likelihood convention.",
+        call. = FALSE
+      )
+    }
+    df <- vapply(likelihoods, function(ll) attr(ll, "df"), numeric(1))
+    value <- vapply(likelihoods, as.numeric, numeric(1))
+    return(data.frame(
+      df = df,
+      AIC = -2 * value + k * df,
+      row.names = paste0("model", seq_along(fits))
+    ))
+  }
+  stats::AIC(likelihoods[[1L]], k = k)
 }
 
 #' Block unsupported likelihood-inference helpers

@@ -270,8 +270,9 @@ experimental targets.
 
 ## Current limits
 
-How many of each term can a formula carry today? The grammar is deliberately
-narrow; these are the structural limits (not yet "arbitrary" random effects):
+How many of each term can a formula carry today? The default grammar is
+narrow, while the opt-in multi-effect route accepts any number of independent
+random intercepts. These are the structural limits:
 
 - **Exactly one primary effect.** A formula carries exactly one of
   `animal(1 | id, pedigree = ped)` (a pedigree additive effect) or a
@@ -284,8 +285,10 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
   `(1 | g)` intercepts (covered at validation scale; see the opt-in sections
   above). Correlated multi-term structures other than the covered direct–maternal
   (2×2 G) target remain on the roadmap.
-- **Random intercepts only.** Only `1 | group` is parsed. Random slopes
-  (`x | id`) are rejected as planned-not-implemented. On the default path a bare
+- **Default grammar accepts random intercepts only.** Ordinary `1 | group`
+  terms are parsed where the target permits them; raw random slopes (`x | id`)
+  are rejected. The opt-in `animal(rr(t, order = 2) | id, ...)` route is the
+  separate bounded random-regression path. On the default path a bare
   lme4-style `(... | group)` term is rejected with a pointer to the named effects
   above (it is never silently absorbed into the fixed effects); the opt-in
   `target = "multi_effect"` path is where bare `(1 | g)` intercepts are accepted.
@@ -305,9 +308,10 @@ narrow; these are the structural limits (not yet "arbitrary" random effects):
 - **Fixed effects are unrestricted** otherwise: any number of ordinary
   fixed-effect terms (`sex + age + ...`) on the right-hand side is fine.
 
-Arbitrary numbers of random effects and slopes, additional correlated random
-terms, and k≥3 / factor-analytic multi-trait responses remain on the roadmap;
-the parser names each unsupported form rather than guessing.
+General combinations of random slopes and correlated random terms, and
+formula-level structured covariance models remain on the roadmap. The opt-in
+independent multi-effect, k=2 random-regression, and bounded four-trait FA
+expert-control routes have the separate limits described on this page.
 
 ## Not implemented yet
 

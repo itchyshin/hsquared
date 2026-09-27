@@ -63,7 +63,7 @@ formula_status()
 `animal(1 | id, pedigree = ped)` is the additive genetic term. With
 `data = bundle` you can write `animal(1 | id)` and the bundle pedigree is used.
 
-## 2. Preview — no Julia needed
+## 2. Preview: no Julia needed
 
 ```{r preview}
 hsquared(
@@ -78,10 +78,9 @@ model_spec(
 )
 ```
 
-This is the cheapest way to find out that a term is a syntax reservation rather
-than an implemented model: it tells you before you go looking for Julia.
+The preview reports reserved syntax before you start a Julia fit.
 
-## 3. Fit — needs the engine
+## 3. Fit: needs the engine
 
 ```{r fit, eval = FALSE}
 # needs Julia + HSquared.jl; not a silent fallback
@@ -92,7 +91,7 @@ fit <- hsquared(
 ```
 
 Opt-in experimental targets go through `hs_control(engine = "julia")` with an
-`engine_control` target — see
+`engine_control` target. See
 [Can I fit and report this?](current-limits.html) for which ones you may report.
 
 ## 4. Check
@@ -104,8 +103,8 @@ backend_info()         # which engine answered, and its version
 validation_status()    # developer evidence table, not the user list
 ```
 
-Read `at_boundary` before anything else. A variance pinned at zero is a real
-result about your data, not a number to report as an estimate.
+Read `at_boundary` before anything else. A variance pinned at zero is a
+boundary result. Do not report it as an unconstrained estimate.
 
 ## 5. Extract
 
@@ -118,12 +117,19 @@ result about your data, not a number to report as an estimate.
 | Fixed effects | `fixef(fit)`, `coef(fit)` |
 | Random effects | `ranef(fit)` |
 | Fitted values and residuals | `fitted(fit)`, `residuals(fit)` |
-| Model comparison | `logLik(fit)`, `AIC(fit)`, `nobs(fit)` |
+| Model comparison | `logLik(fit)`, `AIC(fit)` where supported; `nobs(fit)` |
 | A plot | `plot(fit)`, `autoplot(fit)` |
 
-Route-specific extractors exist for the opt-in targets — `repeatability()`,
+Route-specific extractors exist for the opt-in targets: `repeatability()`,
 `common_env_effects()`, `maternal_effects()`, `genetic_covariance()`,
-`marker_effects()`, `g_matrix_geometry()` — and inherit their route's status.
+`marker_effects()`, `g_matrix_geometry()`. They inherit their route's status.
+
+Check `fit_diagnostics()` before comparing likelihoods. Structured multi-effect
+and direct-maternal dense REML routes omit a likelihood constant; `AIC()`
+refuses those results. A matrix-free stochastic likelihood is available in
+diagnostics but not through `logLik()` or `AIC()`. Compare fits only when data,
+method, response family, and likelihood convention match. For REML, the
+fixed-effect design must match as well.
 
 ## Uncertainty: read this before using it
 
@@ -141,11 +147,11 @@ this package currently carries an interval-reporting permission. `confint()` and
 
 `qtl_table()`, `gwas_table()`, `eqtl_table()`, `lod_scores()`, and
 `marker_variance_explained()` are reserved output names for future marker/QTL
-results. They exist so the vocabulary is stable, not because the models fit.
-`marker_effects()` is the exception — it is live for the opt-in SNP-BLUP path.
+results. These names reserve vocabulary for later work. `marker_effects()` is
+implemented on the opt-in SNP-BLUP path.
 
 ## Where to read next
 
-- [Getting started with hsquared](hsquared.html) — the guided introduction.
-- [Can I fit and report this?](current-limits.html) — reporting permissions per route.
-- [Fitting models](fitting-models.html) — the longer fitting guide.
+- [Getting started with hsquared](hsquared.html): the guided introduction.
+- [Can I fit and report this?](current-limits.html): reporting permissions per route.
+- [Fitting models](fitting-models.html): the longer fitting guide.
