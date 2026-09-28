@@ -207,6 +207,6 @@ test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 release", {
   expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
   expect_match(desc, "opt-in partial", fixed = TRUE)
   expect_match(desc, "experimental release", fixed = TRUE)
-  expect_match(desc, "engine-covered is not R covered", fixed = TRUE)
+  expect_match(desc, "engine-covered is not covered at the 'R' interface", fixed = TRUE)
   expect_no_match(desc, "0.9 is not released", fixed = TRUE)
 })
