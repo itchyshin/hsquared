@@ -16,7 +16,7 @@ The AIC comparison uses the objective metadata returned by Julia rather than rec
 
 ## 5. Checks Run
 
-`devtools::document()` regenerated `man/hs_control.Rd`; the incidental NAMESPACE formatting change was restored. Focused validator and metadata tests passed (`/private/tmp/hsquared-boole-validators-green.log`). Live R–Julia three-block and direct-maternal tests passed with no failures or skips (`/private/tmp/hsquared-fa-gllvm-final-live-bridge-escalated.log`). `rcmdcheck::rcmdcheck()` returned zero errors, warnings, and notes after Rose's last prose correction (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-final-rose.log`). `pkgdown::check_pkgdown()` found no problems. Git diff whitespace check passed. The after-task structure checker passed in this R checkout; the hub-level closeout wrapper reported unrelated open brain ledgers.
+`devtools::document()` regenerated `man/hs_control.Rd`; the incidental NAMESPACE formatting change was restored. Focused validator and metadata tests passed (`/private/tmp/hsquared-boole-validators-green.log`). Live R–Julia three-block and direct-maternal tests passed with no failures or skips before and after the Julia W1-09 score repair (`/private/tmp/hsquared-fa-gllvm-w109-live-bridge-final.log`). `rcmdcheck::rcmdcheck()` returned zero errors, warnings, and notes after Rose's last prose correction (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-final-rose.log`). `pkgdown::check_pkgdown()` found no problems. Git diff whitespace check passed. The after-task structure checker passed in this R checkout; the hub-level closeout wrapper reported unrelated open brain ledgers.
 
 ## 6. Tests of the Tests
 

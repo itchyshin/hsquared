@@ -8565,3 +8565,11 @@ or notes (`/private/tmp/hsquared-fa-gllvm-rcmdcheck-20260927-final-rose.log`).
 The Julia twin's final local
 package suite and docs build passed, while all source-review waves remain
 HOLD. Totoro was down; no DRAC, GPU, release, or long simulation was used.
+
+After the Julia W1-09 bounded score repair, the final content-matched Julia
+suite passed and the live R `formula-animal` and `v2-result-metadata` files
+passed with no failures or skips against that source
+(`/private/tmp/hsquared-fa-gllvm-w109-live-bridge-final.log`). This retests
+the converged three-block reduction and direct-maternal metadata. The
+bounded FA/GLLVM routes and covered count did not change. GitHub CI for the
+draft PR remains unverified until its queued jobs finish.
