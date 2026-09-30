@@ -1662,6 +1662,28 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     "search_boundary_condition"
   )
   extras <- diagnostics[setdiff(diagnostic_names, already_reported)]
+  fa_starts <- diagnostics$fa_start_starts
+  if (is.data.frame(fa_starts)) {
+    extras$fa_start_starts <- if (nrow(fa_starts) == 0L) {
+      NA_character_
+    } else {
+      start_rows <- vapply(seq_len(nrow(fa_starts)), function(i) {
+        paste0(
+          fa_starts$name[[i]],
+          "{valid=", hs_diagnostic_value(fa_starts$valid[[i]]),
+          ", converged=", hs_diagnostic_value(fa_starts$converged[[i]]),
+          ", iterations=", hs_diagnostic_value(fa_starts$iterations[[i]]),
+          ", loglik=", hs_diagnostic_value(fa_starts$loglik[[i]]),
+          ", minimum_uniqueness=",
+          hs_diagnostic_value(fa_starts$minimum_uniqueness[[i]]),
+          ", floor_distance=",
+          hs_diagnostic_value(fa_starts$uniqueness_floor_distance[[i]]),
+          "}"
+        )
+      }, character(1))
+      paste(start_rows, collapse = "; ")
+    }
+  }
   rows <- c(base, extras)
   rows <- rows[!vapply(rows, is.null, logical(1))]
 

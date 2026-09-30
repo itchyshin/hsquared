@@ -42,8 +42,8 @@
 #'     default dense route and the opt-in `scale_method = "auto"` route
 #'     forward `initial` and `iterations` to the Julia fitter.
 #'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
-#'   * `genetic_gllvm`: `initial`, `iterations`, `genetic_structure`, `rank`,
-#'     `experimental_gllvm`.
+#'   * `genetic_gllvm`: `iterations`, `genetic_structure`, `rank`,
+#'     `experimental_gllvm` (`initial` is not exposed on this route).
 #'   * `multivariate_repeatability`: `initial`, `iterations`.
 #'   * `random_regression`: `iterations` (no `initial`).
 #'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with

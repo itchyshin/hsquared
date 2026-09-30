@@ -38,7 +38,7 @@ The first `pkgdown::check_pkgdown()` rejected the new article because `_pkgdown.
 
 ## 10. Known Residuals
 
-This is a candidate arc receipt. No external same-objective pedigree comparator or interval calibration has passed. Final Julia checks after source-review repairs, CI, panel signoff, and broader GLLVM grammar remain open. No 0.11 release was made.
+This candidate report does not establish an external same-objective pedigree comparator or interval calibration. Final Julia checks after source-review repairs, CI, panel signoff, and broader GLLVM grammar remain open. No 0.11 release was made.
 
 ## 11. Team Learning
 
@@ -49,3 +49,11 @@ Memory receipt: `route.py hsquared`, brain D-293, and the sibling GLLVM design n
 Covers: Poisson-log T=3, K=2 pure low-rank pedigree genetic covariance, complete balanced responses, trait intercepts, link-scale trait modes, and the stated R extractor set.
 
 This route does NOT cover Bernoulli or mixed families, non-Gaussian uniqueness, missing or unbalanced records, response-scale heritability, raw loading inference, intervals, automatic rank selection, broad recovery, or a covered/release claim.
+
+## 13. Current-candidate live recheck (2026-09-28)
+
+The focused R-to-Julia bridge test was rerun against the current candidates. The R checkout was `fa98c262eb21694d672e671c9672491ce3369cec`; `R/julia-bridge.R` SHA-256 was `c37f4ba887da4a262d4e6957dbebb98235b8a08b1513b93cdcb888ff3605436d`, and `tests/testthat/test-gllvm-optin.R` SHA-256 was `90f8e1f4c687e9f46b3fff137fcf01366e7cf135b00c67b8004ed7ac207d67da`. The Julia checkout was `a7ca8ed557b23ec23c8486365e97a7bac4b71c16`; `src/genetic_gllvm.jl` SHA-256 was `d7d2a2c3dd276cc86813081963e9d61350c5123c0b186b8e222b1630ba5944fd`.
+
+Command: `OPENBLAS_NUM_THREADS=1 JULIA_NUM_THREADS=4 JULIA_DEPOT_PATH=/private/tmp/hsq-test-depot:/Users/z3437171/.julia HSQUARED_JULIA_PROJECT=/Users/z3437171/.codex/worktrees/hsquared-fa-gllvm-foundations/HSquared.jl HSQUARED_JULIA_TESTS=true Rscript -e 'devtools::test(filter = "gllvm-optin")'`. Result: 53 passed, zero failed, zero warnings, zero skips; duration 12.5 seconds. The live test used the specified Julia candidate and compared the R fit with a direct Julia fit on the same data. Trait order, pedigree order, covariance, correlations, fixed effects, trait modes, and objective checks passed.
+
+This verifies the focused bridge test on these file hashes. It does not close the external same-objective comparator, wider recovery or calibration, broader R-Julia parity, Rose's programme-level audit, or the remaining source-review waves. Capability status remains partial and `public_covered_count` remains seven.

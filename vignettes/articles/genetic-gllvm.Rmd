@@ -67,6 +67,10 @@ labels with `scale = "link"`; the underlying fit stores a `q × 3` matrix of
 trait genetic modes. Genetic correlations describe the fitted covariance on
 the link scale. Raw loadings depend on factor rotation and are withheld.
 
+`fit_diagnostics()` reports overall and outer-optimizer convergence and outer
+iterations, along with inner-mode convergence, gradient norm, iteration count,
+stop reason, and backtracks.
+
 The diagnostic objective integrates both fixed effects, under a flat
 measure, and pedigree genetic effects using a Laplace approximation. It is
 not ordinary non-Gaussian maximum likelihood or Gaussian REML, so this fit
@@ -79,7 +83,9 @@ This is one complete, balanced, three-trait, rank-two, pure low-rank Poisson
 cell. It does not fit missing records, repeated records, other response
 families, factor-analytic uniqueness, or arbitrary ranks. Automatic rank
 selection from the `gllvmTMB` and `GLLVModels.jl` work is a separate follow-on
-that needs pedigree-specific validation. A live 12-animal R fit matched a
+that needs pedigree-specific validation. This route uses dense validation-scale
+computation; a sparse pedigree input does not make the internal fit sparse, and
+large-scale use has not been validated. A live 12-animal R fit matched a
 direct same-input Julia fit for the covariance, correlations, fixed effects,
 trait modes, and objective within `1e-8`; this does not establish broad
 recovery, calibration, or an external same-objective comparison. The public

@@ -40,7 +40,7 @@
 #' (`R-to-Julia bridge payload`, `opt-in experimental Julia engine`) stay
 #' **partial** even when individual targets are covered. Targets split into:
 #' default live (`engine = "fit"`), opt-in live (`engine_control$target`),
-#' **PATH_ONLY** smoke (C1-ext intervals — not a fit bridge), and **blocked**
+#' **PATH_ONLY** smoke (C1-ext intervals; not a fit bridge), and **blocked**
 #' planned grammar (for example `animal(cov = fa(...))`). The explicit
 #' four-trait rank-one FA `engine_control` cell is partial and opt-in.
 #' `payload_v2` routing is limited to `direct_maternal` and `multi_effect`.
@@ -508,7 +508,7 @@ hs_validation_status_boundaries <- function() {
     "Planned; no external production-software parity claim.",
     "Planned; no simulation-recovery claim.",
     "Planned; no genomic, QTL, eQTL, or marker-scan claim.",
-    "Planned; no GLLVM-style animal-model validation claim.",
+    "General GLLVM-style animal-model validation remains planned. A separate partial opt-in Poisson-log, three-trait, rank-two pedigree route has one-cell Julia ordinary-start evidence and a 12-animal same-input R-to-Julia parity check. The earlier four-scenario harness used true-loading starts and is separate evidence; broad recovery, calibration, a matched external same-objective comparator, and a covered claim remain open.",
     "Planned; no backend execution, benchmark, or speedup claim."
   )
 }

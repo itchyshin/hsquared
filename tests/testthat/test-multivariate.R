@@ -58,6 +58,16 @@ test_that("multivariate cbind response requires unique non-empty trait names", {
     "empty or missing names",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_validate_multivariate_trait_names(c("y1", "   ")),
+    "empty or missing names",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_multivariate_trait_names(c("y1", intToUtf8(0xA0))),
+    "empty or missing names",
+    fixed = TRUE
+  )
 })
 
 test_that("multivariate parser rejects fixed-effect NA and rank-deficient X", {
@@ -351,11 +361,13 @@ test_that("multivariate result normalizer exposes G, R, h2, and cross-trait EBVs
       trait_names = c("y1", "y2")
     )
   )
+  G <- matrix(c(1.0, 0.2, 0.2, 1.5), 2)
+  R <- matrix(c(2.0, 0.1, 0.1, 2.5), 2)
   raw <- list(
-    genetic_covariance = matrix(c(1.0, 0.2, 0.2, 1.5), 2),
-    residual_covariance = matrix(c(2.0, 0.1, 0.1, 2.5), 2),
-    genetic_correlation = matrix(c(1.0, 0.1633, 0.1633, 1.0), 2),
-    residual_correlation = matrix(c(1.0, 0.0447, 0.0447, 1.0), 2),
+    genetic_covariance = G,
+    residual_covariance = R,
+    genetic_correlation = stats::cov2cor(G),
+    residual_correlation = stats::cov2cor(R),
     heritability = c(1 / 3, 1.5 / 4),
     beta = matrix(c(1, 0.5, 2, 0.7), nrow = 2),
     breeding_ids = payload$ids,

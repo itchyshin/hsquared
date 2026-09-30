@@ -136,8 +136,13 @@ The four-trait, one-factor Gaussian pedigree FA fit is available through an
 explicit Julia expert-control target. It returns a fitted genetic covariance,
 uniqueness estimates, genetic correlations, and diagnostics. The rank does not
 by itself identify every loading and uniqueness configuration. The tested
-fixture required a higher iteration limit. See
-[Multivariate Gaussian animal models](multivariate.html) for the exact call.
+fixture required a higher iteration limit. In a 200-seed Gaussian pedigree
+study with four traits and three records per animal, 141 fits converged and
+110 met the declared covariance-recovery diagnostics, using two ordinary
+starts with 5000 iterations each. All 200 attempts were counted. Inspect
+convergence, start disagreement and floor diagnostics before interpreting a
+fit. See [Multivariate Gaussian animal models](multivariate.html) for the exact
+call and the study's limits.
 
 The three-trait, two-factor Poisson-log pedigree genetic GLLVM fit is also an
 explicit expert-control route. It returns genetic covariance and correlations

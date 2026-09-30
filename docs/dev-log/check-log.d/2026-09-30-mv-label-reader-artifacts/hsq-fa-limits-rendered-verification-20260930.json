@@ -1,0 +1,20 @@
+{
+  "current-limits": {
+    "html_sha256": "399490895ea55304b6b725776fb0223ee6966b3b53e76c88bcd9157b8c2fe3c2",
+    "source_sha256": "ffa1e30ca62767c9815d27af88976c591ee16ea8bc6ab8431c82bd04a8ed3bba",
+    "visible_excerpt": "In a 200-seed Gaussian pedigree study with four traits and three records per animal, 141 fits converged and 110 met the declared covariance-recovery diagnostics, using two ordinary starts with 5000 iterations each. All 200 attempts were counted. Inspect convergence, start disagreement and floor diagnostics before interpreting a fit. See Multivariate Gaussian animal models for the exact call and the study’s limits. The three-trait, two-factor Poisson-log pedigree genetic GLLVM fit is also an explicit expert-control route. It returns genetic covariance and correlations plus trait-level conditional genetic modes on the log-rate scale. See Genetic GLLVM opt-in for the exact call and limits. Both routes are partial . Use their point estimates for exploration; for a paper, run a suitable comparator yourself. No interval, automatic factor rank, missing-response fit, or broader family claim follows from these cells. Where to read next Fitting models : the smallest honest workflow after you choose a route. Visualizing models : diagnose a fitted result before extracting it. Model status : the ",
+    "count_check": "PASS",
+    "teaching_asset_paths": [],
+    "teaching_asset_check": "not_applicable"
+  },
+  "multivariate": {
+    "html_sha256": "e1a29bad6ee980582a3c289caa01c01e36090f2071dee40c48d3feab49013af6",
+    "source_sha256": "60168da9381732694c90c7401008bfddc74ec2ee2948ef25bbe1942da096f632",
+    "visible_excerpt": "What the ordinary-start study found A frozen 200-seed Gaussian study used 60 pedigree animals, four traits, three complete records per animal, one genetic factor, trait intercepts and an estimated unstructured residual covariance. Each default and balanced start had a 5000-iteration limit. Of all 200 attempts, 141 converged and 110 met the predeclared covariance-recovery diagnostics. There were 59 nonconverged fits, 20 genetic-covariance error classifications and 11 residual-covariance error classifications. The diagnostic recovery fraction was 55%, with a Monte Carlo standard error of 3.52 percentage points and a Wilson 95% interval of 48.1%–61.7%. The study specified no overall pass cutoff. Near-uniqueness-floor flags occurred in 13 fits, including six classified as recovered; two fits had a better nonconverged start, including one classified as recovered. These flags remain in the counts. Treat returned values from a nonconverged fit as diagnostic output. The covariance thresholds describe this study, and do not establish interval coverage or general optimizer reliability. Five or",
+    "count_check": "PASS",
+    "teaching_asset_paths": [
+      "../reference/figures/g0-rg-teaching.svg"
+    ],
+    "teaching_asset_check": "PASS"
+  }
+}

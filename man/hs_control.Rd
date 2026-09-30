@@ -55,8 +55,8 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 default dense route and the opt-in \code{scale_method = "auto"} route
 forward \code{initial} and \code{iterations} to the Julia fitter.
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
-\item \code{genetic_gllvm}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank},
-\code{experimental_gllvm}.
+\item \code{genetic_gllvm}: \code{iterations}, \code{genetic_structure}, \code{rank},
+\code{experimental_gllvm} (\code{initial} is not exposed on this route).
 \item \code{multivariate_repeatability}: \code{initial}, \code{iterations}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with

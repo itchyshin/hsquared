@@ -1,5 +1,32 @@
 # Check Log
 
+## 2026-09-30: live FA/GLLVM bridge recheck
+
+The current R bridge tests passed all **213** FA/GLLVM assertions with a required live Julia bridge against the current Julia candidate. The initial default-depot run failed during JuliaCall cache setup; retrying with the writable task-local depot passed with zero warnings and skips. Exact R and Julia pins are recorded in [`check-log.d/2026-09-30-live-fa-gllvm-bridge-recheck.md`](check-log.d/2026-09-30-live-fa-gllvm-bridge-recheck.md). This is focused parity evidence; A2, E1, and V3 remain open.
+
+## 2026-09-29: scale-standardized FA/GLLVM covariance contract
+
+- Check shard: `docs/dev-log/check-log.d/2026-09-29-covariance-scale-contract.md`.
+- Source: branch `codex/hsquared-fa-gllvm-20260927`, HEAD
+  `fa98c262eb21694d672e671c9672491ce3369cec`, with the pre-existing candidate
+  changes preserved. The shard binds the current bridge/test hashes and built
+  archive hash.
+- New red tests reproduced two accepted-invalid GLLVM payloads: an indefinite
+  correlation matrix hidden by trait SDs `(1e8, 1, 1)`, and asymmetry confined
+  to two small-scale traits beside a variance of `1e16`. The validator now
+  checks symmetry, positive-semidefinite geometry, and covariance/correlation
+  agreement after scaling each trait by its marginal SD.
+- Focused live R/Julia `fa-optin|gllvm-optin`: **213 passed, 0 failed,
+  0 warnings, 0 skips**. Full `R CMD check --no-manual` on the rebuilt
+  `hsquared_0.9.0.tar.gz`: **Status: OK**; testthat reported **3,768 passed,
+  0 failed, 26 warnings, 47 skips**. The warnings/skips include established
+  package diagnostics and unavailable optional routes. CRAN and Bioconductor
+  package indexes were unreachable; dependency checks completed from the
+  installed library. This is local evidence, not hosted CI.
+- `git diff --check` passed. The route remains experimental/partial;
+  `public_covered_count` stays **7**. No version, release, registry, tag, or
+  submission action occurred.
+
 ## 2026-09-26 (hsquared#237 R-lane cbind + permanent; count stays 7)
 
 - See `docs/dev-log/check-log.d/2026-09-26-237-mv-permanent-r.md` and
@@ -8573,3 +8600,67 @@ passed with no failures or skips against that source
 the converged three-block reduction and direct-maternal metadata. The
 bounded FA/GLLVM routes and covered count did not change. GitHub CI for the
 draft PR remains unverified until its queued jobs finish.
+
+## 2026-09-28: FA R bridge start diagnostics follow-up [R lane]
+
+The R bridge now carries Julia's multi-start FA diagnostics into the fit
+object, validates the start metadata, and converts Julia `nothing` values to
+missing R diagnostics for an explicit one-start fit. The first live four-trait
+FA suite passed **110/110** before the later readable-row assertions were
+added, against the candidate Julia worktree. It includes a nontrivial
+sire-linked pedigree with repeated records in pedigree order; a separate
+bridge-input test uses unsorted pedigree labels. The live suite also covers
+the `nothing` serialization case. A prior run exposed
+that the separate user-initialized fit was not converged; the test now checks
+the serialization contract independently, while the multi-start fixture
+retains the convergence assertion.
+
+Earlier same-arc receipts remain: genetic GLLVM opt-in **53/53**; adjacent
+bridge/status/help/direct-maternal tests **129/129**; Julia FA multi-start
+targeted tests **37/37**. `pkgdown::check_pkgdown()` found no problems after
+Rose's correction to the R-versus-Julia FA wording in `twin-boundary.Rmd`.
+The final local `rcmdcheck::rcmdcheck(".", args =
+"--no-manual", error_on = "never")` returned **Status: OK, 0 errors, 0
+warnings, 0 notes** in 1m27s on R 4.6.0/macOS Tahoe. CRAN/Bioconductor indexes
+were unreachable in this network-restricted environment, but dependency checks
+completed successfully from the available library. `R CMD check` ran the
+package's applicable testthat suite; no separate `devtools::test()` or CI
+claim is made here. FA and GLLVM stay
+partial, `public_covered_count` remains **7**, and no release action occurred.
+
+## 2026-09-28: FA diagnostics summary refinement [R lane]
+
+The per-start FA table now appears in `fit_diagnostics()` as a compact summary
+with start name, validity, convergence, iterations, log-likelihood, minimum
+uniqueness, and floor distance. The three added assertions passed in the final
+live FA run (**113 total**); the red run had the two expected failures caused
+by `<list>` output. A fresh full package check after this change returned
+Status: OK with zero errors, warnings, or notes in 1m02.8s. Documentation
+regeneration and pkgdown check exited 0. See
+`docs/dev-log/after-task/2026-09-28-fa-r-bridge-diagnostics.md` for prior and
+current receipts and the remaining partial-status limits.
+
+Exact-source rerun on 2026-09-29 after the minimal extractor cleanup returned
+Status: OK, 0 errors, 0 warnings, 0 notes in 1m02.1s
+(`/private/tmp/hsquared-rcmdcheck-final-20260929.log`). The focused live
+`fa-optin` suite remains 113/113 on the paired Julia candidate. Package
+indexes were unreachable; dependency checks completed from the installed
+library. This remains a local check, not hosted CI or release evidence.
+
+## 2026-09-29 current FA/GLLVM live bridge revalidation
+
+With `HSQUARED_JULIA_PROJECT` set to the exact Julia candidate and
+`HSQUARED_REQUIRE_BRIDGE=true`, `devtools::test(filter =
+"fa-optin|gllvm-optin")` passed 200 assertions, 0 failures, and 0 skips.
+The current R bridge and test hashes are recorded in
+`docs/dev-log/check-log.d/2026-09-29-gllvm-status-wording.md`. Full local
+`rcmdcheck` on this candidate passed with 0 errors, warnings, or notes in
+1m24.4s after replacing non-ASCII dash punctuation in
+`R/validation-status.R` and regenerating `man/validation_status.Rd`.
+`pkgdown::check_pkgdown()` reported no problems. This does not establish
+hosted CI; the package remains partial/experimental and the 0.9.0 CRAN
+submission remains in its separate review lane.
+
+## Final local checks and landing preparation, 2026-09-30T22:56:58.704678+00:00
+
+Full Julia suite passes417.16seconds at source11f6319f/runner58cea5f; all213 current live R-Julia checks pass without failures/warnings/skips; R archive854f has Status:OK, and both documentation sites build locally. The installed independently challenged evidence checker passes three scopes against retained hashes. A2/E1 bounded review judgments are accepted; V1/V2 reverified. All child ledgers are met, with nine actual read-only checks replayed and only top V3 still open for consolidated report and hosted landing evidence. Report: docs/dev-log/after-task/2026-09-30-bounded-twin-local-acceptance.md. Protected platform configs are excluded. Completed FA primary stays immutable and experimental. No GPU, submission or tag.

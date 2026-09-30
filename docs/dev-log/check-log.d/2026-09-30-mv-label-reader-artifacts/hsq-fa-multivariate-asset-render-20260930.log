@@ -1,0 +1,40 @@
+hsquared is an experimental 0.9.0 release (not production; CRAN availability is tracked separately). Default fitting needs Julia + HSquared.jl; preview with hs_control(engine = "validate").
+What you may report is listed on Can I fit and report this? -- not in validation_status(). Intervals are not coverage-calibrated.
+See https://itchyshin.github.io/hsquared/articles/current-limits.html
+Reading vignettes/articles/multivariate.Rmd
+
+
+processing file: multivariate.Rmd
+1/21                  
+2/21 [unnamed-chunk-1]
+3/21                  
+4/21 [fixture]        
+5/21                  
+6/21 [unnamed-chunk-2]
+7/21                  
+8/21 [g0-rg-callout]  
+9/21                  
+10/21 [unnamed-chunk-3]
+11/21                  
+12/21 [unnamed-chunk-4]
+13/21                  
+14/21 [unnamed-chunk-5]
+15/21                  
+16/21 [unnamed-chunk-6]
+17/21                  
+18/21 [unnamed-chunk-7]
+19/21                  
+20/21 [unnamed-chunk-8]
+21/21                  
+output file: /private/var/folders/7x/ytfpq14s0v18frbm9v_w9f4c0000gq/T/RtmpHcHPVR/multivariate.knit.md
+
+/opt/homebrew/bin/pandoc +RTS -K512m -RTS /private/var/folders/7x/ytfpq14s0v18frbm9v_w9f4c0000gq/T/RtmpHcHPVR/multivariate.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output /private/tmp/hsquared-fa-gllvm-20260927/pkgdown-site/articles/multivariate.html --lua-filter /Users/z3437171/Library/R/arm64/4.6/library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /Users/z3437171/Library/R/arm64/4.6/library/rmarkdown/rmarkdown/lua/latex-div.lua --lua-filter /Users/z3437171/Library/R/arm64/4.6/library/rmarkdown/rmarkdown/lua/table-classes.lua --standalone --section-divs --template /var/folders/7x/ytfpq14s0v18frbm9v_w9f4c0000gq/T//RtmpHcHPVR/pkgdown-rmd-template-21813116d079.html --syntax-highlighting pygments --mathml --include-in-header /var/folders/7x/ytfpq14s0v18frbm9v_w9f4c0000gq/T//RtmpHcHPVR/rmarkdown-str21812dde1aa9.html 
+
+Output created: pkgdown-site/articles/multivariate.html
+Writing `articles/multivariate.html`
+Missing images in 'vignettes/articles/multivariate.Rmd':
+'../../reference/figures/g0-rg-teaching.svg'
+ℹ pkgdown can only use images in 'man/figures' and 'vignettes'
+Warning message:
+In file.create(to[okay]) :
+  cannot create file '/private/var/folders/7x/ytfpq14s0v18frbm9v_w9f4c0000gq/T/RtmpHcHPVR/../../man/figures/g0-rg-teaching.svg', reason 'Operation not permitted'

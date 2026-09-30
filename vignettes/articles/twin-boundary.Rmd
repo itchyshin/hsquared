@@ -42,8 +42,10 @@ In particular:
   validation-scale, opt-in capability for the narrow S4 cell: `t = 4`, `K = 1`,
   positive Ledermann slack and interior uniqueness, with rotation-invariant
   G/R/psi outputs only. Broad calibration passed 8 of 10 scenarios, so it is
-  not a general FA claim. R factor-analytic grammar and payload activation
-  remain **planned** (`cov = fa(K)` is not parsed).
+  not a general FA claim. R also has a partial, explicit expert-control payload
+  for complete four-trait Gaussian pedigree fits with `K = 1`, trait intercepts,
+  and estimated unstructured residual covariance. Formula grammar remains
+  **planned** (`cov = fa(K)` is not parsed).
 - **Single-step (`V2-SSHINV`)** is covered only as a Julia engine,
   validation-scale, opt-in capability for H-scale sigma-a2/sigma-e2 under
   ordinary defaults (`tau = omega = 1`, blend/ridge zero) and the teaching

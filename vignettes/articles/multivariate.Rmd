@@ -261,12 +261,43 @@ fit_diagnostics(fit_fa)
 
 The `iterations = 5000L` value matches the small live parity fixture; its
 convergence at the default iteration cap was not established. Inspect
-`fit_diagnostics()` on your data. The reported per-trait uniqueness values
+`fit_diagnostics()` on your data. For this FA route it reports the start
+strategy, number of starts, selected start, objective range, disagreement
+between fitted covariances, and proximity to the uniqueness floor. Its
+`fa_start_starts` entry summarizes validity, convergence, iterations,
+log-likelihood, minimum uniqueness, and distance from the floor for each
+attempt. These are optimizer diagnostics, not uncertainty measures. The
+reported per-trait uniqueness values
 depend on the fitted loading pattern for separate identification. A fixed
 rank of one does not guarantee that every uniqueness is identified. This
 route does not provide structured covariance standard errors or raw-loading
 inference. It is experimental and partial; the public covered count remains
 seven. The `cov = fa()` formula grammar above is still reserved.
+
+### What the ordinary-start study found
+
+A frozen 200-seed Gaussian study used 60 pedigree animals, four traits, three
+complete records per animal, one genetic factor, trait intercepts and an
+estimated unstructured residual covariance. Each default and balanced start
+had a 5000-iteration limit. Of all 200 attempts, 141 converged and 110 met the
+predeclared covariance-recovery diagnostics. There were 59 nonconverged fits,
+20 genetic-covariance error classifications and 11 residual-covariance error
+classifications. The diagnostic recovery fraction was 55%, with a Monte Carlo
+standard error of 3.52 percentage points and a Wilson 95% interval of
+48.1%–61.7%. The study specified no overall pass cutoff.
+
+Near-uniqueness-floor flags occurred in 13 fits, including six classified as
+recovered; two fits had a better nonconverged start, including one classified
+as recovered. These flags remain in the counts. Treat returned values from a
+nonconverged fit as diagnostic output. The covariance thresholds describe
+this study, and do not establish interval coverage or general optimizer
+reliability.
+
+Five ordinary-start unit and trait-order checks passed on a separate founder
+fixture, and one same-model independent R fit agreed with the Julia fit using
+an informed start. Each result supports its tested fixture and start policy.
+The fitted covariance still includes both the low-rank part and uniqueness:
+use the full `genetic_covariance(fit_fa)` for trait-level genetic summaries.
 
 ## Claim boundary
 
