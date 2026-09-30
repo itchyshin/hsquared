@@ -229,7 +229,7 @@ hs_formula_status_syntax <- function() {
     rep("reserved", 3L),
     "parsed",
     # cbind() multivariate is parsed; long-format cov=us/diag/lowrank stay
-    # planned; cov=fa is reserved (Julia V4-FA engine-covered, R not fitted);
+    # planned; cov=fa grammar is reserved despite the bounded R expert-control fit;
     # missing-data rows stay planned.
     "planned",
     "planned",
@@ -480,8 +480,12 @@ hs_formula_status_behavior <- function() {
       "Reserved stub for long-format factor-analytic G (Lambda Lambda' + Psi).",
       "Julia V4-FA is engine-covered (HSquared.jl 60895208 / #300). The R",
       "parser rejects trait and `cov` arguments and does not fit this form.",
-      "Not an R-public FA claim. Use cbind() unstructured or",
-      "genetic_structure = \"diagonal\". public_covered_count stays 7."
+      "A separate partial opt-in accepts complete four-trait Gaussian cbind()",
+      "with pedigree animal() and trait intercepts only, using",
+      "hs_control(engine = \"julia\", engine_control = list(target =",
+      "\"multivariate\", genetic_structure = \"factor_analytic\",",
+      "rank = 1L, julia_project = ...)). No cov = fa() grammar or covered",
+      "promotion; public_covered_count stays 7."
     ),
     paste(
       "Ratified planned missing-response control. Future behavior will keep",

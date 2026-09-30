@@ -36,7 +36,8 @@ the advanced opt-in bridge with explicit \code{target} control.}
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
-and \code{max_dense_cells}.
+\code{max_dense_cells}, \code{scale_method}, \code{genetic_structure}, \code{rank}, and
+\code{experimental_gllvm}.
 \code{julia_project} is honoured by every \code{target}; supplying a key a given
 \code{target} does not honour errors (hsquared#212) rather than being
 silently ignored. Per-target honoured keys (besides \code{julia_project}):
@@ -50,11 +51,12 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \code{iterations}.
 \item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells},
 \code{scale_method}.
-\item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method} -- \code{initial}/
-\code{iterations} are honoured on the \code{scale_method = "dense"} (default)
-route only; the opt-in \code{scale_method = "auto"} route does not yet
-forward them (HSquared.jl#343, a known remaining gap).
+\item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method}. Both the
+default dense route and the opt-in \code{scale_method = "auto"} route
+forward \code{initial} and \code{iterations} to the Julia fitter.
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
+\item \code{genetic_gllvm}: \code{iterations}, \code{genetic_structure}, \code{rank},
+\code{experimental_gllvm} (\code{initial} is not exposed on this route).
 \item \code{multivariate_repeatability}: \code{initial}, \code{iterations}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with
@@ -89,7 +91,8 @@ targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"direct_maternal"}, \code{"random_regression"}, \code{"genomic"},
 \code{"single_step"}, \code{"single_step_construct"}, \code{"metafounder"},
 \code{"metafounder_single_step"}, \code{"snp_blup"}, \code{"relmat"}, \code{"precision"},
-\code{"multivariate"}, \code{"multivariate_repeatability"}, and \code{"nongaussian"},
+\code{"multivariate"}, \code{"multivariate_repeatability"}, \code{"nongaussian"}, and
+\code{"genetic_gllvm"},
 described below. Covered opt-in
 routes (validation scale; not the default path) include \code{"two_effect"}
 (\code{common_env()}), \code{"direct_maternal"}, \code{"multi_effect"}, and
@@ -174,8 +177,7 @@ correlated \code{(x || group)} terms remain rejected. The animal-block ratio is
 narrow-sense h2; other blocks are variance-explained proportions, not
 heritabilities. \code{initial} is a plain numeric vector of length K + 1 (one
 value per block, in formula order, plus the residual); it and
-\code{iterations} are honoured on the \code{scale_method = "dense"} route (see
-\code{engine_control} above for the \code{"auto"} gap).
+\code{iterations} are forwarded on both the dense and opt-in \code{"auto"} routes.
 \code{target = "direct_maternal"} is an opt-in path for
 \code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)}. It estimates
 the correlated 2x2 direct-maternal genetic covariance and is covered at
@@ -246,14 +248,21 @@ covered at validation scale, while remaining experimental. It requires a
 surfaces the Julia-owned \code{HSquared.fit_multivariate_reml()} REML-only
 optimizer, and returns G/R covariance matrices, genetic and residual
 correlations, per-trait heritability, and cross-trait breeding values.
-Three or more traits and structured covariance are experimental. The
-reserved \code{genetic_structure} control currently accepts \code{"unstructured"} and
-\code{"diagonal"} on the R bridge. \code{"diagonal"} is the rotation-free structured
-subset: off-diagonal genetic covariances are fixed at zero. \code{"lowrank"}
-remains planned. \code{"factor_analytic"} is planned on the R surface (Julia
-\code{V4-FA} is engine-covered at HSquared.jl \code{60895208} / #300) and is not
-activated on the R bridge; not covered. The future \code{rank} control is also
-reserved and currently errors instead of being ignored.
+Three or more traits and structured covariance are experimental.
+\code{genetic_structure} accepts \code{"unstructured"}, \code{"diagonal"}, and a bounded
+\code{"factor_analytic"} opt-in. \code{"diagonal"} fixes off-diagonal genetic
+covariances at zero. FA requires exactly four complete Gaussian traits,
+pedigree \code{animal()} only, trait intercepts only, unstructured estimated
+residual covariance, and an explicit \code{engine = "julia"},
+\code{target = "multivariate"}, \code{genetic_structure = "factor_analytic"},
+\code{rank = 1L}, and \code{julia_project} path. It reports G, genetic correlations,
+and specific variances (\code{Psi}), with local-identifiability and boundary
+cautions; no loadings or covariance standard errors. \code{initial = NULL}
+uses Julia's phenotype-scale start; a supplied \code{initial} may contain only
+validated \code{G0} and \code{R0} matrices. FA \code{loadings} and \code{uniqueness} starts
+are rejected rather than silently dropped. This does not activate
+\code{cov = fa()} formula grammar, a default route, or a covered status.
+\code{"lowrank"} remains refused on this Gaussian multivariate target.
 \code{target = "multivariate_repeatability"} is the experimental
 \code{cbind(...) + permanent(1 | id)} route (hsquared#237). Naming it is
 optional: that formula auto-routes on the default path and under
@@ -265,19 +274,35 @@ It is experimental, REML-only, not covered, and does not change
 the result target is \code{multivariate_repeatability_reml}. R will not
 fall back to animal-only \code{fit_multivariate_reml}.
 
+\code{target = "genetic_gllvm"} is a bounded experimental Poisson-log route.
+It requires exactly three complete traits, one row per pedigree animal
+(including ancestors), trait intercepts, \code{REML = TRUE}, and explicit
+\code{engine = "julia"}, \code{julia_project}, \code{genetic_structure = "lowrank"},
+\code{rank = 2L}, and \code{experimental_gllvm = TRUE}. \code{iterations} controls the
+outer optimizer (default 1000). It returns link-scale G, genetic
+correlations, and trait genetic conditional modes via \code{\link[=breeding_values]{breeding_values()}}
+(also a pedigree-by-trait matrix in \code{fit$result$trait_genetic_modes}).
+Check \code{\link[=fit_diagnostics]{fit_diagnostics()}} before interpretation. Its Laplace objective
+integrates fixed effects under flat measure; it is available only in
+diagnostics, and \code{logLik()} / \code{AIC()} are unavailable. No heritability,
+posterior means, loading inference, FA uniqueness, missing records,
+Bernoulli traits, or automatic rank selection are supplied.
+
 \code{target = "nongaussian"} is an experimental, opt-in conditional GLMM for
 \code{poisson(log)} or \code{binomial(logit)} (binary 0/1 or
 \code{cbind(successes, failures)} counts) with one intercept and
 \code{animal(1 | id, pedigree = ped)}. The \code{marginal} control selects a Laplace
-marginal likelihood approximation (\code{"laplace"}, default) or a variational
-ELBO (\code{"variational"}; aliases \code{"la"}/\code{"va"}). It reports the ratified
+marginal likelihood approximation (\code{"laplace"}, default) or a hybrid
+variational-plus-Laplace objective (\code{"variational"}; aliases
+\code{"la"}/\code{"va"}). It reports the ratified
 conditional three-field contract: Poisson latent and count-scale observation
 h2; logit latent, liability, and numerically integrated observation-scale h2
 for Bernoulli or common-trial Binomial input. Varying trials return literal
 \code{NaN} with \code{"varying_trials_no_scalar_estimand"}, never a trial-count-averaged
-scalar. The ELBO is a lower bound on the marginal
-log-likelihood, so variational and Laplace \code{logLik}/\code{AIC} are \strong{not}
-comparable. This path remains experimental and not coverage-calibrated.
+scalar. The historical engine field \code{elbo} remains for compatibility; with
+integrated fixed effects this hybrid value has no general lower-bound
+guarantee. Variational and Laplace \code{logLik}/\code{AIC} are \strong{not} comparable.
+This path remains experimental and not coverage-calibrated.
 \code{initial} (hsquared#225) is a list with \code{sigma_a2}. The engine fits the
 single variance component with a \strong{bracketed} Brent search over
 \code{log(sigma_a2)} on \verb{log(initial$sigma_a2) +/- 6} -- there is no start

@@ -35,8 +35,10 @@ Description: Provides the R-facing interface for an open quantitative-genetic
     conditional three-field engine path: logit observation-scale h2 is finite
     for Bernoulli and common-trial Binomial data, while varying trial counts
     return the explicit NaN sentinel because no scalar estimand is defined;
-    no coverage-calibrated or covered claim is made; factor-analytic models
-    remain planned.
+    no coverage-calibrated or covered claim is made. A bounded four-trait,
+    rank-one factor-analytic Gaussian pedigree fit and a three-trait, rank-two
+    Poisson genetic GLLVM fit are partial expert-control routes; broader
+    models and covariance formula grammar remain planned.
 License: MIT + file LICENSE
 URL: https://itchyshin.github.io/hsquared/,
     https://github.com/itchyshin/hsquared,

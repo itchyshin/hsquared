@@ -530,7 +530,14 @@ hs_build_binomial_counts_response <- function(lhs, response) {
 }
 
 hs_validate_multivariate_trait_names <- function(trait_names) {
-  missing_names <- is.na(trait_names) | !nzchar(trait_names)
+  unicode_space <- paste0(
+    "[[:space:]",
+    intToUtf8(c(0x85, 0xA0, 0x1680, 0x2000:0x200A, 0x2028, 0x2029,
+      0x202F, 0x205F, 0x3000)),
+    "]"
+  )
+  missing_names <- is.na(trait_names) |
+    !nzchar(trimws(trait_names, whitespace = unicode_space))
   duplicate_names <- duplicated(trait_names) |
     duplicated(trait_names, fromLast = TRUE)
 
@@ -753,7 +760,7 @@ hs_validate_model_inputs <- function(
       "fit through the experimental, opt-in ",
       "`hs_control(engine = \"julia\", engine_control = list(target = ",
       "\"nongaussian\"))` path: a latent-scale GLMM (engine row V6-LAPLACE/VA, ",
-      "partial) with a Laplace marginal likelihood or variational ELBO; ",
+      "partial) with a Laplace marginal likelihood or hybrid variational-Laplace objective; ",
       "the 0.9 conditional three-field h2 contract remains experimental and ",
       "not coverage-calibrated. Use `model_spec()` ",
       "with `family = gaussian()` to inspect the contract without fitting.",
@@ -1145,10 +1152,14 @@ hs_stop_animal_covariance_arg <- function() {
     "`cbind(trait1, trait2) ~ ... + animal(1 | id, pedigree = ped)`; that ",
     "routes to the multivariate fitter on the default path, with no ",
     "`engine`/`target` argument. Long-format `cov = us()`, `cov = diag()`, ",
-    "and `cov = lowrank(K = 2)` remain planned grammar. `cov = fa(K = 2)` ",
-    "is planned R grammar for factor-analytic G. Julia V4-FA is ",
-    "engine-covered (HSquared.jl 60895208); that is not an R-public fit. ",
-    "The R formula does not parse or fit it.",
+    "and `cov = lowrank(K = 2)` remain planned grammar. `cov = fa(K = 1)` ",
+    "is also reserved and does not parse. A separate experimental FA opt-in ",
+    "accepts exactly four complete Gaussian traits, pedigree `animal()` and ",
+    "trait intercepts only: use `cbind(t1, t2, t3, t4) ~ ",
+    "animal(1 | id, pedigree = ped)` with `hs_control(engine = \"julia\", ",
+    "engine_control = list(target = \"multivariate\", genetic_structure = ",
+    "\"factor_analytic\", rank = 1L, julia_project = ",
+    "\"/path/to/HSquared.jl\"))`.",
     call. = FALSE
   )
 }

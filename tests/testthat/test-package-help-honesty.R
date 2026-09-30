@@ -21,7 +21,7 @@ test_that("package Rd does not keep Phase-0 planned-interface or fitting-waits c
   expect_match(text, "R-facing interface")
   expect_match(text, "non-Gaussian")
   expect_match(text, "opt-in")
-  expect_match(text, "planned, not fitted, on the\\s+R formula")
+  expect_match(text, "formula grammar stays planned")
   expect_no_match(text, "factor-analytic models remain planned")
 })
 

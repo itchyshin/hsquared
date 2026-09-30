@@ -522,6 +522,23 @@ test_that("live R<->engine parity: direct_maternal fit returns converged result"
     )
   )
 
+  # The Julia bridge follows the frozen correlated-result slot: one record,
+  # one shared ID vector, and separate direct / partner effect vectors.
+  expect_equal(
+    JuliaCall::julia_eval("length(hsq_res_dm.random_effects)"),
+    1L
+  )
+  expect_equal(
+    JuliaCall::julia_eval("string(hsq_res_dm.random_effects[1].name)"),
+    "maternal"
+  )
+  expect_setequal(
+    JuliaCall::julia_eval(
+      "string.(collect(propertynames(hsq_res_dm.random_effects[1])))"
+    ),
+    c("name", "ids", "direct", "partner")
+  )
+
   # Shape checks: the fit must be an hsquared_fit with the right structure
   expect_s3_class(fit_dm, "hsquared_fit")
   expect_equal(fit_dm$spec$target, "direct_maternal")

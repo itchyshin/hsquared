@@ -11,13 +11,13 @@ order — not the release schedule. See
 [`docs/dev-log/decisions.md`](docs/dev-log/decisions.md) ("2026-07-11: Release
 Model").
 
-> **Current record (2026-09-11):** the isolated twins carry an experimental
-> **0.9.0 release** after the ratified three-field contract and
-> retained H0/H1/H3 evidence. `public_covered_count` remains **7**; no
-> capability flips are implied. The release is not production. CRAN submission,
-> acceptance, and public availability are separate states. A frozen-artifact
-> gate, external platform evidence, and an independent artifact audit govern
-> the submitted artifact.
+> **Current record (2026-09-27):** experimental **0.9.0 was submitted to CRAN
+> on 2026-09-26**. The submitted frozen tarball SHA-256 is
+> `0f94dce39676db1df75ca0d13f00f588b991ed315c7b45408f3626c0d409946a`;
+> CRAN acceptance and public availability remain separate, pending states.
+> `public_covered_count` remains **7**; submission implies no capability flip.
+> The package remains experimental. No 1.0 milestone or further release action
+> is authorized by this status update.
 
 - **First registration is `0.5.0`, not `1.0`**, shipped with a prominent
   **experimental** label — mirroring the sibling packages (drmTMB, gllvmTMB) and
@@ -165,15 +165,22 @@ twin adds committed recovery/comparator evidence. See
 
 ## Phase 4: Factor-Analytic G Matrices
 
-Status: partial (diagonal) / planned (lowrank, fa) at the R public layer. HSquared.jl has engine-side V4-FA validation evidence, but R has no activated FA grammar or bridge. The R phase remains gated on a rotation-invariant payload contract, R activation, same-estimand comparator evidence, and declared calibration/recovery evidence. The R-side expert-control
-contract for the first structured multivariate bridge is recorded in
+Status: partial at the R public layer for diagonal G and a bounded four-trait,
+rank-one Gaussian pedigree FA expert-control fit. The FA cell requires complete
+responses, trait intercepts, and estimated unstructured residual covariance.
+Its live same-input R–Julia parity passed for G, R, uniqueness, correlations,
+h², fixed effects, EBVs, and logLik (`test-fa-optin.R`, 49 focused assertions).
+The engine's V4-FA evidence remains limited: broad calibration passed 8 of 10
+scenarios, and an independently fitted same-model Gaussian FA/REML comparator
+is owed. Fixed rank alone does not identify uniqueness at every loading
+pattern. The route is experimental/partial; `public_covered_count` stays 7.
+The R-side expert-control contract is in
 [`docs/design/18-structured-covariance-r-control.md`](docs/design/18-structured-covariance-r-control.md).
-It keeps the current `cbind(...)` response grammar. The rotation-free
-`engine_control$genetic_structure = "diagonal"` control is now R-surfaced
-(experimental/partial), with `covariance_structure_lrt()` fixture-verified
-against the twin `structured_covariance_parity` target (live fit skip-guarded).
-`lowrank`/`fa` structured fits stay gated on a validated rotation convention.
-
+The formula grammar remains closed (`cov = fa(K)` is not parsed or fitted),
+and low-rank G remains rejected at the R bridge. Structured covariance standard
+errors and raw-loading inference are withheld. An automatic-rank option is a
+separate usability follow-on that needs pedigree-specific rank recovery and
+failure reporting.
 - `cov = diag()`.
 - `cov = lowrank(K)`.
 - `cov = fa(K)`.
@@ -208,11 +215,24 @@ workflows and external same-estimand comparator validation remain planned.
 
 ## Phase 6: Non-Gaussian And GLLVM Animal Models
 
-Status: partial for simple non-Gaussian animal models, planned for GLLVM/omics.
+Status: partial for simple non-Gaussian animal models and one bounded genetic
+GLLVM opt-in; broader GLLVM/omics remains planned.
+
+- The explicit `target = "genetic_gllvm"` route fits one Poisson-log cell:
+  three complete balanced traits, two pure-low-rank genetic factors, a known
+  pedigree, and trait intercepts. It returns genetic covariance/correlations
+  and `q × T` trait genetic conditional modes on the link scale. A live
+  12-animal reversed-row R fit matched a direct same-input Julia refit to
+  `1e-8` for those outputs, fixed effects, and the integrated objective.
+  This is dense, experimental, and partial. The objective integrates fixed
+  effects under flat measure as well as genetic effects; generic non-Gaussian
+  `logLik` and AIC are withheld. Automatic rank selection, response-scale h²,
+  loading inference, missing records, Bernoulli, non-Gaussian uniqueness,
+  same-objective external comparator, and broad recovery remain open.
 
 - Poisson(log) and binomial(logit) animal-model fits are surfaced
   experimentally through the Julia-owned Laplace marginal-likelihood or
-  variational-ELBO path (`target = "nongaussian"`), with one intercept and
+  variational-plus-Laplace path (`target = "nongaussian"`), with one intercept and
   animal effect. The ratified conditional three-field output supplies Poisson
   latent/count-scale observation h2 and Binomial-logit latent/liability h2.
   Its logit observation-scale h2 is finite for Bernoulli and common-trial

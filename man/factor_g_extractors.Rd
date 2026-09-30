@@ -19,17 +19,16 @@ latent_breeding_values(object, ...)
 \item{...}{Reserved for future arguments.}
 }
 \value{
-These reserved extractors currently error for \code{hsquared_fit} objects.
+\code{specific_variance()} returns named \code{Psi} for the bounded FA fit;
+the other factor extractors error for \code{hsquared_fit} objects.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \details{
-These extractor names are reserved for future factor-analytic G-matrix
-results. The current package can report invariant covariance and correlation
-matrices from multivariate fits, but it does not yet expose
-interpreted loadings, uniqueness/specific variance, or latent breeding
-values. Loading columns (\code{genetic_loadings()}) and latent breeding values
+The bounded four-trait rank-one factor-analytic opt-in reports G, genetic
+correlations, and \code{specific_variance()} (\code{Psi}). Loading columns
+(\code{genetic_loadings()}) and latent breeding values
 (\code{latent_breeding_values()}) are rotation-nonunique until a rotation or
 constraint policy is validated. Future \code{hsquared_fit} methods reserve
 \code{effect} and rotation controls, but these controls currently error rather
@@ -37,14 +36,10 @@ than implying that loading axes are interpretable. The \strong{rotation-invarian
 genetic eigenstructure and evolvability geometry are available now via
 \code{\link[=eigen_G]{eigen_G()}} and the \link{g_matrix_geometry} family.
 
-\code{specific_variance()} (\code{Psi}, the factor-analytic specific/unique
-variances) is a \strong{different case}: for \verb{G = Lambda Lambda' + Psi},
-rotating \verb{Lambda -> Lambda Q} with \verb{QQ' = I} leaves \verb{Lambda Q Q' Lambda' = Lambda Lambda'} unchanged, so \code{Psi} is rotation-\strong{invariant} and
-identified, not rotation-nonunique. The engine payload for structured
-multivariate fits carries \code{Psi} as \code{genetic_uniqueness}, explicitly marked
-identified, alongside the excluded, rotation-nonidentified loadings. This
-extractor still errors on the R surface, but for a different reason:
-\code{genetic_structure = "factor_analytic"} (and \code{"lowrank"}) are planned on
-the R surface and are not yet activated on the R-to-Julia bridge, not
-because \code{Psi} is unidentified.
+For \verb{G = Lambda Lambda' + diag(Psi)}, rotating \code{Lambda} leaves \code{Psi}
+unchanged. The four-trait rank-one FA parameterization is locally
+identifiable up to a sign change only with a regular, sufficiently nonzero
+loading pattern. Sparse or weak loadings and boundary fits can leave \code{Psi}
+poorly identified. \code{specific_variance()}
+returns the named \code{Psi} vector for this opt-in fit and errors for other fits.
 }

@@ -50,7 +50,7 @@ test_that("SG2: matrix_free target is engine-only named abort (D2)", {
   }
 })
 
-test_that("D1: factor_analytic and lowrank stay named planned errors", {
+test_that("D1: unranked FA and lowrank stay named errors", {
   for (gs in c("factor_analytic", "lowrank")) {
     err <- tryCatch(
       hsquared:::hs_validate_genetic_structure_control(
@@ -69,7 +69,7 @@ test_that("D1: factor_analytic and lowrank stay named planned errors", {
     msg <- conditionMessage(err)
     if (identical(gs, "factor_analytic")) {
       expect_match(msg, "factor_analytic", fixed = TRUE)
-      expect_match(msg, "not an R-public factor-analytic fit", fixed = TRUE)
+      expect_match(msg, "rank = 1", fixed = TRUE)
     } else {
       expect_match(msg, "lowrank", fixed = TRUE)
       expect_match(msg, "planned", fixed = TRUE)

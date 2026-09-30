@@ -59,6 +59,9 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' fit and names the implemented accessor. Use [rr_heritability()] for the
 #' `h2(t)` curve.
 #'
+#' The bounded genetic GLLVM route does not define heritability; this
+#' extractor errors because its G and trait genetic modes are on the link scale.
+#'
 #' A non-converged fit still returns the engine number so you can inspect it,
 #' but **warns**: that number is not an estimate. A near-zero value from a
 #' failed fit is not evidence that heritability is zero. Use
@@ -84,6 +87,9 @@ heritability.default <- function(object, ...) {
 
 #' @export
 heritability.hsquared_fit <- function(object, ...) {
+  if (identical(object$spec$target, "genetic_gllvm")) {
+    stop("Heritability is not defined by this genetic GLLVM route. G and trait genetic conditional modes are on the link scale; no response-scale heritability is supplied.", call. = FALSE)
+  }
   hs_warn_if_unusable_fit(object)
   # Willham fence for the direct-maternal correlated model: heritability() on
   # a direct_maternal fit returns the LABELLED TRIPLE -- direct h2_d, maternal
@@ -480,11 +486,9 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' These extractor names are reserved for future factor-analytic G-matrix
-#' results. The current package can report invariant covariance and correlation
-#' matrices from multivariate fits, but it does not yet expose
-#' interpreted loadings, uniqueness/specific variance, or latent breeding
-#' values. Loading columns (`genetic_loadings()`) and latent breeding values
+#' The bounded four-trait rank-one factor-analytic opt-in reports G, genetic
+#' correlations, and `specific_variance()` (`Psi`). Loading columns
+#' (`genetic_loadings()`) and latent breeding values
 #' (`latent_breeding_values()`) are rotation-nonunique until a rotation or
 #' constraint policy is validated. Future `hsquared_fit` methods reserve
 #' `effect` and rotation controls, but these controls currently error rather
@@ -492,21 +496,17 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #' genetic eigenstructure and evolvability geometry are available now via
 #' [eigen_G()] and the [g_matrix_geometry] family.
 #'
-#' `specific_variance()` (`Psi`, the factor-analytic specific/unique
-#' variances) is a **different case**: for `G = Lambda Lambda' + Psi`,
-#' rotating `Lambda -> Lambda Q` with `QQ' = I` leaves `Lambda Q Q' Lambda' =
-#' Lambda Lambda'` unchanged, so `Psi` is rotation-**invariant** and
-#' identified, not rotation-nonunique. The engine payload for structured
-#' multivariate fits carries `Psi` as `genetic_uniqueness`, explicitly marked
-#' identified, alongside the excluded, rotation-nonidentified loadings. This
-#' extractor still errors on the R surface, but for a different reason:
-#' `genetic_structure = "factor_analytic"` (and `"lowrank"`) are planned on
-#' the R surface and are not yet activated on the R-to-Julia bridge, not
-#' because `Psi` is unidentified.
+#' For `G = Lambda Lambda' + diag(Psi)`, rotating `Lambda` leaves `Psi`
+#' unchanged. The four-trait rank-one FA parameterization is locally
+#' identifiable up to a sign change only with a regular, sufficiently nonzero
+#' loading pattern. Sparse or weak loadings and boundary fits can leave `Psi`
+#' poorly identified. `specific_variance()`
+#' returns the named `Psi` vector for this opt-in fit and errors for other fits.
 #'
 #' @inheritParams variance_components
 #'
-#' @return These reserved extractors currently error for `hsquared_fit` objects.
+#' @return `specific_variance()` returns named `Psi` for the bounded FA fit;
+#'   the other factor extractors error for `hsquared_fit` objects.
 #' @name factor_g_extractors
 NULL
 
@@ -549,6 +549,13 @@ specific_variance.default <- function(object, ...) {
 
 #' @export
 specific_variance.hsquared_fit <- function(object, effect = "animal", ...) {
+  if (!identical(effect, "animal")) {
+    stop("`specific_variance()` currently supports only `effect = \"animal\"`.", call. = FALSE)
+  }
+  if (identical(object$result$genetic_structure, "factor_analytic") &&
+      !is.null(object$result$genetic_uniqueness)) {
+    return(object$result$genetic_uniqueness)
+  }
   hs_factor_g_extractor_planned(
     "specific_variance",
     "factor-analytic G-matrix uniqueness / specific variance",
@@ -636,16 +643,9 @@ hs_factor_g_extractor_planned <- function(
     stop(
       "`",
       name,
-      "()` for ",
-      quantity,
-      " is planned, not implemented for `hsquared_fit` objects. Unlike ",
-      "loading axes, `Psi` is rotation-INVARIANT and identified (for ",
-      "`G = Lambda Lambda' + Psi`, rotating `Lambda -> Lambda Q` leaves ",
-      "`Psi` unchanged). It is withheld because `genetic_structure = ",
-      "\"factor_analytic\"` (and `\"lowrank\"`) are planned on the R surface ",
-      "and not yet activated on the R-to-Julia bridge, not because `Psi` is ",
-      "unidentified. Current multivariate fits report invariant ",
-      "`genetic_covariance()` and `genetic_correlation()`.",
+      "()` for ", quantity,
+      " requires a fitted rank-one `factor_analytic` G object with reported ",
+      "`Psi`; it is unavailable for this fit. Loadings remain unreported.",
       call. = FALSE
     )
   }
@@ -1662,6 +1662,28 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     "search_boundary_condition"
   )
   extras <- diagnostics[setdiff(diagnostic_names, already_reported)]
+  fa_starts <- diagnostics$fa_start_starts
+  if (is.data.frame(fa_starts)) {
+    extras$fa_start_starts <- if (nrow(fa_starts) == 0L) {
+      NA_character_
+    } else {
+      start_rows <- vapply(seq_len(nrow(fa_starts)), function(i) {
+        paste0(
+          fa_starts$name[[i]],
+          "{valid=", hs_diagnostic_value(fa_starts$valid[[i]]),
+          ", converged=", hs_diagnostic_value(fa_starts$converged[[i]]),
+          ", iterations=", hs_diagnostic_value(fa_starts$iterations[[i]]),
+          ", loglik=", hs_diagnostic_value(fa_starts$loglik[[i]]),
+          ", minimum_uniqueness=",
+          hs_diagnostic_value(fa_starts$minimum_uniqueness[[i]]),
+          ", floor_distance=",
+          hs_diagnostic_value(fa_starts$uniqueness_floor_distance[[i]]),
+          "}"
+        )
+      }, character(1))
+      paste(start_rows, collapse = "; ")
+    }
+  }
   rows <- c(base, extras)
   rows <- rows[!vapply(rows, is.null, logical(1))]
 
@@ -2099,10 +2121,20 @@ ranef.hsquared_fit <- function(object, ...) {
 
 #' @export
 logLik.hsquared_fit <- function(object, ...) {
+  if (identical(object$spec$target, "genetic_gllvm")) {
+    stop("The genetic GLLVM Laplace objective integrates fixed effects under flat measure and is not ordinary non-Gaussian ML. Inspect fit_diagnostics(); logLik() and AIC() are unavailable.", call. = FALSE)
+  }
   if (identical(object$result$converged, FALSE)) {
     stop(
       "Log-likelihood is unavailable because this `hsquared_fit` object did ",
       "not converge.",
+      call. = FALSE
+    )
+  }
+  if (isTRUE(object$result$diagnostics$loglik_stochastic)) {
+    stop(
+      "Log-likelihood is a stochastic approximation for this fit. Inspect ",
+      "fit_diagnostics(); logLik() and AIC() are unavailable.",
       call. = FALSE
     )
   }
@@ -2111,12 +2143,64 @@ logLik.hsquared_fit <- function(object, ...) {
   class(out) <- "logLik"
   attr(out, "df") <- object$result$df %||% NA_integer_
   attr(out, "nobs") <- object$result$nobs %||% length(object$payload$y)
+  if (!is.null(object$result$diagnostics$loglik_convention)) {
+    attr(out, "loglik_convention") <-
+      object$result$diagnostics$loglik_convention
+  }
   out
 }
 
 #' @export
 AIC.hsquared_fit <- function(object, ..., k = 2) {
-  stats::AIC(stats::logLik(object), ..., k = k)
+  others <- list(...)
+  fits <- c(list(object), others)
+  if (length(others) > 0L &&
+      !all(vapply(others, inherits, logical(1), "hsquared_fit"))) {
+    stop(
+      "AIC comparison through `hsquared_fit` requires every model to be an ",
+      "`hsquared_fit` object with a checked likelihood convention.",
+      call. = FALSE
+    )
+  }
+  likelihoods <- lapply(fits, stats::logLik)
+  for (fit in fits) {
+    if (identical(fit$result$diagnostics$loglik_comparable_across_routes,
+                  FALSE)) {
+      stop(
+        "AIC is unavailable for this fit: its log-likelihood convention is ",
+        "not comparable across routes. Inspect fit_diagnostics() for the ",
+        "constant and method.",
+        call. = FALSE
+      )
+    }
+  }
+  if (length(fits) > 1L) {
+    reference <- fits[[1L]]
+    same_contract <- vapply(fits[-1L], function(fit) {
+      identical(fit$result$diagnostics$method,
+                reference$result$diagnostics$method) &&
+        identical(fit$result$diagnostics$loglik_convention,
+                  reference$result$diagnostics$loglik_convention) &&
+        identical(fit$spec$family, reference$spec$family) &&
+        identical(fit$payload$y, reference$payload$y) &&
+        identical(fit$payload$X, reference$payload$X)
+    }, logical(1))
+    if (!all(same_contract)) {
+      stop(
+        "AIC comparison requires matching data, fixed-effect design, ",
+        "family, method, and likelihood convention.",
+        call. = FALSE
+      )
+    }
+    df <- vapply(likelihoods, function(ll) attr(ll, "df"), numeric(1))
+    value <- vapply(likelihoods, as.numeric, numeric(1))
+    return(data.frame(
+      df = df,
+      AIC = -2 * value + k * df,
+      row.names = paste0("model", seq_along(fits))
+    ))
+  }
+  stats::AIC(likelihoods[[1L]], k = k)
 }
 
 #' Block unsupported likelihood-inference helpers

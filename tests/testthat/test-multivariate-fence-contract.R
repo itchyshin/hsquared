@@ -1,6 +1,6 @@
 # A28 remainder — enforce doc-38 §H fences on claim + parser surfaces.
 # No covered flip. Option (a): k >= 3 stays parseable-and-fittable-but-experimental.
-# diagonal stays experimental; lowrank / factor_analytic stay aborted.
+# diagonal stays experimental; lowrank stays aborted. FA has a bounded opt-in.
 
 test_that("k >= 3 cbind remains parseable (doc-38 §H.1 option a)", {
   ped <- data.frame(
@@ -29,7 +29,7 @@ test_that("k >= 3 cbind remains parseable (doc-38 §H.1 option a)", {
   expect_match(spec$bridge$target, "fit_multivariate_reml", fixed = TRUE)
 })
 
-test_that("diagonal is accepted; lowrank/FA stay aborted (doc-38 §H.4)", {
+test_that("diagonal is accepted; lowrank stays aborted (doc-38 §H.4)", {
   expect_identical(
     hsquared:::hs_validate_genetic_structure_control(
       hs_control(
@@ -43,22 +43,18 @@ test_that("diagonal is accepted; lowrank/FA stay aborted (doc-38 §H.4)", {
     ),
     "diagonal"
   )
-  for (gs in c("lowrank", "factor_analytic")) {
-    expect_error(
-      hsquared:::hs_validate_genetic_structure_control(
-        hs_control(
-          engine = "julia",
-          engine_control = list(
-            target = "multivariate",
-            genetic_structure = gs
-          )
-        ),
-        "multivariate"
-      ),
-      "not activated on the R bridge",
-      fixed = TRUE
-    )
-  }
+  expect_error(
+    hsquared:::hs_validate_genetic_structure_control(
+      hs_control(
+        engine = "julia",
+        engine_control = list(
+          target = "multivariate", genetic_structure = "lowrank"
+        )
+      ), "multivariate"
+    ),
+    "not activated on the R bridge",
+    fixed = TRUE
+  )
 })
 
 test_that("claim surfaces pin k=2 scope and diagonal experimental fences", {

@@ -58,6 +58,16 @@ test_that("multivariate cbind response requires unique non-empty trait names", {
     "empty or missing names",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_validate_multivariate_trait_names(c("y1", "   ")),
+    "empty or missing names",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_validate_multivariate_trait_names(c("y1", intToUtf8(0xA0))),
+    "empty or missing names",
+    fixed = TRUE
+  )
 })
 
 test_that("multivariate parser rejects fixed-effect NA and rank-deficient X", {
@@ -267,50 +277,19 @@ test_that("multivariate genetic_structure control is fenced", {
     ),
     "diagonal"
   )
-  # "lowrank" / "factor_analytic" stay rejected; FA names the engine-covered
-  # twin without becoming an R-public fit.
-  for (gs in c("lowrank", "factor_analytic")) {
-    expect_error(
-      hsquared:::hs_validate_genetic_structure_control(
-        hs_control(
-          engine = "julia",
-          engine_control = list(
-            target = "multivariate",
-            genetic_structure = gs
-          )
-        ),
-        "multivariate"
-      ),
-      "not activated on the R bridge",
-      fixed = TRUE
-    )
-  }
+  # Lowrank remains closed. FA has a separate four-trait rank-one opt-in test.
   expect_error(
     hsquared:::hs_validate_genetic_structure_control(
       hs_control(
         engine = "julia",
         engine_control = list(
           target = "multivariate",
-          genetic_structure = "factor_analytic"
+          genetic_structure = "lowrank"
         )
       ),
       "multivariate"
     ),
-    "60895208",
-    fixed = TRUE
-  )
-  expect_error(
-    hsquared:::hs_validate_genetic_structure_control(
-      hs_control(
-        engine = "julia",
-        engine_control = list(
-          target = "multivariate",
-          genetic_structure = "factor_analytic"
-        )
-      ),
-      "multivariate"
-    ),
-    "planned on the R surface",
+    "not activated on the R bridge",
     fixed = TRUE
   )
   expect_error(
@@ -341,7 +320,7 @@ test_that("multivariate genetic_structure control is fenced", {
         )
       )
     ),
-    "reserved for future `lowrank` and `factor_analytic`",
+    "only used with the bounded",
     fixed = TRUE
   )
 })
@@ -382,11 +361,13 @@ test_that("multivariate result normalizer exposes G, R, h2, and cross-trait EBVs
       trait_names = c("y1", "y2")
     )
   )
+  G <- matrix(c(1.0, 0.2, 0.2, 1.5), 2)
+  R <- matrix(c(2.0, 0.1, 0.1, 2.5), 2)
   raw <- list(
-    genetic_covariance = matrix(c(1.0, 0.2, 0.2, 1.5), 2),
-    residual_covariance = matrix(c(2.0, 0.1, 0.1, 2.5), 2),
-    genetic_correlation = matrix(c(1.0, 0.1633, 0.1633, 1.0), 2),
-    residual_correlation = matrix(c(1.0, 0.0447, 0.0447, 1.0), 2),
+    genetic_covariance = G,
+    residual_covariance = R,
+    genetic_correlation = stats::cov2cor(G),
+    residual_correlation = stats::cov2cor(R),
     heritability = c(1 / 3, 1.5 / 4),
     beta = matrix(c(1, 0.5, 2, 0.7), nrow = 2),
     breeding_ids = payload$ids,

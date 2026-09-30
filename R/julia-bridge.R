@@ -552,7 +552,7 @@ hs_nongaussian_family_symbol <- function(family, n_trials = NULL) {
 
 # Resolve the non-Gaussian marginal-method name to the engine's canonical symbol.
 # "laplace" (the Laplace approximation; default) and "variational" (the
-# variational/ELBO marginal) are accepted, with the DRM-style short spellings
+# hybrid variational-plus-Laplace objective) are accepted, with the DRM-style short spellings
 # "la"/"va" as aliases (the engine itself accepts :laplace/:LA and
 # :variational/:VA). Both objectives are engine-validated (row V6-LAPLACE/VA).
 hs_validate_marginal_method <- function(marginal) {
@@ -570,7 +570,7 @@ hs_validate_marginal_method <- function(marginal) {
   if (is.null(canon)) {
     stop(
       "`engine_control$marginal` must be \"laplace\" (Laplace approximation) or ",
-      "\"variational\" (variational/ELBO; aliases \"la\"/\"va\"); got `",
+      "\"variational\" (variational-plus-Laplace; aliases \"la\"/\"va\"); got `",
       as.character(marginal),
       "`.",
       call. = FALSE
@@ -585,7 +585,7 @@ hs_validate_marginal_method <- function(marginal) {
 # latent, liability, and observation h2, while heterogeneous trial vectors retain
 # the explicit non-scalar observation-scale sentinel.  The Laplace
 # objective is a marginal likelihood approximation; the variational objective
-# is an ELBO, not a REML or AI-REML claim.
+# is a hybrid variational-plus-Laplace objective, not a REML or AI-REML claim.
 hs_fit_julia_nongaussian_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -659,11 +659,7 @@ hs_fit_julia_nongaussian_payload <- function(
   raw <- JuliaCall::julia_eval("hsq_ng_raw")
   result <- hs_normalize_nongaussian_three_field_v09(raw, payload)
   # The engine echoes the canonical marginal objective it actually ran.
-  method_label <- if (identical(result$marginal_method, "variational")) {
-    "Variational ELBO"
-  } else {
-    "Laplace marginal likelihood"
-  }
+  method_label <- hs_ng09_method_label(result$marginal_method)
   hs_new_fit(
     spec = list(
       method = method_label,
@@ -713,18 +709,18 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
     diagnostics = list(
       target = "nongaussian",
       variance_components = if (identical(method, "variational")) {
-        "estimated_variational_reml"
+        "estimated_variational_laplace"
       } else {
-        "estimated_laplace_reml"
+        "estimated_laplace_marginal"
       },
       engine_family = family,
       marginal_method = method,
       latent_scale = TRUE,
       # The Laplace marginal reports the Laplace-approximate marginal loglik; the
-      # variational marginal reports the ELBO (a LOWER BOUND on log p(y)), so
-      # logLik/AIC are NOT comparable across the two marginals.
+      # variational path reports a hybrid objective with no general lower-bound
+      # guarantee after fixed-effect integration; logLik/AIC are not comparable.
       loglik_kind = if (identical(method, "variational")) {
-        "elbo (variational lower bound)"
+        "hybrid variational-Laplace objective"
       } else {
         "laplace marginal loglik"
       },
@@ -741,7 +737,7 @@ hs_normalize_nongaussian_result <- function(raw, payload) {
   if (converged) {
     result$loglik <- as.numeric(raw$loglik)
     # The objective value: the Laplace-approximate marginal log-likelihood for
-    # `marginal = "laplace"`, or the ELBO (a lower bound) for `"variational"` --
+    # `marginal = "laplace"`, or a hybrid variational-Laplace value for `"variational"` --
     # see diagnostics$loglik_kind; the two are not comparable across marginals.
     result$loglik_kind <- result$diagnostics$loglik_kind
     # df = fixed effects + the single additive-genetic variance component.
@@ -854,9 +850,16 @@ hs_ng09_intercept <- function(raw) {
 
 hs_ng09_loglik_kind <- function(method) {
   if (identical(method, "variational")) {
-    return("elbo (variational lower bound)")
+    return("hybrid variational-Laplace objective")
   }
   "laplace marginal loglik"
+}
+
+hs_ng09_method_label <- function(method) {
+  if (identical(method, "variational")) {
+    return("Hybrid variational-Laplace objective")
+  }
+  "Laplace marginal likelihood"
 }
 
 hs_ng09_breeding_values <- function(raw) {
@@ -2075,21 +2078,28 @@ hs_fit_julia_direct_maternal_payload <- function(
     "\"correlation\"      => Float64(hsq_fit_dm.genetic_correlation),",
     "\"residual\"         => Float64(hsq_res_dm.variance_components.residual),",
     "\"loglik\"           => Float64(hsq_res_dm.loglik),",
-    "\"converged\"        => hsq_res_dm.converged)",
+    "\"converged\"        => hsq_res_dm.converged,",
+    "\"df\"               => Int(hsq_res_dm.df),",
+    "\"nobs\"             => Int(hsq_res_dm.nobs),",
+    "\"method\"           => string(hsq_res_dm.diagnostics.method),",
+    "\"optimizer_status\" => hsq_res_dm.diagnostics.optimizer_status,",
+    "\"loglik_convention\" => string(hsq_res_dm.diagnostics.loglik_convention),",
+    "\"loglik_full_constant_offset\" => Float64(hsq_res_dm.diagnostics.loglik_full_constant_offset),",
+    "\"loglik_comparable_across_routes\" => hsq_res_dm.diagnostics.loglik_comparable_across_routes,",
+    "\"loglik_stochastic\" => hsq_res_dm.diagnostics.loglik_stochastic)",
     "end"
   ))
-  # BLUPs: direct (animal) and maternal (dam) effects, pulled per-block.
+  # The frozen correlated result shape is one paired record with a shared ID
+  # order and `direct` / `partner` vectors.
   direct_ids <- JuliaCall::julia_eval(
     "string.(collect(hsq_res_dm.random_effects[1].ids))"
   )
   direct_vals <- JuliaCall::julia_eval(
-    "collect(Float64, hsq_res_dm.random_effects[1].values)"
+    "collect(Float64, hsq_res_dm.random_effects[1].direct)"
   )
-  maternal_ids <- JuliaCall::julia_eval(
-    "string.(collect(hsq_res_dm.random_effects[2].ids))"
-  )
+  maternal_ids <- direct_ids
   maternal_vals <- JuliaCall::julia_eval(
-    "collect(Float64, hsq_res_dm.random_effects[2].values)"
+    "collect(Float64, hsq_res_dm.random_effects[1].partner)"
   )
   beta <- JuliaCall::julia_eval("collect(Float64, hsq_fit_dm.beta)")
 
@@ -2115,6 +2125,158 @@ hs_fit_julia_direct_maternal_payload <- function(
   )
 }
 
+hs_validate_v2_result_metadata <- function(raw, payload, expected_df, target) {
+  scalar_integer <- function(name, expected) {
+    value <- raw[[name]]
+    if (
+      !is.numeric(value) ||
+        length(value) != 1L ||
+        is.na(value) ||
+        !is.finite(value) ||
+        value != floor(value) ||
+        value != expected
+    ) {
+      stop(
+        "Julia `",
+        target,
+        "` result has invalid `",
+        name,
+        "`.",
+        call. = FALSE
+      )
+    }
+    as.integer(value)
+  }
+  df <- scalar_integer("df", expected_df)
+  nobs <- scalar_integer("nobs", length(payload$y))
+  method <- raw$method
+  if (
+    !is.character(method) ||
+      length(method) != 1L ||
+      is.na(method) ||
+      !identical(method, "REML")
+  ) {
+    stop("Julia `", target, "` result has invalid `method`.", call. = FALSE)
+  }
+  optimizer_status <- raw$optimizer_status
+  expected_status <- if (isTRUE(raw$converged)) "converged" else "not_converged"
+  if (
+    !is.character(optimizer_status) ||
+      length(optimizer_status) != 1L ||
+      is.na(optimizer_status) ||
+      !identical(optimizer_status, expected_status)
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result has invalid `optimizer_status`.",
+      call. = FALSE
+    )
+  }
+  convention <- raw$loglik_convention
+  if (
+    !is.character(convention) ||
+      length(convention) != 1L ||
+      is.na(convention) ||
+      !convention %in% c("reml_omit_2pi", "reml_full_constant")
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result has invalid `loglik_convention`.",
+      call. = FALSE
+    )
+  }
+  offset <- raw$loglik_full_constant_offset
+  if (
+    !is.numeric(offset) ||
+      length(offset) != 1L ||
+      is.na(offset) ||
+      !is.finite(offset)
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result has invalid `loglik_full_constant_offset`.",
+      call. = FALSE
+    )
+  }
+  expected_offset <- if (identical(convention, "reml_omit_2pi")) {
+    -(nobs - ncol(payload$X)) * log(2 * pi) / 2
+  } else {
+    0
+  }
+  if (
+    !isTRUE(all.equal(as.numeric(offset), expected_offset, tolerance = 1e-10))
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result has invalid `loglik_full_constant_offset`.",
+      call. = FALSE
+    )
+  }
+  comparable <- raw$loglik_comparable_across_routes
+  stochastic <- raw$loglik_stochastic
+  if (
+    !is.logical(comparable) || length(comparable) != 1L || is.na(comparable)
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result has invalid `loglik_comparable_across_routes`.",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.logical(stochastic) || length(stochastic) != 1L || is.na(stochastic)
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result has invalid `loglik_stochastic`.",
+      call. = FALSE
+    )
+  }
+  if (
+    comparable && (stochastic || !identical(convention, "reml_full_constant"))
+  ) {
+    stop(
+      "Julia `",
+      target,
+      "` result claims incomparable log-likelihood values are comparable.",
+      call. = FALSE
+    )
+  }
+  diagnostics <- list(
+    method = method,
+    optimizer_status = optimizer_status,
+    loglik_convention = convention,
+    loglik_full_constant_offset = as.numeric(offset),
+    loglik_comparable_across_routes = comparable,
+    loglik_stochastic = stochastic
+  )
+  if (stochastic) {
+    mcse <- raw$loglik_mcse
+    if (
+      !is.numeric(mcse) ||
+        length(mcse) != 1L ||
+        is.na(mcse) ||
+        !is.finite(mcse) ||
+        mcse < 0
+    ) {
+      stop(
+        "Julia `",
+        target,
+        "` stochastic result has invalid `loglik_mcse`.",
+        call. = FALSE
+      )
+    }
+    diagnostics$loglik_mcse <- as.numeric(mcse)
+  }
+  list(df = df, nobs = nobs, diagnostics = diagnostics)
+}
+
 hs_normalize_direct_maternal_result <- function(
   raw,
   direct_ids,
@@ -2136,6 +2298,12 @@ hs_normalize_direct_maternal_result <- function(
   sigma_e2 <- as.numeric(raw$residual)
   r_am <- as.numeric(raw$correlation)
   converged <- isTRUE(raw$converged)
+  metadata <- hs_validate_v2_result_metadata(
+    raw,
+    payload,
+    expected_df = ncol(payload$X) + 4L,
+    target = "direct_maternal"
+  )
 
   sigma_P <- sigma_ad + sigma_am + sigma_dm + sigma_e2
   # Direct narrow-sense heritability: h2_d = sigma_ad / sigma_P
@@ -2194,26 +2362,30 @@ hs_normalize_direct_maternal_result <- function(
     maternal_effects = maternal_bv,
     fixed_effects = fe,
     loglik = if (converged) as.numeric(raw$loglik) else NA_real_,
-    nobs = length(payload$y),
+    df = metadata$df,
+    nobs = metadata$nobs,
     converged = converged,
-    diagnostics = list(
-      target = "direct_maternal",
-      variance_components = "estimated_direct_maternal_reml",
-      optimizer_status = if (converged) "converged" else "not_converged",
-      conditioning_caveat = paste(
-        "Experimental direct-maternal 2x2 G_dm REML estimator (Phase 4).",
-        "Asymptotic delta-method intervals are NOT coverage-calibrated.",
-        "A negative genetic correlation (r_am) is real and expected in many",
-        "livestock traits (antagonistic direct-maternal covariance;",
-        "Willham 1963, 1972). Identifiability requires multiple offspring per dam",
-        "with sires recorded; shallow pedigrees produce boundary G_dm.",
-        "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
-        "h2 is denominator-dependent under maternal effects. ASReml/BLUPF90/",
-        "WOMBAT report raw components and leave sigma^2_P to the user; sommer/",
-        "MCMCglmm h2 depends on the user's chosen denominator - compare",
-        "(co)variance components, not h2 values, across software.",
-        "Use validate = TRUE to inspect the contract before fitting."
-      )
+    diagnostics = utils::modifyList(
+      list(
+        target = "direct_maternal",
+        variance_components = "estimated_direct_maternal_reml",
+        optimizer_status = if (converged) "converged" else "not_converged",
+        conditioning_caveat = paste(
+          "Experimental direct-maternal 2x2 G_dm REML estimator (Phase 4).",
+          "Asymptotic delta-method intervals are NOT coverage-calibrated.",
+          "A negative genetic correlation (r_am) is real and expected in many",
+          "livestock traits (antagonistic direct-maternal covariance;",
+          "Willham 1963, 1972). Identifiability requires multiple offspring per dam",
+          "with sires recorded; shallow pedigrees produce boundary G_dm.",
+          "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972);",
+          "h2 is denominator-dependent under maternal effects. ASReml/BLUPF90/",
+          "WOMBAT report raw components and leave sigma^2_P to the user; sommer/",
+          "MCMCglmm h2 depends on the user's chosen denominator - compare",
+          "(co)variance components, not h2 values, across software.",
+          "Use validate = TRUE to inspect the contract before fitting."
+        )
+      ),
+      metadata$diagnostics
     )
   )
 }
@@ -2398,8 +2570,21 @@ hs_fit_julia_n_effect_payload <- function(
     "\"re_names\" => [r.name for r in hsq_result.random_effects],",
     "\"beta\" => collect(Float64, hsq_fit.beta),",
     "\"loglik\" => hsq_result.loglik,",
-    "\"converged\" => hsq_result.converged)"
+    "\"converged\" => hsq_result.converged,",
+    "\"df\" => Int(hsq_result.df),",
+    "\"nobs\" => Int(hsq_result.nobs),",
+    "\"method\" => string(hsq_result.diagnostics.method),",
+    "\"optimizer_status\" => hsq_result.diagnostics.optimizer_status,",
+    "\"loglik_convention\" => string(hsq_result.diagnostics.loglik_convention),",
+    "\"loglik_full_constant_offset\" => Float64(hsq_result.diagnostics.loglik_full_constant_offset),",
+    "\"loglik_comparable_across_routes\" => hsq_result.diagnostics.loglik_comparable_across_routes,",
+    "\"loglik_stochastic\" => hsq_result.diagnostics.loglik_stochastic)"
   ))
+  if (isTRUE(raw$loglik_stochastic)) {
+    raw$loglik_mcse <- as.numeric(JuliaCall::julia_eval(
+      "hsq_result.diagnostics.loglik_mcse"
+    ))
+  }
   # Per-block BLUP ids/values (ragged), pulled one block at a time so JuliaCall
   # returns clean per-block vectors rather than a jagged nested structure.
   n_blocks <- length(raw$block_names)
@@ -2551,6 +2736,53 @@ hs_normalize_two_effect_result <- function(raw, payload) {
 # NOT a heritability. This normalizes the POINT ESTIMATES; the caller attaches
 # the experimental ratio interval separately via `hs_attach_n_effect_intervals`.
 hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
+  expected_blocks <- payload$random_effects
+  expected_names <- vapply(
+    expected_blocks,
+    function(block) {
+      as.character(block$name)
+    },
+    character(1)
+  )
+  if (!identical(as.character(raw$block_names), expected_names)) {
+    stop(
+      "Internal bridge error: the Julia result block names or order do ",
+      "not match the R payload.",
+      call. = FALSE
+    )
+  }
+  if (
+    length(raw$block_variances) != length(expected_names) ||
+      length(re_ids) != length(expected_names) ||
+      length(re_values) != length(expected_names)
+  ) {
+    stop(
+      "Internal bridge error: the Julia result block values do not match ",
+      "the R payload block count.",
+      call. = FALSE
+    )
+  }
+  for (i in seq_along(expected_names)) {
+    if (
+      !identical(
+        as.character(re_ids[[i]]),
+        as.character(expected_blocks[[i]]$ids)
+      ) ||
+        length(re_values[[i]]) != length(re_ids[[i]])
+    ) {
+      stop(
+        "Internal bridge error: the Julia result random-effect IDs or ",
+        "values do not match the R payload block order.",
+        call. = FALSE
+      )
+    }
+  }
+  metadata <- hs_validate_v2_result_metadata(
+    raw,
+    payload,
+    expected_df = ncol(payload$X) + length(expected_names) + 1L,
+    target = "multi_effect"
+  )
   fixed_effects <- as.numeric(raw$beta)
   fixed_names <- payload$metadata$fixed_colnames
   if (length(fixed_effects) == length(fixed_names)) {
@@ -2610,9 +2842,13 @@ hs_normalize_n_effect_result <- function(raw, re_ids, re_values, payload) {
     random_effects = random_effects,
     fixed_effects = fixed_effects,
     loglik = as.numeric(raw$loglik),
-    nobs = length(payload$y),
+    df = metadata$df,
+    nobs = metadata$nobs,
     converged = isTRUE(raw$converged),
-    diagnostics = list(variance_components = "estimated_multi_effect_reml")
+    diagnostics = utils::modifyList(
+      list(variance_components = "estimated_multi_effect_reml"),
+      metadata$diagnostics
+    )
   )
 }
 
@@ -2742,7 +2978,8 @@ hs_fit_julia_multivariate_payload <- function(
   project = hs_default_julia_project(),
   initial = NULL,
   iterations = 2000L,
-  genetic_structure = "unstructured"
+  genetic_structure = "unstructured",
+  rank = NULL
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -2761,20 +2998,25 @@ hs_fit_julia_multivariate_payload <- function(
       call. = FALSE
     )
   }
+  ntraits <- ncol(payload$Y)
+  if (!identical(genetic_structure, "factor_analytic") || !is.null(initial)) {
+    initial <- hs_validate_multivariate_initial(
+      initial,
+      ntraits,
+      genetic_structure = genetic_structure
+    )
+  }
+  iterations <- hs_validate_iterations(iterations)
+  traits <- payload$metadata$trait_names %||% colnames(payload$Y)
+  if (is.null(traits)) {
+    traits <- paste0("trait", seq_len(ntraits))
+  }
   if (!hs_julia_bridge_available(project)) {
     stop(
       "The experimental Julia bridge requires Julia, the `JuliaCall` R ",
       "package, and a local `HSquared.jl` project.",
       call. = FALSE
     )
-  }
-
-  ntraits <- ncol(payload$Y)
-  initial <- hs_validate_multivariate_initial(initial, ntraits)
-  iterations <- hs_validate_iterations(iterations)
-  traits <- payload$metadata$trait_names %||% colnames(payload$Y)
-  if (is.null(traits)) {
-    traits <- paste0("trait", seq_len(ntraits))
   }
 
   hs_julia_setup(project)
@@ -2785,6 +3027,7 @@ hs_fit_julia_multivariate_payload <- function(
   JuliaCall::julia_assign("hsq_Y", hs_y_matrix_for_julia(payload$Y))
   JuliaCall::julia_assign("hsq_X", payload$X)
   hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_mv_ids", as.character(payload$ids))
   JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
   JuliaCall::julia_assign(
     "hsq_sire",
@@ -2792,23 +3035,43 @@ hs_fit_julia_multivariate_payload <- function(
   )
   JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
   JuliaCall::julia_assign("hsq_traits", as.character(traits))
-  JuliaCall::julia_assign("hsq_initial_G0", initial$G0)
-  JuliaCall::julia_assign("hsq_initial_R0", initial$R0)
+  if (!is.null(initial)) {
+    JuliaCall::julia_assign("hsq_initial_G0", initial$G0)
+    JuliaCall::julia_assign("hsq_initial_R0", initial$R0)
+  }
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_assign(
     "hsq_genetic_structure",
     as.character(genetic_structure)
   )
+  if (identical(genetic_structure, "factor_analytic")) {
+    JuliaCall::julia_assign("hsq_rank", as.integer(rank))
+  }
+  initial_expr <- if (is.null(initial)) {
+    "nothing"
+  } else {
+    "(G0 = hsq_initial_G0, R0 = hsq_initial_R0)"
+  }
+  rank_expr <- if (identical(genetic_structure, "factor_analytic")) {
+    ", rank = hsq_rank"
+  } else {
+    ""
+  }
   hs_julia_fit(
     JuliaCall::julia_command(paste(
       hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "string.(hsq_ped.ids) == hsq_mv_ids || error(\"Multivariate pedigree ID order changed across bridge\");",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
       "hsq_fit = HSquared.fit_multivariate_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
-      "initial = (G0 = hsq_initial_G0, R0 = hsq_initial_R0),",
+      paste0("initial = ", initial_expr, ","),
       "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits,",
-      "genetic_structure = Symbol(hsq_genetic_structure));",
+      paste0(
+        "genetic_structure = Symbol(hsq_genetic_structure)",
+        rank_expr,
+        ");"
+      ),
       "hsq_mv_raw = Dict(",
       "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
       "\"residual_covariance\" => Matrix{Float64}(hsq_fit.residual_covariance),",
@@ -2825,6 +3088,30 @@ hs_fit_julia_multivariate_payload <- function(
       "\"traits\" => string.(collect(hsq_fit.traits)),",
       "\"genetic_structure\" => string(hsq_fit.genetic_structure)",
       ");",
+      "if hsq_fit.genetic_structure == :factor_analytic;",
+      "hsq_mv_structured = HSquared.structured_genetic_payload(hsq_fit);",
+      "hsq_mv_raw[\"genetic_rank\"] = hsq_mv_structured.genetic_rank;",
+      "hsq_mv_raw[\"genetic_uniqueness\"] = collect(Float64, hsq_mv_structured.genetic_uniqueness);",
+      "hsq_mv_raw[\"genetic_uniqueness_identification\"] = string(hsq_mv_structured.genetic_uniqueness_identification);",
+      "fa = hsq_fit.fa_start_diagnostics;",
+      "hsq_mv_raw[\"fa_start_strategy\"] = string(fa.strategy);",
+      "hsq_mv_raw[\"fa_start_starts_attempted\"] = fa.starts_attempted;",
+      "hsq_mv_raw[\"fa_start_selected_start\"] = string(fa.selected_start);",
+      "hsq_mv_raw[\"fa_start_objective_range\"] = something(fa.objective_range, NaN);",
+      "hsq_mv_raw[\"fa_start_g_relative_disagreement\"] = something(fa.g_relative_disagreement, NaN);",
+      "hsq_mv_raw[\"fa_start_r_relative_disagreement\"] = something(fa.r_relative_disagreement, NaN);",
+      "hsq_mv_raw[\"fa_start_better_nonconverged_start\"] = fa.better_nonconverged_start;",
+      "hsq_mv_raw[\"fa_start_minimum_uniqueness\"] = fa.minimum_uniqueness;",
+      "hsq_mv_raw[\"fa_start_uniqueness_floor_distance\"] = fa.uniqueness_floor_distance;",
+      "hsq_mv_raw[\"fa_start_near_uniqueness_floor\"] = fa.near_uniqueness_floor;",
+      "hsq_mv_raw[\"fa_start_names\"] = string.([s.name for s in fa.starts]);",
+      "hsq_mv_raw[\"fa_start_loglik\"] = [something(s.loglik, NaN) for s in fa.starts];",
+      "hsq_mv_raw[\"fa_start_valid\"] = [s.valid for s in fa.starts];",
+      "hsq_mv_raw[\"fa_start_converged\"] = [s.converged for s in fa.starts];",
+      "hsq_mv_raw[\"fa_start_iterations\"] = [s.iterations for s in fa.starts];",
+      "hsq_mv_raw[\"fa_start_minimum_uniqueness_by_start\"] = [something(s.minimum_uniqueness, NaN) for s in fa.starts];",
+      "hsq_mv_raw[\"fa_start_uniqueness_floor_distance_by_start\"] = [something(s.uniqueness_floor_distance, NaN) for s in fa.starts];",
+      "end;",
       # Number of genetic covariance parameters (contract field for the
       # structure LRT). Read from the engine payload when present; the R
       # normalizer falls back to deriving it from genetic_structure + n_traits.
@@ -3009,14 +3296,62 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
 }
 
 hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
-  traits <- as.character(raw$traits %||% payload$metadata$trait_names)
-  if (length(traits) == 0L) {
-    traits <- paste0("trait", seq_len(ncol(payload$Y)))
+  expected_traits <- as.character(
+    payload$metadata$trait_names %||% colnames(payload$Y) %||%
+      paste0("trait", seq_len(ncol(payload$Y)))
+  )
+  expected_ids <- as.character(payload$ids)
+  if (length(expected_traits) != ncol(payload$Y) ||
+      anyNA(expected_traits) || any(!nzchar(expected_traits)) ||
+      anyDuplicated(expected_traits)) {
+    stop(
+      "Internal bridge error: multivariate-repeatability request trait ",
+      "labels must be unique, nonmissing, nonempty and match Y's columns.",
+      call. = FALSE
+    )
   }
+  if (length(expected_ids) == 0L || anyNA(expected_ids) ||
+      any(!nzchar(expected_ids)) || anyDuplicated(expected_ids)) {
+    stop(
+      "Internal bridge error: multivariate-repeatability request animal ",
+      "IDs must be unique, nonmissing and nonempty.",
+      call. = FALSE
+    )
+  }
+
+  # The dedicated caller returns all five label fields in request order.
+  check_labels <- function(value, expected, field) {
+    if (is.null(value)) {
+      stop(
+        "The Julia multivariate-repeatability result is missing `", field,
+        "` labels.",
+        call. = FALSE
+      )
+    }
+    labels <- as.character(value)
+    if (anyNA(labels) || any(!nzchar(labels)) || anyDuplicated(labels)) {
+      stop(
+        "The Julia multivariate-repeatability result `", field,
+        "` labels must be unique, nonmissing and nonempty.",
+        call. = FALSE
+      )
+    }
+    if (!identical(labels, expected)) {
+      stop(
+        "The Julia multivariate-repeatability result `", field,
+        "` labels must match the request in the same order.",
+        call. = FALSE
+      )
+    }
+    labels
+  }
+  traits <- check_labels(raw$traits, expected_traits, "traits")
+  ids <- check_labels(raw$breeding_ids, expected_ids, "breeding_ids")
+  pe_ids <- check_labels(raw$pe_ids, expected_ids, "pe_ids")
+  check_labels(raw$breeding_traits, expected_traits, "breeding_traits")
+  check_labels(raw$pe_traits, expected_traits, "pe_traits")
   ntraits <- length(traits)
   fixed_names <- payload$metadata$fixed_colnames
-  ids <- as.character(raw$breeding_ids %||% payload$ids)
-  pe_ids <- as.character(raw$pe_ids %||% ids)
 
   G0 <- hs_matrix_from_julia(
     raw$genetic_covariance,
@@ -3148,14 +3483,147 @@ hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
   result
 }
 
+hs_validate_covariance_correlation <- function(
+  covariance,
+  correlation,
+  label,
+  allow_semidefinite = FALSE
+) {
+  if (any(!is.finite(covariance))) {
+    stop(label, " covariance contains non-finite values.", call. = FALSE)
+  }
+  n <- nrow(covariance)
+  marginal_variances <- diag(covariance)
+  if (any(!is.finite(marginal_variances)) || any(marginal_variances <= 0)) {
+    stop(
+      label,
+      " covariance must have positive marginal variances.",
+      call. = FALSE
+    )
+  }
+  marginal_sds <- sqrt(marginal_variances)
+  scaled_covariance <- sweep(
+    sweep(covariance, 1L, marginal_sds, "/"),
+    2L,
+    marginal_sds,
+    "/"
+  )
+  if (any(!is.finite(scaled_covariance))) {
+    stop(label, " covariance has invalid scaled geometry.", call. = FALSE)
+  }
+  covariance_tolerance <- 100 *
+    .Machine$double.eps *
+    n *
+    max(1, max(abs(scaled_covariance)))
+  if (
+    max(abs(scaled_covariance - t(scaled_covariance))) > covariance_tolerance
+  ) {
+    stop(label, " covariance must be symmetric.", call. = FALSE)
+  }
+  symmetric_covariance <- scaled_covariance +
+    (t(scaled_covariance) - scaled_covariance) / 2
+  eigenvalues <- eigen(
+    symmetric_covariance,
+    symmetric = TRUE,
+    only.values = TRUE
+  )$values
+  eigen_tolerance <- 100 *
+    .Machine$double.eps *
+    n *
+    max(1, max(abs(eigenvalues)))
+  if (min(eigenvalues) < -eigen_tolerance) {
+    stop(label, " covariance must be positive semidefinite.", call. = FALSE)
+  }
+  if (!allow_semidefinite && min(eigenvalues) <= 0) {
+    stop(label, " covariance must be positive definite.", call. = FALSE)
+  }
+  if (any(!is.finite(correlation))) {
+    stop(label, " correlation contains non-finite values.", call. = FALSE)
+  }
+  correlation_scale <- max(abs(correlation))
+  correlation_tolerance <- 100 * .Machine$double.eps * n * correlation_scale
+  if (max(abs(correlation - t(correlation))) > correlation_tolerance) {
+    stop(label, " correlation must be symmetric.", call. = FALSE)
+  }
+  comparison_tolerance <- 100 * .Machine$double.eps * n
+  if (max(abs(diag(correlation) - 1)) > comparison_tolerance) {
+    stop(label, " correlation must have a unit diagonal.", call. = FALSE)
+  }
+  if (max(abs(correlation)) > 1 + comparison_tolerance) {
+    stop(label, " correlation entries must be between -1 and 1.", call. = FALSE)
+  }
+  expected_correlation <- symmetric_covariance
+  if (max(abs(correlation - expected_correlation)) > comparison_tolerance) {
+    stop(
+      label,
+      " correlation is inconsistent with ",
+      label,
+      " covariance.",
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
 hs_normalize_multivariate_result <- function(raw, payload) {
-  traits <- as.character(raw$traits %||% payload$metadata$trait_names)
+  gstruct <- raw$genetic_structure %||% "unstructured"
+  if (identical(gstruct, "factor_analytic")) {
+    required_order_fields <- c("traits", "breeding_traits", "breeding_ids")
+    missing_order_fields <- required_order_fields[vapply(
+      required_order_fields,
+      function(field) is.null(raw[[field]]),
+      logical(1)
+    )]
+    if (length(missing_order_fields) > 0L) {
+      stop(
+        "Julia factor-analytic result is missing required order metadata: ",
+        paste(missing_order_fields, collapse = ", "),
+        ".",
+        call. = FALSE
+      )
+    }
+  }
+  expected_traits <- payload$metadata$trait_names %||% colnames(payload$Y)
+  if (!is.null(expected_traits)) {
+    expected_traits <- as.character(expected_traits)
+  }
+  traits <- as.character(raw$traits %||% expected_traits)
   if (length(traits) == 0L) {
     traits <- paste0("trait", seq_len(ncol(payload$Y)))
   }
+  if (
+    !is.null(raw$traits) &&
+      !is.null(expected_traits) &&
+      !identical(traits, expected_traits)
+  ) {
+    stop(
+      "Julia multivariate result has a different trait order from the payload.",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.null(raw$breeding_traits) &&
+      !identical(as.character(raw$breeding_traits), traits)
+  ) {
+    stop(
+      "Julia breeding values have a different breeding-trait order from the covariance result.",
+      call. = FALSE
+    )
+  }
   ntraits <- length(traits)
   fixed_names <- payload$metadata$fixed_colnames
-  ids <- as.character(raw$breeding_ids %||% payload$ids)
+  expected_ids <- as.character(payload$ids %||% character())
+  ids <- as.character(raw$breeding_ids %||% expected_ids)
+  if (
+    !is.null(raw$breeding_ids) &&
+      length(expected_ids) > 0L &&
+      !identical(ids, expected_ids)
+  ) {
+    stop(
+      "Julia breeding values have a different pedigree ID order from the payload.",
+      call. = FALSE
+    )
+  }
 
   G0 <- hs_matrix_from_julia(
     raw$genetic_covariance,
@@ -3181,6 +3649,8 @@ hs_normalize_multivariate_result <- function(raw, payload) {
     ntraits,
     "residual correlation"
   )
+  hs_validate_covariance_correlation(G0, Gcor, "genetic")
+  hs_validate_covariance_correlation(R0, Rcor, "residual")
   dimnames(G0) <- dimnames(R0) <- dimnames(Gcor) <- dimnames(Rcor) <-
     list(traits, traits)
 
@@ -3207,7 +3677,16 @@ hs_normalize_multivariate_result <- function(raw, payload) {
 
   converged <- isTRUE(raw$converged)
   p <- ncol(payload$X)
-  n_covariance_parameters <- ntraits * (ntraits + 1L)
+  n_genetic_params <- if (!is.null(raw$n_genetic_params)) {
+    as.integer(raw$n_genetic_params)
+  } else if (identical(gstruct, "diagonal")) {
+    as.integer(ntraits)
+  } else if (identical(gstruct, "factor_analytic")) {
+    as.integer(ntraits * (as.integer(raw$genetic_rank %||% 1L) + 1L))
+  } else {
+    as.integer(ntraits * (ntraits + 1L) / 2L)
+  }
+  n_covariance_parameters <- n_genetic_params + ntraits * (ntraits + 1L) / 2L
 
   result <- list(
     variance_components = data.frame(
@@ -3245,7 +3724,23 @@ hs_normalize_multivariate_result <- function(raw, payload) {
         "Ainv internally, so deep-inbreeding/high-condition-number pedigrees",
         "remain a twin-side hardening item."
       ),
-      genetic_structure = raw$genetic_structure %||% "unstructured"
+      genetic_structure = gstruct,
+      genetic_rank = if (identical(gstruct, "factor_analytic")) {
+        as.integer(raw$genetic_rank %||% 1L)
+      } else {
+        NULL
+      },
+      identifiability_caveat = if (identical(gstruct, "factor_analytic")) {
+        paste(
+          "At four traits, rank-one FA is locally identifiable up to sign",
+          "only for a regular loading pattern with sufficiently nonzero",
+          "entries. Sparse or weak loadings and boundary fits can leave Psi",
+          "poorly identified. Interpret G, genetic correlations, and Psi",
+          "cautiously; no loadings or standard errors are reported."
+        )
+      } else {
+        NULL
+      }
     )
   )
   if (converged) {
@@ -3255,16 +3750,245 @@ hs_normalize_multivariate_result <- function(raw, payload) {
   # Genetic-structure label + number of genetic covariance parameters, for the
   # covariance-structure LRT. Prefer the engine payload field; otherwise derive
   # it from the structure (diagonal = t; unstructured = t(t+1)/2).
-  gstruct <- raw$genetic_structure %||% "unstructured"
   result$genetic_structure <- gstruct
-  result$n_genetic_params <- if (!is.null(raw$n_genetic_params)) {
-    as.integer(raw$n_genetic_params)
-  } else if (identical(gstruct, "diagonal")) {
-    as.integer(ntraits)
-  } else {
-    as.integer(ntraits * (ntraits + 1L) / 2L)
+  result$n_genetic_params <- n_genetic_params
+  if (identical(gstruct, "factor_analytic")) {
+    uniqueness_identification <- raw$genetic_uniqueness_identification
+    if (
+      !identical(as.character(uniqueness_identification), "not_assessed_by_fit")
+    ) {
+      stop(
+        "FA bridge result must declare `genetic_uniqueness_identification = 'not_assessed_by_fit'`.",
+        call. = FALSE
+      )
+    }
+    psi <- as.numeric(raw$genetic_uniqueness)
+    if (
+      length(psi) != ntraits ||
+        anyNA(psi) ||
+        any(!is.finite(psi)) ||
+        any(psi <= 0)
+    ) {
+      stop(
+        "FA bridge result must contain positive `genetic_uniqueness` for every trait.",
+        call. = FALSE
+      )
+    }
+    result$genetic_uniqueness <- stats::setNames(psi, traits)
+    result$diagnostics$genetic_uniqueness_identification <- "not_assessed_by_fit"
+
+    fa_start_fields <- c(
+      "strategy",
+      "starts_attempted",
+      "selected_start",
+      "objective_range",
+      "g_relative_disagreement",
+      "r_relative_disagreement",
+      "better_nonconverged_start",
+      "minimum_uniqueness",
+      "uniqueness_floor_distance",
+      "near_uniqueness_floor",
+      "names",
+      "loglik",
+      "valid",
+      "converged",
+      "iterations",
+      "minimum_uniqueness_by_start",
+      "uniqueness_floor_distance_by_start"
+    )
+    fa_start_raw_names <- paste0("fa_start_", fa_start_fields)
+    missing_fa_start <- fa_start_raw_names[vapply(
+      fa_start_raw_names,
+      function(field) is.null(raw[[field]]),
+      logical(1)
+    )]
+    if (length(missing_fa_start) > 0L) {
+      stop(
+        "Julia factor-analytic result is missing required start metadata: ",
+        paste(missing_fa_start, collapse = ", "),
+        ".",
+        call. = FALSE
+      )
+    }
+    starts_attempted <- raw$fa_start_starts_attempted
+    if (
+      length(starts_attempted) != 1L ||
+        is.na(starts_attempted) ||
+        !is.finite(starts_attempted) ||
+        starts_attempted < 1 ||
+        starts_attempted != as.integer(starts_attempted)
+    ) {
+      stop("FA start count must be a positive integer.", call. = FALSE)
+    }
+    starts_attempted <- as.integer(starts_attempted)
+    start_names <- as.character(raw$fa_start_names)
+    vector_fields <- c(
+      "fa_start_loglik",
+      "fa_start_valid",
+      "fa_start_converged",
+      "fa_start_iterations",
+      "fa_start_minimum_uniqueness_by_start",
+      "fa_start_uniqueness_floor_distance_by_start"
+    )
+    bad_length <- vector_fields[vapply(
+      vector_fields,
+      function(field) length(raw[[field]]) != starts_attempted,
+      logical(1)
+    )]
+    if (length(start_names) != starts_attempted || length(bad_length) > 0L) {
+      stop(
+        "FA start vectors must have the same length as `fa_start_starts_attempted`.",
+        call. = FALSE
+      )
+    }
+    if (
+      anyNA(start_names) ||
+        any(!nzchar(start_names)) ||
+        anyDuplicated(start_names)
+    ) {
+      stop("FA start names must be non-empty and unique.", call. = FALSE)
+    }
+    selected_start <- as.character(raw$fa_start_selected_start)
+    if (
+      length(selected_start) != 1L ||
+        is.na(selected_start) ||
+        !selected_start %in% start_names
+    ) {
+      stop(
+        "FA selected start must name one of the returned starts.",
+        call. = FALSE
+      )
+    }
+    for (field in c("fa_start_valid", "fa_start_converged")) {
+      if (!is.logical(raw[[field]]) || anyNA(raw[[field]])) {
+        stop(
+          "FA start status vectors must be logical and non-missing.",
+          call. = FALSE
+        )
+      }
+    }
+    if (
+      !is.numeric(raw$fa_start_iterations) ||
+        anyNA(raw$fa_start_iterations) ||
+        any(!is.finite(raw$fa_start_iterations)) ||
+        any(raw$fa_start_iterations < 0) ||
+        any(raw$fa_start_iterations != as.integer(raw$fa_start_iterations))
+    ) {
+      stop(
+        "FA start iterations must be finite non-negative integers.",
+        call. = FALSE
+      )
+    }
+    for (field in c(
+      "fa_start_loglik",
+      "fa_start_minimum_uniqueness_by_start",
+      "fa_start_uniqueness_floor_distance_by_start"
+    )) {
+      values <- raw[[field]]
+      if (
+        !is.numeric(values) ||
+          any(is.infinite(values)) ||
+          any(!is.na(values) & !is.finite(values))
+      ) {
+        stop(
+          "FA start numeric vectors must be finite or missing.",
+          call. = FALSE
+        )
+      }
+      if (any(raw$fa_start_valid & is.na(values))) {
+        stop(
+          "Valid FA starts must have finite numeric diagnostics.",
+          call. = FALSE
+        )
+      }
+    }
+    scalar_numeric <- c(
+      "fa_start_objective_range",
+      "fa_start_g_relative_disagreement",
+      "fa_start_r_relative_disagreement",
+      "fa_start_minimum_uniqueness",
+      "fa_start_uniqueness_floor_distance"
+    )
+    for (field in scalar_numeric) {
+      value <- raw[[field]]
+      if (
+        !is.numeric(value) ||
+          length(value) != 1L ||
+          is.infinite(value) ||
+          (!is.na(value) && !is.finite(value))
+      ) {
+        stop(
+          "FA scalar numeric diagnostics must be finite or missing.",
+          call. = FALSE
+        )
+      }
+    }
+    for (field in c(
+      "fa_start_better_nonconverged_start",
+      "fa_start_near_uniqueness_floor"
+    )) {
+      if (
+        !is.logical(raw[[field]]) ||
+          length(raw[[field]]) != 1L ||
+          is.na(raw[[field]])
+      ) {
+        stop(
+          "FA scalar status diagnostics must be one non-missing logical value.",
+          call. = FALSE
+        )
+      }
+    }
+    selected_index <- match(selected_start, start_names)
+    if (!raw$fa_start_valid[[selected_index]]) {
+      stop("FA selected start must be valid.", call. = FALSE)
+    }
+    result$diagnostics$fa_start_strategy <- as.character(raw$fa_start_strategy)
+    result$diagnostics$fa_start_starts_attempted <- starts_attempted
+    result$diagnostics$fa_start_selected_start <- selected_start
+    result$diagnostics$fa_start_objective_range <- as.numeric(
+      raw$fa_start_objective_range
+    )
+    result$diagnostics$fa_start_g_relative_disagreement <- as.numeric(
+      raw$fa_start_g_relative_disagreement
+    )
+    result$diagnostics$fa_start_r_relative_disagreement <- as.numeric(
+      raw$fa_start_r_relative_disagreement
+    )
+    result$diagnostics$fa_start_better_nonconverged_start <- raw$fa_start_better_nonconverged_start
+    result$diagnostics$fa_start_minimum_uniqueness <- as.numeric(
+      raw$fa_start_minimum_uniqueness
+    )
+    result$diagnostics$fa_start_uniqueness_floor_distance <- as.numeric(
+      raw$fa_start_uniqueness_floor_distance
+    )
+    result$diagnostics$fa_start_near_uniqueness_floor <- raw$fa_start_near_uniqueness_floor
+    result$diagnostics$fa_start_loglik <- as.numeric(raw$fa_start_loglik)
+    result$diagnostics$fa_start_valid <- raw$fa_start_valid
+    result$diagnostics$fa_start_converged <- raw$fa_start_converged
+    result$diagnostics$fa_start_iterations <- as.integer(
+      raw$fa_start_iterations
+    )
+    result$diagnostics$fa_start_minimum_uniqueness_by_start <-
+      as.numeric(raw$fa_start_minimum_uniqueness_by_start)
+    result$diagnostics$fa_start_uniqueness_floor_distance_by_start <-
+      as.numeric(raw$fa_start_uniqueness_floor_distance_by_start)
+    result$diagnostics$fa_start_starts <- data.frame(
+      name = start_names,
+      loglik = as.numeric(raw$fa_start_loglik),
+      valid = raw$fa_start_valid,
+      converged = raw$fa_start_converged,
+      iterations = as.integer(raw$fa_start_iterations),
+      minimum_uniqueness = as.numeric(raw$fa_start_minimum_uniqueness_by_start),
+      uniqueness_floor_distance = as.numeric(
+        raw$fa_start_uniqueness_floor_distance_by_start
+      ),
+      stringsAsFactors = FALSE
+    )
   }
-  if (!is.null(raw$se_genetic_covariance)) {
+  if (
+    !identical(gstruct, "factor_analytic") &&
+      !is.null(raw$se_genetic_covariance)
+  ) {
     lab <- function(m) {
       m <- as.matrix(m)
       dimnames(m) <- list(traits, traits)
@@ -3282,7 +4006,11 @@ hs_normalize_multivariate_result <- function(raw, payload) {
   result
 }
 
-hs_validate_multivariate_initial <- function(initial, ntraits) {
+hs_validate_multivariate_initial <- function(
+  initial,
+  ntraits,
+  genetic_structure = "unstructured"
+) {
   if (is.null(initial)) {
     initial <- list(G0 = diag(1, ntraits), R0 = diag(1, ntraits))
   }
@@ -3296,6 +4024,16 @@ hs_validate_multivariate_initial <- function(initial, ntraits) {
       "`G0` and `R0` covariance matrices.",
       call. = FALSE
     )
+  }
+  if (identical(genetic_structure, "factor_analytic")) {
+    unsupported <- setdiff(names(initial), c("G0", "R0"))
+    if (length(unsupported) > 0L) {
+      hs_abort_unsupported_syntax(
+        "FA `initial` currently accepts only `G0` and `R0`; ",
+        paste(sprintf("`%s`", unsupported), collapse = ", "),
+        " would otherwise be silently ignored. Remove those fields."
+      )
+    }
   }
   list(
     G0 = hs_validate_initial_covariance(initial$G0, "initial$G0", ntraits),
@@ -4938,9 +5676,7 @@ hs_engine_control_honoured_keys <- list(
   ai_reml = c("initial", "iterations", "em_warmup"),
   repeatability = c("initial", "iterations", "max_dense_cells", "scale_method"),
   two_effect = c("initial", "iterations"),
-  # multi_effect: initial/iterations are honoured on the `scale_method =
-  # "dense"` (default) route only; `scale_method = "auto"` does not forward
-  # them (HSquared.jl#343, a known remaining gap, not fixed here).
+  # multi_effect forwards initial/iterations on both dense and auto routes.
   multi_effect = c("initial", "iterations", "scale_method"),
   direct_maternal = c("initial", "iterations"),
   genomic = c("initial", "iterations"),
@@ -4950,6 +5686,12 @@ hs_engine_control_honoured_keys <- list(
   snp_blup = "variance_components",
   relmat = c("initial", "iterations"),
   precision = c("initial", "iterations"),
+  genetic_gllvm = c(
+    "iterations",
+    "genetic_structure",
+    "rank",
+    "experimental_gllvm"
+  ),
   multivariate = c("initial", "iterations", "genetic_structure", "rank"),
   multivariate_repeatability = c("initial", "iterations"),
   random_regression = "iterations",
@@ -4992,21 +5734,35 @@ hs_engine_control_forwarding <- function(control, target) {
 }
 
 hs_validate_iterations <- function(iterations) {
-  iterations <- suppressWarnings(as.integer(iterations))
-  if (length(iterations) != 1L || is.na(iterations) || iterations <= 0L) {
+  if (
+    !is.numeric(iterations) ||
+      length(iterations) != 1L ||
+      !is.null(dim(iterations)) ||
+      !is.finite(iterations) ||
+      iterations <= 0 ||
+      iterations > .Machine$integer.max ||
+      iterations != floor(iterations)
+  ) {
     stop("`iterations` must be a single positive integer.", call. = FALSE)
   }
-  iterations
+  as.integer(iterations)
 }
 
 # em_warmup: opt-in EM-REML warm-start iterations before the AI/Newton step (engine
 # `fit_ai_reml`, V1-AI-REML). 0 (default) = off / byte-identical to the pre-warm-start path.
 hs_validate_em_warmup <- function(em_warmup) {
-  em_warmup <- suppressWarnings(as.integer(em_warmup))
-  if (length(em_warmup) != 1L || is.na(em_warmup) || em_warmup < 0L) {
+  if (
+    !is.numeric(em_warmup) ||
+      length(em_warmup) != 1L ||
+      !is.null(dim(em_warmup)) ||
+      !is.finite(em_warmup) ||
+      em_warmup < 0 ||
+      em_warmup > .Machine$integer.max ||
+      em_warmup != floor(em_warmup)
+  ) {
     stop("`em_warmup` must be a single non-negative integer.", call. = FALSE)
   }
-  em_warmup
+  as.integer(em_warmup)
 }
 
 # max_dense_cells: the R-facing lever for the engine's dense-validation size
@@ -5034,7 +5790,7 @@ hs_validate_max_dense_cells <- function(max_dense_cells) {
 # validation-scale live routes only — not production sparse fitting. Default
 # `engine = "fit"` auto-selects ai_reml / genomic / multivariate without listing
 # them here. payload_v2 block routing is separate (direct_maternal, multi_effect).
-# FA/lowrank stay blocked in hs_validate_genetic_structure_control(). PATH_ONLY
+# Bounded FA and genetic GLLVM controls have separate scope checks. PATH_ONLY
 # interval smoke (C1-ext) is not a target here. See design-45 DRAFT.
 hs_validate_julia_target <- function(target) {
   if (!is.character(target) || length(target) != 1L || is.na(target)) {
@@ -5085,6 +5841,7 @@ hs_validate_julia_target <- function(target) {
         "multivariate_repeatability",
         "random_regression",
         "nongaussian",
+        "genetic_gllvm",
         "direct_maternal"
       )
   ) {
@@ -5096,7 +5853,7 @@ hs_validate_julia_target <- function(target) {
       "\"single_step_construct\", \"metafounder_single_step\", \"snp_blup\", ",
       "\"relmat\", \"precision\", \"multivariate\", ",
       "\"multivariate_repeatability\", ",
-      "\"random_regression\", \"nongaussian\", or \"direct_maternal\".",
+      "\"random_regression\", \"nongaussian\", \"genetic_gllvm\", or \"direct_maternal\".",
       call. = FALSE
     )
   }
@@ -5128,29 +5885,6 @@ hs_validate_genetic_structure_control <- function(control, target) {
       "`target = \"multivariate\"` with a `cbind(...)` response."
     )
   }
-  if (identical(value, "factor_analytic")) {
-    hs_abort_unsupported_syntax(
-      "`genetic_structure = \"factor_analytic\"` is planned on the R ",
-      "surface and not activated on the R bridge. Julia V4-FA is ",
-      "engine-covered (HSquared.jl 60895208 / #300); that is not an ",
-      "R-public factor-analytic fit. The rotation convention is already ",
-      "ratified (rotation-invariant functionals only, never loadings). ",
-      "Use `genetic_structure = \"unstructured\"` or `\"diagonal\"`. ",
-      "public_covered_count stays 7."
-    )
-  }
-  if (identical(value, "lowrank")) {
-    hs_abort_unsupported_syntax(
-      "`genetic_structure = \"lowrank\"` is planned, not activated on ",
-      "the R bridge. The opt-in multivariate path estimates ",
-      "`\"unstructured\"` or `\"diagonal\"` G0; use one of those. ",
-      "public_covered_count stays 7."
-    )
-  }
-  # "unstructured" (default) and "diagonal" are both reachable. "diagonal" has
-  # no loadings and no rotation ambiguity (it is just per-trait genetic
-  # variances with zero genetic covariances), so it is honesty-clean to surface
-  # ahead of lowrank/factor_analytic.
   rank <- hs_engine_control_value(control, "rank", NULL)
   if (!is.null(rank)) {
     if (
@@ -5166,15 +5900,81 @@ hs_validate_genetic_structure_control <- function(control, target) {
         call. = FALSE
       )
     }
+  }
+  if (identical(value, "lowrank")) {
     hs_abort_unsupported_syntax(
-      "`engine_control$rank` is reserved for future `lowrank` and ",
-      "`factor_analytic` structured covariance controls. The current ",
-      "multivariate bridge estimates unstructured or diagonal G0 with ",
-      "unstructured R0 only; remove `rank` until low-rank or ",
-      "factor-analytic support is available."
+      "`genetic_structure = \"lowrank\"` is planned, not activated on ",
+      "the R bridge. Use `\"unstructured\"`, `\"diagonal\"`, or the bounded ",
+      "four-trait rank-one `\"factor_analytic\"` opt-in."
+    )
+  }
+  if (identical(value, "factor_analytic")) {
+    if (!identical(as.integer(rank), 1L)) {
+      hs_abort_unsupported_syntax(
+        "The R `genetic_structure = \"factor_analytic\"` opt-in requires ",
+        "`engine_control$rank = 1L` ",
+        "(rank = 1); higher ranks remain closed."
+      )
+    }
+  } else if (!is.null(rank)) {
+    hs_abort_unsupported_syntax(
+      "`engine_control$rank` is only used with the bounded ",
+      "`genetic_structure = \"factor_analytic\"` opt-in; remove `rank` for ",
+      "unstructured or diagonal G0."
     )
   }
   value
+}
+
+hs_validate_fa_optin_spec <- function(control, target, spec, payload) {
+  gs <- hs_engine_control_value(control, "genetic_structure", NULL)
+  if (!identical(gs, "factor_analytic")) {
+    return(invisible(NULL))
+  }
+  if (
+    !identical(control$engine, "julia") ||
+      !identical(target, "multivariate") ||
+      !identical(
+        hs_engine_control_value(control, "target", NULL),
+        "multivariate"
+      )
+  ) {
+    hs_abort_unsupported_syntax(
+      "Factor-analytic G requires explicit `hs_control(engine = \"julia\", ",
+      "engine_control = list(target = \"multivariate\", ",
+      "genetic_structure = \"factor_analytic\", rank = 1L, ",
+      "julia_project = ...))`."
+    )
+  }
+  project <- hs_engine_control_value(control, "julia_project", NULL)
+  if (
+    !is.character(project) ||
+      length(project) != 1L ||
+      is.na(project) ||
+      !nzchar(project)
+  ) {
+    hs_abort_unsupported_syntax(
+      "The factor-analytic opt-in requires an explicit `julia_project` path."
+    )
+  }
+  hs_validate_genetic_structure_control(control, target)
+  if (
+    !isTRUE(spec$response$multivariate) ||
+      !is.matrix(payload$Y) ||
+      ncol(payload$Y) != 4L ||
+      anyNA(payload$Y) ||
+      !identical(names(spec$random), "animal") ||
+      !identical(payload$family, "gaussian") ||
+      ncol(payload$X) != 1L ||
+      !identical(payload$metadata$fixed_colnames, "(Intercept)")
+  ) {
+    hs_abort_unsupported_syntax(
+      "The factor-analytic R opt-in currently fits only complete Gaussian ",
+      "`cbind()` responses with exactly four traits, a pedigree `animal()` ",
+      "effect, trait intercepts only, and unstructured residual covariance."
+    )
+  }
+  invisible(NULL)
 }
 
 # All opt-in engine targets that can fit a given non-default random effect. A
@@ -5851,4 +6651,355 @@ hs_drop_julia_classes <- function(x) {
     class(x) <- NULL
   }
   x
+}
+
+# Bounded expert route: one complete Poisson record per pedigree animal,
+# three traits and two common genetic factors. No Gaussian residual variance.
+hs_validate_gllvm_optin_spec <- function(control, spec, payload) {
+  ec <- control$engine_control
+  if (
+    !identical(control$engine, "julia") ||
+      !identical(ec$target, "genetic_gllvm") ||
+      !identical(ec$genetic_structure, "lowrank") ||
+      !is.numeric(ec$rank) ||
+      length(ec$rank) != 1L ||
+      is.na(ec$rank) ||
+      ec$rank != 2 ||
+      !isTRUE(ec$experimental_gllvm) ||
+      !is.character(ec$julia_project) ||
+      length(ec$julia_project) != 1L ||
+      is.na(ec$julia_project) ||
+      !nzchar(ec$julia_project)
+  ) {
+    hs_abort_unsupported_syntax(paste(
+      "Genetic GLLVM requires explicit engine = \"julia\" and engine_control =",
+      "list(target = \"genetic_gllvm\", genetic_structure = \"lowrank\",",
+      "rank = 2L, experimental_gllvm = TRUE, julia_project = ...)."
+    ))
+  }
+  hs_engine_control_forwarding(control, "genetic_gllvm")
+  if (
+    !identical(spec$family$family, "poisson") ||
+      !identical(spec$family$link, "log") ||
+      !identical(spec$method, "REML")
+  ) {
+    hs_abort_unsupported_syntax(
+      "Genetic GLLVM requires Poisson(log) and REML = TRUE; the objective ",
+      "integrates fixed effects under flat measure and is not ordinary ML."
+    )
+  }
+  if (
+    !identical(names(spec$random), "animal") ||
+      is.null(payload$pedigree) ||
+      !isTRUE(spec$response$multivariate) ||
+      !is.matrix(payload$Y) ||
+      ncol(payload$Y) != 3L ||
+      ncol(payload$X) != 1L ||
+      !identical(payload$metadata$fixed_colnames, "(Intercept)")
+  ) {
+    hs_abort_unsupported_syntax(
+      "Genetic GLLVM requires exactly three traits in cbind(), a pedigree ",
+      "animal() effect, and trait intercepts only."
+    )
+  }
+  Y <- payload$Y
+  if (anyNA(Y) || any(!is.finite(Y)) || any(Y < 0) || any(Y != floor(Y))) {
+    hs_abort_unsupported_syntax(
+      "Genetic GLLVM requires complete finite nonnegative integer counts."
+    )
+  }
+  if (any(colSums(Y) == 0)) {
+    hs_abort_unsupported_syntax(
+      "An all-zero Poisson trait has no finite intercept mode; remove that trait."
+    )
+  }
+  Z <- payload$Z
+  if (
+    nrow(Y) != length(payload$ids) ||
+      nrow(Z) != nrow(Y) ||
+      ncol(Z) != length(payload$ids) ||
+      any(Matrix::colSums(Z) != 1) ||
+      any(Matrix::rowSums(Z) != 1) ||
+      any(!Z %in% c(0, 1))
+  ) {
+    hs_abort_unsupported_syntax(
+      "Genetic GLLVM requires one complete row per pedigree animal, including ",
+      "ancestors; repeated or unobserved pedigree animals are not supported."
+    )
+  }
+  # Each incidence column has exactly one observed row; this is pedigree order.
+  as.integer(vapply(
+    seq_len(ncol(Z)),
+    function(j) which(Z[, j] == 1),
+    integer(1)
+  ))
+}
+
+hs_fit_julia_gllvm_payload <- function(
+  payload,
+  project,
+  row_order,
+  iterations = 1000L
+) {
+  iterations <- hs_validate_iterations(iterations)
+  if (!hs_julia_bridge_available(project)) {
+    stop(
+      "The genetic GLLVM bridge requires Julia, JuliaCall, and an explicit local HSquared.jl project.",
+      call. = FALSE
+    )
+  }
+  hs_julia_setup(project)
+  JuliaCall::julia_assign(
+    "hsq_gllvm_Y",
+    unname(payload$Y[row_order, , drop = FALSE])
+  )
+  JuliaCall::julia_assign(
+    "hsq_gllvm_X",
+    unname(payload$X[row_order, , drop = FALSE])
+  )
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  JuliaCall::julia_assign("hsq_gllvm_ids", as.character(payload$ids))
+  JuliaCall::julia_assign(
+    "hsq_gllvm_trait_names",
+    as.character(payload$metadata$trait_names)
+  )
+  JuliaCall::julia_assign("hsq_gllvm_iterations", iterations)
+  hs_julia_fit(
+    JuliaCall::julia_command(paste(
+      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+      "string.(hsq_ped.ids) == hsq_gllvm_ids || error(\"Genetic GLLVM pedigree ID order changed across bridge\");",
+      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      "hsq_gllvm_fit = HSquared.fit_gllvm_laplace_reml(",
+      "hsq_gllvm_Y, hsq_Ainv, HSquared.PoissonResponse(); rank = 2,",
+      "structure = :lowrank, X = hsq_gllvm_X, iterations = hsq_gllvm_iterations,",
+      "trait_names = hsq_gllvm_trait_names);",
+      "hsq_gllvm_raw = Dict(",
+      "\"genetic_covariance\" => hsq_gllvm_fit.genetic_covariance,",
+      "\"genetic_correlation\" => hsq_gllvm_fit.latent_structure.genetic_correlation,",
+      "\"beta\" => hsq_gllvm_fit.beta,",
+      "\"breeding_values\" => hsq_gllvm_fit.breeding_values,",
+      "\"ids\" => string.(hsq_ped.ids),",
+      "\"trait_names\" => hsq_gllvm_fit.trait_names,",
+      "\"loglik\" => hsq_gllvm_fit.loglik,",
+      "\"converged\" => hsq_gllvm_fit.converged,",
+      "\"optimizer_converged\" => hsq_gllvm_fit.optimizer_converged,",
+      "\"mode_converged\" => hsq_gllvm_fit.mode_converged,",
+      "\"mode_gradient_norm\" => hsq_gllvm_fit.mode_gradient_norm,",
+      "\"mode_iterations\" => hsq_gllvm_fit.mode_iterations,",
+      "\"mode_stop_reason\" => string(hsq_gllvm_fit.mode_stop_reason),",
+      "\"mode_backtracks\" => hsq_gllvm_fit.mode_backtracks,",
+      "\"iterations\" => hsq_gllvm_fit.iterations);"
+    )),
+    hint = hs_dense_scale_hint
+  )
+  raw <- JuliaCall::julia_eval("hsq_gllvm_raw")
+  result <- hs_normalize_gllvm_result(raw, payload)
+  fit <- hs_new_fit(
+    spec = list(
+      target = "genetic_gllvm",
+      method = "Laplace integrated fixed-effects objective",
+      family = list(family = "poisson", link = "log")
+    ),
+    payload = payload,
+    result = result,
+    engine = "HSquared.jl"
+  )
+  if (!isTRUE(result$converged)) {
+    warning(result$diagnostics$failure_message, call. = FALSE)
+  }
+  fit
+}
+
+hs_normalize_gllvm_result <- function(raw, payload) {
+  traits <- as.character(payload$metadata$trait_names)
+  ids <- as.character(payload$ids)
+  if (!identical(as.character(raw$ids), ids)) {
+    stop(
+      "Genetic GLLVM result pedigree IDs do not match the input order.",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.character(raw$trait_names) ||
+      !is.null(dim(raw$trait_names)) ||
+      !identical(as.character(raw$trait_names), traits)
+  ) {
+    stop(
+      "Genetic GLLVM result trait order does not match the input order.",
+      call. = FALSE
+    )
+  }
+  is_scalar_logical <- function(x) {
+    is.logical(x) && length(x) == 1L && is.null(dim(x)) && !is.na(x)
+  }
+  is_scalar_finite_numeric <- function(x) {
+    is.numeric(x) && length(x) == 1L && is.null(dim(x)) && is.finite(x)
+  }
+  is_scalar_count <- function(x) {
+    is_scalar_finite_numeric(x) &&
+      x >= 0 &&
+      x <= .Machine$integer.max &&
+      x == floor(x)
+  }
+  if (
+    !is_scalar_logical(raw$converged) ||
+      !is_scalar_logical(raw$optimizer_converged) ||
+      !is_scalar_logical(raw$mode_converged)
+  ) {
+    stop(
+      "Genetic GLLVM result has invalid convergence diagnostics.",
+      call. = FALSE
+    )
+  }
+  converged <- raw$converged
+  optimizer_converged <- raw$optimizer_converged
+  mode_converged <- raw$mode_converged
+  if (!identical(converged, optimizer_converged && mode_converged)) {
+    stop(
+      "Genetic GLLVM combined convergence flag does not match its optimizer and inner-mode flags.",
+      call. = FALSE
+    )
+  }
+  mode_gradient_norm <- raw$mode_gradient_norm
+  mode_iterations <- raw$mode_iterations
+  mode_stop_reason <- raw$mode_stop_reason
+  mode_backtracks <- raw$mode_backtracks
+  if (!is_scalar_finite_numeric(mode_gradient_norm)) {
+    stop(
+      "Genetic GLLVM inner-mode gradient norm must be one finite numeric value.",
+      call. = FALSE
+    )
+  }
+  if (
+    mode_gradient_norm < 0 ||
+      !is_scalar_count(mode_iterations) ||
+      !is.character(mode_stop_reason) ||
+      length(mode_stop_reason) != 1L ||
+      is.na(mode_stop_reason) ||
+      !nzchar(mode_stop_reason) ||
+      !is_scalar_count(mode_backtracks) ||
+      !is_scalar_count(raw$iterations)
+  ) {
+    stop(
+      "Genetic GLLVM result has invalid optimizer or inner-mode diagnostics.",
+      call. = FALSE
+    )
+  }
+  G <- hs_matrix_from_julia(
+    raw$genetic_covariance,
+    3L,
+    3L,
+    "genetic covariance"
+  )
+  Gcor <- hs_matrix_from_julia(
+    raw$genetic_correlation,
+    3L,
+    3L,
+    "genetic correlation"
+  )
+  U <- hs_matrix_from_julia(
+    raw$breeding_values,
+    length(ids),
+    3L,
+    "breeding values"
+  )
+  beta <- hs_matrix_from_julia(raw$beta, 1L, 3L, "fixed effects")
+  if (
+    any(!is.finite(G)) ||
+      any(!is.finite(Gcor)) ||
+      any(!is.finite(U)) ||
+      any(!is.finite(beta))
+  ) {
+    stop(
+      "Genetic GLLVM returned non-finite covariance or conditional modes.",
+      call. = FALSE
+    )
+  }
+  hs_validate_covariance_correlation(
+    G,
+    Gcor,
+    "genetic",
+    allow_semidefinite = TRUE
+  )
+  if (!is_scalar_finite_numeric(raw$loglik)) {
+    stop(
+      "Genetic GLLVM log likelihood must be one finite numeric value.",
+      call. = FALSE
+    )
+  }
+  dimnames(G) <- dimnames(Gcor) <- list(traits, traits)
+  dimnames(U) <- list(ids, traits)
+  bv <- hs_long_matrix(U, ids = ids, traits = traits)
+  bv$scale <- "link"
+  list(
+    genetic_covariance = G,
+    genetic_correlation = Gcor,
+    trait_names = traits,
+    genetic_structure = "lowrank",
+    genetic_rank = 2L,
+    trait_genetic_modes = U,
+    breeding_values = bv,
+    random_effects = list(animal = bv),
+    fixed_effects = data.frame(
+      term = "(Intercept)",
+      trait = traits,
+      estimate = as.numeric(beta),
+      stringsAsFactors = FALSE
+    ),
+    variance_components = data.frame(
+      component = "genetic",
+      trait = traits,
+      estimate = diag(G),
+      scale = "link",
+      stringsAsFactors = FALSE
+    ),
+    nobs = length(payload$Y),
+    converged = converged,
+    diagnostics = list(
+      target = "genetic_gllvm",
+      claim_level = "experimental",
+      optimizer_status = if (optimizer_converged) {
+        "converged"
+      } else {
+        "not_converged"
+      },
+      optimizer_converged = optimizer_converged,
+      inner_mode_converged = mode_converged,
+      inner_mode_gradient_norm = as.numeric(mode_gradient_norm),
+      inner_mode_iterations = as.integer(mode_iterations),
+      inner_mode_stop_reason = as.character(mode_stop_reason),
+      inner_mode_backtracks = as.integer(mode_backtracks),
+      iterations = as.integer(raw$iterations),
+      n_traits = 3L,
+      genetic_rank = 2L,
+      dense_validation_path = TRUE,
+      effect_scale = "link (log)",
+      effect_summary = "trait genetic conditional modes; not posterior means",
+      objective = "Laplace approximation integrating fixed effects under flat measure and genetic modes; not ordinary non-Gaussian ML",
+      laplace_objective = as.numeric(raw$loglik),
+      failure_message = if (converged) {
+        ""
+      } else {
+        paste0(
+          "Genetic GLLVM ",
+          paste(
+            c(
+              if (!optimizer_converged) "outer optimizer",
+              if (!mode_converged) "inner mode"
+            ),
+            collapse = " and "
+          ),
+          " did not converge; inner-mode stop reason was ",
+          as.character(mode_stop_reason),
+          ". Returned values are diagnostic only; inspect counts and increase",
+          " outer or inner iteration limits before interpretation."
+        )
+      }
+    )
+  )
 }

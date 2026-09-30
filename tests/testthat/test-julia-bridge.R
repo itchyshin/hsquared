@@ -458,6 +458,13 @@ test_that("Julia bridge validates iterations control", {
     "must be a single positive integer",
     fixed = TRUE
   )
+  for (bad in list(2.5, "5", NA_real_, Inf, 2147483648)) {
+    expect_error(
+      hsquared:::hs_validate_iterations(bad),
+      "must be a single positive integer",
+      fixed = TRUE
+    )
+  }
 })
 
 test_that("Julia bridge validates em_warmup control", {
@@ -475,6 +482,13 @@ test_that("Julia bridge validates em_warmup control", {
     "must be a single non-negative integer",
     fixed = TRUE
   )
+  for (bad in list(1.5, "3", NA_real_, Inf, 2147483648)) {
+    expect_error(
+      hsquared:::hs_validate_em_warmup(bad),
+      "must be a single non-negative integer",
+      fixed = TRUE
+    )
+  }
 })
 
 test_that("sparse REML payload requires an internal bridge payload", {

@@ -40,8 +40,9 @@
 #' (`R-to-Julia bridge payload`, `opt-in experimental Julia engine`) stay
 #' **partial** even when individual targets are covered. Targets split into:
 #' default live (`engine = "fit"`), opt-in live (`engine_control$target`),
-#' **PATH_ONLY** smoke (C1-ext intervals — not a fit bridge), and **blocked**
-#' planned grammar (for example `genetic_structure = "factor_analytic"`).
+#' **PATH_ONLY** smoke (C1-ext intervals; not a fit bridge), and **blocked**
+#' planned grammar (for example `animal(cov = fa(...))`). The explicit
+#' four-trait rank-one FA `engine_control` cell is partial and opt-in.
 #' `payload_v2` routing is limited to `direct_maternal` and `multi_effect`.
 #' See `docs/design/45-bridge-production-fences-DRAFT.md`.
 #'
@@ -442,8 +443,12 @@ hs_validation_status_boundaries <- function() {
       "\"julia\", target = \"multivariate\"` spelling still works. Covered numeric",
       "claim is scoped to k = 2 unstructured; k >= 3 stays",
       "parseable-and-fittable-but-experimental; genetic_structure =",
-      "\"diagonal\" stays experimental at 0.6; \"factor_analytic\" and \"lowrank\"",
-      "error as planned on the R bridge (rotation fence). `cbind()` responses with missing",
+      "\"diagonal\" stays experimental at 0.6; \"lowrank\" still errors",
+      "as planned. A four-trait rank-one factor_analytic G is partial and",
+      "explicitly opt-in under engine = julia with complete responses,",
+      "pedigree animal only, trait intercepts, and unstructured R; it does",
+      "not enter this covered k = 2 claim or change public_covered_count.",
+      "The cov = fa() formula grammar remains planned. `cbind()` responses with missing",
       "trait cells are supported, but this is REML-only and animal-model-only.",
       "The R lane has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
@@ -476,7 +481,7 @@ hs_validation_status_boundaries <- function() {
       "`engine = \"validate\"`; use `REML = TRUE`). The covered claim is",
       "this REML estimator, not ML. Genomic, repeatability,",
       "two-effect, marker-effect, and non-Gaussian",
-      "(poisson(log)/binomial(logit), Laplace marginal likelihood or variational ELBO)",
+      "(poisson(log)/binomial(logit), Laplace marginal likelihood or hybrid variational-Laplace objective)",
       "fitting are separate",
       "opt-in experimental targets, not the default. A `cbind()` multivariate",
       "response also routes on the default path, but it is a separate,",
@@ -503,7 +508,7 @@ hs_validation_status_boundaries <- function() {
     "Planned; no external production-software parity claim.",
     "Planned; no simulation-recovery claim.",
     "Planned; no genomic, QTL, eQTL, or marker-scan claim.",
-    "Planned; no GLLVM-style animal-model validation claim.",
+    "General GLLVM-style animal-model validation remains planned. A separate partial opt-in Poisson-log, three-trait, rank-two pedigree route has one-cell Julia ordinary-start evidence and a 12-animal same-input R-to-Julia parity check. The earlier four-scenario harness used true-loading starts and is separate evidence; broad recovery, calibration, a matched external same-objective comparator, and a covered claim remain open.",
     "Planned; no backend execution, benchmark, or speedup claim."
   )
 }

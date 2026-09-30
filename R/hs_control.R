@@ -24,7 +24,8 @@
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
 #'   `iterations`, `em_warmup`, `target`, `variance_components`, `marginal`,
-#'   and `max_dense_cells`.
+#'   `max_dense_cells`, `scale_method`, `genetic_structure`, `rank`, and
+#'   `experimental_gllvm`.
 #'   `julia_project` is honoured by every `target`; supplying a key a given
 #'   `target` does not honour errors (hsquared#212) rather than being
 #'   silently ignored. Per-target honoured keys (besides `julia_project`):
@@ -37,11 +38,12 @@
 #'     `iterations`.
 #'   * `repeatability`: `initial`, `iterations`, `max_dense_cells`,
 #'     `scale_method`.
-#'   * `multi_effect`: `initial`, `iterations`, `scale_method` -- `initial`/
-#'     `iterations` are honoured on the `scale_method = "dense"` (default)
-#'     route only; the opt-in `scale_method = "auto"` route does not yet
-#'     forward them (HSquared.jl#343, a known remaining gap).
+#'   * `multi_effect`: `initial`, `iterations`, `scale_method`. Both the
+#'     default dense route and the opt-in `scale_method = "auto"` route
+#'     forward `initial` and `iterations` to the Julia fitter.
 #'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
+#'   * `genetic_gllvm`: `iterations`, `genetic_structure`, `rank`,
+#'     `experimental_gllvm` (`initial` is not exposed on this route).
 #'   * `multivariate_repeatability`: `initial`, `iterations`.
 #'   * `random_regression`: `iterations` (no `initial`).
 #'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
@@ -75,7 +77,8 @@
 #'   `"direct_maternal"`, `"random_regression"`, `"genomic"`,
 #'   `"single_step"`, `"single_step_construct"`, `"metafounder"`,
 #'   `"metafounder_single_step"`, `"snp_blup"`, `"relmat"`, `"precision"`,
-#'   `"multivariate"`, `"multivariate_repeatability"`, and `"nongaussian"`,
+#'   `"multivariate"`, `"multivariate_repeatability"`, `"nongaussian"`, and
+#'   `"genetic_gllvm"`,
 #'   described below. Covered opt-in
 #'   routes (validation scale; not the default path) include `"two_effect"`
 #'   (`common_env()`), `"direct_maternal"`, `"multi_effect"`, and
@@ -161,8 +164,7 @@
 #'   narrow-sense h2; other blocks are variance-explained proportions, not
 #'   heritabilities. `initial` is a plain numeric vector of length K + 1 (one
 #'   value per block, in formula order, plus the residual); it and
-#'   `iterations` are honoured on the `scale_method = "dense"` route (see
-#'   `engine_control` above for the `"auto"` gap).
+#'   `iterations` are forwarded on both the dense and opt-in `"auto"` routes.
 #'   `target = "direct_maternal"` is an opt-in path for
 #'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`. It estimates
 #'   the correlated 2x2 direct-maternal genetic covariance and is covered at
@@ -235,14 +237,21 @@
 #'   surfaces the Julia-owned `HSquared.fit_multivariate_reml()` REML-only
 #'   optimizer, and returns G/R covariance matrices, genetic and residual
 #'   correlations, per-trait heritability, and cross-trait breeding values.
-#'   Three or more traits and structured covariance are experimental. The
-#'   reserved `genetic_structure` control currently accepts `"unstructured"` and
-#'   `"diagonal"` on the R bridge. `"diagonal"` is the rotation-free structured
-#'   subset: off-diagonal genetic covariances are fixed at zero. `"lowrank"`
-#'   remains planned. `"factor_analytic"` is planned on the R surface (Julia
-#'   `V4-FA` is engine-covered at HSquared.jl `60895208` / #300) and is not
-#'   activated on the R bridge; not covered. The future `rank` control is also
-#'   reserved and currently errors instead of being ignored.
+#'   Three or more traits and structured covariance are experimental.
+#'   `genetic_structure` accepts `"unstructured"`, `"diagonal"`, and a bounded
+#'   `"factor_analytic"` opt-in. `"diagonal"` fixes off-diagonal genetic
+#'   covariances at zero. FA requires exactly four complete Gaussian traits,
+#'   pedigree `animal()` only, trait intercepts only, unstructured estimated
+#'   residual covariance, and an explicit `engine = "julia"`,
+#'   `target = "multivariate"`, `genetic_structure = "factor_analytic"`,
+#'   `rank = 1L`, and `julia_project` path. It reports G, genetic correlations,
+#'   and specific variances (`Psi`), with local-identifiability and boundary
+#'   cautions; no loadings or covariance standard errors. `initial = NULL`
+#'   uses Julia's phenotype-scale start; a supplied `initial` may contain only
+#'   validated `G0` and `R0` matrices. FA `loadings` and `uniqueness` starts
+#'   are rejected rather than silently dropped. This does not activate
+#'   `cov = fa()` formula grammar, a default route, or a covered status.
+#'   `"lowrank"` remains refused on this Gaussian multivariate target.
 #'   `target = "multivariate_repeatability"` is the experimental
 #'   `cbind(...) + permanent(1 | id)` route (hsquared#237). Naming it is
 #'   optional: that formula auto-routes on the default path and under
@@ -254,19 +263,35 @@
 #'   the result target is `multivariate_repeatability_reml`. R will not
 #'   fall back to animal-only `fit_multivariate_reml`.
 #'
+#'   `target = "genetic_gllvm"` is a bounded experimental Poisson-log route.
+#'   It requires exactly three complete traits, one row per pedigree animal
+#'   (including ancestors), trait intercepts, `REML = TRUE`, and explicit
+#'   `engine = "julia"`, `julia_project`, `genetic_structure = "lowrank"`,
+#'   `rank = 2L`, and `experimental_gllvm = TRUE`. `iterations` controls the
+#'   outer optimizer (default 1000). It returns link-scale G, genetic
+#'   correlations, and trait genetic conditional modes via [breeding_values()]
+#'   (also a pedigree-by-trait matrix in `fit$result$trait_genetic_modes`).
+#'   Check [fit_diagnostics()] before interpretation. Its Laplace objective
+#'   integrates fixed effects under flat measure; it is available only in
+#'   diagnostics, and `logLik()` / `AIC()` are unavailable. No heritability,
+#'   posterior means, loading inference, FA uniqueness, missing records,
+#'   Bernoulli traits, or automatic rank selection are supplied.
+#'
 #'   `target = "nongaussian"` is an experimental, opt-in conditional GLMM for
 #'   `poisson(log)` or `binomial(logit)` (binary 0/1 or
 #'   `cbind(successes, failures)` counts) with one intercept and
 #'   `animal(1 | id, pedigree = ped)`. The `marginal` control selects a Laplace
-#'   marginal likelihood approximation (`"laplace"`, default) or a variational
-#'   ELBO (`"variational"`; aliases `"la"`/`"va"`). It reports the ratified
+#'   marginal likelihood approximation (`"laplace"`, default) or a hybrid
+#'   variational-plus-Laplace objective (`"variational"`; aliases
+#'   `"la"`/`"va"`). It reports the ratified
 #'   conditional three-field contract: Poisson latent and count-scale observation
 #'   h2; logit latent, liability, and numerically integrated observation-scale h2
 #'   for Bernoulli or common-trial Binomial input. Varying trials return literal
 #'   `NaN` with `"varying_trials_no_scalar_estimand"`, never a trial-count-averaged
-#'   scalar. The ELBO is a lower bound on the marginal
-#'   log-likelihood, so variational and Laplace `logLik`/`AIC` are **not**
-#'   comparable. This path remains experimental and not coverage-calibrated.
+#'   scalar. The historical engine field `elbo` remains for compatibility; with
+#'   integrated fixed effects this hybrid value has no general lower-bound
+#'   guarantee. Variational and Laplace `logLik`/`AIC` are **not** comparable.
+#'   This path remains experimental and not coverage-calibrated.
 #'   `initial` (hsquared#225) is a list with `sigma_a2`. The engine fits the
 #'   single variance component with a **bracketed** Brent search over
 #'   `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` -- there is no start

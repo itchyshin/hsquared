@@ -196,7 +196,7 @@ test_that("reader articles use canonical Documenter leaf URLs", {
   )
 })
 
-test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 release", {
+test_that("DESCRIPTION keeps count 7 and bounds FA and GLLVM routes", {
   desc <- gsub(
     "\\s+",
     " ",
@@ -204,7 +204,9 @@ test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 release", {
   )
   expect_match(desc, "0\\.9\\.0")
   expect_match(desc, "public covered count is 7|public covered count stays 7")
-  expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
+  expect_match(desc, "four-trait, rank-one factor-analytic Gaussian pedigree fit", fixed = TRUE)
+  expect_match(desc, "three-trait, rank-two Poisson genetic GLLVM fit", fixed = TRUE)
+  expect_match(desc, "broader models and covariance formula grammar remain planned", fixed = TRUE)
   expect_match(desc, "opt-in partial", fixed = TRUE)
   expect_match(desc, "experimental release", fixed = TRUE)
   expect_match(desc, "engine-covered is not R covered", fixed = TRUE)
