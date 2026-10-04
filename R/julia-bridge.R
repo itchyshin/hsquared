@@ -784,7 +784,16 @@ hs_ng09_scalar_number <- function(value, name, nonnegative = FALSE) {
 
 hs_ng09_exact_number <- function(actual, expected, name) {
   actual <- hs_ng09_scalar_number(actual, name)
-  if (!identical(unname(actual), unname(as.numeric(expected)))) {
+  expected <- unname(as.numeric(expected))
+  actual_num <- unname(actual)
+  if (identical(actual_num, expected)) {
+    return(actual)
+  }
+  # Julia and R can disagree by ~1 ulp on the same closed form because they
+  # use different libm implementations of exp/expm1 (#301). Keep this tight
+  # enough that a 1e-15 formula mutation still fails.
+  scale <- max(abs(actual_num), abs(expected), 1)
+  if (!isTRUE(abs(actual_num - expected) <= 4 * .Machine$double.eps * scale)) {
     hs_ng09_abort(paste0("`", name, "` does not equal its ratified identity."))
   }
   actual
@@ -1031,9 +1040,10 @@ hs_nongaussian_three_field_julia_command <- function(
   )
 }
 
-# Normalize a complete v0.9 three-field envelope.  Exact (zero-tolerance)
-# identities are checked at the language boundary, so a transport or formula
-# mutation cannot become a different scientific estimand in the R result.
+# Normalize a complete v0.9 three-field envelope.  Closed-form identities
+# are checked at the language boundary so a transport or formula mutation
+# cannot become a different scientific estimand in the R result.  Last-bit
+# Julia/R libm disagreement on the same identity is accepted (#301).
 hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
   schema <- hs_ng09_required(raw, "schema")
   if (!identical(schema, "nongaussian_three_field_v09")) {
