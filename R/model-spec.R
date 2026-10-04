@@ -1028,7 +1028,7 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     term = hs_deparse(call),
     design = "intercept",
     group = group,
-    values = as.character(data[[group]]),
+    values = hs_as_id_character(data[[group]]),
     relationship = "pedigree",
     covariance = "scalar",
     pedigree_source = pedigree_input$source,
@@ -1234,7 +1234,7 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
   }
 
   cols <- hs_pedigree_columns(pedigree)
-  ids <- as.character(pedigree[[cols$id]])
+  ids <- hs_as_id_character(pedigree[[cols$id]])
   sire <- hs_normalize_parent(pedigree[[cols$sire]])
   dam <- hs_normalize_parent(pedigree[[cols$dam]])
 
@@ -1278,7 +1278,7 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
     )
   }
 
-  observed_ids <- as.character(data_ids)
+  observed_ids <- hs_as_id_character(data_ids)
   if (any(is.na(observed_ids) | observed_ids == "" | observed_ids == "0")) {
     stop(
       "`data` column `",
@@ -2420,7 +2420,7 @@ hs_validate_relmat_matrix <- function(mat, arg_name) {
 }
 
 hs_normalize_parent <- function(x) {
-  x <- as.character(x)
+  x <- hs_as_id_character(x)
   x[is.na(x) | x == "" | x == "0"] <- NA_character_
   x
 }
