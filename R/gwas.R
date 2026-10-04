@@ -295,6 +295,14 @@ hs_validate_gwas_fit <- function(object) {
       call. = FALSE
     )
   }
+  if (hs_fit_not_converged(object)) {
+    stop(
+      "`gwas()` cannot use this fit because it did not converge; its variance ",
+      "components are not valid inputs for a marker scan. Inspect ",
+      "`fit_diagnostics(fit)` before running `gwas()`.",
+      call. = FALSE
+    )
+  }
   payload <- object$payload
   if (
     is.null(payload$pedigree) ||

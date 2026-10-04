@@ -332,6 +332,16 @@ test_that("gwas() guards the fit type and the markers shape (no engine needed)",
   expect_error(gwas(fit, matrix(NA_real_, 4, 2)), "finite")
 })
 
+test_that("gwas() rejects variance components from a non-converged fit", {
+  fit <- hs_mock_gwas_fit(n = 4)
+  fit$result$converged <- FALSE
+
+  expect_error(
+    gwas(fit, matrix(0, 4, 2)),
+    "did not converge.*variance components"
+  )
+})
+
 test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   hs_skip_live_julia()
   testthat::skip_if_not(
