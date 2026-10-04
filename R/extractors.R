@@ -1093,6 +1093,30 @@ accuracy.hsquared_fit <- function(object, ...) {
   out
 }
 
+# Same ignored-argument policy as `hsquared()`: name the unused argument
+# rather than dropping it (hsquared#310).
+hs_reject_unused_dots <- function(dots, fn) {
+  if (length(dots) == 0L) {
+    return(invisible(NULL))
+  }
+  dot_names <- names(dots)
+  if (is.null(dot_names)) {
+    dot_names <- rep.int("", length(dots))
+  }
+  labelled <- ifelse(
+    nzchar(dot_names),
+    sprintf("`%s`", dot_names),
+    "an unnamed argument"
+  )
+  stop(
+    fn,
+    " does not accept ",
+    paste(labelled, collapse = ", "),
+    " in `...`. Those arguments would be ignored.",
+    call. = FALSE
+  )
+}
+
 #' Extract an experimental heritability confidence interval
 #'
 #' `r lifecycle::badge("experimental")`
@@ -1130,6 +1154,8 @@ accuracy.hsquared_fit <- function(object, ...) {
 #' `V3-NEFFECT-REML` are `covered`, but this **interval** is not.
 #'
 #' @inheritParams variance_components
+#' @param ... Unused. Extra arguments, including `level`, are an error because
+#'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate`, `lower`, `upper`, `level`, `se`
 #'   (`NA` for the profile method), and `method`, for `hsquared_fit` objects that
@@ -1150,6 +1176,7 @@ heritability_interval.default <- function(object, ...) {
 
 #' @export
 heritability_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`heritability_interval()`")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_interval()` is not available for genomic fits. The ",
@@ -1310,6 +1337,8 @@ hs_as_heritability_se_frame <- function(object, se) {
 #' capability.
 #'
 #' @inheritParams variance_components
+#' @param ... Unused. Extra arguments, including `level`, are an error because
+#'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate` (the repeatability `t`), `lower`,
 #'   `upper`, `level`, and `se`, for `hsquared_fit` objects that contain it.
@@ -1330,6 +1359,7 @@ repeatability_interval.default <- function(object, ...) {
 
 #' @export
 repeatability_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`repeatability_interval()`")
   hs_fit_result(
     object,
     "repeatability_interval",
@@ -1365,6 +1395,8 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 #' [common_env_proportion()] / [maternal_proportion()]).
 #'
 #' @inheritParams variance_components
+#' @param ... Unused. Extra arguments, including `level`, are an error because
+#'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate` (the ratio), `lower`, `upper`,
 #'   `level`, `se`, `lower_clamped`, `upper_clamped`, and `boundary`, plus an
@@ -1386,6 +1418,7 @@ common_env_proportion_interval.default <- function(object, ...) {
 
 #' @export
 common_env_proportion_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`common_env_proportion_interval()`")
   out <- hs_fit_result(
     object,
     "common_env_proportion_interval",
@@ -1412,6 +1445,7 @@ maternal_proportion_interval.default <- function(object, ...) {
 
 #' @export
 maternal_proportion_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`maternal_proportion_interval()`")
   out <- hs_fit_result(
     object,
     "maternal_proportion_interval",

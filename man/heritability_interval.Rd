@@ -9,7 +9,8 @@ heritability_interval(object, ...)
 \arguments{
 \item{object}{A fitted model object.}
 
-\item{...}{Reserved for future arguments.}
+\item{...}{Unused. Extra arguments, including \code{level}, are an error because
+they would be ignored; the interval level is fixed at the engine value.}
 }
 \value{
 A one-row data frame with \code{estimate}, \code{lower}, \code{upper}, \code{level}, \code{se}
