@@ -77,7 +77,7 @@ dat <- data.frame(
 hsquared(
   weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
-  engine = "validate"
+  control = hs_control(engine = "validate")
 )
 ```
 

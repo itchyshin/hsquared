@@ -107,7 +107,11 @@ test_that("README carries the D-41 callout and a validate-first example", {
   expect_length(fit_at, 1L)
   expect_lt(validate_at, fit_at)
 
-  expect_match(text, 'engine = "validate"', fixed = TRUE)
+  expect_match(text, 'control = hs_control(engine = "validate")', fixed = TRUE)
+  expect_no_match(
+    text,
+    "hsquared\\(\\s*\n(?:.*\n)*?\\s*engine = \"validate\""
+  )
 })
 
 

@@ -61,7 +61,7 @@ model_spec(
 )
 ```
 
-`hsquared(..., engine = "validate")` confirms the formula and data.
+`hsquared(..., control = hs_control(engine = "validate"))` confirms the formula and data.
 `model_spec()` shows the parsed design and the engine target that would be
 called. Nothing is fitted.
 
