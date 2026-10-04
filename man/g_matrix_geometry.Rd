@@ -50,8 +50,8 @@ A scalar for the directional metrics; a list for \code{eigen_G()}
 }
 \details{
 These extractors summarise the genetic variance-covariance matrix \code{G} of an
-multivariate \code{hsquared_fit} (a \code{cbind()} response, which fits on the default
-path) through its
+multivariate \code{hsquared_fit} (a \code{cbind()} response; dense and
+validation-scale, capped by \code{max_dense_cells}) through its
 \strong{rotation-invariant} geometry, following Hansen & Houle (2008). They are
 defined on \code{G} itself (not on factor loadings), so they are well defined for
 any multivariate fit -- unstructured, diagonal, or (when bridged) low-rank /

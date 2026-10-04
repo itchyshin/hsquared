@@ -3,8 +3,8 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' These extractors summarise the genetic variance-covariance matrix `G` of an
-#' multivariate `hsquared_fit` (a `cbind()` response, which fits on the default
-#' path) through its
+#' multivariate `hsquared_fit` (a `cbind()` response; dense and
+#' validation-scale, capped by `max_dense_cells`) through its
 #' **rotation-invariant** geometry, following Hansen & Houle (2008). They are
 #' defined on `G` itself (not on factor loadings), so they are well defined for
 #' any multivariate fit -- unstructured, diagonal, or (when bridged) low-rank /

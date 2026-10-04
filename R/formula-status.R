@@ -464,7 +464,8 @@ hs_formula_status_behavior <- function() {
     paste(
       "Roadmap syntax for long-format unstructured covariance; the current",
       "parser rejects trait and `cov` arguments and points users to the",
-      "`cbind()` multivariate path, which fits on the default path."
+      "`cbind()` multivariate path (dense, validation-scale, capped by",
+      "`max_dense_cells`)."
     ),
     paste(
       "Roadmap syntax for long-format diagonal covariance; the current",

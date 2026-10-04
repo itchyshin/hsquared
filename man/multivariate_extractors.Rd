@@ -37,7 +37,10 @@ requested multivariate result field.
 \details{
 These extractors return the genetic (\code{G}) and residual (\code{R}) covariance or
 correlation matrices from multivariate \code{hsquared_fit} objects (a \code{cbind()}
-response, which fits on the default path). \code{G_matrix()} is an applied-workflow alias for
+response). That call auto-routes on the default path, but the fitter is
+dense and validation-scale: it is capped by \code{max_dense_cells}
+(\code{nobs^2 + nanimals^2}, default 1e6; a few hundred animals at t = 2).
+\code{G_matrix()} is an applied-workflow alias for
 \code{genetic_covariance()}, and \code{R_matrix()} is an alias for
 \code{residual_covariance()}. Use them after checking \code{\link[=fit_diagnostics]{fit_diagnostics()}} because
 likelihood-based summaries are intentionally blocked when a multivariate fit

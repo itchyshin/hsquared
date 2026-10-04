@@ -216,7 +216,10 @@ hs_fit_is_genomic <- function(object) {
 #'
 #' These extractors return the genetic (`G`) and residual (`R`) covariance or
 #' correlation matrices from multivariate `hsquared_fit` objects (a `cbind()`
-#' response, which fits on the default path). `G_matrix()` is an applied-workflow alias for
+#' response). That call auto-routes on the default path, but the fitter is
+#' dense and validation-scale: it is capped by `max_dense_cells`
+#' (`nobs^2 + nanimals^2`, default 1e6; a few hundred animals at t = 2).
+#' `G_matrix()` is an applied-workflow alias for
 #' `genetic_covariance()`, and `R_matrix()` is an alias for
 #' `residual_covariance()`. Use them after checking [fit_diagnostics()] because
 #' likelihood-based summaries are intentionally blocked when a multivariate fit
@@ -376,8 +379,8 @@ hs_multivariate_extractor_default <- function(name) {
     name,
     "()` requires an `hsquared_fit` object from the multivariate model ",
     "(a `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ",
-    "ped)`, which fits on the default path) or the opt-in direct-maternal ",
-    "correlated model (`target = \"direct_maternal\"`).",
+    "ped)`, dense and validation-scale, capped by `max_dense_cells`) or the ",
+    "opt-in direct-maternal correlated model (`target = \"direct_maternal\"`).",
     call. = FALSE
   )
 }

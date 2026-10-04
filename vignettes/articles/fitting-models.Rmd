@@ -268,8 +268,11 @@ breeding_values(fit_snp)             # per-individual GEBVs
 The multivariate path uses a `cbind()` response and estimates
 trait-by-trait genetic and residual covariance matrices for the animal effect.
 It fits on the default call without an `engine` or `target` argument. The
-t = 2 unstructured route is **covered** on that default call (validation
-scale); k≥3 and diagonal genetic structure stay experimental. See
+fitter is dense and validation-scale: problems above `max_dense_cells`
+(`nobs^2 + nanimals^2`, default 1e6; a few hundred animals at t = 2)
+error instead of allocating. The t = 2 unstructured route is **covered**
+on that default call (validation scale); k≥3 and diagonal genetic
+structure stay experimental. See
 [Can I fit and report this?](current-limits.html).
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 

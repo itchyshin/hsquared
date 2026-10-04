@@ -543,6 +543,40 @@ test_that("heritability help names non-Gaussian scales and which row to report",
   expect_match(text, "not the latent residual", fixed = TRUE)
 })
 
+test_that("cbind help names the dense validation-scale cell cap", {
+  rd <- testthat::test_path("..", "..", "man", "multivariate_extractors.Rd")
+  skip_if_not(file.exists(rd), "man/multivariate_extractors.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(text, "max_dense_cells", fixed = TRUE)
+  expect_match(text, "nobs^2 + nanimals^2", fixed = TRUE)
+  expect_match(text, "few hundred animals", fixed = TRUE)
+  expect_no_match(text, "fits on the default path", fixed = TRUE)
+
+  ev <- testthat::test_path("..", "..", "man", "g_matrix_geometry.Rd")
+  skip_if_not(file.exists(ev), "man/g_matrix_geometry.Rd not present")
+  ev_text <- paste(readLines(ev, warn = FALSE), collapse = "\n")
+  expect_match(ev_text, "max_dense_cells", fixed = TRUE)
+  expect_no_match(ev_text, "fits on the default path", fixed = TRUE)
+
+  vignette <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "fitting-models.Rmd"
+  )
+  skip_if_not(file.exists(vignette), "fitting-models article not present")
+  vtext <- paste(readLines(vignette, warn = FALSE), collapse = "\n")
+  expect_match(vtext, "max_dense_cells", fixed = TRUE)
+  expect_match(vtext, "few hundred animals", fixed = TRUE)
+
+  expect_error(
+    genetic_covariance(list()),
+    "max_dense_cells",
+    fixed = TRUE
+  )
+})
+
 test_that("fitting-models later examples define their data and validate", {
   vignette <- testthat::test_path(
     "..",
