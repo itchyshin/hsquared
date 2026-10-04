@@ -1094,7 +1094,19 @@ accuracy.hsquared_fit <- function(object, ...) {
 }
 
 # Same ignored-argument policy as `hsquared()`: name the unused argument
-# rather than dropping it (hsquared#310).
+# rather than dropping it (hsquared#310, #320).
+hs_reject_newdata <- function(supplied, what) {
+  if (isTRUE(supplied)) {
+    stop(
+      "`newdata` is not supported; ",
+      what,
+      " are in-sample only.",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
 hs_reject_unused_dots <- function(dots, fn) {
   if (length(dots) == 0L) {
     return(invisible(NULL))
@@ -2390,8 +2402,12 @@ hs_block_multivariate_response_scale <- function(name) {
 #' fits multiple traits jointly and is intentionally out of v0.1 response-scale
 #' scope, so these methods stop with a scope message pointing to
 #' `breeding_values()`, `genetic_covariance()`, and `residual_covariance()`.
+#' Out-of-sample `newdata` is not implemented; supplying it is an error rather
+#' than a silent in-sample result.
 #'
 #' @inheritParams variance_components
+#' @param newdata Not supported. These methods return in-sample values only.
+#' @param ... Unused. Extra arguments are an error because they would be ignored.
 #'
 #' @return Response-scale predictions, fitted values, or residuals for
 #'   univariate `hsquared_fit` objects.
@@ -2400,7 +2416,9 @@ NULL
 
 #' @rdname response_scale_methods
 #' @export
-predict.hsquared_fit <- function(object, ...) {
+predict.hsquared_fit <- function(object, newdata, ...) {
+  hs_reject_newdata(!missing(newdata), "predictions")
+  hs_reject_unused_dots(list(...), "`predict()`")
   if (hs_fit_is_multivariate(object)) {
     hs_block_multivariate_response_scale("predict")
   }
@@ -2409,11 +2427,13 @@ predict.hsquared_fit <- function(object, ...) {
 
 #' @rdname response_scale_methods
 #' @export
-fitted.hsquared_fit <- function(object, ...) {
+fitted.hsquared_fit <- function(object, newdata, ...) {
+  hs_reject_newdata(!missing(newdata), "fitted values")
+  hs_reject_unused_dots(list(...), "`fitted()`")
   if (hs_fit_is_multivariate(object)) {
     hs_block_multivariate_response_scale("fitted")
   }
-  predictions <- stats::predict(object, ...)
+  predictions <- stats::predict(object)
   if (is.data.frame(predictions) && ".fitted" %in% names(predictions)) {
     return(predictions$.fitted)
   }
@@ -2422,7 +2442,9 @@ fitted.hsquared_fit <- function(object, ...) {
 
 #' @rdname response_scale_methods
 #' @export
-residuals.hsquared_fit <- function(object, ...) {
+residuals.hsquared_fit <- function(object, newdata, ...) {
+  hs_reject_newdata(!missing(newdata), "residuals")
+  hs_reject_unused_dots(list(...), "`residuals()`")
   if (hs_fit_is_multivariate(object)) {
     hs_block_multivariate_response_scale("residuals")
   }
@@ -2433,7 +2455,7 @@ residuals.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  fitted_values <- as.numeric(stats::fitted(object, ...))
+  fitted_values <- as.numeric(stats::fitted(object))
   response <- as.numeric(response)
   if (length(response) != length(fitted_values)) {
     stop(
