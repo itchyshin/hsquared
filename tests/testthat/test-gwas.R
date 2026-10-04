@@ -632,6 +632,17 @@ test_that("gwas(genome_wide = TRUE) is rejected for mixed/loco (validated for si
   )
 })
 
+test_that("gwas(genome_wide = TRUE) refuses a non-intercept-only design", {
+  # engine-free: the type-I claim is intercept-only (hsquared#308)
+  fit <- hs_mock_gwas_fit(n = 4)
+  fit$payload$X <- cbind(1, c(0, 1, 0, 1))
+  markers <- matrix(0, 4, 2, dimnames = list(letters[1:4], NULL))
+  expect_error(
+    gwas(fit, markers, method = "single", genome_wide = TRUE),
+    "intercept-only"
+  )
+})
+
 test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
   hs_skip_live_julia()
   testthat::skip_if_not(
@@ -656,17 +667,15 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
       0.5 * (bv[[s]] + bv[[d]]) + stats::rnorm(1, sd = sqrt(0.5))
     }
   }
-  x <- stats::rnorm(n)
   M <- matrix(sample(0:2, n * 4L, replace = TRUE), n, 4L)
   rownames(M) <- ped$id
   # plant a causal effect at marker 2 so a genome-wide hit exists
   dat <- data.frame(
-    y = 1 + 0.5 * x + bv + 0.9 * scale(M[, 2], scale = FALSE)[, 1] + stats::rnorm(n),
-    id = ped$id,
-    x = x
+    y = 1 + bv + 0.9 * scale(M[, 2], scale = FALSE)[, 1] + stats::rnorm(n),
+    id = ped$id
   )
   fit <- hsquared(
-    y ~ x + animal(1 | id, pedigree = ped),
+    y ~ animal(1 | id, pedigree = ped),
     data = dat,
     family = stats::gaussian(),
     REML = TRUE

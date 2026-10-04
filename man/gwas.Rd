@@ -44,9 +44,11 @@ with one group label per marker column (for example a chromosome label).
 Markers in a group are tested with a genomic relationship built from all
 \strong{other} groups. Needs at least two distinct, non-missing labels.}
 
-\item{genome_wide}{Logical; if \code{TRUE} (requires \code{method = "single"}), add a
-genome-wide-calibrated \code{genome_wide_p} column via the exact per-dataset add-one
-permutation rule (see Details). Defaults to \code{FALSE} (nominal p-values only).}
+\item{genome_wide}{Logical; if \code{TRUE} (requires \code{method = "single"} and an
+intercept-only fixed-effect design), add a genome-wide-calibrated
+\code{genome_wide_p} column via the exact per-dataset add-one permutation rule
+(see Details). Defaults to \code{FALSE} (nominal p-values only). A fit with
+covariates is refused: that scope is not type-I-control validated.}
 
 \item{n_permutations}{Number of permutations for the genome-wide null when
 \code{genome_wide = TRUE} (default 1000). The add-one floor is \code{1/(n_permutations+1)}.}

@@ -59,9 +59,11 @@
 #'   with one group label per marker column (for example a chromosome label).
 #'   Markers in a group are tested with a genomic relationship built from all
 #'   **other** groups. Needs at least two distinct, non-missing labels.
-#' @param genome_wide Logical; if `TRUE` (requires `method = "single"`), add a
-#'   genome-wide-calibrated `genome_wide_p` column via the exact per-dataset add-one
-#'   permutation rule (see Details). Defaults to `FALSE` (nominal p-values only).
+#' @param genome_wide Logical; if `TRUE` (requires `method = "single"` and an
+#'   intercept-only fixed-effect design), add a genome-wide-calibrated
+#'   `genome_wide_p` column via the exact per-dataset add-one permutation rule
+#'   (see Details). Defaults to `FALSE` (nominal p-values only). A fit with
+#'   covariates is refused: that scope is not type-I-control validated.
 #' @param n_permutations Number of permutations for the genome-wide null when
 #'   `genome_wide = TRUE` (default 1000). The add-one floor is `1/(n_permutations+1)`.
 #' @param seed Integer RNG seed for the genome-wide permutation null (default 1), so
@@ -143,6 +145,9 @@ gwas.hsquared_fit <- function(
   }
   hs_validate_gwas_fit(object)
   payload <- object$payload
+  if (genome_wide) {
+    hs_validate_gwas_genome_wide_design(payload$X)
+  }
   vc <- object$result$variance_components
   sigma_a2 <- vc$estimate[vc$component == "animal"][[1L]]
   sigma_e2 <- vc$estimate[vc$component == "residual"][[1L]]
@@ -266,7 +271,7 @@ gwas.hsquared_fit <- function(
       threshold = (raw$genome_wide_threshold %||% NA_real_) / (2 * log(10)),
       alpha = raw$alpha %||% 0.05,
       empirical_type1 = NA_real_,
-      marker_panel_mode = "real_panel",
+      marker_panel_mode = raw$marker_panel_mode %||% "real_panel",
       scan_method = method,
       n_replicates = raw$n_permutations %||% n_permutations,
       seed = seed,
@@ -332,6 +337,27 @@ hs_validate_gwas_fit <- function(object) {
     )
   }
   invisible(TRUE)
+}
+
+# genome_wide = TRUE reuses the engine's intercept-only type-I evidence. A
+# supplied-covariate X is accepted by the Julia scan as an experimental
+# residual-permutation utility, but R must not attach that validated claim.
+hs_validate_gwas_genome_wide_design <- function(X) {
+  intercept_only <- is.matrix(X) &&
+    ncol(X) == 1L &&
+    length(X) > 0L &&
+    all(is.finite(X)) &&
+    max(abs(X - 1)) <= 1e-12
+  if (isTRUE(intercept_only)) {
+    return(invisible(TRUE))
+  }
+  stop(
+    "`genome_wide = TRUE` is validated for an intercept-only design ",
+    "(`y ~ animal(...)`). This fit has covariates; supplied-covariate X is ",
+    "an experimental residual-permutation utility and is not type-I-control ",
+    "validated. Refit without covariates or run `genome_wide = FALSE`.",
+    call. = FALSE
+  )
 }
 
 hs_validate_gwas_markers <- function(markers, payload) {
