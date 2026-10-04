@@ -254,6 +254,14 @@ supplied-variance solve (\code{HSquared.fit_snp_blup()}), or omit them to have
 marshals the inverse). \code{target = "precision"} is the same experimental path
 for \code{precision(1 | id, Q = Q)} (a supplied precision/inverse). Neither is
 covered or the default; the supplied matrix is provenance, not an estimate.
+\code{K} / \code{Q} must be square, symmetric, and positive definite, with unique
+row and column names equal to the ids (any row order; names are matched).
+\code{relmat()} takes the matrix \code{K} itself; \code{precision()} takes the inverse
+\code{Q}; \code{genomic()} takes the inverse \code{Ginv}, not \code{G}. Identical genotypes
+(monozygotic twins, clones, repeated rows) make \code{K} singular. Ridge with
+\code{K + 1e-6 * diag(n)}; the printed residual is then \code{E - 1e-6 * Va}, so add
+that shift back before reporting \code{h2 = Va / (Va + Ve)} on the kernel.
+An ACE twin model is not available from \code{relmat()}.
 The \code{animal(1 | id, pedigree = ped)} route rejects selfing (rows with the
 same known sire and dam) in v0.1, with no argument that reaches the
 engine's \code{allow_selfing} flag; \code{relmat(1 | id, K = A)} with a hand-built

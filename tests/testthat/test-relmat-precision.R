@@ -166,6 +166,84 @@ test_that("a non-positive-definite K is rejected", {
   )
 })
 
+test_that("a singular MZ-twin K names the ridge remedy and refuses ACE", {
+  ids <- c("mz1", "mz2", "u1")
+  K <- diag(3)
+  dimnames(K) <- list(ids, ids)
+  K["mz1", "mz2"] <- K["mz2", "mz1"] <- 1
+  dat <- data.frame(y = c(1, 1.1, 0.4), id = ids)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "monozygotic twins",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "1e-6 * diag",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "ACE twin model is not available",
+    fixed = TRUE
+  )
+})
+
+test_that("K without dimnames is rejected", {
+  ids <- paste0("a", 1:3)
+  K <- hs_test_relmat_K(ids)
+  dimnames(K) <- NULL
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "row/column names matching the ids",
+    fixed = TRUE
+  )
+})
+
+test_that("relmat matches K rows by name, not position", {
+  ids <- paste0("a", 1:3)
+  K <- hs_test_relmat_K(ids)
+  K_perm <- K[c(3L, 1L, 2L), c(3L, 1L, 2L)]
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ relmat(1 | id, K = K),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  spec_perm <- hsquared:::hs_build_model_spec(
+    y ~ relmat(1 | id, K = K_perm),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  expect_equal(
+    spec$random$relmat$ginv[ids, ids],
+    spec_perm$random$relmat$ginv[ids, ids]
+  )
+})
+
 test_that("a non-finite K is rejected", {
   ids <- paste0("a", 1:3)
   K <- hs_test_relmat_K(ids)

@@ -243,6 +243,14 @@
 #'   marshals the inverse). `target = "precision"` is the same experimental path
 #'   for `precision(1 | id, Q = Q)` (a supplied precision/inverse). Neither is
 #'   covered or the default; the supplied matrix is provenance, not an estimate.
+#'   `K` / `Q` must be square, symmetric, and positive definite, with unique
+#'   row and column names equal to the ids (any row order; names are matched).
+#'   `relmat()` takes the matrix `K` itself; `precision()` takes the inverse
+#'   `Q`; `genomic()` takes the inverse `Ginv`, not `G`. Identical genotypes
+#'   (monozygotic twins, clones, repeated rows) make `K` singular. Ridge with
+#'   `K + 1e-6 * diag(n)`; the printed residual is then `E - 1e-6 * Va`, so add
+#'   that shift back before reporting `h2 = Va / (Va + Ve)` on the kernel.
+#'   An ACE twin model is not available from `relmat()`.
 #'   The `animal(1 | id, pedigree = ped)` route rejects selfing (rows with the
 #'   same known sire and dam) in v0.1, with no argument that reaches the
 #'   engine's `allow_selfing` flag; `relmat(1 | id, K = A)` with a hand-built

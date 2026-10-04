@@ -2420,7 +2420,20 @@ hs_validate_relmat_matrix <- function(mat, arg_name) {
     error = function(err) FALSE
   )
   if (!chol_ok) {
-    stop("`", arg_name, "` must be positive definite.", call. = FALSE)
+    stop(
+      "`",
+      arg_name,
+      "` must be positive definite. Identical genotypes (monozygotic twins, ",
+      "clones, or repeated rows) make a relationship matrix singular. Ridge ",
+      "with `",
+      arg_name,
+      " + 1e-6 * diag(nrow(",
+      arg_name,
+      "))`; the printed residual is then E - 1e-6 * Va, so add that shift ",
+      "back before reporting h2. An ACE twin model is not available from ",
+      "`relmat()`.",
+      call. = FALSE
+    )
   }
   mat
 }

@@ -127,7 +127,11 @@ test_that("function map names real extractors and R vs Julia gaps", {
   expect_match(text, "additive_relationship()", fixed = TRUE)
   expect_match(text, "genomic_relationship_matrix()", fixed = TRUE)
   expect_match(text, "R function and Julia function", fixed = TRUE)
-  expect_false(exists("g_matrix_geometry", envir = asNamespace("hsquared"), inherits = FALSE))
+  expect_false(exists(
+    "g_matrix_geometry",
+    envir = asNamespace("hsquared"),
+    inherits = FALSE
+  ))
 })
 
 test_that("genomic help states the ridged residual shift", {
@@ -151,6 +155,51 @@ test_that("genomic help states the ridged residual shift", {
   article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
   expect_match(article_text, "0.01 * sigma_g2", fixed = TRUE)
   expect_match(article_text, "no `ridge` argument", fixed = TRUE)
+})
+
+test_that("relmat docs name dimnames, singular MZ kernels, and the live target", {
+  grammar <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "formula-grammar.Rmd"
+  )
+  skip_if_not(file.exists(grammar), "formula-grammar article not present")
+  grammar_text <- paste(readLines(grammar, warn = FALSE), collapse = "\n")
+  expect_no_match(grammar_text, "syntax reservation only", fixed = TRUE)
+  expect_match(grammar_text, 'target = "relmat"', fixed = TRUE)
+  expect_match(grammar_text, "positive definite", fixed = TRUE)
+  expect_match(grammar_text, "row and column names", fixed = TRUE)
+
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "inheritance-systems.Rmd"
+  )
+  skip_if_not(file.exists(article), "inheritance-systems article not present")
+  article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+  expect_match(
+    article_text,
+    "Supplying your own relationship matrix",
+    fixed = TRUE
+  )
+  expect_match(article_text, "Ginv", fixed = TRUE)
+  expect_match(article_text, "1e-6 * diag", fixed = TRUE)
+  expect_match(article_text, "monozygotic", ignore.case = TRUE)
+  expect_match(article_text, "Va / (Va + Ve)", fixed = TRUE)
+  expect_match(article_text, "ACE twin model", fixed = TRUE)
+  expect_match(article_text, "not available from R", fixed = TRUE)
+
+  rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
+  skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
+  rd_text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(rd_text, "positive definite", fixed = TRUE)
+  expect_match(rd_text, "row and column names", fixed = TRUE)
+  expect_match(rd_text, "1e-6", fixed = TRUE)
+  expect_match(rd_text, "monozygotic", ignore.case = TRUE)
 })
 
 test_that("hs_control help names dense-route unit starts and rescale guidance", {
