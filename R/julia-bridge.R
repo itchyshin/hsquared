@@ -4773,7 +4773,8 @@ hs_fit_julia_genomic_payload <- function(
     }
   }
   rel <- payload$relationship
-  inference_cmd <- if (identical(rel, "relmat")) {
+  # Engine-owned AI-REML SEs/intervals: relmat (#295) and genomic (#294).
+  inference_cmd <- if (identical(rel, "relmat") || identical(rel, "genomic")) {
     hs_julia_merge_inference_slots()
   } else {
     ""
@@ -4881,11 +4882,6 @@ hs_fit_julia_genomic_payload <- function(
         result$heritability$estimate <- boundary$profile_ratio
       }
     }
-    # Genomic ratio uncertainty is not yet scale-labelled or separately
-    # calibrated. Keep the engine's raw capability out of the public R result
-    # until that contract is validated.
-    result$heritability_interval <- NULL
-    result$heritability_se <- NULL
     if (
       !is.null(result$genomic_boundary) &&
         result$genomic_boundary$status %in%

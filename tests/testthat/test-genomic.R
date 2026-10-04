@@ -319,9 +319,60 @@ test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]
   expect_null(fit$result$prediction_error_variance)
   expect_null(fit$result$reliability)
   expect_error(breeding_values(fit), "does not contain")
+  expect_null(fit$result$variance_component_se)
   printed <- capture.output(print(fit))
   expect_true(any(grepl("scientific endpoint.*0", printed)))
   expect_true(any(grepl("numerical MME.*1e-07", printed)))
+})
+
+test_that("genomic route forwards engine-owned SEs and intervals [live]", {
+  # hsquared#294: same class as #295 relmat forwarding. Julia already
+  # returns AI-REML SEs on AnimalModelFit; R copies those fields onto the fit.
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
+  )
+
+  set.seed(294)
+  na <- 8
+  ids <- paste0("g", seq_len(na))
+  m <- matrix(stats::rbinom(na * 60, 2, 0.3), na, 60)
+  mc <- scale(m, scale = FALSE)
+  g <- tcrossprod(mc)
+  g <- g / mean(diag(g)) + diag(na) * 0.01
+  Ginv <- solve(g)
+  dimnames(Ginv) <- list(ids, ids)
+
+  # Interior optimum so the engine AI matrix is invertible.
+  bv <- as.numeric(t(chol(g)) %*% stats::rnorm(na))
+  names(bv) <- ids
+  n <- 64
+  rec <- rep(ids, length.out = n)
+  dat <- data.frame(y = 3 + bv[rec] + stats::rnorm(n, 0, 0.7), id = rec)
+
+  fit <- hsquared(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+
+  vcse <- variance_component_standard_errors(fit)
+  expect_equal(vcse$component, c("genomic", "residual"))
+  expect_true(all(is.finite(vcse$se)) && all(vcse$se > 0))
+
+  expect_true(
+    is.finite(fit$result$heritability_se) && fit$result$heritability_se > 0
+  )
+  h2ci <- fit$result$heritability_interval
+  expect_true(
+    h2ci$lower < h2ci$estimate &&
+      h2ci$estimate < h2ci$upper
+  )
 })
 
 test_that("genomic() accepts a marker matrix to build the relationship", {
