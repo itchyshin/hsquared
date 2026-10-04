@@ -23,7 +23,11 @@ A one-row data frame with \code{estimate} (the repeatability \code{t}), \code{lo
 \code{repeatability_interval()} returns an \strong{experimental} large-sample (logit
 delta-method) confidence interval for the repeatability coefficient
 \code{t = (Va + Vpe) / Vp} of the opt-in repeatability (permanent-environment)
-model, available only when the fit contains it.
+model, available only when the fit contains it. The interval is built
+from the observed information: a central finite-difference Hessian of
+the REML log-likelihood with \code{fd_step = 1e-4}, not the univariate
+average-information matrix. See the information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
 
 It mirrors the engine row \code{V3-REPEAT-REML} (\code{partial}): the engine's
 repeatability REML estimator and this interval are engine-internal

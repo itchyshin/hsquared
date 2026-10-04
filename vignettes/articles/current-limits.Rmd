@@ -35,6 +35,8 @@ behind them to report.
    coverage-calibrated.** Named univariate pedigree intervals have a narrower
    `directional-conservative` claim level, not a nominal-calibration claim. Do
    not report any interval as if nominal coverage had been established.
+   The information matrix also differs by route: see
+   [Which information matrix?](#which-information-matrix).
 
 ```{r f3-recovery-ladder, echo = FALSE, results = "asis"}
 cat(sprintf(
@@ -156,6 +158,25 @@ plus trait-level conditional genetic modes on the log-rate scale. See
 Both routes are **partial**. Use their point estimates for exploration; for a
 paper, run a suitable comparator yourself. No interval, automatic factor rank,
 missing-response fit, or broader family claim follows from these cells.
+
+## Which information matrix?
+
+SE and interval extractors do not all use the same information matrix.
+Swapping one matrix for the other changes the SE (the two are not the
+same estimand). The method itself is unchanged; this table only names
+what each route already computes.
+
+| Route | Information matrix | How it is built | Ratio SE / interval |
+| --- | --- | --- | --- |
+| Univariate animal model (default) | Average information | Analytic AI matrix from the REML fit | Delta method; logit scale for `heritability_interval()` |
+| Repeatability / permanent environment | Observed information | Central finite-difference Hessian, `fd_step = 1e-4` | Logit-scale delta method for `repeatability_interval()` |
+| Two-effect (`common_env` / maternal) | Observed information | Central finite-difference Hessian, `fd_step = 1e-4` | Logit-scale delta method for `heritability_interval()` and `common_env_proportion_interval()` |
+| Multivariate `cbind()` | Observed information | Central finite-difference Hessian, `fd_step = 1e-4` | Delta method for `covariance_standard_errors()`; Fisher-z for genetic-correlation endpoints |
+
+See `?variance_component_standard_errors`, `?heritability_interval`,
+`?repeatability_interval`, `?common_env_proportion_interval`, and
+`?covariance_standard_errors`. None of these intervals is nominally
+coverage-calibrated.
 
 ## Where to read next
 

@@ -1175,7 +1175,16 @@ hs_reject_unused_dots <- function(dots, fn) {
 #' separately in `fit$result$variance_ratio_intervals`.
 #'
 #' The interval leg is a REML-only, asymptotic (logit delta-method or profile)
-#' approximation returned by the engine. The 2000-rep C1 coverage confirm
+#' approximation returned by the engine. On the default univariate route the
+#' SE comes from the REML average-information matrix. On the repeatability,
+#' two-effect, and multivariate routes the engine uses the observed
+#' information from a central finite-difference Hessian
+#' (`fd_step = 1e-4`). Those two matrices are not the same estimand; do not
+#' compare SEs across routes as if they were. R cannot request the profile
+#' interval from this extractor; only the engine-returned interval is shown.
+#' See the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' The 2000-rep C1 coverage confirm
 #' (HSquared.jl DRAC job **47925485**) places the univariate pedigree h²
 #' interval at the **directional-conservative** claim level under doc-34 §4:
 #' delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
@@ -1240,7 +1249,12 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #'
 #' `variance_component_standard_errors()` and `heritability_standard_error()`
 #' return **experimental** large-sample (delta-method) standard errors derived
-#' from the REML average-information matrix. They are available only when an
+#' from the REML average-information matrix on the default univariate
+#' Gaussian animal-model route. Repeatability, two-effect, and multivariate
+#' SEs use the observed information from a central finite-difference
+#' Hessian (`fd_step = 1e-4`) instead; see the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' They are available only when an
 #' `hsquared_fit` object contains them; the default Gaussian animal-model fit
 #' populates them from the engine when a local Julia engine is present and the
 #' AI matrix is invertible. When the engine could not compute them, `hsquared()`
@@ -1369,7 +1383,11 @@ hs_as_heritability_se_frame <- function(object, se) {
 #' `repeatability_interval()` returns an **experimental** large-sample (logit
 #' delta-method) confidence interval for the repeatability coefficient
 #' `t = (Va + Vpe) / Vp` of the opt-in repeatability (permanent-environment)
-#' model, available only when the fit contains it.
+#' model, available only when the fit contains it. The interval is built
+#' from the observed information: a central finite-difference Hessian of
+#' the REML log-likelihood with `fd_step = 1e-4`, not the univariate
+#' average-information matrix. See the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 #'
 #' It mirrors the engine row `V3-REPEAT-REML` (`partial`): the engine's
 #' repeatability REML estimator and this interval are engine-internal
@@ -1425,8 +1443,11 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 #'
 #' This mirrors the engine row `V3-TWOEFFECT-REML`: the interval is the asymptotic
 #' delta-method CI built from the two-effect REML observed information (the
-#' finite-difference Hessian of the two-effect REML log-likelihood at the
-#' optimum). It is **asymptotic, delta-method, REML only, and NOT
+#' central finite-difference Hessian of the two-effect REML log-likelihood at
+#' the optimum, `fd_step = 1e-4`). That is not the univariate
+#' average-information matrix; see the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' It is **asymptotic, delta-method, REML only, and NOT
 #' coverage-calibrated** -- on small samples the REML surface is flat and the
 #' interval is unreliable (the parametric bootstrap is the only finite-sample-
 #' aware path). No calibrated coverage is claimed.
@@ -1507,7 +1528,12 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #' `covariance_standard_errors()` returns **experimental** large-sample
 #' (delta-method) standard errors for the multivariate genetic/residual
 #' covariance and correlation matrices and per-trait `h^2`, for an opt-in
-#' **unstructured** multivariate fit, when the engine returned them.
+#' **unstructured** multivariate fit, when the engine returned them. The
+#' SEs come from the observed information: a central finite-difference
+#' Hessian of the multivariate REML log-likelihood with `fd_step = 1e-4`,
+#' not the univariate average-information matrix. See the
+#' information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 #'
 #' Heavy caveats (engine multivariate REML validation row, `partial`): the strict per-seed
 #' recovery gate is still a non-pass (7/12 unstructured seeds in the updated

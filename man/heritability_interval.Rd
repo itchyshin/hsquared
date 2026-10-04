@@ -34,7 +34,16 @@ phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
 
 The interval leg is a REML-only, asymptotic (logit delta-method or profile)
-approximation returned by the engine. The 2000-rep C1 coverage confirm
+approximation returned by the engine. On the default univariate route the
+SE comes from the REML average-information matrix. On the repeatability,
+two-effect, and multivariate routes the engine uses the observed
+information from a central finite-difference Hessian
+(\code{fd_step = 1e-4}). Those two matrices are not the same estimand; do not
+compare SEs across routes as if they were. R cannot request the profile
+interval from this extractor; only the engine-returned interval is shown.
+See the information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+The 2000-rep C1 coverage confirm
 (HSquared.jl DRAC job \strong{47925485}) places the univariate pedigree h²
 interval at the \strong{directional-conservative} claim level under doc-34 §4:
 delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and

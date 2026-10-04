@@ -34,8 +34,11 @@ the direct heritability (\code{h2}, \code{ratio1}).
 
 This mirrors the engine row \code{V3-TWOEFFECT-REML}: the interval is the asymptotic
 delta-method CI built from the two-effect REML observed information (the
-finite-difference Hessian of the two-effect REML log-likelihood at the
-optimum). It is \strong{asymptotic, delta-method, REML only, and NOT
+central finite-difference Hessian of the two-effect REML log-likelihood at
+the optimum, \code{fd_step = 1e-4}). That is not the univariate
+average-information matrix; see the information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+It is \strong{asymptotic, delta-method, REML only, and NOT
 coverage-calibrated} -- on small samples the REML surface is flat and the
 interval is unreliable (the parametric bootstrap is the only finite-sample-
 aware path). No calibrated coverage is claimed.

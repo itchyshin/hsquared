@@ -312,6 +312,53 @@ test_that("dense-limit docs state nobs^2 + nanimals^2, not n < 1000", {
   expect_no_match(article_text, "n <= 1000")
 })
 
+test_that("interval docs name average information versus finite-difference observed information", {
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "current-limits.Rmd"
+  )
+  skip_if_not(file.exists(article), "current-limits.Rmd not present")
+  article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+  expect_match(article_text, "Which information matrix?", fixed = TRUE)
+  expect_match(article_text, "Average information", fixed = TRUE)
+  expect_match(article_text, "Observed information", fixed = TRUE)
+  expect_match(article_text, "fd_step = 1e-4", fixed = TRUE)
+  expect_match(article_text, "same estimand", fixed = TRUE)
+
+  pages <- c(
+    heritability_interval = "heritability_interval.Rd",
+    variance_component_standard_errors = "variance_component_standard_errors.Rd",
+    repeatability_interval = "repeatability_interval.Rd",
+    common_env_proportion_interval = "common_env_proportion_interval.Rd",
+    covariance_standard_errors = "covariance_standard_errors.Rd"
+  )
+  for (rd_name in pages) {
+    rd <- testthat::test_path("..", "..", "man", rd_name)
+    skip_if_not(file.exists(rd), paste(rd_name, "not present"))
+    text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+    expect_match(text, "finite-difference", ignore.case = TRUE, info = rd_name)
+    expect_match(text, "fd_step", fixed = TRUE, info = rd_name)
+    expect_match(text, "current-limits.html", fixed = TRUE, info = rd_name)
+  }
+
+  uni <- paste(
+    readLines(
+      testthat::test_path(
+        "..",
+        "..",
+        "man",
+        "variance_component_standard_errors.Rd"
+      ),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+  expect_match(uni, "average-information", fixed = TRUE)
+})
+
 test_that("heritability help states default, repeatability, and multi-effect Vp", {
   rd <- testthat::test_path("..", "..", "man", "heritability.Rd")
   skip_if_not(file.exists(rd), "man/heritability.Rd not present")

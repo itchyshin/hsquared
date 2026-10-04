@@ -28,7 +28,12 @@ numeric internally; this extractor is the public shape.
 \details{
 \code{variance_component_standard_errors()} and \code{heritability_standard_error()}
 return \strong{experimental} large-sample (delta-method) standard errors derived
-from the REML average-information matrix. They are available only when an
+from the REML average-information matrix on the default univariate
+Gaussian animal-model route. Repeatability, two-effect, and multivariate
+SEs use the observed information from a central finite-difference
+Hessian (\code{fd_step = 1e-4}) instead; see the information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+They are available only when an
 \code{hsquared_fit} object contains them; the default Gaussian animal-model fit
 populates them from the engine when a local Julia engine is present and the
 AI matrix is invertible. When the engine could not compute them, \code{hsquared()}
