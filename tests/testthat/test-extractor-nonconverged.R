@@ -3,6 +3,13 @@
 # heritability(): keep the engine number so it can be inspected, and shout.
 
 hs_nonconverged_extractor_fit <- function(converged = FALSE) {
+  # The non-converged path keeps a near-zero animal share so the warning
+  # bar still sees a failed-fit artefact. The quiet-path control must be
+  # interior: the same 1e-16 share is a variance-component boundary, and
+  # extractors warn on that even when the optimizer reports converged.
+  animal_vc <- if (converged) 0.48 else 1e-16
+  residual_vc <- if (converged) 0.72 else 1.2
+  h2 <- if (converged) 0.4 else 9.48e-17
   hsquared:::hs_new_fit(
     spec = list(
       method = "REML",
@@ -13,20 +20,20 @@ hs_nonconverged_extractor_fit <- function(converged = FALSE) {
     result = list(
       variance_components = data.frame(
         component = c("animal", "residual"),
-        estimate = c(1e-16, 1.2),
+        estimate = c(animal_vc, residual_vc),
         stringsAsFactors = FALSE
       ),
       heritability = data.frame(
         term = "animal",
-        estimate = 9.48e-17,
+        estimate = h2,
         stringsAsFactors = FALSE
       ),
       heritability_interval = data.frame(
-        estimate = 9.48e-17,
-        lower = 0,
-        upper = 1,
+        estimate = h2,
+        lower = if (converged) 0.18 else 0,
+        upper = if (converged) 0.62 else 1,
         level = 0.95,
-        se = 0.4,
+        se = if (converged) 0.11 else 0.4,
         method = "delta",
         stringsAsFactors = FALSE
       ),
