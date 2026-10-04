@@ -2979,7 +2979,8 @@ hs_fit_julia_multivariate_payload <- function(
   initial = NULL,
   iterations = 2000L,
   genetic_structure = "unstructured",
-  rank = NULL
+  rank = NULL,
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -3007,6 +3008,7 @@ hs_fit_julia_multivariate_payload <- function(
     )
   }
   iterations <- hs_validate_iterations(iterations)
+  max_dense_cells <- hs_validate_max_dense_cells(max_dense_cells)
   traits <- payload$metadata$trait_names %||% colnames(payload$Y)
   if (is.null(traits)) {
     traits <- paste0("trait", seq_len(ntraits))
@@ -3040,6 +3042,7 @@ hs_fit_julia_multivariate_payload <- function(
     JuliaCall::julia_assign("hsq_initial_R0", initial$R0)
   }
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_assign("hsq_max_dense_cells", max_dense_cells)
   JuliaCall::julia_assign(
     "hsq_genetic_structure",
     as.character(genetic_structure)
@@ -3066,7 +3069,8 @@ hs_fit_julia_multivariate_payload <- function(
       "hsq_fit = HSquared.fit_multivariate_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
       paste0("initial = ", initial_expr, ","),
-      "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits,",
+      "iterations = hsq_iterations, max_dense_cells = hsq_max_dense_cells,",
+      "ids = hsq_ped.ids, traits = hsq_traits,",
       paste0(
         "genetic_structure = Symbol(hsq_genetic_structure)",
         rank_expr,
@@ -3162,7 +3166,8 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = NULL,
-  iterations = 2000L
+  iterations = 2000L,
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -3201,6 +3206,7 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
   user_initial <- !is.null(initial)
   initial <- hs_validate_multivariate_repeatability_initial(initial, ntraits)
   iterations <- hs_validate_iterations(iterations)
+  max_dense_cells <- hs_validate_max_dense_cells(max_dense_cells)
   traits <- payload$metadata$trait_names %||% colnames(payload$Y)
   if (is.null(traits)) {
     traits <- paste0("trait", seq_len(ntraits))
@@ -3233,6 +3239,7 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
   JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
   JuliaCall::julia_assign("hsq_traits", as.character(traits))
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_assign("hsq_max_dense_cells", max_dense_cells)
   initial_kw <- ""
   if (isTRUE(user_initial)) {
     JuliaCall::julia_assign("hsq_initial_G0", initial$G0)
@@ -3251,7 +3258,8 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
       "hsq_fit = HSquared.fit_multivariate_repeatability_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
       initial_kw,
-      "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits);",
+      "iterations = hsq_iterations, max_dense_cells = hsq_max_dense_cells,",
+      "ids = hsq_ped.ids, traits = hsq_traits);",
       "hsq_mvpe_raw = Dict(",
       "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
       "\"permanent_covariance\" => Matrix{Float64}(hsq_fit.permanent_covariance),",
@@ -5692,8 +5700,14 @@ hs_engine_control_honoured_keys <- list(
     "rank",
     "experimental_gllvm"
   ),
-  multivariate = c("initial", "iterations", "genetic_structure", "rank"),
-  multivariate_repeatability = c("initial", "iterations"),
+  multivariate = c(
+    "initial",
+    "iterations",
+    "genetic_structure",
+    "rank",
+    "max_dense_cells"
+  ),
+  multivariate_repeatability = c("initial", "iterations", "max_dense_cells"),
   random_regression = "iterations",
   # initial (hsquared#225): a list with `sigma_a2`, the centre of the
   # engine's log-scale search bracket, `log(sigma_a2) +/- 6` (default centre

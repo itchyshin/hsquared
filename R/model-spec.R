@@ -925,7 +925,25 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     arg_names <- rep("", length(args))
   }
 
-  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if ("formula" %in% arg_names) {
+    stop(
+      "`animal()` does not accept `formula =`. Write the random-effect ",
+      "expression as the first argument, for example ",
+      "`animal(1 | id, pedigree = ped)`.",
+      call. = FALSE
+    )
+  }
+  repeated <- unique(arg_names[nzchar(arg_names) & duplicated(arg_names)])
+  if (length(repeated) > 0L) {
+    stop(
+      "`animal()` argument ",
+      paste(sprintf("`%s`", repeated), collapse = ", "),
+      " was supplied more than once. The extra value would be ignored.",
+      call. = FALSE
+    )
+  }
+
+  bar_candidates <- which(arg_names == "")
   if (length(bar_candidates) != 1L) {
     stop(
       "`animal()` must have one random-effect expression, for example ",

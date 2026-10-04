@@ -54,20 +54,26 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method}. Both the
 default dense route and the opt-in \code{scale_method = "auto"} route
 forward \code{initial} and \code{iterations} to the Julia fitter.
-\item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
+\item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank},
+\code{max_dense_cells}.
 \item \code{genetic_gllvm}: \code{iterations}, \code{genetic_structure}, \code{rank},
 \code{experimental_gllvm} (\code{initial} is not exposed on this route).
-\item \code{multivariate_repeatability}: \code{initial}, \code{iterations}.
+\item \code{multivariate_repeatability}: \code{initial}, \code{iterations},
+\code{max_dense_cells}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with
 \code{sigma_a2}), \code{restart_check}.
 \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
 the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
-\code{fit_variance_components()}) and \code{target = "repeatability"}. Both require
-\code{engine = "julia"}. It has \strong{no effect} under the default \code{engine = "fit"}
-path, which routes to the sparse-capable \code{HSquared.fit_ai_reml()} and enforces
-no dense-cell cap at all. It must be a
+\code{fit_variance_components()}) and \code{target = "repeatability"}. Those two
+require \code{engine = "julia"}. The default univariate \code{engine = "fit"} path
+routes to sparse-capable \code{HSquared.fit_ai_reml()} and does not use this
+cap. The default \code{cbind()} path does: it forwards \code{max_dense_cells} to
+the dense multivariate fitter, and a problem above the cap errors
+instead of allocating (hsquared#280, HSquared.jl#443). A name that is
+not in the recognised set errors here, rather than being ignored
+(hsquared#323). It must be a
 single positive integer; the default, \code{1e6}, mirrors the engine's own
 \code{DEFAULT_MAX_DENSE_CELLS} unchanged. Raise it to fit a larger dense
 problem at the cost of memory and time, or switch to a sparse route
@@ -84,8 +90,10 @@ the sparse route forms its interval from the fitted components and never
 reaches that entry point, so it is unaffected by \code{max_dense_cells}.
 }
 
-\code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
-it has no effect under the default \code{engine = "fit"} path. The supported
+\code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs.
+Under the default \code{engine = "fit"} path, \code{target} and
+\code{variance_components} are an error: that path would otherwise ignore
+them and return an AI-REML fit (hsquared#267). The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"multi_effect"},
 \code{"direct_maternal"}, \code{"random_regression"}, \code{"genomic"},

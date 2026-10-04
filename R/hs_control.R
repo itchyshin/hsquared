@@ -41,20 +41,26 @@
 #'   * `multi_effect`: `initial`, `iterations`, `scale_method`. Both the
 #'     default dense route and the opt-in `scale_method = "auto"` route
 #'     forward `initial` and `iterations` to the Julia fitter.
-#'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
+#'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`,
+#'     `max_dense_cells`.
 #'   * `genetic_gllvm`: `iterations`, `genetic_structure`, `rank`,
 #'     `experimental_gllvm` (`initial` is not exposed on this route).
-#'   * `multivariate_repeatability`: `initial`, `iterations`.
+#'   * `multivariate_repeatability`: `initial`, `iterations`,
+#'     `max_dense_cells`.
 #'   * `random_regression`: `iterations` (no `initial`).
 #'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
 #'     `sigma_a2`), `restart_check`.
 #'   `max_dense_cells` bounds `nobs^2 + nanimals^2` on
 #'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 #'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
-#'   `fit_variance_components()`) and `target = "repeatability"`. Both require
-#'   `engine = "julia"`. It has **no effect** under the default `engine = "fit"`
-#'   path, which routes to the sparse-capable `HSquared.fit_ai_reml()` and enforces
-#'   no dense-cell cap at all. It must be a
+#'   `fit_variance_components()`) and `target = "repeatability"`. Those two
+#'   require `engine = "julia"`. The default univariate `engine = "fit"` path
+#'   routes to sparse-capable `HSquared.fit_ai_reml()` and does not use this
+#'   cap. The default `cbind()` path does: it forwards `max_dense_cells` to
+#'   the dense multivariate fitter, and a problem above the cap errors
+#'   instead of allocating (hsquared#280, HSquared.jl#443). A name that is
+#'   not in the recognised set errors here, rather than being ignored
+#'   (hsquared#323). It must be a
 #'   single positive integer; the default, `1e6`, mirrors the engine's own
 #'   `DEFAULT_MAX_DENSE_CELLS` unchanged. Raise it to fit a larger dense
 #'   problem at the cost of memory and time, or switch to a sparse route
@@ -70,8 +76,10 @@
 #'   the sparse route forms its interval from the fitted components and never
 #'   reaches that entry point, so it is unaffected by `max_dense_cells`.
 #'
-#'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
-#'   it has no effect under the default `engine = "fit"` path. The supported
+#'   `target` selects which Julia estimator the `engine = "julia"` bridge runs.
+#'   Under the default `engine = "fit"` path, `target` and
+#'   `variance_components` are an error: that path would otherwise ignore
+#'   them and return an AI-REML fit (hsquared#267). The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
 #'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"multi_effect"`,
 #'   `"direct_maternal"`, `"random_regression"`, `"genomic"`,
@@ -345,6 +353,21 @@ hs_control <- function(
   if ("max_dense_cells" %in% names(engine_control)) {
     hs_validate_max_dense_cells(engine_control[["max_dense_cells"]])
   }
+  unknown <- setdiff(names(engine_control), hs_known_engine_control_names())
+  if (length(unknown) > 0L) {
+    known <- sort(hs_known_engine_control_names())
+    stop(
+      "`engine_control` name",
+      if (length(unknown) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unknown), collapse = ", "),
+      if (length(unknown) > 1L) " are" else " is",
+      " not recognised. A typo would fall back to the default and be ",
+      "ignored. Recognised names are ",
+      paste(sprintf("`%s`", known), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
 
   structure(
     list(
@@ -357,6 +380,14 @@ hs_control <- function(
     ),
     class = "hs_control"
   )
+}
+
+hs_known_engine_control_names <- function() {
+  unique(c(
+    unlist(hs_engine_control_honoured_keys, use.names = FALSE),
+    "target",
+    "julia_project"
+  ))
 }
 
 hs_engine_control_value <- function(control, name, default) {

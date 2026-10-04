@@ -61,6 +61,23 @@ hsquared <- function(
   }
   if (identical(julia_target, "nongaussian")) {
     hs_validate_nongaussian_three_field_v09_dots(dots)
+  } else if (length(dots) > 0L) {
+    dot_names <- names(dots)
+    if (is.null(dot_names)) {
+      dot_names <- rep.int("", length(dots))
+    }
+    labelled <- ifelse(
+      nzchar(dot_names),
+      sprintf("`%s`", dot_names),
+      "an unnamed argument"
+    )
+    stop(
+      "`hsquared()` does not accept ",
+      paste(labelled, collapse = ", "),
+      " in `...`. Those arguments would be ignored. Engine options belong in ",
+      "`control = hs_control(engine_control = list(...))`.",
+      call. = FALSE
+    )
   }
   if (identical(control$engine_control$target, "genetic_gllvm") &&
       !identical(control$engine, "julia")) {
@@ -97,6 +114,23 @@ hsquared <- function(
   hs_warn_unmodelled_repeated_records(spec)
 
   if (identical(control$engine, "fit")) {
+    # hsquared#267: `target` and `variance_components` are Julia-engine keys.
+    # The default path would otherwise ignore them and return an AI-REML fit.
+    ignored_on_fit <- intersect(
+      names(control$engine_control),
+      c("target", "variance_components")
+    )
+    if (length(ignored_on_fit) > 0L) {
+      stop(
+        "`engine = \"fit\"` does not use `engine_control` ",
+        paste(sprintf("`%s`", ignored_on_fit), collapse = ", "),
+        ". The default path fits by AI-REML (or the dense multivariate ",
+        "fitter for `cbind()`) and would ignore that key. Use ",
+        "`engine = \"julia\"` to set `target` or `variance_components`, ",
+        "or omit it.",
+        call. = FALSE
+      )
+    }
     # MV-4 (doc 38): a multivariate `cbind(...)` Gaussian response auto-routes to
     # the multivariate REML fitter (dispatched below), no longer requiring the
     # opt-in `target = "multivariate"`. Animal-only cbind stays on that fitter.
@@ -185,7 +219,12 @@ hsquared <- function(
           payload,
           project = project,
           initial = hs_engine_control_value(control, "initial", NULL),
-          iterations = hs_engine_control_value(control, "iterations", 2000L)
+          iterations = hs_engine_control_value(control, "iterations", 2000L),
+          max_dense_cells = hs_engine_control_value(
+            control,
+            "max_dense_cells",
+            1e6
+          )
         ))
       }
       return(hs_fit_julia_multivariate_payload(
@@ -196,6 +235,11 @@ hsquared <- function(
         genetic_structure = hs_validate_genetic_structure_control(
           control,
           "multivariate"
+        ),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
         )
       ))
     }
@@ -382,7 +426,12 @@ hsquared <- function(
           2000L
         ),
         genetic_structure = genetic_structure,
-        rank = hs_engine_control_value(control, "rank", NULL)
+        rank = hs_engine_control_value(control, "rank", NULL),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
+        )
       ))
     }
     if (identical(target, "multivariate_repeatability")) {
@@ -398,6 +447,11 @@ hsquared <- function(
           control,
           "iterations",
           2000L
+        ),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
         )
       ))
     }
