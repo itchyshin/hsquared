@@ -304,6 +304,33 @@ test_that("a malformed precision() Q (non-symmetric) is rejected", {
   )
 })
 
+test_that("inverse rounding noise is accepted and symmetrized", {
+  ids <- paste0("a", 1:6)
+  K <- hs_test_relmat_K(ids)
+  Q <- solve(K)
+  Q[1, 2] <- Q[1, 2] + 1e-12 * max(abs(Q))
+  dat <- data.frame(y = seq_along(ids), id = ids)
+
+  expect_false(isSymmetric(unname(Q)))
+
+  precision_spec <- hsquared:::hs_build_model_spec(
+    y ~ precision(1 | id, Q = Q),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  relmat_spec <- hsquared:::hs_build_model_spec(
+    y ~ relmat(1 | id, Kinv = Q),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  expected <- (Q + t(Q)) / 2
+  expect_identical(precision_spec$random$precision$ginv, expected)
+  expect_identical(relmat_spec$random$relmat$ginv, expected)
+})
+
 test_that("relmat(1 | id, Kinv = X) fits through the direct-inverse path", {
   ids <- paste0("a", 1:3)
   Q <- solve(hs_test_relmat_K(ids))

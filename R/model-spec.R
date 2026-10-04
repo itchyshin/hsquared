@@ -2372,9 +2372,12 @@ hs_validate_relmat_matrix <- function(mat, arg_name) {
   if (!identical(ids, colnames(mat))) {
     stop("`", arg_name, "` row and column names must match.", call. = FALSE)
   }
-  if (!isSymmetric(unname(mat))) {
+  if (!isSymmetric(unname(mat), tol = 1e-8)) {
     stop("`", arg_name, "` must be symmetric.", call. = FALSE)
   }
+  # Dense inverses from solve() can carry harmless floating-point skew. Remove
+  # it before Cholesky validation and before the matrix reaches the engine.
+  mat <- (mat + t(mat)) / 2
   # Positive definiteness via a Cholesky factorization (fails on any
   # non-positive eigenvalue), so the supplied relationship inverse is a valid
   # precision for the REML animal-model spec.
