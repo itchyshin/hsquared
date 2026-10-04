@@ -44,7 +44,12 @@ function that failed (HSquared.jl#351); the field is then absent, not \code{NA}.
 These mirror the engine row \code{V1-HERIT-CI} (\code{partial}): asymptotic,
 REML-only, and unreliable at small \code{n} or near a variance-component
 boundary (where the AI matrix is ill-conditioned and the fields are
-omitted). The 2000-rep C1 coverage confirm (job \strong{47925485}) measured the
+omitted). The Wald SE is not valid when additive variance is near 0;
+\code{V_A = 0} is on the edge of the parameter space, so the usual normal
+approximation does not apply. The likelihood-ratio test of \code{V_A = 0}
+uses a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1} (Self and Liang 1987;
+Stram and Lee 1994). R does not run that test; Julia
+\code{HSquared.nested_lrt(..., df = 1, boundary_df = 1)} already does. The 2000-rep C1 coverage confirm (job \strong{47925485}) measured the
 \strong{additive-variance delta/Wald} interval implied by these SEs to \strong{under-cover}
 (0.897 at nominal 0.95, h²=0.5), placing it at \strong{experimental-only}:
 the SE is a point-estimate reference only, \strong{not a calibrated and not a

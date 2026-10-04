@@ -76,4 +76,16 @@ but \strong{warns}: that number is not an estimate. A near-zero value from a
 failed fit is not evidence that heritability is zero. Use
 \code{\link[=fit_diagnostics]{fit_diagnostics()}} before reading any number. \code{logLik()} already refuses
 a non-converged fit; \code{heritability()} keeps the value and shouts instead.
+
+Testing \code{V_A = 0} and boundary fits: additive variance sits on the edge of
+the parameter space (\code{V_A >= 0}). The Wald SE and the logit-delta CI are
+not valid when \code{V_A} is near 0; the usual normal approximation is an
+interior-point result. The likelihood-ratio test of \code{V_A = 0} uses a
+50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1} (Self and Liang 1987; Stram and
+Lee 1994), so a plain \verb{chi^2_1} p-value is twice too large. R does not
+run that test: \code{\link[stats:anova]{stats::anova()}} stops, and \code{logLik()} / \code{AIC()} are
+exposed so a reader can build a naive \verb{chi^2_1} LRT by hand -- do not.
+The Julia engine already implements the mixture as
+\verb{HSquared.nested_lrt(loglik_constrained, loglik_full; df = 1, boundary_df = 1)}.
+That names an existing helper; it is not a new R test statistic.
 }

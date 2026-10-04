@@ -57,8 +57,13 @@ coverage-calibrated at nominal and \strong{not} "never under-covers." Profile an
 bootstrap h² interval legs were measured in the same confirm but are \strong{not}
 separately surfaced by this extractor; only the engine-returned interval is
 shown. It is reported as a point estimate plus bounds, not a validated
-(coverage-calibrated) capability, and remains unreliable near the
-\verb{h² → 0} boundary. Genomic fits still error (scale-labelled interval not
+(coverage-calibrated) capability. The Wald SE and this logit-delta CI
+are not valid when additive variance is near 0 (\code{h^2 -> 0} is the same
+edge): that is an interior-point approximation. The likelihood-ratio
+test of \code{V_A = 0} uses a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1}
+(Self and Liang 1987; Stram and Lee 1994). R \code{anova()} does not run it;
+Julia \code{HSquared.nested_lrt(..., df = 1, boundary_df = 1)} already does.
+Genomic fits still error (scale-labelled interval not
 validated). The underlying estimators \code{V3-TWOEFFECT-REML} /
 \code{V3-NEFFECT-REML} are \code{covered}, but this \strong{interval} is not.
 }

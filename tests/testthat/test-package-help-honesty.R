@@ -94,6 +94,48 @@ test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout"
   }
 })
 
+test_that("docs name Wald boundary limits and the 50:50 V_A LRT mixture", {
+  pages <- c(
+    heritability = testthat::test_path("..", "..", "man", "heritability.Rd"),
+    heritability_interval = testthat::test_path(
+      "..",
+      "..",
+      "man",
+      "heritability_interval.Rd"
+    ),
+    variance_se = testthat::test_path(
+      "..",
+      "..",
+      "man",
+      "variance_component_standard_errors.Rd"
+    ),
+    inference = testthat::test_path("..", "..", "man", "inference_blocks.Rd"),
+    limits = testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "current-limits.Rmd"
+    ),
+    gryphon = testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "gryphon-worked-example.Rmd"
+    )
+  )
+  for (name in names(pages)) {
+    skip_if_not(file.exists(pages[[name]]), paste(name, "not present"))
+    text <- paste(readLines(pages[[name]], warn = FALSE), collapse = "\n")
+    expect_match(text, "near 0", fixed = TRUE, info = name)
+    expect_match(text, "50:50", fixed = TRUE, info = name)
+    expect_match(text, "Self and Liang", fixed = TRUE, info = name)
+    expect_match(text, "nested_lrt", fixed = TRUE, info = name)
+    expect_no_match(text, "anova() now", fixed = TRUE, info = name)
+  }
+})
+
 test_that("gryphon articles do not claim ancestral loops in the open pedigree", {
   pages <- c(
     testthat::test_path(

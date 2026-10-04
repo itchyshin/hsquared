@@ -146,7 +146,7 @@ function-level match.
 | h2, variance components | `heritability()`, `variance_components()` | same names |
 | h2 SE / interval | `heritability_standard_error()`, `heritability_interval()` (delta only) | same names; also `heritability_interval(method = :profile)` |
 | Other intervals | none | Julia only: `variance_component_interval()`, `bootstrap_variance_component_interval()`, `genetic_correlation_interval()` |
-| Nested LRT / test `V_A = 0` | none (`covariance_structure_lrt()` only) | Julia only: `nested_lrt()` |
+| Nested LRT / test `V_A = 0` | none (`anova()` stops; do not hand-build a `chi^2_1` LRT from `logLik()`) | Julia only: `nested_lrt()` with `df = 1, boundary_df = 1` (50:50 `chi^2_0` + `chi^2_1` mixture) |
 | PEV, reliability, accuracy | `prediction_error_variance()`, `reliability()`, `accuracy()` | same names |
 | A, A-inverse, inbreeding | none | Julia only: `additive_relationship()`, `pedigree_inverse()`, `inbreeding_coefficients()` |
 | Repeatability | `repeatability()`, `repeatability_interval()` | `fit_repeatability_reml()`, `repeatability_interval()`; no `repeatability()` |

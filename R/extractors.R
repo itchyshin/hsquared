@@ -92,6 +92,18 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' [fit_diagnostics()] before reading any number. `logLik()` already refuses
 #' a non-converged fit; `heritability()` keeps the value and shouts instead.
 #'
+#' Testing `V_A = 0` and boundary fits: additive variance sits on the edge of
+#' the parameter space (`V_A >= 0`). The Wald SE and the logit-delta CI are
+#' not valid when `V_A` is near 0; the usual normal approximation is an
+#' interior-point result. The likelihood-ratio test of `V_A = 0` uses a
+#' 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987; Stram and
+#' Lee 1994), so a plain `chi^2_1` p-value is twice too large. R does not
+#' run that test: [stats::anova()] stops, and `logLik()` / `AIC()` are
+#' exposed so a reader can build a naive `chi^2_1` LRT by hand -- do not.
+#' The Julia engine already implements the mixture as
+#' `HSquared.nested_lrt(loglik_constrained, loglik_full; df = 1, boundary_df = 1)`.
+#' That names an existing helper; it is not a new R test statistic.
+#'
 #' @inheritParams variance_components
 #'
 #' @return Heritability results for `hsquared_fit` objects.
@@ -112,7 +124,10 @@ heritability.default <- function(object, ...) {
 #' @export
 heritability.hsquared_fit <- function(object, ...) {
   if (identical(object$spec$target, "genetic_gllvm")) {
-    stop("Heritability is not defined by this genetic GLLVM route. G and trait genetic conditional modes are on the link scale; no response-scale heritability is supplied.", call. = FALSE)
+    stop(
+      "Heritability is not defined by this genetic GLLVM route. G and trait genetic conditional modes are on the link scale; no response-scale heritability is supplied.",
+      call. = FALSE
+    )
   }
   hs_warn_if_unusable_fit(object)
   # Willham fence for the direct-maternal correlated model: heritability() on
@@ -574,10 +589,15 @@ specific_variance.default <- function(object, ...) {
 #' @export
 specific_variance.hsquared_fit <- function(object, effect = "animal", ...) {
   if (!identical(effect, "animal")) {
-    stop("`specific_variance()` currently supports only `effect = \"animal\"`.", call. = FALSE)
+    stop(
+      "`specific_variance()` currently supports only `effect = \"animal\"`.",
+      call. = FALSE
+    )
   }
-  if (identical(object$result$genetic_structure, "factor_analytic") &&
-      !is.null(object$result$genetic_uniqueness)) {
+  if (
+    identical(object$result$genetic_structure, "factor_analytic") &&
+      !is.null(object$result$genetic_uniqueness)
+  ) {
     return(object$result$genetic_uniqueness)
   }
   hs_factor_g_extractor_planned(
@@ -667,7 +687,8 @@ hs_factor_g_extractor_planned <- function(
     stop(
       "`",
       name,
-      "()` for ", quantity,
+      "()` for ",
+      quantity,
       " requires a fitted rank-one `factor_analytic` G object with reported ",
       "`Psi`; it is unavailable for this fit. Loadings remain unreported.",
       call. = FALSE
@@ -1198,8 +1219,13 @@ hs_reject_unused_dots <- function(dots, fn) {
 #' bootstrap h² interval legs were measured in the same confirm but are **not**
 #' separately surfaced by this extractor; only the engine-returned interval is
 #' shown. It is reported as a point estimate plus bounds, not a validated
-#' (coverage-calibrated) capability, and remains unreliable near the
-#' `h² → 0` boundary. Genomic fits still error (scale-labelled interval not
+#' (coverage-calibrated) capability. The Wald SE and this logit-delta CI
+#' are not valid when additive variance is near 0 (`h^2 -> 0` is the same
+#' edge): that is an interior-point approximation. The likelihood-ratio
+#' test of `V_A = 0` uses a 50:50 mixture of `chi^2_0` and `chi^2_1`
+#' (Self and Liang 1987; Stram and Lee 1994). R `anova()` does not run it;
+#' Julia `HSquared.nested_lrt(..., df = 1, boundary_df = 1)` already does.
+#' Genomic fits still error (scale-labelled interval not
 #' validated). The underlying estimators `V3-TWOEFFECT-REML` /
 #' `V3-NEFFECT-REML` are `covered`, but this **interval** is not.
 #'
@@ -1265,7 +1291,12 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic,
 #' REML-only, and unreliable at small `n` or near a variance-component
 #' boundary (where the AI matrix is ill-conditioned and the fields are
-#' omitted). The 2000-rep C1 coverage confirm (job **47925485**) measured the
+#' omitted). The Wald SE is not valid when additive variance is near 0;
+#' `V_A = 0` is on the edge of the parameter space, so the usual normal
+#' approximation does not apply. The likelihood-ratio test of `V_A = 0`
+#' uses a 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987;
+#' Stram and Lee 1994). R does not run that test; Julia
+#' `HSquared.nested_lrt(..., df = 1, boundary_df = 1)` already does. The 2000-rep C1 coverage confirm (job **47925485**) measured the
 #' **additive-variance delta/Wald** interval implied by these SEs to **under-cover**
 #' (0.897 at nominal 0.95, h²=0.5), placing it at **experimental-only**:
 #' the SE is a point-estimate reference only, **not a calibrated and not a
@@ -1673,10 +1704,11 @@ covariance_structure_lrt <- function(constrained, full, ...) {
   same_response <- identical(
     constrained$payload$Y,
     full$payload$Y
-  ) && identical(
-    constrained$payload$metadata$trait_names,
-    full$payload$metadata$trait_names
-  )
+  ) &&
+    identical(
+      constrained$payload$metadata$trait_names,
+      full$payload$metadata$trait_names
+    )
   if (!same_response) {
     stop(
       "`constrained` and `full` must use the same response data and traits.",
@@ -1686,10 +1718,11 @@ covariance_structure_lrt <- function(constrained, full, ...) {
   same_fixed <- identical(
     constrained$payload$X,
     full$payload$X
-  ) && identical(
-    constrained$payload$metadata$fixed_colnames,
-    full$payload$metadata$fixed_colnames
-  )
+  ) &&
+    identical(
+      constrained$payload$metadata$fixed_colnames,
+      full$payload$metadata$fixed_colnames
+    )
   if (!same_fixed) {
     stop(
       "`constrained` and `full` must use the same fixed-effect design.",
@@ -1869,20 +1902,28 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     extras$fa_start_starts <- if (nrow(fa_starts) == 0L) {
       NA_character_
     } else {
-      start_rows <- vapply(seq_len(nrow(fa_starts)), function(i) {
-        paste0(
-          fa_starts$name[[i]],
-          "{valid=", hs_diagnostic_value(fa_starts$valid[[i]]),
-          ", converged=", hs_diagnostic_value(fa_starts$converged[[i]]),
-          ", iterations=", hs_diagnostic_value(fa_starts$iterations[[i]]),
-          ", loglik=", hs_diagnostic_value(fa_starts$loglik[[i]]),
-          ", minimum_uniqueness=",
-          hs_diagnostic_value(fa_starts$minimum_uniqueness[[i]]),
-          ", floor_distance=",
-          hs_diagnostic_value(fa_starts$uniqueness_floor_distance[[i]]),
-          "}"
-        )
-      }, character(1))
+      start_rows <- vapply(
+        seq_len(nrow(fa_starts)),
+        function(i) {
+          paste0(
+            fa_starts$name[[i]],
+            "{valid=",
+            hs_diagnostic_value(fa_starts$valid[[i]]),
+            ", converged=",
+            hs_diagnostic_value(fa_starts$converged[[i]]),
+            ", iterations=",
+            hs_diagnostic_value(fa_starts$iterations[[i]]),
+            ", loglik=",
+            hs_diagnostic_value(fa_starts$loglik[[i]]),
+            ", minimum_uniqueness=",
+            hs_diagnostic_value(fa_starts$minimum_uniqueness[[i]]),
+            ", floor_distance=",
+            hs_diagnostic_value(fa_starts$uniqueness_floor_distance[[i]]),
+            "}"
+          )
+        },
+        character(1)
+      )
       paste(start_rows, collapse = "; ")
     }
   }
@@ -2324,7 +2365,10 @@ ranef.hsquared_fit <- function(object, ...) {
 #' @export
 logLik.hsquared_fit <- function(object, ...) {
   if (identical(object$spec$target, "genetic_gllvm")) {
-    stop("The genetic GLLVM Laplace objective integrates fixed effects under flat measure and is not ordinary non-Gaussian ML. Inspect fit_diagnostics(); logLik() and AIC() are unavailable.", call. = FALSE)
+    stop(
+      "The genetic GLLVM Laplace objective integrates fixed effects under flat measure and is not ordinary non-Gaussian ML. Inspect fit_diagnostics(); logLik() and AIC() are unavailable.",
+      call. = FALSE
+    )
   }
   if (identical(object$result$converged, FALSE)) {
     stop(
@@ -2356,8 +2400,10 @@ logLik.hsquared_fit <- function(object, ...) {
 AIC.hsquared_fit <- function(object, ..., k = 2) {
   others <- list(...)
   fits <- c(list(object), others)
-  if (length(others) > 0L &&
-      !all(vapply(others, inherits, logical(1), "hsquared_fit"))) {
+  if (
+    length(others) > 0L &&
+      !all(vapply(others, inherits, logical(1), "hsquared_fit"))
+  ) {
     stop(
       "AIC comparison through `hsquared_fit` requires every model to be an ",
       "`hsquared_fit` object with a checked likelihood convention.",
@@ -2366,8 +2412,9 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
   }
   likelihoods <- lapply(fits, stats::logLik)
   for (fit in fits) {
-    if (identical(fit$result$diagnostics$loglik_comparable_across_routes,
-                  FALSE)) {
+    if (
+      identical(fit$result$diagnostics$loglik_comparable_across_routes, FALSE)
+    ) {
       stop(
         "AIC is unavailable for this fit: its log-likelihood convention is ",
         "not comparable across routes. Inspect fit_diagnostics() for the ",
@@ -2378,17 +2425,27 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
   }
   if (length(fits) > 1L) {
     reference <- fits[[1L]]
-    same_contract <- vapply(fits[-1L], function(fit) {
-      identical(fit$result$diagnostics$method,
-                reference$result$diagnostics$method) &&
-        identical(fit$result$marginal_method,
-                  reference$result$marginal_method) &&
-        identical(fit$result$diagnostics$loglik_convention,
-                  reference$result$diagnostics$loglik_convention) &&
-        identical(fit$spec$family, reference$spec$family) &&
-        identical(fit$payload$y, reference$payload$y) &&
-        identical(fit$payload$X, reference$payload$X)
-    }, logical(1))
+    same_contract <- vapply(
+      fits[-1L],
+      function(fit) {
+        identical(
+          fit$result$diagnostics$method,
+          reference$result$diagnostics$method
+        ) &&
+          identical(
+            fit$result$marginal_method,
+            reference$result$marginal_method
+          ) &&
+          identical(
+            fit$result$diagnostics$loglik_convention,
+            reference$result$diagnostics$loglik_convention
+          ) &&
+          identical(fit$spec$family, reference$spec$family) &&
+          identical(fit$payload$y, reference$payload$y) &&
+          identical(fit$payload$X, reference$payload$X)
+      },
+      logical(1)
+    )
     if (!all(same_contract)) {
       stop(
         "AIC comparison requires matching data, fixed-effect design, ",
@@ -2416,6 +2473,14 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 #' when the engine returned those fields; they are not coverage-calibrated.
 #' Point estimates remain [variance_components()], [heritability()], and
 #' [fit_diagnostics()].
+#'
+#' Testing `V_A = 0`: the Wald SE and logit-delta CI are not valid when
+#' additive variance is near 0. The likelihood-ratio test of `V_A = 0` uses
+#' a 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987; Stram
+#' and Lee 1994). `anova()` does not run that test. `logLik()` and `AIC()`
+#' are exposed for converged fits, so a naive `chi^2_1` LRT can be built by
+#' hand -- do not. Julia `HSquared.nested_lrt(..., df = 1, boundary_df = 1)`
+#' already implements the mixture; that is not a new R test statistic.
 #'
 #' @param object An `hsquared_fit` object.
 #' @param fitted An `hsquared_fit` object for [stats::profile()].
