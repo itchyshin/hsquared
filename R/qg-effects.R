@@ -31,6 +31,14 @@
 #' same-named function (e.g. `pedigreemm::inbreeding()`) may print a masking
 #' message; this is expected and harmless.
 #'
+#' `inbreeding()` is a reserved future *effect*, not an accessor for inbreeding
+#' coefficients. There is no R function that returns the relationship matrix
+#' `A`, `A^{-1}`, or `F` used by a fit (`payload$Ainv` stays `NULL`; Julia
+#' builds the inverse). Compare those objects against `nadiv` or `pedigreemm`
+#' through `JuliaCall` with `HSquared.additive_relationship()`,
+#' `HSquared.pedigree_inverse()`, and `HSquared.inbreeding_coefficients()`.
+#' The fitting-models article shows the call.
+#'
 #' @param formula A random-effect expression such as `1 | id`.
 #' @param pedigree A pedigree data frame for future parental and relationship
 #'   effects.

@@ -307,6 +307,34 @@ test_that("fitting-models aligns cbind and genomic GREML with covered wording", 
   expect_match(text, "single-step) remain `partial`", fixed = TRUE)
 })
 
+test_that("hsquared#268: inbreeding help and fitting article send A/F checks to JuliaCall", {
+  rd <- testthat::test_path("..", "..", "man", "qg_effect_markers.Rd")
+  skip_if_not(file.exists(rd), "man/qg_effect_markers.Rd not present")
+  rd_text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(rd_text, "not an accessor", ignore.case = TRUE)
+  expect_match(rd_text, "JuliaCall", fixed = TRUE)
+  expect_match(rd_text, "additive_relationship", fixed = TRUE)
+  expect_match(rd_text, "pedigree_inverse", fixed = TRUE)
+  expect_match(rd_text, "inbreeding_coefficients", fixed = TRUE)
+  expect_match(rd_text, "pedigreemm", fixed = TRUE)
+
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "fitting-models.Rmd"
+  )
+  skip_if_not(file.exists(article), "fitting-models article not present")
+  article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+  expect_match(article_text, "Checking A, A-inverse, and inbreeding F", fixed = TRUE)
+  expect_match(article_text, "JuliaCall", fixed = TRUE)
+  expect_match(article_text, "additive_relationship", fixed = TRUE)
+  expect_match(article_text, "inbreeding_coefficients", fixed = TRUE)
+  expect_match(article_text, "does not return F", fixed = TRUE)
+  expect_match(article_text, 'ainv_status = "build_in_julia"', fixed = TRUE)
+})
+
 test_that("function map names real extractors and R vs Julia gaps", {
   article <- testthat::test_path(
     "..",

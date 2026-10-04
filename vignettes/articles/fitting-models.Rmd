@@ -116,6 +116,42 @@ validation scale still means experimental packaging and not production.
 The remaining opt-in models (`repeatability`, the maternal two-effect leg,
 SNP-BLUP, single-step) stay `partial`.
 
+## Checking A, A-inverse, and inbreeding F
+
+`hsquared()` does not return the relationship matrix `A`, its inverse, or
+inbreeding coefficients. The fit payload stores pedigree IDs; `Ainv` is built
+in Julia (`ainv_status = "build_in_julia"`). `inbreeding()` is a reserved
+formula term for a future effect. It is not `pedigreemm::inbreeding()` and it
+does not return F.
+
+Compare `A` / `A^{-1}` / F against `nadiv` or `pedigreemm` through `JuliaCall`
+after the usual Julia setup (see the README). Unknown parents must be `"0"`,
+not `NA`:
+
+```{r}
+# After hs_julia_setup() or julia_setup() with HSQUARED_JULIA_PROJECT set.
+JuliaCall::julia_assign("id", as.character(ped$id))
+JuliaCall::julia_assign(
+  "sire",
+  ifelse(is.na(ped$sire), "0", as.character(ped$sire))
+)
+JuliaCall::julia_assign(
+  "dam",
+  ifelse(is.na(ped$dam), "0", as.character(ped$dam))
+)
+JuliaCall::julia_command(paste(
+  "A = Matrix(HSquared.additive_relationship(id, sire, dam));",
+  "Ainv = Matrix(HSquared.pedigree_inverse(id, sire, dam));",
+  "F = collect(Float64, HSquared.inbreeding_coefficients(id, sire, dam));"
+))
+A <- JuliaCall::julia_eval("A")
+Ainv <- JuliaCall::julia_eval("Ainv")
+F <- JuliaCall::julia_eval("F")
+```
+
+See [Function map and cheat sheet](function-map-cheatsheet.html) for the
+R-versus-Julia function table. No R accessor is added here.
+
 ## Repeatability (permanent environment)
 
 A repeated-records model with an additive-genetic effect and a

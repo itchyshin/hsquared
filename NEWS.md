@@ -1,5 +1,12 @@
 # hsquared (development version)
 
+* **hsquared#268 (docs): `inbreeding()` is a formula term, not F.** There is
+  still no R accessor for `A`, `A^{-1}`, or inbreeding coefficients. `?inbreeding`
+  and the fitting-models article now say to call
+  `HSquared.additive_relationship()`, `HSquared.pedigree_inverse()`, and
+  `HSquared.inbreeding_coefficients()` through `JuliaCall`. No new extractor.
+  No covered flip.
+
 * **hsquared#300 (docs): `?rr` now exists.** `order` is the number of
   Legendre coefficients (`order = 2` is intercept + slope), and the
   covariate is mapped to `[-1, 1]` over the fitted data range. No
