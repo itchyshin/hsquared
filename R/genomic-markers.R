@@ -11,6 +11,15 @@
 #' The reported genomic coefficient is `sigma_g2 / (sigma_g2 + sigma_e2)` on
 #' the declared relationship scale, not generally an average marginal
 #' phenotypic-variance fraction or pedigree/population heritability.
+#' For `genomic(1 | id, markers = M)`, the engine fits the ridged kernel
+#' `K = G + 0.01 I`. Genomic variance and the REML log-likelihood match the
+#' unridged VanRaden `G` model; the reported `residual` is the residual of
+#' `K`, equal to the residual on `G` minus `0.01 * sigma_g2`. The ratio
+#' therefore differs from the textbook GREML ratio on `G`. To compare
+#' residual variance with other software, add `0.01 * sigma_g2` back. The
+#' marker-built ridge is fixed at `0.01`; `genomic()` has no `ridge`
+#' argument (`ridge` exists only on `single_step()`). A supplied `Ginv` is
+#' used as given.
 #' Accepted genomic forms are `genomic(1 | id, Ginv = Ginv)` or
 #' `genomic(1 | id, markers = M)` (GREML, or SNP-BLUP via
 #' `target = "snp_blup"`), and `single_step(1 | id, Hinv = Hinv)` (a precomputed

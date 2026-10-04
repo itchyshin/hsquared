@@ -179,6 +179,12 @@ fingerprints for ID order, marker content, `K_lambda`, and `Q_lambda`.
 genomic variance-component ratio on the declared relationship scale. It is not
 generally an average marginal phenotypic-variance fraction and is not
 pedigree-, founder-base-, population-, or universal narrow-sense heritability.
+The fitted `residual` is the residual variance of the model with kernel
+`G + 0.01 I`; it equals the residual variance on `G` minus `0.01 * sigma_g2`.
+Genomic variance and the REML log-likelihood are unchanged relative to an
+unridged `G` fit. To compare `residual` with GCTA / sommer / rrBLUP on `G`,
+add `0.01 * sigma_g2` back. The marker-built ridge is fixed; `genomic()` has
+no `ridge` argument.
 
 This is convenient for small and validation-scale examples. It is not yet a
 production genotype pipeline:

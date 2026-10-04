@@ -105,6 +105,29 @@ test_that("fitting-models aligns cbind and genomic GREML with covered wording", 
   expect_match(text, "single-step) remain `partial`", fixed = TRUE)
 })
 
+test_that("genomic help states the ridged residual shift", {
+  rd <- testthat::test_path("..", "..", "man", "genomic_markers.Rd")
+  skip_if_not(file.exists(rd), "man/genomic_markers.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+
+  expect_match(text, "G + 0.01 I", fixed = TRUE)
+  expect_match(text, "0.01 * sigma_g2", fixed = TRUE)
+  expect_match(text, "residual", fixed = TRUE)
+  expect_match(text, "no \\\\code\\{ridge\\}")
+
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "genomic-prediction.Rmd"
+  )
+  skip_if_not(file.exists(article), "genomic-prediction article not present")
+  article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+  expect_match(article_text, "0.01 * sigma_g2", fixed = TRUE)
+  expect_match(article_text, "no `ridge` argument", fixed = TRUE)
+})
+
 test_that("hs_control help names dense-route unit starts and rescale guidance", {
   rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
   skip_if_not(file.exists(rd), "man/hs_control.Rd not present")

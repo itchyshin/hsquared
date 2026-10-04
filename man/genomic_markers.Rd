@@ -94,6 +94,15 @@ also remains opt-in and experimental.
 The reported genomic coefficient is \code{sigma_g2 / (sigma_g2 + sigma_e2)} on
 the declared relationship scale, not generally an average marginal
 phenotypic-variance fraction or pedigree/population heritability.
+For \code{genomic(1 | id, markers = M)}, the engine fits the ridged kernel
+\verb{K = G + 0.01 I}. Genomic variance and the REML log-likelihood match the
+unridged VanRaden \code{G} model; the reported \code{residual} is the residual of
+\code{K}, equal to the residual on \code{G} minus \code{0.01 * sigma_g2}. The ratio
+therefore differs from the textbook GREML ratio on \code{G}. To compare
+residual variance with other software, add \code{0.01 * sigma_g2} back. The
+marker-built ridge is fixed at \code{0.01}; \code{genomic()} has no \code{ridge}
+argument (\code{ridge} exists only on \code{single_step()}). A supplied \code{Ginv} is
+used as given.
 Accepted genomic forms are \code{genomic(1 | id, Ginv = Ginv)} or
 \code{genomic(1 | id, markers = M)} (GREML, or SNP-BLUP via
 \code{target = "snp_blup"}), and \code{single_step(1 | id, Hinv = Hinv)} (a precomputed
