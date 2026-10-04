@@ -87,6 +87,56 @@ hs_julia_attach_standard_plot_data <- function() {
   invisible(TRUE)
 }
 
+# Merge engine-owned SE/CI slots into hsq_result. Julia already computes these
+# on AnimalModelFit (~1 ms). Used by both ai_reml and sparse_reml so the
+# documented sparse fallback does not drop uncertainty (#281). Each call is
+# try-guarded so a boundary/singular AI matrix cannot abort the fit (#351).
+hs_julia_merge_inference_slots <- function() {
+  paste(
+    # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
+    # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
+    # which must not abort the fit (the throw is recorded and warned, #351).
+    "if isdefined(HSquared, :heritability_interval) &&",
+    "applicable(HSquared.heritability_interval, hsq_fit);",
+    hs_julia_try_slot(
+      "hsq_hi",
+      "HSquared.heritability_interval(hsq_fit)",
+      "heritability_interval"
+    ),
+    "if hsq_hi !== nothing;",
+    "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
+    "end;",
+    "end;",
+    # Experimental, opt-in variance-component and heritability standard errors
+    # (engine row V1-HERIT-CI, partial). variance_component_covariance() can
+    # throw on a singular/ill-conditioned AI matrix, so each call is wrapped in
+    # a try so an SE failure never aborts the fit; the throw is recorded and
+    # surfaced as a warning rather than a silent absence (#351).
+    "if isdefined(HSquared, :variance_component_standard_errors) &&",
+    "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
+    hs_julia_try_slot(
+      "hsq_vcse",
+      "HSquared.variance_component_standard_errors(hsq_fit)",
+      "variance_component_standard_errors"
+    ),
+    "if hsq_vcse !== nothing;",
+    "hsq_result = merge(hsq_result, (variance_component_se = hsq_vcse,));",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :heritability_standard_error) &&",
+    "applicable(HSquared.heritability_standard_error, hsq_fit);",
+    hs_julia_try_slot(
+      "hsq_h2se",
+      "HSquared.heritability_standard_error(hsq_fit)",
+      "heritability_standard_error"
+    ),
+    "if hsq_h2se !== nothing;",
+    "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
+    "end;",
+    "end;"
+  )
+}
+
 hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -378,7 +428,8 @@ hs_fit_julia_sparse_reml_payload <- function(
       "prediction_error_variance =",
       "HSquared.prediction_error_variance(hsq_fit),",
       "reliability = HSquared.reliability(hsq_fit)));",
-      "end;"
+      "end;",
+      hs_julia_merge_inference_slots()
     )),
     hint = hs_dense_scale_hint
   )
@@ -458,47 +509,7 @@ hs_fit_julia_ai_reml_payload <- function(
       "HSquared.prediction_error_variance(hsq_fit),",
       "reliability = HSquared.reliability(hsq_fit)));",
       "end;",
-      # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
-      # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
-      # which must not abort the fit (the throw is recorded and warned, #351).
-      "if isdefined(HSquared, :heritability_interval) &&",
-      "applicable(HSquared.heritability_interval, hsq_fit);",
-      hs_julia_try_slot(
-        "hsq_hi",
-        "HSquared.heritability_interval(hsq_fit)",
-        "heritability_interval"
-      ),
-      "if hsq_hi !== nothing;",
-      "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
-      "end;",
-      "end;",
-      # Experimental, opt-in variance-component and heritability standard errors
-      # (engine row V1-HERIT-CI, partial). variance_component_covariance() can
-      # throw on a singular/ill-conditioned AI matrix, so each call is wrapped in
-      # a try so an SE failure never aborts the fit; the throw is recorded and
-      # surfaced as a warning rather than a silent absence (#351).
-      "if isdefined(HSquared, :variance_component_standard_errors) &&",
-      "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
-      hs_julia_try_slot(
-        "hsq_vcse",
-        "HSquared.variance_component_standard_errors(hsq_fit)",
-        "variance_component_standard_errors"
-      ),
-      "if hsq_vcse !== nothing;",
-      "hsq_result = merge(hsq_result, (variance_component_se = hsq_vcse,));",
-      "end;",
-      "end;",
-      "if isdefined(HSquared, :heritability_standard_error) &&",
-      "applicable(HSquared.heritability_standard_error, hsq_fit);",
-      hs_julia_try_slot(
-        "hsq_h2se",
-        "HSquared.heritability_standard_error(hsq_fit)",
-        "heritability_standard_error"
-      ),
-      "if hsq_h2se !== nothing;",
-      "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
-      "end;",
-      "end;"
+      hs_julia_merge_inference_slots()
     )),
     hint = hs_dense_scale_hint
   )
