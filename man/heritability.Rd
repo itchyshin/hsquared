@@ -47,6 +47,17 @@ fit and names the implemented accessor. Use \code{\link[=rr_heritability]{rr_her
 The bounded genetic GLLVM route does not define heritability; this
 extractor errors because its G and trait genetic modes are on the link scale.
 
+Non-Gaussian responses (\code{target = "nongaussian"}, \code{poisson(log)} or
+\code{binomial(logit)}): \code{heritability()} returns a table of up to three scales,
+not a single number. For logit, report \code{h2_liability} =
+\code{V_A / (V_A + pi^2/3)} (link variance \code{pi^2/3}). \code{h2_latent} is a
+bookkeeping row that equals 1 when the only random term is \code{animal()}.
+Poisson reports \code{h2_latent} and a count-scale \code{h2_observation} only; there
+is no liability scale, and \code{h2_latent} is not the Nakagawa-Schielzeth
+\code{ln(1 + 1/lambda)} convention -- it is \code{V_A / (V_A + V_RE + V_O)} and is 1
+when those extra residuals are zero. \code{binomial(link = "probit")} is not
+available in R. See the Fitting models article for which row to report.
+
 A non-converged fit still returns the engine number so you can inspect it,
 but \strong{warns}: that number is not an estimate. A near-zero value from a
 failed fit is not evidence that heritability is zero. Use

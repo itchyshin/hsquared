@@ -105,6 +105,20 @@ test_that("fitting-models aligns cbind and genomic GREML with covered wording", 
   expect_match(text, "single-step) remain `partial`", fixed = TRUE)
 })
 
+test_that("heritability help names non-Gaussian scales and which row to report", {
+  rd <- testthat::test_path("..", "..", "man", "heritability.Rd")
+  skip_if_not(file.exists(rd), "man/heritability.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+
+  expect_match(text, "Non-Gaussian responses", fixed = TRUE)
+  expect_match(text, "h2_liability", fixed = TRUE)
+  expect_match(text, "pi^2/3", fixed = TRUE)
+  expect_match(text, "report", ignore.case = TRUE)
+  expect_match(text, "ln(1 + 1/lambda)", fixed = TRUE)
+  expect_match(text, "probit", ignore.case = TRUE)
+  expect_match(text, "is not\\s+available in R")
+})
+
 test_that("fitting-models later examples define their data and validate", {
   vignette <- testthat::test_path(
     "..",

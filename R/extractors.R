@@ -63,6 +63,17 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' The bounded genetic GLLVM route does not define heritability; this
 #' extractor errors because its G and trait genetic modes are on the link scale.
 #'
+#' Non-Gaussian responses (`target = "nongaussian"`, `poisson(log)` or
+#' `binomial(logit)`): `heritability()` returns a table of up to three scales,
+#' not a single number. For logit, report `h2_liability` =
+#' `V_A / (V_A + pi^2/3)` (link variance `pi^2/3`). `h2_latent` is a
+#' bookkeeping row that equals 1 when the only random term is `animal()`.
+#' Poisson reports `h2_latent` and a count-scale `h2_observation` only; there
+#' is no liability scale, and `h2_latent` is not the Nakagawa-Schielzeth
+#' `ln(1 + 1/lambda)` convention -- it is `V_A / (V_A + V_RE + V_O)` and is 1
+#' when those extra residuals are zero. `binomial(link = "probit")` is not
+#' available in R. See the Fitting models article for which row to report.
+#'
 #' A non-converged fit still returns the engine number so you can inspect it,
 #' but **warns**: that number is not an estimate. A near-zero value from a
 #' failed fit is not evidence that heritability is zero. Use
