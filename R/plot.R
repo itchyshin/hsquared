@@ -32,6 +32,10 @@ plot.hsquared_fit <- function(x, type = c("variance", "residuals"), ...) {
   invisible(x)
 }
 
+hs_do_graphics_plot <- function(defaults, ...) {
+  do.call(graphics::plot, utils::modifyList(defaults, list(...)))
+}
+
 hs_plot_variance <- function(x, ...) {
   vc <- x$result$variance_components
   if (is.null(vc) || !all(c("component", "estimate") %in% names(vc))) {
@@ -60,16 +64,18 @@ hs_plot_variance <- function(x, ...) {
   } else {
     "Variance components"
   }
-  graphics::plot(
-    seq_len(n),
-    est,
-    xlim = c(0.5, n + 0.5),
-    ylim = ylim,
-    xaxt = "n",
-    xlab = "",
-    ylab = "variance",
-    main = main,
-    pch = 19,
+  hs_do_graphics_plot(
+    list(
+      x = seq_len(n),
+      y = est,
+      xlim = c(0.5, n + 0.5),
+      ylim = ylim,
+      xaxt = "n",
+      xlab = "",
+      ylab = "variance",
+      main = main,
+      pch = 19
+    ),
     ...
   )
   graphics::axis(1, at = seq_len(n), labels = comp)
@@ -92,13 +98,15 @@ hs_plot_residuals <- function(x, ...) {
     )
   }
   resid <- as.numeric(y) - as.numeric(fitted)
-  graphics::plot(
-    as.numeric(fitted),
-    resid,
-    xlab = "fitted",
-    ylab = "residual",
-    main = "Residuals vs fitted",
-    pch = 19,
+  hs_do_graphics_plot(
+    list(
+      x = as.numeric(fitted),
+      y = resid,
+      xlab = "fitted",
+      ylab = "residual",
+      main = "Residuals vs fitted",
+      pch = 19
+    ),
     ...
   )
   graphics::abline(h = 0, col = "grey70", lty = 3)
