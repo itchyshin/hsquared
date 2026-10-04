@@ -94,6 +94,24 @@ test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout"
   }
 })
 
+test_that("README and Getting started define covered, route, and interval labels", {
+  pages <- c(
+    testthat::test_path("..", "..", "README.md"),
+    testthat::test_path("..", "..", "vignettes", "hsquared.Rmd")
+  )
+  for (page in pages) {
+    skip_if_not(file.exists(page), paste(basename(page), "not present"))
+    text <- paste(readLines(page, warn = FALSE), collapse = "\n")
+    expect_match(text, "named model type", fixed = TRUE, info = page)
+    expect_match(text, "validation status", fixed = TRUE, info = page)
+    expect_match(text, "public_covered_count", fixed = TRUE, info = page)
+    expect_match(text, "not a function", ignore.case = TRUE, info = page)
+    expect_match(text, "directional-conservative", fixed = TRUE, info = page)
+    expect_match(text, "nominal 95%", fixed = TRUE, info = page)
+    expect_match(text, "**7**", fixed = TRUE, info = page)
+  }
+})
+
 test_that("README and Getting started agree on install, Julia 1.10, and PATH", {
   pages <- c(
     testthat::test_path("..", "..", "README.md"),

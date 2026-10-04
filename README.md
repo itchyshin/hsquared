@@ -12,9 +12,12 @@
 <p class="hs-question">How much is genetic?</p>
 
 <p class="hs-pitch">Formula first. The engine returns heritability, variance
-components, and breeding values on the routes that are
-<strong>covered</strong> — experimental 0.9.0 release, not production. CRAN
-availability is tracked separately.</p>
+components, and breeding values on the <strong>routes</strong> that are
+<strong>covered</strong>. A route is a named model type with its own
+validation evidence (for example the default univariate animal model).
+Covered is a validation status: that evidence passed, so point estimates
+may be reported in that scope. Experimental 0.9.0 release, not
+production. CRAN availability is tracked separately.</p>
 
 <p class="hs-cta">
 <a class="hs-btn hs-btn-primary" href="https://itchyshin.github.io/hsquared/articles/hsquared.html">Get started</a>
@@ -29,11 +32,17 @@ availability is tracked separately.</p>
 > <span class="hs-note-eyebrow">Before you report anything</span>
 >
 > **Warning — experimental 0.9.0 release.** Not production. CRAN availability
-> is tracked separately. There are **7** R-public covered routes; fitting needs local Julia
-> and an `HSquared.jl` checkout. Julia engine-covered ≠ R-public covered. Report
-> point estimates only within a covered route. No interval is nominally
-> coverage-calibrated; named univariate pedigree intervals are only classified
-> as directional-conservative. See [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+> is tracked separately. There are **7** R-public covered routes;
+> `public_covered_count` is that ledger total, not a function you can call.
+> Fitting needs local Julia and an `HSquared.jl` checkout. Julia
+> engine-covered ≠ R-public covered (the engine can validate a path that R
+> does not yet expose as reportable). Report point estimates only within a
+> covered route. No interval is nominally coverage-calibrated (the share of
+> intervals that contain the truth is not shown to be 95%); named univariate
+> pedigree intervals are only classified as **directional-conservative**
+> (they tend to be at least as wide as a nominal 95% interval on the
+> measured designs, not "never under-cover"). See
+> [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 
 ## Your first analysis
 
