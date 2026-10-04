@@ -14,8 +14,8 @@ they would be ignored; the interval level is fixed at the engine value.}
 }
 \value{
 A one-row data frame with \code{estimate}, \code{lower}, \code{upper}, \code{level}, \code{se}
-(\code{NA} for the profile method), and \code{method}, for \code{hsquared_fit} objects that
-contain it.
+(\code{NA} when the engine omitted it), and \code{method}, for \code{hsquared_fit} objects
+that contain it. This extractor does not request the Julia profile method.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
@@ -44,14 +44,16 @@ ANIMAL block's ratio interval (the animal additive variance over the total
 phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
 
-The interval leg is a REML-only, asymptotic (logit delta-method or profile)
+The interval leg is a REML-only, asymptotic (logit delta-method)
 approximation returned by the engine. On the default univariate route the
 SE comes from the REML average-information matrix. On the repeatability,
 two-effect, and multivariate routes the engine uses the observed
 information from a central finite-difference Hessian
 (\code{fd_step = 1e-4}). Those two matrices are not the same estimand; do not
-compare SEs across routes as if they were. R cannot request the profile
-interval from this extractor; only the engine-returned interval is shown.
+compare SEs across routes as if they were. R cannot request a profile
+interval from this extractor; that method is Julia-only
+(\verb{HSquared.heritability_interval(fit; method = :profile)}). Only the
+engine-returned interval is shown.
 See the information-matrix table on
 \href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
 The 2000-rep C1 coverage confirm

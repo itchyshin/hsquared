@@ -127,8 +127,8 @@ routes (validation scale; not the default path) include \code{"two_effect"}
 \code{target = "nongaussian"}.
 With \code{engine = "julia"} and no \code{target}, the bridge defaults to
 \code{target = "fit_animal_model"}: it surfaces the Julia-owned
-\code{HSquared.fit_animal_model()} dense NelderMead optimizer, honouring the
-\code{REML} flag. This is \strong{not} the same estimator as the default
+\code{HSquared.fit_animal_model()} dense NelderMead optimizer. REML only;
+\code{REML = FALSE} errors. This is \strong{not} the same estimator as the default
 \code{engine = "fit"} path, which runs the validated average-information REML
 estimator (\code{HSquared.fit_ai_reml()}, the same one reached by
 \code{target = "ai_reml"}). The two paths target the same Gaussian animal model
