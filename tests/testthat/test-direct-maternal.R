@@ -426,6 +426,48 @@ test_that("direct_maternal_covariance() returns sigma_dm (may be negative)", {
   expect_equal(direct_maternal_covariance(fit), -0.10)
 })
 
+test_that("direct-maternal bridge forwards existing engine uncertainty", {
+  result <- make_dm_fit()$result
+  raw_ci <- list(
+    level = 0.95,
+    interval_method = "asymptotic_delta_uncalibrated",
+    sigma_ad_se = 0.12,
+    sigma_am_se = 0.08,
+    sigma_dm_se = 0.06,
+    sigma_e2_se = 0.15,
+    h2_estimate = result$heritability$estimate,
+    h2_se = 0.07,
+    h2_lower = 0.20,
+    h2_upper = 0.47
+  )
+
+  result <- hsquared:::hs_attach_direct_maternal_interval(result, raw_ci)
+  fit <- make_dm_fit()
+  fit$result <- result
+
+  expect_equal(
+    variance_component_standard_errors(fit),
+    data.frame(
+      component = c("direct", "maternal", "covariance", "residual"),
+      se = c(0.12, 0.08, 0.06, 0.15),
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equal(heritability_standard_error(fit)$se, 0.07)
+  expect_equal(
+    heritability_interval(fit),
+    data.frame(
+      estimate = raw_ci$h2_estimate,
+      lower = 0.20,
+      upper = 0.47,
+      level = 0.95,
+      se = 0.07,
+      method = "asymptotic_delta_uncalibrated",
+      stringsAsFactors = FALSE
+    )
+  )
+})
+
 test_that("direct_heritability() errors on non-dm fit", {
   fit_plain <- structure(
     list(

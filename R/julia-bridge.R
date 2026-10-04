@@ -2185,15 +2185,34 @@ hs_fit_julia_direct_maternal_payload <- function(
     ""
   }
   hs_julia_fit(
-    JuliaCall::julia_command(sprintf(
-      "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm%s);",
-      dm_kwargs_str
+    JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
+      sprintf(
+        "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm%s);",
+        dm_kwargs_str
+      )
     )),
     hint = hs_dense_scale_hint
   )
   JuliaCall::julia_command(
     "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
   )
+
+  # Forward the engine's existing direct-maternal uncertainty calculation.
+  # `direct_maternal_interval()` refits the same model and returns the observed-
+  # information SEs and Wald interval; this bridge does not derive an estimator.
+  dm_interval_kwargs <- c(dm_fit_kwargs, "ids = hsq_blkids")
+  JuliaCall::julia_command(paste(
+    "hsq_dm_ci = if isdefined(HSquared, :direct_maternal_interval);",
+    "try; HSquared.direct_maternal_interval(",
+    "hsq_y, hsq_X, hsq_Zd, hsq_Zm,",
+    "hsq_parsed_dm.blocks[1].relmat_inverse;",
+    paste(dm_interval_kwargs, collapse = ", "),
+    ");",
+    hs_julia_catch_record("direct_maternal_interval"),
+    "else; nothing; end;",
+    "hsq_has_dm_ci = hsq_dm_ci !== nothing;"
+  ))
 
   # Pull the correlated block variance fields and genetic correlation.
   raw <- JuliaCall::julia_eval(paste(
@@ -2239,8 +2258,24 @@ hs_fit_julia_direct_maternal_payload <- function(
     beta,
     payload
   )
+  if (isTRUE(JuliaCall::julia_eval("hsq_has_dm_ci"))) {
+    raw_ci <- JuliaCall::julia_eval(paste(
+      "Dict(",
+      "\"level\" => Float64(hsq_dm_ci.level),",
+      "\"interval_method\" => String(hsq_dm_ci.interval_method),",
+      "\"sigma_ad_se\" => Float64(hsq_dm_ci.variance_components.sigma_ad.se),",
+      "\"sigma_am_se\" => Float64(hsq_dm_ci.variance_components.sigma_am.se),",
+      "\"sigma_dm_se\" => Float64(hsq_dm_ci.variance_components.sigma_dm.se),",
+      "\"sigma_e2_se\" => Float64(hsq_dm_ci.variance_components.sigma_e2.se),",
+      "\"h2_estimate\" => Float64(hsq_dm_ci.direct_heritability.estimate),",
+      "\"h2_se\" => Float64(hsq_dm_ci.direct_heritability.se),",
+      "\"h2_lower\" => Float64(hsq_dm_ci.direct_heritability.lower),",
+      "\"h2_upper\" => Float64(hsq_dm_ci.direct_heritability.upper))"
+    ))
+    result <- hs_attach_direct_maternal_interval(result, raw_ci)
+  }
 
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -2250,6 +2285,7 @@ hs_fit_julia_direct_maternal_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_validate_v2_result_metadata <- function(raw, payload, expected_df, target) {
@@ -2515,6 +2551,30 @@ hs_normalize_direct_maternal_result <- function(
       metadata$diagnostics
     )
   )
+}
+
+hs_attach_direct_maternal_interval <- function(result, raw_ci) {
+  result$variance_component_se <- data.frame(
+    component = c("direct", "maternal", "covariance", "residual"),
+    se = as.numeric(c(
+      raw_ci$sigma_ad_se,
+      raw_ci$sigma_am_se,
+      raw_ci$sigma_dm_se,
+      raw_ci$sigma_e2_se
+    )),
+    stringsAsFactors = FALSE
+  )
+  result$heritability_se <- as.numeric(raw_ci$h2_se)
+  result$heritability_interval <- data.frame(
+    estimate = as.numeric(raw_ci$h2_estimate),
+    lower = as.numeric(raw_ci$h2_lower),
+    upper = as.numeric(raw_ci$h2_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$h2_se),
+    method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result
 }
 
 # Fit an arbitrary-N independent-random-effect model (animal + >= 2 i.i.d.
