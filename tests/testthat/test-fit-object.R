@@ -852,15 +852,24 @@ test_that("boundary fits do not surface unreportable uncertainty", {
   expect_no_match(printed, "heritability uncertainty", fixed = TRUE)
   expect_no_match(printed, "variance-component SEs", fixed = TRUE)
 
-  for (extractor in list(
-    heritability_interval,
-    heritability_standard_error,
-    variance_component_standard_errors
-  )) {
-    expect_error(
-      extractor(boundary),
-      "not reportable because the fit did not converge and a variance component is at or near a boundary",
-      fixed = TRUE
-    )
-  }
+  expect_warning(
+    hi <- heritability_interval(boundary),
+    "This `hsquared_fit` object did not converge. The heritability-interval number is not an estimate; do not report it.",
+    fixed = TRUE
+  )
+  expect_equal(hi$estimate, 1e-8)
+
+  expect_warning(
+    h2se <- heritability_standard_error(boundary),
+    "This `hsquared_fit` object did not converge. The heritability standard-error number is not an estimate; do not report it.",
+    fixed = TRUE
+  )
+  expect_equal(h2se$se, 0.04)
+
+  expect_warning(
+    vcse <- variance_component_standard_errors(boundary),
+    "This `hsquared_fit` object did not converge. The variance-component standard-error number is not an estimate; do not report it.",
+    fixed = TRUE
+  )
+  expect_equal(vcse$se, c(0.05, 0.08))
 })

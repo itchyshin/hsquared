@@ -118,25 +118,6 @@ hs_warn_if_unusable_fit <- function(object, what = "heritability") {
   invisible(TRUE)
 }
 
-hs_require_reportable_uncertainty <- function(object, fn) {
-  not_converged <- hs_fit_not_converged(object)
-  at_boundary <- isTRUE(hs_fit_boundary_flag(object))
-  if (!not_converged && !at_boundary) {
-    return(invisible(TRUE))
-  }
-  reasons <- c(
-    if (not_converged) "the fit did not converge",
-    if (at_boundary) "a variance component is at or near a boundary"
-  )
-  stop(
-    fn,
-    " is not reportable because ",
-    paste(reasons, collapse = " and "),
-    ". Refit to an interior converged solution before reporting uncertainty.",
-    call. = FALSE
-  )
-}
-
 hs_print_fit_peek <- function(x) {
   h2 <- x$result$heritability
   if (is.null(h2)) {

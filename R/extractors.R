@@ -1193,7 +1193,7 @@ heritability_interval.default <- function(object, ...) {
 #' @export
 heritability_interval.hsquared_fit <- function(object, ...) {
   hs_reject_unused_dots(list(...), "`heritability_interval()`")
-  hs_require_reportable_uncertainty(object, "`heritability_interval()`")
+  hs_warn_if_unusable_fit(object, what = "heritability-interval")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_interval()` is not available for genomic fits. The ",
@@ -1260,10 +1260,7 @@ variance_component_standard_errors.default <- function(object, ...) {
 
 #' @export
 variance_component_standard_errors.hsquared_fit <- function(object, ...) {
-  hs_require_reportable_uncertainty(
-    object,
-    "`variance_component_standard_errors()`"
-  )
+  hs_warn_if_unusable_fit(object, what = "variance-component standard-error")
   hs_fit_result(
     object,
     "variance_component_se",
@@ -1288,7 +1285,7 @@ heritability_standard_error.default <- function(object, ...) {
 
 #' @export
 heritability_standard_error.hsquared_fit <- function(object, ...) {
-  hs_require_reportable_uncertainty(object, "`heritability_standard_error()`")
+  hs_warn_if_unusable_fit(object, what = "heritability standard-error")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_standard_error()` is not available for genomic fits. ",
