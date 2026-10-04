@@ -105,6 +105,21 @@ test_that("fitting-models aligns cbind and genomic GREML with covered wording", 
   expect_match(text, "single-step) remain `partial`", fixed = TRUE)
 })
 
+test_that("hs_control help names dense-route unit starts and rescale guidance", {
+  rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
+  skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+
+  expect_match(text, "Start values and limits", fixed = TRUE)
+  expect_match(text, "unit start", fixed = TRUE)
+  expect_match(text, "two_effect", fixed = TRUE)
+  expect_match(text, "repeatability", fixed = TRUE)
+  expect_match(text, "variance about 1", fixed = TRUE)
+  expect_match(text, "scale_method", fixed = TRUE)
+  expect_match(text, "equivariant", fixed = TRUE)
+  expect_match(text, "converged", fixed = TRUE)
+})
+
 test_that("heritability help names non-Gaussian scales and which row to report", {
   rd <- testthat::test_path("..", "..", "man", "heritability.Rd")
   skip_if_not(file.exists(rd), "man/heritability.Rd not present")

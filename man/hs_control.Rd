@@ -90,6 +90,18 @@ the sparse route forms its interval from the fitted components and never
 reaches that entry point, so it is unaffected by \code{max_dense_cells}.
 }
 
+Start values and limits: unsupplied \code{initial} is a fixed unit start, not
+data-scaled. Default AI-REML (\code{target = "ai_reml"} and the default
+univariate \code{engine = "fit"} path) starts at \verb{(sigma_a2 = 1, sigma_e2 = 1)},
+with \code{iterations = 100} and \code{tol = 1e-8}, and is equivariant to rescaling
+\code{y}. Dense \code{two_effect} starts at \verb{(1, 1, 1)} with \code{iterations = 200};
+dense \code{repeatability} uses the same unit start and a 200-iteration
+Nelder-Mead cap. Rescale the response to variance about 1 before those
+dense routes, or compare against \code{scale_method = "auto"}; otherwise a
+large-scale trait can report \code{converged = TRUE} at a wrong optimum.
+Fitted variances on a rescaled \code{y} can be multiplied back: REML
+variance estimates are equivariant. Check \code{converged} after a dense fit.
+
 \code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs.
 Under the default \code{engine = "fit"} path, \code{target} and
 \code{variance_components} are an error: that path would otherwise ignore

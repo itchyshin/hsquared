@@ -76,6 +76,18 @@
 #'   the sparse route forms its interval from the fitted components and never
 #'   reaches that entry point, so it is unaffected by `max_dense_cells`.
 #'
+#'   Start values and limits: unsupplied `initial` is a fixed unit start, not
+#'   data-scaled. Default AI-REML (`target = "ai_reml"` and the default
+#'   univariate `engine = "fit"` path) starts at `(sigma_a2 = 1, sigma_e2 = 1)`,
+#'   with `iterations = 100` and `tol = 1e-8`, and is equivariant to rescaling
+#'   `y`. Dense `two_effect` starts at `(1, 1, 1)` with `iterations = 200`;
+#'   dense `repeatability` uses the same unit start and a 200-iteration
+#'   Nelder-Mead cap. Rescale the response to variance about 1 before those
+#'   dense routes, or compare against `scale_method = "auto"`; otherwise a
+#'   large-scale trait can report `converged = TRUE` at a wrong optimum.
+#'   Fitted variances on a rescaled `y` can be multiplied back: REML
+#'   variance estimates are equivariant. Check `converged` after a dense fit.
+#'
 #'   `target` selects which Julia estimator the `engine = "julia"` bridge runs.
 #'   Under the default `engine = "fit"` path, `target` and
 #'   `variance_components` are an error: that path would otherwise ignore
