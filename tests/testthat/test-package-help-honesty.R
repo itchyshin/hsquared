@@ -175,6 +175,13 @@ test_that("gryphon articles do not claim ancestral loops in the open pedigree", 
       "vignettes",
       "articles",
       "benchmark-comparators.Rmd"
+    ),
+    testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "validation-evidence.Rmd"
     )
   )
   for (page in pages) {

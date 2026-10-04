@@ -336,8 +336,9 @@ hs_validation_status_evidence <- function() {
       "package within the signed-off band (VC ~1-2%, h2 ~0.01-0.02), on the",
       "gryphon dataset (CRAN package enhancer). The Julia engine (fit_sparse_reml",
       "and fit_ai_reml) also recovers the published estimates within the",
-      "signed-off band via supplied A_gryphon (the engine correctly rejects the",
-      "pathological raw pedigree); engine-vs-pure-R agreement is to machine",
+      "signed-off band via supplied A_gryphon (the open pedigree has no ancestral",
+      "loops; the signed-off anchor still uses that supplied relationship",
+      "matrix); engine-vs-pure-R agreement is to machine",
       "precision. Gryphon is the maintainer (2026-06-13) signed-off V1-MRODE-FIT",
       "anchor and sommer the V1-COMPARATORS comparator."
     ),
