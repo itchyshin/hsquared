@@ -322,15 +322,23 @@ Bernoulli traits, or automatic rank selection are supplied.
 \code{animal(1 | id, pedigree = ped)}. The \code{marginal} control selects a Laplace
 marginal likelihood approximation (\code{"laplace"}, default) or a hybrid
 variational-plus-Laplace objective (\code{"variational"}; aliases
-\code{"la"}/\code{"va"}). It reports the ratified
+\code{"la"}/\code{"va"}). The default Laplace objective integrates the intercept
+(fixed effects) under a flat measure: \code{V_A} is a REML-like Laplace
+estimate, not conventional Laplace-ML. At n around 800 it is expected to
+exceed \code{glmer} / \code{pedigreemm} / \code{glmmTMB} Laplace-ML \code{V_A} by a few
+percent. \code{logLik()} is not comparable with \code{glmer}. The
+\code{fit_diagnostics()} \code{method} row still reads "Laplace marginal
+likelihood"; that label is this flat-integrated estimator, not
+Laplace-ML. It reports the ratified
 conditional three-field contract: Poisson latent and count-scale observation
 h2; logit latent, liability, and numerically integrated observation-scale h2
 for Bernoulli or common-trial Binomial input. Varying trials return literal
 \code{NaN} with \code{"varying_trials_no_scalar_estimand"}, never a trial-count-averaged
 scalar. The historical engine field \code{elbo} remains for compatibility; with
 integrated fixed effects this hybrid value has no general lower-bound
-guarantee. Variational and Laplace \code{logLik}/\code{AIC} are \strong{not} comparable.
-This path remains experimental and not coverage-calibrated.
+guarantee. Variational and Laplace \code{logLik}/\code{AIC} are \strong{not} comparable
+with each other or with \code{glmer}. This path remains experimental and not
+coverage-calibrated. The numerical method is unchanged.
 \code{initial} (hsquared#225) is a list with \code{sigma_a2}. The engine fits the
 single variance component with a \strong{bracketed} Brent search over
 \code{log(sigma_a2)} on \verb{log(initial$sigma_a2) +/- 6} -- there is no start

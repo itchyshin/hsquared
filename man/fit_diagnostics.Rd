@@ -24,6 +24,13 @@ A data frame with \code{metric} and \code{value} columns and class
 payload: it does not refit the model, rerun validation checks, or promote an
 experimental bridge target to production support.
 
+The \code{method} row names the objective that produced the fit. For
+\code{target = "nongaussian"} with \code{marginal = "laplace"}, that value is
+"Laplace marginal likelihood": a Laplace approximation that integrates
+the intercept under a flat measure (REML-like \code{V_A}), not conventional
+Laplace-ML as in \code{glmer} / \code{pedigreemm}. \code{logLik()} is not comparable
+with \code{glmer}. The numerical method is unchanged.
+
 Two rows share the word "boundary" but report unrelated things
 (hsquared#230):
 \itemize{

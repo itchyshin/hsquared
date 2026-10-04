@@ -1728,6 +1728,13 @@ covariance_structure_lrt <- function(constrained, full, ...) {
 #' payload: it does not refit the model, rerun validation checks, or promote an
 #' experimental bridge target to production support.
 #'
+#' The `method` row names the objective that produced the fit. For
+#' `target = "nongaussian"` with `marginal = "laplace"`, that value is
+#' "Laplace marginal likelihood": a Laplace approximation that integrates
+#' the intercept under a flat measure (REML-like `V_A`), not conventional
+#' Laplace-ML as in `glmer` / `pedigreemm`. `logLik()` is not comparable
+#' with `glmer`. The numerical method is unchanged.
+#'
 #' Two rows share the word "boundary" but report unrelated things
 #' (hsquared#230):
 #'

@@ -335,7 +335,11 @@ heritability(fit_fledge)
 above. It does **not** make this non-Gaussian fit a REML fit: this route uses a
 Laplace marginal likelihood (or a hybrid variational-plus-Laplace objective
 when selected), as stated
-below.
+below. The default Laplace objective integrates the intercept under a flat measure,
+so `V_A` is a REML-like Laplace estimate, not conventional Laplace-ML.
+At n around 800 it is expected to sit a few percent above
+`glmer` / `pedigreemm` / `glmmTMB` Laplace-ML `V_A`. `logLik()` is not comparable with `glmer`.
+The numerical method is unchanged.
 
 `heritability()` returns a small table rather than a single value. For a
 varying-trials fit like this one it looks like:
@@ -396,7 +400,7 @@ variational approximation for genetic effects and a Laplace correction for
 fixed effects). The latter is not guaranteed to be a lower bound on the
 integrated likelihood. Their `logLik()` and `AIC()` values are not
 comparable with each other, nor with the REML values from the Gaussian fits
-above. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
+above, nor with `glmer` Laplace-ML. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
 only; there is no liability scale for a count.
 
 *References.* Dempster, E. R. & Lerner, I. M. (1950) Heritability of threshold

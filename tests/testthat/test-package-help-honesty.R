@@ -79,6 +79,28 @@ test_that("non-Gaussian vignette does not call its marginal fit REML", {
     "does \\*\\*not\\*\\* make this non-Gaussian fit a REML fit"
   )
   expect_match(text, "Laplace marginal likelihood")
+  expect_match(text, "flat measure", fixed = TRUE)
+  expect_match(text, "REML-like", fixed = TRUE)
+  expect_match(text, "not comparable with `glmer`", fixed = TRUE)
+  expect_match(text, "Laplace-ML", fixed = TRUE)
+})
+
+test_that("nongaussian docs name the flat-integrated Laplace V_A estimator", {
+  rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
+  skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(text, "flat measure", fixed = TRUE)
+  expect_match(text, "REML-like", fixed = TRUE)
+  expect_match(text, "Laplace-ML", fixed = TRUE)
+  expect_match(text, "glmer", fixed = TRUE)
+  expect_match(text, "logLik", fixed = TRUE)
+
+  diag_rd <- testthat::test_path("..", "..", "man", "fit_diagnostics.Rd")
+  skip_if_not(file.exists(diag_rd), "man/fit_diagnostics.Rd not present")
+  diag_text <- paste(readLines(diag_rd, warn = FALSE), collapse = "\n")
+  expect_match(diag_text, "flat measure", fixed = TRUE)
+  expect_match(diag_text, "not conventional", fixed = TRUE)
+  expect_match(diag_text, "glmer", fixed = TRUE)
 })
 
 test_that("fitting-models aligns cbind and genomic GREML with covered wording", {
