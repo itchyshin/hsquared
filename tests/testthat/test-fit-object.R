@@ -790,6 +790,34 @@ test_that("heritability() and print() warn when the fit did not converge", {
   expect_false(grepl("9.48", printed, fixed = TRUE))
 })
 
+test_that("multivariate non-convergence warning names the iteration remedy", {
+  failed <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = list(y = matrix(1:12, ncol = 3)),
+    result = list(
+      heritability = data.frame(term = "trait1", estimate = 0.4),
+      diagnostics = list(
+        optimizer_status = "not_converged",
+        iterations = 2000L
+      ),
+      converged = FALSE
+    )
+  )
+
+  expect_warning(
+    heritability(failed),
+    paste0(
+      "The optimizer used 2000 iterations. If that is the requested limit, ",
+      "retry with a larger `engine_control$iterations` value."
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("heritability() and print() stay quiet on a converged interior fit", {
   ok <- hsquared:::hs_new_fit(
     spec = list(

@@ -119,11 +119,28 @@ hs_warn_if_unusable_fit <- function(object, what = "heritability") {
   } else {
     " A near-zero value is not evidence that heritability is zero."
   }
+  iterations <- object$result$diagnostics$iterations
+  iteration_remedy <- if (
+    identical(hs_fit_target_label(object), "multivariate") &&
+      is.numeric(iterations) &&
+      length(iterations) == 1L &&
+      is.finite(iterations)
+  ) {
+    paste0(
+      " The optimizer used ",
+      as.integer(iterations),
+      " iterations. If that is the requested limit, retry with a larger ",
+      "`engine_control$iterations` value."
+    )
+  } else {
+    ""
+  }
   warning(
     "This `hsquared_fit` object did not converge. The ",
     what,
     " number is not an estimate; do not report it.",
     extra,
+    iteration_remedy,
     " Inspect `fit_diagnostics(fit)` before reading any number.",
     call. = FALSE
   )
