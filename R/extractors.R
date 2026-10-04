@@ -2323,6 +2323,8 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
     same_contract <- vapply(fits[-1L], function(fit) {
       identical(fit$result$diagnostics$method,
                 reference$result$diagnostics$method) &&
+        identical(fit$result$marginal_method,
+                  reference$result$marginal_method) &&
         identical(fit$result$diagnostics$loglik_convention,
                   reference$result$diagnostics$loglik_convention) &&
         identical(fit$spec$family, reference$spec$family) &&
@@ -2332,7 +2334,7 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
     if (!all(same_contract)) {
       stop(
         "AIC comparison requires matching data, fixed-effect design, ",
-        "family, method, and likelihood convention.",
+        "family, method, marginal method, and likelihood convention.",
         call. = FALSE
       )
     }

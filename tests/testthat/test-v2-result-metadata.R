@@ -135,6 +135,14 @@ test_that("structured normalizers retain engine df and objective provenance", {
   expect_s3_class(stats::AIC(full_fit, full_fit), "data.frame")
   expect_error(stats::AIC(full_fit, fit), "not comparable")
   expect_error(stats::AIC(fit, full_fit), "not comparable")
+  laplace_fit <- full_fit
+  laplace_fit$result$marginal_method <- "laplace"
+  variational_fit <- full_fit
+  variational_fit$result$marginal_method <- "variational"
+  expect_error(
+    stats::AIC(laplace_fit, variational_fit),
+    "marginal method"
+  )
   changed_design <- full_fit
   changed_design$payload$X <- cbind(1, c(0, 1, 0))
   expect_error(stats::AIC(full_fit, changed_design), "fixed-effect design")
