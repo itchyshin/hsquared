@@ -105,6 +105,31 @@ test_that("fitting-models aligns cbind and genomic GREML with covered wording", 
   expect_match(text, "single-step) remain `partial`", fixed = TRUE)
 })
 
+test_that("function map names real extractors and R vs Julia gaps", {
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "function-map-cheatsheet.Rmd"
+  )
+  skip_if_not(file.exists(article), "function-map article not present")
+  text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+
+  expect_match(text, "accuracy(fit)", fixed = TRUE)
+  expect_match(text, "?g_matrix_geometry", fixed = TRUE)
+  expect_no_match(
+    text,
+    "marker_effects()`, `g_matrix_geometry()`.",
+    fixed = TRUE
+  )
+  expect_match(text, "Julia only: `nested_lrt()", fixed = TRUE)
+  expect_match(text, "additive_relationship()", fixed = TRUE)
+  expect_match(text, "genomic_relationship_matrix()", fixed = TRUE)
+  expect_match(text, "R function and Julia function", fixed = TRUE)
+  expect_false(exists("g_matrix_geometry", envir = asNamespace("hsquared"), inherits = FALSE))
+})
+
 test_that("genomic help states the ridged residual shift", {
   rd <- testthat::test_path("..", "..", "man", "genomic_markers.Rd")
   skip_if_not(file.exists(rd), "man/genomic_markers.Rd not present")
