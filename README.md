@@ -94,6 +94,10 @@ fit <- hsquared(
 summary(fit)
 ```
 
+The first fit in a session takes about 30 s while Julia starts and
+compiles. Later fits take under a second for a few hundred animals.
+The call prints no progress, so the first one can look frozen.
+
 Report only what [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
 allows for the route you ran.
 

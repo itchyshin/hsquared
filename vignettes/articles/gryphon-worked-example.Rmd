@@ -52,6 +52,10 @@ fit <- hsquared(BWT ~ animal(1 | id, pedigree = ped), data = dat)
 fit
 ```
 
+The first fit in a session takes about 30 s while Julia starts and compiles.
+Later fits take under a second for a few hundred animals. The call prints no
+progress, so the first one can look frozen.
+
 ## Read the result
 
 The published REML estimates are `σ²a = 3.3954`, `σ²e = 3.8286`, giving **`h² = 0.470`** — birth

@@ -98,6 +98,12 @@ fit_mv <- hsquared(
 )
 ```
 
+The first `cbind()` fit in a session is slower than the univariate first
+fit (about 40 s on a few hundred records). Later multivariate calls are
+faster than that first call but still slower than a univariate animal
+model. A larger pedigree can take minutes, and the call prints no
+progress.
+
 Read this as one additive animal effect shared across traits. The trait
 covariances live in `G0`; the residual covariances live in `R0`.
 

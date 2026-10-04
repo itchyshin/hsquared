@@ -94,7 +94,10 @@ fit <- hsquared(
 ```
 
 Once the engine is registered, the same call as the validate block
-*attempts* a fit. **n = 4 may not converge.** If `fit_diagnostics()`
+*attempts* a fit. The first fit in a session takes about 30 s while
+Julia starts and compiles. Later fits take under a second for a few
+hundred animals. The call prints no progress, so the first one can
+look frozen. **n = 4 may not converge.** If `fit_diagnostics()`
 says `converged` is FALSE, do not read `heritability()` as a result --
 a near-zero value is not h^2 = 0. `heritability()` warns when the fit
 failed. The successful first path on this page is the validate block

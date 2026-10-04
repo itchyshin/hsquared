@@ -39,6 +39,41 @@ test_that("twin-boundary Getting started link stays inside articles/", {
   expect_no_match(text, "../hsquared.html", fixed = TRUE)
 })
 
+test_that("first-fit pages warn that Julia start and compile take about 30 s", {
+  pages <- c(
+    testthat::test_path("..", "..", "README.md"),
+    testthat::test_path("..", "..", "vignettes", "hsquared.Rmd"),
+    testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "gryphon-worked-example.Rmd"
+    )
+  )
+  for (page in pages) {
+    skip_if_not(file.exists(page), paste(basename(page), "not present"))
+    text <- paste(readLines(page, warn = FALSE), collapse = "\n")
+    expect_match(text, "first fit in a session", fixed = TRUE, info = page)
+    expect_match(text, "30 s", fixed = TRUE, info = page)
+    expect_match(text, "Julia starts and\\s+compiles", info = page)
+    expect_match(text, "under a second", fixed = TRUE, info = page)
+  }
+
+  mv <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "multivariate.Rmd"
+  )
+  skip_if_not(file.exists(mv), "multivariate article not present")
+  mv_text <- paste(readLines(mv, warn = FALSE), collapse = "\n")
+  expect_match(mv_text, "first `cbind()` fit in a session", fixed = TRUE)
+  expect_match(mv_text, "40 s", fixed = TRUE)
+  expect_match(mv_text, "minutes", fixed = TRUE)
+})
+
 test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout", {
   pages <- c(
     testthat::test_path("..", "..", "README.md"),
