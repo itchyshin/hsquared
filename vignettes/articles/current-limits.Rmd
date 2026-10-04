@@ -79,7 +79,8 @@ default call is the one that needs it.
 
 Without the engine, `hsquared()` still tells you whether your model is
 expressible, and errors with install guidance if you ask it to fit. See the
-engine setup section of the [README](https://github.com/itchyshin/hsquared#engine-setup).
+[Installation](https://github.com/itchyshin/hsquared#installation) section of
+the README.
 
 ```{r validate-only, eval = FALSE}
 # no Julia required; same ped/dat as the README

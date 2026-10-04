@@ -323,6 +323,9 @@ status <- validation_status()
 status[status$status == "covered", c("capability_label", "phase", "status")]
 ```
 
-To actually fit the validated model end-to-end — including installing and
-registering the `HSquared.jl` engine — see the *Getting started* article and its
-engine-setup section. This article is about the evidence, not the workflow.
+To actually fit the validated model end-to-end, including installing the
+`HSquared.jl` engine from GitHub, see the README
+[Installation](https://github.com/itchyshin/hsquared#installation) section and
+the *Getting started* article
+([Fit (needs the Julia engine)](hsquared.html#fit-needs-the-julia-engine)).
+This article is about the evidence, not the workflow.

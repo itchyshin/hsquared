@@ -180,6 +180,46 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
   expect_match(text, "cov = fa(K)", fixed = TRUE)
 })
 
+test_that("current-limits and validation-evidence point at a live install heading", {
+  limits <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "current-limits.Rmd"
+  )
+  evidence <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "validation-evidence.Rmd"
+  )
+  skip_if_not(file.exists(limits), "current-limits.Rmd not present")
+  skip_if_not(file.exists(evidence), "validation-evidence.Rmd not present")
+  limits_text <- paste(readLines(limits, warn = FALSE), collapse = "\n")
+  evidence_text <- paste(readLines(evidence, warn = FALSE), collapse = "\n")
+
+  expect_no_match(limits_text, "engine-setup", fixed = TRUE)
+  expect_no_match(evidence_text, "engine-setup", fixed = TRUE)
+  expect_no_match(evidence_text, "registering the", fixed = TRUE)
+  expect_match(
+    limits_text,
+    "https://github.com/itchyshin/hsquared#installation",
+    fixed = TRUE
+  )
+  expect_match(
+    evidence_text,
+    "https://github.com/itchyshin/hsquared#installation",
+    fixed = TRUE
+  )
+  expect_match(
+    evidence_text,
+    "hsquared.html#fit-needs-the-julia-engine",
+    fixed = TRUE
+  )
+})
+
 test_that("validation-evidence separates declared evidence scope from route controls", {
   article <- testthat::test_path(
     "..",
