@@ -3,18 +3,37 @@
 # `n_genetic_params` (the twin's #61 contract), so it is fully fixture-testable
 # without a live engine. Engine row V4-MV-REML (partial).
 
-make_mv_fit <- function(loglik, n_genetic_params, genetic_structure) {
+make_mv_fit <- function(
+  loglik,
+  n_genetic_params,
+  genetic_structure,
+  converged = TRUE
+) {
   hsquared:::hs_new_fit(
     call = quote(hsquared(
       cbind(t1, t2) ~ animal(1 | id, pedigree = ped),
       data = dat
     )),
     spec = list(method = "REML", family = list(family = "gaussian")),
-    payload = list(Y = matrix(0, 4, 2)),
+    payload = list(
+      Y = matrix(0, 4, 2),
+      X = matrix(1, 4, 1),
+      pedigree = list(
+        id = letters[1:4],
+        sire = rep(NA_character_, 4),
+        dam = rep(NA_character_, 4)
+      ),
+      metadata = list(
+        trait_names = c("t1", "t2"),
+        fixed_colnames = "(Intercept)"
+      )
+    ),
     result = list(
       loglik = loglik,
       n_genetic_params = n_genetic_params,
-      genetic_structure = genetic_structure
+      genetic_structure = genetic_structure,
+      converged = converged,
+      nobs = 8L
     )
   )
 }
@@ -47,16 +66,55 @@ test_that("covariance_structure_lrt guards order, object class, and missing fiel
     "must both be"
   )
   # Missing loglik (e.g. a non-converged fit).
-  no_ll <- hsquared:::hs_new_fit(
-    call = quote(hsquared(
-      cbind(t1, t2) ~ animal(1 | id, pedigree = ped),
-      data = dat
-    )),
-    spec = list(method = "REML", family = list(family = "gaussian")),
-    payload = list(Y = matrix(0, 4, 2)),
-    result = list(n_genetic_params = 2L, genetic_structure = "diagonal")
-  )
+  no_ll <- diag_fit
+  no_ll$result$loglik <- NULL
   expect_error(covariance_structure_lrt(no_ll, full_fit), "loglik")
+})
+
+test_that("covariance_structure_lrt requires converged comparable fits", {
+  diag_fit <- make_mv_fit(-110, 2L, "diagonal")
+  full_fit <- make_mv_fit(-108, 3L, "unstructured")
+
+  not_converged <- make_mv_fit(-110, 2L, "diagonal", converged = FALSE)
+  expect_error(
+    covariance_structure_lrt(not_converged, full_fit),
+    "must both have converged"
+  )
+
+  different_nobs <- full_fit
+  different_nobs$result$nobs <- 6L
+  expect_error(
+    covariance_structure_lrt(diag_fit, different_nobs),
+    "same number of observations"
+  )
+
+  different_response <- full_fit
+  different_response$payload$Y[1, 1] <- 1
+  expect_error(
+    covariance_structure_lrt(diag_fit, different_response),
+    "same response data"
+  )
+
+  different_fixed <- full_fit
+  different_fixed$payload$X[, 1] <- 2
+  expect_error(
+    covariance_structure_lrt(diag_fit, different_fixed),
+    "same fixed-effect design"
+  )
+
+  different_pedigree <- full_fit
+  different_pedigree$payload$pedigree$id[[1L]] <- "different"
+  expect_error(
+    covariance_structure_lrt(diag_fit, different_pedigree),
+    "same pedigree"
+  )
+
+  ml_fit <- full_fit
+  ml_fit$spec$method <- "ML"
+  expect_error(
+    covariance_structure_lrt(diag_fit, ml_fit),
+    "REML fits"
+  )
 })
 
 hs_lrt_fixture_meta <- function(dir, key) {
@@ -102,17 +160,24 @@ test_that("covariance_structure_lrt runs end-to-end on the shared fixtures", {
   expect_equal(lrt$full, "unstructured")
 })
 
-test_that("covariance_structure_lrt flags a non-interior null and clamps a negative statistic", {
+test_that("covariance_structure_lrt flags invalid reference cases", {
   # Any pairing other than diagonal-in-unstructured is boundary-conservative
   # (the naive chi-square is not valid at a variance boundary).
   diag_fit <- make_mv_fit(-110, 2L, "diagonal")
   lowrank_fit <- make_mv_fit(-108, 3L, "lowrank")
-  expect_true(covariance_structure_lrt(diag_fit, lowrank_fit)$boundary)
+  expect_warning(
+    boundary_lrt <- covariance_structure_lrt(diag_fit, lowrank_fit),
+    "chi-square reference is not valid"
+  )
+  expect_true(boundary_lrt$boundary)
+  expect_true(is.na(boundary_lrt$pvalue))
 
-  # A marginally-negative 2*Δloglik (optimizer noise) is clamped so the p-value
-  # stays a valid probability rather than exceeding 1.
+  # A negative 2*Delta-loglik is reported, not silently clamped to zero.
   worse_full <- make_mv_fit(-110.0001, 3L, "unstructured")
-  noisy <- covariance_structure_lrt(diag_fit, worse_full)
+  expect_warning(
+    noisy <- covariance_structure_lrt(diag_fit, worse_full),
+    "negative likelihood-ratio statistic"
+  )
   expect_lt(noisy$statistic, 0)
-  expect_equal(noisy$pvalue, stats::pchisq(0, df = 1, lower.tail = FALSE))
+  expect_true(is.na(noisy$pvalue))
 })

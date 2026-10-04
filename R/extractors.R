@@ -1556,7 +1556,10 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 #' It mirrors the engine multivariate REML validation row (`partial`): asymptotic, REML-only,
 #' dense validation-scale, with the multivariate recovery calibration not yet
 #' passed -- a reported test, not a validated one. Both fits must be on the same
-#' response, fixed effects, and pedigree.
+#' response, fixed effects, and pedigree, and both must have converged. The
+#' function refuses mismatched fits. A negative statistic or a comparison whose
+#' null is on a boundary produces a warning and an `NA` p-value rather than a
+#' misleading chi-square result.
 #'
 #' @param constrained,full Two `hsquared_fit` objects from the multivariate
 #'   model; `full` must nest `constrained` (more genetic
@@ -1576,6 +1579,16 @@ covariance_structure_lrt <- function(constrained, full, ...) {
       call. = FALSE
     )
   }
+  if (
+    !isTRUE(constrained$result$converged) ||
+      !isTRUE(full$result$converged)
+  ) {
+    stop(
+      "`constrained` and `full` must both have converged before a ",
+      "covariance-structure LRT can be computed.",
+      call. = FALSE
+    )
+  }
   field <- function(fit, nm) {
     v <- fit$result[[nm]]
     if (is.null(v)) {
@@ -1588,6 +1601,61 @@ covariance_structure_lrt <- function(constrained, full, ...) {
       )
     }
     v
+  }
+  if (
+    !identical(constrained$spec$method, "REML") ||
+      !identical(full$spec$method, "REML")
+  ) {
+    stop(
+      "The covariance-structure LRT requires two REML fits.",
+      call. = FALSE
+    )
+  }
+  nobs_c <- as.integer(field(constrained, "nobs"))
+  nobs_f <- as.integer(field(full, "nobs"))
+  if (!identical(nobs_c, nobs_f)) {
+    stop(
+      "`constrained` and `full` must use the same number of observations.",
+      call. = FALSE
+    )
+  }
+  same_response <- identical(
+    constrained$payload$Y,
+    full$payload$Y
+  ) && identical(
+    constrained$payload$metadata$trait_names,
+    full$payload$metadata$trait_names
+  )
+  if (!same_response) {
+    stop(
+      "`constrained` and `full` must use the same response data and traits.",
+      call. = FALSE
+    )
+  }
+  same_fixed <- identical(
+    constrained$payload$X,
+    full$payload$X
+  ) && identical(
+    constrained$payload$metadata$fixed_colnames,
+    full$payload$metadata$fixed_colnames
+  )
+  if (!same_fixed) {
+    stop(
+      "`constrained` and `full` must use the same fixed-effect design.",
+      call. = FALSE
+    )
+  }
+  if (!identical(constrained$payload$pedigree, full$payload$pedigree)) {
+    stop(
+      "`constrained` and `full` must use the same pedigree.",
+      call. = FALSE
+    )
+  }
+  if (!identical(constrained$spec$family, full$spec$family)) {
+    stop(
+      "`constrained` and `full` must use the same response family.",
+      call. = FALSE
+    )
   }
   ll_c <- as.numeric(field(constrained, "loglik"))
   ll_f <- as.numeric(field(full, "loglik"))
@@ -1607,10 +1675,32 @@ covariance_structure_lrt <- function(constrained, full, ...) {
   sf <- full$result$genetic_structure %||% NA_character_
   stat <- 2 * (ll_f - ll_c)
   boundary <- !(identical(sc, "diagonal") && identical(sf, "unstructured"))
+  invalid_reference <- FALSE
+  if (boundary) {
+    warning(
+      "The chi-square reference is not valid for this covariance-structure ",
+      "comparison because the null is on a boundary; `pvalue` is `NA`.",
+      call. = FALSE
+    )
+    invalid_reference <- TRUE
+  }
+  if (stat < 0) {
+    warning(
+      "The full fit has a lower log-likelihood than the constrained fit, ",
+      "giving a negative likelihood-ratio statistic. Check convergence and ",
+      "model comparability; `pvalue` is `NA`.",
+      call. = FALSE
+    )
+    invalid_reference <- TRUE
+  }
   data.frame(
     statistic = stat,
     df = df,
-    pvalue = stats::pchisq(max(stat, 0), df = df, lower.tail = FALSE),
+    pvalue = if (invalid_reference) {
+      NA_real_
+    } else {
+      stats::pchisq(stat, df = df, lower.tail = FALSE)
+    },
     boundary = boundary,
     constrained = sc,
     full = sf,

@@ -35,5 +35,8 @@ a chi^2-mixture correction and are gated out of the R bridge for now.
 It mirrors the engine multivariate REML validation row (\code{partial}): asymptotic, REML-only,
 dense validation-scale, with the multivariate recovery calibration not yet
 passed -- a reported test, not a validated one. Both fits must be on the same
-response, fixed effects, and pedigree.
+response, fixed effects, and pedigree, and both must have converged. The
+function refuses mismatched fits. A negative statistic or a comparison whose
+null is on a boundary produces a warning and an \code{NA} p-value rather than a
+misleading chi-square result.
 }
