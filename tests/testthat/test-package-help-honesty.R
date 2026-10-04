@@ -94,6 +94,33 @@ test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout"
   }
 })
 
+test_that("gryphon articles do not claim ancestral loops in the open pedigree", {
+  pages <- c(
+    testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "gryphon-worked-example.Rmd"
+    ),
+    testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "benchmark-comparators.Rmd"
+    )
+  )
+  for (page in pages) {
+    skip_if_not(file.exists(page), paste(basename(page), "not present"))
+    text <- paste(readLines(page, warn = FALSE), collapse = "\n")
+    expect_no_match(text, "contains ancestral loops", fixed = TRUE, info = page)
+    expect_no_match(text, "pathological", fixed = TRUE, info = page)
+    expect_match(text, "no ancestral loops", fixed = TRUE, info = page)
+    expect_match(text, "A_gryphon", fixed = TRUE, info = page)
+  }
+})
+
 test_that("README and Getting started define covered, route, and interval labels", {
   pages <- c(
     testthat::test_path("..", "..", "README.md"),

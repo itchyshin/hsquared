@@ -35,9 +35,9 @@ CRAN package `enhancer`, from Wilson et al. (2010), *An ecologist's guide to the
 *J. Anim. Ecol.* 79:13–26. It is **teaching / simulated** data with a known published REML fit, which
 is exactly what makes it a good external anchor.
 
-The model is the univariate Gaussian animal model `BWT ~ 1 + animal`, fitted by REML. The raw
-gryphon pedigree contains ancestral loops that general pedigree tools refuse, so the relationship
-information is supplied directly as `A_gryphon` (the same path the engine uses).
+The model is the univariate Gaussian animal model `BWT ~ 1 + animal`, fitted by REML. The open
+Wilson et al. 2010 gryphon pedigree has no ancestral loops; this benchmark still
+supplies `A_gryphon` as the signed-off recovery path (the same path the engine uses).
 
 ## The published anchor and the benchmark
 
