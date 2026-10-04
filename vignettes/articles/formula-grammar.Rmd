@@ -47,6 +47,14 @@ univariate Gaussian animal model by REML through `HSquared.jl`. Terms below
 that say **parsed** are recognized; only some of those also **fit**, and then
 only on a named `target =`. Reserved names error as planned, not implemented.
 
+Unknown parents in `pedigree =` may be `NA`, `0`, `"0"`, or `""`. Other
+codes (`"."`, `"-9"`, `"UNK"`) are not unknown-parent markers: they are
+treated as real IDs and error if they are not also rows. A parent that is
+not also an `id` row is a phantom parent and is rejected. Add founder
+rows (`data.frame(id = setdiff(c(ped$sire, ped$dam), ped$id), sire = NA,
+dam = NA)`) or recode those slots as `NA`. The R `pedigree =` path does
+not expose the Julia engine's `missing_values` argument.
+
 ## Standard quantitative-genetic extensions
 
 These names are reserved so future models read like the biological question:

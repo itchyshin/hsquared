@@ -15,7 +15,13 @@
 #'   see [rr()].
 #' @param pedigree A pedigree data frame with individual, sire, and dam columns.
 #'   Optional only when the enclosing [hsquared()] or [model_spec()] call uses
-#'   `data = hs_data(..., pedigree = ...)`. In v0.1 this route rejects any row
+#'   `data = hs_data(..., pedigree = ...)`. Unknown parents may be `NA`,
+#'   `0`, `"0"`, or `""`. Other codes (`"."`, `"-9"`, `"UNK"`, `"*"`, the
+#'   string `"NA"`, `-1`) are treated as real IDs and error if they are not
+#'   also rows. Every known parent must appear as an `id` row; phantom
+#'   parents are rejected. Add founder rows
+#'   (`data.frame(id = setdiff(c(ped$sire, ped$dam), ped$id), sire = NA,
+#'   dam = NA)`) or recode those slots as `NA`. In v0.1 this route rejects any row
 #'   with the same known sire and dam (selfing); no argument here reaches the
 #'   engine's existing `allow_selfing` flag. The current workaround for a
 #'   selfing or hermaphroditic pedigree is `relmat(1 | id, K = A)` with a

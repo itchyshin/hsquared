@@ -94,6 +94,30 @@ test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout"
   }
 })
 
+test_that("animal help lists accepted unknown-parent codes and phantom-parent fix", {
+  rd <- testthat::test_path("..", "..", "man", "animal.Rd")
+  skip_if_not(file.exists(rd), "man/animal.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(text, "NA", fixed = TRUE)
+  expect_match(text, "\"0\"", fixed = TRUE)
+  expect_match(text, "phantom", ignore.case = TRUE)
+  expect_match(text, "founder rows", fixed = TRUE)
+  expect_match(text, "-9", fixed = TRUE)
+
+  grammar <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "formula-grammar.Rmd"
+  )
+  skip_if_not(file.exists(grammar), "formula-grammar article not present")
+  grammar_text <- paste(readLines(grammar, warn = FALSE), collapse = "\n")
+  expect_match(grammar_text, "Unknown parents", fixed = TRUE)
+  expect_match(grammar_text, "founder", fixed = TRUE)
+  expect_match(grammar_text, "missing_values", fixed = TRUE)
+})
+
 test_that("docs name Wald boundary limits and the 50:50 V_A LRT mixture", {
   pages <- c(
     heritability = testthat::test_path("..", "..", "man", "heritability.Rd"),

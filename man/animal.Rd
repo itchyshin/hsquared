@@ -13,7 +13,12 @@ see \code{\link[=rr]{rr()}}.}
 
 \item{pedigree}{A pedigree data frame with individual, sire, and dam columns.
 Optional only when the enclosing \code{\link[=hsquared]{hsquared()}} or \code{\link[=model_spec]{model_spec()}} call uses
-\code{data = hs_data(..., pedigree = ...)}. In v0.1 this route rejects any row
+\code{data = hs_data(..., pedigree = ...)}. Unknown parents may be \code{NA},
+\code{0}, \code{"0"}, or \code{""}. Other codes (\code{"."}, \code{"-9"}, \code{"UNK"}, \code{"*"}, the
+string \code{"NA"}, \code{-1}) are treated as real IDs and error if they are not
+also rows. Every known parent must appear as an \code{id} row; phantom
+parents are rejected. Add founder rows
+(\code{data.frame(id = setdiff(c(ped$sire, ped$dam), ped$id), sire = NA, dam = NA)}) or recode those slots as \code{NA}. In v0.1 this route rejects any row
 with the same known sire and dam (selfing); no argument here reaches the
 engine's existing \code{allow_selfing} flag. The current workaround for a
 selfing or hermaphroditic pedigree is \code{relmat(1 | id, K = A)} with a

@@ -533,8 +533,17 @@ hs_build_binomial_counts_response <- function(lhs, response) {
 hs_validate_multivariate_trait_names <- function(trait_names) {
   unicode_space <- paste0(
     "[[:space:]",
-    intToUtf8(c(0x85, 0xA0, 0x1680, 0x2000:0x200A, 0x2028, 0x2029,
-      0x202F, 0x205F, 0x3000)),
+    intToUtf8(c(
+      0x85,
+      0xA0,
+      0x1680,
+      0x2000:0x200A,
+      0x2028,
+      0x2029,
+      0x202F,
+      0x205F,
+      0x3000
+    )),
     "]"
   )
   missing_names <- is.na(trait_names) |
@@ -1256,7 +1265,8 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
       if (length(missing_parents) > 1L) "s" else "",
       " not present as individual IDs: ",
       paste(missing_parents, collapse = ", "),
-      ".",
+      ". Add those IDs as founder rows (sire = NA, dam = NA), or recode ",
+      "unknown parents as NA, 0, \"0\", or \"\".",
       call. = FALSE
     )
   }
