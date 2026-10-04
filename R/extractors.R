@@ -97,6 +97,12 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' failed fit is not evidence that heritability is zero. Use
 #' [fit_diagnostics()] before reading any number. `logLik()` already refuses
 #' a non-converged fit; `heritability()` keeps the value and shouts instead.
+#' The same warn-and-return applies to [heritability_interval()],
+#' [heritability_standard_error()], and
+#' [variance_component_standard_errors()]. `print()` says the heritability
+#' is not reportable when the fit did not converge. `summary()` omits the
+#' printed SE/CI block when the fit did not converge or is at a
+#' variance-component boundary; it does not print those numbers as results.
 #'
 #' Testing `V_A = 0` and boundary fits: additive variance sits on the edge of
 #' the parameter space (`V_A >= 0`). The Wald SE and the logit-delta CI are
@@ -1193,11 +1199,22 @@ hs_reject_unused_dots <- function(dots, fn) {
 #' `r lifecycle::badge("experimental")`
 #'
 #' `heritability_interval()` returns an **experimental** large-sample confidence
-#' interval for `h^2`. It is available only when an `hsquared_fit` object
-#' contains the interval field, which the default Gaussian animal-model fit
+#' interval for `h^2`. It is available when an `hsquared_fit` object contains
+#' the interval field, which the default Gaussian animal-model fit
 #' (`engine = "fit"`) populates from the engine's
-#' `HSquared.heritability_interval()` when a local Julia engine is present and
-#' the estimate is interior to `(0, 1)`. On the opt-in two-effect fit it returns
+#' `HSquared.heritability_interval()` when a local Julia engine is present.
+#' A non-converged or variance-component-boundary fit still returns that
+#' engine row when it is present: the extractor **warns** and keeps the
+#' number for inspection (the same warn-and-return as [heritability()]).
+#' Those numbers must not be reported. `print()` says the heritability is
+#' not reportable when the fit did not converge. `summary()` omits the
+#' printed SE/CI block when the fit did not converge or is at a
+#' variance-component boundary. The engine omits the field only when it
+#' could not compute the interval (for example when the information matrix
+#' is not invertible), not merely because the estimate sits near 0 or 1.
+#' Printed endpoints may be 0 or 1 even though the Julia docstring describes
+#' a logit-delta interval that always lies in (0, 1). On the opt-in
+#' two-effect fit it returns
 #' the direct-heritability ratio interval (`ratio1`), and on the opt-in
 #' multi-effect fit (`target = "multi_effect"`, K >= 3 blocks) it returns the
 #' ANIMAL block's ratio interval (the animal additive variance over the total
@@ -1299,8 +1316,14 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #'
 #' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic,
 #' REML-only, and unreliable at small `n` or near a variance-component
-#' boundary (where the AI matrix is ill-conditioned and the fields are
-#' omitted). The Wald SE is not valid when additive variance is near 0;
+#' boundary. A non-converged or boundary fit still returns the engine SEs
+#' when they are present: the extractors **warn** and keep the numbers for
+#' inspection. Those SEs must not be reported. `summary()` omits the printed
+#' SE block when the fit did not converge or is at a variance-component
+#' boundary. The engine omits the fields only when it could not compute them
+#' (for example when the AI matrix is not invertible), not merely because a
+#' component sits near zero. The Wald SE is not valid when additive variance
+#' is near 0;
 #' `V_A = 0` is on the edge of the parameter space, so the usual normal
 #' approximation does not apply. The likelihood-ratio test of `V_A = 0`
 #' uses a 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987;

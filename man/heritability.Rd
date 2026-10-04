@@ -81,6 +81,12 @@ but \strong{warns}: that number is not an estimate. A near-zero value from a
 failed fit is not evidence that heritability is zero. Use
 \code{\link[=fit_diagnostics]{fit_diagnostics()}} before reading any number. \code{logLik()} already refuses
 a non-converged fit; \code{heritability()} keeps the value and shouts instead.
+The same warn-and-return applies to \code{\link[=heritability_interval]{heritability_interval()}},
+\code{\link[=heritability_standard_error]{heritability_standard_error()}}, and
+\code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}}. \code{print()} says the heritability
+is not reportable when the fit did not converge. \code{summary()} omits the
+printed SE/CI block when the fit did not converge or is at a
+variance-component boundary; it does not print those numbers as results.
 
 Testing \code{V_A = 0} and boundary fits: additive variance sits on the edge of
 the parameter space (\code{V_A >= 0}). The Wald SE and the logit-delta CI are

@@ -43,8 +43,14 @@ function that failed (HSquared.jl#351); the field is then absent, not \code{NA}.
 
 These mirror the engine row \code{V1-HERIT-CI} (\code{partial}): asymptotic,
 REML-only, and unreliable at small \code{n} or near a variance-component
-boundary (where the AI matrix is ill-conditioned and the fields are
-omitted). The Wald SE is not valid when additive variance is near 0;
+boundary. A non-converged or boundary fit still returns the engine SEs
+when they are present: the extractors \strong{warn} and keep the numbers for
+inspection. Those SEs must not be reported. \code{summary()} omits the printed
+SE block when the fit did not converge or is at a variance-component
+boundary. The engine omits the fields only when it could not compute them
+(for example when the AI matrix is not invertible), not merely because a
+component sits near zero. The Wald SE is not valid when additive variance
+is near 0;
 \code{V_A = 0} is on the edge of the parameter space, so the usual normal
 approximation does not apply. The likelihood-ratio test of \code{V_A = 0}
 uses a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1} (Self and Liang 1987;

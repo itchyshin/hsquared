@@ -22,11 +22,22 @@ contain it.
 }
 \details{
 \code{heritability_interval()} returns an \strong{experimental} large-sample confidence
-interval for \code{h^2}. It is available only when an \code{hsquared_fit} object
-contains the interval field, which the default Gaussian animal-model fit
+interval for \code{h^2}. It is available when an \code{hsquared_fit} object contains
+the interval field, which the default Gaussian animal-model fit
 (\code{engine = "fit"}) populates from the engine's
-\code{HSquared.heritability_interval()} when a local Julia engine is present and
-the estimate is interior to \verb{(0, 1)}. On the opt-in two-effect fit it returns
+\code{HSquared.heritability_interval()} when a local Julia engine is present.
+A non-converged or variance-component-boundary fit still returns that
+engine row when it is present: the extractor \strong{warns} and keeps the
+number for inspection (the same warn-and-return as \code{\link[=heritability]{heritability()}}).
+Those numbers must not be reported. \code{print()} says the heritability is
+not reportable when the fit did not converge. \code{summary()} omits the
+printed SE/CI block when the fit did not converge or is at a
+variance-component boundary. The engine omits the field only when it
+could not compute the interval (for example when the information matrix
+is not invertible), not merely because the estimate sits near 0 or 1.
+Printed endpoints may be 0 or 1 even though the Julia docstring describes
+a logit-delta interval that always lies in (0, 1). On the opt-in
+two-effect fit it returns
 the direct-heritability ratio interval (\code{ratio1}), and on the opt-in
 multi-effect fit (\code{target = "multi_effect"}, K >= 3 blocks) it returns the
 ANIMAL block's ratio interval (the animal additive variance over the total

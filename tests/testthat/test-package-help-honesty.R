@@ -670,3 +670,39 @@ test_that("fitting-models later examples define their data and validate", {
     control = v
   ))
 })
+
+test_that("hsquared#270: interval and SE pages name warn-and-return, not omission", {
+  hi <- testthat::test_path("..", "..", "man", "heritability_interval.Rd")
+  se <- testthat::test_path(
+    "..",
+    "..",
+    "man",
+    "variance_component_standard_errors.Rd"
+  )
+  h2 <- testthat::test_path("..", "..", "man", "heritability.Rd")
+  skip_if_not(file.exists(hi), "man/heritability_interval.Rd not present")
+  skip_if_not(
+    file.exists(se),
+    "man/variance_component_standard_errors.Rd not present"
+  )
+  skip_if_not(file.exists(h2), "man/heritability.Rd not present")
+
+  hi_text <- paste(readLines(hi, warn = FALSE), collapse = "\n")
+  se_text <- paste(readLines(se, warn = FALSE), collapse = "\n")
+  h2_text <- paste(readLines(h2, warn = FALSE), collapse = "\n")
+
+  expect_no_match(hi_text, "the estimate is interior to")
+  expect_match(hi_text, "must not be reported", fixed = TRUE)
+  expect_match(hi_text, "warns", ignore.case = TRUE)
+  expect_match(hi_text, "summary()", fixed = TRUE)
+  expect_match(hi_text, "printed SE/CI block", fixed = TRUE)
+
+  expect_no_match(se_text, "fields are omitted")
+  expect_match(se_text, "must not be reported", fixed = TRUE)
+  expect_match(se_text, "warn", ignore.case = TRUE)
+  expect_match(se_text, "summary()", fixed = TRUE)
+
+  expect_match(h2_text, "heritability_interval()", fixed = TRUE)
+  expect_match(h2_text, "summary()", fixed = TRUE)
+  expect_match(h2_text, "printed SE/CI block", fixed = TRUE)
+})
