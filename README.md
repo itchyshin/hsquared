@@ -104,11 +104,17 @@ allows for the route you ran.
 ## Installation
 
 ```r
-# install.packages("remotes")
+install.packages("remotes")
 remotes::install_github("itchyshin/hsquared")
 ```
 
-Fitting also needs Julia, `JuliaCall`, and a local `HSquared.jl` tree.
+`pak::pak("itchyshin/hsquared")` is equivalent. Neither command builds
+vignettes, so `vignette("hsquared")` is empty after install; use
+[Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html)
+on the website.
+
+Fitting also needs [Julia](https://julialang.org/downloads/) 1.10 or later
+with `julia` on `PATH`, `JuliaCall`, and a local `HSquared.jl` tree.
 `HSquared` is not in the Julia General registry — do not use
 `Pkg.add("HSquared")` by name.
 

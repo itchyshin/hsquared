@@ -94,6 +94,33 @@ test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout"
   }
 })
 
+test_that("README and Getting started agree on install, Julia 1.10, and PATH", {
+  pages <- c(
+    testthat::test_path("..", "..", "README.md"),
+    testthat::test_path("..", "..", "vignettes", "hsquared.Rmd")
+  )
+  for (page in pages) {
+    skip_if_not(file.exists(page), paste(basename(page), "not present"))
+    text <- paste(readLines(page, warn = FALSE), collapse = "\n")
+    expect_match(
+      text,
+      'remotes::install_github("itchyshin/hsquared")',
+      fixed = TRUE,
+      info = page
+    )
+    expect_match(
+      text,
+      'pak::pak("itchyshin/hsquared")',
+      fixed = TRUE,
+      info = page
+    )
+    expect_match(text, "equivalent", fixed = TRUE, info = page)
+    expect_match(text, "1.10", fixed = TRUE, info = page)
+    expect_match(text, "PATH", fixed = TRUE, info = page)
+    expect_match(text, "vignette", ignore.case = TRUE, info = page)
+  }
+})
+
 test_that("non-Gaussian vignette does not call its marginal fit REML", {
   vignette <- testthat::test_path(
     "..",
