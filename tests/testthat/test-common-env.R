@@ -37,7 +37,7 @@ test_that("at most one second random effect is allowed", {
     id = c("a", "b", "a", "b"),
     litter = c("l1", "l1", "l2", "l2")
   )
-  expect_error(
+  err <- expect_error(
     hsquared:::hs_build_model_spec(
       y ~ animal(1 | id, pedigree = ped) +
         permanent(1 | id) +
@@ -47,6 +47,11 @@ test_that("at most one second random effect is allowed", {
       REML = TRUE
     ),
     "target = \"multi_effect\"",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(err),
+    "at most one additional random effect",
     fixed = TRUE
   )
 })
