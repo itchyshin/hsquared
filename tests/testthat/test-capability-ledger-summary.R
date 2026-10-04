@@ -91,15 +91,33 @@ test_that("directional interval wording is confined to the named pedigree method
   skip_without_generator()
   gen <- load_generator()
   routes <- gen$hs_route_table()
-  text <- paste(gen$hs_build_summary(as.data.frame(validation_status())), collapse = "\n")
+  text <- paste(
+    gen$hs_build_summary(as.data.frame(validation_status())),
+    collapse = "\n"
+  )
 
-  expect_equal(sum(vapply(routes, `[[`, character(1), "interval") == "directional_conservative"), 1L)
-  expect_identical(routes[[1L]]$key, "univariate Gaussian animal-model fit (default path, AI-REML)")
+  expect_equal(
+    sum(
+      vapply(routes, `[[`, character(1), "interval") ==
+        "directional_conservative"
+    ),
+    1L
+  )
+  expect_identical(
+    routes[[1L]]$key,
+    "univariate Gaussian animal-model fit (default path, AI-REML)"
+  )
   expect_match(text, "h2 delta/profile/bootstrap", fixed = TRUE)
   expect_match(text, "sigma-a2 profile/bootstrap", fixed = TRUE)
   expect_match(text, "Sigma-a2 delta/Wald is experimental-only", fixed = TRUE)
-  expect_no_match(text, "SNP-BLUP marker effects[\\s\\S]*directional-conservative")
-  expect_no_match(text, "Multivariate Gaussian animal model[\\s\\S]*directional-conservative")
+  expect_no_match(
+    text,
+    "SNP-BLUP marker effects[\\s\\S]*directional-conservative"
+  )
+  expect_no_match(
+    text,
+    "Multivariate Gaussian animal model[\\s\\S]*directional-conservative"
+  )
 })
 
 test_that("generated summary states covered/partial/planned honestly", {
@@ -121,6 +139,21 @@ test_that("generated summary states covered/partial/planned honestly", {
   # the words that would hide the runs-versus-validated distinction
   expect_no_match(text, "fully supported", ignore.case = TRUE)
   expect_no_match(text, "production-ready", ignore.case = TRUE)
+})
+
+test_that("common_env and permanent route snippets name the required target", {
+  skip_without_generator()
+  gen <- load_generator()
+  routes <- gen$hs_route_table()
+  calls <- vapply(routes, `[[`, character(1), "call")
+
+  common_env <- calls[grepl("common_env(", calls, fixed = TRUE)]
+  expect_length(common_env, 1L)
+  expect_match(common_env, 'target = "two_effect"', fixed = TRUE)
+
+  permanent <- calls[grepl("permanent(", calls, fixed = TRUE)]
+  expect_length(permanent, 1L)
+  expect_match(permanent, 'target = "repeatability"', fixed = TRUE)
 })
 
 test_that("the committed include is in sync with validation_status()", {

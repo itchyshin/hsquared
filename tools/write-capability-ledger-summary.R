@@ -47,7 +47,8 @@ hs_route_table <- function() {
       title = "Animal model plus independent extra effects (common environment, arbitrary N)",
       call = paste0(
         'hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),\n',
-        '         data = dat, control = hs_control(engine = "julia"))'
+        '         data = dat, control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "two_effect")))'
       ),
       scope = paste(
         "The common-environment leg (additive animal A plus i.i.d. environment,",
@@ -92,7 +93,8 @@ hs_route_table <- function() {
       title = "Repeatability / permanent environment (repeated records)",
       call = paste0(
         'hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,\n',
-        '         control = hs_control(engine = "julia"))'
+        '         control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "repeatability")))'
       ),
       scope = paste(
         "REML-only repeatability optimizer returning additive, permanent-environment,",

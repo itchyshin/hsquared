@@ -34,7 +34,8 @@ hsquared(y ~ sex + animal(1 | id, pedigree = ped), data = dat)
 
 ```r
 hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
-         data = dat, control = hs_control(engine = "julia"))
+         data = dat, control = hs_control(engine = "julia",
+           engine_control = list(target = "two_effect")))
 ```
 
 **Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
@@ -69,7 +70,8 @@ hsquared(y ~ animal(1 | id, pedigree = ped), data = dat,
 
 ```r
 hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
-         control = hs_control(engine = "julia"))
+         control = hs_control(engine = "julia",
+           engine_control = list(target = "repeatability")))
 ```
 
 **Can I fit it?** **Yes, but opt-in and experimental** - the code runs; the evidence is incomplete.
