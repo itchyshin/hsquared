@@ -119,6 +119,26 @@ test_that("rr() rejects unsupported syntax with named pointers", {
     "must be a single positive integer",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      weight ~ animal(rr(age, order = 2.9) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      weight ~ animal(rr(age, order = TRUE) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
 
   # The parser requires a literal because it does not evaluate formula names.
   rr_order <- 2L

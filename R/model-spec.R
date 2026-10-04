@@ -1109,14 +1109,23 @@ hs_parse_rr_lhs <- function(lhs, data) {
       call. = FALSE
     )
   }
-  order <- suppressWarnings(as.integer(order))
-  if (length(order) != 1L || is.na(order) || order < 1L) {
+  if (
+    length(order) != 1L ||
+      !is.numeric(order) ||
+      is.complex(order) ||
+      is.na(order) ||
+      !is.finite(order) ||
+      order < 1 ||
+      order > .Machine$integer.max ||
+      order != floor(order)
+  ) {
     stop(
       "`rr(order = ...)` must be a single positive integer (the number of ",
       "Legendre coefficients; 2 = intercept + slope).",
       call. = FALSE
     )
   }
+  order <- as.integer(order)
 
   values <- data[[covariate]]
   if (!is.numeric(values)) {
