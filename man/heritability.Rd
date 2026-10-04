@@ -62,14 +62,19 @@ extractor errors because its G and trait genetic modes are on the link scale.
 
 Non-Gaussian responses (\code{target = "nongaussian"}, \code{poisson(log)} or
 \code{binomial(logit)}): \code{heritability()} returns a table of up to three scales,
-not a single number. For logit, report \code{h2_liability} =
-\code{V_A / (V_A + pi^2/3)} (link variance \code{pi^2/3}). \code{h2_latent} is a
-bookkeeping row that equals 1 when the only random term is \code{animal()}.
-Poisson reports \code{h2_latent} and a count-scale \code{h2_observation} only; there
-is no liability scale, and \code{h2_latent} is not the Nakagawa-Schielzeth
-\code{ln(1 + 1/lambda)} convention -- it is \code{V_A / (V_A + V_RE + V_O)} and is 1
-when those extra residuals are zero. \code{binomial(link = "probit")} is not
-available in R. See the Fitting models article for which row to report.
+not a single number. Those rows follow de Villemereuil, Schielzeth,
+Nakagawa and Morrissey (2016, \emph{Genetics} 204:1281-1294). \code{h2_latent} is
+Eq 4, \code{V_A / (V_A + V_RE + V_O)}, and is defined for every family,
+including Poisson. The log-link liability variance \code{V_link} is 0; that
+is not the latent residual \code{V_O}, and \code{V_link} does not appear in Eq 4.
+For logit, report \code{h2_liability} = Eq 24,
+\code{V_A / (V_A + V_RE + V_O + pi^2/3)} (link variance \code{pi^2/3}). That
+liability scale is not the latent scale. \code{h2_latent} equals 1 when
+\code{V_RE} and \code{V_O} are zero (the usual intercept-only \code{animal()} model).
+Poisson reports \code{h2_latent} and a count-scale \code{h2_observation} only;
+there is no liability scale, and \code{h2_latent} is not the
+Nakagawa-Schielzeth \code{ln(1 + 1/lambda)} convention. \code{binomial(link = "probit")} is not available in R. See the Fitting models article for
+which row to report.
 
 A non-converged fit still returns the engine number so you can inspect it,
 but \strong{warns}: that number is not an estimate. A near-zero value from a

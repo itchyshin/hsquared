@@ -536,6 +536,11 @@ test_that("heritability help names non-Gaussian scales and which row to report",
   expect_match(text, "ln(1 + 1/lambda)", fixed = TRUE)
   expect_match(text, "probit", ignore.case = TRUE)
   expect_match(text, "is not\\s+available in R")
+  expect_match(text, "de Villemereuil", fixed = TRUE)
+  expect_match(text, "Eq 4", fixed = TRUE)
+  expect_match(text, "Eq 24", fixed = TRUE)
+  expect_match(text, "V_link", fixed = TRUE)
+  expect_match(text, "not the latent residual", fixed = TRUE)
 })
 
 test_that("fitting-models later examples define their data and validate", {
