@@ -812,7 +812,7 @@ test_that("heritability() and print() stay quiet on a converged interior fit", {
   expect_silent(invisible(utils::capture.output(print(ok))))
 })
 
-test_that("boundary fits do not surface unreportable uncertainty", {
+test_that("converged boundary fits warn, return, and omit summary uncertainty", {
   boundary <- hsquared:::hs_new_fit(
     spec = list(
       method = "REML",
@@ -839,8 +839,8 @@ test_that("boundary fits do not surface unreportable uncertainty", {
         component = c("animal", "residual"),
         se = c(0.05, 0.08)
       ),
-      diagnostics = list(optimizer_status = "not_converged"),
-      converged = FALSE
+      diagnostics = list(optimizer_status = "converged"),
+      converged = TRUE
     )
   )
 
@@ -854,21 +854,21 @@ test_that("boundary fits do not surface unreportable uncertainty", {
 
   expect_warning(
     hi <- heritability_interval(boundary),
-    "This `hsquared_fit` object did not converge. The heritability-interval number is not an estimate; do not report it.",
+    "This `hsquared_fit` object is at a variance-component boundary. The heritability-interval number is not reportable as an ordinary interior estimate",
     fixed = TRUE
   )
   expect_equal(hi$estimate, 1e-8)
 
   expect_warning(
     h2se <- heritability_standard_error(boundary),
-    "This `hsquared_fit` object did not converge. The heritability standard-error number is not an estimate; do not report it.",
+    "This `hsquared_fit` object is at a variance-component boundary. The heritability standard-error number is not reportable as an ordinary interior estimate",
     fixed = TRUE
   )
   expect_equal(h2se$se, 0.04)
 
   expect_warning(
     vcse <- variance_component_standard_errors(boundary),
-    "This `hsquared_fit` object did not converge. The variance-component standard-error number is not an estimate; do not report it.",
+    "This `hsquared_fit` object is at a variance-component boundary. The variance-component standard-error number is not reportable as an ordinary interior estimate",
     fixed = TRUE
   )
   expect_equal(vcse$se, c(0.05, 0.08))

@@ -94,10 +94,22 @@ hs_fit_not_converged <- function(object) {
 # estimate / uncertainty extractors must warn at the same bar so a
 # near-zero value is never a silent "result" (hsquared#307).
 hs_warn_if_unusable_fit <- function(object, what = "heritability") {
-  if (!hs_fit_not_converged(object)) {
+  not_converged <- hs_fit_not_converged(object)
+  boundary <- isTRUE(hs_fit_boundary_flag(object))
+  if (!not_converged && !boundary) {
     return(invisible(FALSE))
   }
-  boundary <- isTRUE(hs_fit_boundary_flag(object))
+  if (!not_converged) {
+    warning(
+      "This `hsquared_fit` object is at a variance-component boundary. The ",
+      what,
+      " number is not reportable as an ordinary interior estimate, but the ",
+      "engine number is returned for inspection. Inspect ",
+      "`fit_diagnostics(fit)` before reading any number.",
+      call. = FALSE
+    )
+    return(invisible(TRUE))
+  }
   extra <- if (boundary) {
     paste0(
       " A variance component is also at or near a boundary, so a ",
