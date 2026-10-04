@@ -118,6 +118,25 @@ hs_warn_if_unusable_fit <- function(object, what = "heritability") {
   invisible(TRUE)
 }
 
+hs_require_reportable_uncertainty <- function(object, fn) {
+  not_converged <- hs_fit_not_converged(object)
+  at_boundary <- isTRUE(hs_fit_boundary_flag(object))
+  if (!not_converged && !at_boundary) {
+    return(invisible(TRUE))
+  }
+  reasons <- c(
+    if (not_converged) "the fit did not converge",
+    if (at_boundary) "a variance component is at or near a boundary"
+  )
+  stop(
+    fn,
+    " is not reportable because ",
+    paste(reasons, collapse = " and "),
+    ". Refit to an interior converged solution before reporting uncertainty.",
+    call. = FALSE
+  )
+}
+
 hs_print_fit_peek <- function(x) {
   h2 <- x$result$heritability
   if (is.null(h2)) {
@@ -191,6 +210,8 @@ print.hsquared_fit <- function(x, ...) {
 
 #' @export
 summary.hsquared_fit <- function(object, ...) {
+  uncertainty_reportable <- !hs_fit_not_converged(object) &&
+    !isTRUE(hs_fit_boundary_flag(object))
   structure(
     list(
       call = object$call,
@@ -206,11 +227,19 @@ summary.hsquared_fit <- function(object, ...) {
       at_boundary = hs_fit_boundary_flag(object),
       at_boundary_class = hs_fit_boundary_class(object),
       # Experimental uncertainty surfaces (engine rows V1-HERIT-CI /
-      # V3-REPEAT-REML, partial); present only when the engine returned them.
-      heritability_interval = object$result$heritability_interval,
-      heritability_se = object$result$heritability_se,
-      variance_component_se = object$result$variance_component_se,
-      repeatability_interval = object$result$repeatability_interval
+      # V3-REPEAT-REML, partial); suppress them when the fit is not reportable.
+      heritability_interval = if (uncertainty_reportable) {
+        object$result$heritability_interval
+      },
+      heritability_se = if (uncertainty_reportable) {
+        object$result$heritability_se
+      },
+      variance_component_se = if (uncertainty_reportable) {
+        object$result$variance_component_se
+      },
+      repeatability_interval = if (uncertainty_reportable) {
+        object$result$repeatability_interval
+      }
     ),
     class = "summary_hsquared_fit"
   )

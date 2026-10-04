@@ -811,3 +811,56 @@ test_that("heritability() and print() stay quiet on a converged interior fit", {
   expect_silent(heritability(ok))
   expect_silent(invisible(utils::capture.output(print(ok))))
 })
+
+test_that("boundary fits do not surface unreportable uncertainty", {
+  boundary <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:4),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(1e-8, 1)
+      ),
+      heritability = data.frame(term = "animal", estimate = 1e-8),
+      heritability_interval = data.frame(
+        estimate = 1e-8,
+        lower = 0,
+        upper = 1,
+        level = 0.95,
+        se = 0.04,
+        method = "delta"
+      ),
+      heritability_se = 0.04,
+      variance_component_se = data.frame(
+        component = c("animal", "residual"),
+        se = c(0.05, 0.08)
+      ),
+      diagnostics = list(optimizer_status = "not_converged"),
+      converged = FALSE
+    )
+  )
+
+  printed <- paste(
+    utils::capture.output(print(summary(boundary))),
+    collapse = "\n"
+  )
+  expect_match(printed, "at boundary: TRUE", fixed = TRUE)
+  expect_no_match(printed, "heritability uncertainty", fixed = TRUE)
+  expect_no_match(printed, "variance-component SEs", fixed = TRUE)
+
+  for (extractor in list(
+    heritability_interval,
+    heritability_standard_error,
+    variance_component_standard_errors
+  )) {
+    expect_error(
+      extractor(boundary),
+      "not reportable because the fit did not converge and a variance component is at or near a boundary",
+      fixed = TRUE
+    )
+  }
+})
