@@ -239,6 +239,32 @@ test_that("hs_control help names dense-route unit starts and rescale guidance", 
   expect_match(text, "converged", fixed = TRUE)
 })
 
+test_that("dense-limit docs state nobs^2 + nanimals^2, not n < 1000", {
+  rd <- testthat::test_path("..", "..", "man", "validation_status.Rd")
+  skip_if_not(file.exists(rd), "man/validation_status.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(text, "nobs^2 + nanimals^2", fixed = TRUE)
+  expect_match(text, "1e6", fixed = TRUE)
+  expect_match(text, "pedigree", ignore.case = TRUE)
+  expect_no_match(text, "n <= 1000")
+  expect_no_match(text, "n <~ 1000")
+
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "current-limits.Rmd"
+  )
+  skip_if_not(file.exists(article), "current-limits.Rmd not present")
+  article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+  expect_match(article_text, "nobs^2 + nanimals^2", fixed = TRUE)
+  expect_match(article_text, "1e6", fixed = TRUE)
+  expect_match(article_text, "pedigree", ignore.case = TRUE)
+  expect_no_match(article_text, "n \u2272 1000")
+  expect_no_match(article_text, "n <= 1000")
+})
+
 test_that("heritability help states default, repeatability, and multi-effect Vp", {
   rd <- testthat::test_path("..", "..", "man", "heritability.Rd")
   skip_if_not(file.exists(rd), "man/heritability.Rd not present")

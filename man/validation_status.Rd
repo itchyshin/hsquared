@@ -35,8 +35,12 @@ of their own yet:
 \code{engine_control = list(target = "direct_maternal")}.
 }
 
-Both are covered at validation scale, opt-in, REML-only, and dense
-(n <= 1000 or so). Their scope and reporting limits are recorded in the
+Both are covered at validation scale, opt-in, and REML-only. The
+engine-enforced dense rule on guarded routes is
+\code{nobs^2 + nanimals^2 <= 1e6} (default \code{max_dense_cells}), counting every
+animal in the pedigree, not just records. These two routes do not
+currently accept that lever, so they have no engine-enforced cell cap.
+Their scope and reporting limits are recorded in the
 repository capability ledger
 (\href{https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md}{docs/design/capability-status.md})
 and, for

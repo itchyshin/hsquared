@@ -24,8 +24,12 @@
 #'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` with
 #'   `engine_control = list(target = "direct_maternal")`.
 #'
-#' Both are covered at validation scale, opt-in, REML-only, and dense
-#' (n <= 1000 or so). Their scope and reporting limits are recorded in the
+#' Both are covered at validation scale, opt-in, and REML-only. The
+#' engine-enforced dense rule on guarded routes is
+#' `nobs^2 + nanimals^2 <= 1e6` (default `max_dense_cells`), counting every
+#' animal in the pedigree, not just records. These two routes do not
+#' currently accept that lever, so they have no engine-enforced cell cap.
+#' Their scope and reporting limits are recorded in the
 #' repository capability ledger
 #' ([docs/design/capability-status.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md))
 #' and, for

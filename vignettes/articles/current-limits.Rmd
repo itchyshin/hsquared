@@ -123,10 +123,13 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
   r_am; never a bare scalar. Direct h² is **not** the total heritability, and a
   negative r_am is real and expected. Single relationship A only.
 
-Both are opt-in, experimental, REML-only, and dense (n ≲ 1000); unlike the
-default `animal()` route and `target = "repeatability"`, neither currently
-accepts `engine_control$max_dense_cells`, so this n is a recommendation here,
-not an engine-enforced cap. Read this page before reporting a number;
+Both are opt-in, experimental, and REML-only. The engine-enforced dense
+rule on the default `animal()` route and `target = "repeatability"` is
+`nobs^2 + nanimals^2 <= 1e6` (default `max_dense_cells`), counting every
+animal in the pedigree, not just records. Unlike those guarded routes,
+neither random regression nor direct-maternal currently accepts
+`engine_control$max_dense_cells`, so they have no engine-enforced cell
+cap. Read this page before reporting a number;
 `validation_status()` is a developer evidence table.
 The cards above are generated from
 the evidence table and will not mention them until those rows exist.
