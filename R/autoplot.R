@@ -950,6 +950,25 @@ autoplot.hs_gwas <- function(object, type = c("manhattan", "qq"), ...) {
       call. = FALSE
     )
   }
+  df$p_value <- suppressWarnings(as.numeric(df$p_value))
+  finite <- is.finite(df$p_value)
+  if (!any(finite)) {
+    stop(
+      "`p_value` must contain at least one finite value to plot.",
+      call. = FALSE
+    )
+  }
+  if (any(!finite)) {
+    warning(
+      "Dropped ",
+      sum(!finite),
+      " non-finite `p_value` value",
+      if (sum(!finite) == 1L) "" else "s",
+      " before plotting.",
+      call. = FALSE
+    )
+    df <- df[finite, , drop = FALSE]
+  }
   switch(
     type,
     manhattan = hs_autoplot_manhattan(df, method),

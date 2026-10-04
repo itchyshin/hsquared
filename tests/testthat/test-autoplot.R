@@ -729,6 +729,37 @@ test_that("autoplot.hs_gwas qq returns a ggplot with a y=x null and lambda_GC", 
   expect_true(grepl("lambda_GC", p$labels$subtitle))
 })
 
+test_that("autoplot.hs_gwas drops non-finite p-values consistently", {
+  g <- mock_gwas()
+  g$p_value[c(2L, 5L)] <- c(NA_real_, NaN)
+
+  expect_warning(
+    qq <- autoplot(g, "qq"),
+    "Dropped 2 non-finite `p_value` values",
+    fixed = TRUE
+  )
+  expect_equal(nrow(qq$data), 18L)
+  expect_true(all(is.finite(qq$data$observed)))
+
+  expect_warning(
+    manhattan <- autoplot(g, "manhattan"),
+    "Dropped 2 non-finite `p_value` values",
+    fixed = TRUE
+  )
+  expect_equal(nrow(manhattan$data), 18L)
+  expect_equal(
+    ggplot2::ggplot_build(manhattan)$data[[1L]]$yintercept[[1L]],
+    -log10(0.05 / 18)
+  )
+
+  g$p_value[] <- NA_real_
+  expect_error(
+    autoplot(g, "qq"),
+    "`p_value` must contain at least one finite value to plot.",
+    fixed = TRUE
+  )
+})
+
 test_that("autoplot.hs_gwas notes a relatedness-uncorrected single-marker scan", {
   g <- mock_gwas()
   attr(g, "scan_method") <- "single"
