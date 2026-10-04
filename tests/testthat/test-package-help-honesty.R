@@ -104,3 +104,97 @@ test_that("fitting-models aligns cbind and genomic GREML with covered wording", 
   expect_match(text, "explicit-target genomic GREML", fixed = TRUE)
   expect_match(text, "single-step) remain `partial`", fixed = TRUE)
 })
+
+test_that("fitting-models later examples define their data and validate", {
+  vignette <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "fitting-models.Rmd"
+  )
+  skip_if_not(file.exists(vignette), "source vignette not present")
+  text <- paste(readLines(vignette, warn = FALSE), collapse = "\n")
+  expect_match(text, "repeated_dat <-", fixed = TRUE)
+  expect_match(text, "ce_dat <-", fixed = TRUE)
+  expect_match(text, "mat_dat <-", fixed = TRUE)
+  expect_match(text, "Ginv <-", fixed = TRUE)
+  expect_match(text, "M <-", fixed = TRUE)
+  expect_match(text, "mv_dat$length", fixed = TRUE)
+  expect_match(text, "bin_dat <-", fixed = TRUE)
+
+  ped <- data.frame(
+    id = c("s1", "s2", "d1", "d2", "o1", "o2", "o3", "o4"),
+    sire = c(NA, NA, NA, NA, "s1", "s1", "s2", "s2"),
+    dam = c(NA, NA, NA, NA, "d1", "d2", "d1", "d2")
+  )
+  dat <- data.frame(
+    id = ped$id,
+    sex = c("m", "m", "f", "f", "m", "f", "m", "f"),
+    age = c(4, 5, 4, 5, 1, 1, 1, 1),
+    weight = c(72, 75, 65, 68, 31, 33, 35, 30)
+  )
+  v <- hs_control(engine = "validate")
+
+  repeated_dat <- data.frame(
+    id = rep(dat$id, each = 2),
+    y = rep(dat$weight, each = 2) + c(-0.5, 0.5)
+  )
+  expect_no_error(hsquared(
+    y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
+    data = repeated_dat,
+    control = v
+  ))
+
+  ce_dat <- data.frame(
+    id = dat$id,
+    y = dat$weight,
+    litter = c("l1", "l1", "l2", "l2", "l1", "l2", "l1", "l2")
+  )
+  expect_no_error(hsquared(
+    y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
+    data = ce_dat,
+    control = v
+  ))
+
+  mat_dat <- data.frame(
+    id = c("o1", "o2", "o3", "o4"),
+    y = c(31, 33, 35, 30),
+    dam = c("d1", "d2", "d1", "d2")
+  )
+  expect_no_error(hsquared(
+    y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
+    data = mat_dat,
+    control = v
+  ))
+
+  g_dat <- data.frame(id = dat$id, y = dat$weight)
+  Ginv <- diag(nrow(g_dat))
+  dimnames(Ginv) <- list(g_dat$id, g_dat$id)
+  expect_no_error(hsquared(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = g_dat,
+    control = v
+  ))
+
+  snp_dat <- data.frame(id = dat$id, y = dat$weight)
+  set.seed(1)
+  M <- matrix(
+    sample(0:2, nrow(snp_dat) * 4, replace = TRUE),
+    nrow = nrow(snp_dat)
+  )
+  rownames(M) <- snp_dat$id
+  expect_no_error(hsquared(
+    y ~ genomic(1 | id, markers = M),
+    data = snp_dat,
+    control = v
+  ))
+
+  mv_dat <- dat
+  mv_dat$length <- c(120, 122, 118, 119, 80, 81, 83, 79)
+  expect_no_error(hsquared(
+    cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
+    data = mv_dat,
+    control = v
+  ))
+})

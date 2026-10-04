@@ -124,6 +124,10 @@ permanent-environment effect that shares the animal grouping. The additive
 repeated records per individual.
 
 ```{r}
+repeated_dat <- data.frame(
+  id = rep(dat$id, each = 2),
+  y = rep(dat$weight, each = 2) + c(-0.5, 0.5)
+)
 fit_rep <- hsquared(
   y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
   data = repeated_dat,
@@ -146,9 +150,14 @@ environmental effect (for example a litter or cage), grouped by a separate
 column.
 
 ```{r}
+ce_dat <- data.frame(
+  id = dat$id,
+  y = dat$weight,
+  litter = c("l1", "l1", "l2", "l2", "l1", "l2", "l1", "l2")
+)
 fit_ce <- hsquared(
   y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
-  data = dat,
+  data = ce_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "two_effect")
@@ -169,9 +178,14 @@ model; the correlated 2×2 G version is covered at validation scale (opt-in,
 `target = "direct_maternal"`; see below).
 
 ```{r}
+mat_dat <- data.frame(
+  id = c("o1", "o2", "o3", "o4"),
+  y = c(31, 33, 35, 30),
+  dam = c("d1", "d2", "d1", "d2")
+)
 fit_mat <- hsquared(
   y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
-  data = dat,
+  data = mat_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "two_effect")
@@ -197,9 +211,12 @@ use either a supplied `Hinv` or the experimental constructed path
 activation remains held. Single-step stays exploratory.
 
 ```{r}
+g_dat <- data.frame(id = dat$id, y = dat$weight)
+Ginv <- diag(nrow(g_dat))
+dimnames(Ginv) <- list(g_dat$id, g_dat$id)
 fit_g <- hsquared(
   y ~ genomic(1 | id, Ginv = Ginv),
-  data = dat,
+  data = g_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "genomic")
@@ -222,9 +239,16 @@ residual variances by REML from the markers (`fit_snp_blup_reml`). Weighted /
 Bayesian marker priors and comparator parity are planned.
 
 ```{r}
+snp_dat <- data.frame(id = dat$id, y = dat$weight)
+set.seed(1)
+M <- matrix(
+  sample(0:2, nrow(snp_dat) * 4, replace = TRUE),
+  nrow = nrow(snp_dat)
+)
+rownames(M) <- snp_dat$id
 fit_snp <- hsquared(
   y ~ genomic(1 | id, markers = M),
-  data = dat,
+  data = snp_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(
@@ -250,9 +274,11 @@ scale); k≥3 and diagonal genetic structure stay experimental. See
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 
 ```{r}
+mv_dat <- dat
+mv_dat$length <- c(120, 122, 118, 119, 80, 81, 83, 79)
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
+  data = mv_dat,
   family = gaussian(),
   REML = TRUE
 )
@@ -286,10 +312,14 @@ Take fledging success in a wild bird population. Each female has a clutch of
 between two and seven eggs, and some number of those fledge:
 
 ```{r}
-# dat: one row per breeding attempt; fledged + failed = clutch size, which varies
+bin_dat <- data.frame(
+  id = ped$id,
+  fledged = c(2, 3, 1, 2, 3, 2, 4, 1),
+  failed = c(1, 0, 2, 1, 0, 1, 1, 2)
+)
 fit_fledge <- hsquared(
   cbind(fledged, failed) ~ animal(1 | id, pedigree = ped),
-  data = dat,
+  data = bin_dat,
   family = binomial(),           # logit link
   control = hs_control(
     engine = "julia",
