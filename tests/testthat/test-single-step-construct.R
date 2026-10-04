@@ -197,6 +197,22 @@ test_that("single_step H^Gamma payload rejects malformed group and Gamma", {
         1 | id,
         pedigree = ped,
         markers = m,
+        group = mf_group,
+        Gamma = unname(Gamma)
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must have row and column names when more than one",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
         group = mf_group
       ),
       data = dat,
@@ -274,6 +290,7 @@ test_that("single_step H^Gamma payload rejects malformed group and Gamma", {
     fixed = TRUE
   )
   bad_psd <- matrix(c(1, 2, 2, 1), nrow = 2)
+  dimnames(bad_psd) <- dimnames(Gamma)
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ single_step(

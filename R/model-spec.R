@@ -2008,6 +2008,14 @@ hs_validate_metafounder_gamma <- function(
   }
   rn <- rownames(Gamma)
   cn <- colnames(Gamma)
+  if (length(labels) > 1L && is.null(rn) && is.null(cn)) {
+    stop(
+      label,
+      " `Gamma` must have row and column names when more than one ",
+      "metafounder group is resolved.",
+      call. = FALSE
+    )
+  }
   if (!is.null(rn) || !is.null(cn)) {
     if (is.null(rn) || is.null(cn) || !identical(rn, cn)) {
       stop(
