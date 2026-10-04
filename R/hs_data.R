@@ -699,7 +699,14 @@ hs_optional_summary_value <- function(x) {
 
 hs_as_id_character <- function(x) {
   if (is.numeric(x)) {
-    ids <- format(x, scientific = FALSE, trim = TRUE)
+    ids <- vapply(
+      x,
+      format,
+      character(1L),
+      scientific = FALSE,
+      trim = TRUE,
+      USE.NAMES = FALSE
+    )
     ids[is.na(x)] <- NA_character_
     return(ids)
   }

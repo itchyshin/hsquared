@@ -823,3 +823,13 @@ test_that("integer and double IDs match when as.character would print 3e+05", {
     data = ph_integer
   ))
 })
+
+test_that("numeric IDs are formatted independently", {
+  integer_id <- hs_as_id_character(300000L)
+  double_ids <- hs_as_id_character(c(300000, 1.5))
+
+  expect_identical(c(integer_id, double_ids), c("300000", "300000", "1.5"))
+  expect_identical(integer_id, double_ids[[1L]])
+  expect_false(identical(double_ids[[1L]], "300000.0"))
+  expect_identical(hs_as_id_character(c("300000", "1.5")), c("300000", "1.5"))
+})
