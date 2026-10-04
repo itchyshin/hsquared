@@ -21,6 +21,19 @@ Heritability results for \code{hsquared_fit} objects.
 \code{heritability()} is part of the planned v0.1 fitted-object contract. It
 works for \code{hsquared_fit} objects that contain a Julia result.
 
+What is h2 here? The denominator \code{Vp} is the sum of the random-effect
+variances plus residual. Fixed-effect variance (sex, age, year, block) is
+not in \code{Vp}, so the reported h2 is conditional on the fixed effects.
+\itemize{
+\item Default animal model: \code{h2 = Va / Vp} with \code{Vp = Va + Ve}.
+\item Repeatability (\code{target = "repeatability"}): \code{h2 = Va / Vp} with
+\code{Vp = Va + Vpe + Ve}. Permanent environment is in the denominator.
+\code{\link[=repeatability]{repeatability()}} on the same fit is \code{(Va + Vpe) / Vp}.
+\item Multi-effect (\code{target = "multi_effect"}): \code{h2} for the animal block is
+\code{Va / Vp}, where \code{Vp} is \code{Va} plus every other random-effect variance
+plus residual.
+}
+
 Falconer fence for the opt-in two-effect model (\code{target = "two_effect"}):
 the reported number is the \strong{narrow-sense direct heritability}
 \code{h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)} \emph{within that model} (the

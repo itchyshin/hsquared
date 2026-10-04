@@ -36,6 +36,18 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' `heritability()` is part of the planned v0.1 fitted-object contract. It
 #' works for `hsquared_fit` objects that contain a Julia result.
 #'
+#' What is h2 here? The denominator `Vp` is the sum of the random-effect
+#' variances plus residual. Fixed-effect variance (sex, age, year, block) is
+#' not in `Vp`, so the reported h2 is conditional on the fixed effects.
+#'
+#' - Default animal model: `h2 = Va / Vp` with `Vp = Va + Ve`.
+#' - Repeatability (`target = "repeatability"`): `h2 = Va / Vp` with
+#'   `Vp = Va + Vpe + Ve`. Permanent environment is in the denominator.
+#'   [repeatability()] on the same fit is `(Va + Vpe) / Vp`.
+#' - Multi-effect (`target = "multi_effect"`): `h2` for the animal block is
+#'   `Va / Vp`, where `Vp` is `Va` plus every other random-effect variance
+#'   plus residual.
+#'
 #' Falconer fence for the opt-in two-effect model (`target = "two_effect"`):
 #' the reported number is the **narrow-sense direct heritability**
 #' `h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)` *within that model* (the
@@ -679,7 +691,9 @@ hs_factor_g_extractor_planned <- function(
 #' `r lifecycle::badge("experimental")`
 #'
 #' `repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
-#' opt-in, experimental repeatability (permanent-environment) model. It works
+#' opt-in, experimental repeatability (permanent-environment) model. `Vp` is
+#' `Va + Vpe + Ve`; fixed-effect variance is not in `Vp`. On the same fit,
+#' [heritability()] is `Va / Vp`. It works
 #' for `hsquared_fit` objects fitted with
 #' `engine_control = list(target = "repeatability")`.
 #'

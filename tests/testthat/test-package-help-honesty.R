@@ -239,6 +239,26 @@ test_that("hs_control help names dense-route unit starts and rescale guidance", 
   expect_match(text, "converged", fixed = TRUE)
 })
 
+test_that("heritability help states default, repeatability, and multi-effect Vp", {
+  rd <- testthat::test_path("..", "..", "man", "heritability.Rd")
+  skip_if_not(file.exists(rd), "man/heritability.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+
+  expect_match(text, "What is h2 here", fixed = TRUE)
+  expect_match(text, "Va + Ve", fixed = TRUE)
+  expect_match(text, "Va + Vpe + Ve", fixed = TRUE)
+  expect_match(text, "multi_effect", fixed = TRUE)
+  expect_match(text, "Fixed-effect variance", fixed = TRUE)
+  expect_match(text, "not in", fixed = TRUE)
+  expect_match(text, "repeatability()", fixed = TRUE)
+
+  rep_rd <- testthat::test_path("..", "..", "man", "repeatability.Rd")
+  skip_if_not(file.exists(rep_rd), "man/repeatability.Rd not present")
+  rep_text <- paste(readLines(rep_rd, warn = FALSE), collapse = "\n")
+  expect_match(rep_text, "Va + Vpe + Ve", fixed = TRUE)
+  expect_match(rep_text, "fixed-effect variance", ignore.case = TRUE)
+})
+
 test_that("heritability help names non-Gaussian scales and which row to report", {
   rd <- testthat::test_path("..", "..", "man", "heritability.Rd")
   skip_if_not(file.exists(rd), "man/heritability.Rd not present")
