@@ -42,7 +42,10 @@ and single-step models.}
 by genotyped ID. Entries must be the biallelic allele count \code{0}/\code{1}/\code{2}
 (or an imputed dosage in the closed interval \verb{[0, 2]}); a matrix in the
 centered \code{-1}/\code{0}/\code{1} convention must be recoded (add \code{1}) before it is
-passed in. For \code{genomic()}, the engine uses sample allele frequencies,
+passed in. A \code{0}/\code{1} panel of homozygous inbred lines (as in
+\code{BGLR::wheat}) must be doubled to \code{0}/\code{2} before it is passed in;
+\code{hsquared} does not recode it. For \code{genomic()}, the engine uses sample
+allele frequencies,
 VanRaden method 1, and ridge \code{0.01}. For \code{single_step()}, this is the
 genotyped-subset marker matrix used to construct the genomic relationship.}
 

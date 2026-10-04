@@ -31,7 +31,10 @@ is live today.
 `markers = M` must be coded as the biallelic allele count `0`/`1`/`2` (or an
 imputed dosage in `[0, 2]`); a matrix in the centered `-1`/`0`/`1` convention
 (as produced by some external genomic-prediction tools) must be recoded (add
-`1`) before it is passed in.
+`1`) before it is passed in. A `0`/`1` panel of homozygous inbred lines (as
+in `BGLR::wheat`) must be doubled to `0`/`2`; `hsquared` does not recode it,
+and a named `hsquared_zero_one_markers` warning is raised if every entry is
+in `{0, 1}`.
 
 The genomic GREML paths are experimental, REML-only, and Julia-backed.
 Narrow `genomic(1 | id, markers = M)` / `Ginv = Q` requires

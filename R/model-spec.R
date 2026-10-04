@@ -2195,6 +2195,12 @@ hs_validate_genomic_markers <- function(markers) {
       call. = FALSE
     )
   }
+  if (all(markers %in% c(0, 1))) {
+    hs_warn_zero_one_markers(
+      "markers look 0/1 coded; `genomic()` expects allele counts 0/1/2 ",
+      "(double a homozygous 0/1 panel)"
+    )
+  }
   markers
 }
 

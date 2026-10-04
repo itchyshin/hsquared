@@ -57,7 +57,10 @@ genomic <- function(formula, G = NULL, Ginv = NULL, markers = NULL, ...) {
 #'   by genotyped ID. Entries must be the biallelic allele count `0`/`1`/`2`
 #'   (or an imputed dosage in the closed interval `[0, 2]`); a matrix in the
 #'   centered `-1`/`0`/`1` convention must be recoded (add `1`) before it is
-#'   passed in. For `genomic()`, the engine uses sample allele frequencies,
+#'   passed in. A `0`/`1` panel of homozygous inbred lines (as in
+#'   `BGLR::wheat`) must be doubled to `0`/`2` before it is passed in;
+#'   `hsquared` does not recode it. For `genomic()`, the engine uses sample
+#'   allele frequencies,
 #'   VanRaden method 1, and ridge `0.01`. For `single_step()`, this is the
 #'   genotyped-subset marker matrix used to construct the genomic relationship.
 #' @param group Animal-to-metafounder group labels for the future `H^Gamma`
