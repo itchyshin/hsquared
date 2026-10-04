@@ -391,6 +391,25 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
   ]
   expect_true(all(abs(diag_corr - 1) < 1e-8))
 
+  # A covariance payload must not override an explicit correlation request.
+  fit_cov_payload <- fit
+  fit_cov_payload$result$rr_covariance_surface_plot_data <- list(
+    covariate = c(1, 5),
+    surface = matrix(c(4, 1, 1, 9), nrow = 2L),
+    is_correlation = FALSE
+  )
+  p_payload_corr <- autoplot(
+    fit_cov_payload,
+    "rr_surface",
+    correlation = TRUE
+  )
+  diag_payload_corr <- p_payload_corr$data$value[
+    p_payload_corr$data$covariate_i ==
+      p_payload_corr$data$covariate_j
+  ]
+  expect_true(all(abs(diag_payload_corr - 1) < 1e-8))
+  expect_match(p_payload_corr$labels$title, "correlation")
+
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)
   expect_s3_class(stats::logLik(fit), "logLik")

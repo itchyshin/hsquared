@@ -775,7 +775,8 @@ hs_autoplot_rr_surface <- function(
     hs_rr_use_default_payload_grid(at, n) &&
       !is.null(pd) &&
       !is.null(pd$surface) &&
-      !is.null(pd$covariate)
+      !is.null(pd$covariate) &&
+      identical(isTRUE(correlation), isTRUE(pd$is_correlation))
   ) {
     cov <- as.numeric(pd$covariate)
     surf <- as.matrix(pd$surface)
