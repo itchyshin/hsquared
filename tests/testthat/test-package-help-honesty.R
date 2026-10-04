@@ -719,6 +719,35 @@ test_that("heritability_interval help does not offer a profile method R cannot r
   expect_match(text, "method = :profile", fixed = TRUE)
 })
 
+test_that("random-regression help tells users to rescale the response", {
+  rd <- testthat::test_path(
+    "..",
+    "..",
+    "man",
+    "random_regression_extractors.Rd"
+  )
+  skip_if_not(
+    file.exists(rd),
+    "man/random_regression_extractors.Rd not present"
+  )
+  rd_text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+  expect_match(rd_text, "unit variance", fixed = TRUE)
+  expect_match(rd_text, "converged = TRUE", fixed = TRUE)
+  expect_match(rd_text, "REML optimum", fixed = TRUE)
+
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "current-limits.Rmd"
+  )
+  skip_if_not(file.exists(article), "current-limits article not present")
+  article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
+  expect_match(article_text, "Rescale the response to about unit", fixed = TRUE)
+  expect_match(article_text, "random_regression", fixed = TRUE)
+})
+
 test_that("hs_control help says the Julia default target is REML only", {
   rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
   skip_if_not(file.exists(rd), "man/hs_control.Rd not present")

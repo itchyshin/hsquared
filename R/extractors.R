@@ -2851,6 +2851,15 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #' scale (defaulting to a grid over the fitted range) and re-standardized to
 #' `[-1, 1]` internally, matching the Julia engine's basis convention.
 #'
+#' @section Response scale:
+#' Rescale the response to about unit variance before fitting. On an
+#' unscaled trait the dense Nelder-Mead search can report
+#' `converged = TRUE` below the REML optimum and return a wrong `K_g`
+#' (off-diagonals stuck near 0). Dividing `y` by `sd(y)` recovers the
+#' optimum; multiply fitted variances by `sd(y)^2` to return to the
+#' original scale. A `converged = TRUE` flag is not enough on the raw
+#' scale.
+#'
 #' @section Out-of-range `at`:
 #' `at` must lie inside the fitted covariate range (`object$result$random_regression$lower`
 #' to `$upper`); a value outside that range errors with a message naming the

@@ -116,7 +116,9 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
   all `K_g` entries and the residual. **k = 2 only.** The residual is homogeneous
   and there is no permanent-environment term, so `rr_heritability()` can
   *overstate* h²(t) for repeated-records designs. `K_g` values are not comparable
-  across basis-normalization conventions.
+  across basis-normalization conventions. Rescale the response to about unit
+  variance before fitting; otherwise a large-scale trait can report
+  `converged = TRUE` below the REML optimum and a wrong covariance function.
 - **Direct–maternal correlated 2×2 G:**
   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` via
   `engine_control = list(target = "direct_maternal")`. A pre-declared 48-seed gate
