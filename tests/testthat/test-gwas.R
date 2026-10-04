@@ -384,6 +384,24 @@ test_that("gwas() rejects variance components from a non-converged fit", {
   )
 })
 
+test_that("single-marker GWAS uses each OLS residual mean square", {
+  y <- c(1, 2, 4, 8, 16, 32)
+  X <- cbind(intercept = 1, covariate = c(0, 1, 0, 1, 0, 1))
+  markers <- cbind(
+    m1 = c(0, 0, 1, 1, 2, 2),
+    m2 = c(0, 1, 2, 0, 1, 2)
+  )
+
+  actual <- hsquared:::hs_gwas_single_ols_residual_mse(y, X, markers)
+  expected <- vapply(seq_len(ncol(markers)), function(j) {
+    fit <- stats::lm.fit(cbind(X, markers[, j] - mean(markers[, j])), y)
+    sum(fit$residuals^2) / (length(y) - fit$rank)
+  }, numeric(1L))
+
+  expect_equal(actual, expected)
+  expect_false(isTRUE(all.equal(actual, rep(1, ncol(markers)))))
+})
+
 test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   hs_skip_live_julia()
   testthat::skip_if_not(
@@ -452,11 +470,15 @@ test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   )
   expect_false(isTRUE(all.equal(g$p_value, fixed_p)))
 
-  # method = "single" surfaces exactly that relatedness-UNcorrected scan.
+  # method = "single" uses the relatedness-UNcorrected OLS scan with each
+  # marker regression's own residual mean square.
   g_single <- gwas(fit, M, marker_ids = paste0("m", 1:4), method = "single")
   expect_s3_class(g_single, "hs_gwas")
   expect_equal(attr(g_single, "scan_method"), "single")
-  expect_equal(g_single$p_value, fixed_p, tolerance = 1e-10)
+  direct_single_p <- JuliaCall::julia_eval(
+    "[only(s.p_values) for s in hsq_single_scans]"
+  )
+  expect_equal(g_single$p_value, direct_single_p, tolerance = 1e-10)
   # ... and it differs from the relatedness-corrected mixed scan.
   expect_false(isTRUE(all.equal(g_single$p_value, g$p_value)))
 

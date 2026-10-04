@@ -165,6 +165,11 @@ gwas.hsquared_fit <- function(
     )
   }
   markers_rec <- as.matrix(payload$Z %*% markers)
+  single_sigma_e2 <- if (identical(method, "single") && !genome_wide) {
+    hs_gwas_single_ols_residual_mse(payload$y, payload$X, markers_rec)
+  } else {
+    NULL
+  }
 
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
@@ -224,10 +229,22 @@ gwas.hsquared_fit <- function(
     )
   } else {
     # relatedness-UNcorrected single-marker (OLS) scan: no Z / Ainv / sigma_a2
+    JuliaCall::julia_assign("hsq_single_sigma_e2", single_sigma_e2)
     scan_cmd <- paste(
-      "hsq_scan = HSquared.single_marker_scan(",
-      "hsq_y, hsq_X, hsq_markers;",
-      "sigma_e2 = hsq_sigma_e2, marker_ids = hsq_marker_ids);"
+      "hsq_single_scans = [HSquared.single_marker_scan(",
+      "hsq_y, hsq_X, hsq_markers[:, j:j];",
+      "sigma_e2 = hsq_single_sigma_e2[j], marker_ids = hsq_marker_ids[j:j])",
+      "for j in axes(hsq_markers, 2)];",
+      "hsq_scan = (",
+      "marker_ids = [only(s.marker_ids) for s in hsq_single_scans],",
+      "effects = [only(s.effects) for s in hsq_single_scans],",
+      "standard_errors = [only(s.standard_errors) for s in hsq_single_scans],",
+      "z_scores = [only(s.z_scores) for s in hsq_single_scans],",
+      "chisq = [only(s.chisq) for s in hsq_single_scans],",
+      "p_values = [only(s.p_values) for s in hsq_single_scans],",
+      "bonferroni_p_values = [only(s.p_values) for s in hsq_single_scans],",
+      "bh_q_values = [only(s.p_values) for s in hsq_single_scans],",
+      "lod_scores = [only(s.lod_scores) for s in hsq_single_scans]);"
     )
   }
   gw_dict <- if (genome_wide) {
@@ -259,6 +276,10 @@ gwas.hsquared_fit <- function(
     ");"
   ))
   raw <- JuliaCall::julia_eval("hsq_gwas_raw")
+  if (identical(method, "single") && !genome_wide) {
+    raw$bonferroni <- stats::p.adjust(raw$p_values, method = "bonferroni")
+    raw$bh <- stats::p.adjust(raw$p_values, method = "BH")
+  }
   if (genome_wide) {
     # Build the calibration metadata for the per-dataset permutation rule. It has
     # no per-call empirical type-I (validity is by construction + externally
@@ -337,6 +358,29 @@ hs_validate_gwas_fit <- function(object) {
     )
   }
   invisible(TRUE)
+}
+
+hs_gwas_single_ols_residual_mse <- function(y, X, markers) {
+  centered_markers <- sweep(markers, 2L, colMeans(markers), FUN = "-")
+  vapply(seq_len(ncol(centered_markers)), function(j) {
+    design <- cbind(X, centered_markers[, j])
+    fit <- stats::lm.fit(design, y)
+    residual_df <- length(y) - fit$rank
+    if (residual_df < 1L) {
+      stop(
+        "The single-marker OLS regression has no residual degrees of freedom.",
+        call. = FALSE
+      )
+    }
+    mse <- sum(fit$residuals^2) / residual_df
+    if (!is.finite(mse) || mse <= 0) {
+      stop(
+        "The single-marker OLS residual mean square must be positive and finite.",
+        call. = FALSE
+      )
+    }
+    mse
+  }, numeric(1L))
 }
 
 # genome_wide = TRUE reuses the engine's intercept-only type-I evidence. A
