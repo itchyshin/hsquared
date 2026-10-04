@@ -25,6 +25,7 @@ variance_components.default <- function(object, ...) {
 
 #' @export
 variance_components.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "variance-component")
   hs_fit_result(object, "variance_components", "variance components")
 }
 
@@ -694,6 +695,7 @@ repeatability.default <- function(object, ...) {
 
 #' @export
 repeatability.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "repeatability")
   hs_fit_result(object, "repeatability", "repeatability estimates")
 }
 
@@ -934,6 +936,7 @@ breeding_values.default <- function(object, ...) {
 
 #' @export
 breeding_values.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "breeding-value")
   hs_fit_result(object, "breeding_values", "breeding values")
 }
 
@@ -1074,6 +1077,7 @@ accuracy.default <- function(object, ...) {
 
 #' @export
 accuracy.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "accuracy")
   rel <- reliability(object, ...)
   if (!is.data.frame(rel) || !"value" %in% names(rel)) {
     stop(
@@ -1189,6 +1193,7 @@ heritability_interval.default <- function(object, ...) {
 #' @export
 heritability_interval.hsquared_fit <- function(object, ...) {
   hs_reject_unused_dots(list(...), "`heritability_interval()`")
+  hs_warn_if_unusable_fit(object, what = "heritability-interval")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_interval()` is not available for genomic fits. The ",
@@ -1255,6 +1260,7 @@ variance_component_standard_errors.default <- function(object, ...) {
 
 #' @export
 variance_component_standard_errors.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "variance-component standard-error")
   hs_fit_result(
     object,
     "variance_component_se",
@@ -1279,6 +1285,7 @@ heritability_standard_error.default <- function(object, ...) {
 
 #' @export
 heritability_standard_error.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "heritability standard-error")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_standard_error()` is not available for genomic fits. ",
@@ -1372,6 +1379,7 @@ repeatability_interval.default <- function(object, ...) {
 #' @export
 repeatability_interval.hsquared_fit <- function(object, ...) {
   hs_reject_unused_dots(list(...), "`repeatability_interval()`")
+  hs_warn_if_unusable_fit(object, what = "repeatability-interval")
   hs_fit_result(
     object,
     "repeatability_interval",

@@ -90,8 +90,9 @@ hs_fit_not_converged <- function(object) {
 }
 
 # Students copy README, get h2 ~ 0 from a failed n = 4 fit, and believe it.
-# logLik() refuses a non-converged fit; heritability() and print() must
-# warn at the same bar so a near-zero value is never a silent "result".
+# logLik() refuses a non-converged fit; heritability(), print(), and the
+# estimate / uncertainty extractors must warn at the same bar so a
+# near-zero value is never a silent "result" (hsquared#307).
 hs_warn_if_unusable_fit <- function(object, what = "heritability") {
   if (!hs_fit_not_converged(object)) {
     return(invisible(FALSE))
