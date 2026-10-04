@@ -2270,7 +2270,20 @@ hs_fit_julia_direct_maternal_payload <- function(
       "\"h2_estimate\" => Float64(hsq_dm_ci.direct_heritability.estimate),",
       "\"h2_se\" => Float64(hsq_dm_ci.direct_heritability.se),",
       "\"h2_lower\" => Float64(hsq_dm_ci.direct_heritability.lower),",
-      "\"h2_upper\" => Float64(hsq_dm_ci.direct_heritability.upper))"
+      "\"h2_upper\" => Float64(hsq_dm_ci.direct_heritability.upper),",
+      "\"m2_estimate\" => Float64(hsq_dm_ci.maternal_ratio.estimate),",
+      "\"m2_se\" => Float64(hsq_dm_ci.maternal_ratio.se),",
+      "\"m2_lower\" => Float64(hsq_dm_ci.maternal_ratio.lower),",
+      "\"m2_upper\" => Float64(hsq_dm_ci.maternal_ratio.upper),",
+      "\"h2t_estimate\" => Float64(hsq_dm_ci.total_heritability.estimate),",
+      "\"h2t_se\" => Float64(hsq_dm_ci.total_heritability.se),",
+      "\"h2t_lower\" => Float64(hsq_dm_ci.total_heritability.lower),",
+      "\"h2t_upper\" => Float64(hsq_dm_ci.total_heritability.upper),",
+      "\"ram_estimate\" => Float64(hsq_dm_ci.genetic_correlation.estimate),",
+      "\"ram_se\" => Float64(hsq_dm_ci.genetic_correlation.se),",
+      "\"ram_lower\" => Float64(hsq_dm_ci.genetic_correlation.lower),",
+      "\"ram_upper\" => Float64(hsq_dm_ci.genetic_correlation.upper),",
+      "\"ram_method\" => String(hsq_dm_ci.genetic_correlation.method))"
     ))
     result <- hs_attach_direct_maternal_interval(result, raw_ci)
   }
@@ -2572,6 +2585,33 @@ hs_attach_direct_maternal_interval <- function(result, raw_ci) {
     level = as.numeric(raw_ci$level),
     se = as.numeric(raw_ci$h2_se),
     method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result$maternal_ratio_interval <- data.frame(
+    estimate = as.numeric(raw_ci$m2_estimate),
+    lower = as.numeric(raw_ci$m2_lower),
+    upper = as.numeric(raw_ci$m2_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$m2_se),
+    method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result$total_heritability_interval <- data.frame(
+    estimate = as.numeric(raw_ci$h2t_estimate),
+    lower = as.numeric(raw_ci$h2t_lower),
+    upper = as.numeric(raw_ci$h2t_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$h2t_se),
+    method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result$genetic_correlation_interval <- data.frame(
+    estimate = as.numeric(raw_ci$ram_estimate),
+    lower = as.numeric(raw_ci$ram_lower),
+    upper = as.numeric(raw_ci$ram_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$ram_se),
+    method = as.character(raw_ci$ram_method),
     stringsAsFactors = FALSE
   )
   result
