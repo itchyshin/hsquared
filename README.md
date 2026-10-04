@@ -112,7 +112,23 @@ Fitting also needs Julia, `JuliaCall`, and a local `HSquared.jl` tree.
 install.packages("JuliaCall")
 ```
 
-Clone or point at your `HSquared.jl` checkout per the getting-started guide.
+Clone the engine, install its Julia dependencies, then point R at that tree:
+
+```sh
+git clone https://github.com/itchyshin/HSquared.jl
+julia --project=/path/to/HSquared.jl -e 'using Pkg; Pkg.instantiate()'
+```
+
+```r
+Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
+```
+
+`HSquared.jl` does not ship a `Manifest.toml`, so skipping `Pkg.instantiate()`
+fails on the first fit with a missing `Optim` package. The first call still
+precompiles Julia packages (about 30 seconds when the project is already
+instantiated; about two minutes on a cold depot). See
+[Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html)
+for the per-call `julia_project` alternative.
 
 ## Authors
 

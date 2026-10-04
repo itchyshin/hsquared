@@ -19,7 +19,13 @@ label. See <a href="current-limits.html">Can I fit and report this?</a>.</p>
 
 This article shows the models `hsquared` can fit. Fitting is computed in the
 sibling `HSquared.jl` engine, so every example needs a local Julia, the
-`JuliaCall` package, and an `HSquared.jl` checkout. Register the checkout with
+`JuliaCall` package, and an `HSquared.jl` checkout
+(`git clone https://github.com/itchyshin/HSquared.jl`). After cloning, run
+`julia --project=/path/to/HSquared.jl -e 'using Pkg; Pkg.instantiate()'` once.
+`HSquared.jl` does not ship a `Manifest.toml`, so skipping that step fails on
+the first fit with a missing `Optim` package. The first call still precompiles
+(about 30 seconds after instantiate; about two minutes on a cold depot).
+Register the checkout with
 `Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")` or per call via
 `control = hs_control(engine_control = list(julia_project = "/path/to/HSquared.jl"))`;
 see the README or "Getting started" article for full setup. The code chunks are

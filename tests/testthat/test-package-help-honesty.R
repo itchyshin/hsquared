@@ -39,12 +39,44 @@ test_that("twin-boundary Getting started link stays inside articles/", {
   expect_no_match(text, "../hsquared.html", fixed = TRUE)
 })
 
+test_that("install docs tell the reader to Pkg.instantiate() the Julia checkout", {
+  pages <- c(
+    testthat::test_path("..", "..", "README.md"),
+    testthat::test_path("..", "..", "vignettes", "hsquared.Rmd"),
+    testthat::test_path(
+      "..",
+      "..",
+      "vignettes",
+      "articles",
+      "fitting-models.Rmd"
+    )
+  )
+  for (page in pages) {
+    skip_if_not(file.exists(page), paste(basename(page), "not present"))
+    text <- paste(readLines(page, warn = FALSE), collapse = "\n")
+    expect_match(text, "Pkg.instantiate()", fixed = TRUE, info = page)
+    expect_match(text, "git clone", fixed = TRUE, info = page)
+  }
+})
+
 test_that("non-Gaussian vignette does not call its marginal fit REML", {
-  vignette <- testthat::test_path("..", "..", "vignettes", "articles", "fitting-models.Rmd")
-  skip_if_not(file.exists(vignette), "source vignette not present in the check copy")
+  vignette <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "fitting-models.Rmd"
+  )
+  skip_if_not(
+    file.exists(vignette),
+    "source vignette not present in the check copy"
+  )
   text <- paste(readLines(vignette, warn = FALSE), collapse = "\n")
 
   expect_no_match(text, "All fits are by REML", fixed = TRUE)
-  expect_match(text, "does \\*\\*not\\*\\* make this non-Gaussian fit a REML fit")
+  expect_match(
+    text,
+    "does \\*\\*not\\*\\* make this non-Gaussian fit a REML fit"
+  )
   expect_match(text, "Laplace marginal likelihood")
 })

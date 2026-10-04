@@ -70,8 +70,18 @@ called. Nothing is fitted.
 Installing `hsquared` (`pak::pak("itchyshin/hsquared")`) gives you the R
 interface only. Fitting needs a local [Julia](https://julialang.org/downloads/),
 the `JuliaCall` R package, and an `HSquared.jl` checkout
-(`git clone https://github.com/itchyshin/HSquared.jl`). Register the checkout
-with `Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")`, or per call:
+(`git clone https://github.com/itchyshin/HSquared.jl`). After cloning, install
+the recorded Julia dependencies once:
+
+```sh
+julia --project=/path/to/HSquared.jl -e 'using Pkg; Pkg.instantiate()'
+```
+
+`HSquared.jl` does not ship a `Manifest.toml`, so skipping `Pkg.instantiate()`
+fails on the first fit with a missing `Optim` package. The first call still
+precompiles (about 30 seconds after instantiate; about two minutes on a cold
+depot). Register the checkout with
+`Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")`, or per call:
 
 ```{r golden-fit-path, eval = FALSE}
 fit <- hsquared(
