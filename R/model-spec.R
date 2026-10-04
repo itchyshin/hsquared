@@ -2567,6 +2567,24 @@ hs_parse_second_effect_call <- function(call, data, animal_spec) {
   }
 }
 
+# Reject missing group values so they cannot become a silent NA level shared
+# by every incomplete record (hsquared#317). Used by `common_env()` and bare
+# `(1 | group)`.
+hs_iid_group_values <- function(data, group, term_label) {
+  raw <- data[[group]]
+  if (anyNA(raw)) {
+    stop(
+      term_label,
+      " grouping variable `",
+      group,
+      "` cannot contain missing values.",
+      call. = FALSE
+    )
+  }
+  values <- as.character(raw)
+  list(values = values, levels = unique(values))
+}
+
 # Parse `common_env(1 | group)` as the common-environment effect of the opt-in
 # two-effect model: a random intercept on an environmental grouping (e.g. litter
 # or cage) carrying an identity relationship (each level an independent IID
@@ -2631,14 +2649,15 @@ hs_parse_common_env_call <- function(call, data) {
       call. = FALSE
     )
   }
+  grouped <- hs_iid_group_values(data, group, "`common_env()`")
 
   list(
     type = "common_env",
     term = hs_deparse(call),
     design = "intercept",
     group = group,
-    values = as.character(data[[group]]),
-    levels = unique(as.character(data[[group]])),
+    values = grouped$values,
+    levels = grouped$levels,
     relationship = "identity",
     covariance = "scalar"
   )
@@ -3073,13 +3092,18 @@ hs_parse_bare_iid_call <- function(term, data) {
       call. = FALSE
     )
   }
+  grouped <- hs_iid_group_values(
+    data,
+    group,
+    paste0("The `(1 | ", group, ")`")
+  )
   list(
     type = "iid",
     term = hs_deparse(term),
     design = "intercept",
     group = group,
-    values = as.character(data[[group]]),
-    levels = unique(as.character(data[[group]])),
+    values = grouped$values,
+    levels = grouped$levels,
     relationship = "identity",
     covariance = "scalar"
   )
