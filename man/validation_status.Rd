@@ -37,7 +37,9 @@ of their own yet:
 
 Both are covered at validation scale, opt-in, REML-only, and dense
 (n <= 1000 or so). Their scope and reporting limits are recorded in the
-repository capability ledger (\code{docs/design/capability-status.md}) and, for
+repository capability ledger
+(\href{https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md}{docs/design/capability-status.md})
+and, for
 readers, in \href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}. Read
 this table together with that enumeration: an absent row is not an absent
 capability, and this table alone does not tell you everything you may
@@ -54,12 +56,15 @@ default live (\code{engine = "fit"}), opt-in live (\code{engine_control$target})
 planned grammar (for example \code{animal(cov = fa(...))}). The explicit
 four-trait rank-one FA \code{engine_control} cell is partial and opt-in.
 \code{payload_v2} routing is limited to \code{direct_maternal} and \code{multi_effect}.
-See \code{docs/design/45-bridge-production-fences-DRAFT.md}.
+See
+\href{https://github.com/itchyshin/hsquared/blob/main/docs/design/45-bridge-production-fences-DRAFT.md}{docs/design/45-bridge-production-fences-DRAFT.md}.
 }
 
 \section{Capability identifiers versus labels}{
 \code{capability} is a \strong{stable identifier}. Dated evidence records -- comparator
-runs under \verb{docs/dev-log/comparator-runs/} and check-log entries -- cite these
+runs under
+\href{https://github.com/itchyshin/hsquared/tree/main/docs/dev-log/comparator-runs/}{docs/dev-log/comparator-runs/}
+and check-log entries -- cite these
 strings verbatim to name the row they report against, so an identifier is not
 rewritten once evidence points at it. Look rows up by \code{capability}.
 

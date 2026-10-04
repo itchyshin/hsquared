@@ -104,7 +104,7 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
 ## Two covered routes without their own status row
 
 `validation_status()` does not yet carry a separate row for two routes that
-`docs/design/capability-status.md` records as covered at validation scale:
+[`docs/design/capability-status.md`](https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md) records as covered at validation scale:
 
 - **Random regression / reaction norm, k = 2:**
   `animal(rr(age, order = 2) | id, pedigree = ped)` via

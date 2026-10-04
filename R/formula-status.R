@@ -297,7 +297,7 @@ hs_formula_status_behavior <- function() {
       "fit_multivariate_repeatability_reml (HSquared.jl#398); R consumes",
       "that frozen API. Experimental; no covered flip;",
       "public_covered_count stays 7. See",
-      "docs/design/57-mv-pe-cbind-permanent-237.md."
+      "https://github.com/itchyshin/hsquared/blob/main/docs/design/57-mv-pe-cbind-permanent-237.md."
     ),
     paste(
       "Common-environment effect of the opt-in two-effect model (additive",

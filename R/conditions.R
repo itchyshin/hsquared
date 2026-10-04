@@ -450,7 +450,7 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
       "(HSquared.jl#398). If this checkout lacks the export, the call names ",
       "the missing fitter instead of absorbing PE into G0. Univariate ",
       "`target = \"repeatability\"` remains the covered-scale PE path. See ",
-      "docs/design/57-mv-pe-cbind-permanent-237.md.\n",
+      "https://github.com/itchyshin/hsquared/blob/main/docs/design/57-mv-pe-cbind-permanent-237.md.\n",
       "Suppress with suppressWarnings() if the animal-only cbind model is ",
       "intended.",
       call. = FALSE

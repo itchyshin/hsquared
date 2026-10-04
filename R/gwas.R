@@ -300,7 +300,7 @@ gwas.hsquared_fit <- function(
       package_version = as.character(utils::packageVersion("hsquared")),
       validation_reference = paste0(
         "HSquared.jl production REBUILD gate ",
-        "(sim/phase5_qtl_rebuild_production_gate.jl): per-dataset add-one ",
+        "(https://github.com/itchyshin/HSquared.jl/blob/main/sim/phase5_qtl_rebuild_production_gate.jl): per-dataset add-one ",
         "permutation type-I 0.0504/0.0542 at alpha=0.05 (fixed-effect, ",
         "intercept-only); the (1-alpha) quantile rule is anti-conservative (#202)."
       )

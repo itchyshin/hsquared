@@ -26,7 +26,9 @@
 #'
 #' Both are covered at validation scale, opt-in, REML-only, and dense
 #' (n <= 1000 or so). Their scope and reporting limits are recorded in the
-#' repository capability ledger (`docs/design/capability-status.md`) and, for
+#' repository capability ledger
+#' ([docs/design/capability-status.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md))
+#' and, for
 #' readers, in [Can I fit and report this?](
 #' https://itchyshin.github.io/hsquared/articles/current-limits.html). Read
 #' this table together with that enumeration: an absent row is not an absent
@@ -44,12 +46,15 @@
 #' planned grammar (for example `animal(cov = fa(...))`). The explicit
 #' four-trait rank-one FA `engine_control` cell is partial and opt-in.
 #' `payload_v2` routing is limited to `direct_maternal` and `multi_effect`.
-#' See `docs/design/45-bridge-production-fences-DRAFT.md`.
+#' See
+#' [docs/design/45-bridge-production-fences-DRAFT.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/45-bridge-production-fences-DRAFT.md).
 #'
 #' # Capability identifiers versus labels
 #'
 #' `capability` is a **stable identifier**. Dated evidence records -- comparator
-#' runs under `docs/dev-log/comparator-runs/` and check-log entries -- cite these
+#' runs under
+#' [docs/dev-log/comparator-runs/](https://github.com/itchyshin/hsquared/tree/main/docs/dev-log/comparator-runs/)
+#' and check-log entries -- cite these
 #' strings verbatim to name the row they report against, so an identifier is not
 #' rewritten once evidence points at it. Look rows up by `capability`.
 #'

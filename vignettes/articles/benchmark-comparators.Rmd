@@ -56,7 +56,7 @@ that the pure-R reference and `sommer` agree with the published anchor within th
 
 All three agree to roughly four decimal places.
 
-**The signed-off band** (maintainer, 2026-06-13; `docs/design/01-v0.1-contract.md`): variance
+**The signed-off band** (maintainer, 2026-06-13; [`docs/design/01-v0.1-contract.md`](https://github.com/itchyshin/hsquared/blob/main/docs/design/01-v0.1-contract.md)): variance
 components within ~1–2% relative, `h²` within ~0.01–0.02 absolute, EBV correlation > 0.999. The CI
 test implements the variance-component and `h²` portion (relative `0.02` on the variance
 components via `expect_equal`); the EBV-correlation criterion is a signed-off **target** verified

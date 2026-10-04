@@ -19,7 +19,7 @@ coherent modelling language for phenotypes, pedigrees, genotypes, QTL/eQTL,
 G matrices, inheritance systems, and high-dimensional traits.
 
 The full technical plan lives in
-`docs/design/07-genomics-qtl-gpu-plan.md`. This article is the user-facing
+[`docs/design/07-genomics-qtl-gpu-plan.md`](https://github.com/itchyshin/hsquared/blob/main/docs/design/07-genomics-qtl-gpu-plan.md). This article is the user-facing
 map.
 
 ## Design principle
