@@ -22,9 +22,9 @@ pedigree path); its variance components and pedigree relationship are reused
 so the scan is conditioned on the same covariance the model was fit under.}
 
 \item{markers}{A numeric matrix of marker dosages with one row per animal in
-the fit's pedigree and one column per marker. When row names are supplied,
-they are matched and reordered to the fit's normalized pedigree IDs;
-otherwise rows must already be in that order.}
+the fit's pedigree and one column per marker. Row names are required and
+must match the fit's pedigree IDs exactly; they are reordered to the fit's
+normalized pedigree.}
 
 \item{marker_ids}{Optional marker names; defaults to the \code{markers} column
 names, then to sequential ids.}

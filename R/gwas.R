@@ -41,9 +41,9 @@
 #'   pedigree path); its variance components and pedigree relationship are reused
 #'   so the scan is conditioned on the same covariance the model was fit under.
 #' @param markers A numeric matrix of marker dosages with one row per animal in
-#'   the fit's pedigree and one column per marker. When row names are supplied,
-#'   they are matched and reordered to the fit's normalized pedigree IDs;
-#'   otherwise rows must already be in that order.
+#'   the fit's pedigree and one column per marker. Row names are required and
+#'   must match the fit's pedigree IDs exactly; they are reordered to the fit's
+#'   normalized pedigree.
 #' @param marker_ids Optional marker names; defaults to the `markers` column
 #'   names, then to sequential ids.
 #' @param method `"mixed"` (default) for the relatedness-corrected mixed-model
@@ -354,26 +354,31 @@ hs_validate_gwas_markers <- function(markers, payload) {
     )
   }
   marker_ids <- rownames(markers)
-  if (!is.null(marker_ids)) {
-    if (
-      any(is.na(marker_ids)) ||
-        any(!nzchar(marker_ids)) ||
-        anyDuplicated(marker_ids) > 0L
-    ) {
-      stop(
-        "`markers` row names must be unique, non-missing, and nonempty.",
-        call. = FALSE
-      )
-    }
-    pedigree_ids <- as.character(payload$pedigree$id)
-    if (!setequal(marker_ids, pedigree_ids)) {
-      stop(
-        "`markers` row names must match the fit's pedigree IDs exactly.",
-        call. = FALSE
-      )
-    }
-    markers <- markers[match(pedigree_ids, marker_ids), , drop = FALSE]
+  if (is.null(marker_ids)) {
+    stop(
+      "`markers` must have row names matching the fit's pedigree IDs so they ",
+      "can be reordered to normalized pedigree order.",
+      call. = FALSE
+    )
   }
+  if (
+    any(is.na(marker_ids)) ||
+      any(!nzchar(marker_ids)) ||
+      anyDuplicated(marker_ids) > 0L
+  ) {
+    stop(
+      "`markers` row names must be unique, non-missing, and nonempty.",
+      call. = FALSE
+    )
+  }
+  pedigree_ids <- as.character(payload$pedigree$id)
+  if (!setequal(marker_ids, pedigree_ids)) {
+    stop(
+      "`markers` row names must match the fit's pedigree IDs exactly.",
+      call. = FALSE
+    )
+  }
+  markers <- markers[match(pedigree_ids, marker_ids), , drop = FALSE]
   if (ncol(markers) < 1L) {
     stop("`markers` must have at least one marker column.", call. = FALSE)
   }

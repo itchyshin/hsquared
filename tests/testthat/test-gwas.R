@@ -304,12 +304,13 @@ test_that("hs_gwas_marker_groups guards the LOCO group map (no engine needed)", 
 test_that("gwas() routes method='loco' through the group guard before the bridge", {
   # engine-free: the guard fires before any Julia call, so a mock fit suffices
   fit <- hs_mock_gwas_fit(n = 4)
+  markers <- matrix(0, 4, 2, dimnames = list(letters[1:4], NULL))
   expect_error(
-    gwas(fit, matrix(0, 4, 2), method = "loco"),
+    gwas(fit, markers, method = "loco"),
     "requires"
   )
   expect_error(
-    gwas(fit, matrix(0, 4, 2), marker_groups = c("a", "b")),
+    gwas(fit, markers, marker_groups = c("a", "b")),
     "only used when"
   )
 })
@@ -326,10 +327,17 @@ test_that("gwas() guards the fit type and the markers shape (no engine needed)",
   fit <- hs_mock_gwas_fit(n = 4)
   expect_error(gwas(fit, matrix(0, 3, 2)), "one row per animal")
   expect_error(
-    gwas(fit, matrix(0, 4, 2), marker_ids = "only_one"),
+    gwas(
+      fit,
+      matrix(0, 4, 2, dimnames = list(letters[1:4], NULL)),
+      marker_ids = "only_one"
+    ),
     "one entry per marker"
   )
-  expect_error(gwas(fit, matrix(NA_real_, 4, 2)), "finite")
+  expect_error(
+    gwas(fit, matrix(NA_real_, 4, 2, dimnames = list(letters[1:4], NULL))),
+    "finite"
+  )
 })
 
 test_that("GWAS markers follow the fit's normalized pedigree order", {
@@ -350,6 +358,19 @@ test_that("GWAS markers follow the fit's normalized pedigree order", {
   expect_error(
     hsquared:::hs_validate_gwas_markers(markers, payload),
     "row names must match"
+  )
+})
+
+test_that("GWAS unnamed markers are not paired by row position", {
+  pedigree_ids <- c("s1", "d1", "k1", "d2", "k2")
+  payload <- list(pedigree = list(id = pedigree_ids))
+  # User-order dosages with no row names. The old validator accepted these by
+  # current row position, so s1 would have been scored as if it were k1.
+  markers <- matrix(c(0, 1, 2, 1, 0), ncol = 1)
+
+  expect_error(
+    hsquared:::hs_validate_gwas_markers(markers, payload),
+    "must have row names matching the fit's pedigree IDs"
   )
 })
 
@@ -403,6 +424,7 @@ test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   )
 
   M <- matrix(sample(0:2, n * 4L, replace = TRUE), n, 4L)
+  rownames(M) <- ped$id
   g <- gwas(fit, M, marker_ids = paste0("m", 1:4))
 
   expect_s3_class(g, "hs_gwas")
@@ -527,6 +549,7 @@ test_that("loco gwas() uses ANIMAL-level precisions under a non-square Z", {
 
   set.seed(3)
   M <- matrix(sample(0:2, n_animals * 4L, replace = TRUE), n_animals, 4L)
+  rownames(M) <- ped$id
   grp <- c("chr1", "chr1", "chr2", "chr2")
 
   # If the wrapper fed record-level markers to loco_relationship_precisions, the
@@ -635,6 +658,7 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
   }
   x <- stats::rnorm(n)
   M <- matrix(sample(0:2, n * 4L, replace = TRUE), n, 4L)
+  rownames(M) <- ped$id
   # plant a causal effect at marker 2 so a genome-wide hit exists
   dat <- data.frame(
     y = 1 + 0.5 * x + bv + 0.9 * scale(M[, 2], scale = FALSE)[, 1] + stats::rnorm(n),
