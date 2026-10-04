@@ -29,13 +29,22 @@ hs_route_table <- function() {
         "fit and for `engine = \"validate\"`. The covered claim is this REML",
         "estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2",
         "profile/bootstrap intervals are directional-conservative here; sigma-a2",
-        "delta/Wald remains experimental-only. None is nominally calibrated."
+        "delta/Wald remains experimental-only. None is nominally calibrated.",
+        "This route has no dense-cell cap, but that is not a size-free claim:",
+        "when additive variance is near 0 and the pedigree has more than 512",
+        "animals, the default fit can stop with converged = FALSE,",
+        "optimizer_status boundary_score_unresolved, and an inflated residual.",
+        "Check fit_diagnostics() after every large-pedigree fit."
       ),
       point = "yes",
       interval = "directional_conservative",
       fallback = paste(
-        "None needed - this is the recommended route. For a model with a second",
-        "random effect, see the two-effect card below."
+        "This is the recommended route. If V_A is near 0 and the pedigree has",
+        "more than 512 animals, retry with engine = \"julia\" and",
+        "target = \"sparse_reml\" (see the sparse REML card). That fallback is",
+        "experimental and opt-in; it does not change this route's covered",
+        "point-estimate claim. For a model with a second random effect, see",
+        "the two-effect card below."
       )
     ),
     list(
@@ -81,11 +90,19 @@ hs_route_table <- function() {
         "Reaches the same REML optimum as the default path and is cross-checked",
         "against an independent pure-R REML optimizer and the external",
         "`pedigreemm` package. It exists as an engine-target check, not as a",
-        "separate user-facing model."
+        "separate user-facing model. It is also the existing fallback when the",
+        "default AI-REML path stops unconverged on more than 512 animals with",
+        "V_A near 0 (converged = FALSE,",
+        "optimizer_status boundary_score_unresolved). That use is still",
+        "experimental and opt-in; it does not newly cover this route."
       ),
       point = "partial",
       interval = "no",
-      fallback = "Use the default `hsquared()` call, which is the covered route to the same estimates."
+      fallback = paste(
+        "Use the default `hsquared()` call, which is the covered route to the",
+        "same estimates, except when that path stops on q > 512 animals with",
+        "V_A near 0. Then this target is the existing fallback."
+      )
     ),
     list(
       key = "experimental repeatability estimator (opt-in)",

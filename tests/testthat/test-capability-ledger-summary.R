@@ -120,6 +120,22 @@ test_that("directional interval wording is confined to the named pedigree method
   )
 })
 
+test_that("default-route card documents the 512-animal boundary fallback", {
+  skip_without_generator()
+  gen <- load_generator()
+  text <- paste(
+    gen$hs_build_summary(as.data.frame(validation_status())),
+    collapse = "\n"
+  )
+
+  expect_match(text, "more than 512", fixed = TRUE)
+  expect_match(text, "boundary_score_unresolved", fixed = TRUE)
+  expect_match(text, "converged = FALSE", fixed = TRUE)
+  expect_match(text, 'target = "sparse_reml"', fixed = TRUE)
+  expect_match(text, "covered on the default call", fixed = TRUE)
+  expect_match(text, "does not change this route's covered", fixed = TRUE)
+})
+
 test_that("generated summary states covered/partial/planned honestly", {
   skip_without_generator()
   gen <- load_generator()

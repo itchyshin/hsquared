@@ -69,7 +69,14 @@ target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()
 \code{fit_variance_components()}) and \code{target = "repeatability"}. Those two
 require \code{engine = "julia"}. The default univariate \code{engine = "fit"} path
 routes to sparse-capable \code{HSquared.fit_ai_reml()} and does not use this
-cap. The default \code{cbind()} path does: it forwards \code{max_dense_cells} to
+cap. No dense-cell cap is not a size-free claim: when additive variance
+is near 0 and the pedigree has more than 512 animals, that default path
+can stop with \code{converged = FALSE},
+\code{optimizer_status = "boundary_score_unresolved"}, and an inflated
+residual. Check \code{fit_diagnostics()}. The existing fallback is
+\code{engine = "julia"} with \code{target = "sparse_reml"} (experimental, opt-in;
+not a new covered claim). The default \code{cbind()} path does use the
+dense-cell cap: it forwards \code{max_dense_cells} to
 the dense multivariate fitter, and a problem above the cap errors
 instead of allocating (hsquared#280, HSquared.jl#443). A name that is
 not in the recognised set errors here, rather than being ignored
@@ -137,7 +144,11 @@ path for \code{metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gam
 surfaces the Julia-owned \code{HSquared.fit_sparse_reml()} REML-only sparse
 optimizer; it accepts \code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and
 \code{iterations}. It is not the default, not production fitting, and not a
-variance-component estimation claim for the public R interface.
+variance-component estimation claim for the public R interface. It is
+also the existing fallback when the default AI-REML path stops
+unconverged on more than 512 animals with additive variance near 0
+(\code{converged = FALSE}, \code{optimizer_status = "boundary_score_unresolved"}).
+That fallback use does not newly cover this target.
 \code{target = "ai_reml"} exposes the same average-information REML estimator
 (\code{HSquared.fit_ai_reml()}) that the default \code{engine = "fit"} path uses,
 with explicit \code{initial} and \code{iterations} control. This is the validated

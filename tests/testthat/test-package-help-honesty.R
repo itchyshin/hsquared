@@ -259,6 +259,18 @@ test_that("relmat docs name dimnames, singular MZ kernels, and the live target",
   expect_match(rd_text, "monozygotic", ignore.case = TRUE)
 })
 
+test_that("hs_control help names the 512-animal AI-REML boundary fallback", {
+  rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
+  skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
+  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
+
+  expect_match(text, "512", fixed = TRUE)
+  expect_match(text, "boundary_score_unresolved", fixed = TRUE)
+  expect_match(text, "sparse_reml", fixed = TRUE)
+  expect_match(text, "No dense-cell cap is not a size-free claim", fixed = TRUE)
+  expect_match(text, "not a new covered claim", fixed = TRUE)
+})
+
 test_that("hs_control help names dense-route unit starts and rescale guidance", {
   rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
   skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
