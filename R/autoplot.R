@@ -336,13 +336,24 @@ hs_autoplot_breeding_values <- function(object, ...) {
   )
   from_payload <- !is.null(bv)
   if (!from_payload) {
-    bv <- tryCatch(breeding_values(object), error = function(e) NULL)
+    bv <- breeding_values(object)
     if (is.null(bv) || !all(c("id", "value") %in% names(bv))) {
       stop(
         "This `hsquared_fit` has no breeding values to plot.",
         call. = FALSE
       )
     }
+  }
+  nonfinite <- sum(!is.finite(bv$value))
+  if (nonfinite > 0L) {
+    warning(
+      "Dropped ",
+      nonfinite,
+      " non-finite breeding value",
+      if (nonfinite == 1L) "" else "s",
+      " from the plot.",
+      call. = FALSE
+    )
   }
   bv <- bv[is.finite(bv$value), , drop = FALSE]
   has_trait <- "trait" %in% names(bv)
@@ -445,7 +456,7 @@ hs_autoplot_g_matrix <- function(object, low_h2 = 0.1, ...) {
     }
   }
   if (is.null(rg)) {
-    rg <- tryCatch(genetic_correlation(object), error = function(e) NULL)
+    rg <- genetic_correlation(object)
     h2 <- NULL
   }
   if (is.null(rg) || !is.matrix(rg) || nrow(rg) < 2L) {
@@ -582,7 +593,7 @@ hs_autoplot_g_geometry <- function(object, ...) {
     }
   }
   if (is.null(ev)) {
-    eg <- tryCatch(eigen_G(object), error = function(e) NULL)
+    eg <- eigen_G(object)
     if (is.null(eg) || is.null(eg$values) || length(eg$values) < 2L) {
       stop(
         "`type = \"g_geometry\"` needs a multivariate fit with a genetic ",
