@@ -34,10 +34,11 @@ home:
           G and genetic GLLVM fits are **opt-in partial**; single-step also stays
           **opt-in partial**.
           Julia engine-covered ≠ R covered, and interval coverage is not
-          certified. Not in the Julia General registry — registration
+          certified. Not in the Julia General registry. An earlier
+          registration
           ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
-          is deferred pending collaborator review, so do not use
-          `Pkg.add("HSquared")` by name. Read
+          was closed and not merged, so do not use `Pkg.add("HSquared")`
+          by name. Install HSquared.jl from GitHub only. Read
           [Can I fit and report this?](articles/current-limits.html)
           and [Validation evidence](articles/validation-evidence.html)
           before reporting results.
