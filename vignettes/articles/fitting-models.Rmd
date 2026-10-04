@@ -14,8 +14,10 @@ knitr::opts_chunk$set(eval = FALSE)
 <p class="hs-banner" role="note"><strong>Default path vs opt-in targets.</strong>
 <code>engine = "fit"</code> is the v0.1 univariate Gaussian REML path. Other models below use
 <code>engine = "julia"</code> with an explicit <code>target</code> (experimental / opt-in), except
-multivariate <code>cbind()</code>, which routes on the default call but keeps the experimental
-label. See <a href="current-limits.html">Can I fit and report this?</a>.</p>
+multivariate <code>cbind()</code>, which routes on the default call and is
+<strong>covered</strong> at validation scale for t = 2 unstructured. The
+experimental packaging label stays. See
+<a href="current-limits.html">Can I fit and report this?</a>.</p>
 
 This article shows the models `hsquared` can fit. Fitting is computed in the
 sibling `HSquared.jl` engine, so every example needs a local Julia, the
@@ -99,16 +101,20 @@ summary(fit)
 Most of the remaining models below are **opt-in**: they are reached through
 `engine = "julia"` with an explicit `target`. The one exception is the
 multivariate `cbind()` model, which routes on the default call. Being reachable
-by default does not make it any less experimental. The Gaussian opt-in routes
-are REML-only; the non-Gaussian route has its own marginal-likelihood methods.
-All remain experimental, and none is a covered public default. Four are
-**covered at validation scale**:
+by default does not drop the experimental packaging label. The Gaussian opt-in
+routes are REML-only; the non-Gaussian route has its own marginal-likelihood
+methods. Report point estimates only within a covered route; see
+[Can I fit and report this?](current-limits.html).
+The default univariate animal model and **t = 2 unstructured** multivariate
+`cbind()` are **covered** on the default call. **Genomic GREML** is covered at
+validation scale behind the explicit `engine = "julia", target = "genomic"`
+route. Four more opt-in models are **covered at validation scale**:
 each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
 comparator: the common-environment two-effect model, arbitrary-N multi-effect,
 random regression k = 2, and the direct–maternal 2×2 G model. Covered at
-validation scale means experimental and not production; none is a default fit.
-The remaining opt-in models (`validation_status()` rows `partial`) have not yet
-passed a comparator- or known-truth-validated gate.
+validation scale still means experimental packaging and not production.
+The remaining opt-in models (`repeatability`, the maternal two-effect leg,
+SNP-BLUP, single-step) stay `partial`.
 
 ## Repeatability (permanent environment)
 
@@ -186,8 +192,9 @@ raw marker matrix `M` (rows = individuals) as `genomic(1 | id, markers = M)` and
 let the engine build the genomic relationship and its inverse. Single-step can
 use either a supplied `Hinv` or the experimental constructed path
 `single_step(1 | id, pedigree = ped, markers = M)` with
-`target = "single_step_construct"`. External-comparator validation remains
-planned.
+`target = "single_step_construct"`. Explicit-target genomic GREML is
+**covered** at validation scale. Ordinary-call / default-route genomic
+activation remains held. Single-step stays exploratory.
 
 ```{r}
 fit_g <- hsquared(
@@ -236,8 +243,10 @@ breeding_values(fit_snp)             # per-individual GEBVs
 
 The multivariate path uses a `cbind()` response and estimates
 trait-by-trait genetic and residual covariance matrices for the animal effect.
-It fits on the default call without an `engine` or `target` argument, while the
-capability itself stays `partial` and experimental.
+It fits on the default call without an `engine` or `target` argument. The
+t = 2 unstructured route is **covered** on that default call (validation
+scale); k≥3 and diagonal genetic structure stay experimental. See
+[Can I fit and report this?](current-limits.html).
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 
 ```{r}
@@ -390,10 +399,11 @@ not in `validation_status()`. That function is a developer evidence table;
 an absent row is not an absent covered route.
 The four opt-in models listed as covered above (`two_effect` common-env leg,
 `multi_effect`, `random_regression`, `direct_maternal`) are covered at
-validation scale. The remaining opt-in models (`repeatability`, the maternal
-two-effect leg, genomic, SNP-BLUP, single-step) remain `partial` until their
-`HSquared.jl` gates and external comparators are signed off, and so does the
-multivariate `cbind()` model even though it now routes by default.
+validation scale, as is explicit-target genomic GREML. The t = 2 unstructured
+multivariate `cbind()` model is covered on the default call. The remaining
+opt-in models (`repeatability`, the maternal two-effect leg, SNP-BLUP,
+single-step) remain `partial` until their `HSquared.jl` gates and external
+comparators are signed off.
 Structured multivariate formula grammar and broad factor-analytic covariance
 remain on the roadmap. A bounded four-trait Gaussian FA fit and a bounded
 Poisson genetic GLLVM fit are available through explicit expert controls; see

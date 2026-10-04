@@ -80,3 +80,27 @@ test_that("non-Gaussian vignette does not call its marginal fit REML", {
   )
   expect_match(text, "Laplace marginal likelihood")
 })
+
+test_that("fitting-models aligns cbind and genomic GREML with covered wording", {
+  vignette <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "fitting-models.Rmd"
+  )
+  skip_if_not(file.exists(vignette), "source vignette not present")
+  text <- paste(readLines(vignette, warn = FALSE), collapse = "\n")
+
+  expect_no_match(text, "capability itself stays `partial`", fixed = TRUE)
+  expect_no_match(
+    text,
+    "so does the multivariate `cbind()` model even though",
+    fixed = TRUE
+  )
+  expect_no_match(text, "two-effect leg, genomic, SNP-BLUP", fixed = TRUE)
+  expect_match(text, "covered** on the default call", fixed = TRUE)
+  expect_match(text, "**Genomic GREML** is covered", fixed = TRUE)
+  expect_match(text, "explicit-target genomic GREML", fixed = TRUE)
+  expect_match(text, "single-step) remain `partial`", fixed = TRUE)
+})
