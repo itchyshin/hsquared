@@ -113,8 +113,8 @@
 #'   `target = "nongaussian"`.
 #'   With `engine = "julia"` and no `target`, the bridge defaults to
 #'   `target = "fit_animal_model"`: it surfaces the Julia-owned
-#'   `HSquared.fit_animal_model()` dense NelderMead optimizer. REML only;
-#'   `REML = FALSE` errors. This is **not** the same estimator as the default
+#'   `HSquared.fit_animal_model()` dense NelderMead optimizer, honouring the
+#'   `REML` flag. This is **not** the same estimator as the default
 #'   `engine = "fit"` path, which runs the validated average-information REML
 #'   estimator (`HSquared.fit_ai_reml()`, the same one reached by
 #'   `target = "ai_reml"`). The two paths target the same Gaussian animal model

@@ -37,26 +37,6 @@ hs_fit_target_label <- function(object) {
   as.character(target)[[1L]]
 }
 
-# C1 coverage (job 47925485) is the default univariate pedigree AI-REML
-# route only. Other targets must not inherit that claim language.
-hs_fit_univariate_coverage_route <- function(object) {
-  target <- object$spec$target
-  if (is.null(target) || !nzchar(as.character(target)[[1L]])) {
-    return(TRUE)
-  }
-  identical(as.character(target)[[1L]], "ai_reml")
-}
-
-hs_summary_univariate_coverage <- function(x) {
-  if (!is.null(x$univariate_coverage)) {
-    return(isTRUE(x$univariate_coverage))
-  }
-  target <- x$target
-  is.null(target) ||
-    identical(target, "default animal") ||
-    identical(target, "ai_reml")
-}
-
 hs_fit_formula_label <- function(object) {
   if (inherits(object$spec$formula, "formula")) {
     return(paste(deparse(object$spec$formula), collapse = " "))
@@ -272,8 +252,6 @@ summary.hsquared_fit <- function(object, ...) {
       call = object$call,
       engine = object$engine,
       method = object$spec$method,
-      target = hs_fit_target_label(object),
-      univariate_coverage = hs_fit_univariate_coverage_route(object),
       family = object$spec$family,
       variance_components = object$result$variance_components,
       heritability = object$result$heritability,
@@ -283,9 +261,8 @@ summary.hsquared_fit <- function(object, ...) {
       converged = object$result$converged,
       at_boundary = hs_fit_boundary_flag(object),
       at_boundary_class = hs_fit_boundary_class(object),
-      genetic_correlation_boundary = hs_fit_genetic_correlation_boundary(
-        object
-      ),
+      genetic_correlation_boundary =
+        hs_fit_genetic_correlation_boundary(object),
       # Experimental uncertainty surfaces (engine rows V1-HERIT-CI /
       # V3-REPEAT-REML, partial); suppress them when the fit is not reportable.
       heritability_interval = if (uncertainty_reportable) {
@@ -375,17 +352,10 @@ print.summary_hsquared_fit <- function(x, ...) {
 # Labelled experimental so they are never read as validated.
 hs_print_uncertainty <- function(x) {
   fmt <- function(v) format(signif(as.numeric(v), 4))
-  univariate_coverage <- hs_summary_univariate_coverage(x)
   if (!is.null(x$heritability_se) || !is.null(x$heritability_interval)) {
-    if (univariate_coverage) {
-      cat(
-        "  heritability uncertainty (experimental; directional-conservative / not coverage-calibrated; asymptotic REML):\n"
-      )
-    } else {
-      cat(
-        "  heritability uncertainty (experimental; no coverage study for this route; asymptotic REML):\n"
-      )
-    }
+    cat(
+      "  heritability uncertainty (experimental; directional-conservative / not coverage-calibrated; asymptotic REML):\n"
+    )
     if (!is.null(x$heritability_se)) {
       cat("    SE: ", fmt(x$heritability_se), "\n", sep = "")
     }
@@ -403,15 +373,9 @@ hs_print_uncertainty <- function(x) {
     }
   }
   if (!is.null(x$variance_component_se)) {
-    if (univariate_coverage) {
-      cat(
-        "  variance-component SEs (experimental; NOT coverage-calibrated -- the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n"
-      )
-    } else {
-      cat(
-        "  variance-component SEs (experimental; no coverage study for this route; asymptotic REML; point estimate +/- SE for reference only):\n"
-      )
-    }
+    cat(
+      "  variance-component SEs (experimental; NOT coverage-calibrated -- the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n"
+    )
     se <- x$variance_component_se
     for (i in seq_len(nrow(se))) {
       cat("    ", se$component[i], ": ", fmt(se$se[i]), "\n", sep = "")

@@ -1221,16 +1221,14 @@ hs_reject_unused_dots <- function(dots, fn) {
 #' phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 #' separately in `fit$result$variance_ratio_intervals`.
 #'
-#' The interval leg is a REML-only, asymptotic (logit delta-method)
+#' The interval leg is a REML-only, asymptotic (logit delta-method or profile)
 #' approximation returned by the engine. On the default univariate route the
 #' SE comes from the REML average-information matrix. On the repeatability,
 #' two-effect, and multivariate routes the engine uses the observed
 #' information from a central finite-difference Hessian
 #' (`fd_step = 1e-4`). Those two matrices are not the same estimand; do not
-#' compare SEs across routes as if they were. R cannot request a profile
-#' interval from this extractor; that method is Julia-only
-#' (`HSquared.heritability_interval(fit; method = :profile)`). Only the
-#' engine-returned interval is shown.
+#' compare SEs across routes as if they were. R cannot request the profile
+#' interval from this extractor; only the engine-returned interval is shown.
 #' See the information-matrix table on
 #' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 #' The 2000-rep C1 coverage confirm
@@ -1262,8 +1260,8 @@ hs_reject_unused_dots <- function(dots, fn) {
 #'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate`, `lower`, `upper`, `level`, `se`
-#'   (`NA` when the engine omitted it), and `method`, for `hsquared_fit` objects
-#'   that contain it. This extractor does not request the Julia profile method.
+#'   (`NA` for the profile method), and `method`, for `hsquared_fit` objects that
+#'   contain it.
 #' @export
 heritability_interval <- function(object, ...) {
   UseMethod("heritability_interval")

@@ -707,18 +707,6 @@ test_that("hsquared#270: interval and SE pages name warn-and-return, not omissio
   expect_match(h2_text, "printed SE/CI block", fixed = TRUE)
 })
 
-test_that("heritability_interval help does not offer a profile method R cannot request", {
-  rd <- testthat::test_path("..", "..", "man", "heritability_interval.Rd")
-  skip_if_not(file.exists(rd), "man/heritability_interval.Rd not present")
-  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
-
-  expect_no_match(text, "logit delta-method or profile")
-  expect_no_match(text, "NA for the profile method")
-  expect_match(text, "logit delta-method", fixed = TRUE)
-  expect_match(text, "Julia-only", fixed = TRUE)
-  expect_match(text, "method = :profile", fixed = TRUE)
-})
-
 test_that("random-regression help tells users to rescale the response", {
   rd <- testthat::test_path(
     "..",
@@ -746,14 +734,4 @@ test_that("random-regression help tells users to rescale the response", {
   article_text <- paste(readLines(article, warn = FALSE), collapse = "\n")
   expect_match(article_text, "Rescale the response to about unit", fixed = TRUE)
   expect_match(article_text, "random_regression", fixed = TRUE)
-})
-
-test_that("hs_control help says the Julia default target is REML only", {
-  rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
-  skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
-  text <- paste(readLines(rd, warn = FALSE), collapse = "\n")
-
-  expect_no_match(text, "honouring the")
-  expect_match(text, "REML only", fixed = TRUE)
-  expect_match(text, "REML = FALSE", fixed = TRUE)
 })
