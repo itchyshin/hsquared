@@ -1,5 +1,13 @@
 # hsquared (development version)
 
+* **hsquared#292: BGLR-style `0`/`1` inbred marker coding now warns.**
+  `genomic(markers = M)` still accepts a matrix inside `[0, 2]` and does
+  not recode it, but if every entry is in `{0, 1}` (no `2`) it raises a
+  named `hsquared_zero_one_markers` warning: allele-count `0`/`1`/`2` is
+  required, so a homozygous `0`/`1` panel such as `BGLR::wheat` must be
+  doubled to `0`/`2`. No new heritability estimator. No covered flip;
+  `public_covered_count` stays **7**; version stays **0.9.0**.
+
 * **hsquared#237: `cbind()` + `permanent(1 | id)` parses on the default
   multivariate route.** Repeated-measures multi-trait formulas no longer hit
   the T1 named reject. The call auto-routes to experimental

@@ -186,7 +186,7 @@ test_that("single_step H^Gamma payload rejects malformed group and Gamma", {
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
-  m <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  m <- matrix(c(0, 1, 2), nrow = 1, dimnames = list("c1", c("m1", "m2", "m3")))
   mf_group <- c(c1 = "", s = "base_s", d = "base_d")
   Gamma <- diag(2)
   dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))
@@ -317,7 +317,11 @@ test_that("single_step construction rejects malformed inputs", {
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
-  m_ok <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  m_ok <- matrix(
+    c(0, 1, 2),
+    nrow = 1,
+    dimnames = list("c1", c("m1", "m2", "m3"))
+  )
   m_bad <- matrix(
     c(0, 1, 2, 1),
     nrow = 2,
@@ -562,7 +566,7 @@ test_that("metafounder_single_step target requires the H^Gamma formula branch", 
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
-  m <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  m <- matrix(c(0, 1, 2), nrow = 1, dimnames = list("c1", c("m1", "m2", "m3")))
   mf_group <- c(c1 = "", s = "base_s", d = "base_d")
   Gamma <- diag(2)
   dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))
