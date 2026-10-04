@@ -120,6 +120,19 @@ test_that("rr() rejects unsupported syntax with named pointers", {
     fixed = TRUE
   )
 
+  # The parser requires a literal because it does not evaluate formula names.
+  rr_order <- 2L
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      weight ~ animal(rr(age, order = rr_order) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must be supplied as a literal positive integer",
+    fixed = TRUE
+  )
+
   # A genuinely non-intercept, non-rr() left-hand side stays rejected.
   expect_error(
     hsquared:::hs_build_model_spec(

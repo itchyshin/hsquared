@@ -1101,6 +1101,13 @@ hs_parse_rr_lhs <- function(lhs, data) {
   }
 
   order <- if ("order" %in% names(named_args)) named_args$order else 2
+  if (is.symbol(order)) {
+    stop(
+      "`rr(order = ...)` must be supplied as a literal positive integer, ",
+      "for example `order = 2`; names are not evaluated in the formula parser.",
+      call. = FALSE
+    )
+  }
   order <- suppressWarnings(as.integer(order))
   if (length(order) != 1L || is.na(order) || order < 1L) {
     stop(
