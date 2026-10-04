@@ -46,7 +46,7 @@ test_that("at most one second random effect is allowed", {
       family = stats::gaussian(),
       REML = TRUE
     ),
-    "at most one additional random effect",
+    "target = \"multi_effect\"",
     fixed = TRUE
   )
 })

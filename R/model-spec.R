@@ -116,7 +116,8 @@ hs_build_model_spec <- function(
     hs_abort_unsupported_syntax(
       "`formula` can contain at most one additional random effect ",
       "(`permanent()`, `common_env()`, or `maternal_genetic()`) alongside ",
-      "`animal()`.",
+      "`animal()`. For more independent random effects, use bare ",
+      "`(1 | group)` terms with `target = \"multi_effect\"`.",
       call. = FALSE
     )
   }
