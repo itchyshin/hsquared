@@ -89,6 +89,24 @@ hs_fit_not_converged <- function(object) {
   identical(object$result$diagnostics$optimizer_status, "not_converged")
 }
 
+hs_fit_genetic_correlation_boundary <- function(object, tol = 1e-6) {
+  if (!identical(hs_fit_target_label(object), "multivariate")) {
+    return(NULL)
+  }
+  correlation <- object$result$genetic_correlation
+  if (
+    !is.matrix(correlation) ||
+      !is.numeric(correlation) ||
+      nrow(correlation) < 2L ||
+      nrow(correlation) != ncol(correlation) ||
+      any(!is.finite(correlation))
+  ) {
+    return(NULL)
+  }
+  off_diagonal <- correlation[row(correlation) != col(correlation)]
+  any(abs(off_diagonal) >= 1 - tol)
+}
+
 # Students copy README, get h2 ~ 0 from a failed n = 4 fit, and believe it.
 # logLik() refuses a non-converged fit; heritability(), print(), and the
 # estimate / uncertainty extractors must warn at the same bar so a
@@ -191,6 +209,13 @@ print.hsquared_fit <- function(x, ...) {
   if (!is.null(converged)) {
     cat("  converged: ", isTRUE(converged), "\n", sep = "")
   }
+  if (isTRUE(hs_fit_genetic_correlation_boundary(x))) {
+    cat(
+      "  genetic correlation boundary: TRUE ",
+      "(|r_g| >= 1 - 1e-6; SEs and Wald CIs are not reportable)\n",
+      sep = ""
+    )
+  }
   if (hs_fit_not_converged(x)) {
     cat("  heritability: not reportable (fit did not converge)\n")
     hs_warn_if_unusable_fit(x)
@@ -236,6 +261,8 @@ summary.hsquared_fit <- function(object, ...) {
       converged = object$result$converged,
       at_boundary = hs_fit_boundary_flag(object),
       at_boundary_class = hs_fit_boundary_class(object),
+      genetic_correlation_boundary =
+        hs_fit_genetic_correlation_boundary(object),
       # Experimental uncertainty surfaces (engine rows V1-HERIT-CI /
       # V3-REPEAT-REML, partial); suppress them when the fit is not reportable.
       heritability_interval = if (uncertainty_reportable) {
@@ -262,6 +289,13 @@ print.summary_hsquared_fit <- function(x, ...) {
   cat("  method: ", x$method %||% "unknown", "\n", sep = "")
   if (!is.null(x$converged)) {
     cat("  converged: ", isTRUE(x$converged), "\n", sep = "")
+  }
+  if (isTRUE(x$genetic_correlation_boundary)) {
+    cat(
+      "  genetic correlation boundary: TRUE ",
+      "(|r_g| >= 1 - 1e-6; SEs and Wald CIs are not reportable)\n",
+      sep = ""
+    )
   }
   if (!is.null(x$genomic_boundary)) {
     cat(

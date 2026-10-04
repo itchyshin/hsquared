@@ -742,6 +742,44 @@ test_that("print.hsquared_fit shows target, formula, and heritability peek", {
   expect_match(out, "heritability: animal=0.4", fixed = TRUE)
 })
 
+test_that("print and summary flag a genetic-correlation boundary", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = list(y = matrix(1:12, ncol = 2)),
+    result = list(
+      heritability = data.frame(
+        term = c("trait1", "trait2"),
+        estimate = c(0.3, 0.4)
+      ),
+      genetic_correlation = matrix(
+        c(1, 1 - 5e-7, 1 - 5e-7, 1),
+        nrow = 2
+      ),
+      diagnostics = list(optimizer_status = "converged"),
+      converged = TRUE
+    )
+  )
+
+  fit_output <- paste(utils::capture.output(print(fit)), collapse = "\n")
+  fit_summary <- summary(fit)
+  summary_output <- paste(
+    utils::capture.output(print(fit_summary)),
+    collapse = "\n"
+  )
+  boundary_line <- paste0(
+    "genetic correlation boundary: TRUE ",
+    "(|r_g| >= 1 - 1e-6; SEs and Wald CIs are not reportable)"
+  )
+
+  expect_match(fit_output, boundary_line, fixed = TRUE)
+  expect_true(fit_summary$genetic_correlation_boundary)
+  expect_match(summary_output, boundary_line, fixed = TRUE)
+})
+
 test_that("heritability() and print() warn when the fit did not converge", {
   failed <- hsquared:::hs_new_fit(
     spec = list(
