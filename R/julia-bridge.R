@@ -4773,6 +4773,11 @@ hs_fit_julia_genomic_payload <- function(
     }
   }
   rel <- payload$relationship
+  inference_cmd <- if (identical(rel, "relmat")) {
+    hs_julia_merge_inference_slots()
+  } else {
+    ""
+  }
   boundary_eligible <- identical(rel, "genomic") &&
     nrow(payload$Z) == ncol(payload$Z) &&
     nrow(payload$Z) <= 2000L &&
@@ -4811,7 +4816,8 @@ hs_fit_julia_genomic_payload <- function(
       "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
       "ids = hsq_ids, method = :REML);",
       fit_cmd,
-      "hsq_result = HSquared.result_payload(hsq_fit);"
+      "hsq_result = HSquared.result_payload(hsq_fit);",
+      inference_cmd
     )),
     hint = hs_dense_scale_hint
   )
@@ -4846,6 +4852,11 @@ hs_fit_julia_genomic_payload <- function(
   names(result$random_effects)[
     names(result$random_effects) == "animal"
   ] <- rel
+  if (!is.null(result$variance_component_se)) {
+    result$variance_component_se$component[
+      result$variance_component_se$component == "animal"
+    ] <- rel
+  }
   result$diagnostics$variance_components <- paste0(
     "estimated_",
     rel,
@@ -4887,11 +4898,6 @@ hs_fit_julia_genomic_payload <- function(
       result$prediction_error_variance <- NULL
       result$reliability <- NULL
       result$variance_component_se <- NULL
-    }
-    if (!is.null(result$variance_component_se)) {
-      result$variance_component_se$component[
-        result$variance_component_se$component == "animal"
-      ] <- "genomic"
     }
   }
   fit <- hs_new_fit(
