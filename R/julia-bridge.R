@@ -1415,9 +1415,14 @@ hs_fit_julia_repeatability_payload <- function(
     # `scale_method = "auto"`: the SAME animal + permanent-environment model,
     # expressed as the K = 2 independent-block problem the engine already
     # solves, so `fit_multi_effect(:auto)` can take the SPARSE-exact AI-REML
-    # route (`sparse_multi_effect_aireml`) and escape the dense ceiling. Block 1
-    # is the animal effect carrying A^-1; block 2 is the permanent-environment
-    # effect on the SAME incidence `Z` with an identity relationship.
+    # route (`sparse_multi_effect_aireml`) below its N budget and escape the
+    # dense ceiling. Above that budget the engine silently switches to
+    # matrix-free Monte-Carlo EM-REML (`verbose = false` hides the @info).
+    # Read `dispatch` / `estimator` / `trace_mcse` from the result so the
+    # provenance label names the estimator that actually ran (hsquared#311).
+    # Block 1 is the animal effect carrying A^-1; block 2 is the
+    # permanent-environment effect on the SAME incidence `Z` with an identity
+    # relationship.
     #
     # `initial`/`iterations` are NOT forwarded here: `fit_multi_effect` does not
     # accept them on this route (HSquared.jl#343). The engine picks its own
@@ -1588,6 +1593,10 @@ hs_fit_julia_repeatability_payload <- function(
       "\"loglik_convention\" => hasproperty(hsq_fit, :loglik_convention) ? String(hsq_fit.loglik_convention) : \"unknown\",",
       "\"loglik_full_constant_offset\" => hasproperty(hsq_fit, :loglik_full_constant_offset) ? Float64(hsq_fit.loglik_full_constant_offset) : NaN,",
       "\"loglik_comparable_across_routes\" => hasproperty(hsq_fit, :loglik_comparable_across_routes) ? hsq_fit.loglik_comparable_across_routes : false,",
+      "\"dispatch\" => hasproperty(hsq_fit, :dispatch) ? String(hsq_fit.dispatch) : nothing,",
+      "\"estimator\" => hasproperty(hsq_fit, :estimator) ? String(hsq_fit.estimator) : nothing,",
+      "\"trace_mcse\" => hasproperty(hsq_fit, :trace_mcse) ? collect(Float64, hsq_fit.trace_mcse) : nothing,",
+      "\"loglik_mcse\" => hasproperty(hsq_fit, :loglik_mcse) ? Float64(hsq_fit.loglik_mcse) : nothing,",
       "\"converged\" => hsq_fit.converged) end"
     ))
   }
@@ -1717,33 +1726,130 @@ hs_normalize_repeatability_result <- function(
     # Provenance names the estimator that ACTUALLY ran. The sparse route is not
     # `fit_repeatability_reml`, so it must not claim that estimator's label --
     # a reader checking `variance_components_source` is checking which code
-    # produced the numbers, not which model was requested.
-    diagnostics = list(
-      variance_components = if (identical(scale_method, "dense")) {
-        "estimated_repeatability_reml"
-      } else {
-        "estimated_repeatability_sparse_multi_effect_aireml"
-      },
-      scale_method = scale_method,
-      # HSquared.jl #365: dense omit-2π vs sparse full-constant. Present when
-      # the linked engine exposes the fields; otherwise "unknown"/NA/FALSE.
-      loglik_convention = if (!is.null(raw$loglik_convention)) {
-        as.character(raw$loglik_convention)
-      } else {
-        "unknown"
-      },
-      loglik_full_constant_offset = if (
-        !is.null(raw$loglik_full_constant_offset)
-      ) {
-        as.numeric(raw$loglik_full_constant_offset)
-      } else {
-        NA_real_
-      },
-      loglik_comparable_across_routes = isTRUE(
-        raw$loglik_comparable_across_routes
-      )
-    )
+    # produced the numbers, not which model was requested. `scale_method =
+    # "auto"` is not itself an estimator: the engine may have run exact
+    # AI-REML or matrix-free Monte-Carlo EM-REML (hsquared#311).
+    diagnostics = hs_repeatability_auto_diagnostics(raw, scale_method)
   )
+}
+
+hs_repeatability_engine_symbol <- function(x) {
+  if (is.null(x) || length(x) < 1L) {
+    return(NULL)
+  }
+  x <- x[[1L]]
+  if (length(x) != 1L || is.na(x)) {
+    return(NULL)
+  }
+  x <- sub("^:", "", as.character(x))
+  if (!nzchar(x)) {
+    return(NULL)
+  }
+  x
+}
+
+hs_repeatability_auto_source <- function(dispatch, estimator) {
+  if (
+    identical(estimator, "matrix_free_mc_em_reml") ||
+      identical(dispatch, "matrix_free")
+  ) {
+    return("estimated_repeatability_matrix_free_mc_em_reml")
+  }
+  if (!is.null(estimator)) {
+    return(paste0("estimated_repeatability_", estimator))
+  }
+  "estimated_repeatability_sparse_multi_effect_aireml"
+}
+
+hs_repeatability_auto_diagnostics <- function(raw, scale_method) {
+  dispatch <- hs_repeatability_engine_symbol(raw$dispatch)
+  estimator <- hs_repeatability_engine_symbol(raw$estimator)
+  trace_mcse <- if (is.null(raw$trace_mcse)) {
+    NULL
+  } else {
+    as.numeric(raw$trace_mcse)
+  }
+  if (
+    !is.null(trace_mcse) && (length(trace_mcse) < 1L || all(is.na(trace_mcse)))
+  ) {
+    trace_mcse <- NULL
+  }
+  loglik_mcse <- if (is.null(raw$loglik_mcse)) {
+    NULL
+  } else {
+    as.numeric(raw$loglik_mcse)[[1L]]
+  }
+  if (!is.null(loglik_mcse) && is.na(loglik_mcse)) {
+    loglik_mcse <- NULL
+  }
+  matrix_free <- identical(dispatch, "matrix_free") ||
+    identical(estimator, "matrix_free_mc_em_reml")
+  if (!identical(scale_method, "dense") && is.null(dispatch)) {
+    warning(
+      "The engine did not return `dispatch` for this `scale_method = \"auto\"` ",
+      "repeatability fit, so the provenance label cannot confirm whether exact ",
+      "AI-REML or matrix-free Monte-Carlo EM-REML ran.",
+      call. = FALSE
+    )
+  }
+  if (matrix_free && is.null(trace_mcse)) {
+    warning(
+      "The engine ran matrix-free Monte-Carlo EM-REML but did not return ",
+      "`trace_mcse`; the Monte-Carlo error of the score traces is missing.",
+      call. = FALSE
+    )
+  }
+  if (matrix_free) {
+    warning(
+      "This repeatability fit used matrix-free Monte-Carlo EM-REML because the ",
+      "problem exceeded the exact-path budget. Variance components carry ",
+      "Monte-Carlo error; inspect diagnostics$trace_mcse. logLik() is refused.",
+      call. = FALSE
+    )
+  }
+  loglik_stochastic <- matrix_free ||
+    (!identical(scale_method, "dense") &&
+      is.null(dispatch) &&
+      is.nan(as.numeric(raw$loglik)[[1L]]))
+  diagnostics <- list(
+    variance_components = if (identical(scale_method, "dense")) {
+      "estimated_repeatability_reml"
+    } else {
+      hs_repeatability_auto_source(dispatch, estimator)
+    },
+    scale_method = scale_method,
+    # HSquared.jl #365: dense omit-2π vs sparse full-constant. Present when
+    # the linked engine exposes the fields; otherwise "unknown"/NA/FALSE.
+    loglik_convention = if (!is.null(raw$loglik_convention)) {
+      as.character(raw$loglik_convention)
+    } else {
+      "unknown"
+    },
+    loglik_full_constant_offset = if (
+      !is.null(raw$loglik_full_constant_offset)
+    ) {
+      as.numeric(raw$loglik_full_constant_offset)
+    } else {
+      NA_real_
+    },
+    loglik_comparable_across_routes = isTRUE(
+      raw$loglik_comparable_across_routes
+    ),
+    loglik_stochastic = loglik_stochastic
+  )
+  if (!is.null(dispatch)) {
+    diagnostics$dispatch <- dispatch
+  }
+  if (!is.null(estimator)) {
+    diagnostics$estimator <- estimator
+  }
+  if (!is.null(trace_mcse)) {
+    diagnostics$trace_mcse <- trace_mcse
+  }
+  if (!is.null(loglik_mcse)) {
+    diagnostics$loglik_mcse <- loglik_mcse
+  }
+  diagnostics
 }
 
 hs_validate_repeatability_initial <- function(initial) {
