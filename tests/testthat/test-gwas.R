@@ -332,6 +332,27 @@ test_that("gwas() guards the fit type and the markers shape (no engine needed)",
   expect_error(gwas(fit, matrix(NA_real_, 4, 2)), "finite")
 })
 
+test_that("GWAS markers follow the fit's normalized pedigree order", {
+  pedigree_ids <- c("s1", "d1", "k1", "d2", "k2")
+  payload <- list(pedigree = list(id = pedigree_ids))
+  markers <- matrix(
+    c(0, 1, 2, 1, 0),
+    ncol = 1,
+    dimnames = list(c("k1", "k2", "s1", "d1", "d2"), "snp1")
+  )
+
+  aligned <- hsquared:::hs_validate_gwas_markers(markers, payload)
+
+  expect_identical(rownames(aligned), pedigree_ids)
+  expect_equal(as.vector(aligned), c(2, 1, 0, 0, 1))
+
+  rownames(markers)[1] <- "unknown"
+  expect_error(
+    hsquared:::hs_validate_gwas_markers(markers, payload),
+    "row names must match"
+  )
+})
+
 test_that("gwas() rejects variance components from a non-converged fit", {
   fit <- hs_mock_gwas_fit(n = 4)
   fit$result$converged <- FALSE
