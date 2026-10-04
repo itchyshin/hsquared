@@ -175,6 +175,7 @@ reference:
       - hs_data
       - hs_control
       - animal
+      - rr
       - model_spec
       - formula_status
       - validation_status

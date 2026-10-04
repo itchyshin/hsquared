@@ -4,12 +4,15 @@
 #'
 #' `animal()` is the additive-genetic term in an `hsquared()` formula. Write
 #' `animal(1 | id, pedigree = ped)`, or `animal(1 | id)` when `data` is an
-#' [hs_data()] object with a pedigree component. Fitting happens in
-#' [hsquared()], not here: calling `animal()` on its own is a syntax marker
-#' and returns `NULL`.
+#' [hs_data()] object with a pedigree component. The opt-in random-regression
+#' form is `animal(rr(x, order = k) | id, pedigree = ped)`; see [rr()] for
+#' `order` (number of Legendre coefficients; `order = 2` is intercept + slope)
+#' and the `[-1, 1]` mapping. Fitting happens in [hsquared()], not here:
+#' calling `animal()` on its own is a syntax marker and returns `NULL`.
 #'
 #' @param formula A random-effect expression. The v0.1 parser accepts
-#'   `1 | id`.
+#'   `1 | id`. The opt-in random-regression form is `rr(x, order = k) | id`;
+#'   see [rr()].
 #' @param pedigree A pedigree data frame with individual, sire, and dam columns.
 #'   Optional only when the enclosing [hsquared()] or [model_spec()] call uses
 #'   `data = hs_data(..., pedigree = ...)`. In v0.1 this route rejects any row

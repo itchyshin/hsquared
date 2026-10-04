@@ -1,5 +1,10 @@
 # hsquared (development version)
 
+* **hsquared#300 (docs): `?rr` now exists.** `order` is the number of
+  Legendre coefficients (`order = 2` is intercept + slope), and the
+  covariate is mapped to `[-1, 1]` over the fitted data range. No
+  estimator change; no standard errors; no covered flip.
+
 * **hsquared#292: BGLR-style `0`/`1` inbred marker coding now warns.**
   `genomic(markers = M)` still accepts a matrix inside `[0, 2]` and does
   not recode it, but if every entry is in `{0, 1}` (no `2`) it raises a
