@@ -231,6 +231,13 @@ hs_fit_is_genomic <- function(object) {
 #' likelihood-based summaries are intentionally blocked when a multivariate fit
 #' has not converged.
 #'
+#' A fitted genetic correlation of `+1` or `-1` means the estimated `G` sat
+#' on the correlation boundary in this sample, not that the traits are known
+#' to share one genetic value. `print()` and `summary()` can still report
+#' `converged = TRUE`; R does not set a boundary flag for `|r_g| -> 1`.
+#' [covariance_standard_errors()] is omitted at that flat or boundary
+#' optimum.
+#'
 #' @inheritParams variance_components
 #'
 #' @return A numeric matrix for `hsquared_fit` objects that contain the
@@ -1612,14 +1619,14 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #' flat/boundary optimum, not coverage-calibrated, with no external comparator,
 #' and not a validated capability.
 #'
-#' The returned `genetic_correlation` SE is on the correlation (`r`) scale. A
-#' naive symmetric interval built as `estimate +/- 1.96 * se` on that scale
-#' can leave `(-1, 1)` for strong correlations. The engine instead builds its own
-#' genetic-correlation interval on the **Fisher-z scale**
-#' (`z = atanh(r)`, `se_z = se_r / (1 - r^2)`, endpoints
-#' `tanh(z -+ q * se_z)`), which always lands inside `(-1, 1)`. That
-#' range-respecting endpoint is a separate property from calibration: the
-#' Fisher-z transform does not make these SEs coverage-calibrated (see above).
+#' The returned `genetic_correlation` SE is on the correlation (`r`) scale.
+#' R does not return a genetic-correlation interval.
+#' `estimate +/- 1.96 * se` is not an extractor and can leave `(-1, 1)`
+#' when `|r_g|` is large. Julia `HSquared.genetic_correlation_interval()`
+#' builds a Fisher-z interval (`z = atanh(r)`,
+#' `se_z = se_r / (1 - r^2)`); that helper is not wired to R. When
+#' `|r_g|` is at `+-1`, the engine treats the optimum as flat or boundary
+#' and omits these SEs. `print()` can still say `converged = TRUE`.
 #'
 #' @inheritParams variance_components
 #'

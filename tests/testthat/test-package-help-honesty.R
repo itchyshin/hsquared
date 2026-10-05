@@ -735,6 +735,36 @@ test_that("hsquared#270: interval and SE pages name warn-and-return, not omissio
   expect_match(h2_text, "printed SE/CI block", fixed = TRUE)
 })
 
+test_that("hsquared#278: R help does not claim a Fisher-z r_g interval", {
+  se <- testthat::test_path("..", "..", "man", "covariance_standard_errors.Rd")
+  mv <- testthat::test_path("..", "..", "man", "multivariate_extractors.Rd")
+  skip_if_not(
+    file.exists(se),
+    "man/covariance_standard_errors.Rd not present"
+  )
+  skip_if_not(
+    file.exists(mv),
+    "man/multivariate_extractors.Rd not present"
+  )
+
+  se_text <- paste(readLines(se, warn = FALSE), collapse = "\n")
+  mv_text <- paste(readLines(mv, warn = FALSE), collapse = "\n")
+
+  expect_match(
+    se_text,
+    "does not return a genetic-correlation interval",
+    fixed = TRUE
+  )
+  expect_match(se_text, "not wired to R", fixed = TRUE)
+  expect_match(se_text, "omits these SEs", fixed = TRUE)
+  expect_match(se_text, "converged = TRUE", fixed = TRUE)
+  expect_no_match(se_text, "The engine instead builds its own")
+
+  expect_match(mv_text, "correlation boundary", fixed = TRUE)
+  expect_match(mv_text, "converged = TRUE", fixed = TRUE)
+  expect_match(mv_text, "boundary flag", fixed = TRUE)
+})
+
 test_that("random-regression help tells users to rescale the response", {
   rd <- testthat::test_path(
     "..",
