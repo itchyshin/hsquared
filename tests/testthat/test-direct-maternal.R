@@ -426,6 +426,98 @@ test_that("direct_maternal_covariance() returns sigma_dm (may be negative)", {
   expect_equal(direct_maternal_covariance(fit), -0.10)
 })
 
+test_that("direct-maternal bridge forwards existing engine uncertainty", {
+  result <- make_dm_fit()$result
+  raw_ci <- list(
+    level = 0.95,
+    interval_method = "asymptotic_delta_uncalibrated",
+    sigma_ad_se = 0.12,
+    sigma_am_se = 0.08,
+    sigma_dm_se = 0.06,
+    sigma_e2_se = 0.15,
+    h2_estimate = result$heritability$estimate,
+    h2_se = 0.07,
+    h2_lower = 0.20,
+    h2_upper = 0.47,
+    m2_estimate = 0.17,
+    m2_se = 0.05,
+    m2_lower = 0.07,
+    m2_upper = 0.27,
+    h2t_estimate = 0.25,
+    h2t_se = 0.09,
+    h2t_lower = 0.08,
+    h2t_upper = 0.42,
+    ram_estimate = -0.47,
+    ram_se = 0.11,
+    ram_lower = -0.65,
+    ram_upper = -0.24,
+    ram_method = "fisher_z"
+  )
+
+  result <- hsquared:::hs_attach_direct_maternal_interval(result, raw_ci)
+  fit <- make_dm_fit()
+  fit$result <- result
+
+  expect_equal(
+    variance_component_standard_errors(fit),
+    data.frame(
+      component = c("direct", "maternal", "covariance", "residual"),
+      se = c(0.12, 0.08, 0.06, 0.15),
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equal(heritability_standard_error(fit)$se, 0.07)
+  expect_equal(
+    heritability_interval(fit),
+    data.frame(
+      estimate = raw_ci$h2_estimate,
+      lower = 0.20,
+      upper = 0.47,
+      level = 0.95,
+      se = 0.07,
+      method = "asymptotic_delta_uncalibrated",
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equal(
+    result$maternal_ratio_interval,
+    data.frame(
+      estimate = 0.17,
+      lower = 0.07,
+      upper = 0.27,
+      level = 0.95,
+      se = 0.05,
+      method = "asymptotic_delta_uncalibrated",
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equal(
+    result$total_heritability_interval,
+    data.frame(
+      estimate = 0.25,
+      lower = 0.08,
+      upper = 0.42,
+      level = 0.95,
+      se = 0.09,
+      method = "asymptotic_delta_uncalibrated",
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equal(
+    result$genetic_correlation_interval,
+    data.frame(
+      estimate = -0.47,
+      lower = -0.65,
+      upper = -0.24,
+      level = 0.95,
+      se = 0.11,
+      method = "fisher_z",
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equal(genetic_correlation(fit)$estimate, make_dm_fit()$result$genetic_correlation$estimate)
+})
+
 test_that("direct_heritability() errors on non-dm fit", {
   fit_plain <- structure(
     list(

@@ -131,6 +131,21 @@ hs_abort_out_of_range <- function(...) {
   stop(cond)
 }
 
+# Warn when a marker matrix lies entirely in {0, 1} (hsquared#292).
+# BGLR-style inbred 0/1 coding is inside [0, 2], so the range guard
+# accepts it, but VanRaden treats each entry as an allele count and
+# the reported genomic ratio moves. Do not recode: the caller must
+# double a homozygous 0/1 panel. Catchable class:
+#
+#   c("hsquared_zero_one_markers", "hsquared_warning", "warning", "condition")
+hs_warn_zero_one_markers <- function(...) {
+  cond <- warningCondition(
+    paste0(...),
+    class = c("hsquared_zero_one_markers", "hsquared_warning")
+  )
+  warning(cond)
+}
+
 # Raise a structured "boundary refused" error: an R-side defense-in-depth
 # guard for the non-Gaussian three-field route (hsquared#222). The Julia
 # payload builder (`nongaussian_three_field_payload`, HSquared.jl#342) already
@@ -450,7 +465,7 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
       "(HSquared.jl#398). If this checkout lacks the export, the call names ",
       "the missing fitter instead of absorbing PE into G0. Univariate ",
       "`target = \"repeatability\"` remains the covered-scale PE path. See ",
-      "docs/design/57-mv-pe-cbind-permanent-237.md.\n",
+      "https://github.com/itchyshin/hsquared/blob/main/docs/design/57-mv-pe-cbind-permanent-237.md.\n",
       "Suppress with suppressWarnings() if the animal-only cbind model is ",
       "intended.",
       call. = FALSE

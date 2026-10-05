@@ -24,7 +24,12 @@ them.
 \code{covariance_standard_errors()} returns \strong{experimental} large-sample
 (delta-method) standard errors for the multivariate genetic/residual
 covariance and correlation matrices and per-trait \code{h^2}, for an opt-in
-\strong{unstructured} multivariate fit, when the engine returned them.
+\strong{unstructured} multivariate fit, when the engine returned them. The
+SEs come from the observed information: a central finite-difference
+Hessian of the multivariate REML log-likelihood with \code{fd_step = 1e-4},
+not the univariate average-information matrix. See the
+information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
 
 Heavy caveats (engine multivariate REML validation row, \code{partial}): the strict per-seed
 recovery gate is still a non-pass (7/12 unstructured seeds in the updated

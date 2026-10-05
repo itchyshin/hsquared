@@ -94,9 +94,8 @@ estimates VA = 3.3954, VE = 3.8286, h² = 0.470 (data shipped in the CRAN packag
   to within the signed-off band (VA/VE within ~2%, h² within ~0.02).
 - the **Julia engine** (`fit_sparse_reml` *and* `fit_ai_reml`) recovers the same
   published values within that band, when supplied the published relationship
-  matrix `A_gryphon`. The engine *correctly rejects* the raw gryphon pedigree —
-  it has ancestral loops that even `nadiv::prepPed` refuses — so the anchor uses
-  the supplied `A`. Engine-vs-pure-R agreement is to machine precision.
+  matrix `A_gryphon`. The open Wilson et al. 2010 gryphon pedigree has no ancestral loops; the signed-off anchor still uses the supplied `A`.
+  Engine-vs-pure-R agreement is to machine precision.
 
 This is recovery within a maintainer-signed-off band, **not** a bit-exact match,
 and the gryphon population is teaching/simulated data. Tests:
@@ -323,6 +322,9 @@ status <- validation_status()
 status[status$status == "covered", c("capability_label", "phase", "status")]
 ```
 
-To actually fit the validated model end-to-end — including installing and
-registering the `HSquared.jl` engine — see the *Getting started* article and its
-engine-setup section. This article is about the evidence, not the workflow.
+To actually fit the validated model end-to-end, including installing the
+`HSquared.jl` engine from GitHub, see the README
+[Installation](https://github.com/itchyshin/hsquared#installation) section and
+the *Getting started* article
+([Fit (needs the Julia engine)](hsquared.html#fit-needs-the-julia-engine)).
+This article is about the evidence, not the workflow.

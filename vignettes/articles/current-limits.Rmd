@@ -35,6 +35,8 @@ behind them to report.
    coverage-calibrated.** Named univariate pedigree intervals have a narrower
    `directional-conservative` claim level, not a nominal-calibration claim. Do
    not report any interval as if nominal coverage had been established.
+   The information matrix also differs by route: see
+   [Which information matrix?](#which-information-matrix).
 
 ```{r f3-recovery-ladder, echo = FALSE, results = "asis"}
 cat(sprintf(
@@ -79,7 +81,8 @@ default call is the one that needs it.
 
 Without the engine, `hsquared()` still tells you whether your model is
 expressible, and errors with install guidance if you ask it to fit. See the
-engine setup section of the [README](https://github.com/itchyshin/hsquared#engine-setup).
+[Installation](https://github.com/itchyshin/hsquared#installation) section of
+the README.
 
 ```{r validate-only, eval = FALSE}
 # no Julia required; same ped/dat as the README
@@ -104,7 +107,7 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
 ## Two covered routes without their own status row
 
 `validation_status()` does not yet carry a separate row for two routes that
-`docs/design/capability-status.md` records as covered at validation scale:
+[`docs/design/capability-status.md`](https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md) records as covered at validation scale:
 
 - **Random regression / reaction norm, k = 2:**
   `animal(rr(age, order = 2) | id, pedigree = ped)` via
@@ -113,7 +116,9 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
   all `K_g` entries and the residual. **k = 2 only.** The residual is homogeneous
   and there is no permanent-environment term, so `rr_heritability()` can
   *overstate* h²(t) for repeated-records designs. `K_g` values are not comparable
-  across basis-normalization conventions.
+  across basis-normalization conventions. Rescale the response to about unit
+  variance before fitting; otherwise a large-scale trait can report
+  `converged = TRUE` below the REML optimum and a wrong covariance function.
 - **Direct–maternal correlated 2×2 G:**
   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` via
   `engine_control = list(target = "direct_maternal")`. A pre-declared 48-seed gate
@@ -122,10 +127,13 @@ cat(readLines("includes/capability-ledger-summary.md", warn = FALSE), sep = "\n"
   r_am; never a bare scalar. Direct h² is **not** the total heritability, and a
   negative r_am is real and expected. Single relationship A only.
 
-Both are opt-in, experimental, REML-only, and dense (n ≲ 1000); unlike the
-default `animal()` route and `target = "repeatability"`, neither currently
-accepts `engine_control$max_dense_cells`, so this n is a recommendation here,
-not an engine-enforced cap. Read this page before reporting a number;
+Both are opt-in, experimental, and REML-only. The engine-enforced dense
+rule on the default `animal()` route and `target = "repeatability"` is
+`nobs^2 + nanimals^2 <= 1e6` (default `max_dense_cells`), counting every
+animal in the pedigree, not just records. Unlike those guarded routes,
+neither random regression nor direct-maternal currently accepts
+`engine_control$max_dense_cells`, so they have no engine-enforced cell
+cap. Read this page before reporting a number;
 `validation_status()` is a developer evidence table.
 The cards above are generated from
 the evidence table and will not mention them until those rows exist.
@@ -152,6 +160,38 @@ plus trait-level conditional genetic modes on the log-rate scale. See
 Both routes are **partial**. Use their point estimates for exploration; for a
 paper, run a suitable comparator yourself. No interval, automatic factor rank,
 missing-response fit, or broader family claim follows from these cells.
+
+## Which information matrix?
+
+SE and interval extractors do not all use the same information matrix.
+Swapping one matrix for the other changes the SE (the two are not the
+same estimand). The method itself is unchanged; this table only names
+what each route already computes.
+
+| Route | Information matrix | How it is built | Ratio SE / interval |
+| --- | --- | --- | --- |
+| Univariate animal model (default) | Average information | Analytic AI matrix from the REML fit | Delta method; logit scale for `heritability_interval()` |
+| Repeatability / permanent environment | Observed information | Central finite-difference Hessian, `fd_step = 1e-4` | Logit-scale delta method for `repeatability_interval()` |
+| Two-effect (`common_env` / maternal) | Observed information | Central finite-difference Hessian, `fd_step = 1e-4` | Logit-scale delta method for `heritability_interval()` and `common_env_proportion_interval()` |
+| Multivariate `cbind()` | Observed information | Central finite-difference Hessian, `fd_step = 1e-4` | Delta method for `covariance_standard_errors()`; Fisher-z for genetic-correlation endpoints |
+
+See `?variance_component_standard_errors`, `?heritability_interval`,
+`?repeatability_interval`, `?common_env_proportion_interval`, and
+`?covariance_standard_errors`. None of these intervals is nominally
+coverage-calibrated.
+
+## Testing V_A = 0 and boundary fits
+
+Additive variance sits on the edge of the parameter space (`V_A >= 0`).
+The Wald SE and the logit-delta CI are not valid when `V_A` is near 0.
+The likelihood-ratio test of `V_A = 0` uses a 50:50 mixture of
+`chi^2_0` and `chi^2_1` (Self and Liang 1987; Stram and Lee 1994), so a
+plain `chi^2_1` p-value is twice too large. R `anova()` does not run that
+test. `logLik()` and `AIC()` are exposed for converged fits, so a reader
+can build a naive `chi^2_1` LRT by hand -- do not. The Julia engine
+already implements the mixture as
+`HSquared.nested_lrt(loglik_constrained, loglik_full; df = 1, boundary_df = 1)`.
+That names an existing helper; it is not a new R test statistic.
 
 ## Where to read next
 

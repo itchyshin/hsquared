@@ -26,15 +26,16 @@ hsquared(y ~ sex + animal(1 | id, pedigree = ped), data = dat)
 
 **Can I report an interval?** **Measured, but not nominally calibrated.** Named univariate pedigree h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals have a directional-conservative claim level. Sigma-a2 delta/Wald is experimental-only. Do not report any of them as nominal 95% coverage.
 
-**Exact scope and caveat.** One additive genetic effect, Gaussian response, REML only, fitted by average-information REML on the sparse mixed-model equations. Known-truth recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary pinning. ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE` (the default). That is the same rule for the default fit and for `engine = "validate"`. The covered claim is this REML estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals are directional-conservative here; sigma-a2 delta/Wald remains experimental-only. None is nominally calibrated.
+**Exact scope and caveat.** One additive genetic effect, Gaussian response, REML only, fitted by average-information REML on the sparse mixed-model equations. Known-truth recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary pinning. ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE` (the default). That is the same rule for the default fit and for `engine = "validate"`. The covered claim is this REML estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals are directional-conservative here; sigma-a2 delta/Wald remains experimental-only. None is nominally calibrated. This route has no dense-cell cap, but that is not a size-free claim: when additive variance is near 0 and the pedigree has more than 512 animals, the default fit can stop with converged = FALSE, optimizer_status boundary_score_unresolved, and an inflated residual. Check fit_diagnostics() after every large-pedigree fit.
 
-**Concrete fallback.** None needed - this is the recommended route. For a model with a second random effect, see the two-effect card below.
+**Concrete fallback.** This is the recommended route. If V_A is near 0 and the pedigree has more than 512 animals, retry with engine = "julia" and target = "sparse_reml" (see the sparse REML card). That fallback is experimental and opt-in; it does not change this route's covered point-estimate claim. For a model with a second random effect, see the two-effect card below.
 
 ### Animal model plus independent extra effects (common environment, arbitrary N)
 
 ```r
 hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
-         data = dat, control = hs_control(engine = "julia"))
+         data = dat, control = hs_control(engine = "julia",
+           engine_control = list(target = "two_effect")))
 ```
 
 **Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
@@ -61,15 +62,16 @@ hsquared(y ~ animal(1 | id, pedigree = ped), data = dat,
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** Reaches the same REML optimum as the default path and is cross-checked against an independent pure-R REML optimizer and the external `pedigreemm` package. It exists as an engine-target check, not as a separate user-facing model.
+**Exact scope and caveat.** Reaches the same REML optimum as the default path and is cross-checked against an independent pure-R REML optimizer and the external `pedigreemm` package. It exists as an engine-target check, not as a separate user-facing model. It is also the existing fallback when the default AI-REML path stops unconverged on more than 512 animals with V_A near 0 (converged = FALSE, optimizer_status boundary_score_unresolved). That use is still experimental and opt-in; it does not newly cover this route.
 
-**Concrete fallback.** Use the default `hsquared()` call, which is the covered route to the same estimates.
+**Concrete fallback.** Use the default `hsquared()` call, which is the covered route to the same estimates, except when that path stops on q > 512 animals with V_A near 0. Then this target is the existing fallback.
 
 ### Repeatability / permanent environment (repeated records)
 
 ```r
 hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
-         control = hs_control(engine = "julia"))
+         control = hs_control(engine = "julia",
+           engine_control = list(target = "repeatability")))
 ```
 
 **Can I fit it?** **Yes, but opt-in and experimental** - the code runs; the evidence is incomplete.

@@ -361,7 +361,7 @@ hs_data_pedigree_status <- function(object) {
 
   pedigree <- object$pedigree
   cols <- hs_pedigree_columns(pedigree)
-  ids <- as.character(pedigree[[cols$id]])
+  ids <- hs_as_id_character(pedigree[[cols$id]])
   sire <- hs_normalize_parent(pedigree[[cols$sire]])
   dam <- hs_normalize_parent(pedigree[[cols$dam]])
   known_parent_ids <- unique(c(stats::na.omit(sire), stats::na.omit(dam)))
@@ -697,8 +697,24 @@ hs_optional_summary_value <- function(x) {
   as.character(x)
 }
 
+hs_as_id_character <- function(x) {
+  if (is.numeric(x)) {
+    ids <- vapply(
+      x,
+      format,
+      character(1L),
+      scientific = FALSE,
+      trim = TRUE,
+      USE.NAMES = FALSE
+    )
+    ids[is.na(x)] <- NA_character_
+    return(ids)
+  }
+  as.character(x)
+}
+
 hs_checked_ids <- function(x, label) {
-  ids <- as.character(x)
+  ids <- hs_as_id_character(x)
   if (any(is.na(ids) | ids == "" | ids == "0")) {
     stop(label, " IDs cannot be missing, empty, or `0`.", call. = FALSE)
   }

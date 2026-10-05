@@ -304,12 +304,13 @@ test_that("hs_gwas_marker_groups guards the LOCO group map (no engine needed)", 
 test_that("gwas() routes method='loco' through the group guard before the bridge", {
   # engine-free: the guard fires before any Julia call, so a mock fit suffices
   fit <- hs_mock_gwas_fit(n = 4)
+  markers <- matrix(0, 4, 2, dimnames = list(letters[1:4], NULL))
   expect_error(
-    gwas(fit, matrix(0, 4, 2), method = "loco"),
+    gwas(fit, markers, method = "loco"),
     "requires"
   )
   expect_error(
-    gwas(fit, matrix(0, 4, 2), marker_groups = c("a", "b")),
+    gwas(fit, markers, marker_groups = c("a", "b")),
     "only used when"
   )
 })
@@ -326,10 +327,79 @@ test_that("gwas() guards the fit type and the markers shape (no engine needed)",
   fit <- hs_mock_gwas_fit(n = 4)
   expect_error(gwas(fit, matrix(0, 3, 2)), "one row per animal")
   expect_error(
-    gwas(fit, matrix(0, 4, 2), marker_ids = "only_one"),
+    gwas(
+      fit,
+      matrix(0, 4, 2, dimnames = list(letters[1:4], NULL)),
+      marker_ids = "only_one"
+    ),
     "one entry per marker"
   )
-  expect_error(gwas(fit, matrix(NA_real_, 4, 2)), "finite")
+  expect_error(
+    gwas(fit, matrix(NA_real_, 4, 2, dimnames = list(letters[1:4], NULL))),
+    "finite"
+  )
+})
+
+test_that("GWAS markers follow the fit's normalized pedigree order", {
+  pedigree_ids <- c("s1", "d1", "k1", "d2", "k2")
+  payload <- list(pedigree = list(id = pedigree_ids))
+  markers <- matrix(
+    c(0, 1, 2, 1, 0),
+    ncol = 1,
+    dimnames = list(c("k1", "k2", "s1", "d1", "d2"), "snp1")
+  )
+
+  aligned <- hsquared:::hs_validate_gwas_markers(markers, payload)
+
+  expect_identical(rownames(aligned), pedigree_ids)
+  expect_equal(as.vector(aligned), c(2, 1, 0, 0, 1))
+
+  rownames(markers)[1] <- "unknown"
+  expect_error(
+    hsquared:::hs_validate_gwas_markers(markers, payload),
+    "row names must match"
+  )
+})
+
+test_that("GWAS unnamed markers are not paired by row position", {
+  pedigree_ids <- c("s1", "d1", "k1", "d2", "k2")
+  payload <- list(pedigree = list(id = pedigree_ids))
+  # User-order dosages with no row names. The old validator accepted these by
+  # current row position, so s1 would have been scored as if it were k1.
+  markers <- matrix(c(0, 1, 2, 1, 0), ncol = 1)
+
+  expect_error(
+    hsquared:::hs_validate_gwas_markers(markers, payload),
+    "must have row names matching the fit's pedigree IDs"
+  )
+})
+
+test_that("gwas() rejects variance components from a non-converged fit", {
+  fit <- hs_mock_gwas_fit(n = 4)
+  fit$result$converged <- FALSE
+
+  expect_error(
+    gwas(fit, matrix(0, 4, 2)),
+    "did not converge.*variance components"
+  )
+})
+
+test_that("single-marker GWAS uses each OLS residual mean square", {
+  y <- c(1, 2, 4, 8, 16, 32)
+  X <- cbind(intercept = 1, covariate = c(0, 1, 0, 1, 0, 1))
+  markers <- cbind(
+    m1 = c(0, 0, 1, 1, 2, 2),
+    m2 = c(0, 1, 2, 0, 1, 2)
+  )
+
+  actual <- hsquared:::hs_gwas_single_ols_residual_mse(y, X, markers)
+  expected <- vapply(seq_len(ncol(markers)), function(j) {
+    fit <- stats::lm.fit(cbind(X, markers[, j] - mean(markers[, j])), y)
+    sum(fit$residuals^2) / (length(y) - fit$rank)
+  }, numeric(1L))
+
+  expect_equal(actual, expected)
+  expect_false(isTRUE(all.equal(actual, rep(1, ncol(markers)))))
 })
 
 test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
@@ -372,6 +442,7 @@ test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   )
 
   M <- matrix(sample(0:2, n * 4L, replace = TRUE), n, 4L)
+  rownames(M) <- ped$id
   g <- gwas(fit, M, marker_ids = paste0("m", 1:4))
 
   expect_s3_class(g, "hs_gwas")
@@ -399,11 +470,15 @@ test_that("gwas() runs a live relatedness-corrected scan matching the engine", {
   )
   expect_false(isTRUE(all.equal(g$p_value, fixed_p)))
 
-  # method = "single" surfaces exactly that relatedness-UNcorrected scan.
+  # method = "single" uses the relatedness-UNcorrected OLS scan with each
+  # marker regression's own residual mean square.
   g_single <- gwas(fit, M, marker_ids = paste0("m", 1:4), method = "single")
   expect_s3_class(g_single, "hs_gwas")
   expect_equal(attr(g_single, "scan_method"), "single")
-  expect_equal(g_single$p_value, fixed_p, tolerance = 1e-10)
+  direct_single_p <- JuliaCall::julia_eval(
+    "[only(s.p_values) for s in hsq_single_scans]"
+  )
+  expect_equal(g_single$p_value, direct_single_p, tolerance = 1e-10)
   # ... and it differs from the relatedness-corrected mixed scan.
   expect_false(isTRUE(all.equal(g_single$p_value, g$p_value)))
 
@@ -496,6 +571,7 @@ test_that("loco gwas() uses ANIMAL-level precisions under a non-square Z", {
 
   set.seed(3)
   M <- matrix(sample(0:2, n_animals * 4L, replace = TRUE), n_animals, 4L)
+  rownames(M) <- ped$id
   grp <- c("chr1", "chr1", "chr2", "chr2")
 
   # If the wrapper fed record-level markers to loco_relationship_precisions, the
@@ -578,6 +654,17 @@ test_that("gwas(genome_wide = TRUE) is rejected for mixed/loco (validated for si
   )
 })
 
+test_that("gwas(genome_wide = TRUE) refuses a non-intercept-only design", {
+  # engine-free: the type-I claim is intercept-only (hsquared#308)
+  fit <- hs_mock_gwas_fit(n = 4)
+  fit$payload$X <- cbind(1, c(0, 1, 0, 1))
+  markers <- matrix(0, 4, 2, dimnames = list(letters[1:4], NULL))
+  expect_error(
+    gwas(fit, markers, method = "single", genome_wide = TRUE),
+    "intercept-only"
+  )
+})
+
 test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
   hs_skip_live_julia()
   testthat::skip_if_not(
@@ -602,16 +689,15 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
       0.5 * (bv[[s]] + bv[[d]]) + stats::rnorm(1, sd = sqrt(0.5))
     }
   }
-  x <- stats::rnorm(n)
   M <- matrix(sample(0:2, n * 4L, replace = TRUE), n, 4L)
+  rownames(M) <- ped$id
   # plant a causal effect at marker 2 so a genome-wide hit exists
   dat <- data.frame(
-    y = 1 + 0.5 * x + bv + 0.9 * scale(M[, 2], scale = FALSE)[, 1] + stats::rnorm(n),
-    id = ped$id,
-    x = x
+    y = 1 + bv + 0.9 * scale(M[, 2], scale = FALSE)[, 1] + stats::rnorm(n),
+    id = ped$id
   )
   fit <- hsquared(
-    y ~ x + animal(1 | id, pedigree = ped),
+    y ~ animal(1 | id, pedigree = ped),
     data = dat,
     family = stats::gaussian(),
     REML = TRUE

@@ -87,6 +87,56 @@ hs_julia_attach_standard_plot_data <- function() {
   invisible(TRUE)
 }
 
+# Merge engine-owned SE/CI slots into hsq_result. Julia already computes these
+# on AnimalModelFit (~1 ms). Used by both ai_reml and sparse_reml so the
+# documented sparse fallback does not drop uncertainty (#281). Each call is
+# try-guarded so a boundary/singular AI matrix cannot abort the fit (#351).
+hs_julia_merge_inference_slots <- function() {
+  paste(
+    # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
+    # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
+    # which must not abort the fit (the throw is recorded and warned, #351).
+    "if isdefined(HSquared, :heritability_interval) &&",
+    "applicable(HSquared.heritability_interval, hsq_fit);",
+    hs_julia_try_slot(
+      "hsq_hi",
+      "HSquared.heritability_interval(hsq_fit)",
+      "heritability_interval"
+    ),
+    "if hsq_hi !== nothing;",
+    "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
+    "end;",
+    "end;",
+    # Experimental, opt-in variance-component and heritability standard errors
+    # (engine row V1-HERIT-CI, partial). variance_component_covariance() can
+    # throw on a singular/ill-conditioned AI matrix, so each call is wrapped in
+    # a try so an SE failure never aborts the fit; the throw is recorded and
+    # surfaced as a warning rather than a silent absence (#351).
+    "if isdefined(HSquared, :variance_component_standard_errors) &&",
+    "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
+    hs_julia_try_slot(
+      "hsq_vcse",
+      "HSquared.variance_component_standard_errors(hsq_fit)",
+      "variance_component_standard_errors"
+    ),
+    "if hsq_vcse !== nothing;",
+    "hsq_result = merge(hsq_result, (variance_component_se = hsq_vcse,));",
+    "end;",
+    "end;",
+    "if isdefined(HSquared, :heritability_standard_error) &&",
+    "applicable(HSquared.heritability_standard_error, hsq_fit);",
+    hs_julia_try_slot(
+      "hsq_h2se",
+      "HSquared.heritability_standard_error(hsq_fit)",
+      "heritability_standard_error"
+    ),
+    "if hsq_h2se !== nothing;",
+    "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
+    "end;",
+    "end;"
+  )
+}
+
 hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
@@ -378,7 +428,8 @@ hs_fit_julia_sparse_reml_payload <- function(
       "prediction_error_variance =",
       "HSquared.prediction_error_variance(hsq_fit),",
       "reliability = HSquared.reliability(hsq_fit)));",
-      "end;"
+      "end;",
+      hs_julia_merge_inference_slots()
     )),
     hint = hs_dense_scale_hint
   )
@@ -458,47 +509,7 @@ hs_fit_julia_ai_reml_payload <- function(
       "HSquared.prediction_error_variance(hsq_fit),",
       "reliability = HSquared.reliability(hsq_fit)));",
       "end;",
-      # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
-      # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
-      # which must not abort the fit (the throw is recorded and warned, #351).
-      "if isdefined(HSquared, :heritability_interval) &&",
-      "applicable(HSquared.heritability_interval, hsq_fit);",
-      hs_julia_try_slot(
-        "hsq_hi",
-        "HSquared.heritability_interval(hsq_fit)",
-        "heritability_interval"
-      ),
-      "if hsq_hi !== nothing;",
-      "hsq_result = merge(hsq_result, (heritability_interval = hsq_hi,));",
-      "end;",
-      "end;",
-      # Experimental, opt-in variance-component and heritability standard errors
-      # (engine row V1-HERIT-CI, partial). variance_component_covariance() can
-      # throw on a singular/ill-conditioned AI matrix, so each call is wrapped in
-      # a try so an SE failure never aborts the fit; the throw is recorded and
-      # surfaced as a warning rather than a silent absence (#351).
-      "if isdefined(HSquared, :variance_component_standard_errors) &&",
-      "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
-      hs_julia_try_slot(
-        "hsq_vcse",
-        "HSquared.variance_component_standard_errors(hsq_fit)",
-        "variance_component_standard_errors"
-      ),
-      "if hsq_vcse !== nothing;",
-      "hsq_result = merge(hsq_result, (variance_component_se = hsq_vcse,));",
-      "end;",
-      "end;",
-      "if isdefined(HSquared, :heritability_standard_error) &&",
-      "applicable(HSquared.heritability_standard_error, hsq_fit);",
-      hs_julia_try_slot(
-        "hsq_h2se",
-        "HSquared.heritability_standard_error(hsq_fit)",
-        "heritability_standard_error"
-      ),
-      "if hsq_h2se !== nothing;",
-      "hsq_result = merge(hsq_result, (heritability_se = hsq_h2se,));",
-      "end;",
-      "end;"
+      hs_julia_merge_inference_slots()
     )),
     hint = hs_dense_scale_hint
   )
@@ -784,7 +795,16 @@ hs_ng09_scalar_number <- function(value, name, nonnegative = FALSE) {
 
 hs_ng09_exact_number <- function(actual, expected, name) {
   actual <- hs_ng09_scalar_number(actual, name)
-  if (!identical(unname(actual), unname(as.numeric(expected)))) {
+  expected <- unname(as.numeric(expected))
+  actual_num <- unname(actual)
+  if (identical(actual_num, expected)) {
+    return(actual)
+  }
+  # Julia and R can disagree by ~1 ulp on the same closed form because they
+  # use different libm implementations of exp/expm1 (#301). Keep this tight
+  # enough that a 1e-15 formula mutation still fails.
+  scale <- max(abs(actual_num), abs(expected), 1)
+  if (!isTRUE(abs(actual_num - expected) <= 4 * .Machine$double.eps * scale)) {
     hs_ng09_abort(paste0("`", name, "` does not equal its ratified identity."))
   }
   actual
@@ -1031,9 +1051,10 @@ hs_nongaussian_three_field_julia_command <- function(
   )
 }
 
-# Normalize a complete v0.9 three-field envelope.  Exact (zero-tolerance)
-# identities are checked at the language boundary, so a transport or formula
-# mutation cannot become a different scientific estimand in the R result.
+# Normalize a complete v0.9 three-field envelope.  Closed-form identities
+# are checked at the language boundary so a transport or formula mutation
+# cannot become a different scientific estimand in the R result.  Last-bit
+# Julia/R libm disagreement on the same identity is accepted (#301).
 hs_normalize_nongaussian_three_field_v09 <- function(raw, payload) {
   schema <- hs_ng09_required(raw, "schema")
   if (!identical(schema, "nongaussian_three_field_v09")) {
@@ -1415,9 +1436,14 @@ hs_fit_julia_repeatability_payload <- function(
     # `scale_method = "auto"`: the SAME animal + permanent-environment model,
     # expressed as the K = 2 independent-block problem the engine already
     # solves, so `fit_multi_effect(:auto)` can take the SPARSE-exact AI-REML
-    # route (`sparse_multi_effect_aireml`) and escape the dense ceiling. Block 1
-    # is the animal effect carrying A^-1; block 2 is the permanent-environment
-    # effect on the SAME incidence `Z` with an identity relationship.
+    # route (`sparse_multi_effect_aireml`) below its N budget and escape the
+    # dense ceiling. Above that budget the engine silently switches to
+    # matrix-free Monte-Carlo EM-REML (`verbose = false` hides the @info).
+    # Read `dispatch` / `estimator` / `trace_mcse` from the result so the
+    # provenance label names the estimator that actually ran (hsquared#311).
+    # Block 1 is the animal effect carrying A^-1; block 2 is the
+    # permanent-environment effect on the SAME incidence `Z` with an identity
+    # relationship.
     #
     # `initial`/`iterations` are NOT forwarded here: `fit_multi_effect` does not
     # accept them on this route (HSquared.jl#343). The engine picks its own
@@ -1588,6 +1614,10 @@ hs_fit_julia_repeatability_payload <- function(
       "\"loglik_convention\" => hasproperty(hsq_fit, :loglik_convention) ? String(hsq_fit.loglik_convention) : \"unknown\",",
       "\"loglik_full_constant_offset\" => hasproperty(hsq_fit, :loglik_full_constant_offset) ? Float64(hsq_fit.loglik_full_constant_offset) : NaN,",
       "\"loglik_comparable_across_routes\" => hasproperty(hsq_fit, :loglik_comparable_across_routes) ? hsq_fit.loglik_comparable_across_routes : false,",
+      "\"dispatch\" => hasproperty(hsq_fit, :dispatch) ? String(hsq_fit.dispatch) : nothing,",
+      "\"estimator\" => hasproperty(hsq_fit, :estimator) ? String(hsq_fit.estimator) : nothing,",
+      "\"trace_mcse\" => hasproperty(hsq_fit, :trace_mcse) ? collect(Float64, hsq_fit.trace_mcse) : nothing,",
+      "\"loglik_mcse\" => hasproperty(hsq_fit, :loglik_mcse) ? Float64(hsq_fit.loglik_mcse) : nothing,",
       "\"converged\" => hsq_fit.converged) end"
     ))
   }
@@ -1717,33 +1747,130 @@ hs_normalize_repeatability_result <- function(
     # Provenance names the estimator that ACTUALLY ran. The sparse route is not
     # `fit_repeatability_reml`, so it must not claim that estimator's label --
     # a reader checking `variance_components_source` is checking which code
-    # produced the numbers, not which model was requested.
-    diagnostics = list(
-      variance_components = if (identical(scale_method, "dense")) {
-        "estimated_repeatability_reml"
-      } else {
-        "estimated_repeatability_sparse_multi_effect_aireml"
-      },
-      scale_method = scale_method,
-      # HSquared.jl #365: dense omit-2π vs sparse full-constant. Present when
-      # the linked engine exposes the fields; otherwise "unknown"/NA/FALSE.
-      loglik_convention = if (!is.null(raw$loglik_convention)) {
-        as.character(raw$loglik_convention)
-      } else {
-        "unknown"
-      },
-      loglik_full_constant_offset = if (
-        !is.null(raw$loglik_full_constant_offset)
-      ) {
-        as.numeric(raw$loglik_full_constant_offset)
-      } else {
-        NA_real_
-      },
-      loglik_comparable_across_routes = isTRUE(
-        raw$loglik_comparable_across_routes
-      )
-    )
+    # produced the numbers, not which model was requested. `scale_method =
+    # "auto"` is not itself an estimator: the engine may have run exact
+    # AI-REML or matrix-free Monte-Carlo EM-REML (hsquared#311).
+    diagnostics = hs_repeatability_auto_diagnostics(raw, scale_method)
   )
+}
+
+hs_repeatability_engine_symbol <- function(x) {
+  if (is.null(x) || length(x) < 1L) {
+    return(NULL)
+  }
+  x <- x[[1L]]
+  if (length(x) != 1L || is.na(x)) {
+    return(NULL)
+  }
+  x <- sub("^:", "", as.character(x))
+  if (!nzchar(x)) {
+    return(NULL)
+  }
+  x
+}
+
+hs_repeatability_auto_source <- function(dispatch, estimator) {
+  if (
+    identical(estimator, "matrix_free_mc_em_reml") ||
+      identical(dispatch, "matrix_free")
+  ) {
+    return("estimated_repeatability_matrix_free_mc_em_reml")
+  }
+  if (!is.null(estimator)) {
+    return(paste0("estimated_repeatability_", estimator))
+  }
+  "estimated_repeatability_sparse_multi_effect_aireml"
+}
+
+hs_repeatability_auto_diagnostics <- function(raw, scale_method) {
+  dispatch <- hs_repeatability_engine_symbol(raw$dispatch)
+  estimator <- hs_repeatability_engine_symbol(raw$estimator)
+  trace_mcse <- if (is.null(raw$trace_mcse)) {
+    NULL
+  } else {
+    as.numeric(raw$trace_mcse)
+  }
+  if (
+    !is.null(trace_mcse) && (length(trace_mcse) < 1L || all(is.na(trace_mcse)))
+  ) {
+    trace_mcse <- NULL
+  }
+  loglik_mcse <- if (is.null(raw$loglik_mcse)) {
+    NULL
+  } else {
+    as.numeric(raw$loglik_mcse)[[1L]]
+  }
+  if (!is.null(loglik_mcse) && is.na(loglik_mcse)) {
+    loglik_mcse <- NULL
+  }
+  matrix_free <- identical(dispatch, "matrix_free") ||
+    identical(estimator, "matrix_free_mc_em_reml")
+  if (!identical(scale_method, "dense") && is.null(dispatch)) {
+    warning(
+      "The engine did not return `dispatch` for this `scale_method = \"auto\"` ",
+      "repeatability fit, so the provenance label cannot confirm whether exact ",
+      "AI-REML or matrix-free Monte-Carlo EM-REML ran.",
+      call. = FALSE
+    )
+  }
+  if (matrix_free && is.null(trace_mcse)) {
+    warning(
+      "The engine ran matrix-free Monte-Carlo EM-REML but did not return ",
+      "`trace_mcse`; the Monte-Carlo error of the score traces is missing.",
+      call. = FALSE
+    )
+  }
+  if (matrix_free) {
+    warning(
+      "This repeatability fit used matrix-free Monte-Carlo EM-REML because the ",
+      "problem exceeded the exact-path budget. Variance components carry ",
+      "Monte-Carlo error; inspect diagnostics$trace_mcse. logLik() is refused.",
+      call. = FALSE
+    )
+  }
+  loglik_stochastic <- matrix_free ||
+    (!identical(scale_method, "dense") &&
+      is.null(dispatch) &&
+      is.nan(as.numeric(raw$loglik)[[1L]]))
+  diagnostics <- list(
+    variance_components = if (identical(scale_method, "dense")) {
+      "estimated_repeatability_reml"
+    } else {
+      hs_repeatability_auto_source(dispatch, estimator)
+    },
+    scale_method = scale_method,
+    # HSquared.jl #365: dense omit-2π vs sparse full-constant. Present when
+    # the linked engine exposes the fields; otherwise "unknown"/NA/FALSE.
+    loglik_convention = if (!is.null(raw$loglik_convention)) {
+      as.character(raw$loglik_convention)
+    } else {
+      "unknown"
+    },
+    loglik_full_constant_offset = if (
+      !is.null(raw$loglik_full_constant_offset)
+    ) {
+      as.numeric(raw$loglik_full_constant_offset)
+    } else {
+      NA_real_
+    },
+    loglik_comparable_across_routes = isTRUE(
+      raw$loglik_comparable_across_routes
+    ),
+    loglik_stochastic = loglik_stochastic
+  )
+  if (!is.null(dispatch)) {
+    diagnostics$dispatch <- dispatch
+  }
+  if (!is.null(estimator)) {
+    diagnostics$estimator <- estimator
+  }
+  if (!is.null(trace_mcse)) {
+    diagnostics$trace_mcse <- trace_mcse
+  }
+  if (!is.null(loglik_mcse)) {
+    diagnostics$loglik_mcse <- loglik_mcse
+  }
+  diagnostics
 }
 
 hs_validate_repeatability_initial <- function(initial) {
@@ -2058,15 +2185,34 @@ hs_fit_julia_direct_maternal_payload <- function(
     ""
   }
   hs_julia_fit(
-    JuliaCall::julia_command(sprintf(
-      "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm%s);",
-      dm_kwargs_str
+    JuliaCall::julia_command(paste(
+      hs_julia_bridge_errors_reset,
+      sprintf(
+        "hsq_fit_dm = HSquared.fit_payload_v2(hsq_payload_dm%s);",
+        dm_kwargs_str
+      )
     )),
     hint = hs_dense_scale_hint
   )
   JuliaCall::julia_command(
     "hsq_res_dm = HSquared.result_payload_v2(hsq_fit_dm, hsq_parsed_dm);"
   )
+
+  # Forward the engine's existing direct-maternal uncertainty calculation.
+  # `direct_maternal_interval()` refits the same model and returns the observed-
+  # information SEs and Wald interval; this bridge does not derive an estimator.
+  dm_interval_kwargs <- c(dm_fit_kwargs, "ids = hsq_blkids")
+  JuliaCall::julia_command(paste(
+    "hsq_dm_ci = if isdefined(HSquared, :direct_maternal_interval);",
+    "try; HSquared.direct_maternal_interval(",
+    "hsq_y, hsq_X, hsq_Zd, hsq_Zm,",
+    "hsq_parsed_dm.blocks[1].relmat_inverse;",
+    paste(dm_interval_kwargs, collapse = ", "),
+    ");",
+    hs_julia_catch_record("direct_maternal_interval"),
+    "else; nothing; end;",
+    "hsq_has_dm_ci = hsq_dm_ci !== nothing;"
+  ))
 
   # Pull the correlated block variance fields and genetic correlation.
   raw <- JuliaCall::julia_eval(paste(
@@ -2112,8 +2258,37 @@ hs_fit_julia_direct_maternal_payload <- function(
     beta,
     payload
   )
+  if (isTRUE(JuliaCall::julia_eval("hsq_has_dm_ci"))) {
+    raw_ci <- JuliaCall::julia_eval(paste(
+      "Dict(",
+      "\"level\" => Float64(hsq_dm_ci.level),",
+      "\"interval_method\" => String(hsq_dm_ci.interval_method),",
+      "\"sigma_ad_se\" => Float64(hsq_dm_ci.variance_components.sigma_ad.se),",
+      "\"sigma_am_se\" => Float64(hsq_dm_ci.variance_components.sigma_am.se),",
+      "\"sigma_dm_se\" => Float64(hsq_dm_ci.variance_components.sigma_dm.se),",
+      "\"sigma_e2_se\" => Float64(hsq_dm_ci.variance_components.sigma_e2.se),",
+      "\"h2_estimate\" => Float64(hsq_dm_ci.direct_heritability.estimate),",
+      "\"h2_se\" => Float64(hsq_dm_ci.direct_heritability.se),",
+      "\"h2_lower\" => Float64(hsq_dm_ci.direct_heritability.lower),",
+      "\"h2_upper\" => Float64(hsq_dm_ci.direct_heritability.upper),",
+      "\"m2_estimate\" => Float64(hsq_dm_ci.maternal_ratio.estimate),",
+      "\"m2_se\" => Float64(hsq_dm_ci.maternal_ratio.se),",
+      "\"m2_lower\" => Float64(hsq_dm_ci.maternal_ratio.lower),",
+      "\"m2_upper\" => Float64(hsq_dm_ci.maternal_ratio.upper),",
+      "\"h2t_estimate\" => Float64(hsq_dm_ci.total_heritability.estimate),",
+      "\"h2t_se\" => Float64(hsq_dm_ci.total_heritability.se),",
+      "\"h2t_lower\" => Float64(hsq_dm_ci.total_heritability.lower),",
+      "\"h2t_upper\" => Float64(hsq_dm_ci.total_heritability.upper),",
+      "\"ram_estimate\" => Float64(hsq_dm_ci.genetic_correlation.estimate),",
+      "\"ram_se\" => Float64(hsq_dm_ci.genetic_correlation.se),",
+      "\"ram_lower\" => Float64(hsq_dm_ci.genetic_correlation.lower),",
+      "\"ram_upper\" => Float64(hsq_dm_ci.genetic_correlation.upper),",
+      "\"ram_method\" => String(hsq_dm_ci.genetic_correlation.method))"
+    ))
+    result <- hs_attach_direct_maternal_interval(result, raw_ci)
+  }
 
-  hs_new_fit(
+  fit <- hs_new_fit(
     spec = list(
       method = "REML",
       family = list(family = payload$family, link = "identity"),
@@ -2123,6 +2298,7 @@ hs_fit_julia_direct_maternal_payload <- function(
     result = result,
     engine = "HSquared.jl"
   )
+  hs_julia_surface_bridge_errors(fit)
 }
 
 hs_validate_v2_result_metadata <- function(raw, payload, expected_df, target) {
@@ -2388,6 +2564,57 @@ hs_normalize_direct_maternal_result <- function(
       metadata$diagnostics
     )
   )
+}
+
+hs_attach_direct_maternal_interval <- function(result, raw_ci) {
+  result$variance_component_se <- data.frame(
+    component = c("direct", "maternal", "covariance", "residual"),
+    se = as.numeric(c(
+      raw_ci$sigma_ad_se,
+      raw_ci$sigma_am_se,
+      raw_ci$sigma_dm_se,
+      raw_ci$sigma_e2_se
+    )),
+    stringsAsFactors = FALSE
+  )
+  result$heritability_se <- as.numeric(raw_ci$h2_se)
+  result$heritability_interval <- data.frame(
+    estimate = as.numeric(raw_ci$h2_estimate),
+    lower = as.numeric(raw_ci$h2_lower),
+    upper = as.numeric(raw_ci$h2_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$h2_se),
+    method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result$maternal_ratio_interval <- data.frame(
+    estimate = as.numeric(raw_ci$m2_estimate),
+    lower = as.numeric(raw_ci$m2_lower),
+    upper = as.numeric(raw_ci$m2_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$m2_se),
+    method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result$total_heritability_interval <- data.frame(
+    estimate = as.numeric(raw_ci$h2t_estimate),
+    lower = as.numeric(raw_ci$h2t_lower),
+    upper = as.numeric(raw_ci$h2t_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$h2t_se),
+    method = as.character(raw_ci$interval_method),
+    stringsAsFactors = FALSE
+  )
+  result$genetic_correlation_interval <- data.frame(
+    estimate = as.numeric(raw_ci$ram_estimate),
+    lower = as.numeric(raw_ci$ram_lower),
+    upper = as.numeric(raw_ci$ram_upper),
+    level = as.numeric(raw_ci$level),
+    se = as.numeric(raw_ci$ram_se),
+    method = as.character(raw_ci$ram_method),
+    stringsAsFactors = FALSE
+  )
+  result
 }
 
 # Fit an arbitrary-N independent-random-effect model (animal + >= 2 i.i.d.
@@ -2979,7 +3206,8 @@ hs_fit_julia_multivariate_payload <- function(
   initial = NULL,
   iterations = 2000L,
   genetic_structure = "unstructured",
-  rank = NULL
+  rank = NULL,
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -3007,6 +3235,7 @@ hs_fit_julia_multivariate_payload <- function(
     )
   }
   iterations <- hs_validate_iterations(iterations)
+  max_dense_cells <- hs_validate_max_dense_cells(max_dense_cells)
   traits <- payload$metadata$trait_names %||% colnames(payload$Y)
   if (is.null(traits)) {
     traits <- paste0("trait", seq_len(ntraits))
@@ -3040,6 +3269,7 @@ hs_fit_julia_multivariate_payload <- function(
     JuliaCall::julia_assign("hsq_initial_R0", initial$R0)
   }
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_assign("hsq_max_dense_cells", max_dense_cells)
   JuliaCall::julia_assign(
     "hsq_genetic_structure",
     as.character(genetic_structure)
@@ -3066,7 +3296,8 @@ hs_fit_julia_multivariate_payload <- function(
       "hsq_fit = HSquared.fit_multivariate_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
       paste0("initial = ", initial_expr, ","),
-      "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits,",
+      "iterations = hsq_iterations, max_dense_cells = hsq_max_dense_cells,",
+      "ids = hsq_ped.ids, traits = hsq_traits,",
       paste0(
         "genetic_structure = Symbol(hsq_genetic_structure)",
         rank_expr,
@@ -3162,7 +3393,8 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = NULL,
-  iterations = 2000L
+  iterations = 2000L,
+  max_dense_cells = 1e6
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -3201,6 +3433,7 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
   user_initial <- !is.null(initial)
   initial <- hs_validate_multivariate_repeatability_initial(initial, ntraits)
   iterations <- hs_validate_iterations(iterations)
+  max_dense_cells <- hs_validate_max_dense_cells(max_dense_cells)
   traits <- payload$metadata$trait_names %||% colnames(payload$Y)
   if (is.null(traits)) {
     traits <- paste0("trait", seq_len(ntraits))
@@ -3233,6 +3466,7 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
   JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
   JuliaCall::julia_assign("hsq_traits", as.character(traits))
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  JuliaCall::julia_assign("hsq_max_dense_cells", max_dense_cells)
   initial_kw <- ""
   if (isTRUE(user_initial)) {
     JuliaCall::julia_assign("hsq_initial_G0", initial$G0)
@@ -3251,7 +3485,8 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
       "hsq_fit = HSquared.fit_multivariate_repeatability_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
       initial_kw,
-      "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits);",
+      "iterations = hsq_iterations, max_dense_cells = hsq_max_dense_cells,",
+      "ids = hsq_ped.ids, traits = hsq_traits);",
       "hsq_mvpe_raw = Dict(",
       "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
       "\"permanent_covariance\" => Matrix{Float64}(hsq_fit.permanent_covariance),",
@@ -4538,6 +4773,12 @@ hs_fit_julia_genomic_payload <- function(
     }
   }
   rel <- payload$relationship
+  # Engine-owned AI-REML SEs/intervals: relmat (#295) and genomic (#294).
+  inference_cmd <- if (identical(rel, "relmat") || identical(rel, "genomic")) {
+    hs_julia_merge_inference_slots()
+  } else {
+    ""
+  }
   boundary_eligible <- identical(rel, "genomic") &&
     nrow(payload$Z) == ncol(payload$Z) &&
     nrow(payload$Z) <= 2000L &&
@@ -4576,7 +4817,8 @@ hs_fit_julia_genomic_payload <- function(
       "hsq_y, hsq_X, hsq_Z, hsq_Ginvs;",
       "ids = hsq_ids, method = :REML);",
       fit_cmd,
-      "hsq_result = HSquared.result_payload(hsq_fit);"
+      "hsq_result = HSquared.result_payload(hsq_fit);",
+      inference_cmd
     )),
     hint = hs_dense_scale_hint
   )
@@ -4611,6 +4853,11 @@ hs_fit_julia_genomic_payload <- function(
   names(result$random_effects)[
     names(result$random_effects) == "animal"
   ] <- rel
+  if (!is.null(result$variance_component_se)) {
+    result$variance_component_se$component[
+      result$variance_component_se$component == "animal"
+    ] <- rel
+  }
   result$diagnostics$variance_components <- paste0(
     "estimated_",
     rel,
@@ -4635,11 +4882,6 @@ hs_fit_julia_genomic_payload <- function(
         result$heritability$estimate <- boundary$profile_ratio
       }
     }
-    # Genomic ratio uncertainty is not yet scale-labelled or separately
-    # calibrated. Keep the engine's raw capability out of the public R result
-    # until that contract is validated.
-    result$heritability_interval <- NULL
-    result$heritability_se <- NULL
     if (
       !is.null(result$genomic_boundary) &&
         result$genomic_boundary$status %in%
@@ -4652,11 +4894,6 @@ hs_fit_julia_genomic_payload <- function(
       result$prediction_error_variance <- NULL
       result$reliability <- NULL
       result$variance_component_se <- NULL
-    }
-    if (!is.null(result$variance_component_se)) {
-      result$variance_component_se$component[
-        result$variance_component_se$component == "animal"
-      ] <- "genomic"
     }
   }
   fit <- hs_new_fit(
@@ -5692,8 +5929,14 @@ hs_engine_control_honoured_keys <- list(
     "rank",
     "experimental_gllvm"
   ),
-  multivariate = c("initial", "iterations", "genetic_structure", "rank"),
-  multivariate_repeatability = c("initial", "iterations"),
+  multivariate = c(
+    "initial",
+    "iterations",
+    "genetic_structure",
+    "rank",
+    "max_dense_cells"
+  ),
+  multivariate_repeatability = c("initial", "iterations", "max_dense_cells"),
   random_regression = "iterations",
   # initial (hsquared#225): a list with `sigma_a2`, the centre of the
   # engine's log-scale search bracket, `log(sigma_a2) +/- 6` (default centre

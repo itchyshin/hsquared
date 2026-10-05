@@ -461,8 +461,11 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
-      engine_control = list(target = "multi_effect", scale_method = "auto",
-                            iterations = 400L)
+      engine_control = list(
+        target = "multi_effect",
+        scale_method = "auto",
+        iterations = 400L
+      )
     )
   )
 
@@ -477,10 +480,14 @@ test_that("multi_effect engine_control scale_method = 'auto' agrees with the den
   expect_identical(fit_auto$result$nobs, 8L)
   expect_identical(fit_dense$result$diagnostics$method, "REML")
   expect_identical(fit_auto$result$diagnostics$method, "REML")
-  expect_identical(fit_dense$result$diagnostics$loglik_convention,
-                   "reml_omit_2pi")
-  expect_identical(fit_auto$result$diagnostics$loglik_convention,
-                   "reml_full_constant")
+  expect_identical(
+    fit_dense$result$diagnostics$loglik_convention,
+    "reml_omit_2pi"
+  )
+  expect_identical(
+    fit_auto$result$diagnostics$loglik_convention,
+    "reml_full_constant"
+  )
   expect_error(stats::AIC(fit_dense), "not comparable")
   expect_true(is.finite(stats::AIC(fit_auto)))
   expect_equal(vc_a$component, vc_d$component)
@@ -824,4 +831,73 @@ test_that("animal parser requires a pedigree source", {
     "unless `data` is an `hs_data()` object with a pedigree component",
     fixed = TRUE
   )
+})
+
+test_that("pedigree unknown-parent codes accept NA, 0, and empty string", {
+  dat <- data.frame(y = c(1, 2, 3), id = c("a", "c", "d"))
+  make_spec <- function(ped) {
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    )
+  }
+
+  ped_na <- data.frame(
+    id = c("a", "b", "c", "d"),
+    sire = c(NA, NA, "a", "a"),
+    dam = c(NA, NA, "b", "c")
+  )
+  ped_zero <- ped_na
+  ped_zero[is.na(ped_zero)] <- 0
+  ped_blank <- ped_na
+  ped_blank[is.na(ped_blank)] <- ""
+
+  expect_equal(
+    make_spec(ped_zero)$random$animal$pedigree$data$sire,
+    make_spec(ped_na)$random$animal$pedigree$data$sire
+  )
+  expect_equal(
+    make_spec(ped_blank)$random$animal$pedigree$data$sire,
+    make_spec(ped_na)$random$animal$pedigree$data$sire
+  )
+})
+
+test_that("phantom parents and non-NA unknown codes stay rejected with a fix hint", {
+  dat <- data.frame(y = c(4.5, 2.9), id = c("4", "5"))
+  phantom <- data.frame(
+    id = c("4", "5"),
+    sire = c("1", "3"),
+    dam = c(NA, "2")
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = phantom),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "founder rows",
+    fixed = TRUE
+  )
+
+  coded <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "-9"),
+    dam = c(NA, NA, NA)
+  )
+  dat2 <- data.frame(y = c(1, 2), id = c("a", "c"))
+  err <- tryCatch(
+    hsquared:::hs_build_model_spec(
+      y ~ animal(1 | id, pedigree = coded),
+      data = dat2,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(err, "not present as individual IDs", fixed = TRUE)
+  expect_match(err, "-9", fixed = TRUE)
+  expect_match(err, "NA, 0", fixed = TRUE)
 })

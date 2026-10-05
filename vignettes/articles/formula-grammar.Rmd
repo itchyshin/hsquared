@@ -47,6 +47,14 @@ univariate Gaussian animal model by REML through `HSquared.jl`. Terms below
 that say **parsed** are recognized; only some of those also **fit**, and then
 only on a named `target =`. Reserved names error as planned, not implemented.
 
+Unknown parents in `pedigree =` may be `NA`, `0`, `"0"`, or `""`. Other
+codes (`"."`, `"-9"`, `"UNK"`) are not unknown-parent markers: they are
+treated as real IDs and error if they are not also rows. A parent that is
+not also an `id` row is a phantom parent and is rejected. Add founder
+rows (`data.frame(id = setdiff(c(ped$sire, ped$dam), ped$id), sire = NA,
+dam = NA)`) or recode those slots as `NA`. The R `pedigree =` path does
+not expose the Julia engine's `missing_values` argument.
+
 ## Standard quantitative-genetic extensions
 
 These names are reserved so future models read like the biological question:
@@ -89,8 +97,14 @@ y ~ relmat(1 | id, K = K_custom)
 y ~ precision(1 | id, Q = Q_custom)
 ```
 
-Current status: syntax reservation only. The engine does not consume these
-relationship or precision matrices yet.
+Current status: `relmat()` and `precision()` fit through the opt-in
+experimental `engine = "julia"` path (`target = "relmat"` / `"precision"`).
+They are not covered and not the default. `K` and `Q` must be square,
+symmetric, and positive definite, with unique row and column names equal to
+the ids (any row order; names are matched). `dominance()`, `epistasis()`,
+`cytoplasmic()`, and `imprinting()` remain syntax reservations. See
+[Inheritance systems](inheritance-systems.html) for a worked custom-`K`
+example, including singular monozygotic-twin kernels.
 
 ## Genomic and marker terms
 

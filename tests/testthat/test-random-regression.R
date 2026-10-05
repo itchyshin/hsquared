@@ -119,6 +119,39 @@ test_that("rr() rejects unsupported syntax with named pointers", {
     "must be a single positive integer",
     fixed = TRUE
   )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      weight ~ animal(rr(age, order = 2.9) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      weight ~ animal(rr(age, order = TRUE) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must be a single positive integer",
+    fixed = TRUE
+  )
+
+  # The parser requires a literal because it does not evaluate formula names.
+  rr_order <- 2L
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      weight ~ animal(rr(age, order = rr_order) | id, pedigree = ped),
+      data = fx$data,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must be supplied as a literal positive integer",
+    fixed = TRUE
+  )
 
   # A genuinely non-intercept, non-rr() left-hand side stays rejected.
   expect_error(
@@ -390,6 +423,25 @@ test_that("random-regression result normalizer exposes K_g, coefficients, trajec
     p_corr$data$covariate_i == p_corr$data$covariate_j
   ]
   expect_true(all(abs(diag_corr - 1) < 1e-8))
+
+  # A covariance payload must not override an explicit correlation request.
+  fit_cov_payload <- fit
+  fit_cov_payload$result$rr_covariance_surface_plot_data <- list(
+    covariate = c(1, 5),
+    surface = matrix(c(4, 1, 1, 9), nrow = 2L),
+    is_correlation = FALSE
+  )
+  p_payload_corr <- autoplot(
+    fit_cov_payload,
+    "rr_surface",
+    correlation = TRUE
+  )
+  diag_payload_corr <- p_payload_corr$data$value[
+    p_payload_corr$data$covariate_i ==
+      p_payload_corr$data$covariate_j
+  ]
+  expect_true(all(abs(diag_payload_corr - 1) < 1e-8))
+  expect_match(p_payload_corr$labels$title, "correlation")
 
   # Generic fit S3 surfaces work on a random-regression fit.
   expect_equal(stats::nobs(fit), 12L)

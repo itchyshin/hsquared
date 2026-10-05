@@ -786,3 +786,50 @@ test_that("hsquared can validate the v0.1 formula from an hs_data bundle", {
   )
   expect_match(spec$bridge$target, "fit_animal_model", fixed = TRUE)
 })
+
+test_that("integer and double IDs match when as.character would print 3e+05", {
+  ids <- c(100000L, 200000L, 300000L, 400000L, 500000L, 600000L)
+  ped <- data.frame(
+    id = ids,
+    sire = c(NA, NA, 100000L, 100000L, 300000L, 300000L),
+    dam = c(NA, NA, 200000L, 200000L, 400000L, 400000L)
+  )
+  ph <- data.frame(
+    id = as.numeric(ids[3:6]),
+    y = c(1, 2, 3, 4),
+    x = c(0.1, 0.5, 0.2, 0.9)
+  )
+
+  expect_no_error(hs_data(ph, pedigree = ped))
+  expect_no_error(model_spec(
+    y ~ x + animal(1 | id, pedigree = ped),
+    data = ph
+  ))
+
+  ped_double <- data.frame(
+    id = as.numeric(ids),
+    sire = as.numeric(c(NA, NA, 100000L, 100000L, 300000L, 300000L)),
+    dam = as.numeric(c(NA, NA, 200000L, 200000L, 400000L, 400000L))
+  )
+  ph_integer <- data.frame(
+    id = ids[3:6],
+    y = c(1, 2, 3, 4),
+    x = c(0.1, 0.5, 0.2, 0.9)
+  )
+
+  expect_no_error(hs_data(ph_integer, pedigree = ped_double))
+  expect_no_error(model_spec(
+    y ~ x + animal(1 | id, pedigree = ped_double),
+    data = ph_integer
+  ))
+})
+
+test_that("numeric IDs are formatted independently", {
+  integer_id <- hs_as_id_character(300000L)
+  double_ids <- hs_as_id_character(c(300000, 1.5))
+
+  expect_identical(c(integer_id, double_ids), c("300000", "300000", "1.5"))
+  expect_identical(integer_id, double_ids[[1L]])
+  expect_false(identical(double_ids[[1L]], "300000.0"))
+  expect_identical(hs_as_id_character(c("300000", "1.5")), c("300000", "1.5"))
+})

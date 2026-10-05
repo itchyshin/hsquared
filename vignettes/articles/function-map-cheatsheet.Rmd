@@ -113,7 +113,7 @@ boundary result. Do not report it as an unconstrained estimate.
 | Heritability | `heritability(fit)` |
 | Variance components | `variance_components(fit)` |
 | Breeding values (EBVs/BLUPs) | `breeding_values(fit)` |
-| Accuracy of those EBVs | `prediction_error_variance(fit)`, `reliability(fit)` |
+| Accuracy of those EBVs | `prediction_error_variance(fit)`, `reliability(fit)`, `accuracy(fit)` |
 | Fixed effects | `fixef(fit)`, `coef(fit)` |
 | Random effects | `ranef(fit)` |
 | Fitted values and residuals | `fitted(fit)`, `residuals(fit)` |
@@ -122,7 +122,9 @@ boundary result. Do not report it as an unconstrained estimate.
 
 Route-specific extractors exist for the opt-in targets: `repeatability()`,
 `common_env_effects()`, `maternal_effects()`, `genetic_covariance()`,
-`marker_effects()`, `g_matrix_geometry()`. They inherit their route's status.
+`marker_effects()`, `evolvability()`, and `g_max()`. `?g_matrix_geometry` is
+the help topic for that family; there is no `g_matrix_geometry()` function.
+They inherit their route's status.
 
 Check `fit_diagnostics()` before comparing likelihoods. Structured multi-effect
 and direct-maternal dense REML routes omit a likelihood constant; `AIC()`
@@ -130,6 +132,27 @@ refuses those results. A matrix-free stochastic likelihood is available in
 diagnostics but not through `logLik()` or `AIC()`. Compare fits only when data,
 method, response family, and likelihood convention match. For REML, the
 fixed-effect design must match as well.
+
+## R function and Julia function
+
+R users start here. Some animal-model tools exist only in `HSquared.jl`.
+The Julia pages map articles, not function names; use this table for the
+function-level match.
+
+| Task | R (`hsquared`) | Julia (`HSquared.jl`) |
+|---|---|---|
+| Fit | `hsquared()` | `fit_animal_model()`, `fit_ai_reml()` |
+| Summary of a fit | `summary()`, `print()` | Julia only as `fit_diagnostics()`, `variance_components()` |
+| h2, variance components | `heritability()`, `variance_components()` | same names |
+| h2 SE / interval | `heritability_standard_error()`, `heritability_interval()` (delta only) | same names; also `heritability_interval(method = :profile)` |
+| Other intervals | none | Julia only: `variance_component_interval()`, `bootstrap_variance_component_interval()`, `genetic_correlation_interval()` |
+| Nested LRT / test `V_A = 0` | none (`anova()` stops; do not hand-build a `chi^2_1` LRT from `logLik()`) | Julia only: `nested_lrt()` with `df = 1, boundary_df = 1` (50:50 `chi^2_0` + `chi^2_1` mixture) |
+| PEV, reliability, accuracy | `prediction_error_variance()`, `reliability()`, `accuracy()` | same names |
+| A, A-inverse, inbreeding | none | Julia only: `additive_relationship()`, `pedigree_inverse()`, `inbreeding_coefficients()` |
+| Repeatability | `repeatability()`, `repeatability_interval()` | `fit_repeatability_reml()`, `repeatability_interval()`; no `repeatability()` |
+| Genomic relationship matrix | none (R takes `Ginv` or `markers`) | Julia only: `genomic_relationship_matrix()`, `genomic_relationship_inverse()` |
+| Marker scan | `gwas()`; `marker_scan()` is reserved | `single_marker_scan()`, `mixed_model_marker_scan()`, `genome_wide_marker_scan()` |
+| G-matrix geometry | `evolvability()`, `g_max()`, and siblings; help topic `?g_matrix_geometry` | same extractor names |
 
 ## Uncertainty: read this before using it
 

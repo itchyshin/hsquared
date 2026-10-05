@@ -1,5 +1,25 @@
 # hsquared (development version)
 
+* **hsquared#268 (docs): `inbreeding()` is a formula term, not F.** There is
+  still no R accessor for `A`, `A^{-1}`, or inbreeding coefficients. `?inbreeding`
+  and the fitting-models article now say to call
+  `HSquared.additive_relationship()`, `HSquared.pedigree_inverse()`, and
+  `HSquared.inbreeding_coefficients()` through `JuliaCall`. No new extractor.
+  No covered flip.
+
+* **hsquared#300 (docs): `?rr` now exists.** `order` is the number of
+  Legendre coefficients (`order = 2` is intercept + slope), and the
+  covariate is mapped to `[-1, 1]` over the fitted data range. No
+  estimator change; no standard errors; no covered flip.
+
+* **hsquared#292: BGLR-style `0`/`1` inbred marker coding now warns.**
+  `genomic(markers = M)` still accepts a matrix inside `[0, 2]` and does
+  not recode it, but if every entry is in `{0, 1}` (no `2`) it raises a
+  named `hsquared_zero_one_markers` warning: allele-count `0`/`1`/`2` is
+  required, so a homozygous `0`/`1` panel such as `BGLR::wheat` must be
+  doubled to `0`/`2`. No new heritability estimator. No covered flip;
+  `public_covered_count` stays **7**; version stays **0.9.0**.
+
 * **hsquared#237: `cbind()` + `permanent(1 | id)` parses on the default
   multivariate route.** Repeated-measures multi-trait formulas no longer hit
   the T1 named reject. The call auto-routes to experimental

@@ -21,6 +21,19 @@ Heritability results for \code{hsquared_fit} objects.
 \code{heritability()} is part of the planned v0.1 fitted-object contract. It
 works for \code{hsquared_fit} objects that contain a Julia result.
 
+What is h2 here? The denominator \code{Vp} is the sum of the random-effect
+variances plus residual. Fixed-effect variance (sex, age, year, block) is
+not in \code{Vp}, so the reported h2 is conditional on the fixed effects.
+\itemize{
+\item Default animal model: \code{h2 = Va / Vp} with \code{Vp = Va + Ve}.
+\item Repeatability (\code{target = "repeatability"}): \code{h2 = Va / Vp} with
+\code{Vp = Va + Vpe + Ve}. Permanent environment is in the denominator.
+\code{\link[=repeatability]{repeatability()}} on the same fit is \code{(Va + Vpe) / Vp}.
+\item Multi-effect (\code{target = "multi_effect"}): \code{h2} for the animal block is
+\code{Va / Vp}, where \code{Vp} is \code{Va} plus every other random-effect variance
+plus residual.
+}
+
 Falconer fence for the opt-in two-effect model (\code{target = "two_effect"}):
 the reported number is the \strong{narrow-sense direct heritability}
 \code{h2 = sigma_a2 / (sigma_a2 + sigma_2 + sigma_e2)} \emph{within that model} (the
@@ -47,9 +60,43 @@ fit and names the implemented accessor. Use \code{\link[=rr_heritability]{rr_her
 The bounded genetic GLLVM route does not define heritability; this
 extractor errors because its G and trait genetic modes are on the link scale.
 
+Non-Gaussian responses (\code{target = "nongaussian"}, \code{poisson(log)} or
+\code{binomial(logit)}): \code{heritability()} returns a table of up to three scales,
+not a single number. Those rows follow de Villemereuil, Schielzeth,
+Nakagawa and Morrissey (2016, \emph{Genetics} 204:1281-1294). \code{h2_latent} is
+Eq 4, \code{V_A / (V_A + V_RE + V_O)}, and is defined for every family,
+including Poisson. The log-link liability variance \code{V_link} is 0; that
+is not the latent residual \code{V_O}, and \code{V_link} does not appear in Eq 4.
+For logit, report \code{h2_liability} = Eq 24,
+\code{V_A / (V_A + V_RE + V_O + pi^2/3)} (link variance \code{pi^2/3}). That
+liability scale is not the latent scale. \code{h2_latent} equals 1 when
+\code{V_RE} and \code{V_O} are zero (the usual intercept-only \code{animal()} model).
+Poisson reports \code{h2_latent} and a count-scale \code{h2_observation} only;
+there is no liability scale, and \code{h2_latent} is not the
+Nakagawa-Schielzeth \code{ln(1 + 1/lambda)} convention. \code{binomial(link = "probit")} is not available in R. See the Fitting models article for
+which row to report.
+
 A non-converged fit still returns the engine number so you can inspect it,
 but \strong{warns}: that number is not an estimate. A near-zero value from a
 failed fit is not evidence that heritability is zero. Use
 \code{\link[=fit_diagnostics]{fit_diagnostics()}} before reading any number. \code{logLik()} already refuses
 a non-converged fit; \code{heritability()} keeps the value and shouts instead.
+The same warn-and-return applies to \code{\link[=heritability_interval]{heritability_interval()}},
+\code{\link[=heritability_standard_error]{heritability_standard_error()}}, and
+\code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}}. \code{print()} says the heritability
+is not reportable when the fit did not converge. \code{summary()} omits the
+printed SE/CI block when the fit did not converge or is at a
+variance-component boundary; it does not print those numbers as results.
+
+Testing \code{V_A = 0} and boundary fits: additive variance sits on the edge of
+the parameter space (\code{V_A >= 0}). The Wald SE and the logit-delta CI are
+not valid when \code{V_A} is near 0; the usual normal approximation is an
+interior-point result. The likelihood-ratio test of \code{V_A = 0} uses a
+50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1} (Self and Liang 1987; Stram and
+Lee 1994), so a plain \verb{chi^2_1} p-value is twice too large. R does not
+run that test: \code{\link[stats:anova]{stats::anova()}} stops, and \code{logLik()} / \code{AIC()} are
+exposed so a reader can build a naive \verb{chi^2_1} LRT by hand -- do not.
+The Julia engine already implements the mixture as
+\verb{HSquared.nested_lrt(loglik_constrained, loglik_full; df = 1, boundary_df = 1)}.
+That names an existing helper; it is not a new R test statistic.
 }

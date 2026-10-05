@@ -14,12 +14,20 @@ knitr::opts_chunk$set(eval = FALSE)
 <p class="hs-banner" role="note"><strong>Default path vs opt-in targets.</strong>
 <code>engine = "fit"</code> is the v0.1 univariate Gaussian REML path. Other models below use
 <code>engine = "julia"</code> with an explicit <code>target</code> (experimental / opt-in), except
-multivariate <code>cbind()</code>, which routes on the default call but keeps the experimental
-label. See <a href="current-limits.html">Can I fit and report this?</a>.</p>
+multivariate <code>cbind()</code>, which routes on the default call and is
+<strong>covered</strong> at validation scale for t = 2 unstructured. The
+experimental packaging label stays. See
+<a href="current-limits.html">Can I fit and report this?</a>.</p>
 
 This article shows the models `hsquared` can fit. Fitting is computed in the
 sibling `HSquared.jl` engine, so every example needs a local Julia, the
-`JuliaCall` package, and an `HSquared.jl` checkout. Register the checkout with
+`JuliaCall` package, and an `HSquared.jl` checkout
+(`git clone https://github.com/itchyshin/HSquared.jl`). After cloning, run
+`julia --project=/path/to/HSquared.jl -e 'using Pkg; Pkg.instantiate()'` once.
+`HSquared.jl` does not ship a `Manifest.toml`, so skipping that step fails on
+the first fit with a missing `Optim` package. The first call still precompiles
+(about 30 seconds after instantiate; about two minutes on a cold depot).
+Register the checkout with
 `Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")` or per call via
 `control = hs_control(engine_control = list(julia_project = "/path/to/HSquared.jl"))`;
 see the README or "Getting started" article for full setup. The code chunks are
@@ -93,16 +101,56 @@ summary(fit)
 Most of the remaining models below are **opt-in**: they are reached through
 `engine = "julia"` with an explicit `target`. The one exception is the
 multivariate `cbind()` model, which routes on the default call. Being reachable
-by default does not make it any less experimental. The Gaussian opt-in routes
-are REML-only; the non-Gaussian route has its own marginal-likelihood methods.
-All remain experimental, and none is a covered public default. Four are
-**covered at validation scale**:
+by default does not drop the experimental packaging label. The Gaussian opt-in
+routes are REML-only; the non-Gaussian route has its own marginal-likelihood
+methods. Report point estimates only within a covered route; see
+[Can I fit and report this?](current-limits.html).
+The default univariate animal model and **t = 2 unstructured** multivariate
+`cbind()` are **covered** on the default call. **Genomic GREML** is covered at
+validation scale behind the explicit `engine = "julia", target = "genomic"`
+route. Four more opt-in models are **covered at validation scale**:
 each passed a pre-declared 48-seed recovery gate plus a same-estimand REML
 comparator: the common-environment two-effect model, arbitrary-N multi-effect,
 random regression k = 2, and the direct–maternal 2×2 G model. Covered at
-validation scale means experimental and not production; none is a default fit.
-The remaining opt-in models (`validation_status()` rows `partial`) have not yet
-passed a comparator- or known-truth-validated gate.
+validation scale still means experimental packaging and not production.
+The remaining opt-in models (`repeatability`, the maternal two-effect leg,
+SNP-BLUP, single-step) stay `partial`.
+
+## Checking A, A-inverse, and inbreeding F
+
+`hsquared()` does not return the relationship matrix `A`, its inverse, or
+inbreeding coefficients. The fit payload stores pedigree IDs; `Ainv` is built
+in Julia (`ainv_status = "build_in_julia"`). `inbreeding()` is a reserved
+formula term for a future effect. It is not `pedigreemm::inbreeding()` and it
+does not return F.
+
+Compare `A` / `A^{-1}` / F against `nadiv` or `pedigreemm` through `JuliaCall`
+after the usual Julia setup (see the README). Unknown parents must be `"0"`,
+not `NA`:
+
+```{r}
+# After hs_julia_setup() or julia_setup() with HSQUARED_JULIA_PROJECT set.
+JuliaCall::julia_assign("id", as.character(ped$id))
+JuliaCall::julia_assign(
+  "sire",
+  ifelse(is.na(ped$sire), "0", as.character(ped$sire))
+)
+JuliaCall::julia_assign(
+  "dam",
+  ifelse(is.na(ped$dam), "0", as.character(ped$dam))
+)
+JuliaCall::julia_command(paste(
+  "A = Matrix(HSquared.additive_relationship(id, sire, dam));",
+  "Ainv = Matrix(HSquared.pedigree_inverse(id, sire, dam));",
+  "F = collect(Float64, HSquared.inbreeding_coefficients(id, sire, dam));"
+))
+A <- JuliaCall::julia_eval("A")
+Ainv <- JuliaCall::julia_eval("Ainv")
+F <- JuliaCall::julia_eval("F")
+```
+
+See [Function map and cheat sheet](function-map-cheatsheet.html) for the
+R-versus-Julia function table. No R accessor is added here.
 
 ## Repeatability (permanent environment)
 
@@ -112,6 +160,10 @@ permanent-environment effect that shares the animal grouping. The additive
 repeated records per individual.
 
 ```{r}
+repeated_dat <- data.frame(
+  id = rep(dat$id, each = 2),
+  y = rep(dat$weight, each = 2) + c(-0.5, 0.5)
+)
 fit_rep <- hsquared(
   y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
   data = repeated_dat,
@@ -134,9 +186,14 @@ environmental effect (for example a litter or cage), grouped by a separate
 column.
 
 ```{r}
+ce_dat <- data.frame(
+  id = dat$id,
+  y = dat$weight,
+  litter = c("l1", "l1", "l2", "l2", "l1", "l2", "l1", "l2")
+)
 fit_ce <- hsquared(
   y ~ animal(1 | id, pedigree = ped) + common_env(1 | litter),
-  data = dat,
+  data = ce_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "two_effect")
@@ -157,9 +214,14 @@ model; the correlated 2×2 G version is covered at validation scale (opt-in,
 `target = "direct_maternal"`; see below).
 
 ```{r}
+mat_dat <- data.frame(
+  id = c("o1", "o2", "o3", "o4"),
+  y = c(31, 33, 35, 30),
+  dam = c("d1", "d2", "d1", "d2")
+)
 fit_mat <- hsquared(
   y ~ animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
-  data = dat,
+  data = mat_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "two_effect")
@@ -180,13 +242,17 @@ raw marker matrix `M` (rows = individuals) as `genomic(1 | id, markers = M)` and
 let the engine build the genomic relationship and its inverse. Single-step can
 use either a supplied `Hinv` or the experimental constructed path
 `single_step(1 | id, pedigree = ped, markers = M)` with
-`target = "single_step_construct"`. External-comparator validation remains
-planned.
+`target = "single_step_construct"`. Explicit-target genomic GREML is
+**covered** at validation scale. Ordinary-call / default-route genomic
+activation remains held. Single-step stays exploratory.
 
 ```{r}
+g_dat <- data.frame(id = dat$id, y = dat$weight)
+Ginv <- diag(nrow(g_dat))
+dimnames(Ginv) <- list(g_dat$id, g_dat$id)
 fit_g <- hsquared(
   y ~ genomic(1 | id, Ginv = Ginv),
-  data = dat,
+  data = g_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(target = "genomic")
@@ -209,9 +275,16 @@ residual variances by REML from the markers (`fit_snp_blup_reml`). Weighted /
 Bayesian marker priors and comparator parity are planned.
 
 ```{r}
+snp_dat <- data.frame(id = dat$id, y = dat$weight)
+set.seed(1)
+M <- matrix(
+  sample(0:2, nrow(snp_dat) * 4, replace = TRUE),
+  nrow = nrow(snp_dat)
+)
+rownames(M) <- snp_dat$id
 fit_snp <- hsquared(
   y ~ genomic(1 | id, markers = M),
-  data = dat,
+  data = snp_dat,
   control = hs_control(
     engine = "julia",
     engine_control = list(
@@ -230,14 +303,21 @@ breeding_values(fit_snp)             # per-individual GEBVs
 
 The multivariate path uses a `cbind()` response and estimates
 trait-by-trait genetic and residual covariance matrices for the animal effect.
-It fits on the default call without an `engine` or `target` argument, while the
-capability itself stays `partial` and experimental.
+It fits on the default call without an `engine` or `target` argument. The
+fitter is dense and validation-scale: problems above `max_dense_cells`
+(`nobs^2 + nanimals^2`, default 1e6; a few hundred animals at t = 2)
+error instead of allocating. The t = 2 unstructured route is **covered**
+on that default call (validation scale); k≥3 and diagonal genetic
+structure stay experimental. See
+[Can I fit and report this?](current-limits.html).
 Missing response cells are allowed; missing fixed-effect cells are rejected.
 
 ```{r}
+mv_dat <- dat
+mv_dat$length <- c(120, 122, 118, 119, 80, 81, 83, 79)
 fit_mv <- hsquared(
   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
+  data = mv_dat,
   family = gaussian(),
   REML = TRUE
 )
@@ -271,10 +351,14 @@ Take fledging success in a wild bird population. Each female has a clutch of
 between two and seven eggs, and some number of those fledge:
 
 ```{r}
-# dat: one row per breeding attempt; fledged + failed = clutch size, which varies
+bin_dat <- data.frame(
+  id = ped$id,
+  fledged = c(2, 3, 1, 2, 3, 2, 4, 1),
+  failed = c(1, 0, 2, 1, 0, 1, 1, 2)
+)
 fit_fledge <- hsquared(
   cbind(fledged, failed) ~ animal(1 | id, pedigree = ped),
-  data = dat,
+  data = bin_dat,
   family = binomial(),           # logit link
   control = hs_control(
     engine = "julia",
@@ -290,7 +374,11 @@ heritability(fit_fledge)
 above. It does **not** make this non-Gaussian fit a REML fit: this route uses a
 Laplace marginal likelihood (or a hybrid variational-plus-Laplace objective
 when selected), as stated
-below.
+below. The default Laplace objective integrates the intercept under a flat measure,
+so `V_A` is a REML-like Laplace estimate, not conventional Laplace-ML.
+At n around 800 it is expected to sit a few percent above
+`glmer` / `pedigreemm` / `glmmTMB` Laplace-ML `V_A`. `logLik()` is not comparable with `glmer`.
+The numerical method is unchanged.
 
 `heritability()` returns a small table rather than a single value. For a
 varying-trials fit like this one it looks like:
@@ -351,7 +439,7 @@ variational approximation for genetic effects and a Laplace correction for
 fixed effects). The latter is not guaranteed to be a lower bound on the
 integrated likelihood. Their `logLik()` and `AIC()` values are not
 comparable with each other, nor with the REML values from the Gaussian fits
-above. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
+above, nor with `glmer` Laplace-ML. And Poisson fits report `h2_latent` and a count-scale `h2_observation`
 only; there is no liability scale for a count.
 
 *References.* Dempster, E. R. & Lerner, I. M. (1950) Heritability of threshold
@@ -384,10 +472,11 @@ not in `validation_status()`. That function is a developer evidence table;
 an absent row is not an absent covered route.
 The four opt-in models listed as covered above (`two_effect` common-env leg,
 `multi_effect`, `random_regression`, `direct_maternal`) are covered at
-validation scale. The remaining opt-in models (`repeatability`, the maternal
-two-effect leg, genomic, SNP-BLUP, single-step) remain `partial` until their
-`HSquared.jl` gates and external comparators are signed off, and so does the
-multivariate `cbind()` model even though it now routes by default.
+validation scale, as is explicit-target genomic GREML. The t = 2 unstructured
+multivariate `cbind()` model is covered on the default call. The remaining
+opt-in models (`repeatability`, the maternal two-effect leg, SNP-BLUP,
+single-step) remain `partial` until their `HSquared.jl` gates and external
+comparators are signed off.
 Structured multivariate formula grammar and broad factor-analytic covariance
 remain on the roadmap. A bounded four-trait Gaussian FA fit and a bounded
 Poisson genetic GLLVM fit are available through explicit expert controls; see

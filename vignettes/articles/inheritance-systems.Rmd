@@ -116,6 +116,60 @@ opt-in `engine = "julia"` path (the same supplied-relationship-inverse engine as
 dense positive-definite `K` (or its inverse `Q`), and the matrix is carried as
 provenance, not estimated.
 
+## Supplying your own relationship matrix
+
+Three spellings take a user matrix, and they are not interchangeable:
+
+| Term | Argument | What you pass | Inverse |
+| --- | --- | --- | --- |
+| `relmat(1 \| id, K = K)` | `K` | the relationship / covariance itself | R inverts it (`Kinv = solve(K)`) |
+| `precision(1 \| id, Q = Q)` | `Q` (or `Kinv`) | the precision | used as given |
+| `genomic(1 \| id, Ginv = Ginv)` | `Ginv` | the genomic relationship **inverse** | used as given |
+
+`K`, `Q`, and `Ginv` must be square, symmetric, finite, and positive definite,
+with unique non-missing row and column names equal to the ids. Rows may be in
+any order; they are matched by name, not by position. The fitted coefficient
+from `relmat()` is `Va / (Va + Ve)` on the supplied kernel, not a pedigree
+heritability unless `K` is the pedigree `A`.
+
+A monozygotic (MZ) twin, clone, or repeated-genotype kernel is singular by
+construction: identical individuals have identical rows, so the smallest
+eigenvalue is zero and the parser stops with `` `K` must be positive definite ``.
+This package does not accept that singular `K` and does not invent a new
+decomposition. The AE workaround is a small ridge, `K + 1e-6 * diag(n)`.
+Variance `Va` and the REML log-likelihood match the unridged kernel; the
+printed residual is `E - 1e-6 * Va`, so printed `h2 = Va / (Va + Ve)` is
+slightly inflated unless you add `1e-6 * Va` back to the denominator. A
+larger `eps` moves residual and printed `h2` further while leaving `Va`
+unchanged. An ACE twin model (`relmat()` plus a pair / common-environment
+term) is not available from R; collapsing each MZ pair to one genotype is
+the design alternative. This is not an ACE estimator.
+
+```{r}
+# One MZ pair (K = 1) and one DZ pair (K = 0.5). Unrelated between pairs.
+twin_dat <- data.frame(
+  id = c("mz1", "mz2", "dz1", "dz2"),
+  zyg = c("MZ", "MZ", "DZ", "DZ"),
+  y = c(1.10, 1.02, 0.40, 0.55)
+)
+K <- diag(nrow(twin_dat))
+rownames(K) <- colnames(K) <- twin_dat$id
+K["mz1", "mz2"] <- K["mz2", "mz1"] <- 1
+K["dz1", "dz2"] <- K["dz2", "dz1"] <- 0.5
+# The raw MZ kernel is singular. Ridge it before fitting.
+K_fit <- K + 1e-6 * diag(nrow(K))
+fit_k <- hsquared(
+  y ~ relmat(1 | id, K = K_fit),
+  data = twin_dat,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "relmat")
+  )
+)
+variance_components(fit_k)
+heritability(fit_k) # Va / (Va + Ve) on the ridged kernel
+```
+
 ## Planned inheritance systems
 
 Other systems are roadmap examples rather than exported syntax:

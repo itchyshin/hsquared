@@ -41,20 +41,33 @@
 #'   * `multi_effect`: `initial`, `iterations`, `scale_method`. Both the
 #'     default dense route and the opt-in `scale_method = "auto"` route
 #'     forward `initial` and `iterations` to the Julia fitter.
-#'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`.
+#'   * `multivariate`: `initial`, `iterations`, `genetic_structure`, `rank`,
+#'     `max_dense_cells`.
 #'   * `genetic_gllvm`: `iterations`, `genetic_structure`, `rank`,
 #'     `experimental_gllvm` (`initial` is not exposed on this route).
-#'   * `multivariate_repeatability`: `initial`, `iterations`.
+#'   * `multivariate_repeatability`: `initial`, `iterations`,
+#'     `max_dense_cells`.
 #'   * `random_regression`: `iterations` (no `initial`).
 #'   * `nongaussian`: `marginal`, `iterations`, `initial` (a list with
 #'     `sigma_a2`), `restart_check`.
 #'   `max_dense_cells` bounds `nobs^2 + nanimals^2` on
 #'   the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 #'   target `target = "fit_animal_model"` (via `HSquared.fit_animal_model()` /
-#'   `fit_variance_components()`) and `target = "repeatability"`. Both require
-#'   `engine = "julia"`. It has **no effect** under the default `engine = "fit"`
-#'   path, which routes to the sparse-capable `HSquared.fit_ai_reml()` and enforces
-#'   no dense-cell cap at all. It must be a
+#'   `fit_variance_components()`) and `target = "repeatability"`. Those two
+#'   require `engine = "julia"`. The default univariate `engine = "fit"` path
+#'   routes to sparse-capable `HSquared.fit_ai_reml()` and does not use this
+#'   cap. No dense-cell cap is not a size-free claim: when additive variance
+#'   is near 0 and the pedigree has more than 512 animals, that default path
+#'   can stop with `converged = FALSE`,
+#'   `optimizer_status = "boundary_score_unresolved"`, and an inflated
+#'   residual. Check `fit_diagnostics()`. The existing fallback is
+#'   `engine = "julia"` with `target = "sparse_reml"` (experimental, opt-in;
+#'   not a new covered claim). The default `cbind()` path does use the
+#'   dense-cell cap: it forwards `max_dense_cells` to
+#'   the dense multivariate fitter, and a problem above the cap errors
+#'   instead of allocating (hsquared#280, HSquared.jl#443). A name that is
+#'   not in the recognised set errors here, rather than being ignored
+#'   (hsquared#323). It must be a
 #'   single positive integer; the default, `1e6`, mirrors the engine's own
 #'   `DEFAULT_MAX_DENSE_CELLS` unchanged. Raise it to fit a larger dense
 #'   problem at the cost of memory and time, or switch to a sparse route
@@ -70,8 +83,22 @@
 #'   the sparse route forms its interval from the fitted components and never
 #'   reaches that entry point, so it is unaffected by `max_dense_cells`.
 #'
-#'   `target` selects which Julia estimator the `engine = "julia"` bridge runs;
-#'   it has no effect under the default `engine = "fit"` path. The supported
+#'   Start values and limits: unsupplied `initial` is a fixed unit start, not
+#'   data-scaled. Default AI-REML (`target = "ai_reml"` and the default
+#'   univariate `engine = "fit"` path) starts at `(sigma_a2 = 1, sigma_e2 = 1)`,
+#'   with `iterations = 100` and `tol = 1e-8`, and is equivariant to rescaling
+#'   `y`. Dense `two_effect` starts at `(1, 1, 1)` with `iterations = 200`;
+#'   dense `repeatability` uses the same unit start and a 200-iteration
+#'   Nelder-Mead cap. Rescale the response to variance about 1 before those
+#'   dense routes, or compare against `scale_method = "auto"`; otherwise a
+#'   large-scale trait can report `converged = TRUE` at a wrong optimum.
+#'   Fitted variances on a rescaled `y` can be multiplied back: REML
+#'   variance estimates are equivariant. Check `converged` after a dense fit.
+#'
+#'   `target` selects which Julia estimator the `engine = "julia"` bridge runs.
+#'   Under the default `engine = "fit"` path, `target` and
+#'   `variance_components` are an error: that path would otherwise ignore
+#'   them and return an AI-REML fit (hsquared#267). The supported
 #'   targets are `"fit_animal_model"`, `"ai_reml"`, `"sparse_reml"`,
 #'   `"henderson_mme"`, `"repeatability"`, `"two_effect"`, `"multi_effect"`,
 #'   `"direct_maternal"`, `"random_regression"`, `"genomic"`,
@@ -104,7 +131,11 @@
 #'   surfaces the Julia-owned `HSquared.fit_sparse_reml()` REML-only sparse
 #'   optimizer; it accepts `initial` (named `sigma_a2`/`sigma_e2`) and
 #'   `iterations`. It is not the default, not production fitting, and not a
-#'   variance-component estimation claim for the public R interface.
+#'   variance-component estimation claim for the public R interface. It is
+#'   also the existing fallback when the default AI-REML path stops
+#'   unconverged on more than 512 animals with additive variance near 0
+#'   (`converged = FALSE`, `optimizer_status = "boundary_score_unresolved"`).
+#'   That fallback use does not newly cover this target.
 #'   `target = "ai_reml"` exposes the same average-information REML estimator
 #'   (`HSquared.fit_ai_reml()`) that the default `engine = "fit"` path uses,
 #'   with explicit `initial` and `iterations` control. This is the validated
@@ -223,6 +254,14 @@
 #'   marshals the inverse). `target = "precision"` is the same experimental path
 #'   for `precision(1 | id, Q = Q)` (a supplied precision/inverse). Neither is
 #'   covered or the default; the supplied matrix is provenance, not an estimate.
+#'   `K` / `Q` must be square, symmetric, and positive definite, with unique
+#'   row and column names equal to the ids (any row order; names are matched).
+#'   `relmat()` takes the matrix `K` itself; `precision()` takes the inverse
+#'   `Q`; `genomic()` takes the inverse `Ginv`, not `G`. Identical genotypes
+#'   (monozygotic twins, clones, repeated rows) make `K` singular. Ridge with
+#'   `K + 1e-6 * diag(n)`; the printed residual is then `E - 1e-6 * Va`, so add
+#'   that shift back before reporting `h2 = Va / (Va + Ve)` on the kernel.
+#'   An ACE twin model is not available from `relmat()`.
 #'   The `animal(1 | id, pedigree = ped)` route rejects selfing (rows with the
 #'   same known sire and dam) in v0.1, with no argument that reaches the
 #'   engine's `allow_selfing` flag; `relmat(1 | id, K = A)` with a hand-built
@@ -283,15 +322,23 @@
 #'   `animal(1 | id, pedigree = ped)`. The `marginal` control selects a Laplace
 #'   marginal likelihood approximation (`"laplace"`, default) or a hybrid
 #'   variational-plus-Laplace objective (`"variational"`; aliases
-#'   `"la"`/`"va"`). It reports the ratified
+#'   `"la"`/`"va"`). The default Laplace objective integrates the intercept
+#'   (fixed effects) under a flat measure: `V_A` is a REML-like Laplace
+#'   estimate, not conventional Laplace-ML. At n around 800 it is expected to
+#'   exceed `glmer` / `pedigreemm` / `glmmTMB` Laplace-ML `V_A` by a few
+#'   percent. `logLik()` is not comparable with `glmer`. The
+#'   `fit_diagnostics()` `method` row still reads "Laplace marginal
+#'   likelihood"; that label is this flat-integrated estimator, not
+#'   Laplace-ML. It reports the ratified
 #'   conditional three-field contract: Poisson latent and count-scale observation
 #'   h2; logit latent, liability, and numerically integrated observation-scale h2
 #'   for Bernoulli or common-trial Binomial input. Varying trials return literal
 #'   `NaN` with `"varying_trials_no_scalar_estimand"`, never a trial-count-averaged
 #'   scalar. The historical engine field `elbo` remains for compatibility; with
 #'   integrated fixed effects this hybrid value has no general lower-bound
-#'   guarantee. Variational and Laplace `logLik`/`AIC` are **not** comparable.
-#'   This path remains experimental and not coverage-calibrated.
+#'   guarantee. Variational and Laplace `logLik`/`AIC` are **not** comparable
+#'   with each other or with `glmer`. This path remains experimental and not
+#'   coverage-calibrated. The numerical method is unchanged.
 #'   `initial` (hsquared#225) is a list with `sigma_a2`. The engine fits the
 #'   single variance component with a **bracketed** Brent search over
 #'   `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6` -- there is no start
@@ -345,6 +392,21 @@ hs_control <- function(
   if ("max_dense_cells" %in% names(engine_control)) {
     hs_validate_max_dense_cells(engine_control[["max_dense_cells"]])
   }
+  unknown <- setdiff(names(engine_control), hs_known_engine_control_names())
+  if (length(unknown) > 0L) {
+    known <- sort(hs_known_engine_control_names())
+    stop(
+      "`engine_control` name",
+      if (length(unknown) > 1L) "s " else " ",
+      paste(sprintf("`%s`", unknown), collapse = ", "),
+      if (length(unknown) > 1L) " are" else " is",
+      " not recognised. A typo would fall back to the default and be ",
+      "ignored. Recognised names are ",
+      paste(sprintf("`%s`", known), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
 
   structure(
     list(
@@ -357,6 +419,14 @@ hs_control <- function(
     ),
     class = "hs_control"
   )
+}
+
+hs_known_engine_control_names <- function() {
+  unique(c(
+    unlist(hs_engine_control_honoured_keys, use.names = FALSE),
+    "target",
+    "julia_project"
+  ))
 }
 
 hs_engine_control_value <- function(control, name, default) {

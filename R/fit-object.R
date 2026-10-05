@@ -89,14 +89,45 @@ hs_fit_not_converged <- function(object) {
   identical(object$result$diagnostics$optimizer_status, "not_converged")
 }
 
+hs_fit_genetic_correlation_boundary <- function(object, tol = 1e-6) {
+  if (!identical(hs_fit_target_label(object), "multivariate")) {
+    return(NULL)
+  }
+  correlation <- object$result$genetic_correlation
+  if (
+    !is.matrix(correlation) ||
+      !is.numeric(correlation) ||
+      nrow(correlation) < 2L ||
+      nrow(correlation) != ncol(correlation) ||
+      any(!is.finite(correlation))
+  ) {
+    return(NULL)
+  }
+  off_diagonal <- correlation[row(correlation) != col(correlation)]
+  any(abs(off_diagonal) >= 1 - tol)
+}
+
 # Students copy README, get h2 ~ 0 from a failed n = 4 fit, and believe it.
-# logLik() refuses a non-converged fit; heritability() and print() must
-# warn at the same bar so a near-zero value is never a silent "result".
+# logLik() refuses a non-converged fit; heritability(), print(), and the
+# estimate / uncertainty extractors must warn at the same bar so a
+# near-zero value is never a silent "result" (hsquared#307).
 hs_warn_if_unusable_fit <- function(object, what = "heritability") {
-  if (!hs_fit_not_converged(object)) {
+  not_converged <- hs_fit_not_converged(object)
+  boundary <- isTRUE(hs_fit_boundary_flag(object))
+  if (!not_converged && !boundary) {
     return(invisible(FALSE))
   }
-  boundary <- isTRUE(hs_fit_boundary_flag(object))
+  if (!not_converged) {
+    warning(
+      "This `hsquared_fit` object is at a variance-component boundary. The ",
+      what,
+      " number is not reportable as an ordinary interior estimate, but the ",
+      "engine number is returned for inspection. Inspect ",
+      "`fit_diagnostics(fit)` before reading any number.",
+      call. = FALSE
+    )
+    return(invisible(TRUE))
+  }
   extra <- if (boundary) {
     paste0(
       " A variance component is also at or near a boundary, so a ",
@@ -106,11 +137,28 @@ hs_warn_if_unusable_fit <- function(object, what = "heritability") {
   } else {
     " A near-zero value is not evidence that heritability is zero."
   }
+  iterations <- object$result$diagnostics$iterations
+  iteration_remedy <- if (
+    identical(hs_fit_target_label(object), "multivariate") &&
+      is.numeric(iterations) &&
+      length(iterations) == 1L &&
+      is.finite(iterations)
+  ) {
+    paste0(
+      " The optimizer used ",
+      as.integer(iterations),
+      " iterations. If that is the requested limit, retry with a larger ",
+      "`engine_control$iterations` value."
+    )
+  } else {
+    ""
+  }
   warning(
     "This `hsquared_fit` object did not converge. The ",
     what,
     " number is not an estimate; do not report it.",
     extra,
+    iteration_remedy,
     " Inspect `fit_diagnostics(fit)` before reading any number.",
     call. = FALSE
   )
@@ -161,6 +209,13 @@ print.hsquared_fit <- function(x, ...) {
   if (!is.null(converged)) {
     cat("  converged: ", isTRUE(converged), "\n", sep = "")
   }
+  if (isTRUE(hs_fit_genetic_correlation_boundary(x))) {
+    cat(
+      "  genetic correlation boundary: TRUE ",
+      "(|r_g| >= 1 - 1e-6; SEs and Wald CIs are not reportable)\n",
+      sep = ""
+    )
+  }
   if (hs_fit_not_converged(x)) {
     cat("  heritability: not reportable (fit did not converge)\n")
     hs_warn_if_unusable_fit(x)
@@ -190,6 +245,8 @@ print.hsquared_fit <- function(x, ...) {
 
 #' @export
 summary.hsquared_fit <- function(object, ...) {
+  uncertainty_reportable <- !hs_fit_not_converged(object) &&
+    !isTRUE(hs_fit_boundary_flag(object))
   structure(
     list(
       call = object$call,
@@ -204,12 +261,22 @@ summary.hsquared_fit <- function(object, ...) {
       converged = object$result$converged,
       at_boundary = hs_fit_boundary_flag(object),
       at_boundary_class = hs_fit_boundary_class(object),
+      genetic_correlation_boundary =
+        hs_fit_genetic_correlation_boundary(object),
       # Experimental uncertainty surfaces (engine rows V1-HERIT-CI /
-      # V3-REPEAT-REML, partial); present only when the engine returned them.
-      heritability_interval = object$result$heritability_interval,
-      heritability_se = object$result$heritability_se,
-      variance_component_se = object$result$variance_component_se,
-      repeatability_interval = object$result$repeatability_interval
+      # V3-REPEAT-REML, partial); suppress them when the fit is not reportable.
+      heritability_interval = if (uncertainty_reportable) {
+        object$result$heritability_interval
+      },
+      heritability_se = if (uncertainty_reportable) {
+        object$result$heritability_se
+      },
+      variance_component_se = if (uncertainty_reportable) {
+        object$result$variance_component_se
+      },
+      repeatability_interval = if (uncertainty_reportable) {
+        object$result$repeatability_interval
+      }
     ),
     class = "summary_hsquared_fit"
   )
@@ -222,6 +289,13 @@ print.summary_hsquared_fit <- function(x, ...) {
   cat("  method: ", x$method %||% "unknown", "\n", sep = "")
   if (!is.null(x$converged)) {
     cat("  converged: ", isTRUE(x$converged), "\n", sep = "")
+  }
+  if (isTRUE(x$genetic_correlation_boundary)) {
+    cat(
+      "  genetic correlation boundary: TRUE ",
+      "(|r_g| >= 1 - 1e-6; SEs and Wald CIs are not reportable)\n",
+      sep = ""
+    )
   }
   if (!is.null(x$genomic_boundary)) {
     cat(

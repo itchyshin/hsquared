@@ -9,7 +9,8 @@ heritability_interval(object, ...)
 \arguments{
 \item{object}{A fitted model object.}
 
-\item{...}{Reserved for future arguments.}
+\item{...}{Unused. Extra arguments, including \code{level}, are an error because
+they would be ignored; the interval level is fixed at the engine value.}
 }
 \value{
 A one-row data frame with \code{estimate}, \code{lower}, \code{upper}, \code{level}, \code{se}
@@ -21,11 +22,22 @@ contain it.
 }
 \details{
 \code{heritability_interval()} returns an \strong{experimental} large-sample confidence
-interval for \code{h^2}. It is available only when an \code{hsquared_fit} object
-contains the interval field, which the default Gaussian animal-model fit
+interval for \code{h^2}. It is available when an \code{hsquared_fit} object contains
+the interval field, which the default Gaussian animal-model fit
 (\code{engine = "fit"}) populates from the engine's
-\code{HSquared.heritability_interval()} when a local Julia engine is present and
-the estimate is interior to \verb{(0, 1)}. On the opt-in two-effect fit it returns
+\code{HSquared.heritability_interval()} when a local Julia engine is present.
+A non-converged or variance-component-boundary fit still returns that
+engine row when it is present: the extractor \strong{warns} and keeps the
+number for inspection (the same warn-and-return as \code{\link[=heritability]{heritability()}}).
+Those numbers must not be reported. \code{print()} says the heritability is
+not reportable when the fit did not converge. \code{summary()} omits the
+printed SE/CI block when the fit did not converge or is at a
+variance-component boundary. The engine omits the field only when it
+could not compute the interval (for example when the information matrix
+is not invertible), not merely because the estimate sits near 0 or 1.
+Printed endpoints may be 0 or 1 even though the Julia docstring describes
+a logit-delta interval that always lies in (0, 1). On the opt-in
+two-effect fit it returns
 the direct-heritability ratio interval (\code{ratio1}), and on the opt-in
 multi-effect fit (\code{target = "multi_effect"}, K >= 3 blocks) it returns the
 ANIMAL block's ratio interval (the animal additive variance over the total
@@ -33,7 +45,16 @@ phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
 
 The interval leg is a REML-only, asymptotic (logit delta-method or profile)
-approximation returned by the engine. The 2000-rep C1 coverage confirm
+approximation returned by the engine. On the default univariate route the
+SE comes from the REML average-information matrix. On the repeatability,
+two-effect, and multivariate routes the engine uses the observed
+information from a central finite-difference Hessian
+(\code{fd_step = 1e-4}). Those two matrices are not the same estimand; do not
+compare SEs across routes as if they were. R cannot request the profile
+interval from this extractor; only the engine-returned interval is shown.
+See the information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+The 2000-rep C1 coverage confirm
 (HSquared.jl DRAC job \strong{47925485}) places the univariate pedigree h²
 interval at the \strong{directional-conservative} claim level under doc-34 §4:
 delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
@@ -47,8 +68,13 @@ coverage-calibrated at nominal and \strong{not} "never under-covers." Profile an
 bootstrap h² interval legs were measured in the same confirm but are \strong{not}
 separately surfaced by this extractor; only the engine-returned interval is
 shown. It is reported as a point estimate plus bounds, not a validated
-(coverage-calibrated) capability, and remains unreliable near the
-\verb{h² → 0} boundary. Genomic fits still error (scale-labelled interval not
+(coverage-calibrated) capability. The Wald SE and this logit-delta CI
+are not valid when additive variance is near 0 (\code{h^2 -> 0} is the same
+edge): that is an interior-point approximation. The likelihood-ratio
+test of \code{V_A = 0} uses a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1}
+(Self and Liang 1987; Stram and Lee 1994). R \code{anova()} does not run it;
+Julia \code{HSquared.nested_lrt(..., df = 1, boundary_df = 1)} already does.
+Genomic fits still error (scale-labelled interval not
 validated). The underlying estimators \code{V3-TWOEFFECT-REML} /
 \code{V3-NEFFECT-REML} are \code{covered}, but this \strong{interval} is not.
 }

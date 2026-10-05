@@ -116,7 +116,8 @@ hs_build_model_spec <- function(
     hs_abort_unsupported_syntax(
       "`formula` can contain at most one additional random effect ",
       "(`permanent()`, `common_env()`, or `maternal_genetic()`) alongside ",
-      "`animal()`.",
+      "`animal()`. For more independent random effects, use bare ",
+      "`(1 | group)` terms with `target = \"multi_effect\"`.",
       call. = FALSE
     )
   }
@@ -532,8 +533,17 @@ hs_build_binomial_counts_response <- function(lhs, response) {
 hs_validate_multivariate_trait_names <- function(trait_names) {
   unicode_space <- paste0(
     "[[:space:]",
-    intToUtf8(c(0x85, 0xA0, 0x1680, 0x2000:0x200A, 0x2028, 0x2029,
-      0x202F, 0x205F, 0x3000)),
+    intToUtf8(c(
+      0x85,
+      0xA0,
+      0x1680,
+      0x2000:0x200A,
+      0x2028,
+      0x2029,
+      0x202F,
+      0x205F,
+      0x3000
+    )),
     "]"
   )
   missing_names <- is.na(trait_names) |
@@ -925,7 +935,25 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     arg_names <- rep("", length(args))
   }
 
-  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if ("formula" %in% arg_names) {
+    stop(
+      "`animal()` does not accept `formula =`. Write the random-effect ",
+      "expression as the first argument, for example ",
+      "`animal(1 | id, pedigree = ped)`.",
+      call. = FALSE
+    )
+  }
+  repeated <- unique(arg_names[nzchar(arg_names) & duplicated(arg_names)])
+  if (length(repeated) > 0L) {
+    stop(
+      "`animal()` argument ",
+      paste(sprintf("`%s`", repeated), collapse = ", "),
+      " was supplied more than once. The extra value would be ignored.",
+      call. = FALSE
+    )
+  }
+
+  bar_candidates <- which(arg_names == "")
   if (length(bar_candidates) != 1L) {
     stop(
       "`animal()` must have one random-effect expression, for example ",
@@ -1009,7 +1037,7 @@ hs_parse_animal_call <- function(call, data, env, model_data) {
     term = hs_deparse(call),
     design = "intercept",
     group = group,
-    values = as.character(data[[group]]),
+    values = hs_as_id_character(data[[group]]),
     relationship = "pedigree",
     covariance = "scalar",
     pedigree_source = pedigree_input$source,
@@ -1083,14 +1111,30 @@ hs_parse_rr_lhs <- function(lhs, data) {
   }
 
   order <- if ("order" %in% names(named_args)) named_args$order else 2
-  order <- suppressWarnings(as.integer(order))
-  if (length(order) != 1L || is.na(order) || order < 1L) {
+  if (is.symbol(order)) {
+    stop(
+      "`rr(order = ...)` must be supplied as a literal positive integer, ",
+      "for example `order = 2`; names are not evaluated in the formula parser.",
+      call. = FALSE
+    )
+  }
+  if (
+    length(order) != 1L ||
+      !is.numeric(order) ||
+      is.complex(order) ||
+      is.na(order) ||
+      !is.finite(order) ||
+      order < 1 ||
+      order > .Machine$integer.max ||
+      order != floor(order)
+  ) {
     stop(
       "`rr(order = ...)` must be a single positive integer (the number of ",
       "Legendre coefficients; 2 = intercept + slope).",
       call. = FALSE
     )
   }
+  order <- as.integer(order)
 
   values <- data[[covariate]]
   if (!is.numeric(values)) {
@@ -1199,7 +1243,7 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
   }
 
   cols <- hs_pedigree_columns(pedigree)
-  ids <- as.character(pedigree[[cols$id]])
+  ids <- hs_as_id_character(pedigree[[cols$id]])
   sire <- hs_normalize_parent(pedigree[[cols$sire]])
   dam <- hs_normalize_parent(pedigree[[cols$dam]])
 
@@ -1221,7 +1265,8 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
       if (length(missing_parents) > 1L) "s" else "",
       " not present as individual IDs: ",
       paste(missing_parents, collapse = ", "),
-      ".",
+      ". Add those IDs as founder rows (sire = NA, dam = NA), or recode ",
+      "unknown parents as NA, 0, \"0\", or \"\".",
       call. = FALSE
     )
   }
@@ -1243,7 +1288,7 @@ hs_validate_pedigree <- function(pedigree, data_ids, group) {
     )
   }
 
-  observed_ids <- as.character(data_ids)
+  observed_ids <- hs_as_id_character(data_ids)
   if (any(is.na(observed_ids) | observed_ids == "" | observed_ids == "0")) {
     stop(
       "`data` column `",
@@ -1990,6 +2035,14 @@ hs_validate_metafounder_gamma <- function(
   }
   rn <- rownames(Gamma)
   cn <- colnames(Gamma)
+  if (length(labels) > 1L && is.null(rn) && is.null(cn)) {
+    stop(
+      label,
+      " `Gamma` must have row and column names when more than one ",
+      "metafounder group is resolved.",
+      call. = FALSE
+    )
+  }
   if (!is.null(rn) || !is.null(cn)) {
     if (is.null(rn) || is.null(cn) || !identical(rn, cn)) {
       stop(
@@ -2150,6 +2203,12 @@ hs_validate_genomic_markers <- function(markers) {
       "`markers` must contain polymorphic variation: the sample-frequency ",
       "VanRaden denominator `k` must be positive.",
       call. = FALSE
+    )
+  }
+  if (all(markers %in% c(0, 1))) {
+    hs_warn_zero_one_markers(
+      "markers look 0/1 coded; `genomic()` expects allele counts 0/1/2 ",
+      "(double a homozygous 0/1 panel)"
     )
   }
   markers
@@ -2354,9 +2413,12 @@ hs_validate_relmat_matrix <- function(mat, arg_name) {
   if (!identical(ids, colnames(mat))) {
     stop("`", arg_name, "` row and column names must match.", call. = FALSE)
   }
-  if (!isSymmetric(unname(mat))) {
+  if (!isSymmetric(unname(mat), tol = 1e-8)) {
     stop("`", arg_name, "` must be symmetric.", call. = FALSE)
   }
+  # Dense inverses from solve() can carry harmless floating-point skew. Remove
+  # it before Cholesky validation and before the matrix reaches the engine.
+  mat <- (mat + t(mat)) / 2
   # Positive definiteness via a Cholesky factorization (fails on any
   # non-positive eigenvalue), so the supplied relationship inverse is a valid
   # precision for the REML animal-model spec.
@@ -2368,13 +2430,26 @@ hs_validate_relmat_matrix <- function(mat, arg_name) {
     error = function(err) FALSE
   )
   if (!chol_ok) {
-    stop("`", arg_name, "` must be positive definite.", call. = FALSE)
+    stop(
+      "`",
+      arg_name,
+      "` must be positive definite. Identical genotypes (monozygotic twins, ",
+      "clones, or repeated rows) make a relationship matrix singular. Ridge ",
+      "with `",
+      arg_name,
+      " + 1e-6 * diag(nrow(",
+      arg_name,
+      "))`; the printed residual is then E - 1e-6 * Va, so add that shift ",
+      "back before reporting h2. An ACE twin model is not available from ",
+      "`relmat()`.",
+      call. = FALSE
+    )
   }
   mat
 }
 
 hs_normalize_parent <- function(x) {
-  x <- as.character(x)
+  x <- hs_as_id_character(x)
   x[is.na(x) | x == "" | x == "0"] <- NA_character_
   x
 }
@@ -2549,6 +2624,24 @@ hs_parse_second_effect_call <- function(call, data, animal_spec) {
   }
 }
 
+# Reject missing group values so they cannot become a silent NA level shared
+# by every incomplete record (hsquared#317). Used by `common_env()` and bare
+# `(1 | group)`.
+hs_iid_group_values <- function(data, group, term_label) {
+  raw <- data[[group]]
+  if (anyNA(raw)) {
+    stop(
+      term_label,
+      " grouping variable `",
+      group,
+      "` cannot contain missing values.",
+      call. = FALSE
+    )
+  }
+  values <- as.character(raw)
+  list(values = values, levels = unique(values))
+}
+
 # Parse `common_env(1 | group)` as the common-environment effect of the opt-in
 # two-effect model: a random intercept on an environmental grouping (e.g. litter
 # or cage) carrying an identity relationship (each level an independent IID
@@ -2613,14 +2706,15 @@ hs_parse_common_env_call <- function(call, data) {
       call. = FALSE
     )
   }
+  grouped <- hs_iid_group_values(data, group, "`common_env()`")
 
   list(
     type = "common_env",
     term = hs_deparse(call),
     design = "intercept",
     group = group,
-    values = as.character(data[[group]]),
-    levels = unique(as.character(data[[group]])),
+    values = grouped$values,
+    levels = grouped$levels,
     relationship = "identity",
     covariance = "scalar"
   )
@@ -3055,13 +3149,18 @@ hs_parse_bare_iid_call <- function(term, data) {
       call. = FALSE
     )
   }
+  grouped <- hs_iid_group_values(
+    data,
+    group,
+    paste0("The `(1 | ", group, ")`")
+  )
   list(
     type = "iid",
     term = hs_deparse(term),
     design = "intercept",
     group = group,
-    values = as.character(data[[group]]),
-    levels = unique(as.character(data[[group]])),
+    values = grouped$values,
+    levels = grouped$levels,
     relationship = "identity",
     covariance = "scalar"
   )

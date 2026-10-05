@@ -19,7 +19,9 @@ Repeatability results for repeatability \code{hsquared_fit} objects.
 }
 \details{
 \code{repeatability()} reports the repeatability \code{R = (Va + Vpe) / Vp} of the
-opt-in, experimental repeatability (permanent-environment) model. It works
+opt-in, experimental repeatability (permanent-environment) model. \code{Vp} is
+\code{Va + Vpe + Ve}; fixed-effect variance is not in \code{Vp}. On the same fit,
+\code{\link[=heritability]{heritability()}} is \code{Va / Vp}. It works
 for \code{hsquared_fit} objects fitted with
 \code{engine_control = list(target = "repeatability")}.
 

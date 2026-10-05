@@ -28,7 +28,12 @@ numeric internally; this extractor is the public shape.
 \details{
 \code{variance_component_standard_errors()} and \code{heritability_standard_error()}
 return \strong{experimental} large-sample (delta-method) standard errors derived
-from the REML average-information matrix. They are available only when an
+from the REML average-information matrix on the default univariate
+Gaussian animal-model route. Repeatability, two-effect, and multivariate
+SEs use the observed information from a central finite-difference
+Hessian (\code{fd_step = 1e-4}) instead; see the information-matrix table on
+\href{https://itchyshin.github.io/hsquared/articles/current-limits.html}{Can I fit and report this?}.
+They are available only when an
 \code{hsquared_fit} object contains them; the default Gaussian animal-model fit
 populates them from the engine when a local Julia engine is present and the
 AI matrix is invertible. When the engine could not compute them, \code{hsquared()}
@@ -38,8 +43,19 @@ function that failed (HSquared.jl#351); the field is then absent, not \code{NA}.
 
 These mirror the engine row \code{V1-HERIT-CI} (\code{partial}): asymptotic,
 REML-only, and unreliable at small \code{n} or near a variance-component
-boundary (where the AI matrix is ill-conditioned and the fields are
-omitted). The 2000-rep C1 coverage confirm (job \strong{47925485}) measured the
+boundary. A non-converged or boundary fit still returns the engine SEs
+when they are present: the extractors \strong{warn} and keep the numbers for
+inspection. Those SEs must not be reported. \code{summary()} omits the printed
+SE block when the fit did not converge or is at a variance-component
+boundary. The engine omits the fields only when it could not compute them
+(for example when the AI matrix is not invertible), not merely because a
+component sits near zero. The Wald SE is not valid when additive variance
+is near 0;
+\code{V_A = 0} is on the edge of the parameter space, so the usual normal
+approximation does not apply. The likelihood-ratio test of \code{V_A = 0}
+uses a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1} (Self and Liang 1987;
+Stram and Lee 1994). R does not run that test; Julia
+\code{HSquared.nested_lrt(..., df = 1, boundary_df = 1)} already does. The 2000-rep C1 coverage confirm (job \strong{47925485}) measured the
 \strong{additive-variance delta/Wald} interval implied by these SEs to \strong{under-cover}
 (0.897 at nominal 0.95, h²=0.5), placing it at \strong{experimental-only}:
 the SE is a point-estimate reference only, \strong{not a calibrated and not a

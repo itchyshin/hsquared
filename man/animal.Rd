@@ -8,11 +8,17 @@ animal(formula, pedigree = NULL, ...)
 }
 \arguments{
 \item{formula}{A random-effect expression. The v0.1 parser accepts
-\code{1 | id}.}
+\code{1 | id}. The opt-in random-regression form is \code{rr(x, order = k) | id};
+see \code{\link[=rr]{rr()}}.}
 
 \item{pedigree}{A pedigree data frame with individual, sire, and dam columns.
 Optional only when the enclosing \code{\link[=hsquared]{hsquared()}} or \code{\link[=model_spec]{model_spec()}} call uses
-\code{data = hs_data(..., pedigree = ...)}. In v0.1 this route rejects any row
+\code{data = hs_data(..., pedigree = ...)}. Unknown parents may be \code{NA},
+\code{0}, \code{"0"}, or \code{""}. Other codes (\code{"."}, \code{"-9"}, \code{"UNK"}, \code{"*"}, the
+string \code{"NA"}, \code{-1}) are treated as real IDs and error if they are not
+also rows. Every known parent must appear as an \code{id} row; phantom
+parents are rejected. Add founder rows
+(\code{data.frame(id = setdiff(c(ped$sire, ped$dam), ped$id), sire = NA, dam = NA)}) or recode those slots as \code{NA}. In v0.1 this route rejects any row
 with the same known sire and dam (selfing); no argument here reaches the
 engine's existing \code{allow_selfing} flag. The current workaround for a
 selfing or hermaphroditic pedigree is \code{relmat(1 | id, K = A)} with a
@@ -31,9 +37,11 @@ appears inside a model formula.
 \details{
 \code{animal()} is the additive-genetic term in an \code{hsquared()} formula. Write
 \code{animal(1 | id, pedigree = ped)}, or \code{animal(1 | id)} when \code{data} is an
-\code{\link[=hs_data]{hs_data()}} object with a pedigree component. Fitting happens in
-\code{\link[=hsquared]{hsquared()}}, not here: calling \code{animal()} on its own is a syntax marker
-and returns \code{NULL}.
+\code{\link[=hs_data]{hs_data()}} object with a pedigree component. The opt-in random-regression
+form is \code{animal(rr(x, order = k) | id, pedigree = ped)}; see \code{\link[=rr]{rr()}} for
+\code{order} (number of Legendre coefficients; \code{order = 2} is intercept + slope)
+and the \verb{[-1, 1]} mapping. Fitting happens in \code{\link[=hsquared]{hsquared()}}, not here:
+calling \code{animal()} on its own is a syntax marker and returns \code{NULL}.
 }
 \examples{
 # n = 4 is a syntax demo, not a number for a paper.

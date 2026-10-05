@@ -54,20 +54,33 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method}. Both the
 default dense route and the opt-in \code{scale_method = "auto"} route
 forward \code{initial} and \code{iterations} to the Julia fitter.
-\item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank}.
+\item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank},
+\code{max_dense_cells}.
 \item \code{genetic_gllvm}: \code{iterations}, \code{genetic_structure}, \code{rank},
 \code{experimental_gllvm} (\code{initial} is not exposed on this route).
-\item \code{multivariate_repeatability}: \code{initial}, \code{iterations}.
+\item \code{multivariate_repeatability}: \code{initial}, \code{iterations},
+\code{max_dense_cells}.
 \item \code{random_regression}: \code{iterations} (no \code{initial}).
 \item \code{nongaussian}: \code{marginal}, \code{iterations}, \code{initial} (a list with
 \code{sigma_a2}), \code{restart_check}.
 \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
 the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
-\code{fit_variance_components()}) and \code{target = "repeatability"}. Both require
-\code{engine = "julia"}. It has \strong{no effect} under the default \code{engine = "fit"}
-path, which routes to the sparse-capable \code{HSquared.fit_ai_reml()} and enforces
-no dense-cell cap at all. It must be a
+\code{fit_variance_components()}) and \code{target = "repeatability"}. Those two
+require \code{engine = "julia"}. The default univariate \code{engine = "fit"} path
+routes to sparse-capable \code{HSquared.fit_ai_reml()} and does not use this
+cap. No dense-cell cap is not a size-free claim: when additive variance
+is near 0 and the pedigree has more than 512 animals, that default path
+can stop with \code{converged = FALSE},
+\code{optimizer_status = "boundary_score_unresolved"}, and an inflated
+residual. Check \code{fit_diagnostics()}. The existing fallback is
+\code{engine = "julia"} with \code{target = "sparse_reml"} (experimental, opt-in;
+not a new covered claim). The default \code{cbind()} path does use the
+dense-cell cap: it forwards \code{max_dense_cells} to
+the dense multivariate fitter, and a problem above the cap errors
+instead of allocating (hsquared#280, HSquared.jl#443). A name that is
+not in the recognised set errors here, rather than being ignored
+(hsquared#323). It must be a
 single positive integer; the default, \code{1e6}, mirrors the engine's own
 \code{DEFAULT_MAX_DENSE_CELLS} unchanged. Raise it to fit a larger dense
 problem at the cost of memory and time, or switch to a sparse route
@@ -84,8 +97,22 @@ the sparse route forms its interval from the fitted components and never
 reaches that entry point, so it is unaffected by \code{max_dense_cells}.
 }
 
-\code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs;
-it has no effect under the default \code{engine = "fit"} path. The supported
+Start values and limits: unsupplied \code{initial} is a fixed unit start, not
+data-scaled. Default AI-REML (\code{target = "ai_reml"} and the default
+univariate \code{engine = "fit"} path) starts at \verb{(sigma_a2 = 1, sigma_e2 = 1)},
+with \code{iterations = 100} and \code{tol = 1e-8}, and is equivariant to rescaling
+\code{y}. Dense \code{two_effect} starts at \verb{(1, 1, 1)} with \code{iterations = 200};
+dense \code{repeatability} uses the same unit start and a 200-iteration
+Nelder-Mead cap. Rescale the response to variance about 1 before those
+dense routes, or compare against \code{scale_method = "auto"}; otherwise a
+large-scale trait can report \code{converged = TRUE} at a wrong optimum.
+Fitted variances on a rescaled \code{y} can be multiplied back: REML
+variance estimates are equivariant. Check \code{converged} after a dense fit.
+
+\code{target} selects which Julia estimator the \code{engine = "julia"} bridge runs.
+Under the default \code{engine = "fit"} path, \code{target} and
+\code{variance_components} are an error: that path would otherwise ignore
+them and return an AI-REML fit (hsquared#267). The supported
 targets are \code{"fit_animal_model"}, \code{"ai_reml"}, \code{"sparse_reml"},
 \code{"henderson_mme"}, \code{"repeatability"}, \code{"two_effect"}, \code{"multi_effect"},
 \code{"direct_maternal"}, \code{"random_regression"}, \code{"genomic"},
@@ -117,7 +144,11 @@ path for \code{metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gam
 surfaces the Julia-owned \code{HSquared.fit_sparse_reml()} REML-only sparse
 optimizer; it accepts \code{initial} (named \code{sigma_a2}/\code{sigma_e2}) and
 \code{iterations}. It is not the default, not production fitting, and not a
-variance-component estimation claim for the public R interface.
+variance-component estimation claim for the public R interface. It is
+also the existing fallback when the default AI-REML path stops
+unconverged on more than 512 animals with additive variance near 0
+(\code{converged = FALSE}, \code{optimizer_status = "boundary_score_unresolved"}).
+That fallback use does not newly cover this target.
 \code{target = "ai_reml"} exposes the same average-information REML estimator
 (\code{HSquared.fit_ai_reml()}) that the default \code{engine = "fit"} path uses,
 with explicit \code{initial} and \code{iterations} control. This is the validated
@@ -234,6 +265,14 @@ supplied-variance solve (\code{HSquared.fit_snp_blup()}), or omit them to have
 marshals the inverse). \code{target = "precision"} is the same experimental path
 for \code{precision(1 | id, Q = Q)} (a supplied precision/inverse). Neither is
 covered or the default; the supplied matrix is provenance, not an estimate.
+\code{K} / \code{Q} must be square, symmetric, and positive definite, with unique
+row and column names equal to the ids (any row order; names are matched).
+\code{relmat()} takes the matrix \code{K} itself; \code{precision()} takes the inverse
+\code{Q}; \code{genomic()} takes the inverse \code{Ginv}, not \code{G}. Identical genotypes
+(monozygotic twins, clones, repeated rows) make \code{K} singular. Ridge with
+\code{K + 1e-6 * diag(n)}; the printed residual is then \code{E - 1e-6 * Va}, so add
+that shift back before reporting \code{h2 = Va / (Va + Ve)} on the kernel.
+An ACE twin model is not available from \code{relmat()}.
 The \code{animal(1 | id, pedigree = ped)} route rejects selfing (rows with the
 same known sire and dam) in v0.1, with no argument that reaches the
 engine's \code{allow_selfing} flag; \code{relmat(1 | id, K = A)} with a hand-built
@@ -294,15 +333,23 @@ Bernoulli traits, or automatic rank selection are supplied.
 \code{animal(1 | id, pedigree = ped)}. The \code{marginal} control selects a Laplace
 marginal likelihood approximation (\code{"laplace"}, default) or a hybrid
 variational-plus-Laplace objective (\code{"variational"}; aliases
-\code{"la"}/\code{"va"}). It reports the ratified
+\code{"la"}/\code{"va"}). The default Laplace objective integrates the intercept
+(fixed effects) under a flat measure: \code{V_A} is a REML-like Laplace
+estimate, not conventional Laplace-ML. At n around 800 it is expected to
+exceed \code{glmer} / \code{pedigreemm} / \code{glmmTMB} Laplace-ML \code{V_A} by a few
+percent. \code{logLik()} is not comparable with \code{glmer}. The
+\code{fit_diagnostics()} \code{method} row still reads "Laplace marginal
+likelihood"; that label is this flat-integrated estimator, not
+Laplace-ML. It reports the ratified
 conditional three-field contract: Poisson latent and count-scale observation
 h2; logit latent, liability, and numerically integrated observation-scale h2
 for Bernoulli or common-trial Binomial input. Varying trials return literal
 \code{NaN} with \code{"varying_trials_no_scalar_estimand"}, never a trial-count-averaged
 scalar. The historical engine field \code{elbo} remains for compatibility; with
 integrated fixed effects this hybrid value has no general lower-bound
-guarantee. Variational and Laplace \code{logLik}/\code{AIC} are \strong{not} comparable.
-This path remains experimental and not coverage-calibrated.
+guarantee. Variational and Laplace \code{logLik}/\code{AIC} are \strong{not} comparable
+with each other or with \code{glmer}. This path remains experimental and not
+coverage-calibrated. The numerical method is unchanged.
 \code{initial} (hsquared#225) is a list with \code{sigma_a2}. The engine fits the
 single variance component with a \strong{bracketed} Brent search over
 \code{log(sigma_a2)} on \verb{log(initial$sigma_a2) +/- 6} -- there is no start

@@ -24,9 +24,15 @@
 #'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` with
 #'   `engine_control = list(target = "direct_maternal")`.
 #'
-#' Both are covered at validation scale, opt-in, REML-only, and dense
-#' (n <= 1000 or so). Their scope and reporting limits are recorded in the
-#' repository capability ledger (`docs/design/capability-status.md`) and, for
+#' Both are covered at validation scale, opt-in, and REML-only. The
+#' engine-enforced dense rule on guarded routes is
+#' `nobs^2 + nanimals^2 <= 1e6` (default `max_dense_cells`), counting every
+#' animal in the pedigree, not just records. These two routes do not
+#' currently accept that lever, so they have no engine-enforced cell cap.
+#' Their scope and reporting limits are recorded in the
+#' repository capability ledger
+#' ([docs/design/capability-status.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md))
+#' and, for
 #' readers, in [Can I fit and report this?](
 #' https://itchyshin.github.io/hsquared/articles/current-limits.html). Read
 #' this table together with that enumeration: an absent row is not an absent
@@ -44,12 +50,15 @@
 #' planned grammar (for example `animal(cov = fa(...))`). The explicit
 #' four-trait rank-one FA `engine_control` cell is partial and opt-in.
 #' `payload_v2` routing is limited to `direct_maternal` and `multi_effect`.
-#' See `docs/design/45-bridge-production-fences-DRAFT.md`.
+#' See
+#' [docs/design/45-bridge-production-fences-DRAFT.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/45-bridge-production-fences-DRAFT.md).
 #'
 #' # Capability identifiers versus labels
 #'
 #' `capability` is a **stable identifier**. Dated evidence records -- comparator
-#' runs under `docs/dev-log/comparator-runs/` and check-log entries -- cite these
+#' runs under
+#' [docs/dev-log/comparator-runs/](https://github.com/itchyshin/hsquared/tree/main/docs/dev-log/comparator-runs/)
+#' and check-log entries -- cite these
 #' strings verbatim to name the row they report against, so an identifier is not
 #' rewritten once evidence points at it. Look rows up by `capability`.
 #'
@@ -327,8 +336,9 @@ hs_validation_status_evidence <- function() {
       "package within the signed-off band (VC ~1-2%, h2 ~0.01-0.02), on the",
       "gryphon dataset (CRAN package enhancer). The Julia engine (fit_sparse_reml",
       "and fit_ai_reml) also recovers the published estimates within the",
-      "signed-off band via supplied A_gryphon (the engine correctly rejects the",
-      "pathological raw pedigree); engine-vs-pure-R agreement is to machine",
+      "signed-off band via supplied A_gryphon (the open pedigree has no ancestral",
+      "loops; the signed-off anchor still uses that supplied relationship",
+      "matrix); engine-vs-pure-R agreement is to machine",
       "precision. Gryphon is the maintainer (2026-06-13) signed-off V1-MRODE-FIT",
       "anchor and sommer the V1-COMPARATORS comparator."
     ),

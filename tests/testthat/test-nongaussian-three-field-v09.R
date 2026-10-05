@@ -356,6 +356,35 @@ test_that("the v0.9 normalizer rejects schema and estimand mutations exactly", {
   )
 })
 
+test_that("the v0.9 identity check accepts last-bit Julia/R libm disagreement", {
+  # #301: a converged Poisson fit was discarded because identical() compared
+  # Julia's h2_observation with R's recomputed identity 0.9 ulp apart.
+  julia <- 0.554663825041251
+  r_recomputed <- 0.55466382504125089
+  expect_false(identical(julia, r_recomputed))
+  expect_identical(
+    hsquared:::hs_ng09_exact_number(julia, r_recomputed, "h2_observation"),
+    julia
+  )
+
+  raw <- ng09_raw()
+  raw$h2_observation <- raw$h2_observation + (julia - r_recomputed)
+  result <- hsquared:::hs_normalize_nongaussian_three_field_v09(
+    raw,
+    ng09_payload()
+  )
+  expect_identical(result$h2_observation, raw$h2_observation)
+
+  expect_error(
+    hsquared:::hs_ng09_exact_number(
+      r_recomputed + 1e-12,
+      r_recomputed,
+      "h2_observation"
+    ),
+    "does not equal its ratified identity"
+  )
+})
+
 test_that("the v0.9 normalizer rejects non-structural V_RE and V_O", {
   raw <- ng09_raw()
   raw$components[["V_RE"]] <- 0.01

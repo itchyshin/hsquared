@@ -12,9 +12,12 @@
 <p class="hs-question">How much is genetic?</p>
 
 <p class="hs-pitch">Formula first. The engine returns heritability, variance
-components, and breeding values on the routes that are
-<strong>covered</strong> — experimental 0.9.0 release, not production. CRAN
-availability is tracked separately.</p>
+components, and breeding values on the <strong>routes</strong> that are
+<strong>covered</strong>. A route is a named model type with its own
+validation evidence (for example the default univariate animal model).
+Covered is a validation status: that evidence passed, so point estimates
+may be reported in that scope. Experimental 0.9.0 release, not
+production. CRAN availability is tracked separately.</p>
 
 <p class="hs-cta">
 <a class="hs-btn hs-btn-primary" href="https://itchyshin.github.io/hsquared/articles/hsquared.html">Get started</a>
@@ -29,11 +32,17 @@ availability is tracked separately.</p>
 > <span class="hs-note-eyebrow">Before you report anything</span>
 >
 > **Warning — experimental 0.9.0 release.** Not production. CRAN availability
-> is tracked separately. There are **7** R-public covered routes; fitting needs local Julia
-> and an `HSquared.jl` checkout. Julia engine-covered ≠ R-public covered. Report
-> point estimates only within a covered route. No interval is nominally
-> coverage-calibrated; named univariate pedigree intervals are only classified
-> as directional-conservative. See [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+> is tracked separately. There are **7** R-public covered routes;
+> `public_covered_count` is that ledger total, not a function you can call.
+> Fitting needs local Julia and an `HSquared.jl` checkout. Julia
+> engine-covered ≠ R-public covered (the engine can validate a path that R
+> does not yet expose as reportable). Report point estimates only within a
+> covered route. No interval is nominally coverage-calibrated (the share of
+> intervals that contain the truth is not shown to be 95%); named univariate
+> pedigree intervals are only classified as **directional-conservative**
+> (they tend to be at least as wide as a nominal 95% interval on the
+> measured designs, not "never under-cover"). See
+> [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 
 ## Your first analysis
 
@@ -77,7 +86,7 @@ dat <- data.frame(
 hsquared(
   weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
-  engine = "validate"
+  control = hs_control(engine = "validate")
 )
 ```
 
@@ -94,17 +103,27 @@ fit <- hsquared(
 summary(fit)
 ```
 
+The first fit in a session takes about 30 s while Julia starts and
+compiles. Later fits take under a second for a few hundred animals.
+The call prints no progress, so the first one can look frozen.
+
 Report only what [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html)
 allows for the route you ran.
 
 ## Installation
 
 ```r
-# install.packages("remotes")
+install.packages("remotes")
 remotes::install_github("itchyshin/hsquared")
 ```
 
-Fitting also needs Julia, `JuliaCall`, and a local `HSquared.jl` tree.
+`pak::pak("itchyshin/hsquared")` is equivalent. Neither command builds
+vignettes, so `vignette("hsquared")` is empty after install; use
+[Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html)
+on the website.
+
+Fitting also needs [Julia](https://julialang.org/downloads/) 1.10 or later
+with `julia` on `PATH`, `JuliaCall`, and a local `HSquared.jl` tree.
 `HSquared` is not in the Julia General registry — do not use
 `Pkg.add("HSquared")` by name.
 
@@ -112,7 +131,23 @@ Fitting also needs Julia, `JuliaCall`, and a local `HSquared.jl` tree.
 install.packages("JuliaCall")
 ```
 
-Clone or point at your `HSquared.jl` checkout per the getting-started guide.
+Clone the engine, install its Julia dependencies, then point R at that tree:
+
+```sh
+git clone https://github.com/itchyshin/HSquared.jl
+julia --project=/path/to/HSquared.jl -e 'using Pkg; Pkg.instantiate()'
+```
+
+```r
+Sys.setenv(HSQUARED_JULIA_PROJECT = "/path/to/HSquared.jl")
+```
+
+`HSquared.jl` does not ship a `Manifest.toml`, so skipping `Pkg.instantiate()`
+fails on the first fit with a missing `Optim` package. The first call still
+precompiles Julia packages (about 30 seconds when the project is already
+instantiated; about two minutes on a cold depot). See
+[Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html)
+for the per-call `julia_project` alternative.
 
 ## Authors
 

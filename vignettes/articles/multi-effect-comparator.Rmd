@@ -23,7 +23,7 @@ cross-check and cites the primary engine validation gate. It is companion readin
    `eval = FALSE` chunk option is set globally). Numbers quoted in prose are from a live local
    run with `julia` on `PATH` and `HSQUARED_JULIA_PROJECT` pointing at `HSquared.jl` on the
    `feat/2026-07-01-phase2-multi-effect-interval` branch. The reproducible parity record is
-   `sim/phase2_multi_effect_live_parity.R`.
+   [`sim/phase2_multi_effect_live_parity.R`](https://github.com/itchyshin/hsquared/blob/main/sim/phase2_multi_effect_live_parity.R).
 
 2. **The per-component intervals are asymptotic and NOT coverage-calibrated.** They come from a
    logit-scale delta-method finite-difference information Hessian
@@ -61,7 +61,7 @@ A 40-animal pedigree (10 founders + 30 offspring); two environmental factors —
 (8 levels) and `year` (5 levels) — assigned **independently** of the pedigree and of each
 other, so all three variance components (additive-genetic, nest, year) are separable. This
 gives three independent blocks and routes to `fit_multi_effect_reml` (K = 3). This is the same
-fixture as the live parity record (`sim/phase2_multi_effect_live_parity.R`, seed 2027).
+fixture as the live parity record ([`sim/phase2_multi_effect_live_parity.R`](https://github.com/itchyshin/hsquared/blob/main/sim/phase2_multi_effect_live_parity.R), seed 2027).
 
 ```{r fixture}
 set.seed(2027)
@@ -243,7 +243,7 @@ agreement
 
 ## Live bridge parity (the marshalling check)
 
-Beyond the `sommer` cross-check, the reproducible record `sim/phase2_multi_effect_live_parity.R`
+Beyond the `sommer` cross-check, the reproducible record [`sim/phase2_multi_effect_live_parity.R`](https://github.com/itchyshin/hsquared/blob/main/sim/phase2_multi_effect_live_parity.R)
 verifies that the R `hsquared()` call and a **direct** `HSquared.fit_multi_effect_reml` +
 `multi_effect_ratio_interval` on the same inputs return identical results:
 
@@ -260,7 +260,7 @@ verifies that the R `hsquared()` call and a **direct** `HSquared.fit_multi_effec
 This `sommer` cross-check is additional corroborating evidence. The **primary validation gate**
 is on the Julia side (row `V3-NEFFECT-REML` in `HSquared.validation_status()`):
 
-- **Pre-declared 48-seed bias/MCSE recovery gate** (`sim/phase3_neffect_recovery_gate.jl`,
+- **Pre-declared 48-seed bias/MCSE recovery gate** ([`sim/phase3_neffect_recovery_gate.jl`](https://github.com/itchyshin/HSquared.jl/blob/main/sim/phase3_neffect_recovery_gate.jl),
   predeclared commit `68cc7acc` BEFORE running): DGP is an 860-animal half-sib pedigree with
   K = 3 independent effects — animal-A, env1-I(80 levels), env2-I(60 levels), both environmental
   factors independent of the pedigree and of each other; truth
@@ -273,8 +273,8 @@ is on the Julia side (row `V3-NEFFECT-REML` in `HSquared.validation_status()`):
   ~1e-4 relative** (max 8.09e-5).
 
 References (HSquared.jl repo, branch `feat/2026-07-01-phase2-multi-effect-interval`):
-`docs/dev-log/recovery-checkpoints/2026-07-01-neffect-covered-evidence.md`,
-`docs/dev-log/recovery-checkpoints/2026-07-01-neffect-recovery-gate-predeclaration.md`.
+[`docs/dev-log/recovery-checkpoints/2026-07-01-neffect-covered-evidence.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-07-01-neffect-covered-evidence.md),
+[`docs/dev-log/recovery-checkpoints/2026-07-01-neffect-recovery-gate-predeclaration.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-07-01-neffect-recovery-gate-predeclaration.md).
 
 Scope of the covered claim: arbitrary-N **independent**-effect REML on the tested identified
 design (Gaussian, dense/validation-scale). The R public `target = "multi_effect"` surface is

@@ -41,7 +41,9 @@
 #'   pedigree path); its variance components and pedigree relationship are reused
 #'   so the scan is conditioned on the same covariance the model was fit under.
 #' @param markers A numeric matrix of marker dosages with one row per animal in
-#'   the fit's pedigree (in pedigree order) and one column per marker.
+#'   the fit's pedigree and one column per marker. Row names are required and
+#'   must match the fit's pedigree IDs exactly; they are reordered to the fit's
+#'   normalized pedigree.
 #' @param marker_ids Optional marker names; defaults to the `markers` column
 #'   names, then to sequential ids.
 #' @param method `"mixed"` (default) for the relatedness-corrected mixed-model
@@ -57,9 +59,11 @@
 #'   with one group label per marker column (for example a chromosome label).
 #'   Markers in a group are tested with a genomic relationship built from all
 #'   **other** groups. Needs at least two distinct, non-missing labels.
-#' @param genome_wide Logical; if `TRUE` (requires `method = "single"`), add a
-#'   genome-wide-calibrated `genome_wide_p` column via the exact per-dataset add-one
-#'   permutation rule (see Details). Defaults to `FALSE` (nominal p-values only).
+#' @param genome_wide Logical; if `TRUE` (requires `method = "single"` and an
+#'   intercept-only fixed-effect design), add a genome-wide-calibrated
+#'   `genome_wide_p` column via the exact per-dataset add-one permutation rule
+#'   (see Details). Defaults to `FALSE` (nominal p-values only). A fit with
+#'   covariates is refused: that scope is not type-I-control validated.
 #' @param n_permutations Number of permutations for the genome-wide null when
 #'   `genome_wide = TRUE` (default 1000). The add-one floor is `1/(n_permutations+1)`.
 #' @param seed Integer RNG seed for the genome-wide permutation null (default 1), so
@@ -141,6 +145,9 @@ gwas.hsquared_fit <- function(
   }
   hs_validate_gwas_fit(object)
   payload <- object$payload
+  if (genome_wide) {
+    hs_validate_gwas_genome_wide_design(payload$X)
+  }
   vc <- object$result$variance_components
   sigma_a2 <- vc$estimate[vc$component == "animal"][[1L]]
   sigma_e2 <- vc$estimate[vc$component == "residual"][[1L]]
@@ -158,6 +165,11 @@ gwas.hsquared_fit <- function(
     )
   }
   markers_rec <- as.matrix(payload$Z %*% markers)
+  single_sigma_e2 <- if (identical(method, "single") && !genome_wide) {
+    hs_gwas_single_ols_residual_mse(payload$y, payload$X, markers_rec)
+  } else {
+    NULL
+  }
 
   hs_julia_setup(project)
   JuliaCall::julia_assign("hsq_y", payload$y)
@@ -217,10 +229,22 @@ gwas.hsquared_fit <- function(
     )
   } else {
     # relatedness-UNcorrected single-marker (OLS) scan: no Z / Ainv / sigma_a2
+    JuliaCall::julia_assign("hsq_single_sigma_e2", single_sigma_e2)
     scan_cmd <- paste(
-      "hsq_scan = HSquared.single_marker_scan(",
-      "hsq_y, hsq_X, hsq_markers;",
-      "sigma_e2 = hsq_sigma_e2, marker_ids = hsq_marker_ids);"
+      "hsq_single_scans = [HSquared.single_marker_scan(",
+      "hsq_y, hsq_X, hsq_markers[:, j:j];",
+      "sigma_e2 = hsq_single_sigma_e2[j], marker_ids = hsq_marker_ids[j:j])",
+      "for j in axes(hsq_markers, 2)];",
+      "hsq_scan = (",
+      "marker_ids = [only(s.marker_ids) for s in hsq_single_scans],",
+      "effects = [only(s.effects) for s in hsq_single_scans],",
+      "standard_errors = [only(s.standard_errors) for s in hsq_single_scans],",
+      "z_scores = [only(s.z_scores) for s in hsq_single_scans],",
+      "chisq = [only(s.chisq) for s in hsq_single_scans],",
+      "p_values = [only(s.p_values) for s in hsq_single_scans],",
+      "bonferroni_p_values = [only(s.p_values) for s in hsq_single_scans],",
+      "bh_q_values = [only(s.p_values) for s in hsq_single_scans],",
+      "lod_scores = [only(s.lod_scores) for s in hsq_single_scans]);"
     )
   }
   gw_dict <- if (genome_wide) {
@@ -252,6 +276,10 @@ gwas.hsquared_fit <- function(
     ");"
   ))
   raw <- JuliaCall::julia_eval("hsq_gwas_raw")
+  if (identical(method, "single") && !genome_wide) {
+    raw$bonferroni <- stats::p.adjust(raw$p_values, method = "bonferroni")
+    raw$bh <- stats::p.adjust(raw$p_values, method = "BH")
+  }
   if (genome_wide) {
     # Build the calibration metadata for the per-dataset permutation rule. It has
     # no per-call empirical type-I (validity is by construction + externally
@@ -264,7 +292,7 @@ gwas.hsquared_fit <- function(
       threshold = (raw$genome_wide_threshold %||% NA_real_) / (2 * log(10)),
       alpha = raw$alpha %||% 0.05,
       empirical_type1 = NA_real_,
-      marker_panel_mode = "real_panel",
+      marker_panel_mode = raw$marker_panel_mode %||% "real_panel",
       scan_method = method,
       n_replicates = raw$n_permutations %||% n_permutations,
       seed = seed,
@@ -272,7 +300,7 @@ gwas.hsquared_fit <- function(
       package_version = as.character(utils::packageVersion("hsquared")),
       validation_reference = paste0(
         "HSquared.jl production REBUILD gate ",
-        "(sim/phase5_qtl_rebuild_production_gate.jl): per-dataset add-one ",
+        "(https://github.com/itchyshin/HSquared.jl/blob/main/sim/phase5_qtl_rebuild_production_gate.jl): per-dataset add-one ",
         "permutation type-I 0.0504/0.0542 at alpha=0.05 (fixed-effect, ",
         "intercept-only); the (1-alpha) quantile rule is anti-conservative (#202)."
       )
@@ -292,6 +320,14 @@ hs_validate_gwas_fit <- function(object) {
       "a Gaussian animal-model fit; `",
       family,
       "` fits are not supported.",
+      call. = FALSE
+    )
+  }
+  if (hs_fit_not_converged(object)) {
+    stop(
+      "`gwas()` cannot use this fit because it did not converge; its variance ",
+      "components are not valid inputs for a marker scan. Inspect ",
+      "`fit_diagnostics(fit)` before running `gwas()`.",
       call. = FALSE
     )
   }
@@ -324,6 +360,50 @@ hs_validate_gwas_fit <- function(object) {
   invisible(TRUE)
 }
 
+hs_gwas_single_ols_residual_mse <- function(y, X, markers) {
+  centered_markers <- sweep(markers, 2L, colMeans(markers), FUN = "-")
+  vapply(seq_len(ncol(centered_markers)), function(j) {
+    design <- cbind(X, centered_markers[, j])
+    fit <- stats::lm.fit(design, y)
+    residual_df <- length(y) - fit$rank
+    if (residual_df < 1L) {
+      stop(
+        "The single-marker OLS regression has no residual degrees of freedom.",
+        call. = FALSE
+      )
+    }
+    mse <- sum(fit$residuals^2) / residual_df
+    if (!is.finite(mse) || mse <= 0) {
+      stop(
+        "The single-marker OLS residual mean square must be positive and finite.",
+        call. = FALSE
+      )
+    }
+    mse
+  }, numeric(1L))
+}
+
+# genome_wide = TRUE reuses the engine's intercept-only type-I evidence. A
+# supplied-covariate X is accepted by the Julia scan as an experimental
+# residual-permutation utility, but R must not attach that validated claim.
+hs_validate_gwas_genome_wide_design <- function(X) {
+  intercept_only <- is.matrix(X) &&
+    ncol(X) == 1L &&
+    length(X) > 0L &&
+    all(is.finite(X)) &&
+    max(abs(X - 1)) <= 1e-12
+  if (isTRUE(intercept_only)) {
+    return(invisible(TRUE))
+  }
+  stop(
+    "`genome_wide = TRUE` is validated for an intercept-only design ",
+    "(`y ~ animal(...)`). This fit has covariates; supplied-covariate X is ",
+    "an experimental residual-permutation utility and is not type-I-control ",
+    "validated. Refit without covariates or run `genome_wide = FALSE`.",
+    call. = FALSE
+  )
+}
+
 hs_validate_gwas_markers <- function(markers, payload) {
   if (is.null(markers)) {
     stop("`markers` is required.", call. = FALSE)
@@ -343,6 +423,32 @@ hs_validate_gwas_markers <- function(markers, payload) {
       call. = FALSE
     )
   }
+  marker_ids <- rownames(markers)
+  if (is.null(marker_ids)) {
+    stop(
+      "`markers` must have row names matching the fit's pedigree IDs so they ",
+      "can be reordered to normalized pedigree order.",
+      call. = FALSE
+    )
+  }
+  if (
+    any(is.na(marker_ids)) ||
+      any(!nzchar(marker_ids)) ||
+      anyDuplicated(marker_ids) > 0L
+  ) {
+    stop(
+      "`markers` row names must be unique, non-missing, and nonempty.",
+      call. = FALSE
+    )
+  }
+  pedigree_ids <- as.character(payload$pedigree$id)
+  if (!setequal(marker_ids, pedigree_ids)) {
+    stop(
+      "`markers` row names must match the fit's pedigree IDs exactly.",
+      call. = FALSE
+    )
+  }
+  markers <- markers[match(pedigree_ids, marker_ids), , drop = FALSE]
   if (ncol(markers) < 1L) {
     stop("`markers` must have at least one marker column.", call. = FALSE)
   }

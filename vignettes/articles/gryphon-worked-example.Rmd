@@ -22,10 +22,11 @@ Two honesty notes first:
   `HSquared.jl` + `JuliaCall`. The code below is shown but not executed at build time; the
   heritability value quoted is the published/recovered estimate (see the benchmark article for the
   executed agreement).
-- **gryphon uses a supplied relationship matrix.** The raw gryphon pedigree contains ancestral
-  loops that pedigree tools refuse, so the relationship information is supplied directly as
-  `A_gryphon` rather than parsed from a raw pedigree. Most of your own datasets will use the
-  ordinary `animal(1 | id, pedigree = ped)` path shown in [Fitting models](fitting-models.html).
+- **gryphon uses a supplied relationship matrix.** The open Wilson et al. 2010
+  gryphon pedigree has no ancestral loops (parents precede offspring; no
+  self-parents). This article still uses the supplied `A_gryphon` matrix as the
+  signed-off recovery path. Most of your own datasets will use the ordinary
+  `animal(1 | id, pedigree = ped)` path shown in [Fitting models](fitting-models.html).
 
 ## The data and question
 
@@ -51,6 +52,10 @@ information is supplied via the engine path.
 fit <- hsquared(BWT ~ animal(1 | id, pedigree = ped), data = dat)
 fit
 ```
+
+The first fit in a session takes about 30 s while Julia starts and compiles.
+Later fits take under a second for a few hundred animals. The call prints no
+progress, so the first one can look frozen.
 
 ## Read the result
 
@@ -94,10 +99,16 @@ property of *this population in this environment*, not a fixed constant of the t
 
 ## Honest boundaries
 
-- The fit requires a local engine; gryphon uses a supplied relationship matrix (the raw pedigree is
-  pathological). Your own analyses will typically use `animal(1 | id, pedigree = ped)`.
+- The fit requires a local engine; this article uses the supplied `A_gryphon`
+  relationship matrix as the signed-off recovery path. The open gryphon
+  pedigree has no ancestral loops. Your own analyses will typically use
+  `animal(1 | id, pedigree = ped)`.
 - The CI/SE surfaces are **experimental** (engine row `V1-HERIT-CI`, `partial`): asymptotic,
-  REML-only, unreliable at small `n`. They are reported, not validated.
+  REML-only, unreliable at small `n`. They are reported, not validated. The
+  Wald SE and logit-delta CI are not valid when additive variance is near 0.
+  The likelihood-ratio test of `V_A = 0` uses a 50:50 mixture of `chi^2_0`
+  and `chi^2_1` (Self and Liang 1987). R `anova()` does not run it; Julia
+  `nested_lrt(..., df = 1, boundary_df = 1)` already does.
 - gryphon is teaching/simulated data; the published numbers are an external anchor, not a
   known-truth simulation. For bias/coverage and external-package agreement see
   [Validation evidence](validation-evidence.html) and the
