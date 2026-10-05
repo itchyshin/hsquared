@@ -57,13 +57,21 @@ hs_route_table <- function() {
       call = paste0(
         'hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),\n',
         '         data = dat, control = hs_control(engine = "julia",\n',
-        '           engine_control = list(target = "two_effect")))'
+        '           engine_control = list(target = "two_effect")))\n',
+        '# more independent intercepts (hsquared#285):\n',
+        'hsquared(y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),\n',
+        '         data = dat, control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "multi_effect")))'
       ),
       scope = paste(
         "The common-environment leg (additive animal A plus i.i.d. environment,",
         "A2 = I) and the arbitrary-N generalization to independent i.i.d. effects",
         "are covered at validation scale on a pre-declared 48-seed recovery gate",
-        "with an external same-estimand REML comparator. The animal-block ratio is",
+        "with an external same-estimand REML comparator. The default grammar",
+        "accepts one named extra effect beside animal(); more independent",
+        "intercepts use bare `(1 | group)` with `target = \"multi_effect\"`.",
+        "A maternal-genetic plus permanent-environment combination is not",
+        "available. The animal-block ratio is",
         "narrow-sense h2; other blocks are variance-explained proportions, NOT",
         "heritabilities. Independent effects only - correlated, random-regression,",
         "and non-Gaussian structures are not this route."
