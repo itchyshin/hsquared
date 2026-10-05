@@ -1,5 +1,12 @@
 # hsquared (development version)
 
+* **hsquared#321: `metafounder()` now rejects a repeated named argument
+  and `formula =`.** `animal()` already stopped a second `pedigree =` and
+  no longer called `formula =` "planned". `metafounder()` had the same
+  silent drop. A repeated `pedigree =`, `group =`, or `Gamma =` is now an
+  error, and `formula =` is refused as unsupported rather than planned.
+  No estimator change. No covered flip.
+
 * **hsquared#268 (docs): `inbreeding()` is a formula term, not F.** There is
   still no R accessor for `A`, `A^{-1}`, or inbreeding coefficients. `?inbreeding`
   and the fitting-models article now say to call
