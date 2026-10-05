@@ -76,8 +76,12 @@ y ~ sex + age +
 Current status: `permanent()`, `common_env()`, and `maternal_genetic()` are
 parsed. They fit only with a named `target =` (repeatability, two-effect, or
 direct–maternal — see Fitting models). The default `hsquared()` call names
-that target and stops. `maternal_env()`, `paternal_genetic()`, and
-`paternal_env()` are reserved and error as planned, not implemented.
+that target and stops. The default grammar accepts at most one of those named
+extra effects beside `animal()`. More independent intercepts use bare
+`(1 | group)` terms with `target = "multi_effect"`. A maternal-genetic plus
+permanent-environment combination is not available. `maternal_env()`,
+`paternal_genetic()`, and `paternal_env()` are reserved and error as planned,
+not implemented.
 
 ## Inheritance and relationship kernels
 

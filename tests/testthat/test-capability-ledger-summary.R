@@ -172,6 +172,24 @@ test_that("common_env and permanent route snippets name the required target", {
   expect_match(permanent, 'target = "repeatability"', fixed = TRUE)
 })
 
+test_that("the arbitrary-N card includes a multi_effect snippet", {
+  skip_without_generator()
+  gen <- load_generator()
+  routes <- gen$hs_route_table()
+  calls <- vapply(routes, `[[`, character(1), "call")
+  scopes <- vapply(routes, `[[`, character(1), "scope")
+
+  multi <- calls[grepl('target = "multi_effect"', calls, fixed = TRUE)]
+  expect_length(multi, 1L)
+  expect_match(multi, "(1 | nest)", fixed = TRUE)
+  expect_match(multi, "(1 | year)", fixed = TRUE)
+  expect_match(
+    scopes[grepl('target = "multi_effect"', calls, fixed = TRUE)],
+    "maternal-genetic plus permanent-environment combination is not",
+    fixed = TRUE
+  )
+})
+
 test_that("the committed include is in sync with validation_status()", {
   skip_without_generator()
   gen <- load_generator()

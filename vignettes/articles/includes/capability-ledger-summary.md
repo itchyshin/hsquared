@@ -36,6 +36,10 @@ hsquared(y ~ sex + animal(1 | id, pedigree = ped), data = dat)
 hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
          data = dat, control = hs_control(engine = "julia",
            engine_control = list(target = "two_effect")))
+# more independent intercepts (hsquared#285):
+hsquared(y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),
+         data = dat, control = hs_control(engine = "julia",
+           engine_control = list(target = "multi_effect")))
 ```
 
 **Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
@@ -44,7 +48,7 @@ hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** The common-environment leg (additive animal A plus i.i.d. environment, A2 = I) and the arbitrary-N generalization to independent i.i.d. effects are covered at validation scale on a pre-declared 48-seed recovery gate with an external same-estimand REML comparator. The animal-block ratio is narrow-sense h2; other blocks are variance-explained proportions, NOT heritabilities. Independent effects only - correlated, random-regression, and non-Gaussian structures are not this route.
+**Exact scope and caveat.** The common-environment leg (additive animal A plus i.i.d. environment, A2 = I) and the arbitrary-N generalization to independent i.i.d. effects are covered at validation scale on a pre-declared 48-seed recovery gate with an external same-estimand REML comparator. The default grammar accepts one named extra effect beside animal(); more independent intercepts use bare `(1 | group)` with `target = "multi_effect"`. A maternal-genetic plus permanent-environment combination is not available. The animal-block ratio is narrow-sense h2; other blocks are variance-explained proportions, NOT heritabilities. Independent effects only - correlated, random-regression, and non-Gaussian structures are not this route.
 
 **Concrete fallback.** The maternal-genetic leg (`maternal_genetic()`, A2 = pedigree A) runs on the same estimator but is still experimental: its own recovery gate and comparator are owed. Use the covered common-environment route, or treat a maternal fit as exploratory.
 
