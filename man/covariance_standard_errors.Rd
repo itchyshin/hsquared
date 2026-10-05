@@ -45,12 +45,12 @@ factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
 flat/boundary optimum, not coverage-calibrated, with no external comparator,
 and not a validated capability.
 
-The returned \code{genetic_correlation} SE is on the correlation (\code{r}) scale. A
-naive symmetric interval built as \verb{estimate +/- 1.96 * se} on that scale
-can leave \verb{(-1, 1)} for strong correlations. The engine instead builds its own
-genetic-correlation interval on the \strong{Fisher-z scale}
-(\code{z = atanh(r)}, \code{se_z = se_r / (1 - r^2)}, endpoints
-\code{tanh(z -+ q * se_z)}), which always lands inside \verb{(-1, 1)}. That
-range-respecting endpoint is a separate property from calibration: the
-Fisher-z transform does not make these SEs coverage-calibrated (see above).
+The returned \code{genetic_correlation} SE is on the correlation (\code{r}) scale.
+R does not return a genetic-correlation interval.
+\verb{estimate +/- 1.96 * se} is not an extractor and can leave \verb{(-1, 1)}
+when \verb{|r_g|} is large. Julia \code{HSquared.genetic_correlation_interval()}
+builds a Fisher-z interval (\code{z = atanh(r)},
+\code{se_z = se_r / (1 - r^2)}); that helper is not wired to R. When
+\verb{|r_g|} is at \code{+-1}, the engine treats the optimum as flat or boundary
+and omits these SEs. \code{print()} can still say \code{converged = TRUE}.
 }

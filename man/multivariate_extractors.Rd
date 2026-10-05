@@ -45,6 +45,13 @@ dense and validation-scale: it is capped by \code{max_dense_cells}
 \code{residual_covariance()}. Use them after checking \code{\link[=fit_diagnostics]{fit_diagnostics()}} because
 likelihood-based summaries are intentionally blocked when a multivariate fit
 has not converged.
+
+A fitted genetic correlation of \code{+1} or \code{-1} means the estimated \code{G} sat
+on the correlation boundary in this sample, not that the traits are known
+to share one genetic value. \code{print()} and \code{summary()} can still report
+\code{converged = TRUE}; R does not set a boundary flag for \verb{|r_g| -> 1}.
+\code{\link[=covariance_standard_errors]{covariance_standard_errors()}} is omitted at that flat or boundary
+optimum.
 }
 \examples{
 \dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
