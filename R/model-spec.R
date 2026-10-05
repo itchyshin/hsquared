@@ -807,7 +807,25 @@ hs_parse_metafounder_call <- function(call, data, env, model_data) {
     arg_names <- rep("", length(args))
   }
 
-  bar_candidates <- which(arg_names == "" | arg_names == "formula")
+  if ("formula" %in% arg_names) {
+    stop(
+      "`metafounder()` does not accept `formula =`. Write the random-effect ",
+      "expression as the first argument, for example ",
+      "`metafounder(1 | id, pedigree = ped, group = mf_group, Gamma = Gamma)`.",
+      call. = FALSE
+    )
+  }
+  repeated <- unique(arg_names[nzchar(arg_names) & duplicated(arg_names)])
+  if (length(repeated) > 0L) {
+    stop(
+      "`metafounder()` argument ",
+      paste(sprintf("`%s`", repeated), collapse = ", "),
+      " was supplied more than once. The extra value would be ignored.",
+      call. = FALSE
+    )
+  }
+
+  bar_candidates <- which(arg_names == "")
   if (length(bar_candidates) != 1L) {
     stop(
       "`metafounder()` must have one random-effect expression, for example ",

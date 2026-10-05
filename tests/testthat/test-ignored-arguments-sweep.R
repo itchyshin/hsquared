@@ -1,4 +1,6 @@
 # hsquared#267, #303, #321, #323. These checks do not fit a model.
+# #321 also covers metafounder(): the same silent drop of a repeated
+# named argument, and formula= rejected as "planned".
 
 test_that("unknown engine_control names error instead of falling back", {
   expect_error(
@@ -102,6 +104,80 @@ test_that("formula= is rejected and is not described as planned", {
     "does not accept `formula =`",
     fixed = TRUE
   )
+})
+
+test_that("a repeated metafounder argument is an error", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  ped2 <- ped
+  dat <- data.frame(y = c(1, 2.5, 4), id = c("sire", "dam", "calf"))
+  mf_group <- c(sire = "base", dam = "base", calf = "")
+  Gamma <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~
+        metafounder(
+          1 | id,
+          pedigree = ped,
+          pedigree = ped2,
+          group = mf_group,
+          Gamma = Gamma
+        ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "supplied more than once",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~
+        metafounder(
+          1 | id,
+          pedigree = ped,
+          group = mf_group,
+          group = mf_group,
+          Gamma = Gamma
+        ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "supplied more than once",
+    fixed = TRUE
+  )
+})
+
+test_that("metafounder formula= is rejected and is not described as planned", {
+  ped <- data.frame(
+    id = c("sire", "dam", "calf"),
+    sire = c(NA, NA, "sire"),
+    dam = c(NA, NA, "dam")
+  )
+  dat <- data.frame(y = c(1, 2.5, 4), id = c("sire", "dam", "calf"))
+  mf_group <- c(sire = "base", dam = "base", calf = "")
+  Gamma <- matrix(0.25, nrow = 1, dimnames = list("base", "base"))
+  err <- tryCatch(
+    hsquared:::hs_build_model_spec(
+      y ~
+        metafounder(
+          formula = 1 | id,
+          pedigree = ped,
+          group = mf_group,
+          Gamma = Gamma
+        ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_match(err, "does not accept `formula =`", fixed = TRUE)
+  expect_false(grepl("planned, not implemented", err, fixed = TRUE))
 })
 
 test_that("bivariate cbind reports the dense-cell refusal", {
