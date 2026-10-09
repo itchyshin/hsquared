@@ -112,7 +112,7 @@ test_that("R interval claim surface stays experimental / blocked for H1/H3", {
   expect_equal(unname(desc[, "Version"]), "0.9.0")
   expect_match(
     unname(desc[, "Description"]),
-    "public covered count is 7",
+    "Uncertainty intervals are not coverage-calibrated",
     fixed = TRUE
   )
 
