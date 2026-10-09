@@ -59,6 +59,14 @@
       "kind": "file",
       "value": "/private/tmp/hsquared-cran-review-20261008/docs/dev-log/recovery-checkpoints/2026-10-08-cran-review-resubmission.md"
     },
+    "platform_matrix": {
+      "kind": "file",
+      "value": "/private/tmp/hsquared-cran-review-20261008/docs/dev-log/recovery-checkpoints/2026-10-08-cran-review-resubmission.md"
+    },
+    "external_logs": {
+      "kind": "file",
+      "value": "/private/tmp/hsquared-cran-review-20261008/docs/dev-log/recovery-checkpoints/00check-winbuilder-20261009.log"
+    },
     "reverse_dependencies": {
       "kind": "rationale",
       "value": "NOT_APPLICABLE: initial CRAN package has no known reverse dependencies"
@@ -72,14 +80,14 @@
       "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/00check-macos.log"
     }
   },
-  "panel": {"grace": "NOT_READY", "rose": "NOT_READY", "pat": "NOT_READY"},
+  "panel": {"grace": "READY", "rose": "READY", "pat": "NOT_READY"},
   "content_panel": {"grace": "APPROVED", "rose": "APPROVED_WITH_LIMITATIONS", "pat": "APPROVED"},
   "source_exception": "Maintainer explicitly approved release branch, branch-sourced comments, and annotated v0.9.0 at 501c99c on 2026-10-08.",
   "public_tag": {"object": "48a483f0991e52cbb3499998efed3d111d51d76c", "peeled_commit": "501c99c0ec6f9f8bb490590ca220eeb6cd3e34e6", "verified_by": "git ls-remote origin refs/tags/v0.9.0 refs/tags/v0.9.0^{}"},
   "reply_authorization": "Maintainer authorizes factual reply to Konstanze after actual resubmission, not before.",
   "open_gates": [
-    "new exact-tarball Windows result",
-    "final comments and readiness panel after platform results",
+    "Pat reproduced broken no-Julia Quick start in README and vignette: requires documentation repair and a new frozen archive",
+    "new artifact-dependent checks and final readiness panel after documentation repair",
     "fresh action-time CRAN Submit confirmation"
   ],
   "submission": {}

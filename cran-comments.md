@@ -30,8 +30,15 @@ R CMD check reports no WARNING. The three new extractor examples take less
 than 0.02 seconds each on this platform.
 
 Tarball SHA-256: 850b36c3782c2af69412f620e14db3b087ba881e028374edf6c3b3bf0bdc8ecb.
-Win-builder R-devel received this exact 919391-byte tarball on 8 October 2026;
-its result is pending. This file is not yet an upload-ready attachment.
+Win-builder R-devel (Windows Server 2022, R-devel 2026-10-08 r90650 ucrt):
+0 errors, 0 warnings, 1 NOTE. Installation took 16 seconds and checking took
+190 seconds. Examples, tests, vignettes and both manuals passed.
+Log: https://win-builder.r-project.org/G0pEBZ06KP9d/00check.log
+
+The incoming NOTE records a new submission and dictionary flags for Gilmour,
+et, al, heritability and hs. These are not spelling errors: Gilmour et al.
+is the cited author reference, heritability is the quantitative-genetic term,
+and hs is part of the documented function name hs_control().
 
 ## Test environment
 

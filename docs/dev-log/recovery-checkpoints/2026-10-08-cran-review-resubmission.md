@@ -47,8 +47,18 @@ Its console log is /private/tmp/hsquared-cran-review-refrozen-check.log.
 Win-builder R-devel accepted the exact 919391-byte file on 8 October at about
 18:30 Edmonton time. The screenshot receipt is saved at
 /Users/z3437171/.codex/visualizations/2026/09/25/01a0d9e6-3028-7e20-9ead-ac70cb98a8c2/hsquared-winbuilder-upload-20261008.png.
-New exact-tarball Windows result evidence is not yet available as of 18:41
-Edmonton time. On 8 October the maintainer explicitly approved the release-branch
+The matching Windows result was inspected on 9 October: 0 errors, 0 warnings
+and 1 incoming NOTE, with all examples, tests, vignettes and manuals passing.
+Windows Server 2022, R-devel 2026-10-08 r90650 ucrt; install 16 seconds, check
+190 seconds. The result email is dated 8 October 18:37 Edmonton time, after
+the exact-archive upload. Its actual log is saved alongside this checkpoint as
+00check-winbuilder-20261009.log, from
+https://win-builder.r-project.org/G0pEBZ06KP9d/00check.log.
+The NOTE contains new-submission status and dictionary flags Gilmour, et, al,
+heritability and hs. The first three are the existing author citation;
+heritability is the field term and hs is part of hs_control(). The updated
+comments explicitly explain these flags. No spelling correction is warranted.
+On 8 October the maintainer explicitly approved the release-branch
 exception, branch-sourced comments attachment, and retargeting v0.9.0 to 501c99c.
 The public annotated tag is now 48a483f0991e52cbb3499998efed3d111d51d76c,
 peeling to 501c99c0ec6f9f8bb490590ca220eeb6cd3e34e6. The replacement push used
@@ -82,6 +92,29 @@ installs, loads, and runs its examples without Julia. This is evidence for an
 unavailable local backend only, not network isolation or live R-Julia fitting.
 Evidence: artifacts/testthat-macos.Rout and artifacts/00check-macos.log in the
 frozen artifact directory above. Live engine tests remain explicitly skipped.
+
+## Final panel, 9 October 2026
+
+Fresh independent Grace and Rose audits voted READY for the exact 850b36c
+archive, within their technical and public-claim scopes. Grace found no additional
+R-hub requirement for this pure-R documentation and metadata repair. There is
+no GitHub Actions run at 501c99c; no claim of candidate CI-green is made.
+
+Pat voted NOT_READY after replaying the README first workflow from the installed
+exact archive. README.md lines 77-81 passes engine="validate" directly to
+hsquared(), which takes that option through control, not the top-level dots.
+The call therefore attempts fitting and requests Julia. The corrected call
+control=hs_control(engine="validate") succeeds. The rendered homepage repeats
+the broken call, and vignettes/hsquared.Rmd line 64 repeats the wrong shorthand.
+All three repaired synthetic extractor examples passed Pat's independent replay.
+Later fitting article blocks also use dat columns y/litter/dam not defined by
+the first block; label these as templates requiring user data during the repair.
+
+Overall NOT_READY despite passed platform checks. Repair the user-facing examples,
+regenerate the preview, freeze a new 0.9.0 archive and repeat affected artifact
+checks. Do not reuse 850b36c platform logs as evidence for that replacement.
+The maintainer approved tag target 501c99c only; obtain explicit approval before
+moving the public tag to any new source commit. No CRAN upload or reply occurred.
 
 ## Landing State
 
