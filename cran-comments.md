@@ -39,7 +39,7 @@ revision.
   checkout of the sibling engine **HSquared.jl** (not in the Julia General registry). README and
   vignettes state this explicitly; `engine = "validate"` exercises the R-side contract without fitting.
 * We did **not** add `SystemRequirements: Julia` because the package installs and checks cleanly
-  without Julia; only the default fit path needs it.
+  without Julia; only model fitting needs it.
 
 ## Experimental release labelling
 

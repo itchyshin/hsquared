@@ -2473,8 +2473,10 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #' @param ... Reserved for future arguments.
 #'
 #' @return `rr_covariance()` returns a numeric matrix; `random_coefficients()`
-#'   returns a data frame; the trajectory extractors return a data frame with a
-#'   `covariate` column and the evaluated `value`s.
+#'   returns a data frame; `rr_genetic_variance()` and `rr_heritability()` return
+#'   data frames with `covariate` and `value` columns. `rr_correlation()` returns
+#'   a numeric matrix. `rr_eigenfunctions()` returns a list containing eigenvalues,
+#'   variance proportions, eigen-coefficients and evaluated eigenfunctions.
 #'
 #' @examples
 #' # Synthetic result object: demonstrate extraction, not model fitting.
@@ -2484,7 +2486,9 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #'   result = list(coefficient_covariance = diag(c(1, 0.2)),
 #'                 residual_variance = 0.5,
 #'                 random_coefficients = data.frame(
-#'                   id = "animal1", intercept = 0.1, linear = 0.2),
+#'                   id = rep("animal1", 2),
+#'                   coefficient = c("legendre0", "legendre1"),
+#'                   value = c(0.1, 0.2)),
 #'                 random_regression = list(
 #'                   covariate = "age", lower = 1, upper = 5, order = 2),
 #'                 converged = TRUE)
@@ -2707,6 +2711,8 @@ hs_require_direct_maternal <- function(object, name) {
 #' These extractors summarize an opt-in, **covered at validation scale**
 #' direct-maternal correlated model (`target = "direct_maternal"`), fitted with
 #' `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)`.
+#' Validation-scale coverage concerns point estimates within the documented
+#' scope; this is not a production-scale or calibrated-interval claim.
 #' The model estimates a 2x2 genetic covariance matrix G_dm between the direct
 #' additive and maternal additive effects, plus a residual variance.
 #'
@@ -2723,7 +2729,7 @@ hs_require_direct_maternal <- function(object, name) {
 #' software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma^2_P to the
 #' user).** A **negative** genetic correlation `r_am` is real and biologically
 #' expected in many livestock traits; it reflects an antagonistic
-#' direct-maternal relationship and does NOT indicate a model failure.
+#' direct-maternal relationship and does not by itself indicate a model failure.
 #'
 #' Note: the 2x2 G_dm formulation is due to Willham (1963, 1972), not
 #' Falconer (1965). Falconer's single-m model fixes `r_am = +/-1` and is

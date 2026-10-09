@@ -36,8 +36,10 @@ errors (see the "Out-of-range \code{at}" section below).}
 }
 \value{
 \code{rr_covariance()} returns a numeric matrix; \code{random_coefficients()}
-returns a data frame; the trajectory extractors return a data frame with a
-\code{covariate} column and the evaluated \code{value}s.
+returns a data frame; \code{rr_genetic_variance()} and \code{rr_heritability()} return
+data frames with \code{covariate} and \code{value} columns. \code{rr_correlation()} returns
+a numeric matrix. \code{rr_eigenfunctions()} returns a list containing eigenvalues,
+variance proportions, eigen-coefficients and evaluated eigenfunctions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
@@ -93,7 +95,9 @@ fit_rr <- structure(list(
   result = list(coefficient_covariance = diag(c(1, 0.2)),
                 residual_variance = 0.5,
                 random_coefficients = data.frame(
-                  id = "animal1", intercept = 0.1, linear = 0.2),
+                  id = rep("animal1", 2),
+                  coefficient = c("legendre0", "legendre1"),
+                  value = c(0.1, 0.2)),
                 random_regression = list(
                   covariate = "age", lower = 1, upper = 5, order = 2),
                 converged = TRUE)

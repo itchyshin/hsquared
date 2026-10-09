@@ -41,6 +41,8 @@ single numerics (the raw variance component).
 These extractors summarize an opt-in, \strong{covered at validation scale}
 direct-maternal correlated model (\code{target = "direct_maternal"}), fitted with
 \code{animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)}.
+Validation-scale coverage concerns point estimates within the documented
+scope; this is not a production-scale or calibrated-interval claim.
 The model estimates a 2x2 genetic covariance matrix G_dm between the direct
 additive and maternal additive effects, plus a residual variance.
 
@@ -57,7 +59,7 @@ maternal effects; compare (co)variance components, not h2 values, across
 software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma^2_P to the
 user).} A \strong{negative} genetic correlation \code{r_am} is real and biologically
 expected in many livestock traits; it reflects an antagonistic
-direct-maternal relationship and does NOT indicate a model failure.
+direct-maternal relationship and does not by itself indicate a model failure.
 
 Note: the 2x2 G_dm formulation is due to Willham (1963, 1972), not
 Falconer (1965). Falconer's single-m model fixes \verb{r_am = +/-1} and is

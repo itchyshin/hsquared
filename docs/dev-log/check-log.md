@@ -1,5 +1,15 @@
 # Check Log
 
+## 2026-10-08 CRAN example and scope repair
+
+Isolated release branch from prior submitted 0cdfb783. All 49 example files and
+focused metadata tests passed. A provisional full check found one stale metadata
+assertion, now corrected. Final exact-tarball check remains in progress.
+Generating clean source bb966a4; SHA-256
+54c4c8a1aac00e058f7e1076179bcb067cf6ce09cc5fc46d8a83dbca22baf0b1.
+No upload, tag movement, main merge or Julia registry action. See the
+2026-10-08 after-task checkpoint for residual gates and negative controls.
+
 ## 2026-09-26 (Cursor handover resume; classify only; count stays 7)
 
 - See `docs/dev-log/check-log.d/2026-09-26-cursor-handover-resume.md` and
