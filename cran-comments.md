@@ -22,9 +22,16 @@ permissions. We do not claim that future or partial routes are fully developed.
 
 ## R CMD check results
 
-Pending verification on the revised source tarball. This file is not yet an
-upload-ready attachment. Predecessor check results are not evidence for this
-revision.
+Local exact-tarball check (macOS, R 4.6.0): 0 errors, 0 warnings, 1 NOTE
+(new submission). Command: R CMD check --as-cran --run-donttest.
+Tests: 2644 passed, zero failures; 166 skips for optional engines or excluded
+repository-only material. Testthat records five test warnings; the completed
+R CMD check reports no WARNING. The three new extractor examples take less
+than 0.02 seconds each on this platform.
+
+Tarball SHA-256: 850b36c3782c2af69412f620e14db3b087ba881e028374edf6c3b3bf0bdc8ecb.
+Win-builder R-devel received this exact 919391-byte tarball on 8 October 2026;
+its result is pending. This file is not yet an upload-ready attachment.
 
 ## Test environment
 

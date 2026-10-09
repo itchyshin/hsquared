@@ -2,13 +2,14 @@
 
 ## 2026-10-08 CRAN example and scope repair
 
-Isolated release branch from prior submitted 0cdfb783. All 49 example files and
-focused metadata tests passed. A provisional full check found one stale metadata
-assertion, now corrected. Final exact-tarball check remains in progress.
-Generating clean source bb966a4; SHA-256
-54c4c8a1aac00e058f7e1076179bcb067cf6ce09cc5fc46d8a83dbca22baf0b1.
-No upload, tag movement, main merge or Julia registry action. See the
-2026-10-08 after-task checkpoint for residual gates and negative controls.
+Isolated release branch from prior submitted 0cdfb783. Final local exact-tarball
+check completed with 0 errors, 0 warnings and 1 new-submission NOTE. Tests: 2644
+passed, zero failures, 166 skips, five recorded test warnings. All examples,
+vignettes and manuals passed. Generating clean source 501c99c; SHA-256
+850b36c3782c2af69412f620e14db3b087ba881e028374edf6c3b3bf0bdc8ecb.
+Win-builder R-devel test upload accepted the 919391-byte artifact; result pending.
+No CRAN resubmission, tag movement, main merge or Julia registry action. See the
+2026-10-08 after-task and recovery checkpoints for residual gates and negative controls.
 
 ## 2026-09-26 (Cursor handover resume; classify only; count stays 7)
 

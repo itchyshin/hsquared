@@ -36,6 +36,8 @@ CRAN reply describes implemented scope and leaves acceptance to CRAN.
 - docs/dev-log/after-task/2026-10-08-cran-examples-scope-repair.md
 - docs/dev-log/check-log.md
 - docs/dev-log/coordination-board.md
+- docs/dev-log/recovery-checkpoints/2026-10-08-cran-review-resubmission.md
+- docs/dev-log/recovery-checkpoints/2026-10-08-cran-release-ledger.json
 
 Roxygen briefly normalized NAMESPACE formatting; that unrelated formatting change
 was reverted. Rose's graph query refreshed ignored graph files, not release code.
@@ -58,6 +60,17 @@ clarified trajectory return types and softened the negative-correlation wording.
 All three focused test files passed after those corrections. A new clean source
 and artifact must be frozen and checked with --as-cran --run-donttest and normal
 Suggests requirements before any upload.
+
+Final refreeze: clean generating source 501c99c0ec6f9f8bb490590ca220eeb6cd3e34e6;
+SHA-256 850b36c3782c2af69412f620e14db3b087ba881e028374edf6c3b3bf0bdc8ecb;
+919391 bytes, 278 entries. Exact local check completed with 0 errors, 0 warnings
+and one new-submission NOTE. Tests recorded 2644 passes, zero failures, 166 skips
+and five test warnings. All examples, vignettes and manuals passed. The three
+replacement examples took 0.001, 0.008 and 0.015 seconds on this platform.
+Win-builder R-devel accepted the same artifact; its result remains pending.
+The durable artifact directory contains the actual local logs and inventory.
+Rose, Grace and Pat independently approved the refrozen content, while explicitly
+withholding overall readiness until the remaining gates close.
 
 ## 6. Tests of the Tests
 
@@ -96,8 +109,8 @@ no useful evidence. Only completed checks count.
 No resubmission, confirmation, tag movement, main merge, Julia change or registry
 action occurred. The candidate is on codex/cran-090-examples-review-20261008, not
 main. Current main contains post-release work; the branch-first release exception
-and tag movement need explicit resolution. The final check and Windows evidence
-are still pending. CRAN may reject retained experimental labels even with an
+and tag movement need explicit resolution. Windows evidence
+is still pending. CRAN may reject retained experimental labels even with an
 honest current-scope explanation. The comments file is not upload-ready yet.
 
 ## 11. Team Learning

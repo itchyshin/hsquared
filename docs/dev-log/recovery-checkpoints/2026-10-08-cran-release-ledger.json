@@ -1,0 +1,78 @@
+{
+  "package": "hsquared",
+  "version": "0.9.0",
+  "release_type": "resubmission",
+  "status_claim": "submission-ready",
+  "overall_status": "NOT_READY",
+  "profile": {
+    "compiled_code": false,
+    "reverse_dependencies": false,
+    "system_or_external_services": true,
+    "large_data_or_vignettes": false
+  },
+  "artifact": {
+    "path": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/hsquared_0.9.0.tar.gz",
+    "sha256": "850b36c3782c2af69412f620e14db3b087ba881e028374edf6c3b3bf0bdc8ecb",
+    "size_bytes": 919391,
+    "source_commit": "501c99c0ec6f9f8bb490590ca220eeb6cd3e34e6",
+    "clean_worktree": true,
+    "inventory_evidence": {
+      "kind": "file",
+      "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/inventory.txt"
+    },
+    "forbidden_entries": []
+  },
+  "evidence": {
+    "product_contract": {
+      "kind": "file",
+      "value": "/private/tmp/hsquared-cran-review-20261008/docs/dev-log/after-task/2026-10-08-cran-examples-scope-repair.md"
+    },
+    "rights_and_consent": {
+      "kind": "file",
+      "value": "/private/tmp/hsquared-cran-review-20261008/cran-comments.md"
+    },
+    "current_cran_policy": {
+      "kind": "url",
+      "value": "https://cran.r-project.org/web/packages/policies.html"
+    },
+    "local_as_cran": {
+      "kind": "file",
+      "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/00check-macos.log"
+    },
+    "incoming_feasibility": {
+      "kind": "file",
+      "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/00check-macos.log"
+    },
+    "installed_package": {
+      "kind": "file",
+      "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/testthat-macos.Rout"
+    },
+    "timing": {
+      "kind": "file",
+      "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/00check-macos.log"
+    },
+    "reverse_dependencies": {
+      "kind": "rationale",
+      "value": "NOT_APPLICABLE: initial CRAN package has no known reverse dependencies"
+    },
+    "compiled_diagnostics": {
+      "kind": "rationale",
+      "value": "NOT_APPLICABLE: the R package contains no compiled code"
+    },
+    "size_and_vignette_budget": {
+      "kind": "file",
+      "value": "/Users/z3437171/local-scratch/lanes/hsquared-cran-review-20261008-501c99c/artifacts/00check-macos.log"
+    }
+  },
+  "panel": {"grace": "NOT_READY", "rose": "NOT_READY", "pat": "NOT_READY"},
+  "content_panel": {"grace": "APPROVED", "rose": "APPROVED_WITH_LIMITATIONS", "pat": "APPROVED"},
+  "open_gates": [
+    "new exact-tarball Windows result",
+    "source-branch exception and comments attachment source approval",
+    "public annotated tag retargeting approval",
+    "reader-site evidence and applicable external-service evidence closure",
+    "final comments and readiness panel after platform results",
+    "fresh action-time CRAN Submit confirmation"
+  ],
+  "submission": {}
+}
