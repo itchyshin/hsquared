@@ -86,17 +86,18 @@ standardized covariate outside \verb{[-1, 1]} rather than clamping it (#213).
 }
 
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-fit_rr <- hsquared(
-  weight ~ sex + animal(rr(age, order = 2) | id, pedigree = ped),
-  data = long_records,
-  family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "random_regression")
-  )
-)
+# Synthetic result object: demonstrate extraction, not model fitting.
+# The supplied covariance describes two Legendre coefficients.
+fit_rr <- structure(list(
+  spec = list(target = "random_regression"),
+  result = list(coefficient_covariance = diag(c(1, 0.2)),
+                residual_variance = 0.5,
+                random_coefficients = data.frame(
+                  id = "animal1", intercept = 0.1, linear = 0.2),
+                random_regression = list(
+                  covariate = "age", lower = 1, upper = 5, order = 2),
+                converged = TRUE)
+), class = "hsquared_fit")
 
 rr_covariance(fit_rr)
 random_coefficients(fit_rr)
@@ -104,5 +105,4 @@ rr_genetic_variance(fit_rr)
 rr_heritability(fit_rr)
 rr_correlation(fit_rr, at = c(1, 3, 5))
 rr_eigenfunctions(fit_rr)
-\dontshow{\}) # examplesIf}
 }

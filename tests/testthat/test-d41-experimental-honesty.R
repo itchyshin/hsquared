@@ -196,17 +196,32 @@ test_that("reader articles use canonical Documenter leaf URLs", {
   )
 })
 
-test_that("DESCRIPTION keeps count 7 and FA planned for the 0.9 release", {
+test_that("DESCRIPTION describes the current scope without development-roadmap claims", {
   desc <- gsub(
     "\\s+",
     " ",
     utils::packageDescription("hsquared")$Description
   )
-  expect_match(desc, "0\\.9\\.0")
-  expect_match(desc, "public covered count is 7|public covered count stays 7")
-  expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
-  expect_match(desc, "opt-in partial", fixed = TRUE)
-  expect_match(desc, "experimental release", fixed = TRUE)
-  expect_match(desc, "engine-covered is not covered at the 'R' interface", fixed = TRUE)
-  expect_no_match(desc, "0.9 is not released", fixed = TRUE)
+  expect_match(desc, "Gaussian pedigree animal models", fixed = TRUE)
+  expect_match(desc, "not coverage-calibrated", fixed = TRUE)
+  expect_match(desc, "requires a local 'Julia'", fixed = TRUE)
+  expect_no_match(desc, "remain planned|not production|experimental release")
+  expect_equal(utils::packageDescription("hsquared")$Version, "0.9.0")
+})
+
+test_that("extractor help examples are runnable rather than disabled", {
+  expect_failure(expect_no_match("if (FALSE) { 1 }", "if\\s*\\(FALSE\\)"))
+  topics <- c("multivariate_extractors", "random_regression_extractors",
+              "direct_maternal_extractors")
+  for (topic in topics) {
+    source_rd <- testthat::test_path("..", "..", "man", paste0(topic, ".Rd"))
+    rd <- if (file.exists(source_rd)) tools::parse_Rd(source_rd) else
+      tools::Rd_db("hsquared")[[paste0(topic, ".Rd")]]
+    text <- paste(capture.output(tools::Rd2ex(rd)), collapse = "\n")
+    expect_no_match(text, "if\\s*\\(FALSE\\)")
+    expect_match(text, "Synthetic result object", fixed = TRUE)
+    example_env <- new.env(parent = as.environment("package:hsquared"))
+    expect_error(suppressMessages(capture.output(
+      eval(parse(text = text), envir = example_env))), NA)
+  }
 })

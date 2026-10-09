@@ -60,15 +60,14 @@ test_that("?hs_control matches the covered default-route multivariate contract",
   expect_no_match(section, "not the default and remains", fixed = TRUE)
 })
 
-test_that("DESCRIPTION does not call non-Gaussian models planned", {
+test_that("DESCRIPTION points to model-specific limits instead of a development roadmap", {
   desc <- gsub(
     "\\s+",
     " ",
     utils::packageDescription("hsquared")$Description
   )
   expect_no_match(desc, "non-Gaussian models are planned")
-  expect_match(desc, "non-Gaussian")
-  expect_match(desc, "opt-in")
-  expect_match(desc, "experimental")
-  expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
+  expect_match(desc, "Model-specific restrictions are documented", fixed = TRUE)
+  expect_match(desc, "Can I fit and report this", fixed = TRUE)
+  expect_no_match(desc, "remain planned|not production")
 })

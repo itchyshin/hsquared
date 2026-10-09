@@ -176,19 +176,22 @@ hs_fit_is_genomic <- function(object) {
 #' @return A numeric matrix for `hsquared_fit` objects that contain the
 #'   requested multivariate result field.
 #'
-#' @examplesIf FALSE
-#' fit_mv <- hsquared(
-#'   cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
-#'   data = dat,
-#'   family = gaussian(),
-#'   REML = TRUE,
-#'   control = hs_control(
-#'     engine = "julia",
-#'     engine_control = list(target = "multivariate")
-#'   )
-#' )
-#'
-#' fit_diagnostics(fit_mv)
+#' @examples
+#' # Synthetic result object: demonstrate extraction, not model fitting.
+#' # No Julia installation is needed for this example.
+#' G <- matrix(c(0.4, 0.1, 0.1, 0.3), 2,
+#'             dimnames = list(c("weight", "length"), c("weight", "length")))
+#' R <- diag(c(0.6, 0.7))
+#' dimnames(R) <- dimnames(G)
+#' fit_mv <- structure(list(
+#'   spec = list(target = "multivariate"),
+#'   result = list(genetic_covariance = G, residual_covariance = R,
+#'                 genetic_correlation = cov2cor(G),
+#'                 residual_correlation = cov2cor(R),
+#'                 heritability = data.frame(trait = colnames(G),
+#'                                           estimate = diag(G) / diag(G + R)),
+#'                 converged = TRUE)
+#' ), class = "hsquared_fit")
 #'
 #' genetic_covariance(fit_mv)
 #' G_matrix(fit_mv)
@@ -2473,17 +2476,19 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #'   returns a data frame; the trajectory extractors return a data frame with a
 #'   `covariate` column and the evaluated `value`s.
 #'
-#' @examplesIf FALSE
-#' fit_rr <- hsquared(
-#'   weight ~ sex + animal(rr(age, order = 2) | id, pedigree = ped),
-#'   data = long_records,
-#'   family = gaussian(),
-#'   REML = TRUE,
-#'   control = hs_control(
-#'     engine = "julia",
-#'     engine_control = list(target = "random_regression")
-#'   )
-#' )
+#' @examples
+#' # Synthetic result object: demonstrate extraction, not model fitting.
+#' # The supplied covariance describes two Legendre coefficients.
+#' fit_rr <- structure(list(
+#'   spec = list(target = "random_regression"),
+#'   result = list(coefficient_covariance = diag(c(1, 0.2)),
+#'                 residual_variance = 0.5,
+#'                 random_coefficients = data.frame(
+#'                   id = "animal1", intercept = 0.1, linear = 0.2),
+#'                 random_regression = list(
+#'                   covariate = "age", lower = 1, upper = 5, order = 2),
+#'                 converged = TRUE)
+#' ), class = "hsquared_fit")
 #'
 #' rr_covariance(fit_rr)
 #' random_coefficients(fit_rr)
@@ -2744,17 +2749,23 @@ hs_require_direct_maternal <- function(object, name) {
 #'
 #' @seealso [variance_components()], [genetic_correlation()], [maternal_effects()],
 #'   [total_heritability()]
-#' @examplesIf FALSE
-#' fit_dm <- hsquared(
-#'   y ~ 1 + animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
-#'   data = dat,
-#'   family = gaussian(),
-#'   REML = TRUE,
-#'   control = hs_control(
-#'     engine = "julia",
-#'     engine_control = list(target = "direct_maternal")
-#'   )
-#' )
+#' @examples
+#' # Synthetic result object: demonstrate extraction, not model fitting.
+#' # Phenotypic variance is 0.30 + 0.15 - 0.10 + 0.55 = 0.90.
+#' fit_dm <- structure(list(
+#'   spec = list(target = "direct_maternal"),
+#'   result = list(
+#'     direct_variance = 0.30, partner_variance = 0.15, covariance = -0.10,
+#'     variance_components = data.frame(
+#'       component = c("direct", "maternal", "covariance", "residual"),
+#'       estimate = c(0.30, 0.15, -0.10, 0.55)),
+#'     heritability = data.frame(term = "direct", estimate = 0.30 / 0.90),
+#'     genetic_correlation = data.frame(
+#'       term_1 = "direct", term_2 = "maternal",
+#'       estimate = -0.10 / sqrt(0.30 * 0.15)),
+#'     maternal_effects = data.frame(id = "dam1", value = 0.1),
+#'     converged = TRUE)
+#' ), class = "hsquared_fit")
 #'
 #' direct_heritability(fit_dm)    # h2_d (direct narrow-sense)
 #' total_heritability(fit_dm)     # h2_T (Willham selection-response)

@@ -71,17 +71,22 @@ variance-component scalars. \code{genetic_correlation()} on a direct-maternal
 fit returns the between-effect correlation r_am.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-fit_dm <- hsquared(
-  y ~ 1 + animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam),
-  data = dat,
-  family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "direct_maternal")
-  )
-)
+# Synthetic result object: demonstrate extraction, not model fitting.
+# Phenotypic variance is 0.30 + 0.15 - 0.10 + 0.55 = 0.90.
+fit_dm <- structure(list(
+  spec = list(target = "direct_maternal"),
+  result = list(
+    direct_variance = 0.30, partner_variance = 0.15, covariance = -0.10,
+    variance_components = data.frame(
+      component = c("direct", "maternal", "covariance", "residual"),
+      estimate = c(0.30, 0.15, -0.10, 0.55)),
+    heritability = data.frame(term = "direct", estimate = 0.30 / 0.90),
+    genetic_correlation = data.frame(
+      term_1 = "direct", term_2 = "maternal",
+      estimate = -0.10 / sqrt(0.30 * 0.15)),
+    maternal_effects = data.frame(id = "dam1", value = 0.1),
+    converged = TRUE)
+), class = "hsquared_fit")
 
 direct_heritability(fit_dm)    # h2_d (direct narrow-sense)
 total_heritability(fit_dm)     # h2_T (Willham selection-response)
@@ -91,7 +96,6 @@ partner_variance(fit_dm)       # sigma_am
 direct_maternal_covariance(fit_dm)  # sigma_dm
 variance_components(fit_dm)    # all four components
 maternal_effects(fit_dm)       # maternal EBVs
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=variance_components]{variance_components()}}, \code{\link[=genetic_correlation]{genetic_correlation()}}, \code{\link[=maternal_effects]{maternal_effects()}},

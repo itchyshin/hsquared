@@ -44,19 +44,21 @@ likelihood-based summaries are intentionally blocked when a multivariate fit
 has not converged.
 }
 \examples{
-\dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
-fit_mv <- hsquared(
-  cbind(weight, length) ~ sex + age + animal(1 | id, pedigree = ped),
-  data = dat,
-  family = gaussian(),
-  REML = TRUE,
-  control = hs_control(
-    engine = "julia",
-    engine_control = list(target = "multivariate")
-  )
-)
-
-fit_diagnostics(fit_mv)
+# Synthetic result object: demonstrate extraction, not model fitting.
+# No Julia installation is needed for this example.
+G <- matrix(c(0.4, 0.1, 0.1, 0.3), 2,
+            dimnames = list(c("weight", "length"), c("weight", "length")))
+R <- diag(c(0.6, 0.7))
+dimnames(R) <- dimnames(G)
+fit_mv <- structure(list(
+  spec = list(target = "multivariate"),
+  result = list(genetic_covariance = G, residual_covariance = R,
+                genetic_correlation = cov2cor(G),
+                residual_correlation = cov2cor(R),
+                heritability = data.frame(trait = colnames(G),
+                                          estimate = diag(G) / diag(G + R)),
+                converged = TRUE)
+), class = "hsquared_fit")
 
 genetic_covariance(fit_mv)
 G_matrix(fit_mv)
@@ -65,5 +67,4 @@ R_matrix(fit_mv)
 genetic_correlation(fit_mv)
 residual_correlation(fit_mv)
 heritability(fit_mv)
-\dontshow{\}) # examplesIf}
 }
