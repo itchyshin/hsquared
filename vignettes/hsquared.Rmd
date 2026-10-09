@@ -61,7 +61,7 @@ model_spec(
 )
 ```
 
-`hsquared(..., engine = "validate")` confirms the formula and data.
+`hsquared(..., control = hs_control(engine = "validate"))` confirms the formula and data.
 `model_spec()` shows the parsed design and the engine target that would be
 called. Nothing is fitted.
 
@@ -103,11 +103,12 @@ breeding_values(fit)
 ```
 
 Without the engine, that default call errors with install guidance rather than
-silently degrading. Until then, `engine = "validate"` is the successful path.
+silently degrading. Until then, `control = hs_control(engine = "validate")`
+is the successful path.
 
 ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE`
 (the default). That is the same rule for the default fit and for
-`engine = "validate"`.
+`control = hs_control(engine = "validate")`.
 
 ## After this works
 

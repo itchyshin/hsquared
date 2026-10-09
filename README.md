@@ -49,7 +49,7 @@ availability is tracked separately.</p>
 
 | If you want to… | Read this |
 | --- | --- |
-| check a formula without installing Julia | [Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html) (`engine = "validate"`) |
+| check a formula without installing Julia | [Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html) (`control = hs_control(engine = "validate")`) |
 | decide whether a number may go in a paper | [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html) |
 | see the seven R-public covered routes | [Model status](https://itchyshin.github.io/hsquared/articles/model-status.html) |
 | set up the Julia engine | [Installation](#installation) |
@@ -77,7 +77,7 @@ dat <- data.frame(
 hsquared(
   weight ~ sex + animal(1 | id, pedigree = ped),
   data = dat,
-  engine = "validate"
+  control = hs_control(engine = "validate")
 )
 ```
 

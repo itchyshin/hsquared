@@ -102,6 +102,13 @@ validation scale means experimental and not production; none is a default fit.
 The remaining opt-in models (`validation_status()` rows `partial`) have not yet
 passed a comparator- or known-truth-validated gate.
 
+The blocks below are model templates, not a continuation of the eight-animal
+example above. Supply your own data and relationship matrices for each route.
+For example, the repeatability template needs `repeated_dat` with `y` and `id`;
+the common-environment template needs `dat` with `y`, `id`, and `litter`;
+the maternal template needs `dat` with `y`, `id`, and `dam`. These columns
+are not supplied by the `weight` example above.
+
 ## Repeatability (permanent environment)
 
 A repeated-records model with an additive-genetic effect and a
