@@ -47,18 +47,46 @@ Its console log is /private/tmp/hsquared-cran-review-refrozen-check.log.
 Win-builder R-devel accepted the exact 919391-byte file on 8 October at about
 18:30 Edmonton time. The screenshot receipt is saved at
 /Users/z3437171/.codex/visualizations/2026/09/25/01a0d9e6-3028-7e20-9ead-ac70cb98a8c2/hsquared-winbuilder-upload-20261008.png.
-New exact-tarball Windows result evidence is not yet available. The public annotated
-v0.9.0 still identifies prior submitted 0cdfb783. No tag movement occurred.
+New exact-tarball Windows result evidence is not yet available as of 18:41
+Edmonton time. On 8 October the maintainer explicitly approved the release-branch
+exception, branch-sourced comments attachment, and retargeting v0.9.0 to 501c99c.
+The public annotated tag is now 48a483f0991e52cbb3499998efed3d111d51d76c,
+peeling to 501c99c0ec6f9f8bb490590ca220eeb6cd3e34e6. The replacement push used
+an exact lease against prior annotated object 8a695074337a6d1cdee719a5594fe91028082b1e;
+git ls-remote verified the published result. This is the R repository only.
 Current origin/main contains later features and must not replace this candidate.
-The release-branch exception, updated comments attachment source, and retargeting
-v0.9.0 require the maintainer's explicit decision before upload.
+The source and tag approval gate is closed. The maintainer also authorizes a
+factual reply to Konstanze after actual CRAN resubmission, not before it.
 
 The original action-time Submit and email-confirmation gates remain in effect.
 No CRAN upload, resubmission, confirmation or reply occurred in this repair run.
 
+## Additional release checks
+
+On 8 October pkgdown::check_pkgdown() completed with no problems found.
+The first full local site build stopped because the sandbox could not resolve
+cloud.r-project.org and denied the normal sass cache. The authorized rerun
+completed with exit status 0 and finished its problems check. The repaired
+random-regression page was visually inspected in Codex's browser; its synthetic
+example output, coefficient labels, return types and limits render correctly.
+Preview: /private/tmp/hsquared-cran-review-20261008/pkgdown-site.
+Screenshot: /Users/z3437171/.codex/visualizations/2026/09/25/01a0d9e6-3028-7e20-9ead-ac70cb98a8c2/hsquared-release-preview-20261008.png.
+No public site deployment was made. Pandoc printed deprecated math-option
+notices, not package-check warnings. The frozen tarball checksum is unchanged.
+
+Grace independently inspected the exact archive's installed test log and the
+unchanged bridge and setup code. Executed tests cover unavailable local engine
+errors, conservative availability checks, engine="validate", and required-bridge
+failure handling. Julia setup disables automatic installation. The exact archive
+installs, loads, and runs its examples without Julia. This is evidence for an
+unavailable local backend only, not network isolation or live R-Julia fitting.
+Evidence: artifacts/testthat-macos.Rout and artifacts/00check-macos.log in the
+frozen artifact directory above. Live engine tests remain explicitly skipped.
+
 ## Landing State
 
-CARRIED-OVER: the implementation commits and later release-evidence records are local and unpushed on
+CARRIED-OVER: the implementation commits and release-evidence records through
+a18b6ec3a484e623045629b8e61c18d4759b9bd5 are pushed on
 codex/cran-090-examples-review-20261008. They are not on main. This preserves
 the exact previous release scope without reverting main's post-release work.
 Other branches and the dirty Dropbox checkout belong to other work and must
@@ -66,7 +94,7 @@ remain untouched. Handoff gate reported these unlanded states explicitly.
 
 Resume: inspect git status in the worktree, verify the artifact checksum, read
 the completed final check and new Win-builder email in Codex's in-app browser,
-then obtain the source/tag decision. Refresh the exact-artifact readiness panel
+then inspect the actual new Windows log. Refresh the exact-artifact readiness panel
 and executable release ledger before preparing CRAN's form.
 
 FINDINGS-OF-RECORD: none. This is a release repair, not new scientific evidence.
