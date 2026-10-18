@@ -939,3 +939,47 @@ test_that("converged boundary fits warn, return, and omit summary uncertainty", 
   )
   expect_equal(vcse$se, c(0.05, 0.08))
 })
+
+test_that("summary() prints the univariate calibration claim only on the univariate route (hsquared#272)", {
+  make_fit <- function(target) {
+    hsquared:::hs_new_fit(
+      spec = list(
+        method = "REML",
+        family = list(family = "gaussian"),
+        target = target
+      ),
+      payload = list(y = 1:4),
+      result = list(
+        variance_components = data.frame(
+          component = c("animal", "permanent", "residual"),
+          estimate = c(1, 0.5, 1)
+        ),
+        heritability = data.frame(term = "animal", estimate = 0.4),
+        heritability_se = 0.15,
+        variance_component_se = data.frame(
+          component = c("animal", "permanent", "residual"),
+          se = c(0.3, 0.3, 0.1)
+        ),
+        diagnostics = list(optimizer_status = "converged"),
+        converged = TRUE
+      )
+    )
+  }
+  out_for <- function(target) {
+    paste(
+      utils::capture.output(print(summary(make_fit(target)))),
+      collapse = "\n"
+    )
+  }
+
+  univariate <- out_for("ai_reml")
+  expect_match(univariate, "directional-conservative", fixed = TRUE)
+  expect_match(univariate, "0.897", fixed = TRUE)
+
+  for (target in c("repeatability", "two_effect", "multivariate")) {
+    other <- out_for(target)
+    expect_no_match(other, "directional-conservative", fixed = TRUE)
+    expect_no_match(other, "0.897", fixed = TRUE)
+    expect_match(other, "no coverage study for this route", fixed = TRUE)
+  }
+})

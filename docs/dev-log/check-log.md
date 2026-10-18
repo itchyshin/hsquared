@@ -1,5 +1,11 @@
 # Check Log
 
+## 2026-10-18 (hsquared#272 claims-vs-behaviour labels)
+
+- Red: new `summary() prints the univariate calibration claim only on the univariate route` test failed 9 expectations on `main` (c48bd26): repeatability / two_effect / multivariate summaries printed "directional-conservative" and the 0.897 figure.
+- Fix: `summary()` now carries `target`; `hs_print_uncertainty()` prints the C1 calibration claim only for the univariate (`ai_reml` / `sparse_reml`) route and says "no coverage study for this route" elsewhere. `heritability_interval.Rd` drops "or profile" and "NA for the profile method"; `hs_control.Rd` says REML only (`REML = FALSE` errors). Help-page test added to `test-package-help-honesty.R`.
+- Green: `test-fit-object.R` and `test-package-help-honesty.R` pass. Full `devtools::test()` in a Linux sandbox (R 4.3.3, no Julia, no `sommer`, older `Matrix`) leaves 4 failures outside this change (`test-gllvm-optin.R:40` `Z %in%` on a Matrix object, reproduced on clean `main`; three `sommer` Suggests gates). `roxygen2::roxygenise()` run, unrelated version churn reverted. `R CMD check --no-manual --no-tests` (`_R_CHECK_FORCE_SUGGESTS_=false`): 1 NOTE (Suggests unavailable). `air` and `pkgdown` not available in the sandbox; CI is the remaining gate.
+
 ## 2026-09-30: live FA/GLLVM bridge recheck
 
 The current R bridge tests passed all **213** FA/GLLVM assertions with a required live Julia bridge against the current Julia candidate. The initial default-depot run failed during JuliaCall cache setup; retrying with the writable task-local depot passed with zero warnings and skips. Exact R and Julia pins are recorded in [`check-log.d/2026-09-30-live-fa-gllvm-bridge-recheck.md`](check-log.d/2026-09-30-live-fa-gllvm-bridge-recheck.md). This is focused parity evidence; A2, E1, and V3 remain open.

@@ -252,6 +252,7 @@ summary.hsquared_fit <- function(object, ...) {
       call = object$call,
       engine = object$engine,
       method = object$spec$method,
+      target = object$spec$target,
       family = object$spec$family,
       variance_components = object$result$variance_components,
       heritability = object$result$heritability,
@@ -352,9 +353,20 @@ print.summary_hsquared_fit <- function(x, ...) {
 # Labelled experimental so they are never read as validated.
 hs_print_uncertainty <- function(x) {
   fmt <- function(v) format(signif(as.numeric(v), 4))
+  # hsquared#272: the C1 calibration figures were measured on the univariate
+  # pedigree route only; other routes carry no coverage study.
+  univariate <- is.null(x$target) ||
+    as.character(x$target)[[1L]] %in% c("ai_reml", "sparse_reml")
   if (!is.null(x$heritability_se) || !is.null(x$heritability_interval)) {
     cat(
-      "  heritability uncertainty (experimental; directional-conservative / not coverage-calibrated; asymptotic REML):\n"
+      "  heritability uncertainty (experimental; ",
+      if (univariate) {
+        "directional-conservative / not coverage-calibrated"
+      } else {
+        "not coverage-calibrated; no coverage study for this route"
+      },
+      "; asymptotic REML):\n",
+      sep = ""
     )
     if (!is.null(x$heritability_se)) {
       cat("    SE: ", fmt(x$heritability_se), "\n", sep = "")
@@ -374,7 +386,14 @@ hs_print_uncertainty <- function(x) {
   }
   if (!is.null(x$variance_component_se)) {
     cat(
-      "  variance-component SEs (experimental; NOT coverage-calibrated -- the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n"
+      "  variance-component SEs (experimental; NOT coverage-calibrated -- ",
+      if (univariate) {
+        "the sigma_a2 delta/Wald leg under-covers, ~0.897 at nominal 0.95"
+      } else {
+        "no coverage study for this route"
+      },
+      "; asymptotic REML; point estimate +/- SE for reference only, not a calibrated or conservative interval):\n",
+      sep = ""
     )
     se <- x$variance_component_se
     for (i in seq_len(nrow(se))) {
