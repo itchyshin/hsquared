@@ -2851,6 +2851,11 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #'   **rotation-invariant** functionals of `K_g` (mirroring the engine's
 #'   `rr_eigenfunctions`); no raw, rotation-arbitrary loadings are returned.
 #'
+#' A random-regression fit returns no standard errors.
+#' [variance_component_standard_errors()] and [covariance_standard_errors()]
+#' are refused for this target, so `K_g` and every trajectory below are point
+#' estimates only.
+#'
 #' The trajectories are computed in R from the estimated `K_g` and the recorded
 #' covariate standardization range; `at` is supplied on the ORIGINAL covariate
 #' scale (defaulting to a grid over the fitted range) and re-standardized to

@@ -41,6 +41,11 @@ basis (\verb{phi_n(t) = sqrt((2n+1)/2) P_n(t)}). A comparison with another
 program must rebuild the same mapping and the same normalized Legendre
 family; otherwise the coefficient covariances are not the same estimand.
 
+A random-regression fit returns no standard errors.
+\code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}} and \code{\link[=covariance_standard_errors]{covariance_standard_errors()}}
+are refused for \code{target = "random_regression"}; use \code{\link[=rr_covariance]{rr_covariance()}} for
+the point estimate of \code{K_g}.
+
 \code{order} must be a literal positive integer in the formula. A name such as
 \verb{ord <- 2L; rr(age, order = ord)} is not evaluated by the parser.
 }

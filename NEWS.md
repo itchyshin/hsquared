@@ -1,5 +1,11 @@
 # hsquared (development version)
 
+* **hsquared#300 (docs): `?rr` and `?rr_covariance` say SEs are refused.**
+  `variance_component_standard_errors()` and `covariance_standard_errors()`
+  are refused for `target = "random_regression"`; both help pages now say
+  so and point to `rr_covariance()` for the point estimate. No behaviour
+  change.
+
 * **hsquared#321: `metafounder()` now rejects a repeated named argument
   and `formula =`.** `animal()` already stopped a second `pedigree =` and
   no longer called `formula =` "planned". `metafounder()` had the same
