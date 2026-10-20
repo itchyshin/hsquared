@@ -1,5 +1,10 @@
 # hsquared (development version)
 
+* **`metafounder_groups()` uses the names of `group_of` when the fit has no
+  `ids`.** The names were read after `as.character()` had dropped them, so the
+  fallback never worked and such a fit errored as malformed. No estimator
+  change. No covered flip.
+
 * **hsquared#321: `metafounder()` now rejects a repeated named argument
   and `formula =`.** `animal()` already stopped a second `pedigree =` and
   no longer called `formula =` "planned". `metafounder()` had the same
