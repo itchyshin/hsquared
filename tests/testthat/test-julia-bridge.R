@@ -830,3 +830,112 @@ test_that("the default engine fits the v0.1 contract via ai_reml", {
     "estimated_ai_reml"
   )
 })
+
+hs_266_inbred_pedigree <- function() {
+  base <- hs_sim_pedigree(n_founder = 10, n_per_gen = 10, n_gen = 1, seed = 266)
+  # A sib mating (full sibs x and y, then offspring z1-z3) so F > 0.
+  rbind(
+    base,
+    data.frame(
+      id = c("x", "y", "z1", "z2", "z3"),
+      sire = c("1", "1", "x", "x", "x"),
+      dam = c("6", "6", "y", "y", "y"),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+test_that("pedigree routes hand the engine relationship_diag = 1 + F (#266)", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
+  )
+
+  ped <- hs_266_inbred_pedigree()
+  set.seed(266)
+  dat <- data.frame(
+    id = ped$id,
+    y = stats::rnorm(nrow(ped), 10, 1),
+    stringsAsFactors = FALSE
+  )
+  init <- c(sigma_a2 = 0.5, sigma_e2 = 0.5)
+
+  for (route in c("default", "sparse")) {
+    engine_control <- list(initial = init)
+    if (identical(route, "sparse")) {
+      engine_control$target <- "sparse_reml"
+    }
+    fitter <- if (identical(route, "sparse")) "fit_sparse_reml" else "fit_ai_reml"
+    fit <- hsquared(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE,
+      control = if (identical(route, "sparse")) {
+        hs_control(engine = "julia", engine_control = engine_control)
+      } else {
+        hs_control(engine_control = engine_control)
+      }
+    )
+
+    carried <- JuliaCall::julia_eval("hsq_spec.relationship_diag")
+    expected <- JuliaCall::julia_eval(
+      "1 .+ HSquared.inbreeding_coefficients(hsq_ped)"
+    )
+    expect_equal(carried, expected, tolerance = 1e-12, info = route)
+    expect_gt(max(carried), 1.2)
+
+    # The carried diagonal must not change what users see.
+    JuliaCall::julia_command(paste0(
+      "hsq_spec_nodiag = HSquared.animal_model_spec(",
+      "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
+      "ids = hsq_ped.ids, method = :REML);",
+      "hsq_fit_nodiag = HSquared.", fitter, "(",
+      "hsq_spec_nodiag; initial = (sigma_a2 = hsq_initial_sigma_a2,",
+      "sigma_e2 = hsq_initial_sigma_e2), iterations = hsq_iterations);",
+      "hsq_rel_nodiag = collect(Float64, HSquared.reliability(hsq_fit_nodiag).values);",
+      "hsq_rel_carried = collect(Float64, HSquared.reliability(hsq_fit).values);"
+    ))
+    expect_equal(
+      JuliaCall::julia_eval("hsq_rel_carried"),
+      JuliaCall::julia_eval("hsq_rel_nodiag"),
+      tolerance = 1e-12,
+      info = route
+    )
+    expect_equal(
+      reliability(fit)$value,
+      JuliaCall::julia_eval("hsq_rel_nodiag"),
+      tolerance = 1e-8,
+      info = route
+    )
+  }
+})
+
+test_that("the genomic route does not carry a pedigree relationship_diag (#266)", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
+  )
+
+  ids <- paste0("i", 1:30)
+  set.seed(266)
+  M <- matrix(
+    sample(0:2, 30 * 60, replace = TRUE),
+    nrow = 30,
+    dimnames = list(ids, paste0("m", 1:60))
+  )
+  dat <- data.frame(id = ids, y = stats::rnorm(30), stringsAsFactors = FALSE)
+  fit <- hsquared(
+    y ~ genomic(1 | id, markers = M),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+  expect_s3_class(fit, "hsquared_fit")
+  expect_null(JuliaCall::julia_eval("hsq_spec.relationship_diag"))
+})

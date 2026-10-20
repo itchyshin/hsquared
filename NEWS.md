@@ -1,5 +1,11 @@
 # hsquared (development version)
 
+* **hsquared#266 (performance): pedigree Julia routes carry `1 + F` to the
+  engine.** The default and `sparse_reml` bridge routes now pass the inbreeding
+  diagonal that `pedigree_inverse` already computes, so `reliability()` skips a
+  selected inverse of `Ainv`. Reliability is unchanged (1e-12). Supplied-`Ginv`
+  and genomic routes are untouched. No covered flip.
+
 * **hsquared#321: `metafounder()` now rejects a repeated named argument
   and `formula =`.** `animal()` already stopped a second `pedigree =` and
   no longer called `formula =` "planned". `metafounder()` had the same

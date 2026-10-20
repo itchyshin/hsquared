@@ -27,6 +27,19 @@ hs_julia_bridge_available <- function(project = hs_default_julia_project()) {
 # `attr(fit, "bridge_errors")` and warns once (see R/conditions.R).
 hs_julia_bridge_errors_reset <- "hsq_bridge_errors = Dict{String,String}();"
 
+# Pedigree routes only (#266): `pedigree_inverse` already paid for the
+# inbreeding F, so hand the engine diag(A) = 1 + F and `reliability()` skips a
+# selected inverse of Ainv. Never use this on a supplied-Ginv/genomic route,
+# where diag(inv(Ginv)) is not 1 + F. An engine without the keyword gets no
+# extra argument.
+hs_julia_pedigree_diag_cmd <- paste(
+  "hsq_diag_kw = if isdefined(HSquared, :inbreeding_coefficients) &&",
+  "any(m -> :relationship_diag in Base.kwarg_decl(m),",
+  "methods(HSquared.animal_model_spec));",
+  "(relationship_diag = 1 .+ HSquared.inbreeding_coefficients(hsq_ped),);",
+  "else NamedTuple(); end;"
+)
+
 # The recording `catch` of one guarded post-fit call; `name` is the engine
 # function that threw, as the warning reports it:
 #   catch err; hsq_bridge_errors["<name>"] = sprint(showerror, err); nothing; end;
@@ -407,9 +420,10 @@ hs_fit_julia_sparse_reml_payload <- function(
       hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      hs_julia_pedigree_diag_cmd,
       "hsq_spec = HSquared.animal_model_spec(",
       "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-      "ids = hsq_ped.ids, method = :REML);",
+      "ids = hsq_ped.ids, method = :REML, hsq_diag_kw...);",
       "hsq_fit = HSquared.fit_sparse_reml(",
       "hsq_spec;",
       "initial = (sigma_a2 = hsq_initial_sigma_a2,",
@@ -485,9 +499,10 @@ hs_fit_julia_ai_reml_payload <- function(
       hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      hs_julia_pedigree_diag_cmd,
       "hsq_spec = HSquared.animal_model_spec(",
       "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-      "ids = hsq_ped.ids, method = :REML);",
+      "ids = hsq_ped.ids, method = :REML, hsq_diag_kw...);",
       "hsq_fit = HSquared.fit_ai_reml(",
       "hsq_spec;",
       "initial = (sigma_a2 = hsq_initial_sigma_a2,",
