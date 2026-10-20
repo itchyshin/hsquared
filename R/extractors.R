@@ -488,8 +488,8 @@ metafounder_groups.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  group_of <- as.character(group_of)
   ids <- object$payload$ids %||% names(group_of)
+  group_of <- as.character(group_of)
   if (is.null(ids) || length(ids) != length(group_of)) {
     stop(
       "This `hsquared_fit` object has malformed metafounder group metadata; ",
