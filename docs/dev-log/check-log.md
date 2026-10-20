@@ -8664,3 +8664,7 @@ submission remains in its separate review lane.
 ## Final local checks and landing preparation, 2026-09-30T22:56:58.704678+00:00
 
 Full Julia suite passes417.16seconds at source11f6319f/runner58cea5f; all213 current live R-Julia checks pass without failures/warnings/skips; R archive854f has Status:OK, and both documentation sites build locally. The installed independently challenged evidence checker passes three scopes against retained hashes. A2/E1 bounded review judgments are accepted; V1/V2 reverified. All child ledgers are met, with nine actual read-only checks replayed and only top V3 still open for consolidated report and hosted landing evidence. Report: docs/dev-log/after-task/2026-09-30-bounded-twin-local-acceptance.md. Protected platform configs are excluded. Completed FA primary stays immutable and experimental. No GPU, submission or tag.
+
+## rr response-scale warning (#299), 2026-10-20
+
+`Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-random-regression.R")'`: new test failed on main (c48bd26: `hs_warn_rr_response_scale` missing); green on the branch, 95 passed, 0 failed, 1 skipped (live Julia). `test-package-help-honesty.R`: 285 passed, 0 failed. Julia, `air`, `pkgdown` and the full `devtools::check()` were not run in this sandbox. The engine-side `converged = TRUE` below the optimum is unchanged (HSquared.jl).

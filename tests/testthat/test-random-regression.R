@@ -729,3 +729,49 @@ test_that("public claim surfaces use the implemented rr() grammar and accessor",
     }
   }
 })
+
+test_that("rr fit warns when the response is far from unit scale (#299)", {
+  fx <- hs_rr_fixture()
+  spec_of <- function(scale) {
+    d <- fx$data
+    d$weight <- d$weight * scale
+    hsquared:::hs_build_model_spec(
+      weight ~ sex + animal(rr(age, order = 2) | id, pedigree = fx$ped),
+      data = d,
+      family = stats::gaussian(),
+      REML = TRUE
+    )
+  }
+  expect_warning(
+    hsquared:::hs_warn_rr_response_scale(spec_of(5000)),
+    "unit variance"
+  )
+  expect_warning(
+    hsquared:::hs_warn_rr_response_scale(spec_of(1e-3)),
+    "unit variance"
+  )
+  expect_no_warning(hsquared:::hs_warn_rr_response_scale(spec_of(1)))
+
+  # The public entry point reaches the check before any engine call.
+  d <- fx$data
+  d$weight <- d$weight * 5000
+  w <- NULL
+  tryCatch(
+    withCallingHandlers(
+      hsquared(
+        weight ~ sex + animal(rr(age, order = 2) | id, pedigree = fx$ped),
+        data = d,
+        control = hs_control(
+          engine = "julia",
+          engine_control = list(target = "random_regression")
+        )
+      ),
+      warning = function(cnd) {
+        w <<- c(w, conditionMessage(cnd))
+        invokeRestart("muffleWarning")
+      }
+    ),
+    error = function(e) NULL
+  )
+  expect_true(any(grepl("unit variance", w)))
+})

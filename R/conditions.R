@@ -487,3 +487,31 @@ hs_warn_unmodelled_repeated_records <- function(spec) {
   )
   invisible(TRUE)
 }
+
+# hsquared#299: the random-regression engine fit can stop at a non-optimal point
+# and still report `converged = TRUE` when the response is far from unit scale
+# (un-rescaled milk yield, sd ~ 4,500, ended 0.19-0.76 log-lik below the REML
+# optimum with K_g[1, 2] stuck at 0). The engine-side fix lives in HSquared.jl;
+# until then R tells the user the lever. REML is scale-equivariant, so rescaling
+# y and multiplying the variances back by sd^2 recovers the same fit.
+hs_warn_rr_response_scale <- function(spec) {
+  values <- spec$response$values
+  if (is.null(values) || length(values) < 2L) {
+    return(invisible(FALSE))
+  }
+  sd_y <- stats::sd(values)
+  if (!is.finite(sd_y) || (sd_y >= 0.1 && sd_y <= 10)) {
+    return(invisible(FALSE))
+  }
+  warning(
+    "The response `", spec$response$name, "` has standard deviation ",
+    signif(sd_y, 3), ", far from unit scale. The random-regression fit can ",
+    "stop short of the REML optimum on such a response and still report ",
+    "`converged = TRUE` (hsquared#299). Rescale the response to about unit ",
+    "variance, e.g. `", spec$response$name, " / sd(", spec$response$name,
+    ")`, and multiply the fitted variances (K_g, residual) back by its ",
+    "variance afterwards; REML is scale-equivariant and h2(t) is unchanged.",
+    call. = FALSE
+  )
+  invisible(TRUE)
+}
