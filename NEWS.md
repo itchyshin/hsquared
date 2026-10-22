@@ -5,6 +5,12 @@
   are refused for `target = "random_regression"`; both help pages now say
   so and point to `rr_covariance()` for the point estimate. No behaviour
   change.
+* **hsquared#297 (docs): `?hs_control` states the multivariate iterations
+  default.** `target = "multivariate"` uses `iterations = 2000`; an
+  unstructured model with three or more traits can stop at that cap with
+  `converged = FALSE`, and the remedy is a larger `iterations` through
+  `engine_control`. A help-page test pins the text. No optimiser change.
+  No covered flip.
 
 * **hsquared#321: `metafounder()` now rejects a repeated named argument
   and `formula =`.** `animal()` already stopped a second `pedigree =` and
