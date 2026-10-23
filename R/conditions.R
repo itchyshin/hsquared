@@ -511,12 +511,10 @@ hs_warn_rr_response_scale <- function(spec) {
     ", far from unit scale. The random-regression fit can ",
     "stop short of the REML optimum on such a response and still report ",
     "`converged = TRUE` (hsquared#299). Rescale the response to about unit ",
-    "variance, e.g. `",
-    spec$response$name,
-    " / sd(",
-    spec$response$name,
-    ")`, and multiply the fitted variances (K_g, residual) back by its ",
-    "variance afterwards; REML is scale-equivariant and h2(t) is unchanged.",
+    "variance by dividing it by its sample standard deviation. To return to ",
+    "the original response units, multiply fixed-effect coefficients by the ",
+    "original standard deviation and variance components (K_g, residual) by ",
+    "the original standard deviation squared. h2(t) is unchanged.",
     call. = FALSE
   )
   invisible(TRUE)

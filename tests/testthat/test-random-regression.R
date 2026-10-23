@@ -744,7 +744,7 @@ test_that("rr fit warns when the response is far from unit scale (#299)", {
   }
   expect_warning(
     hsquared:::hs_warn_rr_response_scale(spec_of(5000)),
-    "unit variance"
+    "unit variance.*fixed-effect coefficients.*standard deviation squared"
   )
   expect_warning(
     hsquared:::hs_warn_rr_response_scale(spec_of(1e-3)),
