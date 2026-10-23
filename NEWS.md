@@ -1,5 +1,7 @@
 # hsquared (development version)
 
+* hsquared#299: random-regression fits warn when sd(y) is outside 0.1 to 10; the engine half is still open in HSquared.jl, no covered flip.
+
 * **hsquared#266 (performance): pedigree Julia routes carry `1 + F` to the
   engine.** The default and `sparse_reml` bridge routes now pass the inbreeding
   diagonal that `pedigree_inverse` already computes, so `reliability()` skips a
