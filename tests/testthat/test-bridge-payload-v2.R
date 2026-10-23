@@ -8,18 +8,18 @@
 
 make_ped <- function() {
   data.frame(
-    id   = c("a", "b", "c", "d"),
-    sire = c(NA,  NA,  "a", "a"),
-    dam  = c(NA,  NA,  "b", "c"),
+    id = c("a", "b", "c", "d"),
+    sire = c(NA, NA, "a", "a"),
+    dam = c(NA, NA, "b", "c"),
     stringsAsFactors = FALSE
   )
 }
 
 make_dat_single <- function() {
   data.frame(
-    y   = c(1, 2, 3),
+    y = c(1, 2, 3),
     sex = c("f", "m", "f"),
-    id  = c("a", "c", "d"),
+    id = c("a", "c", "d"),
     stringsAsFactors = FALSE
   )
 }
@@ -59,12 +59,15 @@ test_that("payload-v2 single animal model: exactly one pedigree block", {
   expect_equal(re[[1L]]$relmat_status, "build_in_julia")
   expect_null(re[[1L]]$relmat_inverse)
   # pedigree sub-list must carry the same fields as the top-level pedigree
-  expect_equal(re[[1L]]$pedigree$id,             payload$pedigree$id)
-  expect_equal(re[[1L]]$pedigree$sire,           payload$pedigree$sire)
-  expect_equal(re[[1L]]$pedigree$dam,            payload$pedigree$dam)
-  expect_equal(re[[1L]]$pedigree$sire_index,     payload$pedigree$sire_index)
-  expect_equal(re[[1L]]$pedigree$dam_index,      payload$pedigree$dam_index)
-  expect_equal(re[[1L]]$pedigree$original_order, payload$pedigree$original_order)
+  expect_equal(re[[1L]]$pedigree$id, payload$pedigree$id)
+  expect_equal(re[[1L]]$pedigree$sire, payload$pedigree$sire)
+  expect_equal(re[[1L]]$pedigree$dam, payload$pedigree$dam)
+  expect_equal(re[[1L]]$pedigree$sire_index, payload$pedigree$sire_index)
+  expect_equal(re[[1L]]$pedigree$dam_index, payload$pedigree$dam_index)
+  expect_equal(
+    re[[1L]]$pedigree$original_order,
+    payload$pedigree$original_order
+  )
   # ids must equal the top-level ids
   expect_equal(re[[1L]]$ids, payload$ids)
   # Z must be the same sparse matrix as the top-level Z
@@ -119,13 +122,13 @@ test_that("payload-v2 single animal model: all legacy v0.1 fields unchanged", {
   # ids + pedigree
   expect_equal(payload$ids, c("a", "b", "c", "d"))
   expect_equal(payload$pedigree$sire_index, c(0L, 0L, 1L, 1L))
-  expect_equal(payload$pedigree$dam_index,  c(0L, 0L, 2L, 3L))
+  expect_equal(payload$pedigree$dam_index, c(0L, 0L, 2L, 3L))
 
   # metadata
-  expect_equal(payload$metadata$observed_ids,       c("a", "c", "d"))
-  expect_equal(payload$metadata$observed_id_index,  c(1L, 3L, 4L))
-  expect_equal(payload$metadata$ainv_status,         "build_in_julia")
-  expect_match(payload$metadata$julia_spec_target,  "animal_model_spec")
+  expect_equal(payload$metadata$observed_ids, c("a", "c", "d"))
+  expect_equal(payload$metadata$observed_id_index, c(1L, 3L, 4L))
+  expect_equal(payload$metadata$ainv_status, "build_in_julia")
+  expect_match(payload$metadata$julia_spec_target, "animal_model_spec")
 })
 
 # ---------------------------------------------------------------------------- #
@@ -135,8 +138,8 @@ test_that("payload-v2 single animal model: all legacy v0.1 fields unchanged", {
 test_that("payload-v2 animal + common_env: two blocks (pedigree + iid)", {
   ped <- make_ped()
   dat <- data.frame(
-    y      = c(1, 2, 3, 4),
-    id     = c("a", "c", "d", "b"),
+    y = c(1, 2, 3, 4),
+    id = c("a", "c", "d", "b"),
     litter = c("L1", "L1", "L2", "L2"),
     stringsAsFactors = FALSE
   )
@@ -152,13 +155,13 @@ test_that("payload-v2 animal + common_env: two blocks (pedigree + iid)", {
   expect_length(re, 2L)
 
   # block 1
-  expect_equal(re[[1L]]$name,          "animal")
-  expect_equal(re[[1L]]$type,          "pedigree")
+  expect_equal(re[[1L]]$name, "animal")
+  expect_equal(re[[1L]]$type, "pedigree")
   expect_equal(re[[1L]]$relmat_status, "build_in_julia")
 
   # block 2
-  expect_equal(re[[2L]]$name,          "common_env")
-  expect_equal(re[[2L]]$type,          "iid")
+  expect_equal(re[[2L]]$name, "common_env")
+  expect_equal(re[[2L]]$type, "iid")
   expect_equal(re[[2L]]$relmat_status, "identity")
   expect_null(re[[2L]]$relmat_inverse)
   expect_null(re[[2L]]$pedigree)
@@ -174,7 +177,8 @@ test_that("payload-v2 animal + common_env: two blocks (pedigree + iid)", {
   expect_equal(payload$payload_version, 2L)
   expect_s4_class(payload$Z2, "dgCMatrix")
   expect_equal(
-    payload$effect2$type,         "common_env"
+    payload$effect2$type,
+    "common_env"
   )
   expect_equal(payload$effect2$relationship, "identity")
 })
@@ -187,7 +191,7 @@ test_that("payload-v2 animal + permanent: two blocks (pedigree + iid)", {
   ped <- make_ped()
   # repeatability: repeated records per individual
   dat <- data.frame(
-    y  = c(1, 2, 3, 4, 5, 6),
+    y = c(1, 2, 3, 4, 5, 6),
     id = c("a", "a", "b", "b", "c", "c"),
     stringsAsFactors = FALSE
   )
@@ -203,13 +207,13 @@ test_that("payload-v2 animal + permanent: two blocks (pedigree + iid)", {
   expect_length(re, 2L)
 
   # block 1 — animal pedigree
-  expect_equal(re[[1L]]$name,          "animal")
-  expect_equal(re[[1L]]$type,          "pedigree")
+  expect_equal(re[[1L]]$name, "animal")
+  expect_equal(re[[1L]]$type, "pedigree")
   expect_equal(re[[1L]]$relmat_status, "build_in_julia")
 
   # block 2 — permanent environment (iid, shares animal Z)
-  expect_equal(re[[2L]]$name,          "permanent")
-  expect_equal(re[[2L]]$type,          "iid")
+  expect_equal(re[[2L]]$name, "permanent")
+  expect_equal(re[[2L]]$type, "iid")
   expect_equal(re[[2L]]$relmat_status, "identity")
   expect_null(re[[2L]]$relmat_inverse)
   expect_null(re[[2L]]$pedigree)
@@ -235,8 +239,8 @@ test_that("payload-v2 animal + permanent: two blocks (pedigree + iid)", {
 test_that("payload-v2 animal + maternal_genetic: two pedigree blocks", {
   ped <- make_ped()
   dat <- data.frame(
-    y   = c(1, 2, 3),
-    id  = c("c", "d", "c"),
+    y = c(1, 2, 3),
+    id = c("c", "d", "c"),
     dam = c("b", "c", "c"),
     stringsAsFactors = FALSE
   )
@@ -252,13 +256,13 @@ test_that("payload-v2 animal + maternal_genetic: two pedigree blocks", {
   expect_length(re, 2L)
 
   # block 1 — direct animal (pedigree)
-  expect_equal(re[[1L]]$name,          "animal")
-  expect_equal(re[[1L]]$type,          "pedigree")
+  expect_equal(re[[1L]]$name, "animal")
+  expect_equal(re[[1L]]$type, "pedigree")
   expect_equal(re[[1L]]$relmat_status, "build_in_julia")
 
   # block 2 — maternal genetic (independent pedigree, NOT correlated — schema §3)
-  expect_equal(re[[2L]]$name,          "maternal")
-  expect_equal(re[[2L]]$type,          "pedigree")
+  expect_equal(re[[2L]]$name, "maternal")
+  expect_equal(re[[2L]]$type, "pedigree")
   expect_equal(re[[2L]]$relmat_status, "build_in_julia")
   expect_null(re[[2L]]$relmat_inverse)
   # maternal block carries pedigree rows (shares Ainv construction)
@@ -289,20 +293,47 @@ test_that("payload-v2 preserves the frozen bridge schema", {
   expect_setequal(
     names(payload),
     c(
-      "payload_version", "y", "Y", "X", "Z", "Z2", "effect2",
-      "random_effects", "random_regression", "Ainv", "group_of",
-      "Gamma", "gamma_labels", "relationship_source", "method", "family",
-      "n_trials", "ids", "pedigree", "metadata"
+      "payload_version",
+      "y",
+      "Y",
+      "X",
+      "Z",
+      "Z2",
+      "effect2",
+      "random_effects",
+      "random_regression",
+      "Ainv",
+      "group_of",
+      "Gamma",
+      "gamma_labels",
+      "relationship_source",
+      "method",
+      "family",
+      "n_trials",
+      "ids",
+      "pedigree",
+      "metadata"
     )
   )
   expect_equal(payload$payload_version, 2L)
   expect_setequal(
     names(payload$metadata),
     c(
-      "response", "response_type", "trait_names", "random_regression",
-      "fixed_colnames", "animal_id_column", "observed_ids",
-      "observed_id_index", "relationship", "gamma_source", "fixed_terms",
-      "contrasts", "ainv_status", "ainv_target", "julia_spec_target",
+      "response",
+      "response_type",
+      "trait_names",
+      "random_regression",
+      "fixed_colnames",
+      "animal_id_column",
+      "observed_ids",
+      "observed_id_index",
+      "relationship",
+      "gamma_source",
+      "fixed_terms",
+      "contrasts",
+      "ainv_status",
+      "ainv_target",
+      "julia_spec_target",
       "julia_fit_target"
     )
   )
@@ -312,6 +343,14 @@ test_that("payload-v2 preserves the frozen bridge schema", {
   )
   expect_equal(payload$random_effects[[1L]]$type, "pedigree")
   expect_equal(payload$random_effects[[1L]]$relmat_status, "build_in_julia")
-  expect_match(payload$metadata$julia_spec_target, "animal_model_spec", fixed = TRUE)
-  expect_match(payload$metadata$julia_fit_target, "fit_animal_model", fixed = TRUE)
+  expect_match(
+    payload$metadata$julia_spec_target,
+    "animal_model_spec",
+    fixed = TRUE
+  )
+  expect_match(
+    payload$metadata$julia_fit_target,
+    "fit_animal_model",
+    fixed = TRUE
+  )
 })

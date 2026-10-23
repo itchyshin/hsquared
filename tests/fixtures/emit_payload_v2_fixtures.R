@@ -32,7 +32,10 @@ suppressMessages({
 cmd_args_full <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("--file=", cmd_args_full, value = TRUE)
 if (length(file_arg) > 0L) {
-  script_path <- normalizePath(sub("--file=", "", file_arg[[1L]]), mustWork = FALSE)
+  script_path <- normalizePath(
+    sub("--file=", "", file_arg[[1L]]),
+    mustWork = FALSE
+  )
   this_dir <- dirname(script_path)
   hsq_root <- normalizePath(file.path(this_dir, "../.."), mustWork = FALSE)
 } else {
@@ -68,9 +71,9 @@ sparse_to_triplet <- function(M) {
   M <- as(M, "CsparseMatrix")
   M <- as(M, "TsparseMatrix")
   list(
-    i    = as.integer(M@i + 1L),   # 1-based row indices for Julia
-    j    = as.integer(M@j + 1L),   # 1-based col indices for Julia
-    v    = as.numeric(M@x),
+    i = as.integer(M@i + 1L), # 1-based row indices for Julia
+    j = as.integer(M@j + 1L), # 1-based col indices for Julia
+    v = as.numeric(M@x),
     nrow = nrow(M),
     ncol = ncol(M)
   )
@@ -81,7 +84,7 @@ sparse_to_triplet <- function(M) {
 dense_to_rowmajor <- function(M) {
   M <- unname(as.matrix(M))
   list(
-    data = as.numeric(t(M)),   # row-major: row1col1, row1col2, ..., row2col1, ...
+    data = as.numeric(t(M)), # row-major: row1col1, row1col2, ..., row2col1, ...
     nrow = nrow(M),
     ncol = ncol(M)
   )
@@ -90,11 +93,11 @@ dense_to_rowmajor <- function(M) {
 #' Serialize a pedigree sub-list (id, sire, dam + integer indexes).
 pedigree_to_json <- function(ped_list) {
   list(
-    id             = as.character(ped_list$id),
-    sire           = as.character(ped_list$sire),
-    dam            = as.character(ped_list$dam),
-    sire_index     = as.integer(ped_list$sire_index),
-    dam_index      = as.integer(ped_list$dam_index),
+    id = as.character(ped_list$id),
+    sire = as.character(ped_list$sire),
+    dam = as.character(ped_list$dam),
+    sire_index = as.integer(ped_list$sire_index),
+    dam_index = as.integer(ped_list$dam_index),
     original_order = as.integer(ped_list$original_order)
   )
 }
@@ -102,11 +105,11 @@ pedigree_to_json <- function(ped_list) {
 #' Serialize one block from random_effects.
 block_to_json <- function(blk) {
   out <- list(
-    name          = blk$name,
-    type          = blk$type,
+    name = blk$name,
+    type = blk$type,
     relmat_status = blk$relmat_status,
-    relmat_inverse = NULL,          # always NULL: Julia builds it
-    ids            = as.character(blk$ids)
+    relmat_inverse = NULL, # always NULL: Julia builds it
+    ids = as.character(blk$ids)
   )
   # Z is always a sparse matrix in the emitter.
   out$Z <- sparse_to_triplet(blk$Z)
@@ -126,17 +129,17 @@ payload_to_json_list <- function(payload) {
 
   list(
     payload_version = as.integer(payload$payload_version),
-    y               = as.numeric(payload$y),
-    X               = dense_to_rowmajor(payload$X),
-    method          = as.character(payload$method),
-    family          = as.character(payload$family),
-    random_effects  = re_json,
+    y = as.numeric(payload$y),
+    X = dense_to_rowmajor(payload$X),
+    method = as.character(payload$method),
+    family = as.character(payload$family),
+    random_effects = re_json,
     # --- metadata for human readability + Julia cross-check ---
     metadata = list(
-      n_obs             = length(payload$y),
-      n_re_blocks       = length(payload$random_effects),
-      fixed_colnames    = as.character(payload$metadata$fixed_colnames),
-      ainv_status       = as.character(payload$metadata$ainv_status)
+      n_obs = length(payload$y),
+      n_re_blocks = length(payload$random_effects),
+      fixed_colnames = as.character(payload$metadata$fixed_colnames),
+      ainv_status = as.character(payload$metadata$ainv_status)
     )
   )
 }
@@ -144,9 +147,9 @@ payload_to_json_list <- function(payload) {
 # ---- shared pedigree + data ------------------------------------------------- #
 
 ped_abcd <- data.frame(
-  id   = c("a", "b", "c", "d"),
-  sire = c(NA,  NA,  "a", "a"),
-  dam  = c(NA,  NA,  "b", "c"),
+  id = c("a", "b", "c", "d"),
+  sire = c(NA, NA, "a", "a"),
+  dam = c(NA, NA, "b", "c"),
   stringsAsFactors = FALSE
 )
 
@@ -157,17 +160,17 @@ ped_abcd <- data.frame(
 # ============================================================================
 
 dat_a <- data.frame(
-  y   = c(1.0, 2.0, 3.0),
+  y = c(1.0, 2.0, 3.0),
   sex = c("f", "m", "f"),
-  id  = c("a", "c", "d"),
+  id = c("a", "c", "d"),
   stringsAsFactors = FALSE
 )
 
 spec_a <- hsquared:::hs_build_model_spec(
   y ~ sex + animal(1 | id, pedigree = ped_abcd),
-  data   = dat_a,
+  data = dat_a,
   family = stats::gaussian(),
-  REML   = TRUE
+  REML = TRUE
 )
 payload_a <- hsquared:::hs_build_bridge_payload(spec_a)
 
@@ -177,7 +180,13 @@ stopifnot(payload_a$random_effects[[1L]]$relmat_status == "build_in_julia")
 
 json_a <- payload_to_json_list(payload_a)
 out_path_a <- file.path(out_dir, "fixture_a_single_animal.json")
-jsonlite::write_json(json_a, out_path_a, auto_unbox = TRUE, null = "null", digits = 15)
+jsonlite::write_json(
+  json_a,
+  out_path_a,
+  auto_unbox = TRUE,
+  null = "null",
+  digits = 15
+)
 cat("Written fixture (a):", out_path_a, "\n")
 
 # ============================================================================
@@ -188,17 +197,17 @@ cat("Written fixture (a):", out_path_a, "\n")
 
 # 4 records, 4 animals, 2 litter groups.
 dat_b <- data.frame(
-  y      = c(14.0, 13.0, 12.1, 8.9),
-  id     = c("a",  "b",  "c",  "d"),
+  y = c(14.0, 13.0, 12.1, 8.9),
+  id = c("a", "b", "c", "d"),
   litter = c("L1", "L1", "L2", "L2"),
   stringsAsFactors = FALSE
 )
 
 spec_b <- hsquared:::hs_build_model_spec(
   y ~ animal(1 | id, pedigree = ped_abcd) + common_env(1 | litter),
-  data   = dat_b,
+  data = dat_b,
   family = stats::gaussian(),
-  REML   = TRUE
+  REML = TRUE
 )
 payload_b <- hsquared:::hs_build_bridge_payload(spec_b)
 
@@ -211,7 +220,13 @@ stopifnot(payload_b$random_effects[[2L]]$relmat_status == "identity")
 
 json_b <- payload_to_json_list(payload_b)
 out_path_b <- file.path(out_dir, "fixture_b_animal_common_env.json")
-jsonlite::write_json(json_b, out_path_b, auto_unbox = TRUE, null = "null", digits = 15)
+jsonlite::write_json(
+  json_b,
+  out_path_b,
+  auto_unbox = TRUE,
+  null = "null",
+  digits = 15
+)
 cat("Written fixture (b):", out_path_b, "\n")
 
 # ============================================================================
@@ -222,22 +237,22 @@ cat("Written fixture (b):", out_path_b, "\n")
 
 # 6 records, 3 animals with 2 records each.
 ped_abc <- data.frame(
-  id   = c("a", "b", "c"),
-  sire = c(NA,  NA,  "a"),
-  dam  = c(NA,  NA,  "b"),
+  id = c("a", "b", "c"),
+  sire = c(NA, NA, "a"),
+  dam = c(NA, NA, "b"),
   stringsAsFactors = FALSE
 )
 dat_c <- data.frame(
-  y  = c(10.0, 11.0, 9.0, 12.0, 8.5, 9.5),
-  id = c("a",  "a",  "b", "b",  "c", "c"),
+  y = c(10.0, 11.0, 9.0, 12.0, 8.5, 9.5),
+  id = c("a", "a", "b", "b", "c", "c"),
   stringsAsFactors = FALSE
 )
 
 spec_c <- hsquared:::hs_build_model_spec(
   y ~ animal(1 | id, pedigree = ped_abc) + permanent(1 | id),
-  data   = dat_c,
+  data = dat_c,
   family = stats::gaussian(),
-  REML   = TRUE
+  REML = TRUE
 )
 payload_c <- hsquared:::hs_build_bridge_payload(spec_c)
 
@@ -252,7 +267,13 @@ stopifnot(length(payload_c$random_effects[[2L]]$ids) <= length(payload_c$ids))
 
 json_c <- payload_to_json_list(payload_c)
 out_path_c <- file.path(out_dir, "fixture_c_animal_permanent.json")
-jsonlite::write_json(json_c, out_path_c, auto_unbox = TRUE, null = "null", digits = 15)
+jsonlite::write_json(
+  json_c,
+  out_path_c,
+  auto_unbox = TRUE,
+  null = "null",
+  digits = 15
+)
 cat("Written fixture (c):", out_path_c, "\n")
 
 # ---- summary --------------------------------------------------------------- #

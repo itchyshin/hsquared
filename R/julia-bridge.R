@@ -27,6 +27,19 @@ hs_julia_bridge_available <- function(project = hs_default_julia_project()) {
 # `attr(fit, "bridge_errors")` and warns once (see R/conditions.R).
 hs_julia_bridge_errors_reset <- "hsq_bridge_errors = Dict{String,String}();"
 
+# Pedigree routes only (#266): `pedigree_inverse` already paid for the
+# inbreeding F, so hand the engine diag(A) = 1 + F and `reliability()` skips a
+# selected inverse of Ainv. Never use this on a supplied-Ginv/genomic route,
+# where diag(inv(Ginv)) is not 1 + F. An engine without the keyword gets no
+# extra argument.
+hs_julia_pedigree_diag_cmd <- paste(
+  "hsq_diag_kw = if isdefined(HSquared, :inbreeding_coefficients) &&",
+  "any(m -> :relationship_diag in Base.kwarg_decl(m),",
+  "methods(HSquared.animal_model_spec));",
+  "(relationship_diag = 1 .+ HSquared.inbreeding_coefficients(hsq_ped),);",
+  "else NamedTuple(); end;"
+)
+
 # The recording `catch` of one guarded post-fit call; `name` is the engine
 # function that threw, as the warning reports it:
 #   catch err; hsq_bridge_errors["<name>"] = sprint(showerror, err); nothing; end;
@@ -407,9 +420,10 @@ hs_fit_julia_sparse_reml_payload <- function(
       hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      hs_julia_pedigree_diag_cmd,
       "hsq_spec = HSquared.animal_model_spec(",
       "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-      "ids = hsq_ped.ids, method = :REML);",
+      "ids = hsq_ped.ids, method = :REML, hsq_diag_kw...);",
       "hsq_fit = HSquared.fit_sparse_reml(",
       "hsq_spec;",
       "initial = (sigma_a2 = hsq_initial_sigma_a2,",
@@ -485,9 +499,10 @@ hs_fit_julia_ai_reml_payload <- function(
       hs_julia_bridge_errors_reset,
       "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
       "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+      hs_julia_pedigree_diag_cmd,
       "hsq_spec = HSquared.animal_model_spec(",
       "hsq_y, hsq_X, hsq_Z, hsq_Ainv;",
-      "ids = hsq_ped.ids, method = :REML);",
+      "ids = hsq_ped.ids, method = :REML, hsq_diag_kw...);",
       "hsq_fit = HSquared.fit_ai_reml(",
       "hsq_spec;",
       "initial = (sigma_a2 = hsq_initial_sigma_a2,",
@@ -3532,21 +3547,29 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
 
 hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
   expected_traits <- as.character(
-    payload$metadata$trait_names %||% colnames(payload$Y) %||%
+    payload$metadata$trait_names %||%
+      colnames(payload$Y) %||%
       paste0("trait", seq_len(ncol(payload$Y)))
   )
   expected_ids <- as.character(payload$ids)
-  if (length(expected_traits) != ncol(payload$Y) ||
-      anyNA(expected_traits) || any(!nzchar(expected_traits)) ||
-      anyDuplicated(expected_traits)) {
+  if (
+    length(expected_traits) != ncol(payload$Y) ||
+      anyNA(expected_traits) ||
+      any(!nzchar(expected_traits)) ||
+      anyDuplicated(expected_traits)
+  ) {
     stop(
       "Internal bridge error: multivariate-repeatability request trait ",
       "labels must be unique, nonmissing, nonempty and match Y's columns.",
       call. = FALSE
     )
   }
-  if (length(expected_ids) == 0L || anyNA(expected_ids) ||
-      any(!nzchar(expected_ids)) || anyDuplicated(expected_ids)) {
+  if (
+    length(expected_ids) == 0L ||
+      anyNA(expected_ids) ||
+      any(!nzchar(expected_ids)) ||
+      anyDuplicated(expected_ids)
+  ) {
     stop(
       "Internal bridge error: multivariate-repeatability request animal ",
       "IDs must be unique, nonmissing and nonempty.",
@@ -3558,7 +3581,8 @@ hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
   check_labels <- function(value, expected, field) {
     if (is.null(value)) {
       stop(
-        "The Julia multivariate-repeatability result is missing `", field,
+        "The Julia multivariate-repeatability result is missing `",
+        field,
         "` labels.",
         call. = FALSE
       )
@@ -3566,14 +3590,16 @@ hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
     labels <- as.character(value)
     if (anyNA(labels) || any(!nzchar(labels)) || anyDuplicated(labels)) {
       stop(
-        "The Julia multivariate-repeatability result `", field,
+        "The Julia multivariate-repeatability result `",
+        field,
         "` labels must be unique, nonmissing and nonempty.",
         call. = FALSE
       )
     }
     if (!identical(labels, expected)) {
       stop(
-        "The Julia multivariate-repeatability result `", field,
+        "The Julia multivariate-repeatability result `",
+        field,
         "` labels must match the request in the same order.",
         call. = FALSE
       )

@@ -56,7 +56,9 @@ Sys.setenv(HSQUARED_JULIA_PROJECT = JULIA_PROJECT)
 cat("=== BRIDGE AVAILABILITY ===\n")
 avail <- hsquared:::hs_julia_bridge_available(JULIA_PROJECT)
 cat("hs_julia_bridge_available:", avail, "\n")
-if (!avail) stop("BRIDGE NOT AVAILABLE — check julia on PATH and JULIA_PROJECT")
+if (!avail) {
+  stop("BRIDGE NOT AVAILABLE — check julia on PATH and JULIA_PROJECT")
+}
 
 ## =========================================================
 ## FIXTURE: animal-A pedigree + TWO pedigree-independent iid groups
@@ -71,11 +73,19 @@ set.seed(2027)
 n_found <- 10L
 n_off <- 30L
 ids <- c(paste0("f", 1:n_found), paste0("o", 1:n_off))
-sire <- c(rep(NA, n_found), sample(paste0("f", 1:n_found), n_off, replace = TRUE))
-dam <- c(rep(NA, n_found), sample(paste0("f", 1:n_found), n_off, replace = TRUE))
+sire <- c(
+  rep(NA, n_found),
+  sample(paste0("f", 1:n_found), n_off, replace = TRUE)
+)
+dam <- c(
+  rep(NA, n_found),
+  sample(paste0("f", 1:n_found), n_off, replace = TRUE)
+)
 # avoid sire == dam self-mating
 same <- which(!is.na(sire) & sire == dam)
-for (i in same) dam[i] <- sample(setdiff(paste0("f", 1:n_found), sire[i]), 1)
+for (i in same) {
+  dam[i] <- sample(setdiff(paste0("f", 1:n_found), sire[i]), 1)
+}
 ped <- data.frame(id = ids, sire = sire, dam = dam, stringsAsFactors = FALSE)
 
 n <- length(ids)
@@ -89,16 +99,20 @@ year_e <- setNames(rnorm(5, 0, 0.5), year_lvls)
 # here — identifiability + parity is; the engine's V3-NEFFECT-REML 48-seed gate
 # already establishes recovery)
 a_founder <- setNames(rnorm(n_found, 0, 0.8), paste0("f", 1:n_found))
-a_val <- numeric(n); names(a_val) <- ids
+a_val <- numeric(n)
+names(a_val) <- ids
 a_val[paste0("f", 1:n_found)] <- a_founder
 for (i in seq_len(n_off)) {
   oid <- paste0("o", i)
-  a_val[oid] <- 0.5 * (a_val[ped$sire[ped$id == oid]] + a_val[ped$dam[ped$id == oid]]) +
+  a_val[oid] <- 0.5 *
+    (a_val[ped$sire[ped$id == oid]] + a_val[ped$dam[ped$id == oid]]) +
     rnorm(1, 0, 0.5)
 }
 dat <- data.frame(
   y = 3 + a_val[ids] + nest_e[nest] + year_e[year] + rnorm(n, 0, 0.6),
-  id = ids, nest = nest, year = year,
+  id = ids,
+  nest = nest,
+  year = year,
   stringsAsFactors = FALSE
 )
 
@@ -109,29 +123,64 @@ fit <- hsquared(
   family = gaussian(),
   control = hs_control(
     engine = "julia",
-    engine_control = list(target = "multi_effect", julia_project = JULIA_PROJECT)
+    engine_control = list(
+      target = "multi_effect",
+      julia_project = JULIA_PROJECT
+    )
   )
 )
 
 vc_r <- variance_components(fit)
 h2_r <- heritability(fit)$estimate
-hi_r <- if (!is.null(fit$result$heritability_interval)) heritability_interval(fit) else NULL
+hi_r <- if (!is.null(fit$result$heritability_interval)) {
+  heritability_interval(fit)
+} else {
+  NULL
+}
 vri_r <- fit$result$variance_ratio_intervals
 cat("R converged:", fit$result$converged, "\n")
-cat("R VC (", paste(vc_r$component, collapse = ", "), "):\n  ",
-    paste(signif(vc_r$estimate, 8), collapse = "  "), "\n", sep = "")
+cat(
+  "R VC (",
+  paste(vc_r$component, collapse = ", "),
+  "):\n  ",
+  paste(signif(vc_r$estimate, 8), collapse = "  "),
+  "\n",
+  sep = ""
+)
 cat("R h2 (animal):", signif(h2_r, 8), "\n")
 if (!is.null(hi_r)) {
-  cat("R h2 CI: [", signif(hi_r$lower, 6), ",", signif(hi_r$upper, 6),
-      "] se=", signif(hi_r$se, 6), " method=", hi_r$method,
-      " bnd=", hi_r$boundary, "\n")
+  cat(
+    "R h2 CI: [",
+    signif(hi_r$lower, 6),
+    ",",
+    signif(hi_r$upper, 6),
+    "] se=",
+    signif(hi_r$se, 6),
+    " method=",
+    hi_r$method,
+    " bnd=",
+    hi_r$boundary,
+    "\n"
+  )
 }
 if (!is.null(vri_r)) {
   for (nm in names(vri_r)) {
     ci <- vri_r[[nm]]
-    cat("R ratio[", nm, "]: est=", signif(ci$estimate, 6),
-        " CI=[", signif(ci$lower, 6), ",", signif(ci$upper, 6), "]",
-        " bnd=", ci$boundary, "\n", sep = "")
+    cat(
+      "R ratio[",
+      nm,
+      "]: est=",
+      signif(ci$estimate, 6),
+      " CI=[",
+      signif(ci$lower, 6),
+      ",",
+      signif(ci$upper, 6),
+      "]",
+      " bnd=",
+      ci$boundary,
+      "\n",
+      sep = ""
+    )
   }
 }
 
@@ -185,7 +234,7 @@ JuliaCall::julia_assign("hsq_v2_X", matrix(1.0, nrow = n, ncol = 1))
 JuliaCall::julia_assign("hsq_v2_pid", as.character(ped$id))
 JuliaCall::julia_assign("hsq_v2_sire", ifelse(is.na(ped$sire), "0", ped$sire))
 JuliaCall::julia_assign("hsq_v2_dam", ifelse(is.na(ped$dam), "0", ped$dam))
-JuliaCall::julia_assign("hsq_v2_rec_id", as.character(dat$id))     # record -> animal
+JuliaCall::julia_assign("hsq_v2_rec_id", as.character(dat$id)) # record -> animal
 JuliaCall::julia_assign("hsq_v2_nest", as.character(dat$nest))
 JuliaCall::julia_assign("hsq_v2_year", as.character(dat$year))
 JuliaCall::julia_command(paste(
@@ -228,8 +277,13 @@ d2 <- JuliaCall::julia_eval(paste(
 max_vc_2 <- max(abs(r_sigmas - d2$sigmas), abs(r_se2 - d2$se2))
 max_h2_2 <- abs(h2_r - d2$ratios[animal_idx])
 max_ci_2 <- max(abs(r_ci_lo - d2$ci_lo), abs(r_ci_hi - d2$ci_hi), na.rm = TRUE)
-cat("CHECK 2 native VC:  ", paste(signif(d2$sigmas, 8), collapse = "  "),
-    " | se2=", signif(d2$se2, 8), "\n")
+cat(
+  "CHECK 2 native VC:  ",
+  paste(signif(d2$sigmas, 8), collapse = "  "),
+  " | se2=",
+  signif(d2$se2, 8),
+  "\n"
+)
 cat("CHECK 2 max VC diff:", max_vc_2, "\n")
 cat("CHECK 2 max h2 diff:", max_h2_2, "\n")
 cat("CHECK 2 max CI-bound diff:", max_ci_2, "\n")
@@ -246,17 +300,36 @@ res <- testthat::test_file(
   reporter = testthat::SilentReporter$new()
 )
 totals <- as.data.frame(res)
-cat("test-formula-animal.R | pass:", sum(totals$passed),
-    "| fail:", sum(totals$failed), "| skip:", sum(totals$skipped), "\n")
+cat(
+  "test-formula-animal.R | pass:",
+  sum(totals$passed),
+  "| fail:",
+  sum(totals$failed),
+  "| skip:",
+  sum(totals$skipped),
+  "\n"
+)
 if (sum(totals$failed) > 0) {
-  for (i in which(totals$failed > 0)) cat("  FAIL:", totals$test[i], "\n")
+  for (i in which(totals$failed > 0)) {
+    cat("  FAIL:", totals$test[i], "\n")
+  }
 }
 
 ## =========================================================
 cat("\n=== RESULT SUMMARY ===\n")
-cat("CHECK 1 (marshalling identity)  PASS:", pass1,
-    " | max diff:", signif(max(max_vc_1, max_h2_1, max_ci_1, na.rm = TRUE), 3), "\n")
-cat("CHECK 2 (independent native)    PASS:", pass2,
-    " | max diff:", signif(max(max_vc_2, max_h2_2, max_ci_2, na.rm = TRUE), 3), "\n")
+cat(
+  "CHECK 1 (marshalling identity)  PASS:",
+  pass1,
+  " | max diff:",
+  signif(max(max_vc_1, max_h2_1, max_ci_1, na.rm = TRUE), 3),
+  "\n"
+)
+cat(
+  "CHECK 2 (independent native)    PASS:",
+  pass2,
+  " | max diff:",
+  signif(max(max_vc_2, max_h2_2, max_ci_2, na.rm = TRUE), 3),
+  "\n"
+)
 cat("Live test failures:", sum(totals$failed), "\n")
 cat("\n=== DONE ===\n")

@@ -135,7 +135,11 @@ gwas.hsquared_fit <- function(
       )
     }
     n_permutations <- as.integer(n_permutations)
-    if (length(n_permutations) != 1L || is.na(n_permutations) || n_permutations < 1L) {
+    if (
+      length(n_permutations) != 1L ||
+        is.na(n_permutations) ||
+        n_permutations < 1L
+    ) {
       stop("`n_permutations` must be a positive whole number.", call. = FALSE)
     }
     seed <- as.integer(seed)
@@ -362,25 +366,29 @@ hs_validate_gwas_fit <- function(object) {
 
 hs_gwas_single_ols_residual_mse <- function(y, X, markers) {
   centered_markers <- sweep(markers, 2L, colMeans(markers), FUN = "-")
-  vapply(seq_len(ncol(centered_markers)), function(j) {
-    design <- cbind(X, centered_markers[, j])
-    fit <- stats::lm.fit(design, y)
-    residual_df <- length(y) - fit$rank
-    if (residual_df < 1L) {
-      stop(
-        "The single-marker OLS regression has no residual degrees of freedom.",
-        call. = FALSE
-      )
-    }
-    mse <- sum(fit$residuals^2) / residual_df
-    if (!is.finite(mse) || mse <= 0) {
-      stop(
-        "The single-marker OLS residual mean square must be positive and finite.",
-        call. = FALSE
-      )
-    }
-    mse
-  }, numeric(1L))
+  vapply(
+    seq_len(ncol(centered_markers)),
+    function(j) {
+      design <- cbind(X, centered_markers[, j])
+      fit <- stats::lm.fit(design, y)
+      residual_df <- length(y) - fit$rank
+      if (residual_df < 1L) {
+        stop(
+          "The single-marker OLS regression has no residual degrees of freedom.",
+          call. = FALSE
+        )
+      }
+      mse <- sum(fit$residuals^2) / residual_df
+      if (!is.finite(mse) || mse <= 0) {
+        stop(
+          "The single-marker OLS residual mean square must be positive and finite.",
+          call. = FALSE
+        )
+      }
+      mse
+    },
+    numeric(1L)
+  )
 }
 
 # genome_wide = TRUE reuses the engine's intercept-only type-I evidence. A
@@ -638,15 +646,19 @@ hs_validate_gwas_calibration_metadata <- function(
   # `validation_reference`. For that method `empirical_type1` may be NA; for any other
   # (e.g. fixed-panel-simulation) calibration it must be a measured value in [0, 1].
   if (identical(method, "permutation_addone")) {
-    if (!is.na(empirical_type1) &&
-      (empirical_type1 < 0 || empirical_type1 > 1)) {
+    if (
+      !is.na(empirical_type1) &&
+        (empirical_type1 < 0 || empirical_type1 > 1)
+    ) {
       stop(
         "GWAS calibration `empirical_type1` must be NA or between 0 and 1 for ",
         "the `permutation_addone` method.",
         call. = FALSE
       )
     }
-    validation_reference <- hs_scalar_character(calibration$validation_reference)
+    validation_reference <- hs_scalar_character(
+      calibration$validation_reference
+    )
     if (is.na(validation_reference) || !nzchar(validation_reference)) {
       stop(
         "GWAS calibration method `permutation_addone` requires a non-empty ",
@@ -772,7 +784,8 @@ print.hs_gwas <- function(x, ...) {
       )
       cat(sprintf(
         "  %s, type-I-control validated). Significant when genome_wide_p <= %.2g.\n",
-        cal$calibration_method %||% "permutation_addone", cal$alpha %||% 0.05
+        cal$calibration_method %||% "permutation_addone",
+        cal$alpha %||% 0.05
       ))
       cat(
         "  The nominal `p_value`/`bonferroni_p`/`bh_qvalue` columns remain NOT\n"

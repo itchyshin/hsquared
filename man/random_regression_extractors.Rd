@@ -71,6 +71,11 @@ eigenfunctions \verb{psi_j(t) = phi(t)' v_j} over the covariate grid. These are
 \code{rr_eigenfunctions}); no raw, rotation-arbitrary loadings are returned.
 }
 
+A random-regression fit returns no standard errors.
+\code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}} and \code{\link[=covariance_standard_errors]{covariance_standard_errors()}}
+are refused for this target, so \code{K_g} and every trajectory below are point
+estimates only.
+
 The trajectories are computed in R from the estimated \code{K_g} and the recorded
 covariate standardization range; \code{at} is supplied on the ORIGINAL covariate
 scale (defaulting to a grid over the fitted range) and re-standardized to

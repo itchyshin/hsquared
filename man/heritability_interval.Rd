@@ -14,7 +14,7 @@ they would be ignored; the interval level is fixed at the engine value.}
 }
 \value{
 A one-row data frame with \code{estimate}, \code{lower}, \code{upper}, \code{level}, \code{se}
-(\code{NA} for the profile method), and \code{method}, for \code{hsquared_fit} objects that
+(\code{NA} when the engine returns no SE), and \code{method}, for \code{hsquared_fit} objects that
 contain it.
 }
 \description{
@@ -44,7 +44,7 @@ ANIMAL block's ratio interval (the animal additive variance over the total
 phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 separately in \code{fit$result$variance_ratio_intervals}.
 
-The interval leg is a REML-only, asymptotic (logit delta-method or profile)
+The interval leg is a REML-only, asymptotic (logit delta-method)
 approximation returned by the engine. On the default univariate route the
 SE comes from the REML average-information matrix. On the repeatability,
 two-effect, and multivariate routes the engine uses the observed

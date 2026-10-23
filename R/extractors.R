@@ -488,8 +488,8 @@ metafounder_groups.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  group_of <- as.character(group_of)
   ids <- object$payload$ids %||% names(group_of)
+  group_of <- as.character(group_of)
   if (is.null(ids) || length(ids) != length(group_of)) {
     stop(
       "This `hsquared_fit` object has malformed metafounder group metadata; ",
@@ -1228,7 +1228,7 @@ hs_reject_unused_dots <- function(dots, fn) {
 #' phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 #' separately in `fit$result$variance_ratio_intervals`.
 #'
-#' The interval leg is a REML-only, asymptotic (logit delta-method or profile)
+#' The interval leg is a REML-only, asymptotic (logit delta-method)
 #' approximation returned by the engine. On the default univariate route the
 #' SE comes from the REML average-information matrix. On the repeatability,
 #' two-effect, and multivariate routes the engine uses the observed
@@ -1267,7 +1267,7 @@ hs_reject_unused_dots <- function(dots, fn) {
 #'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate`, `lower`, `upper`, `level`, `se`
-#'   (`NA` for the profile method), and `method`, for `hsquared_fit` objects that
+#'   (`NA` when the engine returns no SE), and `method`, for `hsquared_fit` objects that
 #'   contain it.
 #' @export
 heritability_interval <- function(object, ...) {
@@ -2850,6 +2850,11 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #'   eigenfunctions `psi_j(t) = phi(t)' v_j` over the covariate grid. These are
 #'   **rotation-invariant** functionals of `K_g` (mirroring the engine's
 #'   `rr_eigenfunctions`); no raw, rotation-arbitrary loadings are returned.
+#'
+#' A random-regression fit returns no standard errors.
+#' [variance_component_standard_errors()] and [covariance_standard_errors()]
+#' are refused for this target, so `K_g` and every trajectory below are point
+#' estimates only.
 #'
 #' The trajectories are computed in R from the estimated `K_g` and the recorded
 #' covariate standardization range; `at` is supplied on the ORIGINAL covariate

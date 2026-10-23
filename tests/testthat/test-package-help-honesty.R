@@ -793,3 +793,35 @@ test_that("random-regression help tells users to rescale the response", {
   expect_match(article_text, "Rescale the response to about unit", fixed = TRUE)
   expect_match(article_text, "random_regression", fixed = TRUE)
 })
+
+test_that("help pages do not claim a profile interval or an ML option R cannot run (hsquared#272)", {
+  hi <- testthat::test_path("..", "..", "man", "heritability_interval.Rd")
+  hc <- testthat::test_path("..", "..", "man", "hs_control.Rd")
+  skip_if_not(
+    file.exists(hi) && file.exists(hc),
+    "man pages not present in the check copy"
+  )
+  hi_text <- paste(readLines(hi, warn = FALSE), collapse = "\n")
+  hc_text <- paste(readLines(hc, warn = FALSE), collapse = "\n")
+
+  expect_no_match(hi_text, "delta-method or profile", fixed = TRUE)
+  expect_no_match(hi_text, "for the profile method", fixed = TRUE)
+  expect_no_match(hc_text, "honouring the\n\\code{REML} flag", fixed = TRUE)
+  expect_match(hc_text, "REML only", fixed = TRUE)
+})
+
+test_that("?hs_control states the multivariate iterations default and remedy (hsquared#297)", {
+  rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
+  skip_if_not(file.exists(rd), "man/hs_control.Rd not present in the check copy")
+  text <- paste(readLines(rd, warn = FALSE), collapse = " ")
+  text <- gsub("\\s+", " ", text)
+
+  expect_match(text, "iterations = 2000", fixed = TRUE)
+  expect_match(text, "three or more traits", fixed = TRUE)
+  expect_match(text, "converged = FALSE", fixed = TRUE)
+  expect_match(
+    text,
+    "engine_control = list(target = \"multivariate\", iterations = 10000)",
+    fixed = TRUE
+  )
+})

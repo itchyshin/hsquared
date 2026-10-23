@@ -1,5 +1,23 @@
 # hsquared (development version)
 
+* **hsquared#266 (performance): pedigree Julia routes carry `1 + F` to the
+  engine.** The default and `sparse_reml` bridge routes now pass the inbreeding
+  diagonal that `pedigree_inverse` already computes, so `reliability()` skips a
+  selected inverse of `Ainv`. Reliability is unchanged (1e-12). Supplied-`Ginv`
+  and genomic routes are untouched. No covered flip.
+
+* **hsquared#300 (docs): `?rr` and `?rr_covariance` say SEs are refused.**
+  `variance_component_standard_errors()` and `covariance_standard_errors()`
+  are refused for `target = "random_regression"`; both help pages now say
+  so and point to `rr_covariance()` for the point estimate. No behaviour
+  change.
+* **hsquared#297 (docs): `?hs_control` states the multivariate iterations
+  default.** `target = "multivariate"` uses `iterations = 2000`; an
+  unstructured model with three or more traits can stop at that cap with
+  `converged = FALSE`, and the remedy is a larger `iterations` through
+  `engine_control`. A help-page test pins the text. No optimiser change.
+  No covered flip.
+
 * **hsquared#321: `metafounder()` now rejects a repeated named argument
   and `formula =`.** `animal()` already stopped a second `pedigree =` and
   no longer called `formula =` "planned". `metafounder()` had the same
