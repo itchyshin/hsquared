@@ -112,6 +112,9 @@ hsquared <- function(
   }
   hs_validate_fa_optin_spec(control, julia_target, spec, payload)
   hs_warn_unmodelled_repeated_records(spec)
+  if (identical(julia_target, "random_regression")) {
+    hs_warn_rr_response_scale(spec)
+  }
 
   if (identical(control$engine, "fit")) {
     # hsquared#267: `target` and `variance_components` are Julia-engine keys.
