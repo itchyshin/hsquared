@@ -277,6 +277,12 @@
 #'   optimizer, and returns G/R covariance matrices, genetic and residual
 #'   correlations, per-trait heritability, and cross-trait breeding values.
 #'   Three or more traits and structured covariance are experimental.
+#'   The multivariate fitter uses `iterations = 2000` by default. An
+#'   unstructured model with three or more traits has six or more genetic
+#'   covariance parameters and can stop at that cap with `converged = FALSE`;
+#'   the heritability is then not an estimate and must not be reported. Retry
+#'   with a larger cap, for example
+#'   `engine_control = list(target = "multivariate", iterations = 10000)`.
 #'   `genetic_structure` accepts `"unstructured"`, `"diagonal"`, and a bounded
 #'   `"factor_analytic"` opt-in. `"diagonal"` fixes off-diagonal genetic
 #'   covariances at zero. FA requires exactly four complete Gaussian traits,

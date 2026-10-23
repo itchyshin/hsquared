@@ -20,6 +20,11 @@
 #' program must rebuild the same mapping and the same normalized Legendre
 #' family; otherwise the coefficient covariances are not the same estimand.
 #'
+#' A random-regression fit returns no standard errors.
+#' [variance_component_standard_errors()] and [covariance_standard_errors()]
+#' are refused for `target = "random_regression"`; use [rr_covariance()] for
+#' the point estimate of `K_g`.
+#'
 #' `order` must be a literal positive integer in the formula. A name such as
 #' `ord <- 2L; rr(age, order = ord)` is not evaluated by the parser.
 #'
