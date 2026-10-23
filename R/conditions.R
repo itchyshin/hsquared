@@ -500,15 +500,21 @@ hs_warn_rr_response_scale <- function(spec) {
     return(invisible(FALSE))
   }
   sd_y <- stats::sd(values)
-  if (!is.finite(sd_y) || (sd_y >= 0.1 && sd_y <= 10)) {
+  if (!is.finite(sd_y) || sd_y <= 0 || (sd_y >= 0.1 && sd_y <= 10)) {
     return(invisible(FALSE))
   }
   warning(
-    "The response `", spec$response$name, "` has standard deviation ",
-    signif(sd_y, 3), ", far from unit scale. The random-regression fit can ",
+    "The response `",
+    spec$response$name,
+    "` has standard deviation ",
+    signif(sd_y, 3),
+    ", far from unit scale. The random-regression fit can ",
     "stop short of the REML optimum on such a response and still report ",
     "`converged = TRUE` (hsquared#299). Rescale the response to about unit ",
-    "variance, e.g. `", spec$response$name, " / sd(", spec$response$name,
+    "variance, e.g. `",
+    spec$response$name,
+    " / sd(",
+    spec$response$name,
     ")`, and multiply the fitted variances (K_g, residual) back by its ",
     "variance afterwards; REML is scale-equivariant and h2(t) is unchanged.",
     call. = FALSE

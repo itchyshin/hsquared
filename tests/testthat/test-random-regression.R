@@ -751,6 +751,8 @@ test_that("rr fit warns when the response is far from unit scale (#299)", {
     "unit variance"
   )
   expect_no_warning(hsquared:::hs_warn_rr_response_scale(spec_of(1)))
+  # A constant response has no usable scale; never recommend division by sd = 0.
+  expect_no_warning(hsquared:::hs_warn_rr_response_scale(spec_of(0)))
 
   # The public entry point reaches the check before any engine call.
   d <- fx$data
