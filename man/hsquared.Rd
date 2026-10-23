@@ -23,7 +23,8 @@ whose \code{phenotypes} component holds them. Formula arguments such as
 \code{pedigree = pedigree} can name components of the bundle.}
 
 \item{family}{A response family. The default path accepts \code{gaussian()}.
-Opt-in experimental paths accept \code{poisson()} and \code{binomial()}; see
+Opt-in experimental paths accept \code{poisson()} and \code{binomial()}; the
+bounded genetic GLLVM route accepts three complete Poisson traits. See
 \code{\link[=formula_status]{formula_status()}}.}
 
 \item{REML}{Logical; REML estimation. The default path supports REML only

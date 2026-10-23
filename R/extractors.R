@@ -25,6 +25,7 @@ variance_components.default <- function(object, ...) {
 
 #' @export
 variance_components.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "variance-component")
   hs_fit_result(object, "variance_components", "variance components")
 }
 
@@ -34,6 +35,18 @@ variance_components.hsquared_fit <- function(object, ...) {
 #'
 #' `heritability()` is part of the planned v0.1 fitted-object contract. It
 #' works for `hsquared_fit` objects that contain a Julia result.
+#'
+#' What is h2 here? The denominator `Vp` is the sum of the random-effect
+#' variances plus residual. Fixed-effect variance (sex, age, year, block) is
+#' not in `Vp`, so the reported h2 is conditional on the fixed effects.
+#'
+#' - Default animal model: `h2 = Va / Vp` with `Vp = Va + Ve`.
+#' - Repeatability (`target = "repeatability"`): `h2 = Va / Vp` with
+#'   `Vp = Va + Vpe + Ve`. Permanent environment is in the denominator.
+#'   [repeatability()] on the same fit is `(Va + Vpe) / Vp`.
+#' - Multi-effect (`target = "multi_effect"`): `h2` for the animal block is
+#'   `Va / Vp`, where `Vp` is `Va` plus every other random-effect variance
+#'   plus residual.
 #'
 #' Falconer fence for the opt-in two-effect model (`target = "two_effect"`):
 #' the reported number is the **narrow-sense direct heritability**
@@ -47,7 +60,7 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' Willham fence for the opt-in direct-maternal correlated model
 #' (`target = "direct_maternal"`): `heritability()` returns the **labelled
 #' triple** -- direct h2_d, maternal m2, Willham total h2_T, and r_am -- as a
-#' data frame (Willham 1963, 1972). `sigma_P = sigma_ad + sigma_am + sigma_dm +
+#' data frame (Willham 1963, 1972). `sigma^2_P = sigma_ad + sigma_am + sigma_dm +
 #' sigma_e2 = Var(y_i)` (coefficient 1 on sigma_dm). A warning is issued
 #' because h2 is denominator-dependent under maternal effects and
 #' h2_T < h2_d is expected when r_am < 0. Use [direct_heritability()] or
@@ -59,11 +72,49 @@ variance_components.hsquared_fit <- function(object, ...) {
 #' fit and names the implemented accessor. Use [rr_heritability()] for the
 #' `h2(t)` curve.
 #'
+#' The bounded genetic GLLVM route does not define heritability; this
+#' extractor errors because its G and trait genetic modes are on the link scale.
+#'
+#' Non-Gaussian responses (`target = "nongaussian"`, `poisson(log)` or
+#' `binomial(logit)`): `heritability()` returns a table of up to three scales,
+#' not a single number. Those rows follow de Villemereuil, Schielzeth,
+#' Nakagawa and Morrissey (2016, *Genetics* 204:1281-1294). `h2_latent` is
+#' Eq 4, `V_A / (V_A + V_RE + V_O)`, and is defined for every family,
+#' including Poisson. The log-link liability variance `V_link` is 0; that
+#' is not the latent residual `V_O`, and `V_link` does not appear in Eq 4.
+#' For logit, report `h2_liability` = Eq 24,
+#' `V_A / (V_A + V_RE + V_O + pi^2/3)` (link variance `pi^2/3`). That
+#' liability scale is not the latent scale. `h2_latent` equals 1 when
+#' `V_RE` and `V_O` are zero (the usual intercept-only `animal()` model).
+#' Poisson reports `h2_latent` and a count-scale `h2_observation` only;
+#' there is no liability scale, and `h2_latent` is not the
+#' Nakagawa-Schielzeth `ln(1 + 1/lambda)` convention. `binomial(link =
+#' "probit")` is not available in R. See the Fitting models article for
+#' which row to report.
+#'
 #' A non-converged fit still returns the engine number so you can inspect it,
 #' but **warns**: that number is not an estimate. A near-zero value from a
 #' failed fit is not evidence that heritability is zero. Use
 #' [fit_diagnostics()] before reading any number. `logLik()` already refuses
 #' a non-converged fit; `heritability()` keeps the value and shouts instead.
+#' The same warn-and-return applies to [heritability_interval()],
+#' [heritability_standard_error()], and
+#' [variance_component_standard_errors()]. `print()` says the heritability
+#' is not reportable when the fit did not converge. `summary()` omits the
+#' printed SE/CI block when the fit did not converge or is at a
+#' variance-component boundary; it does not print those numbers as results.
+#'
+#' Testing `V_A = 0` and boundary fits: additive variance sits on the edge of
+#' the parameter space (`V_A >= 0`). The Wald SE and the logit-delta CI are
+#' not valid when `V_A` is near 0; the usual normal approximation is an
+#' interior-point result. The likelihood-ratio test of `V_A = 0` uses a
+#' 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987; Stram and
+#' Lee 1994), so a plain `chi^2_1` p-value is twice too large. R does not
+#' run that test: [stats::anova()] stops, and `logLik()` / `AIC()` are
+#' exposed so a reader can build a naive `chi^2_1` LRT by hand -- do not.
+#' The Julia engine already implements the mixture as
+#' `HSquared.nested_lrt(loglik_constrained, loglik_full; df = 1, boundary_df = 1)`.
+#' That names an existing helper; it is not a new R test statistic.
 #'
 #' @inheritParams variance_components
 #'
@@ -84,6 +135,12 @@ heritability.default <- function(object, ...) {
 
 #' @export
 heritability.hsquared_fit <- function(object, ...) {
+  if (identical(object$spec$target, "genetic_gllvm")) {
+    stop(
+      "Heritability is not defined by this genetic GLLVM route. G and trait genetic conditional modes are on the link scale; no response-scale heritability is supplied.",
+      call. = FALSE
+    )
+  }
   hs_warn_if_unusable_fit(object)
   # Willham fence for the direct-maternal correlated model: heritability() on
   # a direct_maternal fit returns the LABELLED TRIPLE -- direct h2_d, maternal
@@ -114,13 +171,13 @@ heritability.hsquared_fit <- function(object, ...) {
     attr(out, "interpretation") <- paste(
       "Direct-maternal correlated model (target = \"direct_maternal\"):",
       "heritability() returns the labelled triple (Willham 1963, 1972).",
-      "h2_direct = sigma_ad / sigma_P (direct narrow-sense heritability);",
-      "m2_maternal = sigma_am / sigma_P (maternal variance ratio, NOT a",
+      "h2_direct = sigma_ad / sigma^2_P (direct narrow-sense heritability);",
+      "m2_maternal = sigma_am / sigma^2_P (maternal variance ratio, NOT a",
       "heritability); h2_total_willham = (sigma_ad + 1.5*sigma_dm +",
-      "0.5*sigma_am) / sigma_P (Willham total heritability - PREDICTS",
+      "0.5*sigma_am) / sigma^2_P (Willham total heritability - PREDICTS",
       "RESPONSE TO MASS SELECTION; can be LOWER than h2_direct when r_am < 0);",
       "r_am = genetic correlation between direct and maternal effects.",
-      "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972).",
+      "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 (Willham 1972).",
       "h2 is denominator-dependent under maternal effects; compare",
       "(co)variance components rather than h2 across software.",
       "Use direct_heritability() or total_heritability() for targeted accessors."
@@ -165,11 +222,21 @@ hs_fit_is_genomic <- function(object) {
 #'
 #' These extractors return the genetic (`G`) and residual (`R`) covariance or
 #' correlation matrices from multivariate `hsquared_fit` objects (a `cbind()`
-#' response, which fits on the default path). `G_matrix()` is an applied-workflow alias for
+#' response). That call auto-routes on the default path, but the fitter is
+#' dense and validation-scale: it is capped by `max_dense_cells`
+#' (`nobs^2 + nanimals^2`, default 1e6; a few hundred animals at t = 2).
+#' `G_matrix()` is an applied-workflow alias for
 #' `genetic_covariance()`, and `R_matrix()` is an alias for
 #' `residual_covariance()`. Use them after checking [fit_diagnostics()] because
 #' likelihood-based summaries are intentionally blocked when a multivariate fit
 #' has not converged.
+#'
+#' A fitted genetic correlation of `+1` or `-1` means the estimated `G` sat
+#' on the correlation boundary in this sample, not that the traits are known
+#' to share one genetic value. `print()` and `summary()` can still report
+#' `converged = TRUE`; R does not set a boundary flag for `|r_g| -> 1`.
+#' [covariance_standard_errors()] is omitted at that flat or boundary
+#' optimum.
 #'
 #' @inheritParams variance_components
 #'
@@ -325,8 +392,8 @@ hs_multivariate_extractor_default <- function(name) {
     name,
     "()` requires an `hsquared_fit` object from the multivariate model ",
     "(a `cbind(trait1, trait2, ...)` response with `animal(1 | id, pedigree = ",
-    "ped)`, which fits on the default path) or the opt-in direct-maternal ",
-    "correlated model (`target = \"direct_maternal\"`).",
+    "ped)`, dense and validation-scale, capped by `max_dense_cells`) or the ",
+    "opt-in direct-maternal correlated model (`target = \"direct_maternal\"`).",
     call. = FALSE
   )
 }
@@ -392,7 +459,10 @@ gamma_matrix.hsquared_fit <- function(object, ...) {
 #' @inheritParams variance_components
 #'
 #' @return A data frame with columns `id`, `metafounder_group`, and
-#'   `is_metafounder`.
+#'   `is_metafounder`. Rows are **animals**, keyed by `id`; `is_metafounder`
+#'   flags animals whose unknown-parent slot carries a supplied group label,
+#'   not metafounders themselves. The metafounders are the pseudo-populations
+#'   that are the rows and columns of [gamma_matrix()].
 #' @export
 metafounder_groups <- function(object, ...) {
   UseMethod("metafounder_groups")
@@ -418,8 +488,8 @@ metafounder_groups.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  group_of <- as.character(group_of)
   ids <- object$payload$ids %||% names(group_of)
+  group_of <- as.character(group_of)
   if (is.null(ids) || length(ids) != length(group_of)) {
     stop(
       "This `hsquared_fit` object has malformed metafounder group metadata; ",
@@ -477,20 +547,27 @@ metafounder_effects.hsquared_fit <- function(object, ...) {
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' These extractor names are reserved for future factor-analytic G-matrix
-#' results. The current package can report invariant covariance and correlation
-#' matrices from multivariate fits, but it does not yet expose
-#' interpreted loadings, uniqueness/specific variance, or latent breeding
-#' values. Loading columns are rotation-nonunique until a rotation or
+#' The bounded four-trait rank-one factor-analytic opt-in reports G, genetic
+#' correlations, and `specific_variance()` (`Psi`). Loading columns
+#' (`genetic_loadings()`) and latent breeding values
+#' (`latent_breeding_values()`) are rotation-nonunique until a rotation or
 #' constraint policy is validated. Future `hsquared_fit` methods reserve
 #' `effect` and rotation controls, but these controls currently error rather
 #' than implying that loading axes are interpretable. The **rotation-invariant**
 #' genetic eigenstructure and evolvability geometry are available now via
 #' [eigen_G()] and the [g_matrix_geometry] family.
 #'
+#' For `G = Lambda Lambda' + diag(Psi)`, rotating `Lambda` leaves `Psi`
+#' unchanged. The four-trait rank-one FA parameterization is locally
+#' identifiable up to a sign change only with a regular, sufficiently nonzero
+#' loading pattern. Sparse or weak loadings and boundary fits can leave `Psi`
+#' poorly identified. `specific_variance()`
+#' returns the named `Psi` vector for this opt-in fit and errors for other fits.
+#'
 #' @inheritParams variance_components
 #'
-#' @return These reserved extractors currently error for `hsquared_fit` objects.
+#' @return `specific_variance()` returns named `Psi` for the bounded FA fit;
+#'   the other factor extractors error for `hsquared_fit` objects.
 #' @name factor_g_extractors
 NULL
 
@@ -533,6 +610,18 @@ specific_variance.default <- function(object, ...) {
 
 #' @export
 specific_variance.hsquared_fit <- function(object, effect = "animal", ...) {
+  if (!identical(effect, "animal")) {
+    stop(
+      "`specific_variance()` currently supports only `effect = \"animal\"`.",
+      call. = FALSE
+    )
+  }
+  if (
+    identical(object$result$genetic_structure, "factor_analytic") &&
+      !is.null(object$result$genetic_uniqueness)
+  ) {
+    return(object$result$genetic_uniqueness)
+  }
   hs_factor_g_extractor_planned(
     "specific_variance",
     "factor-analytic G-matrix uniqueness / specific variance",
@@ -616,6 +705,17 @@ hs_factor_g_extractor_planned <- function(
       call. = FALSE
     )
   }
+  if (identical(name, "specific_variance")) {
+    stop(
+      "`",
+      name,
+      "()` for ",
+      quantity,
+      " requires a fitted rank-one `factor_analytic` G object with reported ",
+      "`Psi`; it is unavailable for this fit. Loadings remain unreported.",
+      call. = FALSE
+    )
+  }
   stop(
     "`",
     name,
@@ -634,9 +734,15 @@ hs_factor_g_extractor_planned <- function(
 #' `r lifecycle::badge("experimental")`
 #'
 #' `repeatability()` reports the repeatability `R = (Va + Vpe) / Vp` of the
-#' opt-in, experimental repeatability (permanent-environment) model. It works
+#' opt-in, experimental repeatability (permanent-environment) model. `Vp` is
+#' `Va + Vpe + Ve`; fixed-effect variance is not in `Vp`. On the same fit,
+#' [heritability()] is `Va / Vp`. It works
 #' for `hsquared_fit` objects fitted with
 #' `engine_control = list(target = "repeatability")`.
+#'
+#' Separating `sigma_a2` from `sigma_pe2` needs repeated records per
+#' individual; see `?hs_control` (`target = "repeatability"`) for that
+#' identifiability requirement.
 #'
 #' @inheritParams variance_components
 #'
@@ -657,6 +763,7 @@ repeatability.default <- function(object, ...) {
 
 #' @export
 repeatability.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "repeatability")
   hs_fit_result(object, "repeatability", "repeatability estimates")
 }
 
@@ -666,6 +773,10 @@ repeatability.hsquared_fit <- function(object, ...) {
 #'
 #' `permanent_effects()` returns the predicted permanent-environment effects of
 #' the opt-in, experimental repeatability model.
+#'
+#' Separating `sigma_a2` from `sigma_pe2` needs repeated records per
+#' individual; see `?hs_control` (`target = "repeatability"`) for that
+#' identifiability requirement.
 #'
 #' @inheritParams variance_components
 #'
@@ -893,6 +1004,7 @@ breeding_values.default <- function(object, ...) {
 
 #' @export
 breeding_values.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "breeding-value")
   hs_fit_result(object, "breeding_values", "breeding values")
 }
 
@@ -946,6 +1058,11 @@ hs_breeding_values_default <- function(name) {
 #' contract. It returns values only when an `hsquared_fit` object contains a
 #' Julia result field for prediction error variances.
 #'
+#' The engine defines PEV as the animal-block diagonal of the inverse of the
+#' precision-scaled Henderson mixed-model-equation coefficient matrix, so
+#' `diag(C^-1)` is directly the prediction error variance in variance units,
+#' with no separate `sigma_e2` factor to apply.
+#'
 #' @inheritParams variance_components
 #'
 #' @return Prediction error variances for `hsquared_fit` objects.
@@ -980,6 +1097,14 @@ prediction_error_variance.hsquared_fit <- function(object, ...) {
 #' returns values only when an `hsquared_fit` object contains a Julia result
 #' field for reliability estimates. `accuracy()` returns the square root of
 #' reliability for `hsquared_fit` objects.
+#'
+#' The engine defines reliability as `1 - PEV_i / (sigma_a2 * A_ii)`, using the
+#' dense relationship matrix `A = inv(Ainv)` implied by the supplied precision.
+#' For a genomic spec (`Ainv = Ginv`) this `A_ii` is `diag(inv(Ginv)) = diag(G)
+#' + ridge` (the regularized genomic self-relationship, often not equal to 1),
+#' so the genomic ridge perturbs the reported reliability and accuracy.
+#' Reliability values are **not clipped**; `accuracy()` **rejects** a
+#' reliability value below 0 or above 1 rather than silently clipping it.
 #'
 #' @inheritParams variance_components
 #'
@@ -1020,6 +1145,7 @@ accuracy.default <- function(object, ...) {
 
 #' @export
 accuracy.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "accuracy")
   rel <- reliability(object, ...)
   if (!is.data.frame(rel) || !"value" %in% names(rel)) {
     stop(
@@ -1039,29 +1165,106 @@ accuracy.hsquared_fit <- function(object, ...) {
   out
 }
 
+# Same ignored-argument policy as `hsquared()`: name the unused argument
+# rather than dropping it (hsquared#310, #320).
+hs_reject_newdata <- function(supplied, what) {
+  if (isTRUE(supplied)) {
+    stop(
+      "`newdata` is not supported; ",
+      what,
+      " are in-sample only.",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
+hs_reject_unused_dots <- function(dots, fn) {
+  if (length(dots) == 0L) {
+    return(invisible(NULL))
+  }
+  dot_names <- names(dots)
+  if (is.null(dot_names)) {
+    dot_names <- rep.int("", length(dots))
+  }
+  labelled <- ifelse(
+    nzchar(dot_names),
+    sprintf("`%s`", dot_names),
+    "an unnamed argument"
+  )
+  stop(
+    fn,
+    " does not accept ",
+    paste(labelled, collapse = ", "),
+    " in `...`. Those arguments would be ignored.",
+    call. = FALSE
+  )
+}
+
 #' Extract an experimental heritability confidence interval
 #'
 #' `r lifecycle::badge("experimental")`
 #'
 #' `heritability_interval()` returns an **experimental** large-sample confidence
-#' interval for `h^2`. It is available only when an `hsquared_fit` object
-#' contains the interval field, which the default Gaussian animal-model fit
+#' interval for `h^2`. It is available when an `hsquared_fit` object contains
+#' the interval field, which the default Gaussian animal-model fit
 #' (`engine = "fit"`) populates from the engine's
-#' `HSquared.heritability_interval()` when a local Julia engine is present and
-#' the estimate is interior to `(0, 1)`. On the opt-in two-effect fit it returns
+#' `HSquared.heritability_interval()` when a local Julia engine is present.
+#' A non-converged or variance-component-boundary fit still returns that
+#' engine row when it is present: the extractor **warns** and keeps the
+#' number for inspection (the same warn-and-return as [heritability()]).
+#' Those numbers must not be reported. `print()` says the heritability is
+#' not reportable when the fit did not converge. `summary()` omits the
+#' printed SE/CI block when the fit did not converge or is at a
+#' variance-component boundary. The engine omits the field only when it
+#' could not compute the interval (for example when the information matrix
+#' is not invertible), not merely because the estimate sits near 0 or 1.
+#' Printed endpoints may be 0 or 1 even though the Julia docstring describes
+#' a logit-delta interval that always lies in (0, 1). On the opt-in
+#' two-effect fit it returns
 #' the direct-heritability ratio interval (`ratio1`), and on the opt-in
 #' multi-effect fit (`target = "multi_effect"`, K >= 3 blocks) it returns the
 #' ANIMAL block's ratio interval (the animal additive variance over the total
 #' phenotypic variance); the other blocks' variance-ratio intervals are surfaced
 #' separately in `fit$result$variance_ratio_intervals`.
 #'
-#' The interval leg is a REML-only, asymptotic (logit delta-method) approximation,
-#' not a coverage-calibrated interval, and is unreliable at small `n` (as with the
-#' `partial` `V1-HERIT-CI`). The underlying estimators `V3-TWOEFFECT-REML` /
-#' `V3-NEFFECT-REML` are `covered`, but this interval is reported as a point estimate
-#' plus bounds, not a validated (coverage-calibrated) capability.
+#' The interval leg is a REML-only, asymptotic (logit delta-method or profile)
+#' approximation returned by the engine. On the default univariate route the
+#' SE comes from the REML average-information matrix. On the repeatability,
+#' two-effect, and multivariate routes the engine uses the observed
+#' information from a central finite-difference Hessian
+#' (`fd_step = 1e-4`). Those two matrices are not the same estimand; do not
+#' compare SEs across routes as if they were. R cannot request the profile
+#' interval from this extractor; only the engine-returned interval is shown.
+#' See the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' The 2000-rep C1 coverage confirm
+#' (HSquared.jl DRAC job **47925485**) places the univariate pedigree h²
+#' interval at the **directional-conservative** claim level under doc-34 §4:
+#' delta over-covers (worst Ĉ 0.969), profile is in-band (worst Ĉ 0.950), and
+#' bootstrap **mildly under-covers versus nominal 0.95** at the governing
+#' interior cell (worst Ĉ **0.924** at h²=0.5, still at least 0.90). Those
+#' figures were measured on one **interpretable small design** (`q = 120`),
+#' at **interior** `h² in {0.3, 0.5, 0.7}`, at the **0.95** level, in DRAC job
+#' **47925485**; **unbalanced designs were not in the confirm grid**, so
+#' these numbers say nothing about coverage under imbalance. That is **not**
+#' coverage-calibrated at nominal and **not** "never under-covers." Profile and
+#' bootstrap h² interval legs were measured in the same confirm but are **not**
+#' separately surfaced by this extractor; only the engine-returned interval is
+#' shown. It is reported as a point estimate plus bounds, not a validated
+#' (coverage-calibrated) capability. The Wald SE and this logit-delta CI
+#' are not valid when additive variance is near 0 (`h^2 -> 0` is the same
+#' edge): that is an interior-point approximation. The likelihood-ratio
+#' test of `V_A = 0` uses a 50:50 mixture of `chi^2_0` and `chi^2_1`
+#' (Self and Liang 1987; Stram and Lee 1994). R `anova()` does not run it;
+#' Julia `HSquared.nested_lrt(..., df = 1, boundary_df = 1)` already does.
+#' Genomic fits still error (scale-labelled interval not
+#' validated). The underlying estimators `V3-TWOEFFECT-REML` /
+#' `V3-NEFFECT-REML` are `covered`, but this **interval** is not.
 #'
 #' @inheritParams variance_components
+#' @param ... Unused. Extra arguments, including `level`, are an error because
+#'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate`, `lower`, `upper`, `level`, `se`
 #'   (`NA` for the profile method), and `method`, for `hsquared_fit` objects that
@@ -1082,6 +1285,8 @@ heritability_interval.default <- function(object, ...) {
 
 #' @export
 heritability_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`heritability_interval()`")
+  hs_warn_if_unusable_fit(object, what = "heritability-interval")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_interval()` is not available for genomic fits. The ",
@@ -1103,21 +1308,51 @@ heritability_interval.hsquared_fit <- function(object, ...) {
 #'
 #' `variance_component_standard_errors()` and `heritability_standard_error()`
 #' return **experimental** large-sample (delta-method) standard errors derived
-#' from the REML average-information matrix. They are available only when an
+#' from the REML average-information matrix on the default univariate
+#' Gaussian animal-model route. Repeatability, two-effect, and multivariate
+#' SEs use the observed information from a central finite-difference
+#' Hessian (`fd_step = 1e-4`) instead; see the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' They are available only when an
 #' `hsquared_fit` object contains them; the default Gaussian animal-model fit
 #' populates them from the engine when a local Julia engine is present and the
-#' AI matrix is invertible.
+#' AI matrix is invertible. When the engine could not compute them, `hsquared()`
+#' warns once at fit time and keeps the engine's reason in
+#' `attr(fit, "bridge_errors")`, a character vector named by the engine
+#' function that failed (HSquared.jl#351); the field is then absent, not `NA`.
 #'
-#' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic, REML-only,
-#' and unreliable at small `n` or near a variance-component boundary (where the
-#' AI matrix is ill-conditioned and the fields are omitted). They are not
-#' coverage-calibrated and not a validated capability.
+#' These mirror the engine row `V1-HERIT-CI` (`partial`): asymptotic,
+#' REML-only, and unreliable at small `n` or near a variance-component
+#' boundary. A non-converged or boundary fit still returns the engine SEs
+#' when they are present: the extractors **warn** and keep the numbers for
+#' inspection. Those SEs must not be reported. `summary()` omits the printed
+#' SE block when the fit did not converge or is at a variance-component
+#' boundary. The engine omits the fields only when it could not compute them
+#' (for example when the AI matrix is not invertible), not merely because a
+#' component sits near zero. The Wald SE is not valid when additive variance
+#' is near 0;
+#' `V_A = 0` is on the edge of the parameter space, so the usual normal
+#' approximation does not apply. The likelihood-ratio test of `V_A = 0`
+#' uses a 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987;
+#' Stram and Lee 1994). R does not run that test; Julia
+#' `HSquared.nested_lrt(..., df = 1, boundary_df = 1)` already does. The 2000-rep C1 coverage confirm (job **47925485**) measured the
+#' **additive-variance delta/Wald** interval implied by these SEs to **under-cover**
+#' (0.897 at nominal 0.95, h²=0.5), placing it at **experimental-only**:
+#' the SE is a point-estimate reference only, **not a calibrated and not a
+#' conservative interval**. (A profile additive-variance interval is
+#' `directional-conservative` by the same run — including the h²=0.3 cell
+#' 0.963 — but is not surfaced by this delta-method extractor. Additive-variance
+#' bootstrap worst-cell Ĉ 0.918 is the same DC mild-under branch as h²
+#' bootstrap.) Not coverage-calibrated, not a validated capability.
 #'
 #' @inheritParams variance_components
 #'
 #' @return `variance_component_standard_errors()` returns a data frame with
-#'   `component` and `se`; `heritability_standard_error()` returns a single
-#'   numeric. Only for `hsquared_fit` objects that contain them.
+#'   `component` and `se`. `heritability_standard_error()` returns a one-row
+#'   data frame with `term` and `se`, matching [heritability()] so the two
+#'   merge on `term` (hsquared#236). Only for `hsquared_fit` objects that
+#'   contain them. The fit object may still store `heritability_se` as a bare
+#'   numeric internally; this extractor is the public shape.
 #' @export
 variance_component_standard_errors <- function(object, ...) {
   UseMethod("variance_component_standard_errors")
@@ -1134,6 +1369,7 @@ variance_component_standard_errors.default <- function(object, ...) {
 
 #' @export
 variance_component_standard_errors.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "variance-component standard-error")
   hs_fit_result(
     object,
     "variance_component_se",
@@ -1158,6 +1394,7 @@ heritability_standard_error.default <- function(object, ...) {
 
 #' @export
 heritability_standard_error.hsquared_fit <- function(object, ...) {
+  hs_warn_if_unusable_fit(object, what = "heritability standard-error")
   if (hs_fit_is_genomic(object)) {
     stop(
       "`heritability_standard_error()` is not available for genomic fits. ",
@@ -1165,10 +1402,47 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  hs_fit_result(
+  se <- hs_fit_result(
     object,
     "heritability_se",
     "an experimental heritability standard error"
+  )
+  hs_as_heritability_se_frame(object, se)
+}
+
+# Public SE shape for heritability (hsquared#236): always `data.frame(term, se)`,
+# matching `heritability()` so `merge(..., by = "term")` works. Internal storage
+# may still be a bare numeric (animal-model and sparse-repeatability bridges).
+hs_as_heritability_se_frame <- function(object, se) {
+  if (is.data.frame(se)) {
+    if (!all(c("term", "se") %in% names(se))) {
+      stop(
+        "`heritability_se` on the fit must be a numeric or a data frame with ",
+        "columns `term` and `se`.",
+        call. = FALSE
+      )
+    }
+    out <- se[, c("term", "se"), drop = FALSE]
+    out$term <- as.character(out$term)
+    out$se <- as.numeric(out$se)
+    rownames(out) <- NULL
+    return(out)
+  }
+  term <- "animal"
+  h2 <- object$result$heritability
+  if (is.data.frame(h2) && "term" %in% names(h2) && nrow(h2) >= 1L) {
+    if (nrow(h2) == 1L) {
+      term <- as.character(h2$term[[1L]])
+    } else if ("animal" %in% h2$term) {
+      term <- "animal"
+    } else {
+      term <- as.character(h2$term[[1L]])
+    }
+  }
+  data.frame(
+    term = term,
+    se = as.numeric(se)[[1L]],
+    stringsAsFactors = FALSE
   )
 }
 
@@ -1179,7 +1453,11 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
 #' `repeatability_interval()` returns an **experimental** large-sample (logit
 #' delta-method) confidence interval for the repeatability coefficient
 #' `t = (Va + Vpe) / Vp` of the opt-in repeatability (permanent-environment)
-#' model, available only when the fit contains it.
+#' model, available only when the fit contains it. The interval is built
+#' from the observed information: a central finite-difference Hessian of
+#' the REML log-likelihood with `fd_step = 1e-4`, not the univariate
+#' average-information matrix. See the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 #'
 #' It mirrors the engine row `V3-REPEAT-REML` (`partial`): the engine's
 #' repeatability REML estimator and this interval are engine-internal
@@ -1191,6 +1469,8 @@ heritability_standard_error.hsquared_fit <- function(object, ...) {
 #' capability.
 #'
 #' @inheritParams variance_components
+#' @param ... Unused. Extra arguments, including `level`, are an error because
+#'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate` (the repeatability `t`), `lower`,
 #'   `upper`, `level`, and `se`, for `hsquared_fit` objects that contain it.
@@ -1211,6 +1491,8 @@ repeatability_interval.default <- function(object, ...) {
 
 #' @export
 repeatability_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`repeatability_interval()`")
+  hs_warn_if_unusable_fit(object, what = "repeatability-interval")
   hs_fit_result(
     object,
     "repeatability_interval",
@@ -1231,8 +1513,11 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 #'
 #' This mirrors the engine row `V3-TWOEFFECT-REML`: the interval is the asymptotic
 #' delta-method CI built from the two-effect REML observed information (the
-#' finite-difference Hessian of the two-effect REML log-likelihood at the
-#' optimum). It is **asymptotic, delta-method, REML only, and NOT
+#' central finite-difference Hessian of the two-effect REML log-likelihood at
+#' the optimum, `fd_step = 1e-4`). That is not the univariate
+#' average-information matrix; see the information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
+#' It is **asymptotic, delta-method, REML only, and NOT
 #' coverage-calibrated** -- on small samples the REML surface is flat and the
 #' interval is unreliable (the parametric bootstrap is the only finite-sample-
 #' aware path). No calibrated coverage is claimed.
@@ -1246,6 +1531,8 @@ repeatability_interval.hsquared_fit <- function(object, ...) {
 #' [common_env_proportion()] / [maternal_proportion()]).
 #'
 #' @inheritParams variance_components
+#' @param ... Unused. Extra arguments, including `level`, are an error because
+#'   they would be ignored; the interval level is fixed at the engine value.
 #'
 #' @return A one-row data frame with `estimate` (the ratio), `lower`, `upper`,
 #'   `level`, `se`, `lower_clamped`, `upper_clamped`, and `boundary`, plus an
@@ -1267,6 +1554,7 @@ common_env_proportion_interval.default <- function(object, ...) {
 
 #' @export
 common_env_proportion_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`common_env_proportion_interval()`")
   out <- hs_fit_result(
     object,
     "common_env_proportion_interval",
@@ -1293,6 +1581,7 @@ maternal_proportion_interval.default <- function(object, ...) {
 
 #' @export
 maternal_proportion_interval.hsquared_fit <- function(object, ...) {
+  hs_reject_unused_dots(list(...), "`maternal_proportion_interval()`")
   out <- hs_fit_result(
     object,
     "maternal_proportion_interval",
@@ -1309,7 +1598,12 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #' `covariance_standard_errors()` returns **experimental** large-sample
 #' (delta-method) standard errors for the multivariate genetic/residual
 #' covariance and correlation matrices and per-trait `h^2`, for an opt-in
-#' **unstructured** multivariate fit, when the engine returned them.
+#' **unstructured** multivariate fit, when the engine returned them. The
+#' SEs come from the observed information: a central finite-difference
+#' Hessian of the multivariate REML log-likelihood with `fd_step = 1e-4`,
+#' not the univariate average-information matrix. See the
+#' information-matrix table on
+#' [Can I fit and report this?](https://itchyshin.github.io/hsquared/articles/current-limits.html).
 #'
 #' Heavy caveats (engine multivariate REML validation row, `partial`): the strict per-seed
 #' recovery gate is still a non-pass (7/12 unstructured seeds in the updated
@@ -1324,6 +1618,15 @@ maternal_proportion_interval.hsquared_fit <- function(object, ...) {
 #' factor-analytic fits, whose loadings are rotation-nonidentified), omitted at a
 #' flat/boundary optimum, not coverage-calibrated, with no external comparator,
 #' and not a validated capability.
+#'
+#' The returned `genetic_correlation` SE is on the correlation (`r`) scale.
+#' R does not return a genetic-correlation interval.
+#' `estimate +/- 1.96 * se` is not an extractor and can leave `(-1, 1)`
+#' when `|r_g|` is large. Julia `HSquared.genetic_correlation_interval()`
+#' builds a Fisher-z interval (`z = atanh(r)`,
+#' `se_z = se_r / (1 - r^2)`); that helper is not wired to R. When
+#' `|r_g|` is at `+-1`, the engine treats the optimum as flat or boundary
+#' and omits these SEs. `print()` can still say `converged = TRUE`.
 #'
 #' @inheritParams variance_components
 #'
@@ -1374,7 +1677,10 @@ covariance_standard_errors.hsquared_fit <- function(object, ...) {
 #' It mirrors the engine multivariate REML validation row (`partial`): asymptotic, REML-only,
 #' dense validation-scale, with the multivariate recovery calibration not yet
 #' passed -- a reported test, not a validated one. Both fits must be on the same
-#' response, fixed effects, and pedigree.
+#' response, fixed effects, and pedigree, and both must have converged. The
+#' function refuses mismatched fits. A negative statistic or a comparison whose
+#' null is on a boundary produces a warning and an `NA` p-value rather than a
+#' misleading chi-square result.
 #'
 #' @param constrained,full Two `hsquared_fit` objects from the multivariate
 #'   model; `full` must nest `constrained` (more genetic
@@ -1394,6 +1700,16 @@ covariance_structure_lrt <- function(constrained, full, ...) {
       call. = FALSE
     )
   }
+  if (
+    !isTRUE(constrained$result$converged) ||
+      !isTRUE(full$result$converged)
+  ) {
+    stop(
+      "`constrained` and `full` must both have converged before a ",
+      "covariance-structure LRT can be computed.",
+      call. = FALSE
+    )
+  }
   field <- function(fit, nm) {
     v <- fit$result[[nm]]
     if (is.null(v)) {
@@ -1406,6 +1722,63 @@ covariance_structure_lrt <- function(constrained, full, ...) {
       )
     }
     v
+  }
+  if (
+    !identical(constrained$spec$method, "REML") ||
+      !identical(full$spec$method, "REML")
+  ) {
+    stop(
+      "The covariance-structure LRT requires two REML fits.",
+      call. = FALSE
+    )
+  }
+  nobs_c <- as.integer(field(constrained, "nobs"))
+  nobs_f <- as.integer(field(full, "nobs"))
+  if (!identical(nobs_c, nobs_f)) {
+    stop(
+      "`constrained` and `full` must use the same number of observations.",
+      call. = FALSE
+    )
+  }
+  same_response <- identical(
+    constrained$payload$Y,
+    full$payload$Y
+  ) &&
+    identical(
+      constrained$payload$metadata$trait_names,
+      full$payload$metadata$trait_names
+    )
+  if (!same_response) {
+    stop(
+      "`constrained` and `full` must use the same response data and traits.",
+      call. = FALSE
+    )
+  }
+  same_fixed <- identical(
+    constrained$payload$X,
+    full$payload$X
+  ) &&
+    identical(
+      constrained$payload$metadata$fixed_colnames,
+      full$payload$metadata$fixed_colnames
+    )
+  if (!same_fixed) {
+    stop(
+      "`constrained` and `full` must use the same fixed-effect design.",
+      call. = FALSE
+    )
+  }
+  if (!identical(constrained$payload$pedigree, full$payload$pedigree)) {
+    stop(
+      "`constrained` and `full` must use the same pedigree.",
+      call. = FALSE
+    )
+  }
+  if (!identical(constrained$spec$family, full$spec$family)) {
+    stop(
+      "`constrained` and `full` must use the same response family.",
+      call. = FALSE
+    )
   }
   ll_c <- as.numeric(field(constrained, "loglik"))
   ll_f <- as.numeric(field(full, "loglik"))
@@ -1425,10 +1798,32 @@ covariance_structure_lrt <- function(constrained, full, ...) {
   sf <- full$result$genetic_structure %||% NA_character_
   stat <- 2 * (ll_f - ll_c)
   boundary <- !(identical(sc, "diagonal") && identical(sf, "unstructured"))
+  invalid_reference <- FALSE
+  if (boundary) {
+    warning(
+      "The chi-square reference is not valid for this covariance-structure ",
+      "comparison because the null is on a boundary; `pvalue` is `NA`.",
+      call. = FALSE
+    )
+    invalid_reference <- TRUE
+  }
+  if (stat < 0) {
+    warning(
+      "The full fit has a lower log-likelihood than the constrained fit, ",
+      "giving a negative likelihood-ratio statistic. Check convergence and ",
+      "model comparability; `pvalue` is `NA`.",
+      call. = FALSE
+    )
+    invalid_reference <- TRUE
+  }
   data.frame(
     statistic = stat,
     df = df,
-    pvalue = stats::pchisq(max(stat, 0), df = df, lower.tail = FALSE),
+    pvalue = if (invalid_reference) {
+      NA_real_
+    } else {
+      stats::pchisq(stat, df = df, lower.tail = FALSE)
+    },
     boundary = boundary,
     constrained = sc,
     full = sf,
@@ -1444,6 +1839,40 @@ covariance_structure_lrt <- function(constrained, full, ...) {
 #' `hsquared_fit` object. It is an inspection helper over the current result
 #' payload: it does not refit the model, rerun validation checks, or promote an
 #' experimental bridge target to production support.
+#'
+#' The `method` row names the objective that produced the fit. For
+#' `target = "nongaussian"` with `marginal = "laplace"`, that value is
+#' "Laplace marginal likelihood": a Laplace approximation that integrates
+#' the intercept under a flat measure (REML-like `V_A`), not conventional
+#' Laplace-ML as in `glmer` / `pedigreemm`. `logLik()` is not comparable
+#' with `glmer`. The numerical method is unchanged.
+#'
+#' Two rows share the word "boundary" but report unrelated things
+#' (hsquared#230):
+#'
+#' * `at_boundary` / `at_boundary_condition` derive from the fitted
+#'   **estimates**: a variance component at or near zero, or an inadmissible
+#'   negative estimate (`hs_fit_boundary_class()`). Emitted for the Gaussian
+#'   animal-model / genomic / single-step routes that report one primary
+#'   variance-share layout; the `_condition` row is dropped (not `NA`) when
+#'   the fit is interior, since there is nothing extra to say.
+#' * `search_boundary` / `search_boundary_condition` mirror the non-Gaussian
+#'   bridge's **optimizer** state: `result$boundary` (documented as
+#'   `fit$result$boundary` in `?hs_control`) reports whether
+#'   `HSquared.jl`'s single-variance Brent search stopped on the rail of its
+#'   log-scale bracket (`log(initial$sigma_a2) +/- 6`, HSquared.jl#327) or,
+#'   under `restart_check = TRUE`, whether the two-start gap fence fired;
+#'   either way the estimate is a function of the search, not the data.
+#'   Only fits whose result carries a `boundary` field (the non-Gaussian
+#'   route) gain this pair; a Gaussian `engine = "fit"` fit gains neither row
+#'   (not even `NA`). Unlike `at_boundary_condition`, `search_boundary_condition`
+#'   is always emitted alongside a present `search_boundary` flag, reading
+#'   `"interior"` rather than disappearing when the flag is `FALSE` -- the
+#'   search-bracket rail is a binary optimizer state with no benign-vs-
+#'   inadmissible split to only sometimes report. In practice a
+#'   `search_boundary = TRUE` fit is refused before it reaches an
+#'   `hsquared_fit` object at all, so a returned fit's `search_boundary` is
+#'   always `FALSE`; `TRUE` is reachable only on a hand-built `result` object.
 #'
 #' @inheritParams variance_components
 #'
@@ -1487,6 +1916,10 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     at_boundary = hs_fit_boundary_flag(object),
     at_boundary_condition = hs_fit_boundary_condition_label(
       hs_fit_boundary_class(object)
+    ),
+    search_boundary = hs_fit_search_boundary_flag(object),
+    search_boundary_condition = hs_fit_search_boundary_condition_label(
+      hs_fit_search_boundary_flag(object)
     )
   )
 
@@ -1498,9 +1931,41 @@ fit_diagnostics.hsquared_fit <- function(object, ...) {
     "optimizer_status",
     "iterations",
     "dense_validation_path",
-    "variance_components"
+    "variance_components",
+    "search_boundary",
+    "search_boundary_condition"
   )
   extras <- diagnostics[setdiff(diagnostic_names, already_reported)]
+  fa_starts <- diagnostics$fa_start_starts
+  if (is.data.frame(fa_starts)) {
+    extras$fa_start_starts <- if (nrow(fa_starts) == 0L) {
+      NA_character_
+    } else {
+      start_rows <- vapply(
+        seq_len(nrow(fa_starts)),
+        function(i) {
+          paste0(
+            fa_starts$name[[i]],
+            "{valid=",
+            hs_diagnostic_value(fa_starts$valid[[i]]),
+            ", converged=",
+            hs_diagnostic_value(fa_starts$converged[[i]]),
+            ", iterations=",
+            hs_diagnostic_value(fa_starts$iterations[[i]]),
+            ", loglik=",
+            hs_diagnostic_value(fa_starts$loglik[[i]]),
+            ", minimum_uniqueness=",
+            hs_diagnostic_value(fa_starts$minimum_uniqueness[[i]]),
+            ", floor_distance=",
+            hs_diagnostic_value(fa_starts$uniqueness_floor_distance[[i]]),
+            "}"
+          )
+        },
+        character(1)
+      )
+      paste(start_rows, collapse = "; ")
+    }
+  }
   rows <- c(base, extras)
   rows <- rows[!vapply(rows, is.null, logical(1))]
 
@@ -1611,6 +2076,46 @@ hs_fit_boundary_condition_label <- function(cls) {
     negative = "negative (inadmissible variance)",
     NULL
   )
+}
+
+# Logical flag for the `search_boundary` diagnostics row (hsquared#230).
+# Unrelated to `at_boundary`/`hs_fit_boundary_class()`: `at_boundary` is
+# derived from the ESTIMATED variance shares, while `search_boundary` mirrors
+# the non-Gaussian bridge's `result$boundary` field (`hs_ng09_boundary()` in
+# R/julia-bridge.R), which reports whether HSquared.jl's single-variance Brent
+# search stopped on the rail of its log-scale bracket
+# (log(initial$sigma_a2) +/- 6, HSquared.jl#327) -- an optimizer-search state,
+# not a property of the estimates themselves. Gaussian animal-model fits
+# (`engine = "fit"`) never carry a `boundary` field, so this returns NULL for
+# them and both `search_boundary` rows are dropped by the same NULL filter
+# that drops every other absent diagnostic (no NA row either).
+hs_fit_search_boundary_flag <- function(object) {
+  boundary <- object$result$boundary
+  if (!is.logical(boundary) || length(boundary) != 1L || is.na(boundary)) {
+    return(NULL)
+  }
+  boundary
+}
+
+# Map the `search_boundary` flag to the `search_boundary_condition` value.
+# Unlike `at_boundary_condition` (only emitted for the at/near-zero and
+# negative cases, dropped otherwise), this row is always emitted alongside a
+# present `search_boundary` flag: the search-bracket rail is a binary
+# optimizer state with no benign-vs-inadmissible split to only-sometimes
+# report, so the FALSE case reads "interior" rather than disappearing.
+hs_fit_search_boundary_condition_label <- function(flag) {
+  if (is.null(flag)) {
+    return(NULL)
+  }
+  if (isTRUE(flag)) {
+    return(paste0(
+      "single-variance search stopped on the rail of the log-scale bracket ",
+      "log(initial$sigma_a2) +/- 6, or (with restart_check = TRUE) the two ",
+      "starts disagreed; either way the estimate is a function of the search, ",
+      "not the data (HSquared.jl#327)"
+    ))
+  }
+  "interior"
 }
 
 hs_diagnostic_value <- function(x) {
@@ -1898,10 +2403,23 @@ ranef.hsquared_fit <- function(object, ...) {
 
 #' @export
 logLik.hsquared_fit <- function(object, ...) {
+  if (identical(object$spec$target, "genetic_gllvm")) {
+    stop(
+      "The genetic GLLVM Laplace objective integrates fixed effects under flat measure and is not ordinary non-Gaussian ML. Inspect fit_diagnostics(); logLik() and AIC() are unavailable.",
+      call. = FALSE
+    )
+  }
   if (identical(object$result$converged, FALSE)) {
     stop(
       "Log-likelihood is unavailable because this `hsquared_fit` object did ",
       "not converge.",
+      call. = FALSE
+    )
+  }
+  if (isTRUE(object$result$diagnostics$loglik_stochastic)) {
+    stop(
+      "Log-likelihood is a stochastic approximation for this fit. Inspect ",
+      "fit_diagnostics(); logLik() and AIC() are unavailable.",
       call. = FALSE
     )
   }
@@ -1910,12 +2428,79 @@ logLik.hsquared_fit <- function(object, ...) {
   class(out) <- "logLik"
   attr(out, "df") <- object$result$df %||% NA_integer_
   attr(out, "nobs") <- object$result$nobs %||% length(object$payload$y)
+  if (!is.null(object$result$diagnostics$loglik_convention)) {
+    attr(out, "loglik_convention") <-
+      object$result$diagnostics$loglik_convention
+  }
   out
 }
 
 #' @export
 AIC.hsquared_fit <- function(object, ..., k = 2) {
-  stats::AIC(stats::logLik(object), ..., k = k)
+  others <- list(...)
+  fits <- c(list(object), others)
+  if (
+    length(others) > 0L &&
+      !all(vapply(others, inherits, logical(1), "hsquared_fit"))
+  ) {
+    stop(
+      "AIC comparison through `hsquared_fit` requires every model to be an ",
+      "`hsquared_fit` object with a checked likelihood convention.",
+      call. = FALSE
+    )
+  }
+  likelihoods <- lapply(fits, stats::logLik)
+  for (fit in fits) {
+    if (
+      identical(fit$result$diagnostics$loglik_comparable_across_routes, FALSE)
+    ) {
+      stop(
+        "AIC is unavailable for this fit: its log-likelihood convention is ",
+        "not comparable across routes. Inspect fit_diagnostics() for the ",
+        "constant and method.",
+        call. = FALSE
+      )
+    }
+  }
+  if (length(fits) > 1L) {
+    reference <- fits[[1L]]
+    same_contract <- vapply(
+      fits[-1L],
+      function(fit) {
+        identical(
+          fit$result$diagnostics$method,
+          reference$result$diagnostics$method
+        ) &&
+          identical(
+            fit$result$marginal_method,
+            reference$result$marginal_method
+          ) &&
+          identical(
+            fit$result$diagnostics$loglik_convention,
+            reference$result$diagnostics$loglik_convention
+          ) &&
+          identical(fit$spec$family, reference$spec$family) &&
+          identical(fit$payload$y, reference$payload$y) &&
+          identical(fit$payload$X, reference$payload$X)
+      },
+      logical(1)
+    )
+    if (!all(same_contract)) {
+      stop(
+        "AIC comparison requires matching data, fixed-effect design, ",
+        "family, method, marginal method, and likelihood convention.",
+        call. = FALSE
+      )
+    }
+    df <- vapply(likelihoods, function(ll) attr(ll, "df"), numeric(1))
+    value <- vapply(likelihoods, as.numeric, numeric(1))
+    return(data.frame(
+      df = df,
+      AIC = -2 * value + k * df,
+      row.names = paste0("model", seq_along(fits))
+    ))
+  }
+  stats::AIC(likelihoods[[1L]], k = k)
 }
 
 #' Block unsupported likelihood-inference helpers
@@ -1927,6 +2512,14 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 #' when the engine returned those fields; they are not coverage-calibrated.
 #' Point estimates remain [variance_components()], [heritability()], and
 #' [fit_diagnostics()].
+#'
+#' Testing `V_A = 0`: the Wald SE and logit-delta CI are not valid when
+#' additive variance is near 0. The likelihood-ratio test of `V_A = 0` uses
+#' a 50:50 mixture of `chi^2_0` and `chi^2_1` (Self and Liang 1987; Stram
+#' and Lee 1994). `anova()` does not run that test. `logLik()` and `AIC()`
+#' are exposed for converged fits, so a naive `chi^2_1` LRT can be built by
+#' hand -- do not. Julia `HSquared.nested_lrt(..., df = 1, boundary_df = 1)`
+#' already implements the mixture; that is not a new R test statistic.
 #'
 #' @param object An `hsquared_fit` object.
 #' @param fitted An `hsquared_fit` object for [stats::profile()].
@@ -2071,8 +2664,12 @@ hs_block_multivariate_response_scale <- function(name) {
 #' fits multiple traits jointly and is intentionally out of v0.1 response-scale
 #' scope, so these methods stop with a scope message pointing to
 #' `breeding_values()`, `genetic_covariance()`, and `residual_covariance()`.
+#' Out-of-sample `newdata` is not implemented; supplying it is an error rather
+#' than a silent in-sample result.
 #'
 #' @inheritParams variance_components
+#' @param newdata Not supported. These methods return in-sample values only.
+#' @param ... Unused. Extra arguments are an error because they would be ignored.
 #'
 #' @return Response-scale predictions, fitted values, or residuals for
 #'   univariate `hsquared_fit` objects.
@@ -2081,7 +2678,9 @@ NULL
 
 #' @rdname response_scale_methods
 #' @export
-predict.hsquared_fit <- function(object, ...) {
+predict.hsquared_fit <- function(object, newdata, ...) {
+  hs_reject_newdata(!missing(newdata), "predictions")
+  hs_reject_unused_dots(list(...), "`predict()`")
   if (hs_fit_is_multivariate(object)) {
     hs_block_multivariate_response_scale("predict")
   }
@@ -2090,11 +2689,13 @@ predict.hsquared_fit <- function(object, ...) {
 
 #' @rdname response_scale_methods
 #' @export
-fitted.hsquared_fit <- function(object, ...) {
+fitted.hsquared_fit <- function(object, newdata, ...) {
+  hs_reject_newdata(!missing(newdata), "fitted values")
+  hs_reject_unused_dots(list(...), "`fitted()`")
   if (hs_fit_is_multivariate(object)) {
     hs_block_multivariate_response_scale("fitted")
   }
-  predictions <- stats::predict(object, ...)
+  predictions <- stats::predict(object)
   if (is.data.frame(predictions) && ".fitted" %in% names(predictions)) {
     return(predictions$.fitted)
   }
@@ -2103,7 +2704,9 @@ fitted.hsquared_fit <- function(object, ...) {
 
 #' @rdname response_scale_methods
 #' @export
-residuals.hsquared_fit <- function(object, ...) {
+residuals.hsquared_fit <- function(object, newdata, ...) {
+  hs_reject_newdata(!missing(newdata), "residuals")
+  hs_reject_unused_dots(list(...), "`residuals()`")
   if (hs_fit_is_multivariate(object)) {
     hs_block_multivariate_response_scale("residuals")
   }
@@ -2114,7 +2717,7 @@ residuals.hsquared_fit <- function(object, ...) {
       call. = FALSE
     )
   }
-  fitted_values <- as.numeric(stats::fitted(object, ...))
+  fitted_values <- as.numeric(stats::fitted(object))
   response <- as.numeric(response)
   if (length(response) != length(fitted_values)) {
     stop(
@@ -2163,8 +2766,11 @@ hs_require_random_regression <- function(object, name) {
 
 # Resolve the covariate points the trajectory is evaluated at. `at = NULL`
 # (the default) builds an evenly spaced grid of `n` points spanning the recorded
-# covariate range; otherwise `at` is taken on the ORIGINAL covariate scale.
-# Returns the original-scale points and the matching standardized t in [-1, 1].
+# covariate range; otherwise `at` is taken on the ORIGINAL covariate scale and
+# validated against that range (#213 -- the Julia engine refuses a
+# standardized t outside [-1, 1], so no R extractor may silently clamp one
+# either). Returns the original-scale points and the matching standardized
+# t in [-1, 1].
 hs_rr_eval_points <- function(object, at, n = 25L) {
   rr <- object$result$random_regression
   if (is.null(rr)) {
@@ -2176,13 +2782,28 @@ hs_rr_eval_points <- function(object, at, n = 25L) {
   }
   if (is.null(at)) {
     at <- seq(rr$lower, rr$upper, length.out = n)
-  } else {
-    at <- as.numeric(at)
-    if (length(at) == 0L || anyNA(at) || any(!is.finite(at))) {
-      stop("`at` must be finite covariate values.", call. = FALSE)
-    }
+    t_std <- hs_standardize_covariate(at, rr$lower, rr$upper)
+    return(list(at = at, t = t_std, covariate = rr$covariate, order = rr$order))
+  }
+  at <- as.numeric(at)
+  if (length(at) == 0L || anyNA(at) || any(!is.finite(at))) {
+    stop("`at` must be finite covariate values.", call. = FALSE)
   }
   t_std <- hs_standardize_covariate(at, rr$lower, rr$upper)
+  out_of_range <- t_std < -1 - 1e-10 | t_std > 1 + 1e-10
+  if (any(out_of_range)) {
+    hs_abort_out_of_range(
+      "`at` must lie inside the fitted covariate range [",
+      format(rr$lower, trim = TRUE),
+      ", ",
+      format(rr$upper, trim = TRUE),
+      "] (covariate `",
+      rr$covariate,
+      "`); got ",
+      paste(format(at[out_of_range], trim = TRUE), collapse = ", "),
+      "."
+    )
+  }
   list(at = at, t = t_std, covariate = rr$covariate, order = rr$order)
 }
 
@@ -2230,15 +2851,37 @@ hs_rr_variance_values <- function(K_g, t_std, order) {
 #'   **rotation-invariant** functionals of `K_g` (mirroring the engine's
 #'   `rr_eigenfunctions`); no raw, rotation-arbitrary loadings are returned.
 #'
+#' A random-regression fit returns no standard errors.
+#' [variance_component_standard_errors()] and [covariance_standard_errors()]
+#' are refused for this target, so `K_g` and every trajectory below are point
+#' estimates only.
+#'
 #' The trajectories are computed in R from the estimated `K_g` and the recorded
 #' covariate standardization range; `at` is supplied on the ORIGINAL covariate
 #' scale (defaulting to a grid over the fitted range) and re-standardized to
 #' `[-1, 1]` internally, matching the Julia engine's basis convention.
 #'
+#' @section Response scale:
+#' Rescale the response to about unit variance before fitting. On an
+#' unscaled trait the dense Nelder-Mead search can report
+#' `converged = TRUE` below the REML optimum and return a wrong `K_g`
+#' (off-diagonals stuck near 0). Dividing `y` by `sd(y)` recovers the
+#' optimum; multiply fitted variances by `sd(y)^2` to return to the
+#' original scale. A `converged = TRUE` flag is not enough on the raw
+#' scale.
+#'
+#' @section Out-of-range `at`:
+#' `at` must lie inside the fitted covariate range (`object$result$random_regression$lower`
+#' to `$upper`); a value outside that range errors with a message naming the
+#' fitted range, instead of silently returning the nearest endpoint's value.
+#' This matches the Julia engine (`HSquared.legendre_basis`), which refuses a
+#' standardized covariate outside `[-1, 1]` rather than clamping it (#213).
+#'
 #' @param object A random-regression `hsquared_fit` object.
 #' @param at Covariate values on the original scale at which to evaluate the
 #'   trajectory. `NULL` (the default) uses an evenly spaced grid over the fitted
-#'   covariate range.
+#'   covariate range. A supplied value outside the fitted covariate range
+#'   errors (see the "Out-of-range `at`" section below).
 #' @param n Number of grid points used when `at = NULL`.
 #' @param ... Reserved for future arguments.
 #'
@@ -2479,16 +3122,16 @@ hs_require_direct_maternal <- function(object, name) {
 #' additive and maternal additive effects, plus a residual variance.
 #'
 #' Willham fence: the direct-maternal model (Willham 1963, 1972) distinguishes
-#' the **direct** narrow-sense heritability `h2_d = sigma_ad / sigma_P` from
-#' the maternal variance ratio `m2 = sigma_am / sigma_P`, the Willham total
+#' the **direct** narrow-sense heritability `h2_d = sigma_ad / sigma^2_P` from
+#' the maternal variance ratio `m2 = sigma_am / sigma^2_P`, the Willham total
 #' (selection-response) heritability
-#' `h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma_P`, and the
+#' `h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma^2_P`, and the
 #' genetic covariance `sigma_dm`.
-#' `sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)` for a
+#' `sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)` for a
 #' non-inbred base (coefficient 1 on `sigma_dm` because
 #' `2 * A[i,dam] = 2 * (1/2) = 1`). **h2 is denominator-dependent under
 #' maternal effects; compare (co)variance components, not h2 values, across
-#' software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma_P to the
+#' software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma^2_P to the
 #' user).** A **negative** genetic correlation `r_am` is real and biologically
 #' expected in many livestock traits; it reflects an antagonistic
 #' direct-maternal relationship and does NOT indicate a model failure.
@@ -2561,12 +3204,12 @@ direct_heritability.hsquared_fit <- function(object, ...) {
   out <- hs_fit_result(object, "heritability", "direct heritability estimate")
   attr(out, "interpretation") <- paste(
     "Direct narrow-sense heritability from the direct-maternal correlated",
-    "model: h2_d = sigma_ad / sigma_P, where",
-    "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)",
+    "model: h2_d = sigma_ad / sigma^2_P, where",
+    "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)",
     "(Willham 1963, 1972; coefficient 1 on sigma_dm because",
     "2*A[i,dam] = 2*(1/2) = 1 for a non-inbred base).",
     "h2 is denominator-dependent under maternal effects; hsquared defines",
-    "sigma_P to include sigma_dm (Willham 1972). Compare (co)variance",
+    "sigma^2_P to include sigma_dm (Willham 1972). Compare (co)variance",
     "components rather than h2 values across software.",
     "A negative genetic correlation r_am is real and expected in many",
     "livestock traits. Use total_heritability() for Willham's selection-",
@@ -2675,12 +3318,12 @@ total_heritability.hsquared_fit <- function(object, ...) {
   )
   attr(out, "interpretation") <- paste(
     "Willham total (selection-response) heritability:",
-    "h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma_P",
+    "h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma^2_P",
     "(Willham 1963, 1972; coefficients 1, 1.5, 0.5 for direct,",
     "covariance, maternal terms). PREDICTS RESPONSE TO MASS SELECTION.",
     "h2_T CAN BE LOWER than direct h2_d when r_am < 0 (antagonistic",
     "direct-maternal covariance) - this is real and expected.",
-    "sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i).",
+    "sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i).",
     "Do NOT confuse with 'total heritable variance' (coefficients 1, 2, 1)",
     "which is a different quantity. Use direct_heritability() for h2_d",
     "and genetic_correlation() for r_am."

@@ -39,8 +39,8 @@ Four points frame everything below.
    - a pre-declared 48-seed bias/MCSE recovery gate PASSED (48/48 converged,
      all three `|bias| ≤ 2·MCSE` — no detectable bias, never "unbiased");
    - a `blupf90+` 2.60 same-estimand REML comparator agrees to ~1e-5.
-   Details: `docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-recovery-gate-predeclaration.md`
-   and `docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-blupf90-comparator.md`
+   Details: [`docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-recovery-gate-predeclaration.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-recovery-gate-predeclaration.md)
+   and [`docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-blupf90-comparator.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-blupf90-comparator.md)
    (Julia repo, branch `feat/2026-07-01-phase1-two-effect-public`).
    This article's `sommer` cross-check is additional evidence, not the primary gate.
 
@@ -259,15 +259,15 @@ not a spurious narrow CI. This is tested in the live test suite (`test-common-en
 This sommer cross-check is additional corroborating evidence. The **primary validation gate**
 is on the Julia side (row `V3-TWOEFFECT-REML` in `HSquared.validation_status()`):
 
-- **Pre-declared 48-seed bias/MCSE recovery gate** (`sim/phase3_two_effect_bias_mcse.jl`,
+- **Pre-declared 48-seed bias/MCSE recovery gate** ([`sim/phase3_two_effect_bias_mcse.jl`](https://github.com/itchyshin/HSquared.jl/blob/main/sim/phase3_two_effect_bias_mcse.jl),
   predeclared commit `41bd18f6` BEFORE running): 48/48 converged, all three
   `|bias| ≤ 2·MCSE`. No detectable bias; this does NOT mean "unbiased".
 - **`blupf90+` 2.60 same-estimand REML comparator** from a neutral start (6 rounds) on the
   seed-20260618 dataset: (σ²a, σ²c, σ²e) = (1.1457, 0.4793, 0.8867), agreement to ~1e-5.
 
 References:
-`docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-recovery-gate-predeclaration.md`,
-`docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-blupf90-comparator.md`
+[`docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-recovery-gate-predeclaration.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-recovery-gate-predeclaration.md),
+[`docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-blupf90-comparator.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-06-30-v3-two-effect-blupf90-comparator.md)
 (HSquared.jl repo).
 
 Do not re-run these gates. They are committed evidence, not live code.

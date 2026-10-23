@@ -29,7 +29,8 @@ rr_eigenfunctions(object, at = NULL, n = 25L, ...)
 
 \item{at}{Covariate values on the original scale at which to evaluate the
 trajectory. \code{NULL} (the default) uses an evenly spaced grid over the fitted
-covariate range.}
+covariate range. A supplied value outside the fitted covariate range
+errors (see the "Out-of-range \code{at}" section below).}
 
 \item{n}{Number of grid points used when \code{at = NULL}.}
 }
@@ -70,11 +71,36 @@ eigenfunctions \verb{psi_j(t) = phi(t)' v_j} over the covariate grid. These are
 \code{rr_eigenfunctions}); no raw, rotation-arbitrary loadings are returned.
 }
 
+A random-regression fit returns no standard errors.
+\code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}} and \code{\link[=covariance_standard_errors]{covariance_standard_errors()}}
+are refused for this target, so \code{K_g} and every trajectory below are point
+estimates only.
+
 The trajectories are computed in R from the estimated \code{K_g} and the recorded
 covariate standardization range; \code{at} is supplied on the ORIGINAL covariate
 scale (defaulting to a grid over the fitted range) and re-standardized to
 \verb{[-1, 1]} internally, matching the Julia engine's basis convention.
 }
+\section{Response scale}{
+
+Rescale the response to about unit variance before fitting. On an
+unscaled trait the dense Nelder-Mead search can report
+\code{converged = TRUE} below the REML optimum and return a wrong \code{K_g}
+(off-diagonals stuck near 0). Dividing \code{y} by \code{sd(y)} recovers the
+optimum; multiply fitted variances by \code{sd(y)^2} to return to the
+original scale. A \code{converged = TRUE} flag is not enough on the raw
+scale.
+}
+
+\section{Out-of-range \code{at}}{
+
+\code{at} must lie inside the fitted covariate range (\code{object$result$random_regression$lower}
+to \verb{$upper}); a value outside that range errors with a message naming the
+fitted range, instead of silently returning the nearest endpoint's value.
+This matches the Julia engine (\code{HSquared.legendre_basis}), which refuses a
+standardized covariate outside \verb{[-1, 1]} rather than clamping it (#213).
+}
+
 \examples{
 \dontshow{if (FALSE) withAutoprint(\{ # examplesIf}
 fit_rr <- hsquared(

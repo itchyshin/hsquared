@@ -1,5 +1,12 @@
 # 41 — Lane Goal: hsquared / HSquared.jl through Phase 6 to a capable 1.0
 
+> **Current-state amendment (2026-09-11):** the live target for this lane is
+> an experimental **0.9.0 candidate** with `public_covered_count` **7** after
+> the ratified narrow three-field contract and retained H0/H1/H3 evidence.
+> The historical 0.8.0 descriptions below remain provenance, not current
+> release state. Gate B (independent audit, external evidence, and maintainer
+> decision) remains unexecuted.
+
 > The standing goal for this lane. Any session or agent may execute against it
 > without re-opening the strategy. It operationalises the release model
 > (`docs/dev-log/decisions.md`, 2026-07-11) and the execution plan
@@ -13,6 +20,13 @@ experimental label is **retained**. That is the tip. It is **not** Phase 6
 done and **not** 1.0. Block 1 / first-registration **0.5.0** / MV-4 evidence
 assembly are historical or paused owner debt — they are **not** the active
 spine. The north star below is unchanged.
+
+> **Record status (2026-09-07):** A later documentation/usability milestone is
+> complete, but it changes neither this scientific goal nor the release ladder:
+> package numbering and release authorization remain undecided. The 0.9 and 1.0
+> rows below are still planned; H1/H3 are deferred and G10 promotion holds are
+> not released. See
+> [`2026-09-07-documentation-milestone-release-boundary.md`](../dev-log/decisions/2026-09-07-documentation-milestone-release-boundary.md).
 
 ## 1. The goal (north star)
 
@@ -127,9 +141,9 @@ recovery. Each pillar closes with an after-task report + coordination-board row.
 At every §5 boundary the lane pauses with a crisp decision packet for the
 maintainer and continues once cleared.
 
-**Current slice on the spine — honesty 2026-09-04.** This paragraph used to
+**Historical slice on the spine — honesty 2026-09-04.** This paragraph used to
 present Block 1 / 0.5.0 registration or MV-4 evidence assembly as the live
-tip. Those are done or paused. The live position is experimental **0.8.0** /
+tip. Those are done or paused. The then-live position was experimental **0.8.0** /
 count **7**. Reversible next work is **0.9 prep** (NG-1 remaining
 ratification; interval-calibration Layer B / H1–H3) under §5 — drafts and
 inventories only. That is not a 0.9 claim, not a covered flip, and not a

@@ -22,7 +22,9 @@ pedigree path); its variance components and pedigree relationship are reused
 so the scan is conditioned on the same covariance the model was fit under.}
 
 \item{markers}{A numeric matrix of marker dosages with one row per animal in
-the fit's pedigree (in pedigree order) and one column per marker.}
+the fit's pedigree and one column per marker. Row names are required and
+must match the fit's pedigree IDs exactly; they are reordered to the fit's
+normalized pedigree.}
 
 \item{marker_ids}{Optional marker names; defaults to the \code{markers} column
 names, then to sequential ids.}
@@ -42,9 +44,11 @@ with one group label per marker column (for example a chromosome label).
 Markers in a group are tested with a genomic relationship built from all
 \strong{other} groups. Needs at least two distinct, non-missing labels.}
 
-\item{genome_wide}{Logical; if \code{TRUE} (requires \code{method = "single"}), add a
-genome-wide-calibrated \code{genome_wide_p} column via the exact per-dataset add-one
-permutation rule (see Details). Defaults to \code{FALSE} (nominal p-values only).}
+\item{genome_wide}{Logical; if \code{TRUE} (requires \code{method = "single"} and an
+intercept-only fixed-effect design), add a genome-wide-calibrated
+\code{genome_wide_p} column via the exact per-dataset add-one permutation rule
+(see Details). Defaults to \code{FALSE} (nominal p-values only). A fit with
+covariates is refused: that scope is not type-I-control validated.}
 
 \item{n_permutations}{Number of permutations for the genome-wide null when
 \code{genome_wide = TRUE} (default 1000). The add-one floor is \code{1/(n_permutations+1)}.}

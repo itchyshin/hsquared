@@ -322,7 +322,8 @@ ceremony forced onto the v0.1 animal model.
   reservation exists.
 - `formula_status()`: add rows only when the R package can reject or parse the
   syntax explicitly.
-- `docs/design/06-public-claims-register.md` and `capability-status.md`: keep
-  GLLVM-style models `planned` until evidence lands.
+- `docs/design/06-public-claims-register.md` and `capability-status.md`: the
+  bounded Poisson genetic GLLVM expert-control cell is now `partial`; wide
+  response grammar and broader GLLVM models remain planned.
 - `HSquared.jl` engine docs: define the matrix/observed-cell payload before R
   exposes a live bridge.

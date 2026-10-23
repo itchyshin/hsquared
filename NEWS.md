@@ -1,4 +1,347 @@
+# hsquared (development version)
+
+* **hsquared#300 (docs): `?rr` and `?rr_covariance` say SEs are refused.**
+  `variance_component_standard_errors()` and `covariance_standard_errors()`
+  are refused for `target = "random_regression"`; both help pages now say
+  so and point to `rr_covariance()` for the point estimate. No behaviour
+  change.
+* **hsquared#297 (docs): `?hs_control` states the multivariate iterations
+  default.** `target = "multivariate"` uses `iterations = 2000`; an
+  unstructured model with three or more traits can stop at that cap with
+  `converged = FALSE`, and the remedy is a larger `iterations` through
+  `engine_control`. A help-page test pins the text. No optimiser change.
+  No covered flip.
+
+* **hsquared#321: `metafounder()` now rejects a repeated named argument
+  and `formula =`.** `animal()` already stopped a second `pedigree =` and
+  no longer called `formula =` "planned". `metafounder()` had the same
+  silent drop. A repeated `pedigree =`, `group =`, or `Gamma =` is now an
+  error, and `formula =` is refused as unsupported rather than planned.
+  No estimator change. No covered flip.
+
+* **hsquared#268 (docs): `inbreeding()` is a formula term, not F.** There is
+  still no R accessor for `A`, `A^{-1}`, or inbreeding coefficients. `?inbreeding`
+  and the fitting-models article now say to call
+  `HSquared.additive_relationship()`, `HSquared.pedigree_inverse()`, and
+  `HSquared.inbreeding_coefficients()` through `JuliaCall`. No new extractor.
+  No covered flip.
+
+* **hsquared#300 (docs): `?rr` now exists.** `order` is the number of
+  Legendre coefficients (`order = 2` is intercept + slope), and the
+  covariate is mapped to `[-1, 1]` over the fitted data range. No
+  estimator change; no standard errors; no covered flip.
+
+* **hsquared#292: BGLR-style `0`/`1` inbred marker coding now warns.**
+  `genomic(markers = M)` still accepts a matrix inside `[0, 2]` and does
+  not recode it, but if every entry is in `{0, 1}` (no `2`) it raises a
+  named `hsquared_zero_one_markers` warning: allele-count `0`/`1`/`2` is
+  required, so a homozygous `0`/`1` panel such as `BGLR::wheat` must be
+  doubled to `0`/`2`. No new heritability estimator. No covered flip;
+  `public_covered_count` stays **7**; version stays **0.9.0**.
+
+* **hsquared#237: `cbind()` + `permanent(1 | id)` parses on the default
+  multivariate route.** Repeated-measures multi-trait formulas no longer hit
+  the T1 named reject. The call auto-routes to experimental
+  `target = "multivariate_repeatability"` and will not fall back to
+  animal-only `fit_multivariate_reml` (that path absorbs V_PE into G0).
+  R consumes HSquared.jl#398 `fit_multivariate_repeatability_reml`
+  (result target `multivariate_repeatability_reml`; status experimental).
+  Absent that export, R names the missing fitter rather than absorbing
+  PE into G0. Experimental only; **no covered flip**;
+  `public_covered_count` stays **7**; version stays **0.9.0**.
+
+* **Authorship.** Added co-authors Yefeng Yang (ORCID 0000-0002-8610-4016) and
+  Szymon Drobniak (ORCID 0000-0001-8101-6247) across `DESCRIPTION`, `inst/CITATION`,
+  and `CITATION.cff`; Shinichi Nakagawa remains maintainer and corresponding author.
+  No version bump; experimental **0.9.0** unchanged.
+
+* **hsquared#236: `heritability_standard_error()` returns `data.frame(term, se)`.**
+  Same public table shape as [heritability()], so
+  `merge(heritability(fit), heritability_standard_error(fit), by = "term")`
+  works. Sibling `variance_component_standard_errors()` stays
+  `data.frame(component, se)`. Estimands and internal storage are unchanged
+  (fits may still carry a bare numeric `heritability_se`); only the extractor
+  return shape is aligned. **Breaking** for callers that treated the return as a
+  length-1 numeric (use `$se`). No covered flip; `public_covered_count` stays
+  **7**; version stays **0.9.0**.
+
+* **Genomic ordinary-call honesty (T3).** Default-path `genomic()` now refuses
+  with a pasteable `target = "genomic"` next call and names the held ordinary
+  activation (design-44 G5; sealed `BOUNDARY_HOLDOUT_FAIL`). No silent default
+  route, no covered flip, `public_covered_count` stays **7**, experimental
+  **0.9.0** unchanged. Activation remains an owner science ticket.
+
+* **hsquared#237 T1 close: `cbind` + `permanent` stays an honest fence, with a
+  design note.** The engine still has no multi-trait permanent-environment
+  fitter (`G0 ⊗ A + P0 ⊗ I`), so the named reject from parity-09 remains the
+  live path. This slice banks `docs/design/57-mv-pe-cbind-permanent-237.md`,
+  strengthens the multivariate repeated-records ABSORB warning to cite #237 and
+  the two closest live routes (univariate `target = "repeatability"`, or
+  `cbind` without `permanent()`), and adds capability / validation-debt rows.
+  **No promotion** — `public_covered_count` stays **7**; version stays **0.9.0**.
+
+* **R↔Julia `engine = "julia"` parity inventory at experimental 0.9.0 (parity-09).**
+  Durable matrix `docs/design/55-r-julia-engine-julia-parity-09.md` classifies every
+  Julia-fittable surface as REACHABLE / HONEST-ERROR / SILENT-GAP. SILENT-GAPs SG1–SG3
+  closed with named unsupported-syntax tips (`cbind`+`permanent` #237; matfree
+  engine-only; FA/lowrank stay planned). Skip-guarded smoke
+  `tests/testthat/test-engine-julia-parity-smoke.R` names every REACHABLE target.
+  **No promotion** — `public_covered_count` stays **7**; version stays **0.9.0**.
+  Twin pointer: HSquared.jl `docs/design/12-bridge-compatibility.md`.
+
+* **The sparse repeatability route asks the engine for its uncertainty once,
+  not three times (HSquared.jl#370).** `target = "repeatability"` with
+  `scale_method = "auto"` wanted three post-fit quantities — the
+  variance-component standard errors, the ratio standard errors, and the
+  repeatability interval — and called a separate engine function for each. All
+  three are derived from the same asymptotic covariance, and that covariance is
+  a finite-difference Hessian of the REML log-likelihood, the most expensive
+  post-fit quantity in the engine, so it was being built three times. The route
+  now calls `multi_effect_uncertainty()` once and reads all three from it.
+  Measured on the great tit development data (11,856 records, 10,937 pedigree
+  rows), end to end in R including the bridge: **6.15 s to 1.26 s**, with every
+  reported number unchanged to the last printed digit — variance components,
+  all three standard errors, the heritability standard error, and the
+  repeatability interval and its endpoints. `hsquared` still works against an
+  engine checkout that predates `multi_effect_uncertainty()`: it falls back to
+  the three separate calls when the function is absent. (Szymon Drobniak.)
+
+* **Fitting repeated records without a `permanent()` term now warns
+  (HSquared.jl#352).** With more than one record per individual and only the
+  additive effect in the model, the additive variance absorbs the
+  permanent-environment variance and both it and the heritability are inflated
+  — silently, until now. The warning names the counts that triggered it and the
+  exact call that separates the two components, and is suppressible with
+  `suppressWarnings()` when the single-effect model is intended.
+  `formula_status()`'s `permanent(1 | id)` row now names the repeated-measures
+  model and the `scale_method` lever. (Szymon Drobniak.)
+
+* **Fixed the great tit development notebook's standard-error columns.**
+  `dev-test/great_tit_animal_model.qmd` hardcoded `SE = NA_real_` for the
+  `hsquared` rows in both the variance-component and heritability comparison
+  tables and never called `variance_component_standard_errors()` or
+  `heritability_standard_error()`. That, not an engine failure, is where the
+  "hsquared produces no standard errors" report came from; the engine returns
+  them on this route and always did. (Szymon Drobniak.)
+
+* **The animal + permanent-environment model now fits at real pedigree scale
+  (HSquared.jl#352).** `target = "repeatability"` gains
+  `scale_method`. The default `"dense"` is unchanged; `scale_method = "auto"`
+  fits the same `animal(1 | id, pedigree = ped) + permanent(1 | id)` model
+  through the engine's sparse K-effect AI-REML, which has no
+  `nobs^2 + nanimals^2` dense ceiling. Previously any field-scale
+  repeated-measures dataset was refused by that ceiling, so users fell back to
+  a single animal effect and `V_A` silently absorbed `V_PE`. Below the ceiling
+  the two estimators agree to REML tolerance. On the sparse route `initial` and
+  `iterations` are not honoured (a supplied value now warns), no
+  `loglik` carries the REML
+  normalising constant the dense route omits, so log-likelihoods must not be
+  compared across `scale_method`. `repeatability_interval()` works on both
+  routes and they agree. The dense route's refusal now names
+  `scale_method = "auto"` instead of saying only "use a sparse route".
+  (Szymon Drobniak.)
+
+* **The sparse repeatability route returns standard errors
+  (HSquared.jl#352).** `variance_component_standard_errors()` and
+  `heritability_standard_error()` now resolve on a
+  `scale_method = "auto"` repeatability fit, backed by new K-effect engine
+  functions (`multi_effect_variance_component_standard_errors()`,
+  `multi_effect_ratio_standard_errors()`). Previously the engine defined
+  standard errors only for a single-animal-effect fit and for the multivariate
+  fit, so every multi-effect model had none. The engine refuses at a flat or
+  boundary optimum rather than returning `NaN`, and that refusal surfaces
+  through the usual one-warning path rather than as a silent `NA`. The
+  permanent block's ratio is reported as a variance-explained proportion, not
+  as a heritability. The `"dense"` route still has no standard errors and still
+  says so. (Szymon Drobniak.)
+
+* **`animal(...)` plus a single `(1 | group)` effect now fits
+  (HSquared.jl#352).** The multi-effect bridge required at least three
+  random-effect blocks, an R-side accident — every engine entry point accepts
+  `K >= 1`. The floor is now two, so `target = "multi_effect"` reaches the
+  two-block model instead of erroring. (Szymon Drobniak.)
+
+* Fixed stale documentation: `R/julia-bridge.R` comments described the Julia
+  `prediction_error_variance()`/`reliability()` extractor defaults as
+  `:dense`, which HSquared.jl#355 made false (the default is now `:auto`,
+  selecting the inverse by storage; `:dense` remains the explicit validation
+  oracle). No code or behaviour change. (HSquared.jl#364, Szymon Drobniak.)
+
+* **Post-fit engine failures now surface instead of vanishing
+  (HSquared.jl#351).** The bridge computes the experimental standard errors,
+  intervals, and plot data inside Julia `try` blocks so a failure there never
+  aborts the fit; previously the `catch` swallowed the error, so a fit whose
+  `variance_component_standard_errors()` or `heritability_standard_error()`
+  threw came back with those fields silently absent and no message, and
+  nobody could tell "undefined here" from "the engine threw". Every such
+  block (the SE trio, the multivariate covariance SEs, the repeatability /
+  two-effect / n-effect ratio intervals, and all plot-data attachments,
+  including an `OutOfMemoryError` there) now records the engine's message.
+  After the fit, `hsquared()` raises ONE warning naming each engine function
+  that failed with the first 200 characters of its message, and attaches the
+  full record as `attr(fit, "bridge_errors")` (a named character vector).
+  What is computed is unchanged; a clean fit carries no attribute and no
+  warning. The underlying throw on the reported real-data fit is a separate
+  engine question. No version bump; no capability-status change.
+  Credit: Szymon Drobniak (finding).
+
+* **`fit_diagnostics()` reports `search_boundary` for non-Gaussian fits,
+  distinct from `at_boundary` (#230 / HSquared.jl#327).** Fits whose result
+  carries a `boundary` field (the non-Gaussian bridge route) now gain a
+  `search_boundary` row (mirroring `result$boundary`) and a
+  `search_boundary_condition` row, which explains the bracket rail when
+  `TRUE` and reads `"interior"` when `FALSE`.
+  Gaussian animal-model fits (`engine = "fit"`) never carry a `boundary`
+  field, so they gain neither row. `search_boundary` is unrelated to the
+  existing `at_boundary` rows, which flag an estimated variance component at
+  or near zero; `search_boundary` instead reports whether the optimizer's
+  single-variance search stopped on the rail of its log-scale bracket. No
+  version bump; no capability-status change.
+
+* **The non-Gaussian bridge (`target = "nongaussian"`) forwards
+  `engine_control$initial`/`$restart_check` and surfaces `boundary`
+  (#222, #225 / HSquared.jl#342).** `initial` (a list with `sigma_a2`)
+  recentres the engine's log-scale search bracket for the single variance
+  component: `HSquared.fit_laplace_reml()` runs a bracketed Brent search over
+  `log(sigma_a2)` on `log(initial$sigma_a2) +/- 6`, so supplying `initial`
+  moves the whole search window, not just a starting point. Unsupplied, the
+  engine's hard-coded `sigma_a2 = 1.0` centres it, giving `[exp(-6), exp(6)]`
+  -- a true `sigma_a2` outside that window cannot be reached without an
+  `initial` on the scale of the data; `restart_check` (logical, default
+  `FALSE`) opts into the engine's two-start restart. The R result now
+  carries `boundary` next to `converged` (read it as `fit$result$boundary`;
+  a `fit_diagnostics()` row is tracked as #230, distinct from the existing
+  `at_boundary` rows): `TRUE` means the fitted `sigma_a2` is a function of
+  the search start, not the data. A fit that lands on its search boundary is refused by
+  the Julia payload builder and surfaces as a classed
+  `hsquared_julia_error`/`hsquared_error` naming `initial`/`restart_check` as
+  the retry levers (previously the advice named these levers but the R bridge
+  had no way to supply them); the R-side `hs_ng09_boundary()` guard also
+  aborts with an `hsquared_boundary_refused`/`hsquared_error` condition on any
+  future route that returns `boundary = TRUE` without refusing first. No
+  version bump; no capability-status change.
+
+* **Random-regression basis and evaluation points now error on out-of-range
+  covariates instead of clamping (#213 / PR #219).** `hs_legendre_basis()`
+  errors beyond the engine's own `1e-10` tolerance, matching the Julia
+  `legendre_basis` boundary exactly (values within tolerance are still
+  clamped to `[-1, 1]`, as before). `hs_rr_eval_points()` now validates a
+  user-supplied `at` against the fitted covariate range and errors with the
+  same `hsquared_out_of_range`/`hsquared_error`-classed condition, naming the
+  fitted range and the offending value(s), before any random-regression
+  trajectory extractor (`rr_genetic_variance()`, `rr_heritability()`,
+  `rr_correlation()`, `rr_eigenfunctions()`, the `reaction_norm`/`rr_surface`
+  plot types) can silently return the nearest fitted endpoint labelled with
+  the requested out-of-range value.
+
+* **Julia bridge errors are now translated into classed R conditions, and a
+  new `max_dense_cells` lever raises the dense-validation-size cap on two
+  guarded targets (#214, #217 / PR #220).** Every Julia-bridge fit call now
+  raises an `hsquared_julia_error`/`hsquared_error`-classed condition
+  carrying the original Julia message plus a one-line hint (e.g. pointing at
+  `ridge`/`blend_weight` for an ill-conditioned `single_step()` block),
+  instead of a raw, untranslated Julia error and stack trace.
+  `hs_control(engine_control = list(max_dense_cells = ...))` raises or lowers
+  the dense-validation-size cap (default `1e6`, unchanged) on two Julia
+  targets: `target = "fit_animal_model"` (the default target under
+  `engine = "julia"`) and `target = "repeatability"`, which is now guarded by
+  the same cap for the first time. Both require `engine = "julia"`; the lever
+  has **no effect** under the default `engine = "fit"` path, which routes to
+  the sparse-capable `HSquared.fit_ai_reml()` and enforces no dense-cell cap
+  at all. No other target was given the lever: `target = "multi_effect"` and
+  `target = "direct_maternal"` do reach engine fitters that enforce the same
+  guard, but they reach them through `HSquared.fit_payload_v2()`, which
+  accepts no `max_dense_cells` argument, so those routes stay pinned at the
+  engine default `1e6` with no R-side control — their bridge errors therefore
+  carry a lever-free size hint rather than naming `max_dense_cells`. Repeatability's caveat: raising `max_dense_cells` above
+  the default disables the repeatability *interval* silently (it returns
+  `NULL`) rather than erroring, because `HSquared.repeatability_interval`
+  runs the engine default internally and is not itself configurable by this
+  lever — see `?hs_control`.
+
+* **`engine_control$initial`/`iterations` are now forwarded on every target
+  that documents them, and an unsupported key now errors (#212 / PR #223).**
+  Five sites previously accepted `initial` and/or `iterations` with no
+  effect: `target = "multi_effect"`, `target = "direct_maternal"`,
+  `single_step_construct()`, `metafounder_single_step()`, and the
+  `multi_effect_ratio_interval()` refit. All five now forward both controls
+  into their Julia calls. A new per-target forwarding check errors with class
+  `hsquared_unsupported_syntax` (naming the key and the target) when a caller
+  supplies an `engine_control` key their chosen target does not honour; the
+  full per-target table is in `?hs_control`. Known engine-side gap, not fixed
+  here: `target = "multi_effect"` with `scale_method = "auto"` still does not
+  forward `initial`/`iterations` (HSquared.jl#343).
+
+* **Documentation family: engine contracts carried into the R surface, plus
+  vignette fixtures (#208, #209, #210, #211, #215, #216, #218 / PR #221).**
+  `?prediction_error_variance`, `?reliability`, and
+  `?covariance_standard_errors` now state the engine's own PEV, reliability,
+  accuracy, and Fisher-z interval-construction formulas, including that
+  reliability/accuracy values are not clipped. `?genomic_markers` and the
+  genomic-prediction vignette document the required 0/1/2 (or `[0, 2]`
+  dosage) marker coding; a centered `-1/0/1` matrix must be recoded, and the
+  out-of-range check now raises a classed `hsquared_error` instead of a bare
+  `stop()`. `?heritability_interval` scopes the cited coverage figures to the
+  design they were measured on (`q = 120`, interior h², level 0.95, DRAC job
+  47925485). `sigma_P` is now written `sigma^2_P` throughout user-visible
+  roxygen prose and interpretation strings, with no arithmetic change.
+  `?animal`/`?hs_control` document that the `pedigree =` route rejects
+  selfing rows in v0.1, with `relmat(1 | id, K = A)` named as the current
+  workaround. `?factor_g_extractors` clarifies that `specific_variance()` is
+  withheld only because `factor_analytic`/`lowrank` are not yet activated on
+  the R-to-Julia bridge, not because `Psi` is unidentified. Six vignette
+  articles gained a fixture chunk so their fit chunks resolve every object
+  and stop only at the expected "requires the HSquared.jl Julia engine"
+  message. `vignettes/articles/twin-boundary.Rmd` gained a "Twin contract
+  rule" section pointing at the matching paragraph landed in HSquared.jl
+  PR #338.
+
+None of the four entries above changes `DESCRIPTION`, bumps the version, moves
+a capability-status row, or changes `public_covered_count` (stays **7**). All
+are R-repo-only bridge/validation/documentation fixes from the H² twin
+independent test campaign.
+
+# hsquared 0.9.0 (experimental release)
+
+* **Ratified three-field non-Gaussian boundary.** The opt-in Poisson/log and
+  Binomial/logit route retains its explicit scale boundaries: observation-scale
+  h² is defined for Bernoulli and common-trial Binomial inputs, while varying
+  trial counts return the named non-scalar sentinel rather than an averaged
+  scalar. This does not increase `public_covered_count`, add a default route,
+  or make a non-Gaussian REML claim.
+
+* **Retained interval evidence, without promotion.** H0, H1, and H3 evidence
+  is reported only at its declared route and claim level; no package-wide
+  nominal-coverage or covered-status claim is created. The release remains
+  experimental and not production; CRAN availability is tracked separately.
+
+* **Default genomic route remains deferred.** The covered genomic-GREML
+  estimand remains available only through explicit
+  `engine = "julia", target = "genomic"`; the ordinary call is again the
+  pedigree animal-model route. This restores the 0.9 scope boundary, changes
+  no covered count, and does not alter the scientific fixture or evidence.
+
 # hsquared 0.8.0
+
+* **Interval-coverage claim levels for the univariate animal model (2000-rep
+  C1 confirm; H0 Layer B).** The pre-registered C1 campaign
+  (`docs/design/34-interval-recovery-pre-registration.md`) returned at the
+  2000-rep confirm tier (HSquared.jl DRAC job 47925485). Mapped through
+  doc-34 §4 at the worst interpretable interior cell: the **h² interval**
+  is **directional-conservative** on all three legs — delta over-covers
+  (0.969), profile is in-band (0.950), and bootstrap **mildly
+  under-covers versus nominal 0.95** at Ĉ **0.924** (still ≥0.90). Do
+  **not** describe h² as "never under-covers." The **σ²a profile** and
+  **σ²a bootstrap** intervals are directional-conservative (profile
+  0.963/0.947/0.956; bootstrap worst 0.918). The **σ²a delta/Wald**
+  interval is **experimental-only** — it under-covers (0.897) and is
+  shown as a point estimate ± SE only, not as a calibrated or
+  conservative interval. `directional-conservative` is **not**
+  coverage-calibrated-at-nominal: no leg is promoted to `point`. No
+  capability is promoted — `public_covered_count` stays **7**. This is
+  an honesty / claim-level change, not a covered flip, not a version
+  bump, and not a 0.9 / 1.0 claim. **H0 Layer B ratified** (owner
+  `ratify H0 Layer B`, 2026-09-07; Rose CLEAN WITH NITS; no covered flip).
 
 * **Single-step opt-in routes are now distinguished in user-facing status
   guidance.** `single_step(..., Hinv = Hinv)` consumes a supplied relationship
@@ -54,14 +397,15 @@
   (post-G10 pointer). Not covered. `public_covered_count` stays **7**.
   Experimental stays **0.7.0**. No General / CRAN / 1.0.
 
-* **Default genomic GREML activation (honesty-safe; no count bump).**
+* **Historical default genomic GREML activation (superseded for 0.9).**
   Owner YES 2026-09-03. Narrow `genomic(1 | id, markers = M)` /
   `genomic(1 | id, Ginv = Q)` now auto-routes on `engine = "fit"` (and on
   `engine = "julia"` with no explicit target) to the same covered
   validation-scale GREML estimand as `target = "genomic"`. Session warn-once
   keeps relationship-scale / experimental fences. Design-44 nine-cell recovery
   campaign is confirmatory / may still run — not claimed PASS. `public_covered_count`
-  stays **7**. Single-step / SNP-BLUP stay opt-in. No General / CRAN / 1.0.
+  stayed **7**. Single-step / SNP-BLUP stayed opt-in. The 0.9 candidate
+  restores explicit genomic routing. No General / CRAN / 1.0.
 
 * **#7 - R genomic GREML `partial -> covered` (validation-scale, opt-in).**
   Owner ink: overnight approvals #5-#10 (auto-flip #7 when design-41 section 3 + Rose
@@ -70,7 +414,8 @@
   **retained**. Scope: explicit `engine = "julia", target = "genomic"` on
   `genomic(1 | id, markers = M)` / `Ginv = Q`; estimand `genomic_variance_ratio`
   on \(K_\lambda = G + 0.01 I\) (design-51). **A later maintainer decision
-  activated the default route for this same estimand (2026-09-03).** **NOT** single-step / SNP-BLUP /
+  temporarily activated the default route for this same estimand (2026-09-03);
+  the 0.9 candidate restores explicit routing.** **NOT** single-step / SNP-BLUP /
   APY / GPU / intervals. **NO-ANCHOR DISCLOSURE:** no clean Mrode genomic-\(h^2\)
   pin. Evidence: design-53 SUPERSEDE; Totoro exact-`G` PASS; Boole RATIFIED;
   canon VanRaden lock; promotion parity (DP-10 CI caveat). No General / CRAN / 1.0.
@@ -126,7 +471,7 @@ Julia 0.5.0 is in General.
 * **Experimental, opt-in single-step H⁻¹ *construction*.** `hsquared()` now accepts `single_step(1 | id, pedigree = ped, markers = M)` and fits it through `engine_control = list(target = "single_step_construct")`: the engine builds the pedigree inverse `A⁻¹` and dense `A` from the pedigree and the genomic relationship `G` from the genotyped-subset markers, assembles the single-step relationship inverse `H⁻¹` (Aguilar et al. 2010), and fits by REML — so you no longer have to precompute `Hinv` yourself (the supplied-`Hinv` form still works). Genotyped animals must be in the pedigree, but phenotyped animals need **not** be genotyped (the point of single-step), and GEBVs are returned for **all** pedigree animals. Construction knobs (`tau`, `omega`, `blend_weight`, `ridge`) are exposed but not comparator-validated. When the data is an `hs_data()` container that bundles a pedigree and genotypes, `single_step(1 | id)` resolves both from the bundle (the `animal(1 | id)` precedent), so neither `pedigree =` nor `markers =` is required; explicit arguments still override the bundle. Experimental, opt-in, REML-only, dense/validation-scale; mirrors the twin `V2-SSHINV` (partial). Verified live: marker-row-order invariance (the genotyped-rows alignment guard), id-labelled GEBVs covering ungenotyped animals, a differs-from-pedigree-model anchor, and the `hs_data()` shorthand fitting identically to the explicit call. Not the default; promotion past `partial` is twin-gated (`docs/design/25`).
 * `formula_status()` now reports the `single_step(1 | id)` `hs_data()` bundle shorthand as its own parsed opt-in row, separate from explicit `single_step(1 | id, pedigree = ped, markers = M)` and supplied-`Hinv` single-step forms.
 * **G-matrix geometry / evolvability extractors** (Hansen & Houle 2008) for opt-in multivariate fits: `eigen_G()` (the genetic eigenstructure — variance per genetic axis + the genetic principal components, the reserved name now implemented), `g_max()` (the leading genetic axis), `mean_evolvability()`, and the directional `evolvability()`, `variance_along_gradient()`, `respondability()`, `conditional_evolvability()`, and `autonomy()`. These are **rotation-invariant** functionals of the estimated `G` (not of factor loadings), so they are well defined for any multivariate fit and need no loading-rotation convention — the agreed cross-lane convention for what the structured-covariance bridge may surface (`HSquared.jl#42`/`#55`). Computed in R from `genetic_covariance(fit)` and verified to match the engine's `evolvability.jl` definitions by a live parity test; experimental, REML-only, no standard errors, carrying the multivariate fit's `partial` status (#55).
-* **Experimental, opt-in non-Gaussian (GLMM) animal model.** `hsquared()` now accepts `family = poisson()` and `family = binomial()` (binary 0/1) on `animal(1 | id, pedigree = ped)` through `hs_control(engine = "julia", engine_control = list(target = "nongaussian"))`, surfacing the Julia-owned `HSquared.fit_laplace_reml()` marginal (Laplace) REML optimizer. It returns the latent-scale additive-genetic variance, breeding values, fixed effects, and the marginal log-likelihood. Because a non-Gaussian family has no residual-variance scale, **no heritability is reported** (a liability-scale `h²` would be an unbacked claim). The marginal is selected with `engine_control$marginal`: `"laplace"` (the Laplace approximation, default) or `"variational"` (the variational/ELBO marginal; aliases `"la"`/`"va"`, mirroring the sister-package method-string convention) — the variational fit is surfaced as `Variational-REML` in `print()`/`summary()` and is verified live to match the engine element-wise. `binomial(logit)` now also accepts a **`cbind(successes, failures)` counts response** (Binomial), not only a binary 0/1 response (Bernoulli): the canonical R `glm` binomial syntax. The engine uses a single common trial count, so the `cbind` row totals (successes + failures) must be equal — varying per-record trials error with a directing message (a planned engine follow-up). **Bug fix:** a `cbind(successes, failures)` response under `family = binomial()` was previously mis-detected as a two-trait multivariate Gaussian (family-blind `cbind` detection); it is now correctly a binomial-counts model. Experimental, REML-only; mirrors the engine row `V6-LAPLACE`/`VA` (`partial`): not coverage-calibrated, no external comparator, and Bernoulli `σ²a` is prone to a search-bound boundary at small scale. Not the default (#44).
+* **Experimental, opt-in non-Gaussian (GLMM) animal model.** `hsquared()` accepts `poisson(log)` or `binomial(logit)` on an intercept-only `animal(1 | id, pedigree = ped)` model through `hs_control(engine = "julia", engine_control = list(target = "nongaussian"))`. The versioned 0.9 conditional three-field result reports Poisson latent and count-scale observation h2; and logit latent, liability, and numerically integrated observation-scale h2 for Bernoulli or common-trial Binomial input. Varying-trial Binomial deliberately reports `h2_observation = NaN` with `h2_observation_undefined_reason = "varying_trials_no_scalar_estimand"`: no trial-count averaging or scalar observation-scale claim is made. `binomial(logit)` accepts binary 0/1 Bernoulli input or `cbind(successes, failures)` counts with scalar or varying positive trial totals. The objective is selected with `engine_control$marginal`: `"laplace"` is a Laplace marginal-likelihood approximation and `"variational"` (aliases `"la"`/`"va"`) is an ELBO; neither is called REML/AI-REML and their `logLik`/`AIC` values are not comparable. Experimental and opt-in only: no coverage calibration, external same-estimand comparator, capability promotion, or covered claim; not the default (#44). The "Fitting models" article now has a section, *Binary and count traits (experimental): which heritability to report*, that walks a varying-clutch fledging example and explains in plain terms that the liability-scale row is the one to report, why the observation-scale row is `NaN` when trial sizes vary, and how to get a data-scale value from `QGglmm` if one is needed.
 * **Experimental:** `heritability_interval()` extracts a large-sample confidence interval for `h²` from the default Gaussian animal-model fit, when a local Julia engine returns one. It is a REML-only, asymptotic (logit delta-method) interval — mirroring the engine row `V1-HERIT-CI` (`partial`), so it is not coverage-calibrated and is unreliable at small `n`. It is reported as a point estimate plus bounds, not a validated capability (#11).
 * **Experimental:** `variance_component_standard_errors()` and `heritability_standard_error()` return large-sample (delta-method) standard errors from the REML average-information matrix, when the default Gaussian fit's engine provides them. Same `V1-HERIT-CI` (`partial`) caveats: asymptotic, REML-only, omitted near a variance-component boundary (ill-conditioned AI matrix), not coverage-calibrated, not a validated capability.
 * **Experimental:** `repeatability_interval()` returns a logit delta-method confidence interval for the repeatability coefficient `t = (Va + Vpe) / Vp` from the opt-in repeatability model, when the engine provides one. It mirrors the engine row `V3-REPEAT-REML` (`partial`): engine-internal self-consistency tested (recovery of `t` + interval bracketing on seeded fixtures) but with no external comparator, no `h²` interval, and no deep-pedigree validation; reported as a point estimate plus bounds only (#12).

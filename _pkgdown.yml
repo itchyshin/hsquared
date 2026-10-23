@@ -1,23 +1,44 @@
 url: https://itchyshin.github.io/hsquared/
 destination: pkgdown-site
 
+# Legacy article slugs (bookmarks / external links). Unlike ROADMAP.html, these
+# do not recreate hidden internal pages — see pkgdown workflow verify step.
+redirects:
+  - ["articles/can-i-fit-and-report-this.html", "articles/current-limits.html"]
+  - ["articles/progression-and-evidence.html", "articles/progression-evidence.html"]
+
 # D-41: prominent site-wide EXPERIMENTAL callout on the home sidebar (channel 3).
 home:
+  title: How much is genetic?
+  description: >-
+    Experimental 0.9.0 release R interface for a Julia-backed animal model.
+    public_covered_count is 7. Not production; CRAN availability is tracked separately.
+    Fitting needs a local Julia and an HSquared.jl checkout.
+    Report point estimates only for covered routes.
   sidebar:
     structure: [experimental, links, license, community, citation, authors, dev]
     components:
+      # D-41 channel 3 stays, but as the SHORT form. The full statement
+      # (experimental 0.9.0 release / not production / CRAN availability tracked separately /
+      # needs a local Julia) is said once, in the body callout a few
+      # centimetres to the left of this card; repeating it verbatim here put
+      # the same paragraph on screen twice, which is the craft defect the
+      # 2026-09-06 sister-bar review flagged. Every fact unique to this card —
+      # the planned/partial rows, the registry status, both evidence links —
+      # is kept. Nothing was removed from the page, only from the second copy.
       experimental:
         title: Status
         text: >-
-          **Experimental 0.8.0 — not production / not CRAN / 0.9 is not
-          released.** Version tracks covered capability, not surface area.
-          `public_covered_count` is **7**. Factor-analytic G stays **planned**
-          on R; single-step stays **opt-in partial**. Julia engine-covered ≠
-          R covered. Interval coverage is not certified. Julia General
+          **Experimental 0.9.0 release.** Version tracks covered capability, not
+          surface area. `public_covered_count` is **7**. Bounded factor-analytic
+          G and genetic GLLVM fits are **opt-in partial**; single-step also stays
+          **opt-in partial**.
+          Julia engine-covered ≠ R covered, and interval coverage is not
+          certified. Not in the Julia General registry. An earlier
           registration
           ([PR #166969](https://github.com/JuliaRegistries/General/pull/166969))
-          is deferred pending collaborator review; do not use
-          `Pkg.add("HSquared")` by name. Read
+          was closed and not merged, so do not use `Pkg.add("HSquared")`
+          by name. Install HSquared.jl from GitHub only. Read
           [Can I fit and report this?](articles/current-limits.html)
           and [Validation evidence](articles/validation-evidence.html)
           before reporting results.
@@ -30,19 +51,35 @@ home:
 
 template:
   bootstrap: 5
+  bootswatch: flatly
+  includes:
+    # pkgdown already prints the plain version beside the brand; the pill adds
+    # the status word, not a second copy of the number.
+    before_navbar: '<span class="hsquared-version-note">experimental</span>'
   bslib:
+    # Deeper teal navbar matching the drmTMB/gllvmTMB sister packages.
+    # Body ink is not the brand hue; link teal remains AA-safe on white.
     bg: "#ffffff"
-    fg: "#0f2533"
-    primary: "#0284c7"
-    secondary: "#475569"
-    headings-color: "#082f49"
-    link-color: "#0369a1"
-    link-hover-color: "#075985"
-    border-color: "#bae6fd"
+    fg: "#112638"
+    primary: "#0f7887"
+    secondary: "#37515a"
+    headings-color: "#112638"
+    link-color: "#0f7887"
+    link-hover-color: "#0a617d"
+    border-color: "#d6e3e6"
+  # HEX R-package lockup; keep the visual identity R/sister teal, never Julia
+  # RGBP. man/figures/logo.svg is the single mark: pkgdown 2.2 find_logo()
+  # prefers it, and it renders exactly once per page (the home page header).
+  # The navbar is text-only — see pkgdown/templates/navbar.html.
+  # Repository-local figure assets are the public source of this mark.
+  opengraph:
+    image:
+      src: man/figures/logo.png
+      alt: "hsquared hex logo: a pedigree and h squared, dark teal (proposed mark)"
 
 navbar:
   structure:
-    left: [intro, model_guides, status, comparators, developer, reference, news]
+    left: [intro, choose, fit, diagnose, report, progression, developer, reference, news]
     right: [search, github]
   components:
     intro:
@@ -50,23 +87,49 @@ navbar:
       menu:
         - text: Getting started with hsquared
           href: articles/hsquared.html
+        - text: Julia engine docs (HSquared.jl)
+          href: https://itchyshin.github.io/HSquared.jl/dev/
         - text: Can I fit and report this?
           href: articles/current-limits.html
         - text: Function map and cheat sheet
           href: articles/function-map-cheatsheet.html
         - text: Worked example (gryphon)
           href: articles/gryphon-worked-example.html
-    model_guides:
-      text: Model guides
+    choose:
+      text: Choose a model
+      menu:
+        - text: Can I fit and report this?
+          href: articles/current-limits.html
+        - text: Model status and route scope
+          href: articles/model-status.html
+        - text: Standard routes (fitting tour)
+          href: articles/fitting-models.html
+        - text: Multivariate Gaussian animal models
+          href: articles/multivariate.html
+        - text: Genetic GLLVM opt-in
+          href: articles/genetic-gllvm.html
+        - text: Genomic prediction
+          href: articles/genomic-prediction.html
+    fit:
+      text: Fit
       menu:
         - text: Fitting models
           href: articles/fitting-models.html
+        - text: Worked example (gryphon)
+          href: articles/gryphon-worked-example.html
+        - text: Function map and cheat sheet
+          href: articles/function-map-cheatsheet.html
+    diagnose:
+      text: Diagnose
+      menu:
         - text: Visualizing models
           href: articles/visualizing-models.html
-        - text: Multivariate Gaussian animal models
-          href: articles/multivariate.html
-    status:
-      text: Status
+        - text: Model status
+          href: articles/model-status.html
+        - text: Validation evidence
+          href: articles/validation-evidence.html
+    report:
+      text: Report
       menu:
         - text: Twin boundary (R public vs Julia engine)
           href: articles/twin-boundary.html
@@ -76,9 +139,7 @@ navbar:
           href: articles/model-status.html
         - text: Validation evidence
           href: articles/validation-evidence.html
-    comparators:
-      text: Comparators
-      menu:
+        - text: "---------"
         - text: "Benchmark: sommer & pedigreemm"
           href: articles/benchmark-comparators.html
         - text: "Two-effect model: sommer comparator"
@@ -87,6 +148,9 @@ navbar:
           href: articles/multi-effect-comparator.html
         - text: "Random regression (k = 2): sommer comparator"
           href: articles/rr-comparator.html
+    progression:
+      text: Progression & evidence
+      href: articles/progression-evidence.html
     developer:
       text: Developer
       menu:
@@ -97,8 +161,6 @@ navbar:
         - text: Genomics and GPU roadmap
           href: articles/genomics-gpu-roadmap.html
         - text: "---------"
-        - text: Genomic prediction
-          href: articles/genomic-prediction.html
         - text: Reading G matrices
           href: articles/g-matrix-interpretation.html
         - text: QTL, GWAS, and eQTL status
@@ -114,6 +176,7 @@ reference:
       - hs_data
       - hs_control
       - animal
+      - rr
       - model_spec
       - formula_status
       - validation_status
@@ -173,9 +236,9 @@ reference:
   - title: Uncertainty (experimental)
     desc: >
       Asymptotic/delta-method standard errors, intervals, and tests, surfaced when
-      the engine provides them. **Not coverage-calibrated** — no route carries an
-      interval-reporting permission. `confint()` and `vcov()` are deliberately
-      absent rather than shipped uncalibrated.
+      the engine provides them. No route has nominal coverage calibration; named
+      univariate-pedigree methods are directional-conservative only. `confint()`
+      and `vcov()` are deliberately absent.
     contents:
       - heritability_interval
       - variance_component_standard_errors
@@ -224,35 +287,53 @@ articles:
       - articles/function-map-cheatsheet
       - articles/gryphon-worked-example
 
-  - title: Model guides
+  - title: Choose a model
     desc: >
-      Fitting and visualization for the animal-model path. Multivariate is
-      opt-in experimental. Genomic prediction and G-matrix pages live under
-      Developer until those routes are covered.
+      Decide whether a route is current and what its evidence allows before
+      opening a fitting command.
+    contents:
+      - articles/current-limits
+      - articles/model-status
+      - articles/fitting-models
+      - articles/multivariate
+      - articles/genetic-gllvm
+      - articles/genomic-prediction
+
+  - title: Fit
+    desc: >
+      The default animal-model workflow and its specialist companions. Each page
+      keeps engine requirements and route scope visible.
     contents:
       - articles/fitting-models
-      - articles/visualizing-models
-      - articles/multivariate
+      - articles/gryphon-worked-example
+      - articles/function-map-cheatsheet
 
-  - title: Status
+  - title: Diagnose
     desc: >
-      Capability limits, validation evidence, and model-family status. Read these
-      before reporting point estimates or intervals.
+      Check convergence, boundary flags, model status, and validation evidence
+      before extracting or reporting an estimate.
     contents:
-      - articles/twin-boundary
-      - articles/current-limits
+      - articles/visualizing-models
       - articles/model-status
       - articles/validation-evidence
 
-  - title: Comparators
+  - title: Report
     desc: >
-      External comparator evidence against sommer and pedigreemm. Comparator
+      Route-scoped reporting permission and comparator evidence. Comparator
       agreement does not certify interval coverage.
     contents:
+      - articles/twin-boundary
+      - articles/current-limits
       - articles/benchmark-comparators
       - articles/two-effect-comparator
       - articles/multi-effect-comparator
       - articles/rr-comparator
+
+  - title: Progression & evidence
+    desc: >
+      Dated evidence milestones, not a release announcement or a status ledger.
+    contents:
+      - articles/progression-evidence
 
   - title: Developer
     desc: >
@@ -263,6 +344,5 @@ articles:
       - articles/formula-grammar
       - articles/inheritance-systems
       - articles/genomics-gpu-roadmap
-      - articles/genomic-prediction
       - articles/g-matrix-interpretation
       - articles/qtl-gwas-eqtl-status

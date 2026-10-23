@@ -10,15 +10,20 @@
 #' local Julia and `HSquared.jl` are available, and otherwise errors with
 #' install guidance. A `cbind()` multivariate Gaussian response also routes on
 #' that default path; multivariate is covered at validation scale and stays experimental.
-#' Genomic, repeatability, two-effect, and non-Gaussian
-#' (`poisson`/`binomial`, Laplace or variational REML) models fit through
-#' opt-in, experimental engine paths; single-step stays **opt-in partial**;
-#' factor-analytic G is engine-covered on the Julia engine (`V4-FA`) and
-#' planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
+#' Narrow genomic GREML is an explicit experimental target (`target = "genomic"`)
+#' and is covered at validation scale. The covered common-environment two-effect, independent multi-effect,
+#' direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
+#' maternal two-effect, and non-Gaussian (`poisson(log)`/`binomial(logit)`,
+#' Laplace marginal likelihood or hybrid variational-Laplace objective) models are opt-in and
+#' experimental; single-step stays **opt-in partial**. Factor-analytic G has
+#' a bounded experimental four-trait rank-one R control route; `cov = fa()`
+#' formula grammar stays planned. Genetic GLLVM has a bounded experimental
+#' three-trait, two-factor Poisson-log expert route. Neither R route is covered;
+#' see [hs_control()] for the required explicit controls and limits.
 #'
 #' @section Current limitations:
-#' This package is **experimental** (0.8.0); **0.9 is not released**; the first CRAN release is not this bump,
-#' not 1.0.0. Default [hsquared()] fitting requires a local Julia installation
+#' This package is an **experimental 0.9.0 release**; it is not production or
+#' 1.0.0, and CRAN availability is tracked separately. Default [hsquared()] fitting requires a local Julia installation
 #' and HSquared.jl; use [hs_control()] with `engine = "validate"` to check the
 #' model contract without fitting. Report point estimates only for `covered`
 #' routes; uncertainty intervals are experimental and not coverage-calibrated.

@@ -80,6 +80,40 @@ hs_sim_genedrop_phenotypes <- function(ped, sigma_a2, sigma_e2, seed = 1) {
   data.frame(id = ped$id, y = y, stringsAsFactors = FALSE)
 }
 
+# Same gene-drop recursion as hs_sim_genedrop_phenotypes(), but returns the
+# breeding values alone (no residual), named by ped$id and in ped row order.
+# Used by the non-Gaussian (Poisson/Bernoulli/Binomial) live fixtures, whose
+# response is drawn from a family-specific link rather than additive Gaussian
+# noise, so they need u_i on the linear-predictor scale, not a phenotype y.
+# See HSquared.jl#342 and hsquared#225: the R bridge cannot forward a
+# non-default `initial` to the Julia nongaussian target, so every live fit
+# starts its sigma_a2 search at 1.0 -- fixtures with no real additive signal
+# ride that search bracket's boundary instead of estimating anything.
+hs_sim_genedrop_bv <- function(ped, sigma_a2, seed = 1) {
+  set.seed(seed)
+  u <- stats::setNames(numeric(nrow(ped)), ped$id)
+  for (i in seq_len(nrow(ped))) {
+    s <- ped$sire[i]
+    d <- ped$dam[i]
+    has_s <- !is.na(s)
+    has_d <- !is.na(d)
+    pa <- 0
+    ms <- sigma_a2 # Mendelian-sampling variance (non-inbred founders)
+    if (has_s && has_d) {
+      pa <- 0.5 * (u[[s]] + u[[d]])
+      ms <- 0.5 * sigma_a2
+    } else if (has_s) {
+      pa <- 0.5 * u[[s]]
+      ms <- 0.75 * sigma_a2
+    } else if (has_d) {
+      pa <- 0.5 * u[[d]]
+      ms <- 0.75 * sigma_a2
+    }
+    u[i] <- pa + stats::rnorm(1, 0, sqrt(ms))
+  }
+  u
+}
+
 # Henderson BLUP EBVs at supplied variance components for the intercept-only
 # animal model (X = 1, Z = I), used to score EBV accuracy against true u.
 hs_sim_blup_ebv <- function(y, Ainv, sigma_a2, sigma_e2) {

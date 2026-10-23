@@ -24,17 +24,22 @@ hsquared(y ~ sex + animal(1 | id, pedigree = ped), data = dat)
 
 **Can I report the point estimate?** **Yes, within the stated scope** - a pre-declared recovery gate passed and an external same-estimand comparator agrees.
 
-**Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
+**Can I report an interval?** **Measured, but not nominally calibrated.** Named univariate pedigree h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals have a directional-conservative claim level. Sigma-a2 delta/Wald is experimental-only. Do not report any of them as nominal 95% coverage.
 
-**Exact scope and caveat.** One additive genetic effect, Gaussian response, REML only, fitted by average-information REML on the sparse mixed-model equations. Known-truth recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary pinning. ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE` (the default). That is the same rule for the default fit and for `engine = "validate"`. The covered claim is this REML estimator, not ML.
+**Exact scope and caveat.** One additive genetic effect, Gaussian response, REML only, fitted by average-information REML on the sparse mixed-model equations. Known-truth recovery is near-unbiased across an h2 grid of 0.2/0.4/0.6; the near-boundary cell h2 = 0.1 shows mild upward bias and 5% boundary pinning. ML is not implemented. `REML = FALSE` is rejected; use `REML = TRUE` (the default). That is the same rule for the default fit and for `engine = "validate"`. The covered claim is this REML estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals are directional-conservative here; sigma-a2 delta/Wald remains experimental-only. None is nominally calibrated. This route has no dense-cell cap, but that is not a size-free claim: when additive variance is near 0 and the pedigree has more than 512 animals, the default fit can stop with converged = FALSE, optimizer_status boundary_score_unresolved, and an inflated residual. Check fit_diagnostics() after every large-pedigree fit.
 
-**Concrete fallback.** None needed - this is the recommended route. For a model with a second random effect, see the two-effect card below.
+**Concrete fallback.** This is the recommended route. If V_A is near 0 and the pedigree has more than 512 animals, retry with engine = "julia" and target = "sparse_reml" (see the sparse REML card). That fallback is experimental and opt-in; it does not change this route's covered point-estimate claim. For a model with a second random effect, see the two-effect card below.
 
 ### Animal model plus independent extra effects (common environment, arbitrary N)
 
 ```r
 hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
-         data = dat, control = hs_control(engine = "julia"))
+         data = dat, control = hs_control(engine = "julia",
+           engine_control = list(target = "two_effect")))
+# more independent intercepts (hsquared#285):
+hsquared(y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),
+         data = dat, control = hs_control(engine = "julia",
+           engine_control = list(target = "multi_effect")))
 ```
 
 **Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
@@ -43,7 +48,7 @@ hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** The common-environment leg (additive animal A plus i.i.d. environment, A2 = I) and the arbitrary-N generalization to independent i.i.d. effects are covered at validation scale on a pre-declared 48-seed recovery gate with an external same-estimand REML comparator. The animal-block ratio is narrow-sense h2; other blocks are variance-explained proportions, NOT heritabilities. Independent effects only - correlated, random-regression, and non-Gaussian structures are not this route.
+**Exact scope and caveat.** The common-environment leg (additive animal A plus i.i.d. environment, A2 = I) and the arbitrary-N generalization to independent i.i.d. effects are covered at validation scale on a pre-declared 48-seed recovery gate with an external same-estimand REML comparator. The default grammar accepts one named extra effect beside animal(); more independent intercepts use bare `(1 | group)` with `target = "multi_effect"`. A maternal-genetic plus permanent-environment combination is not available. The animal-block ratio is narrow-sense h2; other blocks are variance-explained proportions, NOT heritabilities. Independent effects only - correlated, random-regression, and non-Gaussian structures are not this route.
 
 **Concrete fallback.** The maternal-genetic leg (`maternal_genetic()`, A2 = pedigree A) runs on the same estimator but is still experimental: its own recovery gate and comparator are owed. Use the covered common-environment route, or treat a maternal fit as exploratory.
 
@@ -61,15 +66,16 @@ hsquared(y ~ animal(1 | id, pedigree = ped), data = dat,
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** Reaches the same REML optimum as the default path and is cross-checked against an independent pure-R REML optimizer and the external `pedigreemm` package. It exists as an engine-target check, not as a separate user-facing model.
+**Exact scope and caveat.** Reaches the same REML optimum as the default path and is cross-checked against an independent pure-R REML optimizer and the external `pedigreemm` package. It exists as an engine-target check, not as a separate user-facing model. It is also the existing fallback when the default AI-REML path stops unconverged on more than 512 animals with V_A near 0 (converged = FALSE, optimizer_status boundary_score_unresolved). That use is still experimental and opt-in; it does not newly cover this route.
 
-**Concrete fallback.** Use the default `hsquared()` call, which is the covered route to the same estimates.
+**Concrete fallback.** Use the default `hsquared()` call, which is the covered route to the same estimates, except when that path stops on q > 512 animals with V_A near 0. Then this target is the existing fallback.
 
 ### Repeatability / permanent environment (repeated records)
 
 ```r
 hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
-         control = hs_control(engine = "julia"))
+         control = hs_control(engine = "julia",
+           engine_control = list(target = "repeatability")))
 ```
 
 **Can I fit it?** **Yes, but opt-in and experimental** - the code runs; the evidence is incomplete.
@@ -85,18 +91,20 @@ hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,
 ### Genomic (GREML) and single-step relationship models
 
 ```r
-hsquared(y ~ genomic(1 | id, markers = M), data = dat)
+hsquared(y ~ genomic(1 | id, markers = M), data = dat,
+         control = hs_control(engine = "julia",
+           engine_control = list(target = "genomic")))
 ```
 
-**Can I fit it?** **Yes** - implemented and covered on the default call.
+**Can I fit it?** **Yes** - implemented and covered at validation scale, behind an opt-in engine target.
 
 **Can I report the point estimate?** **Yes, within the stated scope** - a pre-declared recovery gate passed and an external same-estimand comparator agrees.
 
 **Can I report an interval?** **No.** Standard errors and intervals are asymptotic/delta-method, labelled experimental, and NOT coverage-calibrated. No route in this package currently carries an interval-reporting permission.
 
-**Exact scope and caveat.** 0.7 covered claim is genomic GREML (genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Default engine = "fit" auto-routes the narrow form (owner YES 2026-09-03 / design-44); explicit target = "genomic" remains an alias. Design-44 nine-cell recovery campaign is confirmatory / may still run — not claimed PASS here. Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
+**Exact scope and caveat.** 0.7 covered claim is opt-in genomic GREML only (target = "genomic"; genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G from markers. Ordinary-call / default-route activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL). Single-step / metafounder paths in this combined validation_status row remain exploratory (not the 0.7 covered claim). APY / production / intervals out of scope.
 
-**Concrete fallback.** Report genomic_variance_ratio on the declared kernel with the no-anchor and scale disclosures. Do not treat single-step or SNP-BLUP as the 0.7 covered claim.
+**Concrete fallback.** Report genomic_variance_ratio on the declared kernel with the no-anchor and scale disclosures. Do not treat single-step or default genomic routing as covered.
 
 ### SNP-BLUP marker effects
 
@@ -133,9 +141,9 @@ hsquared(cbind(y1, y2) ~ animal(1 | id, pedigree = ped), data = dat)
 
 **Concrete fallback.** For k>=3 or a diagonal genetic structure, treat the fit as experimental. For a single-trait question, use the covered univariate model.
 
-## Not available (syntax reservations and planned lanes)
+## Planned validation lanes and grammar
 
-These rows are `planned` in `validation_status()`. The formula vocabulary may parse, but the fit aborts as planned, not implemented - and there is no reporting permission of any kind.
+These rows are `planned` validation tasks in `validation_status()`, not a blanket statement that every related fit aborts. Check the partial routes on this page for bounded FA and genetic GLLVM fits. A planned row by itself gives no reporting permission.
 
 - Mrode fitted animal-model outputs *(Phase 1)*
 - ASReml comparison policy *(Phase 1)*
@@ -149,7 +157,6 @@ These rows are `planned` in `validation_status()`. The formula vocabulary may pa
 
 1. Confirm this page still lists your route as reportable. Do not treat `validation_status()` as the complete user list.
 2. Report point estimates for covered routes only.
-3. Do not report a standard error or interval as calibrated. None of them are, in any release of this package so far.
+3. Do not report a standard error or interval as nominally calibrated. The named univariate-pedigree directional-conservative methods are a narrower claim, not a nominal-coverage permission.
 4. For a `partial` route, run an external comparator yourself and report both numbers.
 5. Say in the methods that the fit came from an experimental package, and name the version.
-

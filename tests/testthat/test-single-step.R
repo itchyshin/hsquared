@@ -118,6 +118,21 @@ test_that("the default single-step error names both opt-in routes", {
     "Neither route is a covered default R formula path.",
     fixed = TRUE
   )
+  expect_match(
+    conditionMessage(cnd),
+    "Ordinary/default single-step stays held",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "V2-SSHINV",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(cnd),
+    "public_covered_count stays 7",
+    fixed = TRUE
+  )
 })
 
 test_that("model_spec() errors clearly on a single_step formula", {

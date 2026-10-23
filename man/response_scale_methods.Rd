@@ -7,16 +7,18 @@
 \alias{residuals.hsquared_fit}
 \title{Response-scale prediction helpers}
 \usage{
-\method{predict}{hsquared_fit}(object, ...)
+\method{predict}{hsquared_fit}(object, newdata, ...)
 
-\method{fitted}{hsquared_fit}(object, ...)
+\method{fitted}{hsquared_fit}(object, newdata, ...)
 
-\method{residuals}{hsquared_fit}(object, ...)
+\method{residuals}{hsquared_fit}(object, newdata, ...)
 }
 \arguments{
 \item{object}{A fitted model object.}
 
-\item{...}{Reserved for future arguments.}
+\item{newdata}{Not supported. These methods return in-sample values only.}
+
+\item{...}{Unused. Extra arguments are an error because they would be ignored.}
 }
 \value{
 Response-scale predictions, fitted values, or residuals for
@@ -29,4 +31,6 @@ univariate-only: the multivariate model (a \code{cbind()} response)
 fits multiple traits jointly and is intentionally out of v0.1 response-scale
 scope, so these methods stop with a scope message pointing to
 \code{breeding_values()}, \code{genetic_covariance()}, and \code{residual_covariance()}.
+Out-of-sample \code{newdata} is not implemented; supplying it is an error rather
+than a silent in-sample result.
 }

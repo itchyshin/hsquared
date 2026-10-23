@@ -5,7 +5,8 @@ validated, or claimed as working. Neither `hsquared` nor `HSquared.jl` can fit
 a factor-analytic genetic covariance (`fa(K)`) today; the engine's Phase 4B
 `factor_analytic_covariance` + `fit_multivariate_reml(...; genetic_structure=
 :factor_analytic, rank=K)` exists on `HSquared.jl origin/main` but its recovery
-calibration **did not pass** (FA 8/10, LR 9/10 seeds; validation row V4-FA =
+calibration **did not pass** (FA: 8 of 10 scenarios passed; LR: 9 of 10 passed;
+validation row V4-FA =
 **partial**). This note proposes — for the twin engine to consider, design, and
 independently validate — using a Rubin–Thayer EM as a *warm-start* (or an
 alternative estimator) for the constrained FA-G REML fit, with the aim of
@@ -127,7 +128,8 @@ constrained REML optimizer as a starting point.
 
 ## 2. Why a good init should help the failing calibration
 
-The Phase 4B calibration fails on a minority of seeds (FA 8/10, LR 9/10). That
+The Phase 4B calibration has failures in a minority of scenarios (FA: 8 of 10
+passed; LR: 9 of 10 passed). That
 pattern — most seeds pass, a few do not — is the signature of an estimator that
 is correct but **start-sensitive**, not one that is structurally wrong. Factor-
 analytic likelihoods are known to be multimodal and to have rotation-flat
@@ -239,7 +241,7 @@ are recorded in the engine's validation evidence (and cross-checked against
    log-likelihood (or its complete-data surrogate) is monotone non-decreasing on
    test data, mirroring the testable property the source advertises.
 3. **Passing multi-seed calibration.** Recovery passes a pre-registered
-   multi-seed threshold materially better than the current FA 8/10 — at minimum
+   multi-seed threshold materially better than the current FA 8-of-10 pass rate — at minimum
    the agreed FA pass bar across the full seed set — for `t ≥ 3`, `K = 1`, and at
    least one `K > 1` case, *with* and *without* the EM init, so the init's
    contribution is attributable.

@@ -21,4 +21,9 @@ Prediction error variances for \code{hsquared_fit} objects.
 \code{prediction_error_variance()} is part of the planned v0.1 fitted-object
 contract. It returns values only when an \code{hsquared_fit} object contains a
 Julia result field for prediction error variances.
+
+The engine defines PEV as the animal-block diagonal of the inverse of the
+precision-scaled Henderson mixed-model-equation coefficient matrix, so
+\code{diag(C^-1)} is directly the prediction error variance in variance units,
+with no separate \code{sigma_e2} factor to apply.
 }

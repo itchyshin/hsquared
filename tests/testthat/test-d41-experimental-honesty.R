@@ -11,7 +11,7 @@ test_that(".onAttach emits experimental honesty message", {
   text <- paste(msg, collapse = " ")
 
   expect_match(text, "experimental", ignore.case = TRUE)
-  expect_match(text, "0\\.8\\.0")
+  expect_match(text, "0\\.9\\.0")
   expect_match(text, "Julia")
   expect_match(text, "validate")
   expect_match(text, "validation_status")
@@ -78,7 +78,7 @@ test_that("DESCRIPTION and README point at Can I fit and report this?, not valid
   flat <- gsub("\\s+", " ", paste(sub("^>\\s?", "", lines), collapse = " "))
 
   expect_match(flat, "Can I fit and report this", fixed = TRUE)
-  expect_match(flat, "developer evidence table", fixed = TRUE)
+  expect_match(flat, "R-public covered routes", fixed = TRUE)
   expect_no_match(flat, "live source of truth", fixed = TRUE)
   expect_no_match(flat, "only for rows marked `covered` by", fixed = TRUE)
 })
@@ -90,9 +90,9 @@ test_that("README carries the D-41 callout and a validate-first example", {
 
   # channel 4: lifecycle badge + prominent callout
   expect_match(text, "lifecycle-experimental", fixed = TRUE)
-  expect_match(text, "[!WARNING]", fixed = TRUE)
-  expect_match(text, "0.8.0", fixed = TRUE)
-  expect_match(text, "not coverage-calibrated", fixed = TRUE)
+  expect_match(text, "Warning — experimental 0.9.0 release", fixed = TRUE)
+  expect_match(text, "0.9.0", fixed = TRUE)
+  expect_match(text, "No interval is nominally", fixed = TRUE)
 
   # I2: the first runnable example must not need Julia
   validate_at <- which(
@@ -107,11 +107,15 @@ test_that("README carries the D-41 callout and a validate-first example", {
   expect_length(fit_at, 1L)
   expect_lt(validate_at, fit_at)
 
-  expect_match(text, 'engine = "validate"', fixed = TRUE)
+  expect_match(text, 'control = hs_control(engine = "validate")', fixed = TRUE)
+  expect_no_match(
+    text,
+    "hsquared\\(\\s*\n(?:.*\n)*?\\s*engine = \"validate\""
+  )
 })
 
 
-test_that("README and pkgdown lock 0.9-prep public honesty fences", {
+test_that("README and pkgdown lock 0.9 release public honesty fences", {
   readme <- testthat::test_path("..", "..", "README.md")
   skip_if_not(file.exists(readme), "README.md not present in the check copy")
   text <- gsub(
@@ -120,19 +124,9 @@ test_that("README and pkgdown lock 0.9-prep public honesty fences", {
     paste(readLines(readme, warn = FALSE), collapse = " ")
   )
 
-  expect_match(text, "Experimental 0.8.0", fixed = TRUE)
-  expect_match(text, "0.9 is not released", fixed = TRUE)
-  expect_match(text, "`public_covered_count` is **7**", fixed = TRUE)
-  expect_match(text, "factor-analytic", ignore.case = TRUE)
-  expect_match(text, "planned", ignore.case = TRUE)
-  expect_match(text, "opt-in partial", fixed = TRUE)
-  expect_match(text, "engine-covered", ignore.case = TRUE)
-  expect_true(any(
-    grepl("not R-public covered", text, fixed = TRUE),
-    grepl("not R covered", text, fixed = TRUE)
-  ))
-  expect_match(text, "do **not** flip R coverage", fixed = TRUE)
-  expect_match(text, "cov = fa(K)", fixed = TRUE)
+  expect_match(text, "experimental 0.9.0 release", fixed = TRUE)
+  expect_match(text, "CRAN availability is tracked separately", fixed = TRUE)
+  expect_match(text, "R-public covered routes", fixed = TRUE)
 
   pkgdown <- testthat::test_path("..", "..", "_pkgdown.yml")
   skip_if_not(
@@ -144,12 +138,17 @@ test_that("README and pkgdown lock 0.9-prep public honesty fences", {
     " ",
     paste(readLines(pkgdown, warn = FALSE), collapse = " ")
   )
-  expect_match(ptext, "0.9 is not", fixed = TRUE)
+  expect_match(ptext, "CRAN availability is tracked separately", fixed = TRUE)
   expect_match(ptext, "public_covered_count", fixed = TRUE)
   expect_match(ptext, "**7**", fixed = TRUE)
   expect_match(ptext, "planned", ignore.case = TRUE)
   expect_match(ptext, "opt-in partial", fixed = TRUE)
   expect_match(ptext, "engine-covered", ignore.case = TRUE)
+  expect_match(ptext, "closed and not merged", fixed = TRUE)
+  expect_match(ptext, "Install HSquared.jl from GitHub only", fixed = TRUE)
+  expect_match(ptext, "PR #166969", fixed = TRUE)
+  expect_no_match(ptext, "deferred pending", fixed = TRUE)
+  expect_no_match(ptext, "collaborator review", fixed = TRUE)
 })
 
 test_that("model-status article keeps FA planned / SS opt-in partial / count 7", {
@@ -170,10 +169,10 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
     paste(readLines(article, warn = FALSE), collapse = " ")
   )
 
-  expect_match(text, "experimental 0.8.0", fixed = TRUE)
+  expect_match(text, "experimental 0.9.0 release", fixed = TRUE)
   expect_no_match(text, "experimental 0.7.0", fixed = TRUE)
   expect_match(text, "public_covered_count", fixed = TRUE)
-  expect_match(text, "0.9 is not released", fixed = TRUE)
+  expect_match(text, "CRAN availability is tracked separately", fixed = TRUE)
   expect_match(text, "opt-in partial", fixed = TRUE)
   expect_match(text, "factor-analytic", ignore.case = TRUE)
   expect_match(text, "planned", ignore.case = TRUE)
@@ -181,17 +180,133 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
   expect_match(text, "cov = fa(K)", fixed = TRUE)
 })
 
-test_that("DESCRIPTION keeps count 7 and FA planned without claiming 0.9", {
+test_that("current-limits and validation-evidence point at a live install heading", {
+  limits <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "current-limits.Rmd"
+  )
+  evidence <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "validation-evidence.Rmd"
+  )
+  skip_if_not(file.exists(limits), "current-limits.Rmd not present")
+  skip_if_not(file.exists(evidence), "validation-evidence.Rmd not present")
+  limits_text <- paste(readLines(limits, warn = FALSE), collapse = "\n")
+  evidence_text <- paste(readLines(evidence, warn = FALSE), collapse = "\n")
+
+  expect_no_match(limits_text, "engine-setup", fixed = TRUE)
+  expect_no_match(evidence_text, "engine-setup", fixed = TRUE)
+  expect_no_match(evidence_text, "registering the", fixed = TRUE)
+  expect_match(
+    limits_text,
+    "https://github.com/itchyshin/hsquared#installation",
+    fixed = TRUE
+  )
+  expect_match(
+    evidence_text,
+    "https://github.com/itchyshin/hsquared#installation",
+    fixed = TRUE
+  )
+  expect_match(
+    evidence_text,
+    "hsquared.html#fit-needs-the-julia-engine",
+    fixed = TRUE
+  )
+})
+
+test_that("validation-evidence separates declared evidence scope from route controls", {
+  article <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "validation-evidence.Rmd"
+  )
+  skip_if_not(
+    file.exists(article),
+    "validation-evidence.Rmd not present in the check copy"
+  )
+  text <- gsub(
+    "\\s+",
+    " ",
+    paste(readLines(article, warn = FALSE), collapse = " ")
+  )
+
+  expect_no_match(text, "The capability fits by default", fixed = TRUE)
+  expect_no_match(
+    text,
+    "Partial rows are experimental: REML-only",
+    fixed = TRUE
+  )
+  expect_match(text, "may have limited evidence", fixed = TRUE)
+  expect_match(text, "declared scope evidence", fixed = TRUE)
+  expect_match(text, "default-routed or opt-in", fixed = TRUE)
+})
+
+test_that("reader articles use canonical Documenter leaf URLs", {
+  articles <- testthat::test_path("..", "..", "vignettes", "articles")
+  skip_if_not(
+    dir.exists(articles),
+    "reader article sources not present in the check copy"
+  )
+  paths <- list.files(articles, pattern = "[.]Rmd$", full.names = TRUE)
+  text <- paste(
+    unlist(lapply(paths, readLines, warn = FALSE), use.names = FALSE),
+    collapse = "\n"
+  )
+
+  expect_no_match(
+    text,
+    "https://itchyshin\\.github\\.io/HSquared\\.jl/dev/[^/[:space:]<>]+/"
+  )
+
+  twin_boundary <- paste(
+    readLines(file.path(articles, "twin-boundary.Rmd"), warn = FALSE),
+    collapse = "\n"
+  )
+  expect_match(
+    twin_boundary,
+    "https://itchyshin.github.io/HSquared.jl/dev/validation-status.html",
+    fixed = TRUE
+  )
+  expect_match(
+    twin_boundary,
+    "https://itchyshin.github.io/HSquared.jl/dev/twin-boundary.html",
+    fixed = TRUE
+  )
+})
+
+test_that("DESCRIPTION keeps count 7 and bounds FA and GLLVM routes", {
   desc <- gsub(
     "\\s+",
     " ",
     utils::packageDescription("hsquared")$Description
   )
-  expect_match(desc, "0\\.8\\.0")
+  expect_match(desc, "0\\.9\\.0")
   expect_match(desc, "public covered count is 7|public covered count stays 7")
-  expect_match(desc, "factor-analytic models remain planned", fixed = TRUE)
+  expect_match(
+    desc,
+    "four-trait, rank-one factor-analytic Gaussian pedigree fit",
+    fixed = TRUE
+  )
+  expect_match(
+    desc,
+    "three-trait, rank-two Poisson genetic GLLVM fit",
+    fixed = TRUE
+  )
+  expect_match(
+    desc,
+    "broader models and covariance formula grammar remain planned",
+    fixed = TRUE
+  )
   expect_match(desc, "opt-in partial", fixed = TRUE)
-  expect_match(desc, "0.9 is not released", fixed = TRUE)
+  expect_match(desc, "experimental release", fixed = TRUE)
   expect_match(desc, "engine-covered is not R covered", fixed = TRUE)
-  expect_no_match(desc, "Version 0\\.9")
+  expect_no_match(desc, "0.9 is not released", fixed = TRUE)
 })

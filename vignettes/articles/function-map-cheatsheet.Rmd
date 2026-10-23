@@ -63,7 +63,7 @@ formula_status()
 `animal(1 | id, pedigree = ped)` is the additive genetic term. With
 `data = bundle` you can write `animal(1 | id)` and the bundle pedigree is used.
 
-## 2. Preview — no Julia needed
+## 2. Preview: no Julia needed
 
 ```{r preview}
 hsquared(
@@ -78,10 +78,9 @@ model_spec(
 )
 ```
 
-This is the cheapest way to find out that a term is a syntax reservation rather
-than an implemented model: it tells you before you go looking for Julia.
+The preview reports reserved syntax before you start a Julia fit.
 
-## 3. Fit — needs the engine
+## 3. Fit: needs the engine
 
 ```{r fit, eval = FALSE}
 # needs Julia + HSquared.jl; not a silent fallback
@@ -92,7 +91,7 @@ fit <- hsquared(
 ```
 
 Opt-in experimental targets go through `hs_control(engine = "julia")` with an
-`engine_control` target — see
+`engine_control` target. See
 [Can I fit and report this?](current-limits.html) for which ones you may report.
 
 ## 4. Check
@@ -104,8 +103,8 @@ backend_info()         # which engine answered, and its version
 validation_status()    # developer evidence table, not the user list
 ```
 
-Read `at_boundary` before anything else. A variance pinned at zero is a real
-result about your data, not a number to report as an estimate.
+Read `at_boundary` before anything else. A variance pinned at zero is a
+boundary result. Do not report it as an unconstrained estimate.
 
 ## 5. Extract
 
@@ -114,16 +113,46 @@ result about your data, not a number to report as an estimate.
 | Heritability | `heritability(fit)` |
 | Variance components | `variance_components(fit)` |
 | Breeding values (EBVs/BLUPs) | `breeding_values(fit)` |
-| Accuracy of those EBVs | `prediction_error_variance(fit)`, `reliability(fit)` |
+| Accuracy of those EBVs | `prediction_error_variance(fit)`, `reliability(fit)`, `accuracy(fit)` |
 | Fixed effects | `fixef(fit)`, `coef(fit)` |
 | Random effects | `ranef(fit)` |
 | Fitted values and residuals | `fitted(fit)`, `residuals(fit)` |
-| Model comparison | `logLik(fit)`, `AIC(fit)`, `nobs(fit)` |
+| Model comparison | `logLik(fit)`, `AIC(fit)` where supported; `nobs(fit)` |
 | A plot | `plot(fit)`, `autoplot(fit)` |
 
-Route-specific extractors exist for the opt-in targets — `repeatability()`,
+Route-specific extractors exist for the opt-in targets: `repeatability()`,
 `common_env_effects()`, `maternal_effects()`, `genetic_covariance()`,
-`marker_effects()`, `g_matrix_geometry()` — and inherit their route's status.
+`marker_effects()`, `evolvability()`, and `g_max()`. `?g_matrix_geometry` is
+the help topic for that family; there is no `g_matrix_geometry()` function.
+They inherit their route's status.
+
+Check `fit_diagnostics()` before comparing likelihoods. Structured multi-effect
+and direct-maternal dense REML routes omit a likelihood constant; `AIC()`
+refuses those results. A matrix-free stochastic likelihood is available in
+diagnostics but not through `logLik()` or `AIC()`. Compare fits only when data,
+method, response family, and likelihood convention match. For REML, the
+fixed-effect design must match as well.
+
+## R function and Julia function
+
+R users start here. Some animal-model tools exist only in `HSquared.jl`.
+The Julia pages map articles, not function names; use this table for the
+function-level match.
+
+| Task | R (`hsquared`) | Julia (`HSquared.jl`) |
+|---|---|---|
+| Fit | `hsquared()` | `fit_animal_model()`, `fit_ai_reml()` |
+| Summary of a fit | `summary()`, `print()` | Julia only as `fit_diagnostics()`, `variance_components()` |
+| h2, variance components | `heritability()`, `variance_components()` | same names |
+| h2 SE / interval | `heritability_standard_error()`, `heritability_interval()` (delta only) | same names; also `heritability_interval(method = :profile)` |
+| Other intervals | none | Julia only: `variance_component_interval()`, `bootstrap_variance_component_interval()`, `genetic_correlation_interval()` |
+| Nested LRT / test `V_A = 0` | none (`anova()` stops; do not hand-build a `chi^2_1` LRT from `logLik()`) | Julia only: `nested_lrt()` with `df = 1, boundary_df = 1` (50:50 `chi^2_0` + `chi^2_1` mixture) |
+| PEV, reliability, accuracy | `prediction_error_variance()`, `reliability()`, `accuracy()` | same names |
+| A, A-inverse, inbreeding | none | Julia only: `additive_relationship()`, `pedigree_inverse()`, `inbreeding_coefficients()` |
+| Repeatability | `repeatability()`, `repeatability_interval()` | `fit_repeatability_reml()`, `repeatability_interval()`; no `repeatability()` |
+| Genomic relationship matrix | none (R takes `Ginv` or `markers`) | Julia only: `genomic_relationship_matrix()`, `genomic_relationship_inverse()` |
+| Marker scan | `gwas()`; `marker_scan()` is reserved | `single_marker_scan()`, `mixed_model_marker_scan()`, `genome_wide_marker_scan()` |
+| G-matrix geometry | `evolvability()`, `g_max()`, and siblings; help topic `?g_matrix_geometry` | same extractor names |
 
 ## Uncertainty: read this before using it
 
@@ -141,11 +170,11 @@ this package currently carries an interval-reporting permission. `confint()` and
 
 `qtl_table()`, `gwas_table()`, `eqtl_table()`, `lod_scores()`, and
 `marker_variance_explained()` are reserved output names for future marker/QTL
-results. They exist so the vocabulary is stable, not because the models fit.
-`marker_effects()` is the exception — it is live for the opt-in SNP-BLUP path.
+results. These names reserve vocabulary for later work. `marker_effects()` is
+implemented on the opt-in SNP-BLUP path.
 
 ## Where to read next
 
-- [Getting started with hsquared](../hsquared.html) — the guided introduction.
-- [Can I fit and report this?](current-limits.html) — reporting permissions per route.
-- [Fitting models](fitting-models.html) — the longer fitting guide.
+- [Getting started with hsquared](hsquared.html): the guided introduction.
+- [Can I fit and report this?](current-limits.html): reporting permissions per route.
+- [Fitting models](fitting-models.html): the longer fitting guide.

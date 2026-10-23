@@ -27,13 +27,24 @@ hs_route_table <- function() {
         "pinning. ML is not implemented. `REML = FALSE` is rejected; use",
         "`REML = TRUE` (the default). That is the same rule for the default",
         "fit and for `engine = \"validate\"`. The covered claim is this REML",
-        "estimator, not ML."
+        "estimator, not ML. Named h2 delta/profile/bootstrap and sigma-a2",
+        "profile/bootstrap intervals are directional-conservative here; sigma-a2",
+        "delta/Wald remains experimental-only. None is nominally calibrated.",
+        "This route has no dense-cell cap, but that is not a size-free claim:",
+        "when additive variance is near 0 and the pedigree has more than 512",
+        "animals, the default fit can stop with converged = FALSE,",
+        "optimizer_status boundary_score_unresolved, and an inflated residual.",
+        "Check fit_diagnostics() after every large-pedigree fit."
       ),
       point = "yes",
-      interval = "no",
+      interval = "directional_conservative",
       fallback = paste(
-        "None needed - this is the recommended route. For a model with a second",
-        "random effect, see the two-effect card below."
+        "This is the recommended route. If V_A is near 0 and the pedigree has",
+        "more than 512 animals, retry with engine = \"julia\" and",
+        "target = \"sparse_reml\" (see the sparse REML card). That fallback is",
+        "experimental and opt-in; it does not change this route's covered",
+        "point-estimate claim. For a model with a second random effect, see",
+        "the two-effect card below."
       )
     ),
     list(
@@ -45,13 +56,22 @@ hs_route_table <- function() {
       title = "Animal model plus independent extra effects (common environment, arbitrary N)",
       call = paste0(
         'hsquared(y ~ animal(1 | id, pedigree = ped) + common_env(1 | group),\n',
-        '         data = dat, control = hs_control(engine = "julia"))'
+        '         data = dat, control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "two_effect")))\n',
+        '# more independent intercepts (hsquared#285):\n',
+        'hsquared(y ~ animal(1 | id, pedigree = ped) + (1 | nest) + (1 | year),\n',
+        '         data = dat, control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "multi_effect")))'
       ),
       scope = paste(
         "The common-environment leg (additive animal A plus i.i.d. environment,",
         "A2 = I) and the arbitrary-N generalization to independent i.i.d. effects",
         "are covered at validation scale on a pre-declared 48-seed recovery gate",
-        "with an external same-estimand REML comparator. The animal-block ratio is",
+        "with an external same-estimand REML comparator. The default grammar",
+        "accepts one named extra effect beside animal(); more independent",
+        "intercepts use bare `(1 | group)` with `target = \"multi_effect\"`.",
+        "A maternal-genetic plus permanent-environment combination is not",
+        "available. The animal-block ratio is",
         "narrow-sense h2; other blocks are variance-explained proportions, NOT",
         "heritabilities. Independent effects only - correlated, random-regression,",
         "and non-Gaussian structures are not this route."
@@ -78,11 +98,19 @@ hs_route_table <- function() {
         "Reaches the same REML optimum as the default path and is cross-checked",
         "against an independent pure-R REML optimizer and the external",
         "`pedigreemm` package. It exists as an engine-target check, not as a",
-        "separate user-facing model."
+        "separate user-facing model. It is also the existing fallback when the",
+        "default AI-REML path stops unconverged on more than 512 animals with",
+        "V_A near 0 (converged = FALSE,",
+        "optimizer_status boundary_score_unresolved). That use is still",
+        "experimental and opt-in; it does not newly cover this route."
       ),
       point = "partial",
       interval = "no",
-      fallback = "Use the default `hsquared()` call, which is the covered route to the same estimates."
+      fallback = paste(
+        "Use the default `hsquared()` call, which is the covered route to the",
+        "same estimates, except when that path stops on q > 512 animals with",
+        "V_A near 0. Then this target is the existing fallback."
+      )
     ),
     list(
       key = "experimental repeatability estimator (opt-in)",
@@ -90,7 +118,8 @@ hs_route_table <- function() {
       title = "Repeatability / permanent environment (repeated records)",
       call = paste0(
         'hsquared(y ~ animal(1 | id, pedigree = ped) + permanent(1 | id), data = dat,\n',
-        '         control = hs_control(engine = "julia"))'
+        '         control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "repeatability")))'
       ),
       scope = paste(
         "REML-only repeatability optimizer returning additive, permanent-environment,",
@@ -107,28 +136,27 @@ hs_route_table <- function() {
     list(
       key = "experimental supplied-relationship estimator (opt-in: genomic, single-step)",
       expect = "covered",
-      default_route = TRUE,
       title = "Genomic (GREML) and single-step relationship models",
       call = paste0(
-        'hsquared(y ~ genomic(1 | id, markers = M), data = dat)'
+        'hsquared(y ~ genomic(1 | id, markers = M), data = dat,\n',
+        '         control = hs_control(engine = "julia",\n',
+        '           engine_control = list(target = "genomic")))'
       ),
       scope = paste(
-        "0.7 covered claim is genomic GREML (genomic_variance_ratio on",
-        "K_lambda; design-51/53). Accepts supplied Ginv or builds VanRaden1 G",
-        "from markers. Default engine = \"fit\" auto-routes the narrow form",
-        "(owner YES 2026-09-03 / design-44); explicit target = \"genomic\"",
-        "remains an alias. Design-44 nine-cell recovery campaign is",
-        "confirmatory / may still run — not claimed PASS here. Single-step /",
-        "metafounder paths in this combined validation_status row remain",
-        "exploratory (not the 0.7 covered claim). APY / production / intervals",
-        "out of scope."
+        "0.7 covered claim is opt-in genomic GREML only (target = \"genomic\";",
+        "genomic_variance_ratio on K_lambda; design-51/53). Accepts supplied",
+        "Ginv or builds VanRaden1 G from markers. Ordinary-call / default-route",
+        "activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL).",
+        "Single-step / metafounder paths in this combined validation_status",
+        "row remain exploratory (not the 0.7 covered claim). APY / production",
+        "/ intervals out of scope."
       ),
       point = "yes",
       interval = "no",
       fallback = paste(
         "Report genomic_variance_ratio on the declared kernel with the no-anchor",
-        "and scale disclosures. Do not treat single-step or SNP-BLUP as the",
-        "0.7 covered claim."
+        "and scale disclosures. Do not treat single-step or default genomic",
+        "routing as covered."
       )
     ),
     list(
@@ -225,6 +253,12 @@ hs_permission_interval <- function(interval) {
   switch(
     interval,
     yes = "**Yes** - named, coverage-calibrated interval method.",
+    directional_conservative = paste(
+      "**Measured, but not nominally calibrated.** Named univariate pedigree",
+      "h2 delta/profile/bootstrap and sigma-a2 profile/bootstrap intervals have",
+      "a directional-conservative claim level. Sigma-a2 delta/Wald is",
+      "experimental-only. Do not report any of them as nominal 95% coverage."
+    ),
     no = paste(
       "**No.** Standard errors and intervals are asymptotic/delta-method,",
       "labelled experimental, and NOT coverage-calibrated. No route in this",
@@ -298,12 +332,13 @@ hs_render_planned <- function(status_tbl) {
     return(character())
   }
   c(
-    "## Not available (syntax reservations and planned lanes)",
+    "## Planned validation lanes and grammar",
     "",
     paste(
-      "These rows are `planned` in `validation_status()`. The formula vocabulary",
-      "may parse, but the fit aborts as planned, not implemented - and there is no",
-      "reporting permission of any kind."
+      "These rows are `planned` validation tasks in `validation_status()`,",
+      "not a blanket statement that every related fit aborts. Check the partial",
+      "routes on this page for bounded FA and genetic GLLVM fits. A planned row",
+      "by itself gives no reporting permission."
     ),
     "",
     paste0("- ", planned$capability, " *(", planned$phase, ")*"),
@@ -394,8 +429,9 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
     ),
     "2. Report point estimates for covered routes only.",
     paste0(
-      "3. Do not report a standard error or interval as calibrated. None of them ",
-      "are, in any release of this package so far."
+      "3. Do not report a standard error or interval as nominally calibrated. The ",
+      "named univariate-pedigree directional-conservative methods are a narrower ",
+      "claim, not a nominal-coverage permission."
     ),
     paste0(
       "4. For a `partial` route, run an external comparator yourself and report ",
@@ -404,8 +440,7 @@ hs_build_summary <- function(status_tbl, routes = hs_route_table()) {
     paste0(
       "5. Say in the methods that the fit came from an experimental package, and ",
       "name the version."
-    ),
-    ""
+    )
   )
 
   lines

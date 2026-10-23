@@ -1,0 +1,103 @@
+---
+title: "Great Tit Animal Model — ASReml vs hsquared Summary"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    number-sections: true
+    self-contained: true
+execute:
+  warning: false
+  message: false
+  cache: false
+---
+
+<!--
+Combined print-out only. Loads neither `asreml` nor `JuliaCall`/`hsquared` --
+it just reads the .rds files saved by dev-test/great_tit_asreml_model.qmd and
+dev-test/great_tit_hsquared_model.qmd (render those two first, in that order).
+-->
+
+```{r}
+#| label: packages
+library(tidyverse)
+library(knitr)
+```
+
+## Load saved results
+
+```{r}
+#| label: load-results
+asreml_res   <- readRDS("dev-test/asreml_results.rds")
+hsquared_res <- readRDS("dev-test/hsquared_results.rds")
+```
+
+## Runtime comparison
+
+```{r}
+#| label: compare-runtime
+runtime_comparison <- tibble(
+  Trait = rep(c("Clutch size", "Laying date"), each = 2),
+  Engine = rep(c("ASReml", "hsquared"), times = 2),
+  `Elapsed (s)` = c(
+    asreml_res$time_cs[["elapsed"]],   hsquared_res$time_cs[["elapsed"]],
+    asreml_res$time_ld[["elapsed"]],   hsquared_res$time_ld[["elapsed"]]
+  )
+)
+
+runtime_comparison |>
+  mutate(`Elapsed (s)` = round(`Elapsed (s)`, 3)) |>
+  kable(caption = "Runtime comparison")
+```
+
+## Variance-component comparison
+
+```{r}
+#| label: compare-variance-components
+variance_component_comparison <- bind_rows(
+  asreml_res$vc_cs   |> mutate(Trait = "Clutch size", Engine = "ASReml"),
+  hsquared_res$vc_cs |> mutate(Trait = "Clutch size", Engine = "hsquared"),
+  asreml_res$vc_ld   |> mutate(Trait = "Laying date", Engine = "ASReml"),
+  hsquared_res$vc_ld |> mutate(Trait = "Laying date", Engine = "hsquared")
+) |>
+  select(Trait, Engine, Component, Estimate, SE)
+
+variance_component_comparison |>
+  mutate(across(c(Estimate, SE), ~ round(., 4))) |>
+  kable(caption = "Variance-component comparison")
+```
+
+## Heritability comparison
+
+```{r}
+#| label: compare-heritability
+heritability_comparison <- bind_rows(
+  tibble(Trait = "Clutch size", Engine = "ASReml",
+         Heritability = asreml_res$h2_cs[["Estimate"]],
+         SE = asreml_res$h2_cs[["SE"]]),
+  tibble(Trait = "Clutch size", Engine = "hsquared",
+         Heritability = hsquared_res$h2_cs$Estimate,
+         SE = hsquared_res$h2_cs$SE),
+  tibble(Trait = "Laying date", Engine = "ASReml",
+         Heritability = asreml_res$h2_ld[["Estimate"]],
+         SE = asreml_res$h2_ld[["SE"]]),
+  tibble(Trait = "Laying date", Engine = "hsquared",
+         Heritability = hsquared_res$h2_ld$Estimate,
+         SE = hsquared_res$h2_ld$SE)
+)
+
+heritability_comparison |>
+  mutate(across(c(Heritability, SE), ~ round(., 4))) |>
+  kable(caption = "Heritability comparison")
+```
+
+# Session info
+
+```{r}
+#| label: session
+sessionInfo()
+```

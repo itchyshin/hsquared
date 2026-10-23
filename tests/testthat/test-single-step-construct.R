@@ -186,11 +186,27 @@ test_that("single_step H^Gamma payload rejects malformed group and Gamma", {
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
-  m <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  m <- matrix(c(0, 1, 2), nrow = 1, dimnames = list("c1", c("m1", "m2", "m3")))
   mf_group <- c(c1 = "", s = "base_s", d = "base_d")
   Gamma <- diag(2)
   dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))
 
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ single_step(
+        1 | id,
+        pedigree = ped,
+        markers = m,
+        group = mf_group,
+        Gamma = unname(Gamma)
+      ),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "must have row and column names when more than one",
+    fixed = TRUE
+  )
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ single_step(
@@ -274,6 +290,7 @@ test_that("single_step H^Gamma payload rejects malformed group and Gamma", {
     fixed = TRUE
   )
   bad_psd <- matrix(c(1, 2, 2, 1), nrow = 2)
+  dimnames(bad_psd) <- dimnames(Gamma)
   expect_error(
     hsquared:::hs_build_model_spec(
       y ~ single_step(
@@ -300,7 +317,11 @@ test_that("single_step construction rejects malformed inputs", {
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
-  m_ok <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  m_ok <- matrix(
+    c(0, 1, 2),
+    nrow = 1,
+    dimnames = list("c1", c("m1", "m2", "m3"))
+  )
   m_bad <- matrix(
     c(0, 1, 2, 1),
     nrow = 2,
@@ -545,7 +566,7 @@ test_that("metafounder_single_step target requires the H^Gamma formula branch", 
     stringsAsFactors = FALSE
   )
   dat <- data.frame(y = c(1, 2, 3), id = c("c1", "s", "d"))
-  m <- matrix(c(0, 1), nrow = 1, dimnames = list("c1", c("m1", "m2")))
+  m <- matrix(c(0, 1, 2), nrow = 1, dimnames = list("c1", c("m1", "m2", "m3")))
   mf_group <- c(c1 = "", s = "base_s", d = "base_d")
   Gamma <- diag(2)
   dimnames(Gamma) <- list(c("base_s", "base_d"), c("base_s", "base_d"))

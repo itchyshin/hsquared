@@ -69,6 +69,13 @@ jobs:
         run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
+      - name: Remove duplicate article-output subtree
+        # pkgdown can copy the rendered article directory back beneath itself
+        # when vignette sources are grouped in vignettes/articles. Keep only
+        # the canonical articles/*.html routes in the uploaded candidate.
+        run: rm -rf pkgdown-site/articles/articles
+        shell: bash
+
       - name: Verify internal pages are absent
         run: |
           test ! -e pkgdown-site/AGENTS.html

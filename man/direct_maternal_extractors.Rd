@@ -45,16 +45,16 @@ The model estimates a 2x2 genetic covariance matrix G_dm between the direct
 additive and maternal additive effects, plus a residual variance.
 
 Willham fence: the direct-maternal model (Willham 1963, 1972) distinguishes
-the \strong{direct} narrow-sense heritability \code{h2_d = sigma_ad / sigma_P} from
-the maternal variance ratio \code{m2 = sigma_am / sigma_P}, the Willham total
+the \strong{direct} narrow-sense heritability \verb{h2_d = sigma_ad / sigma^2_P} from
+the maternal variance ratio \verb{m2 = sigma_am / sigma^2_P}, the Willham total
 (selection-response) heritability
-\code{h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma_P}, and the
+\verb{h2_T = (sigma_ad + 1.5*sigma_dm + 0.5*sigma_am) / sigma^2_P}, and the
 genetic covariance \code{sigma_dm}.
-\code{sigma_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)} for a
+\verb{sigma^2_P = sigma_ad + sigma_am + sigma_dm + sigma_e2 = Var(y_i)} for a
 non-inbred base (coefficient 1 on \code{sigma_dm} because
 \code{2 * A[i,dam] = 2 * (1/2) = 1}). \strong{h2 is denominator-dependent under
 maternal effects; compare (co)variance components, not h2 values, across
-software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma_P to the
+software (ASReml/BLUPF90/WOMBAT/sommer/MCMCglmm all leave sigma^2_P to the
 user).} A \strong{negative} genetic correlation \code{r_am} is real and biologically
 expected in many livestock traits; it reflects an antagonistic
 direct-maternal relationship and does NOT indicate a model failure.

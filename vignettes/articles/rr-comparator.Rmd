@@ -264,7 +264,7 @@ This `sommer` cross-check is corroborating evidence. The **primary validation ev
 random-regression REML estimator lives on the Julia side (the random-regression
 REML row in `HSquared.validation_status()`), at the covered aim **k = 2**:
 
-- **Pre-declared 48-seed bias/MCSE recovery gate** (`sim/phase3_rr_recovery_gate.jl`;
+- **Pre-declared 48-seed bias/MCSE recovery gate** ([`sim/phase3_rr_recovery_gate.jl`](https://github.com/itchyshin/HSquared.jl/blob/main/sim/phase3_rr_recovery_gate.jl);
   predeclaration committed **before** the run, harness byte-identical pre/post). DGP: half-sib
   q = 360 (300 recorded offspring × 6 spread normalized-Legendre covariate points, n = 1800);
   truth `K_g = [1.0 0.3; 0.3 0.5]`, `σ²e = 1.0`; seeds 20261000..20261047; cold start
@@ -285,9 +285,9 @@ REML row in `HSquared.validation_status()`), at the covered aim **k = 2**:
   **≤ 1.9 × 10⁻⁵ relative** (table above).
 
 References (HSquared.jl repo, branch `feat/2026-07-01-phase3-rr-k2`):
-`docs/dev-log/recovery-checkpoints/2026-07-01-rr-k2-recovery-gate-predeclaration.md`,
-`docs/dev-log/recovery-checkpoints/2026-07-01-rr-k2-covered-evidence.md`, and the convention
-lock `docs/design/22-rr-convention-lock.md`.
+[`docs/dev-log/recovery-checkpoints/2026-07-01-rr-k2-recovery-gate-predeclaration.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-07-01-rr-k2-recovery-gate-predeclaration.md),
+[`docs/dev-log/recovery-checkpoints/2026-07-01-rr-k2-covered-evidence.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/dev-log/recovery-checkpoints/2026-07-01-rr-k2-covered-evidence.md), and the convention
+lock [`docs/design/22-rr-convention-lock.md`](https://github.com/itchyshin/HSquared.jl/blob/main/docs/design/22-rr-convention-lock.md).
 
 Do not re-run these gates. They are committed evidence, not live code.
 

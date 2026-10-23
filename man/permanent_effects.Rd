@@ -21,4 +21,8 @@ Permanent-environment effect results for repeatability
 \details{
 \code{permanent_effects()} returns the predicted permanent-environment effects of
 the opt-in, experimental repeatability model.
+
+Separating \code{sigma_a2} from \code{sigma_pe2} needs repeated records per
+individual; see \code{?hs_control} (\code{target = "repeatability"}) for that
+identifiability requirement.
 }

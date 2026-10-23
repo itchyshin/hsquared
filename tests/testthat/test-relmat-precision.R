@@ -166,6 +166,84 @@ test_that("a non-positive-definite K is rejected", {
   )
 })
 
+test_that("a singular MZ-twin K names the ridge remedy and refuses ACE", {
+  ids <- c("mz1", "mz2", "u1")
+  K <- diag(3)
+  dimnames(K) <- list(ids, ids)
+  K["mz1", "mz2"] <- K["mz2", "mz1"] <- 1
+  dat <- data.frame(y = c(1, 1.1, 0.4), id = ids)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "monozygotic twins",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "1e-6 * diag",
+    fixed = TRUE
+  )
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "ACE twin model is not available",
+    fixed = TRUE
+  )
+})
+
+test_that("K without dimnames is rejected", {
+  ids <- paste0("a", 1:3)
+  K <- hs_test_relmat_K(ids)
+  dimnames(K) <- NULL
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+  expect_error(
+    hsquared:::hs_build_model_spec(
+      y ~ relmat(1 | id, K = K),
+      data = dat,
+      family = stats::gaussian(),
+      REML = TRUE
+    ),
+    "row/column names matching the ids",
+    fixed = TRUE
+  )
+})
+
+test_that("relmat matches K rows by name, not position", {
+  ids <- paste0("a", 1:3)
+  K <- hs_test_relmat_K(ids)
+  K_perm <- K[c(3L, 1L, 2L), c(3L, 1L, 2L)]
+  dat <- data.frame(y = c(1, 2, 3), id = ids)
+  spec <- hsquared:::hs_build_model_spec(
+    y ~ relmat(1 | id, K = K),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  spec_perm <- hsquared:::hs_build_model_spec(
+    y ~ relmat(1 | id, K = K_perm),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  expect_equal(
+    spec$random$relmat$ginv[ids, ids],
+    spec_perm$random$relmat$ginv[ids, ids]
+  )
+})
+
 test_that("a non-finite K is rejected", {
   ids <- paste0("a", 1:3)
   K <- hs_test_relmat_K(ids)
@@ -302,6 +380,33 @@ test_that("a malformed precision() Q (non-symmetric) is rejected", {
     "symmetric",
     fixed = TRUE
   )
+})
+
+test_that("inverse rounding noise is accepted and symmetrized", {
+  ids <- paste0("a", 1:6)
+  K <- hs_test_relmat_K(ids)
+  Q <- solve(K)
+  Q[1, 2] <- Q[1, 2] + 1e-12 * max(abs(Q))
+  dat <- data.frame(y = seq_along(ids), id = ids)
+
+  expect_false(isSymmetric(unname(Q)))
+
+  precision_spec <- hsquared:::hs_build_model_spec(
+    y ~ precision(1 | id, Q = Q),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+  relmat_spec <- hsquared:::hs_build_model_spec(
+    y ~ relmat(1 | id, Kinv = Q),
+    data = dat,
+    family = stats::gaussian(),
+    REML = TRUE
+  )
+
+  expected <- (Q + t(Q)) / 2
+  expect_identical(precision_spec$random$precision$ginv, expected)
+  expect_identical(relmat_spec$random$relmat$ginv, expected)
 })
 
 test_that("relmat(1 | id, Kinv = X) fits through the direct-inverse path", {
@@ -490,6 +595,25 @@ test_that("relmat with K = A_pedigree fits identically to the animal model", {
   )
   # The animal ratio is renamed to the relmat relationship, not "animal".
   expect_true("relmat" %in% vc_relmat$component)
+
+  vcse_animal <- variance_component_standard_errors(fit_animal)
+  vcse_relmat <- variance_component_standard_errors(fit_relmat)
+  expect_equal(vcse_relmat$component, c("relmat", "residual"))
+  expect_equal(vcse_relmat$se, vcse_animal$se, tolerance = 1e-4)
+
+  h2se_relmat <- heritability_standard_error(fit_relmat)
+  expect_true(is.finite(h2se_relmat$se) && h2se_relmat$se > 0)
+  expect_equal(
+    h2se_relmat$se,
+    heritability_standard_error(fit_animal)$se,
+    tolerance = 1e-4
+  )
+
+  h2ci_relmat <- heritability_interval(fit_relmat)
+  expect_true(
+    h2ci_relmat$lower < h2ci_relmat$estimate &&
+      h2ci_relmat$estimate < h2ci_relmat$upper
+  )
 })
 
 test_that("precision with Q = Ainv matches the animal model", {

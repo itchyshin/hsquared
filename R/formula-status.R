@@ -229,7 +229,7 @@ hs_formula_status_syntax <- function() {
     rep("reserved", 3L),
     "parsed",
     # cbind() multivariate is parsed; long-format cov=us/diag/lowrank stay
-    # planned; cov=fa is reserved (Julia V4-FA engine-covered, R not fitted);
+    # planned; cov=fa grammar is reserved despite the bounded R expert-control fit;
     # missing-data rows stay planned.
     "planned",
     "planned",
@@ -253,7 +253,7 @@ hs_formula_status_fitting <- function() {
     rep("not available", 5L),
     "fitted (opt-in supplied relationship, experimental)",
     "fitted (opt-in supplied precision, experimental)",
-    "fitted (default-route genomic GREML, covered validation-scale)",
+    "fitted (opt-in genomic, covered validation-scale)",
     "fitted (opt-in genomic / SNP-BLUP)",
     "fitted (opt-in single-step)",
     "fitted (opt-in single-step construction)",
@@ -282,7 +282,22 @@ hs_formula_status_behavior <- function() {
     paste(
       "Permanent-environment effect of the opt-in, experimental repeatability",
       "model; requires an animal() term, repeated records, and",
-      "engine = \"julia\", target = \"repeatability\"."
+      "engine = \"julia\", target = \"repeatability\". THIS IS THE STANDARD",
+      "REPEATED-MEASURES ANIMAL MODEL: with more than one record per individual",
+      "and no permanent() term, sigma^2_a ABSORBS the permanent-environment",
+      "variance and both it and h2 are inflated (the fit warns). Add",
+      "scale_method = \"auto\" to engine_control for any real pedigree -- the",
+      "default dense estimator is capped at nobs^2 + nanimals^2 <=",
+      "max_dense_cells. Returns variance-component and h2 standard errors on",
+      "the sparse route; experimental, REML only, not coverage-calibrated.",
+      "cbind(...) + permanent(1 | id) now parses on the default multivariate",
+      "route (hsquared#237; experimental; target",
+      "\"multivariate_repeatability\"). It does not silently call the",
+      "animal-only multivariate fitter. The Julia sibling exports",
+      "fit_multivariate_repeatability_reml (HSquared.jl#398); R consumes",
+      "that frozen API. Experimental; no covered flip;",
+      "public_covered_count stays 7. See",
+      "https://github.com/itchyshin/hsquared/blob/main/docs/design/57-mv-pe-cbind-permanent-237.md."
     ),
     paste(
       "Common-environment effect of the opt-in two-effect model (additive",
@@ -373,23 +388,25 @@ hs_formula_status_behavior <- function() {
       "NOT covered, NOT the default; `Q` is supplied provenance, not estimated."
     ),
     paste(
-      "Primary genomic effect for the narrow default-route Gaussian REML form;",
-      "a supplied `Ginv` is used without alteration and its construction method,",
-      "allele frequencies, ridge, and denominator remain unknown. Auto-routes on",
-      "engine = \"fit\" (design-44 / owner YES 2026-09-03); explicit",
-      "engine = \"julia\", target = \"genomic\" remains an alias. The",
+      "Primary genomic effect for the narrow opt-in Gaussian REML route; a",
+      "supplied `Ginv` is used without alteration and its construction method,",
+      "allele frequencies, ridge, and denominator remain unknown. NOT on the",
+      "default `engine = \"fit\"` path: ordinary-call / default-route genomic",
+      "activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL). The",
+      "explicit model requires engine = \"julia\", target = \"genomic\". The",
       "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. Covered at validation scale (0.7);",
-      "public_covered_count remains 7."
+      "and SE accessors are unavailable. Covered at validation scale (0.7),",
+      "experimental; public_covered_count remains 7."
     ),
     paste(
-      "Primary genomic effect for the narrow default-route Gaussian REML marker",
-      "form: sample allele frequencies, unweighted VanRaden method 1, ridge",
-      "0.01. Auto-routes on engine = \"fit\"; explicit target = \"genomic\"",
-      "remains an alias. target = \"snp_blup\" remains opt-in. The",
-      "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. Covered at validation scale (0.7);",
-      "public_covered_count remains 7."
+      "Primary genomic effect for the narrow opt-in Gaussian REML marker route:",
+      "sample allele frequencies, unweighted VanRaden method 1, ridge 0.01.",
+      "NOT on the default `engine = \"fit\"` path: ordinary-call genomic",
+      "activation remains held. Use target = \"genomic\"; target = \"snp_blup\"",
+      "remains opt-in. The coefficient-scale result is labelled",
+      "`genomic_variance_ratio`; interval and SE accessors are unavailable.",
+      "Covered at validation scale (0.7), experimental; public_covered_count",
+      "remains 7."
     ),
     paste(
       "Primary single-step effect of the opt-in, experimental supplied-inverse",
@@ -436,15 +453,19 @@ hs_formula_status_behavior <- function() {
       "Covered numeric claim is scoped to k = 2 unstructured G0/R0;",
       "k >= 3 traits stay parseable-and-fittable-but-experimental;",
       "genetic_structure = \"diagonal\" stays experimental at 0.6.",
-      "Missing trait cells are allowed as `NA`. Under",
+      "Missing trait cells are allowed as `NA`. Adding `permanent(1 | id)`",
+      "parses on this default route as experimental multivariate PE",
+      "(hsquared#237; target \"multivariate_repeatability\"; no covered flip;",
+      "public_covered_count stays 7). Under",
       "`family = binomial()`, `cbind(successes, failures)` is instead a",
-      "binomial-counts GLMM via target = \"nongaussian\" (equal row totals",
-      "required), not a multivariate Gaussian."
+      "binomial-counts GLMM via target = \"nongaussian\" (scalar or varying",
+      "positive row totals admitted), not a multivariate Gaussian."
     ),
     paste(
       "Roadmap syntax for long-format unstructured covariance; the current",
       "parser rejects trait and `cov` arguments and points users to the",
-      "`cbind()` multivariate path, which fits on the default path."
+      "`cbind()` multivariate path (dense, validation-scale, capped by",
+      "`max_dense_cells`)."
     ),
     paste(
       "Roadmap syntax for long-format diagonal covariance; the current",
@@ -460,8 +481,12 @@ hs_formula_status_behavior <- function() {
       "Reserved stub for long-format factor-analytic G (Lambda Lambda' + Psi).",
       "Julia V4-FA is engine-covered (HSquared.jl 60895208 / #300). The R",
       "parser rejects trait and `cov` arguments and does not fit this form.",
-      "Not an R-public FA claim. Use cbind() unstructured or",
-      "genetic_structure = \"diagonal\". public_covered_count stays 7."
+      "A separate partial opt-in accepts complete four-trait Gaussian cbind()",
+      "with pedigree animal() and trait intercepts only, using",
+      "hs_control(engine = \"julia\", engine_control = list(target =",
+      "\"multivariate\", genetic_structure = \"factor_analytic\",",
+      "rank = 1L, julia_project = ...)). No cov = fa() grammar or covered",
+      "promotion; public_covered_count stays 7."
     ),
     paste(
       "Ratified planned missing-response control. Future behavior will keep",

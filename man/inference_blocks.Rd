@@ -37,3 +37,12 @@ when the engine returned those fields; they are not coverage-calibrated.
 Point estimates remain \code{\link[=variance_components]{variance_components()}}, \code{\link[=heritability]{heritability()}}, and
 \code{\link[=fit_diagnostics]{fit_diagnostics()}}.
 }
+\details{
+Testing \code{V_A = 0}: the Wald SE and logit-delta CI are not valid when
+additive variance is near 0. The likelihood-ratio test of \code{V_A = 0} uses
+a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1} (Self and Liang 1987; Stram
+and Lee 1994). \code{anova()} does not run that test. \code{logLik()} and \code{AIC()}
+are exposed for converged fits, so a naive \verb{chi^2_1} LRT can be built by
+hand -- do not. Julia \code{HSquared.nested_lrt(..., df = 1, boundary_df = 1)}
+already implements the mixture; that is not a new R test statistic.
+}

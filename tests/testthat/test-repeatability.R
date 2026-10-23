@@ -256,14 +256,23 @@ test_that("hsquared fits the opt-in repeatability model on repeated records", {
     id = ids
   )
 
-  fit <- hsquared(
-    y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
-    data = dat,
-    family = stats::gaussian(),
-    control = hs_control(
-      engine = "julia",
-      engine_control = list(target = "repeatability")
-    )
+  # PINNED (hsquared#235): on this tiny fixture the engine's REML information
+  # is not positive definite, so repeatability_interval() refuses and the
+  # bridge surfaces it as one warning instead of a silent NA. Asserting it
+  # means the surfacing cannot regress to silence unnoticed. If the engine
+  # later makes this interval computable, this expectation FAILS -- that is
+  # the intent: update it deliberately, do not muffle it.
+  expect_warning(
+    fit <- hsquared(
+      y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
+      data = dat,
+      family = stats::gaussian(),
+      control = hs_control(
+        engine = "julia",
+        engine_control = list(target = "repeatability")
+      )
+    ),
+    "repeatability_interval\\(\\).*REML information is not positive definite"
   )
 
   expect_s3_class(fit, "hsquared_fit")

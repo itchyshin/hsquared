@@ -237,3 +237,24 @@ test_that("DGP recovery band (0.06) rejects a biased h2/variance statistic", {
   expect_false(poor_accuracy > 0.5)
   expect_failure(expect_gt(poor_accuracy, 0.5))
 })
+
+test_that("DGP recovery rejects a start-value shortcut that only forces convergence", {
+  # hsquared#139: a constant introduced so a fit looks converged must fail
+  # the same 0.06 band the real DGP test uses. That test starts REML at
+  # (0.5, 0.5) and also asserts convergence == 0. Returning those starts
+  # as the estimate, with convergence 0, is the usual shortcut. Convergence
+  # alone is not recovery.
+  s2a <- 0.4
+  s2e <- 0.6
+  forced_start <- c(sigma_a2 = 0.5, sigma_e2 = 0.5)
+  forced_conv <- 0L
+  forced_h2 <- unname(forced_start[["sigma_a2"]] / sum(forced_start))
+
+  expect_true(forced_conv == 0L)
+  expect_false(abs(forced_start[["sigma_a2"]] - s2a) < 0.06)
+  expect_false(abs(forced_start[["sigma_e2"]] - s2e) < 0.06)
+  expect_false(abs(forced_h2 - 0.4) < 0.06)
+  expect_failure(expect_lt(abs(forced_start[["sigma_a2"]] - s2a), 0.06))
+  expect_failure(expect_lt(abs(forced_start[["sigma_e2"]] - s2e), 0.06))
+  expect_failure(expect_lt(abs(forced_h2 - 0.4), 0.06))
+})

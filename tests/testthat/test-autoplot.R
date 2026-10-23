@@ -222,6 +222,35 @@ test_that("autoplot.hsquared_fit breeding_values returns a ggplot", {
   )))
 })
 
+test_that("autoplot preserves extractor errors and warns when dropping EBVs", {
+  missing <- structure(list(result = list()), class = "hsquared_fit")
+  expect_error(
+    autoplot(missing, "breeding_values"),
+    "does not contain",
+    fixed = TRUE
+  )
+  expect_error(
+    autoplot(missing, "g_matrix"),
+    "does not contain",
+    fixed = TRUE
+  )
+  expect_error(
+    autoplot(missing, "g_geometry"),
+    "G-matrix geometry requires",
+    fixed = TRUE
+  )
+
+  fit <- mock_uni_fit()
+  fit$result$breeding_values$value[[2L]] <- Inf
+  expect_warning(
+    p <- autoplot(fit, "breeding_values"),
+    "Dropped 1 non-finite breeding value",
+    fixed = TRUE
+  )
+  expect_equal(nrow(p$data), 5L)
+  expect_true(all(is.finite(p$data$value)))
+})
+
 test_that("breeding_values autoplot consumes the engine breeding_values_plot_data", {
   # a fit carrying ONLY the engine payload (no extractable breeding_values), so
   # autoplot must use the payload.
@@ -277,7 +306,7 @@ test_that("autoplot.hsquared_fit g_matrix returns a ggplot for multivariate", {
 test_that("g_matrix errors on a univariate fit (no correlation matrix)", {
   expect_error(
     autoplot(mock_uni_fit(), "g_matrix"),
-    "multivariate fit",
+    "does not contain genetic correlation matrix",
     fixed = TRUE
   )
 })
@@ -309,7 +338,7 @@ test_that("g_geometry draws a rotation-invariant eigenvalue scree", {
 test_that("g_geometry errors on a fit without a genetic covariance", {
   expect_error(
     autoplot(mock_uni_fit(), "g_geometry"),
-    "g_geometry",
+    "G-matrix geometry requires",
     fixed = TRUE
   )
 })
@@ -698,6 +727,37 @@ test_that("autoplot.hs_gwas qq returns a ggplot with a y=x null and lambda_GC", 
   expect_equal(m$type, "qq")
   expect_equal(m$interval_status, "uncalibrated")
   expect_true(grepl("lambda_GC", p$labels$subtitle))
+})
+
+test_that("autoplot.hs_gwas drops non-finite p-values consistently", {
+  g <- mock_gwas()
+  g$p_value[c(2L, 5L)] <- c(NA_real_, NaN)
+
+  expect_warning(
+    qq <- autoplot(g, "qq"),
+    "Dropped 2 non-finite `p_value` values",
+    fixed = TRUE
+  )
+  expect_equal(nrow(qq$data), 18L)
+  expect_true(all(is.finite(qq$data$observed)))
+
+  expect_warning(
+    manhattan <- autoplot(g, "manhattan"),
+    "Dropped 2 non-finite `p_value` values",
+    fixed = TRUE
+  )
+  expect_equal(nrow(manhattan$data), 18L)
+  expect_equal(
+    ggplot2::ggplot_build(manhattan)$data[[1L]]$yintercept[[1L]],
+    -log10(0.05 / 18)
+  )
+
+  g$p_value[] <- NA_real_
+  expect_error(
+    autoplot(g, "qq"),
+    "`p_value` must contain at least one finite value to plot.",
+    fixed = TRUE
+  )
 })
 
 test_that("autoplot.hs_gwas notes a relatedness-uncorrected single-marker scan", {

@@ -1,61 +1,47 @@
-## Submission summary
+## R CMD check results
 
-This is a **draft** first-CRAN comment file for hsquared version **0.5.0**
-(experimental). It is prepared for the A20 local gate and is **not** a live
-submission. Tarball SHA, win-builder, and R-hub results below remain
-placeholders until the release pass after HSquared.jl is in General (Julia
-registers first).
+0 errors | 0 warnings | 1 note
 
-hsquared is the R-facing twin of the Julia engine HSquared.jl. It provides
-formula syntax, validation, summaries, and extractors for quantitative-genetic
-animal models. Default fitting requires a local Julia and HSquared.jl; CRAN
-checks must not invoke live Julia setup. Use `hs_control(engine = "validate")`
-to preview the model contract without fitting.
+* Local Julia-free check on the frozen tarball (macOS, R 4.6.0):
+  `env -u NOT_CRAN -u HSQUARED_JULIA_TESTS R CMD check --as-cran --run-donttest hsquared_0.9.0.tar.gz`
+* **NOTE — CRAN incoming:** first submission for this package name at version 0.9.0.
 
-Package status at first CRAN: **experimental** (D-41). Version is intentionally
-`0.5.0`, not `1.0.0`. Report point estimates only for rows marked `covered` in
-`validation_status()`; uncertainty intervals are experimental and not
-coverage-calibrated.
+## Test environment
 
-## Artifact (fill at release pass)
+* Default `R CMD check` and CRAN incoming run **without** Julia or `HSQUARED_JULIA_TESTS`.
+  Engine-backed tests are skipped when Julia is unavailable; the check log reports skips, not failures.
+* Optional suggested packages (`enhancer`, `nadiv`, `pedigreemm`, `sommer`, …) may be absent on CRAN
+  builders; examples and tests guard or skip accordingly.
 
-* tarball `hsquared_0.5.0.tar.gz`;
-* SHA-256 `TBD`;
-* size TBD;
-* built from clean twin-aligned commit `TBD` (after Julia General acceptance).
+## External software (not on CRAN)
 
-## R CMD check results (local gate — update at release)
+* **Default fitting** requires a local Julia installation, the suggested package `JuliaCall`, and a
+  checkout of the sibling engine **HSquared.jl** (not in the Julia General registry). README and
+  vignettes state this explicitly; `engine = "validate"` exercises the R-side contract without fitting.
+* We did **not** add `SystemRequirements: Julia` because the package installs and checks cleanly
+  without Julia; only the default fit path needs it.
 
-Local macOS `devtools::check()` / `R CMD check --as-cran` on the campaign branch
-(worktree tip recorded in `docs/dev-log/check-log.d/`):
+## Experimental release labelling
 
-```
-Status: see check-log shard for A20
-```
+* Version **0.9.0** is an **experimental** release (lifecycle badge, README, DESCRIPTION). Public
+  covered capability count is **7**; many formula terms remain planned or experimental-only.
+* Uncertainty intervals and several opt-in routes are **not** coverage-calibrated; users are directed
+  to the pkgdown article “Can I fit and report this?”.
 
-Expected first-submission NOTE when submitted:
+## Authors and consent
 
-```
-New submission
-```
+* Maintainer and corresponding author: Shinichi Nakagawa `<itchyshin@gmail.com>`.
+* Co-authors Yefeng Yang and Szymon Drobniak are listed with ORCIDs in `DESCRIPTION`, `inst/CITATION`,
+  `CITATION.cff`, and README. `CITATION.cff` is retained for GitHub citation but excluded from the R source
+  tarball; `inst/CITATION` is the package citation record. **Maintainer confirms co-author consent for CRAN `aut` and `cph` roles**
+  (record kept outside the tarball).
 
-## Test-suite design
+## Method references
 
-* CRAN lane: formula, extractors, error paths, release identity, and contract
-  tests that do **not** call `JuliaCall::julia_setup()`.
-* Live Julia / recovery / comparator suites: repository CI and maintainer
-  machines only (`NOT_CRAN=true` or `HSQUARED_JULIA_TESTS=true`).
-* Defense in depth: `hs_skip_live_julia()` (see `tests/testthat/helper-julia-skip.R`)
-  mirrors drmTMB's `drm_skip_live_julia()` so non-interactive CRAN checks never
-  hang inside Julia setup.
+* There is no single published methods paper for the full `hsquared` / `HSquared.jl` system. Validation
+  follows textbook animal-model examples (e.g. Mrode) and package-documented recovery studies; see
+  vignettes under `articles/` and `NEWS.md` for 0.9.0 scope.
 
 ## Downstream dependencies
 
-There are no CRAN reverse dependencies because this is the package's first
-submission.
-
-## Twin citation
-
-Cite the R+Julia twin as one data publication when the shared DOI (D-23) is
-issued. Until then, `citation("hsquared")` returns the package Manual entry with
-an explicit twin-DOI placeholder note.
+* None known at first submission.

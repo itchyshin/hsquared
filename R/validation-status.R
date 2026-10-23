@@ -24,19 +24,41 @@
 #'   `animal(1 | id, pedigree = ped) + maternal_genetic(1 | dam)` with
 #'   `engine_control = list(target = "direct_maternal")`.
 #'
-#' Both are covered at validation scale, opt-in, REML-only, and dense
-#' (n <= 1000 or so). Their scope and reporting limits are recorded in the
-#' repository capability ledger (`docs/design/capability-status.md`) and, for
+#' Both are covered at validation scale, opt-in, and REML-only. The
+#' engine-enforced dense rule on guarded routes is
+#' `nobs^2 + nanimals^2 <= 1e6` (default `max_dense_cells`), counting every
+#' animal in the pedigree, not just records. These two routes do not
+#' currently accept that lever, so they have no engine-enforced cell cap.
+#' Their scope and reporting limits are recorded in the
+#' repository capability ledger
+#' ([docs/design/capability-status.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/capability-status.md))
+#' and, for
 #' readers, in [Can I fit and report this?](
 #' https://itchyshin.github.io/hsquared/articles/current-limits.html). Read
 #' this table together with that enumeration: an absent row is not an absent
 #' capability, and this table alone does not tell you everything you may
 #' report.
 #'
+#' # Bridge production fences (0.9)
+#'
+#' The R-to-Julia bridge is **live at validation scale** for covered default and
+#' opt-in targets, but **not production-complete**. Infrastructure capabilities
+#' (`R-to-Julia bridge payload`, `opt-in experimental Julia engine`) stay
+#' **partial** even when individual targets are covered. Targets split into:
+#' default live (`engine = "fit"`), opt-in live (`engine_control$target`),
+#' **PATH_ONLY** smoke (C1-ext intervals; not a fit bridge), and **blocked**
+#' planned grammar (for example `animal(cov = fa(...))`). The explicit
+#' four-trait rank-one FA `engine_control` cell is partial and opt-in.
+#' `payload_v2` routing is limited to `direct_maternal` and `multi_effect`.
+#' See
+#' [docs/design/45-bridge-production-fences-DRAFT.md](https://github.com/itchyshin/hsquared/blob/main/docs/design/45-bridge-production-fences-DRAFT.md).
+#'
 #' # Capability identifiers versus labels
 #'
 #' `capability` is a **stable identifier**. Dated evidence records -- comparator
-#' runs under `docs/dev-log/comparator-runs/` and check-log entries -- cite these
+#' runs under
+#' [docs/dev-log/comparator-runs/](https://github.com/itchyshin/hsquared/tree/main/docs/dev-log/comparator-runs/)
+#' and check-log entries -- cite these
 #' strings verbatim to name the row they report against, so an identifier is not
 #' rewritten once evidence points at it. Look rows up by `capability`.
 #'
@@ -150,7 +172,7 @@ hs_validation_status_status <- function() {
   c(
     rep("partial", 7L), # positions 1-7
     "covered", # position 8 = two-effect / arbitrary-N independent-effect estimator (COMMON-ENV + (1|g) iid / A2=I covered; maternal experimental)
-    "covered", # position 9 = genomic GREML (0.7 covered validation-scale; G5 default-route)
+    "covered", # position 9 = genomic GREML (0.7 covered validation-scale; opt-in)
     "partial", # position 10 = SNP-BLUP
     "covered", # position 11 = multivariate REML (G10 t=2 unstructured R-public)
     rep("covered", 3L),
@@ -217,7 +239,9 @@ hs_validation_status_evidence <- function() {
       "variance_components_source = \"estimated_two_effect_reml\"."
     ),
     paste(
-      "Pure-R control/validator tests plus skip-guarded live tests running Julia",
+      "Opt-in experimental only; Julia V2-SSHINV engine-covered does not promote",
+      "R-public covered. AGHmatrix/BLUPF90 external comparators owed. Pure-R",
+      "control/validator tests plus skip-guarded live tests running Julia",
       "fit_ai_reml() on a user-supplied relationship inverse through the opt-in",
       "bridge: target = \"genomic\" on `genomic(1 | id, Ginv = Ginv)` (a genomic",
       "relationship inverse) and target = \"single_step\" on",
@@ -312,8 +336,9 @@ hs_validation_status_evidence <- function() {
       "package within the signed-off band (VC ~1-2%, h2 ~0.01-0.02), on the",
       "gryphon dataset (CRAN package enhancer). The Julia engine (fit_sparse_reml",
       "and fit_ai_reml) also recovers the published estimates within the",
-      "signed-off band via supplied A_gryphon (the engine correctly rejects the",
-      "pathological raw pedigree); engine-vs-pure-R agreement is to machine",
+      "signed-off band via supplied A_gryphon (the open pedigree has no ancestral",
+      "loops; the signed-off anchor still uses that supplied relationship",
+      "matrix); engine-vs-pure-R agreement is to machine",
       "precision. Gryphon is the maintainer (2026-06-13) signed-off V1-MRODE-FIT",
       "anchor and sommer the V1-COMPARATORS comparator."
     ),
@@ -397,21 +422,18 @@ hs_validation_status_boundaries <- function() {
       "path is opt-in experimental."
     ),
     paste(
-      "Covered at VALIDATION scale for genomic GREML (0.7 / owner #7; default",
-      "route activated under owner YES 2026-09-03); Julia-owned REML",
-      "estimator (fit_ai_reml / fit_gblup_reml on a relationship-inverse or",
-      "marker-built Q_lambda) that R surfaces; mirrors the twin V2-GREML",
-      "covered gate for the supplied-Ginv estimator, with marker==Q identity +",
-      "Totoro exact-G comparator + design-53 SUPERSEDE. ROUTING: a narrow",
-      "`genomic(1 | id, markers = M)` / `genomic(1 | id, Ginv = Q)` Gaussian",
-      "REML form auto-routes on the DEFAULT path (design-44); explicit",
-      "`engine = \"julia\", target = \"genomic\"` remains an alias. Single-step /",
-      "metafounder / SNP-BLUP stay opt-in or partial. Public estimand is",
-      "genomic_variance_ratio on K_lambda (design-51). Design-44 nine-cell",
-      "recovery campaign is confirmatory / may still run under Totoro -- not",
-      "claimed PASS here. APY, intervals, and field-panel robustness remain out",
-      "of the covered claim. Experimental label retained; not ML, not",
-      "production. NO-ANCHOR: no clean Mrode genomic-h2 pin.",
+      "Covered at VALIDATION scale for opt-in genomic GREML (0.7 / owner #7);",
+      "Julia-owned REML estimator (fit_ai_reml / fit_gblup_reml on a",
+      "relationship-inverse or marker-built Q_lambda) that R surfaces; mirrors",
+      "the twin V2-GREML covered gate for the supplied-Ginv estimator, with",
+      "marker==Q identity + Totoro exact-G comparator + design-53 SUPERSEDE.",
+      "Single-step / metafounder construction paths in this combined row remain",
+      "PARTIAL (V2-SSHINV). Genomic GREML accepts a supplied Ginv or a marker",
+      "matrix (engine-built VanRaden1 G + ridge 0.01); public estimand is",
+      "genomic_variance_ratio on K_lambda (design-51). Default activation,",
+      "APY, SNP-BLUP, intervals, and field-panel robustness are out of the",
+      "covered claim. Experimental label retained; not the default route, not",
+      "ML, not production. NO-ANCHOR: no clean Mrode genomic-h2 pin.",
       "public_covered_count is 7."
     ),
     paste(
@@ -431,7 +453,12 @@ hs_validation_status_boundaries <- function() {
       "\"julia\", target = \"multivariate\"` spelling still works. Covered numeric",
       "claim is scoped to k = 2 unstructured; k >= 3 stays",
       "parseable-and-fittable-but-experimental; genetic_structure =",
-      "\"diagonal\" stays experimental at 0.6. `cbind()` responses with missing",
+      "\"diagonal\" stays experimental at 0.6; \"lowrank\" still errors",
+      "as planned. A four-trait rank-one factor_analytic G is partial and",
+      "explicitly opt-in under engine = julia with complete responses,",
+      "pedigree animal only, trait intercepts, and unstructured R; it does",
+      "not enter this covered k = 2 claim or change public_covered_count.",
+      "The cov = fa() formula grammar remains planned. `cbind()` responses with missing",
       "trait cells are supported, but this is REML-only and animal-model-only.",
       "The R lane has cold-start recovery and one reproduced full-unstructured sommer",
       "comparator leg plus a published Mrode-style supplied-variance BLUP/MME",
@@ -464,7 +491,8 @@ hs_validation_status_boundaries <- function() {
       "`engine = \"validate\"`; use `REML = TRUE`). The covered claim is",
       "this REML estimator, not ML. Genomic, repeatability,",
       "two-effect, marker-effect, and non-Gaussian",
-      "(poisson/binomial, Laplace or variational REML) fitting are separate",
+      "(poisson(log)/binomial(logit), Laplace marginal likelihood or hybrid variational-Laplace objective)",
+      "fitting are separate",
       "opt-in experimental targets, not the default. A `cbind()` multivariate",
       "response also routes on the default path, but it is a separate,",
       "covered (validation-scale) sibling row and is NOT part of this univariate covered claim.",
@@ -490,7 +518,7 @@ hs_validation_status_boundaries <- function() {
     "Planned; no external production-software parity claim.",
     "Planned; no simulation-recovery claim.",
     "Planned; no genomic, QTL, eQTL, or marker-scan claim.",
-    "Planned; no GLLVM-style animal-model validation claim.",
+    "General GLLVM-style animal-model validation remains planned. A separate partial opt-in Poisson-log, three-trait, rank-two pedigree route has one-cell Julia ordinary-start evidence and a 12-animal same-input R-to-Julia parity check. The earlier four-scenario harness used true-loading starts and is separate evidence; broad recovery, calibration, a matched external same-objective comparator, and a covered claim remain open.",
     "Planned; no backend execution, benchmark, or speedup claim."
   )
 }

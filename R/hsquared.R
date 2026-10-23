@@ -17,7 +17,8 @@
 #'   whose `phenotypes` component holds them. Formula arguments such as
 #'   `pedigree = pedigree` can name components of the bundle.
 #' @param family A response family. The default path accepts `gaussian()`.
-#'   Opt-in experimental paths accept `poisson()` and `binomial()`; see
+#'   Opt-in experimental paths accept `poisson()` and `binomial()`; the
+#'   bounded genetic GLLVM route accepts three complete Poisson traits. See
 #'   [formula_status()].
 #' @param REML Logical; REML estimation. The default path supports REML only
 #'   (`TRUE`). `REML = FALSE` (ML) is rejected.
@@ -58,7 +59,33 @@ hsquared <- function(
   } else {
     NA_character_
   }
-  allow_families <- if (identical(julia_target, "nongaussian")) {
+  if (identical(julia_target, "nongaussian")) {
+    hs_validate_nongaussian_three_field_v09_dots(dots)
+  } else if (length(dots) > 0L) {
+    dot_names <- names(dots)
+    if (is.null(dot_names)) {
+      dot_names <- rep.int("", length(dots))
+    }
+    labelled <- ifelse(
+      nzchar(dot_names),
+      sprintf("`%s`", dot_names),
+      "an unnamed argument"
+    )
+    stop(
+      "`hsquared()` does not accept ",
+      paste(labelled, collapse = ", "),
+      " in `...`. Those arguments would be ignored. Engine options belong in ",
+      "`control = hs_control(engine_control = list(...))`.",
+      call. = FALSE
+    )
+  }
+  if (identical(control$engine_control$target, "genetic_gllvm") &&
+      !identical(control$engine, "julia")) {
+    hs_abort_unsupported_syntax("Genetic GLLVM requires explicit engine = \"julia\".")
+  }
+  allow_families <- if (identical(julia_target, "genetic_gllvm")) {
+    "poisson"
+  } else if (identical(julia_target, "nongaussian")) {
     c("gaussian", "poisson", "binomial")
   } else {
     "gaussian"
@@ -72,13 +99,42 @@ hsquared <- function(
     allow_families = allow_families
   )
   payload <- hs_build_bridge_payload(spec)
+  if (identical(julia_target, "genetic_gllvm")) {
+    row_order <- hs_validate_gllvm_optin_spec(control, spec, payload)
+    payload$method <- "Laplace integrated fixed-effects objective"
+    payload$metadata$julia_spec_target <- NULL
+    payload$metadata$julia_fit_target <- paste0(
+      "HSquared.fit_gllvm_laplace_reml(Y, Ainv, PoissonResponse(); ",
+      "rank = 2, structure = :lowrank, X = X)")
+    return(hs_fit_julia_gllvm_payload(payload,
+      project = control$engine_control$julia_project, row_order = row_order,
+      iterations = hs_engine_control_value(control, "iterations", 1000L)))
+  }
+  hs_validate_fa_optin_spec(control, julia_target, spec, payload)
+  hs_warn_unmodelled_repeated_records(spec)
 
   if (identical(control$engine, "fit")) {
+    # hsquared#267: `target` and `variance_components` are Julia-engine keys.
+    # The default path would otherwise ignore them and return an AI-REML fit.
+    ignored_on_fit <- intersect(
+      names(control$engine_control),
+      c("target", "variance_components")
+    )
+    if (length(ignored_on_fit) > 0L) {
+      stop(
+        "`engine = \"fit\"` does not use `engine_control` ",
+        paste(sprintf("`%s`", ignored_on_fit), collapse = ", "),
+        ". The default path fits by AI-REML (or the dense multivariate ",
+        "fitter for `cbind()`) and would ignore that key. Use ",
+        "`engine = \"julia\"` to set `target` or `variance_components`, ",
+        "or omit it.",
+        call. = FALSE
+      )
+    }
     # MV-4 (doc 38): a multivariate `cbind(...)` Gaussian response auto-routes to
     # the multivariate REML fitter (dispatched below), no longer requiring the
-    # opt-in `target = "multivariate"`. The spec fence (`R/model-spec.R`) already
-    # guarantees an animal-only, single-effect, random-intercept multivariate
-    # response, so clauses (4)-(7) of the frozen dispatch key hold here.
+    # opt-in `target = "multivariate"`. Animal-only cbind stays on that fitter.
+    # cbind + permanent() is the #237 exception and uses a distinct target.
     if (identical(spec$random$animal$design, "random_regression")) {
       hs_abort_opt_in_next_call(
         "random_regression",
@@ -95,49 +151,22 @@ hsquared <- function(
       )
     }
     opt_in_effect <- setdiff(names(spec$random), "animal")
-    if (length(opt_in_effect) > 0L) {
+    mv_permanent <- hs_is_multivariate_permanent(spec)
+    if (length(opt_in_effect) > 0L && !isTRUE(mv_permanent)) {
       effect_type <- opt_in_effect[[1L]]
-      # G5 (design-44 / owner YES 2026-09-03): narrow univariate genomic GREML
-      # auto-routes on the default path. Same estimator as explicit
-      # target = "genomic". single_step / snp_blup / relmat stay opt-in.
-      if (identical(effect_type, "genomic")) {
-        project <- hs_engine_control_value(
-          control,
-          "julia_project",
-          hs_default_julia_project()
-        )
-        if (!hs_julia_bridge_available(project)) {
-          stop(
-            "Fitting genomic GREML on the default path requires the HSquared.jl ",
-            "Julia engine (Julia, the `JuliaCall` R package, and a from-source ",
-            "checkout of `HSquared.jl`). Point the bridge via ",
-            "`HSQUARED_JULIA_PROJECT` or `hs_control(engine = \"julia\", ",
-            "engine_control = list(julia_project = \"/path/to/HSquared.jl\", ",
-            "target = \"genomic\"))`. To validate without fitting, use ",
-            "`control = hs_control(engine = \"validate\")`.",
-            call. = FALSE
-          )
-        }
-        hs_warn_genomic_default_once()
-        return(hs_fit_julia_genomic_payload(
-          payload,
-          project = project,
-          initial = hs_engine_control_value(
-            control,
-            "initial",
-            c(sigma_a2 = 1, sigma_e2 = 1)
-          ),
-          iterations = hs_engine_control_value(control, "iterations", 100L)
-        ))
-      }
       # Boole: maternal_genetic has two opt-in targets. Name the covered
       # direct_maternal sibling first. Do not auto-route. common_env /
-      # permanent paste stays on the sibling helper.
+      # permanent paste stays on the sibling helper. cbind + permanent is
+      # the #237 default-route exception: do not send users to univariate
+      # target = "repeatability".
       if (identical(effect_type, "maternal_genetic")) {
         hs_abort_maternal_genetic_default_path()
       }
       if (identical(effect_type, "single_step")) {
         hs_abort_single_step_default_path()
+      }
+      if (identical(effect_type, "genomic")) {
+        hs_abort_genomic_default_path(formula, data_name)
       }
       # Pat UX: the natural second-effect formulas print a pasteable next
       # call. Other opt-in primaries keep the existing knob-name abort.
@@ -185,6 +214,19 @@ hsquared <- function(
     }
     if (isTRUE(spec$response$multivariate)) {
       hs_warn_cbind_experimental_once()
+      if (isTRUE(mv_permanent)) {
+        return(hs_fit_julia_multivariate_repeatability_payload(
+          payload,
+          project = project,
+          initial = hs_engine_control_value(control, "initial", NULL),
+          iterations = hs_engine_control_value(control, "iterations", 2000L),
+          max_dense_cells = hs_engine_control_value(
+            control,
+            "max_dense_cells",
+            1e6
+          )
+        ))
+      }
       return(hs_fit_julia_multivariate_payload(
         payload,
         project = project,
@@ -193,6 +235,11 @@ hsquared <- function(
         genetic_structure = hs_validate_genetic_structure_control(
           control,
           "multivariate"
+        ),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
         )
       ))
     }
@@ -223,20 +270,28 @@ hsquared <- function(
       isTRUE(spec$response$multivariate) &&
         identical(target, "fit_animal_model")
     ) {
-      target <- "multivariate"
+      target <- if (hs_is_multivariate_permanent(spec)) {
+        "multivariate_repeatability"
+      } else {
+        "multivariate"
+      }
     }
-    # G5: genomic primary under engine = "julia" with no explicit target
-    # auto-selects genomic GREML (same as default-path auto-route). Explicit
-    # target = "snp_blup" / "single_step" still required for those siblings.
+    # Never send cbind + permanent to the animal-only multivariate fitter:
+    # that would absorb V_PE into G0 (the #237 defect).
     if (
-      identical(target, "fit_animal_model") &&
-        identical(names(spec$random), "genomic")
+      hs_is_multivariate_permanent(spec) &&
+        identical(target, "multivariate")
     ) {
-      target <- "genomic"
+      target <- "multivariate_repeatability"
     }
     genetic_structure <- hs_validate_genetic_structure_control(control, target)
+    # hsquared#212: error on an `engine_control` key this target does not
+    # honour (named, alongside the target) rather than silently discarding
+    # it, before any target-specific dispatch below runs.
+    hs_engine_control_forwarding(control, target)
     if (
-      isTRUE(spec$response$multivariate) && !identical(target, "multivariate")
+      isTRUE(spec$response$multivariate) &&
+        !target %in% c("multivariate", "multivariate_repeatability")
     ) {
       hs_abort_unsupported_syntax(
         "A `cbind(...)` multivariate response requires the multivariate Julia ",
@@ -247,11 +302,26 @@ hsquared <- function(
       )
     }
     if (
-      identical(target, "multivariate") && !isTRUE(spec$response$multivariate)
+      target %in%
+        c("multivariate", "multivariate_repeatability") &&
+        !isTRUE(spec$response$multivariate)
     ) {
       hs_abort_unsupported_syntax(
-        "`target = \"multivariate\"` requires a `cbind(trait1, trait2, ...)` ",
+        "`target = \"",
+        target,
+        "\"` requires a `cbind(trait1, trait2, ...)` ",
         "response with `animal(1 | id, pedigree = ped)`.",
+        call. = FALSE
+      )
+    }
+    if (
+      identical(target, "multivariate_repeatability") &&
+        is.null(spec$random$permanent)
+    ) {
+      hs_abort_unsupported_syntax(
+        "`target = \"multivariate_repeatability\"` requires ",
+        "`cbind(...) ~ ... + animal(1 | id, pedigree = ped) + ",
+        "permanent(1 | id)`.",
         call. = FALSE
       )
     }
@@ -322,6 +392,8 @@ hsquared <- function(
           "` target fits the single additive-genetic effect only.",
           if (identical(second_effect[[1L]], "maternal_genetic")) {
             hs_maternal_genetic_allowed_targets_note()
+          } else if (identical(second_effect[[1L]], "single_step")) {
+            hs_single_step_allowed_targets_note()
           } else {
             ""
           },
@@ -353,7 +425,34 @@ hsquared <- function(
           "iterations",
           2000L
         ),
-        genetic_structure = genetic_structure
+        genetic_structure = genetic_structure,
+        rank = hs_engine_control_value(control, "rank", NULL),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
+        )
+      ))
+    }
+    if (identical(target, "multivariate_repeatability")) {
+      return(hs_fit_julia_multivariate_repeatability_payload(
+        payload,
+        project = hs_engine_control_value(
+          control,
+          "julia_project",
+          hs_default_julia_project()
+        ),
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(
+          control,
+          "iterations",
+          2000L
+        ),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
+        )
       ))
     }
     if (identical(target, "random_regression")) {
@@ -389,7 +488,9 @@ hsquared <- function(
         ),
         family = family,
         marginal = hs_engine_control_value(control, "marginal", "laplace"),
-        iterations = hs_engine_control_value(control, "iterations", 200L)
+        iterations = hs_engine_control_value(control, "iterations", 200L),
+        initial = hs_engine_control_value(control, "initial", NULL),
+        restart_check = hs_engine_control_value(control, "restart_check", FALSE)
       ))
     }
     if (identical(target, "henderson_mme")) {
@@ -483,6 +584,33 @@ hsquared <- function(
           call. = FALSE
         )
       }
+      # `initial`/`iterations` reach the dense estimator but NOT the sparse one
+      # (HSquared.jl#343). Say so rather than accepting them and quietly
+      # ignoring them -- a start value the user tuned to rescue convergence,
+      # silently dropped, is the worst of both behaviours.
+      if (
+        identical(
+          hs_engine_control_value(control, "scale_method", "dense"),
+          "auto"
+        )
+      ) {
+        inert <- c("initial", "iterations")[
+          c(
+            !is.null(hs_engine_control_value(control, "initial", NULL)),
+            !is.null(hs_engine_control_value(control, "iterations", NULL))
+          )
+        ]
+        if (length(inert) > 0L) {
+          warning(
+            "`target = \"repeatability\"` with `scale_method = \"auto\"` ",
+            "ignores ",
+            paste0("`", inert, "`", collapse = " and "),
+            ": the sparse route picks its own start and iteration count ",
+            "(HSquared.jl#343). Use `scale_method = \"dense\"` to control them.",
+            call. = FALSE
+          )
+        }
+      }
       return(hs_fit_julia_repeatability_payload(
         payload,
         project = hs_engine_control_value(
@@ -499,6 +627,20 @@ hsquared <- function(
           control,
           "iterations",
           200L
+        ),
+        max_dense_cells = hs_engine_control_value(
+          control,
+          "max_dense_cells",
+          1e6
+        ),
+        # "dense" (default) keeps the covered validation-scale estimator.
+        # "auto" routes the SAME model through the engine's sparse K-effect
+        # AI-REML, which is the only way a real repeated-measures pedigree
+        # clears the dense nobs^2 + nanimals^2 ceiling.
+        scale_method = hs_engine_control_value(
+          control,
+          "scale_method",
+          "dense"
         )
       ))
     }
@@ -536,6 +678,12 @@ hsquared <- function(
     }
 
     if (identical(target, "multi_effect")) {
+      # A `permanent(1 | id)` formula is deliberately NOT accepted here: the
+      # term-to-target router above already sends it to `target =
+      # "repeatability"` with the closest working call spelled out, and that
+      # target keeps the PE-specific labels, `repeatability()` and
+      # `permanent_effects()`. Accepting it here too would give the same model
+      # a second, worse-labelled surface.
       if (
         is.null(spec$random$iid_effects) ||
           length(spec$random$iid_effects) == 0L
@@ -559,7 +707,15 @@ hsquared <- function(
         # factorization is infeasible; the default "dense" is the covered
         # validation-scale path. See ?hsquared (engine_control) and the engine's
         # `docs/design/25-completion-ultraplan.md` (V8.6).
-        scale_method = hs_engine_control_value(control, "scale_method", "dense")
+        scale_method = hs_engine_control_value(
+          control,
+          "scale_method",
+          "dense"
+        ),
+        # hsquared#212: forward `initial`/`iterations` on both dense and
+        # opt-in auto routes. NULL leaves each fitter's default unchanged.
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", NULL)
       ))
     }
 
@@ -580,7 +736,11 @@ hsquared <- function(
           control,
           "julia_project",
           hs_default_julia_project()
-        )
+        ),
+        # hsquared#212: forward `initial`/`iterations`; NULL (unsupplied)
+        # reproduces the pre-#212-fix default exactly.
+        initial = hs_engine_control_value(control, "initial", NULL),
+        iterations = hs_engine_control_value(control, "iterations", NULL)
       ))
     }
 
@@ -772,6 +932,11 @@ hsquared <- function(
         control,
         "initial",
         c(sigma_a2 = 1, sigma_e2 = 1)
+      ),
+      max_dense_cells = hs_engine_control_value(
+        control,
+        "max_dense_cells",
+        1e6
       )
     ))
   }

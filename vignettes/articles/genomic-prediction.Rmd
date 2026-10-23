@@ -20,18 +20,26 @@ knitr::opts_chunk$set(
 )
 ```
 
-<p class="hs-banner" role="note"><strong>Experimental 0.7.0 · default-route GREML · count stays 7.</strong>
-Narrow <code>genomic()</code> GREML now auto-routes on the ordinary call and is covered at validation scale. SNP-BLUP and single-step stay opt-in and experimental. This page does not flip <code>public_covered_count</code> and does not claim the nine-cell recovery campaign as PASS.</p>
+<p class="hs-banner" role="note"><strong>Experimental 0.9.0 release · explicit GREML target · count stays 7.</strong>
+Narrow <code>genomic()</code> GREML is covered at validation scale only through its explicit Julia target. SNP-BLUP and single-step stay opt-in and experimental. This page does not flip <code>public_covered_count</code> and does not claim the nine-cell recovery campaign as PASS.</p>
 
 This article shows the current genomic prediction surface in `hsquared`.
 It is for users who already have a genomic relationship inverse, a marker
 matrix, or a single-step relationship inverse and want to understand which path
 is live today.
 
+`markers = M` must be coded as the biallelic allele count `0`/`1`/`2` (or an
+imputed dosage in `[0, 2]`); a matrix in the centered `-1`/`0`/`1` convention
+(as produced by some external genomic-prediction tools) must be recoded (add
+`1`) before it is passed in. A `0`/`1` panel of homozygous inbred lines (as
+in `BGLR::wheat`) must be doubled to `0`/`2`; `hsquared` does not recode it,
+and a named `hsquared_zero_one_markers` warning is raised if every entry is
+in `{0, 1}`.
+
 The genomic GREML paths are experimental, REML-only, and Julia-backed.
-Narrow `genomic(1 | id, markers = M)` / `Ginv = Q` auto-routes on
-`engine = "fit"` (and on `engine = "julia"` with no target); explicit
-`target = "genomic"` remains an alias. SNP-BLUP and single-step still
+Narrow `genomic(1 | id, markers = M)` / `Ginv = Q` requires
+`engine = "julia", target = "genomic"`; the ordinary `engine = "fit"`
+call remains the pedigree animal-model route. SNP-BLUP and single-step still
 need their own explicit targets. A repaired boundary candidate resolved
 all 240 sealed holdouts and corrected 30 classifications with no losses,
 but its preregistered runtime gate failed because one cell was 5.99 times
@@ -78,6 +86,26 @@ QTL/eQTL scans remain planned.
 Use this path when you already have a genomic relationship inverse whose row and
 column names match the IDs in the phenotype data.
 
+```{r fixture}
+ids <- paste0("id", seq_len(8))
+pheno <- data.frame(
+  id    = ids,
+  batch = rep(c("A", "B"), each = 4),
+  y     = c(72, 75, 65, 68, 31, 33, 35, 30)
+)
+
+set.seed(1)
+M <- matrix(sample(0:2, 8 * 6, replace = TRUE), nrow = 8, ncol = 6)
+rownames(M) <- ids
+
+p <- colMeans(M) / 2
+Z <- M - matrix(2 * p, nrow = 8, ncol = 6, byrow = TRUE)
+k <- 2 * sum(p * (1 - p))
+G <- tcrossprod(Z) / k + diag(0.01, 8)
+dimnames(G) <- list(ids, ids)
+Ginv <- solve(G)
+```
+
 ```{r}
 fit_g <- hsquared(
   y ~ batch + genomic(1 | id, Ginv = Ginv),
@@ -113,9 +141,11 @@ and is not pedigree-, founder-base-, population-, or universal narrow-sense
 heritability.
 Genomic `heritability_interval()` and `heritability_standard_error()` are
 unavailable until a scale-labelled interval contract is separately validated.
-The R surface remains partial because the sealed boundary candidate failed its
-runtime gate, the nine-cell campaign did not run, and production-scale genomic
-validation is not complete.
+The covered narrow GREML route remains validation-scale only: the sealed
+boundary candidate failed its runtime gate, the nine-cell campaign did not run,
+and production-scale genomic validation is not complete. Those are remaining
+debts, not a demotion of GREML; SNP-BLUP and both single-step routes remain
+opt-in partial.
 
 ## Marker-built G
 
@@ -149,6 +179,12 @@ fingerprints for ID order, marker content, `K_lambda`, and `Q_lambda`.
 genomic variance-component ratio on the declared relationship scale. It is not
 generally an average marginal phenotypic-variance fraction and is not
 pedigree-, founder-base-, population-, or universal narrow-sense heritability.
+The fitted `residual` is the residual variance of the model with kernel
+`G + 0.01 I`; it equals the residual variance on `G` minus `0.01 * sigma_g2`.
+Genomic variance and the REML log-likelihood are unchanged relative to an
+unridged `G` fit. To compare `residual` with GCTA / sommer / rrBLUP on `G`,
+add `0.01 * sigma_g2` back. The marker-built ridge is fixed; `genomic()` has
+no `ridge` argument.
 
 This is convenient for small and validation-scale examples. It is not yet a
 production genotype pipeline:
@@ -308,8 +344,10 @@ eqtl_table(fit_g)   # reserved
 
 ## Current evidence boundary
 
-The current R genomic and single-step rows remain `partial`; the explicit route
-does not change `public_covered_count` (live count 6; genomic not covered).
+The current R genomic and single-step rows have different status: narrow genomic
+GREML is covered at validation scale, while supplied and constructed single-step
+routes remain opt-in partial. This page does not change the current
+`public_covered_count` of 7.
 
 Covered in the R lane:
 
@@ -361,8 +399,8 @@ single-step blending of pedigree and genomic information. Useful anchors are
 (2010)](https://pubmed.ncbi.nlm.nih.gov/20105546/).
 
 For `hsquared`, those papers motivate the roadmap. The package exposes one
-narrow default-route genomic GREML path (covered at validation scale;
-experimental 0.7.0; count stays 7) while keeping SNP-BLUP, single-step,
+narrow explicit genomic GREML target (covered at validation scale;
+experimental 0.9.0 release; count stays 7) while keeping SNP-BLUP, single-step,
 recovery-campaign PASS, interval, and broad production genomic claims
 behind explicit validation gates.
 

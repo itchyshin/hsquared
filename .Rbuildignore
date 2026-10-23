@@ -2,7 +2,9 @@
 ^\.agents$
 ^\.codex$
 ^\.claude$
+^\.vscode$
 ^\.mission-control$
+^\.unlazy$
 ^CLAUDE\.md$
 ^\.gitignore$
 ^\.Rproj\.user$
@@ -11,12 +13,21 @@
 ^ROADMAP\.md$
 ^docs$
 ^data-raw$
+^dev-test$
 ^hsquared\.Rproj$
 ^README\.Rmd$
 ^pkgdown-site$
 ^pkgdown$
 ^sim$
+^tools$
 ^vignettes/articles$
 
 ^\.git$
+^CITATION\.cff$
+^\.gitattributes$
+^LOOP$
 ^cran-comments\.md$
+^\.cursor$
+^\.mcp\.json$
+^\.ignore$
+^graft$

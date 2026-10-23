@@ -587,7 +587,7 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
       REML = TRUE,
       control = hs_control(
         engine = "julia",
-        engine_control = c(list(initial = init, iterations = 1000L), extra)
+        engine_control = c(list(initial = init), extra)
       )
     )
   }
@@ -597,8 +597,13 @@ test_that("sparse and dense REML optimizers reach the same REML optimum", {
   # via different linear algebra, so on the same data they must reach the same
   # optimum. This cross-validates the sparse optimizer against the dense one; it
   # is NOT an external comparator, DGP recovery, or production-fitting claim.
+  # hsquared#212: the implicit `target = "fit_animal_model"` dense path has no
+  # `iterations` control (it never did -- `hs_fit_julia_payload()` has no such
+  # formal), so `iterations` is supplied only on the sparse_reml side, which
+  # does honour it; this changes nothing about the dense fit's actual
+  # behaviour, only whether the call passes the new #212 key-forwarding gate.
   dense <- fit_with(list())
-  sparse <- fit_with(list(target = "sparse_reml"))
+  sparse <- fit_with(list(target = "sparse_reml", iterations = 1000L))
 
   expect_equal(dense$spec$target %||% "fit_animal_model", "fit_animal_model")
   expect_equal(sparse$spec$target, "sparse_reml")

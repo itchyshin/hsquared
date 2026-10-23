@@ -112,4 +112,12 @@ formula-only tokens detected by call head and are not meant to be called
 directly, so attaching \code{hsquared} alongside a package that exports a
 same-named function (e.g. \code{pedigreemm::inbreeding()}) may print a masking
 message; this is expected and harmless.
+
+\code{inbreeding()} is a reserved future \emph{effect}, not an accessor for inbreeding
+coefficients. There is no R function that returns the relationship matrix
+\code{A}, \code{A^{-1}}, or \code{F} used by a fit (\code{payload$Ainv} stays \code{NULL}; Julia
+builds the inverse). Compare those objects against \code{nadiv} or \code{pedigreemm}
+through \code{JuliaCall} with \code{HSquared.additive_relationship()},
+\code{HSquared.pedigree_inverse()}, and \code{HSquared.inbreeding_coefficients()}.
+The fitting-models article shows the call.
 }

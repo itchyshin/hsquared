@@ -301,9 +301,10 @@ test_that("reserved factor-analytic extractors fail with rotation-aware scope", 
     "rotation controls are planned, not implemented",
     fixed = TRUE
   )
+  # Psi is available only on a bounded FA fit; this object is not one.
   expect_error(
     specific_variance(fit),
-    "planned, not implemented.*rotation-nonunique",
+    "requires a fitted rank-one.*unavailable for this fit",
     perl = TRUE
   )
   expect_error(
@@ -507,6 +508,72 @@ test_that("fit_diagnostics flags a variance-component boundary solution", {
   )
 })
 
+# hsquared#230: `search_boundary` (the non-Gaussian bridge's optimizer-bracket
+# flag) is a distinct concept from `at_boundary` (an estimated variance share
+# at/near zero). It is keyed off `result$boundary`, which only the non-Gaussian
+# bridge route populates -- a Gaussian `engine = "fit"` result never carries a
+# `boundary` field, so it must get no `search_boundary` row at all (not even
+# NA), unlike `at_boundary`, which IS derived from Gaussian variance estimates.
+test_that("fit_diagnostics reports search_boundary for a non-Gaussian-shaped result", {
+  at_rail <- hsquared:::hs_new_fit(
+    spec = list(method = "laplace", family = list(family = "binomial")),
+    payload = list(y = 1:3),
+    result = list(
+      converged = TRUE,
+      boundary = TRUE
+    )
+  )
+  diag <- fit_diagnostics(at_rail)
+  expect_equal(diag$value[diag$metric == "search_boundary"], "TRUE")
+  expect_match(
+    diag$value[diag$metric == "search_boundary_condition"],
+    "log(initial$sigma_a2)",
+    fixed = TRUE
+  )
+  expect_match(
+    diag$value[diag$metric == "search_boundary_condition"],
+    "HSquared.jl#327",
+    fixed = TRUE
+  )
+
+  interior_ng <- hsquared:::hs_new_fit(
+    spec = list(method = "laplace", family = list(family = "binomial")),
+    payload = list(y = 1:3),
+    result = list(
+      converged = TRUE,
+      boundary = FALSE
+    )
+  )
+  diag_interior <- fit_diagnostics(interior_ng)
+  expect_equal(
+    diag_interior$value[diag_interior$metric == "search_boundary"],
+    "FALSE"
+  )
+  condition_value <- diag_interior$value[
+    diag_interior$metric == "search_boundary_condition"
+  ]
+  expect_equal(length(condition_value), 1L)
+  expect_equal(condition_value, "interior")
+})
+
+test_that("fit_diagnostics gains no search_boundary row for a Gaussian fit without `boundary`", {
+  gaussian_fit <- hsquared:::hs_new_fit(
+    spec = list(method = "REML", family = list(family = "gaussian")),
+    payload = list(y = 1:3),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(0.5, 0.5)
+      ),
+      converged = TRUE
+    ),
+    engine = "fit"
+  )
+  diag <- fit_diagnostics(gaussian_fit)
+  expect_false("search_boundary" %in% diag$metric)
+  expect_false("search_boundary_condition" %in% diag$metric)
+})
+
 test_that("accuracy requires reliability values on [0, 1]", {
   fit <- hsquared:::hs_new_fit(
     spec = list(method = "REML", family = list(family = "gaussian")),
@@ -675,6 +742,44 @@ test_that("print.hsquared_fit shows target, formula, and heritability peek", {
   expect_match(out, "heritability: animal=0.4", fixed = TRUE)
 })
 
+test_that("print and summary flag a genetic-correlation boundary", {
+  fit <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = list(y = matrix(1:12, ncol = 2)),
+    result = list(
+      heritability = data.frame(
+        term = c("trait1", "trait2"),
+        estimate = c(0.3, 0.4)
+      ),
+      genetic_correlation = matrix(
+        c(1, 1 - 5e-7, 1 - 5e-7, 1),
+        nrow = 2
+      ),
+      diagnostics = list(optimizer_status = "converged"),
+      converged = TRUE
+    )
+  )
+
+  fit_output <- paste(utils::capture.output(print(fit)), collapse = "\n")
+  fit_summary <- summary(fit)
+  summary_output <- paste(
+    utils::capture.output(print(fit_summary)),
+    collapse = "\n"
+  )
+  boundary_line <- paste0(
+    "genetic correlation boundary: TRUE ",
+    "(|r_g| >= 1 - 1e-6; SEs and Wald CIs are not reportable)"
+  )
+
+  expect_match(fit_output, boundary_line, fixed = TRUE)
+  expect_true(fit_summary$genetic_correlation_boundary)
+  expect_match(summary_output, boundary_line, fixed = TRUE)
+})
+
 test_that("heritability() and print() warn when the fit did not converge", {
   failed <- hsquared:::hs_new_fit(
     spec = list(
@@ -723,6 +828,34 @@ test_that("heritability() and print() warn when the fit did not converge", {
   expect_false(grepl("9.48", printed, fixed = TRUE))
 })
 
+test_that("multivariate non-convergence warning names the iteration remedy", {
+  failed <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "multivariate"
+    ),
+    payload = list(y = matrix(1:12, ncol = 3)),
+    result = list(
+      heritability = data.frame(term = "trait1", estimate = 0.4),
+      diagnostics = list(
+        optimizer_status = "not_converged",
+        iterations = 2000L
+      ),
+      converged = FALSE
+    )
+  )
+
+  expect_warning(
+    heritability(failed),
+    paste0(
+      "The optimizer used 2000 iterations. If that is the requested limit, ",
+      "retry with a larger `engine_control$iterations` value."
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("heritability() and print() stay quiet on a converged interior fit", {
   ok <- hsquared:::hs_new_fit(
     spec = list(
@@ -743,4 +876,66 @@ test_that("heritability() and print() stay quiet on a converged interior fit", {
   )
   expect_silent(heritability(ok))
   expect_silent(invisible(utils::capture.output(print(ok))))
+})
+
+test_that("converged boundary fits warn, return, and omit summary uncertainty", {
+  boundary <- hsquared:::hs_new_fit(
+    spec = list(
+      method = "REML",
+      family = list(family = "gaussian"),
+      target = "ai_reml"
+    ),
+    payload = list(y = 1:4),
+    result = list(
+      variance_components = data.frame(
+        component = c("animal", "residual"),
+        estimate = c(1e-8, 1)
+      ),
+      heritability = data.frame(term = "animal", estimate = 1e-8),
+      heritability_interval = data.frame(
+        estimate = 1e-8,
+        lower = 0,
+        upper = 1,
+        level = 0.95,
+        se = 0.04,
+        method = "delta"
+      ),
+      heritability_se = 0.04,
+      variance_component_se = data.frame(
+        component = c("animal", "residual"),
+        se = c(0.05, 0.08)
+      ),
+      diagnostics = list(optimizer_status = "converged"),
+      converged = TRUE
+    )
+  )
+
+  printed <- paste(
+    utils::capture.output(print(summary(boundary))),
+    collapse = "\n"
+  )
+  expect_match(printed, "at boundary: TRUE", fixed = TRUE)
+  expect_no_match(printed, "heritability uncertainty", fixed = TRUE)
+  expect_no_match(printed, "variance-component SEs", fixed = TRUE)
+
+  expect_warning(
+    hi <- heritability_interval(boundary),
+    "This `hsquared_fit` object is at a variance-component boundary. The heritability-interval number is not reportable as an ordinary interior estimate",
+    fixed = TRUE
+  )
+  expect_equal(hi$estimate, 1e-8)
+
+  expect_warning(
+    h2se <- heritability_standard_error(boundary),
+    "This `hsquared_fit` object is at a variance-component boundary. The heritability standard-error number is not reportable as an ordinary interior estimate",
+    fixed = TRUE
+  )
+  expect_equal(h2se$se, 0.04)
+
+  expect_warning(
+    vcse <- variance_component_standard_errors(boundary),
+    "This `hsquared_fit` object is at a variance-component boundary. The variance-component standard-error number is not reportable as an ordinary interior estimate",
+    fixed = TRUE
+  )
+  expect_equal(vcse$se, c(0.05, 0.08))
 })

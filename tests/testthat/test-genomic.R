@@ -87,7 +87,7 @@ test_that("genomic is a valid opt-in julia target", {
   expect_equal(hsquared:::hs_validate_julia_target("genomic"), "genomic")
 })
 
-test_that("the default fit path auto-routes genomic() GREML (G5)", {
+test_that("the default fit path keeps genomic() opt-in", {
   ids <- paste0("g", 1:3)
   Ginv <- hs_test_ginv(ids)
   dat <- data.frame(y = c(1, 2, 3), id = ids)
@@ -100,7 +100,72 @@ test_that("the default fit path auto-routes genomic() GREML (G5)", {
   ))
   expect_match(spec$bridge$target, "Ginv", fixed = TRUE)
 
-  # REML = FALSE stays rejected on the genomic default route (design-44).
+  err <- tryCatch(
+    hsquared(
+      y ~ genomic(1 | id, Ginv = Ginv),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`genomic()` is not on the default",
+    err,
+    fixed = TRUE
+  ))
+  expect_true(grepl("Ordinary-call / default-route", err, fixed = TRUE))
+  expect_true(grepl("BOUNDARY_HOLDOUT_FAIL", err, fixed = TRUE))
+  expect_true(grepl("Closest working call", err, fixed = TRUE))
+  expect_true(grepl("target = \"genomic\"", err, fixed = TRUE))
+  expect_true(grepl("genomic_variance_ratio", err, fixed = TRUE))
+  expect_true(grepl("public_covered_count stays 7", err, fixed = TRUE))
+  expect_true(grepl("y ~ genomic(1 | id, Ginv = Ginv)", err, fixed = TRUE))
+  expect_true(grepl("data = dat", err, fixed = TRUE))
+  expect_true(grepl(
+    "not a silent ordinary-route promotion",
+    err,
+    fixed = TRUE
+  ))
+
+  # Marker form gets the same ordinary-call hold (no silent default route).
+  markers <- matrix(
+    c(0, 1, 2, 1, 0, 2, 2, 1, 0),
+    nrow = 3L,
+    dimnames = list(ids, paste0("m", 1:3))
+  )
+  err_m <- tryCatch(
+    hsquared(
+      y ~ genomic(1 | id, markers = markers),
+      data = dat,
+      family = stats::gaussian()
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl(
+    "`genomic()` is not on the default",
+    err_m,
+    fixed = TRUE
+  ))
+  expect_true(grepl("target = \"genomic\"", err_m, fixed = TRUE))
+  expect_true(grepl("snp_blup", err_m, fixed = TRUE))
+
+  # Targetless engine = "julia" also refuses silent genomic routing.
+  err_j <- tryCatch(
+    hsquared(
+      y ~ genomic(1 | id, Ginv = Ginv),
+      data = dat,
+      family = stats::gaussian(),
+      control = hs_control(engine = "julia")
+    ),
+    error = function(e) conditionMessage(e)
+  )
+  expect_true(grepl("target = \"genomic\"", err_j, fixed = TRUE))
+  expect_true(
+    grepl("fit_animal_model", err_j, fixed = TRUE) ||
+      grepl("single additive-genetic", err_j, fixed = TRUE)
+  )
+
+  # REML = FALSE stays rejected on the explicit genomic route (design-44).
   expect_error(
     hsquared(
       y ~ genomic(1 | id, Ginv = Ginv),
@@ -111,20 +176,43 @@ test_that("the default fit path auto-routes genomic() GREML (G5)", {
     "REML = FALSE",
     fixed = TRUE
   )
+})
 
-  # Without Julia the default genomic route names the bridge requirement
-  # (honest failure; not the old opt-in abort).
-  if (!isTRUE(hsquared:::hs_julia_bridge_available())) {
-    expect_error(
-      hsquared(
-        y ~ genomic(1 | id, Ginv = Ginv),
-        data = dat,
-        family = stats::gaussian()
-      ),
-      "genomic GREML",
-      fixed = TRUE
-    )
-  }
+test_that("formula_status names the ordinary-call genomic hold", {
+  status <- formula_status()
+  ginv_row <- status[
+    status$term == "genomic(1 | id, Ginv = Ginv)",
+    ,
+    drop = FALSE
+  ]
+  expect_length(ginv_row$current_behavior, 1L)
+  expect_match(
+    ginv_row$current_behavior,
+    "NOT on the default",
+    fixed = TRUE
+  )
+  expect_match(
+    ginv_row$current_behavior,
+    "BOUNDARY_HOLDOUT_FAIL",
+    fixed = TRUE
+  )
+  expect_match(
+    ginv_row$current_behavior,
+    "public_covered_count remains 7",
+    fixed = TRUE
+  )
+
+  markers_row <- status[
+    status$term == "genomic(1 | id, markers = M)",
+    ,
+    drop = FALSE
+  ]
+  expect_length(markers_row$current_behavior, 1L)
+  expect_match(
+    markers_row$current_behavior,
+    "ordinary-call genomic activation remains held",
+    fixed = TRUE
+  )
 })
 
 test_that("the genomic bridge requires an internal payload", {
@@ -199,58 +287,6 @@ test_that("the explicit supplied-Ginv route fits [live]", {
   )
 })
 
-test_that("the default fit path genomic GREML route matches explicit target [live]", {
-  hs_skip_live_julia()
-  testthat::skip_if_not(
-    hsquared:::hs_julia_bridge_available(),
-    "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
-  )
-  hsquared:::hs_reset_session_flags()
-
-  set.seed(5)
-  na <- 8
-  ids <- paste0("g", seq_len(na))
-  m <- matrix(stats::rbinom(na * 60, 2, 0.3), na, 60)
-  mc <- scale(m, scale = FALSE)
-  g <- tcrossprod(mc)
-  g <- g / mean(diag(g)) + diag(na) * 0.01
-  Ginv <- solve(g)
-  dimnames(Ginv) <- list(ids, ids)
-
-  n <- 24
-  rec <- rep(ids, length.out = n)
-  dat <- data.frame(
-    y = 3 + stats::rnorm(n, 0, 1),
-    id = rec
-  )
-
-  fit_default <- suppressWarnings(hsquared(
-    y ~ genomic(1 | id, Ginv = Ginv),
-    data = dat,
-    family = stats::gaussian()
-  ))
-  fit_explicit <- hsquared(
-    y ~ genomic(1 | id, Ginv = Ginv),
-    data = dat,
-    family = stats::gaussian(),
-    control = hs_control(
-      engine = "julia",
-      engine_control = list(target = "genomic")
-    )
-  )
-  expect_equal(fit_default$spec$target, "genomic")
-  expect_equal(
-    unname(as.numeric(variance_components(fit_default)$estimate)),
-    unname(as.numeric(variance_components(fit_explicit)$estimate)),
-    tolerance = 1e-10
-  )
-  expect_equal(
-    unname(as.numeric(heritability(fit_default)$estimate)),
-    unname(as.numeric(heritability(fit_explicit)$estimate)),
-    tolerance = 1e-10
-  )
-})
-
 test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]", {
   hs_skip_live_julia()
   testthat::skip_if_not(
@@ -283,9 +319,60 @@ test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]
   expect_null(fit$result$prediction_error_variance)
   expect_null(fit$result$reliability)
   expect_error(breeding_values(fit), "does not contain")
+  expect_null(fit$result$variance_component_se)
   printed <- capture.output(print(fit))
   expect_true(any(grepl("scientific endpoint.*0", printed)))
   expect_true(any(grepl("numerical MME.*1e-07", printed)))
+})
+
+test_that("genomic route forwards engine-owned SEs and intervals [live]", {
+  # hsquared#294: same class as #295 relmat forwarding. Julia already
+  # returns AI-REML SEs on AnimalModelFit; R copies those fields onto the fit.
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
+  )
+
+  set.seed(294)
+  na <- 8
+  ids <- paste0("g", seq_len(na))
+  m <- matrix(stats::rbinom(na * 60, 2, 0.3), na, 60)
+  mc <- scale(m, scale = FALSE)
+  g <- tcrossprod(mc)
+  g <- g / mean(diag(g)) + diag(na) * 0.01
+  Ginv <- solve(g)
+  dimnames(Ginv) <- list(ids, ids)
+
+  # Interior optimum so the engine AI matrix is invertible.
+  bv <- as.numeric(t(chol(g)) %*% stats::rnorm(na))
+  names(bv) <- ids
+  n <- 64
+  rec <- rep(ids, length.out = n)
+  dat <- data.frame(y = 3 + bv[rec] + stats::rnorm(n, 0, 0.7), id = rec)
+
+  fit <- hsquared(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+
+  vcse <- variance_component_standard_errors(fit)
+  expect_equal(vcse$component, c("genomic", "residual"))
+  expect_true(all(is.finite(vcse$se)) && all(vcse$se > 0))
+
+  expect_true(
+    is.finite(fit$result$heritability_se) && fit$result$heritability_se > 0
+  )
+  h2ci <- fit$result$heritability_interval
+  expect_true(
+    h2ci$lower < h2ci$estimate &&
+      h2ci$estimate < h2ci$upper
+  )
 })
 
 test_that("genomic() accepts a marker matrix to build the relationship", {
@@ -432,6 +519,14 @@ test_that("marker validation freezes dosage, names, and polymorphism", {
     "[0, 2]",
     fixed = TRUE
   )
+  # The dosage-range guard is a classed hsquared_error (#216), naming the
+  # 0/1/2 convention and the -1/0/1 recode, not a bare stop().
+  cnd <- tryCatch(
+    hsquared:::hs_validate_genomic_markers(bad),
+    error = function(e) e
+  )
+  expect_s3_class(cnd, "hsquared_error")
+  expect_match(cnd$message, "recoded", fixed = TRUE)
   bad <- M
   rownames(bad)[1] <- ""
   expect_error(

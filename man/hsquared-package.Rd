@@ -16,16 +16,21 @@ through the HSquared.jl engine: the default \code{hsquared()} call fits when a
 local Julia and \code{HSquared.jl} are available, and otherwise errors with
 install guidance. A \code{cbind()} multivariate Gaussian response also routes on
 that default path; multivariate is covered at validation scale and stays experimental.
-Genomic, repeatability, two-effect, and non-Gaussian
-(\code{poisson}/\code{binomial}, Laplace or variational REML) models fit through
-opt-in, experimental engine paths; single-step stays \strong{opt-in partial};
-factor-analytic G is engine-covered on the Julia engine (\code{V4-FA}) and
-planned, not fitted, on the R formula (Julia engine-covered ≠ R covered).
+Narrow genomic GREML is an explicit experimental target (\code{target = "genomic"})
+and is covered at validation scale. The covered common-environment two-effect, independent multi-effect,
+direct-maternal, and k = 2 random-regression models remain opt-in. Repeatability,
+maternal two-effect, and non-Gaussian (\code{poisson(log)}/\code{binomial(logit)},
+Laplace marginal likelihood or hybrid variational-Laplace objective) models are opt-in and
+experimental; single-step stays \strong{opt-in partial}. Factor-analytic G has
+a bounded experimental four-trait rank-one R control route; \code{cov = fa()}
+formula grammar stays planned. Genetic GLLVM has a bounded experimental
+three-trait, two-factor Poisson-log expert route. Neither R route is covered;
+see \code{\link[=hs_control]{hs_control()}} for the required explicit controls and limits.
 }
 \section{Current limitations}{
 
-This package is \strong{experimental} (0.8.0); \strong{0.9 is not released}; the first CRAN release is not this bump,
-not 1.0.0. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
+This package is an \strong{experimental 0.9.0 release}; it is not production or
+1.0.0, and CRAN availability is tracked separately. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
 and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
 model contract without fitting. Report point estimates only for \code{covered}
 routes; uncertainty intervals are experimental and not coverage-calibrated.
@@ -52,11 +57,13 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com}
+\strong{Maintainer}: Shinichi Nakagawa \email{itchyshin@gmail.com} (\href{https://orcid.org/0000-0002-7765-5182}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item Shinichi Nakagawa \email{itchyshin@gmail.com}
+  \item Shinichi Nakagawa \email{itchyshin@gmail.com} (\href{https://orcid.org/0000-0002-7765-5182}{ORCID}) [copyright holder]
+  \item Yefeng Yang (\href{https://orcid.org/0000-0002-8610-4016}{ORCID}) [copyright holder]
+  \item Szymon Drobniak (\href{https://orcid.org/0000-0001-8101-6247}{ORCID}) [copyright holder]
 }
 
 }

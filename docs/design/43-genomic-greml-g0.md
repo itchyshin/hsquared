@@ -7,6 +7,11 @@
 > promotion decision. Doc 44 is the frozen activation contract; this page is
 > retained verbatim except for corrections to claims known to be unsafe.
 
+> **Current 0.9 route status (2026-09-11):** the brief default-route experiment
+> described below is historical. The covered genomic-GREML claim is again
+> explicit `engine = "julia", target = "genomic"`; ordinary default fitting is
+> not genomic routing.
+
 > **Status: PROPOSAL, 2026-07-11.** The G0 start-now design for the 0.7 genomic
 > GREML covered flip (`docs/design/36-phase3-6-execution-plan.md`). Pins the
 > genomic-scale estimand, a Boole-freeze-ready dispatch grammar, and the

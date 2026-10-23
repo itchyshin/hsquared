@@ -13,7 +13,10 @@ metafounder_groups(object, ...)
 }
 \value{
 A data frame with columns \code{id}, \code{metafounder_group}, and
-\code{is_metafounder}.
+\code{is_metafounder}. Rows are \strong{animals}, keyed by \code{id}; \code{is_metafounder}
+flags animals whose unknown-parent slot carries a supplied group label,
+not metafounders themselves. The metafounders are the pseudo-populations
+that are the rows and columns of \code{\link[=gamma_matrix]{gamma_matrix()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}

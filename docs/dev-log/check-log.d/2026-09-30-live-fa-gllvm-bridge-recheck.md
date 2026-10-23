@@ -1,0 +1,8 @@
+# 2026-09-30 live FA/GLLVM bridge recheck
+
+- Command: `JULIA_DEPOT_PATH=/private/tmp/hsq-julia-depot:/Users/z3437171/.julia JULIA_PKG_PRECOMPILE_AUTO=0 HSQUARED_JULIA_PROJECT=/Users/z3437171/.codex/worktrees/hsquared-fa-gllvm-foundations/HSquared.jl HSQUARED_REQUIRE_BRIDGE=true Rscript -e 'devtools::test(filter = "fa-optin|gllvm-optin")'`.
+- Result: **213 passed, 0 failed, 0 warnings, 0 skips**, duration 24.3 seconds. JuliaCall used the exact candidate in `HSQUARED_JULIA_PROJECT`.
+- The first attempt with the default depot failed during JuliaCall setup when it could not open the shared `RCall` compiled-cache pidfile. The local writable depot retry passed; no model or bridge assertion failed in the first attempt.
+- Exact R source/test pins: `R/julia-bridge.R` `4cb8074949c8b843727cd4d6acf8ef720113967e5820f135c5170bc3496e24c2`; `R/hsquared.R` `75ba334b77c5a947e22a988b54d851075e157c7870fd6ada56d6949ca948617b`; `tests/testthat/test-fa-optin.R` `196a9962e0aa3019819eb1b12fd3bdee1b9b0d1c043170a6b66506d0ead51f35`; `tests/testthat/test-gllvm-optin.R` `a7f33d6ff78f7f3296bcf1a4eec95c735711e5af0e3de77e8532b7d0c08d4bc7`.
+- Julia source pins: `src/multivariate.jl` `fc41aefefb61b2cc915d4f802b0017dc4daea5daa795a9d3421854e9c4958670`; `src/genetic_gllvm.jl` `0727459d2f163835519ae8cf8481d2439b90ba5065cfc8d74ad2c0c08736d2ca`; `src/nongaussian.jl` `24a31752319a1c51dbded522d8e20d066227d208e71be970cb94891beb87da00`.
+- This is focused live parity evidence only. The existing full local package check is recorded separately; hosted CI, broader validation, A2, E1, and V3 remain open. No covered-count, release, submission, registry, or tag status changed.

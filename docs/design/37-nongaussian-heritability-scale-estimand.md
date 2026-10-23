@@ -1,5 +1,24 @@
 # 37 · Non-Gaussian heritability-scale estimand contract (NG-1)
 
+> **Current-state amendment (2026-09-11):** the former 0.8/PR-#173 hold text
+> below is historical. The narrow ratified three-field Poisson/Binomial
+> transport is present in the experimental **0.9.0 candidate** at public count
+> **7**, with its stated NaN varying-trial sentinel and no covered or
+> coverage-calibrated claim. This amendment does not authorize release,
+> promotion, a wider family set, or a changed scientific contract.
+
+> **A3 reconciliation (2026-09-08).** The current narrow ratified 0.9 transport
+> supersedes the former “heritability-free” implementation statement only for
+> an intercept-only `animal(1 | id, pedigree = ped)` Poisson(log) or
+> Binomial(logit) route. It returns Poisson latent/count-observation, or logit
+> latent/liability plus a numerically integrated observation h2 for Bernoulli or
+> common trials. Only varying trials return literal `NaN` with
+> `varying_trials_no_scalar_estimand`; no scalar is averaged across trials. It
+> accepts binary or `cbind` scalar/varying positive trial counts. It is
+> experimental/partial—not a REML/AI-REML, calibration, external-comparator,
+> promotion, default, or release claim. Remaining broader derivation and
+> evidence text below stays historical or deferred.
+
 > **Status: NG-2 SIGNED OFF — ratify-with-fixes (3–1), 2026-07-11.** Framework and
 > all math independently re-derived and confirmed sound (no mathematical or
 > estimand error); resolved decisions in the sign-off block below (§0a) and §6;

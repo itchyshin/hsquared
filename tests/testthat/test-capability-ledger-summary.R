@@ -74,7 +74,7 @@ test_that("a demoted capability row aborts generation", {
   )
 })
 
-test_that("no route claims an interval-reporting permission", {
+test_that("only the named default route has a directional interval claim level", {
   skip_without_generator()
   gen <- load_generator()
 
@@ -83,7 +83,57 @@ test_that("no route claims an interval-reporting permission", {
     function(x) x$interval,
     character(1)
   )
-  expect_true(all(intervals == "no"))
+  expect_identical(intervals[[1L]], "directional_conservative")
+  expect_true(all(intervals[-1L] == "no"))
+})
+
+test_that("directional interval wording is confined to the named pedigree methods", {
+  skip_without_generator()
+  gen <- load_generator()
+  routes <- gen$hs_route_table()
+  text <- paste(
+    gen$hs_build_summary(as.data.frame(validation_status())),
+    collapse = "\n"
+  )
+
+  expect_equal(
+    sum(
+      vapply(routes, `[[`, character(1), "interval") ==
+        "directional_conservative"
+    ),
+    1L
+  )
+  expect_identical(
+    routes[[1L]]$key,
+    "univariate Gaussian animal-model fit (default path, AI-REML)"
+  )
+  expect_match(text, "h2 delta/profile/bootstrap", fixed = TRUE)
+  expect_match(text, "sigma-a2 profile/bootstrap", fixed = TRUE)
+  expect_match(text, "Sigma-a2 delta/Wald is experimental-only", fixed = TRUE)
+  expect_no_match(
+    text,
+    "SNP-BLUP marker effects[\\s\\S]*directional-conservative"
+  )
+  expect_no_match(
+    text,
+    "Multivariate Gaussian animal model[\\s\\S]*directional-conservative"
+  )
+})
+
+test_that("default-route card documents the 512-animal boundary fallback", {
+  skip_without_generator()
+  gen <- load_generator()
+  text <- paste(
+    gen$hs_build_summary(as.data.frame(validation_status())),
+    collapse = "\n"
+  )
+
+  expect_match(text, "more than 512", fixed = TRUE)
+  expect_match(text, "boundary_score_unresolved", fixed = TRUE)
+  expect_match(text, "converged = FALSE", fixed = TRUE)
+  expect_match(text, 'target = "sparse_reml"', fixed = TRUE)
+  expect_match(text, "covered on the default call", fixed = TRUE)
+  expect_match(text, "does not change this route's covered", fixed = TRUE)
 })
 
 test_that("generated summary states covered/partial/planned honestly", {
@@ -97,13 +147,47 @@ test_that("generated summary states covered/partial/planned honestly", {
 
   expect_match(text, "do not edit by hand", fixed = TRUE)
   expect_match(text, "validation_status()", fixed = TRUE)
-  expect_match(text, "NOT coverage-calibrated", fixed = TRUE)
+  expect_match(text, "directional-conservative", fixed = TRUE)
+  expect_match(text, "nominally calibrated", fixed = TRUE)
   expect_match(text, "## Reader routes", fixed = TRUE)
   expect_match(text, "## Before you report", fixed = TRUE)
 
   # the words that would hide the runs-versus-validated distinction
   expect_no_match(text, "fully supported", ignore.case = TRUE)
   expect_no_match(text, "production-ready", ignore.case = TRUE)
+})
+
+test_that("common_env and permanent route snippets name the required target", {
+  skip_without_generator()
+  gen <- load_generator()
+  routes <- gen$hs_route_table()
+  calls <- vapply(routes, `[[`, character(1), "call")
+
+  common_env <- calls[grepl("common_env(", calls, fixed = TRUE)]
+  expect_length(common_env, 1L)
+  expect_match(common_env, 'target = "two_effect"', fixed = TRUE)
+
+  permanent <- calls[grepl("permanent(", calls, fixed = TRUE)]
+  expect_length(permanent, 1L)
+  expect_match(permanent, 'target = "repeatability"', fixed = TRUE)
+})
+
+test_that("the arbitrary-N card includes a multi_effect snippet", {
+  skip_without_generator()
+  gen <- load_generator()
+  routes <- gen$hs_route_table()
+  calls <- vapply(routes, `[[`, character(1), "call")
+  scopes <- vapply(routes, `[[`, character(1), "scope")
+
+  multi <- calls[grepl('target = "multi_effect"', calls, fixed = TRUE)]
+  expect_length(multi, 1L)
+  expect_match(multi, "(1 | nest)", fixed = TRUE)
+  expect_match(multi, "(1 | year)", fixed = TRUE)
+  expect_match(
+    scopes[grepl('target = "multi_effect"', calls, fixed = TRUE)],
+    "maternal-genetic plus permanent-environment combination is not",
+    fixed = TRUE
+  )
 })
 
 test_that("the committed include is in sync with validation_status()", {
