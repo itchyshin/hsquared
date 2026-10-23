@@ -15,7 +15,11 @@ test_that("claims register states covered multivariate scope after G10", {
   text <- paste(readLines(path, warn = FALSE), collapse = "\n")
 
   expect_true(
-    grepl("Covered numeric claim is scoped to k=2 unstructured", text, fixed = TRUE),
+    grepl(
+      "Covered numeric claim is scoped to k=2 unstructured",
+      text,
+      fixed = TRUE
+    ),
     info = "A4: post-G10 covered-scope sentence is unconditional"
   )
   expect_false(
@@ -23,8 +27,16 @@ test_that("claims register states covered multivariate scope after G10", {
     info = "A4: pre-flip (when flipped) conditional is gone"
   )
   expect_true(
-    grepl("| multivariate Gaussian animal model | covered (validation-scale) |", text, fixed = TRUE) ||
-      grepl("multivariate Gaussian animal model | covered (validation-scale)", text, fixed = TRUE),
+    grepl(
+      "| multivariate Gaussian animal model | covered (validation-scale) |",
+      text,
+      fixed = TRUE
+    ) ||
+      grepl(
+        "multivariate Gaussian animal model | covered (validation-scale)",
+        text,
+        fixed = TRUE
+      ),
     info = "A4: claims register status cell is covered"
   )
 })

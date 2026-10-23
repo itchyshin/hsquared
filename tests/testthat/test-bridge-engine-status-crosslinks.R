@@ -3,7 +3,13 @@
 # No Julia required. Does not flip capability rows or public_covered_count.
 
 test_that("bridge-gap design notes engine-covered V4-FA / V2-SSHINV without R flips", {
-  path <- testthat::test_path("..", "..", "docs", "design", "19-on-main-bridge-gap.md")
+  path <- testthat::test_path(
+    "..",
+    "..",
+    "docs",
+    "design",
+    "19-on-main-bridge-gap.md"
+  )
   skip_if_not(file.exists(path), "design-19 not present in the check copy")
   text <- paste(readLines(path, warn = FALSE), collapse = "\n")
 
@@ -55,7 +61,11 @@ test_that("FA eigenbasis contract notes engine V4-FA cover without R promotion",
   expect_match(text, "engine-covered", fixed = TRUE)
   expect_match(text, "60895208", fixed = TRUE)
   expect_match(text, "bounded experimental FA opt-in", fixed = TRUE)
-  expect_match(text, "R `factor-analytic G matrices` row is **partial**", fixed = TRUE)
+  expect_match(
+    text,
+    "R `factor-analytic G matrices` row is **partial**",
+    fixed = TRUE
+  )
   expect_match(text, "public_covered_count` stays **7**", fixed = TRUE)
   expect_match(text, "12-bridge-compatibility.md", fixed = TRUE)
 })

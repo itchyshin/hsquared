@@ -3532,21 +3532,29 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
 
 hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
   expected_traits <- as.character(
-    payload$metadata$trait_names %||% colnames(payload$Y) %||%
+    payload$metadata$trait_names %||%
+      colnames(payload$Y) %||%
       paste0("trait", seq_len(ncol(payload$Y)))
   )
   expected_ids <- as.character(payload$ids)
-  if (length(expected_traits) != ncol(payload$Y) ||
-      anyNA(expected_traits) || any(!nzchar(expected_traits)) ||
-      anyDuplicated(expected_traits)) {
+  if (
+    length(expected_traits) != ncol(payload$Y) ||
+      anyNA(expected_traits) ||
+      any(!nzchar(expected_traits)) ||
+      anyDuplicated(expected_traits)
+  ) {
     stop(
       "Internal bridge error: multivariate-repeatability request trait ",
       "labels must be unique, nonmissing, nonempty and match Y's columns.",
       call. = FALSE
     )
   }
-  if (length(expected_ids) == 0L || anyNA(expected_ids) ||
-      any(!nzchar(expected_ids)) || anyDuplicated(expected_ids)) {
+  if (
+    length(expected_ids) == 0L ||
+      anyNA(expected_ids) ||
+      any(!nzchar(expected_ids)) ||
+      anyDuplicated(expected_ids)
+  ) {
     stop(
       "Internal bridge error: multivariate-repeatability request animal ",
       "IDs must be unique, nonmissing and nonempty.",
@@ -3558,7 +3566,8 @@ hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
   check_labels <- function(value, expected, field) {
     if (is.null(value)) {
       stop(
-        "The Julia multivariate-repeatability result is missing `", field,
+        "The Julia multivariate-repeatability result is missing `",
+        field,
         "` labels.",
         call. = FALSE
       )
@@ -3566,14 +3575,16 @@ hs_normalize_multivariate_repeatability_result <- function(raw, payload) {
     labels <- as.character(value)
     if (anyNA(labels) || any(!nzchar(labels)) || anyDuplicated(labels)) {
       stop(
-        "The Julia multivariate-repeatability result `", field,
+        "The Julia multivariate-repeatability result `",
+        field,
         "` labels must be unique, nonmissing and nonempty.",
         call. = FALSE
       )
     }
     if (!identical(labels, expected)) {
       stop(
-        "The Julia multivariate-repeatability result `", field,
+        "The Julia multivariate-repeatability result `",
+        field,
         "` labels must match the request in the same order.",
         call. = FALSE
       )

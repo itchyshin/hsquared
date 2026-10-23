@@ -7,12 +7,20 @@
 v07_oracle_source_path <- local({
   file_arg <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
   candidates <- gsub("~+~", " ", sub("^--file=", "", file_arg), fixed = TRUE)
-  frame_files <- vapply(sys.frames(), function(frame) {
-    value <- frame$ofile
-    if (is.null(value)) "" else as.character(value[[1L]])
-  }, character(1L))
+  frame_files <- vapply(
+    sys.frames(),
+    function(frame) {
+      value <- frame$ofile
+      if (is.null(value)) "" else as.character(value[[1L]])
+    },
+    character(1L)
+  )
   candidates <- c(candidates, rev(frame_files[nzchar(frame_files)]))
-  if (!length(candidates)) NULL else normalizePath(candidates[[1L]], mustWork = TRUE)
+  if (!length(candidates)) {
+    NULL
+  } else {
+    normalizePath(candidates[[1L]], mustWork = TRUE)
+  }
 })
 
 v07_exchange_schema <- "v07-genomic-localization-exchange-v1"
@@ -80,10 +88,22 @@ v07_arm_columns <- c(
   "kernel_hash"
 )
 v07_atomic_arm_ids <- c(
-  "C100_E0", "C1000_E0", "C100_E5", "C1000_E5",
-  "S050_C100_E0", "S050_C1000_E0", "S050_C100_E5", "S050_C1000_E5",
-  "S010_C100_E0", "S010_C1000_E0", "S010_C100_E5", "S010_C1000_E5",
-  "S090_C100_E0", "S090_C1000_E0", "S090_C100_E5", "S090_C1000_E5"
+  "C100_E0",
+  "C1000_E0",
+  "C100_E5",
+  "C1000_E5",
+  "S050_C100_E0",
+  "S050_C1000_E0",
+  "S050_C100_E5",
+  "S050_C1000_E5",
+  "S010_C100_E0",
+  "S010_C1000_E0",
+  "S010_C100_E5",
+  "S010_C1000_E5",
+  "S090_C100_E0",
+  "S090_C1000_E0",
+  "S090_C100_E5",
+  "S090_C1000_E5"
 )
 v07_oracle_columns <- c(
   "phase",
@@ -142,25 +162,64 @@ v07_holdout_doc46 <- c(
 )
 v07_holdout_files <- c("K.tsv", "X.tsv", "fits.tsv", "metadata.tsv", "y.tsv")
 v07_holdout_metadata_keys <- c(
-  "schema_version", "candidate_id", "cell_id", "seed", "n", "p", "m",
-  "ridge", "marker_hash", "id_hash", "kernel_hash", "doc46_commit",
-  "doc46_sha256", "julia_boundary_impl_commit", "r_boundary_impl_commit",
-  "discovery_digest", "discovery_candidate_seal_sha256",
-  "candidate_seal_sha256", "holdout_manifest_sha256", "execution_commit",
-  "driver_sha256", "r_oracle_sha256"
+  "schema_version",
+  "candidate_id",
+  "cell_id",
+  "seed",
+  "n",
+  "p",
+  "m",
+  "ridge",
+  "marker_hash",
+  "id_hash",
+  "kernel_hash",
+  "doc46_commit",
+  "doc46_sha256",
+  "julia_boundary_impl_commit",
+  "r_boundary_impl_commit",
+  "discovery_digest",
+  "discovery_candidate_seal_sha256",
+  "candidate_seal_sha256",
+  "holdout_manifest_sha256",
+  "execution_commit",
+  "driver_sha256",
+  "r_oracle_sha256"
 )
 v07_holdout_fit_columns <- c(
-  "cell_id", "seed", "route", "converged", "termination_reason",
-  "iterations", "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
-  "profile_t_hat", "boundary_status", "boundary_epsilon", "profile_loglik",
-  "lower_derivative_per_observation", "upper_derivative_per_observation",
-  "objective", "ai_score_norm", "fd_log_gradient_norm", "runtime_seconds",
-  "marker_hash", "id_hash", "kernel_hash"
+  "cell_id",
+  "seed",
+  "route",
+  "converged",
+  "termination_reason",
+  "iterations",
+  "sigma_g2",
+  "sigma_e2",
+  "numerical_ratio",
+  "profile_ratio",
+  "profile_t_hat",
+  "boundary_status",
+  "boundary_epsilon",
+  "profile_loglik",
+  "lower_derivative_per_observation",
+  "upper_derivative_per_observation",
+  "objective",
+  "ai_score_norm",
+  "fd_log_gradient_norm",
+  "runtime_seconds",
+  "marker_hash",
+  "id_hash",
+  "kernel_hash"
 )
 v07_holdout_oracle_columns <- c(
-  "cell_id", "seed", "oracle_class", "oracle_profile_ratio", "oracle_t_hat",
-  "oracle_profile_loglik", "oracle_lower_derivative_per_observation",
-  "oracle_upper_derivative_per_observation", "oracle_sigma_g2_numerical",
+  "cell_id",
+  "seed",
+  "oracle_class",
+  "oracle_profile_ratio",
+  "oracle_t_hat",
+  "oracle_profile_loglik",
+  "oracle_lower_derivative_per_observation",
+  "oracle_upper_derivative_per_observation",
+  "oracle_sigma_g2_numerical",
   "oracle_sigma_e2_numerical"
 )
 
@@ -223,7 +282,10 @@ v07_read_tsv <- function(path) {
     }
   )
   lines <- readLines(path, warn = FALSE)
-  if (!length(lines) || !identical(lines[[1L]], paste(names(out), collapse = "\t"))) {
+  if (
+    !length(lines) ||
+      !identical(lines[[1L]], paste(names(out), collapse = "\t"))
+  ) {
     v07_stop("noncanonical TSV header in: ", path)
   }
   tokens <- if (nrow(out)) {
@@ -243,7 +305,9 @@ v07_verify_seal <- function(dataset_dir) {
   lock_path <- file.path(dataset_dir, "files.sha256.tsv")
   lock <- v07_read_tsv(lock_path)
   v07_assert_names(lock, c("relative_path", "sha256"), "files.sha256.tsv")
-  if (nrow(lock) != length(v07_sealed_files) || anyDuplicated(lock$relative_path)) {
+  if (
+    nrow(lock) != length(v07_sealed_files) || anyDuplicated(lock$relative_path)
+  ) {
     v07_stop("files.sha256.tsv must contain each sealed file exactly once")
   }
   if (!identical(lock$relative_path, v07_sealed_files)) {
@@ -384,8 +448,11 @@ v07_validate_arms <- function(arms, metadata) {
     }
   } else if (identical(phase, "holdout")) {
     indices <- match(as.character(arms$arm_id), v07_atomic_arm_ids)
-    if (anyNA(indices) || arms$arm_id[[1L]] != "C100_E0" ||
-        any(diff(indices) <= 0)) {
+    if (
+      anyNA(indices) ||
+        arms$arm_id[[1L]] != "C100_E0" ||
+        any(diff(indices) <= 0)
+    ) {
       v07_stop("holdout arms.tsv arm set or frozen order mismatch")
     }
   } else {
@@ -441,8 +508,11 @@ v07_validate_arms <- function(arms, metadata) {
     "step_halvings"
   )
   if (
-    any(vapply(arms[setdiff(integer_fields, "iterations")],
-      function(x) any(x < 0 | x != floor(x)), logical(1L))) ||
+    any(vapply(
+      arms[setdiff(integer_fields, "iterations")],
+      function(x) any(x < 0 | x != floor(x)),
+      logical(1L)
+    )) ||
       any(arms$iterations != floor(arms$iterations)) ||
       any(arms$iterations < -1)
   ) {
@@ -454,8 +524,10 @@ v07_validate_arms <- function(arms, metadata) {
       any(arms$start_sigma_g2 <= 0 | arms$start_sigma_e2 <= 0) ||
       any(arms$estimate_sigma_g2[is.finite(arms$estimate_sigma_g2)] < 0) ||
       any(arms$estimate_sigma_e2[is.finite(arms$estimate_sigma_e2)] < 0) ||
-      any(arms$estimate_ratio[is.finite(arms$estimate_ratio)] < 0 |
-          arms$estimate_ratio[is.finite(arms$estimate_ratio)] > 1) ||
+      any(
+        arms$estimate_ratio[is.finite(arms$estimate_ratio)] < 0 |
+          arms$estimate_ratio[is.finite(arms$estimate_ratio)] > 1
+      ) ||
       any(arms$smallest_component[is.finite(arms$smallest_component)] < 0) ||
       any(arms$runtime_seconds < 0 | arms$peak_rss_mb < 0)
   ) {
@@ -479,22 +551,29 @@ v07_validate_arms <- function(arms, metadata) {
     "julia_fd_log_gradient_norm",
     "smallest_component"
   )
-  if (any(success) && any(vapply(
-    arms[success_finite],
-    function(x) any(!is.finite(x[success])),
-    logical(1L)
-  ))) {
+  if (
+    any(success) &&
+      any(vapply(
+        arms[success_finite],
+        function(x) any(!is.finite(x[success])),
+        logical(1L)
+      ))
+  ) {
     v07_stop("successful arm contains a non-finite required diagnostic")
   }
   failed <- !success
   if (any(failed)) {
-    if (any(arms$termination_reason[failed] %in% c("", "converged")) ||
-        any(arms$error_class[failed] == "none")) {
+    if (
+      any(arms$termination_reason[failed] %in% c("", "converged")) ||
+        any(arms$error_class[failed] == "none")
+    ) {
       v07_stop("failed arm lacks a fail-closed termination/error class")
     }
     prefit <- arms$termination_reason == "exception"
-    if (any(arms$iterations == -1 & !prefit) ||
-        any(prefit & arms$iterations != -1)) {
+    if (
+      any(arms$iterations == -1 & !prefit) ||
+        any(prefit & arms$iterations != -1)
+    ) {
       v07_stop("iterations=-1 is reserved for pre-fit exceptions")
     }
   }
@@ -529,8 +608,10 @@ v07_read_exchange <- function(dataset_dir) {
   }
   X_frame <- v07_read_tsv(file.path(dataset_dir, "X.tsv"))
   K_frame <- v07_read_tsv(file.path(dataset_dir, "K.tsv"))
-  if (!identical(as.integer(X_frame$row), seq_len(nrow(X_frame))) ||
-      !identical(as.integer(K_frame$row), seq_len(nrow(K_frame)))) {
+  if (
+    !identical(as.integer(X_frame$row), seq_len(nrow(X_frame))) ||
+      !identical(as.integer(K_frame$row), seq_len(nrow(K_frame)))
+  ) {
     v07_stop("X.tsv or K.tsv row index drift")
   }
   X <- v07_numeric_matrix(X_frame[-1L], "X.tsv")
@@ -741,7 +822,8 @@ v07_classify_oracle <- function(y, X, K, reverse_kkt = FALSE) {
     abs(candidates_ll[["upper"]] - candidates_ll[["interior"]]) <= tie_tol
   class <- "oracle_unresolved"
   if (
-    !endpoint_pair_tie && !lower_interior_tie &&
+    !endpoint_pair_tie &&
+      !lower_interior_tie &&
       candidates_ll[["lower"]] + tie_tol >=
         max(candidates_ll[c("interior", "upper")]) &&
       lower_kkt
@@ -749,7 +831,8 @@ v07_classify_oracle <- function(y, X, K, reverse_kkt = FALSE) {
     class <- "lower_boundary"
     ratio <- 0
   } else if (
-    !endpoint_pair_tie && !upper_interior_tie &&
+    !endpoint_pair_tie &&
+      !upper_interior_tie &&
       candidates_ll[["upper"]] + tie_tol >=
         max(candidates_ll[c("lower", "interior")]) &&
       upper_kkt
@@ -844,7 +927,9 @@ v07_build_oracle_rows <- function(exchange) {
     "lower_derivative_per_observation",
     "upper_derivative_per_observation"
   )
-  if (any(vapply(out[always_finite], function(x) any(!is.finite(x)), logical(1L)))) {
+  if (
+    any(vapply(out[always_finite], function(x) any(!is.finite(x)), logical(1L)))
+  ) {
     v07_stop("independent oracle produced a non-finite dataset diagnostic")
   }
   arm_diagnostics <- c(
@@ -852,12 +937,17 @@ v07_build_oracle_rows <- function(exchange) {
     "objective_gap_per_observation",
     "oracle_fd_log_gradient_norm"
   )
-  if (any(!failed) && any(vapply(
-    out[arm_diagnostics],
-    function(x) any(!is.finite(x[!failed])),
-    logical(1L)
-  ))) {
-    v07_stop("independent oracle produced a non-finite successful-arm diagnostic")
+  if (
+    any(!failed) &&
+      any(vapply(
+        out[arm_diagnostics],
+        function(x) any(!is.finite(x[!failed])),
+        logical(1L)
+      ))
+  ) {
+    v07_stop(
+      "independent oracle produced a non-finite successful-arm diagnostic"
+    )
   }
   out
 }
@@ -883,9 +973,11 @@ v07_format_token <- function(x) {
 
 v07_write_oracle_table <- function(x, path) {
   raw_tokens <- attr(x, "v07_raw_tokens")
-  if (is.null(raw_tokens) ||
+  if (
+    is.null(raw_tokens) ||
       nrow(raw_tokens) != nrow(x) ||
-      ncol(raw_tokens) != length(v07_arm_columns)) {
+      ncol(raw_tokens) != length(v07_arm_columns)
+  ) {
     v07_stop("oracle output is missing the byte-exact raw arm tokens")
   }
   con <- file(path, open = "wb")
@@ -893,7 +985,11 @@ v07_write_oracle_table <- function(x, path) {
   writeLines(paste(v07_oracle_columns, collapse = "\t"), con, sep = "\n")
   for (i in seq_len(nrow(x))) {
     suffix <- vapply(
-      x[i, (length(v07_arm_columns) + 1L):length(v07_oracle_columns), drop = FALSE],
+      x[
+        i,
+        (length(v07_arm_columns) + 1L):length(v07_oracle_columns),
+        drop = FALSE
+      ],
       function(value) v07_format_token(value[[1L]]),
       character(1L)
     )
@@ -970,11 +1066,14 @@ v07_compare_output <- function(actual, expected, tolerance = 1e-12) {
   }
   actual_tokens <- attr(actual, "v07_tokens")
   expected_tokens <- attr(expected, "v07_raw_tokens")
-  if (!is.null(actual_tokens) && !is.null(expected_tokens) &&
+  if (
+    !is.null(actual_tokens) &&
+      !is.null(expected_tokens) &&
       !identical(
         actual_tokens[, seq_along(v07_arm_columns), drop = FALSE],
         expected_tokens
-      )) {
+      )
+  ) {
     v07_stop("oracle output changed or reordered byte-exact raw arm fields")
   }
   numeric <- names(expected)[vapply(expected, is.numeric, logical(1L))]
@@ -1025,8 +1124,11 @@ v07_holdout_verify_seal <- function(dataset_dir) {
   lock_path <- file.path(dataset_dir, "files.sha256.tsv")
   lock <- v07_read_tsv(lock_path)
   v07_assert_names(lock, c("relative_path", "sha256"), "files.sha256.tsv")
-  if (nrow(lock) != length(v07_holdout_files) || anyDuplicated(lock$relative_path) ||
-      !identical(lock$relative_path, v07_holdout_files)) {
+  if (
+    nrow(lock) != length(v07_holdout_files) ||
+      anyDuplicated(lock$relative_path) ||
+      !identical(lock$relative_path, v07_holdout_files)
+  ) {
     v07_stop("doc46 sealed file set or order mismatch")
   }
   actual_files <- sort(basename(list.files(dataset_dir, full.names = TRUE)))
@@ -1051,38 +1153,68 @@ v07_holdout_verify_seal <- function(dataset_dir) {
 v07_holdout_read_metadata <- function(path) {
   x <- v07_read_tsv(path)
   v07_assert_names(x, c("key", "value"), "doc46 metadata.tsv")
-  if (nrow(x) != length(v07_holdout_metadata_keys) || anyDuplicated(x$key) ||
-      !identical(x$key, v07_holdout_metadata_keys) || any(!nzchar(x$value))) {
+  if (
+    nrow(x) != length(v07_holdout_metadata_keys) ||
+      anyDuplicated(x$key) ||
+      !identical(x$key, v07_holdout_metadata_keys) ||
+      any(!nzchar(x$value))
+  ) {
     v07_stop("doc46 metadata key set, order, or value mismatch")
   }
   out <- stats::setNames(x$value, x$key)
-  if (!identical(out[["schema_version"]], v07_holdout_schema) ||
+  if (
+    !identical(out[["schema_version"]], v07_holdout_schema) ||
       !identical(out[["candidate_id"]], v07_holdout_candidate_id) ||
       !identical(out[["doc46_commit"]], v07_holdout_doc46[["commit"]]) ||
-      !identical(out[["doc46_sha256"]], v07_holdout_doc46[["sha256"]])) {
+      !identical(out[["doc46_sha256"]], v07_holdout_doc46[["sha256"]])
+  ) {
     v07_stop("doc46 frozen schema, candidate, or document identity mismatch")
   }
   hash_keys <- c(
-    "marker_hash", "id_hash", "kernel_hash", "doc46_sha256",
-    "discovery_digest", "discovery_candidate_seal_sha256",
-    "candidate_seal_sha256", "holdout_manifest_sha256", "driver_sha256",
+    "marker_hash",
+    "id_hash",
+    "kernel_hash",
+    "doc46_sha256",
+    "discovery_digest",
+    "discovery_candidate_seal_sha256",
+    "candidate_seal_sha256",
+    "holdout_manifest_sha256",
+    "driver_sha256",
     "r_oracle_sha256"
   )
   commit_keys <- c(
-    "doc46_commit", "julia_boundary_impl_commit", "r_boundary_impl_commit",
+    "doc46_commit",
+    "julia_boundary_impl_commit",
+    "r_boundary_impl_commit",
     "execution_commit"
   )
-  if (any(!grepl("^[0-9a-f]{64}$", out[hash_keys])) ||
-      any(!grepl("^[0-9a-f]{40}$", out[commit_keys]))) {
+  if (
+    any(!grepl("^[0-9a-f]{64}$", out[hash_keys])) ||
+      any(!grepl("^[0-9a-f]{40}$", out[commit_keys]))
+  ) {
     v07_stop("doc46 metadata contains an invalid hash or commit")
   }
-  if (!is.null(v07_oracle_source_path) &&
-      out[["r_oracle_sha256"]] != v07_sha256_file(v07_oracle_source_path)) {
+  if (
+    !is.null(v07_oracle_source_path) &&
+      out[["r_oracle_sha256"]] != v07_sha256_file(v07_oracle_source_path)
+  ) {
     v07_stop("doc46 metadata r_oracle_sha256 does not match this oracle")
   }
-  numeric <- suppressWarnings(as.numeric(out[c("seed", "n", "p", "m", "ridge")]))
-  if (any(!is.finite(numeric)) || numeric[[2L]] < 2 || numeric[[3L]] < 1 ||
-      numeric[[3L]] >= numeric[[2L]] || numeric[[4L]] < 1 || numeric[[5L]] != 0.01) {
+  numeric <- suppressWarnings(as.numeric(out[c(
+    "seed",
+    "n",
+    "p",
+    "m",
+    "ridge"
+  )]))
+  if (
+    any(!is.finite(numeric)) ||
+      numeric[[2L]] < 2 ||
+      numeric[[3L]] < 1 ||
+      numeric[[3L]] >= numeric[[2L]] ||
+      numeric[[4L]] < 1 ||
+      numeric[[5L]] != 0.01
+  ) {
     v07_stop("doc46 metadata contains invalid n/p/m/ridge values")
   }
   out
@@ -1090,8 +1222,13 @@ v07_holdout_read_metadata <- function(path) {
 
 v07_holdout_validate_fits <- function(fits, metadata) {
   v07_assert_names(fits, v07_holdout_fit_columns, "doc46 fits.tsv")
-  if (nrow(fits) != 2L ||
-      !identical(as.character(fits$route), c("default_ai", "boundary_candidate"))) {
+  if (
+    nrow(fits) != 2L ||
+      !identical(
+        as.character(fits$route),
+        c("default_ai", "boundary_candidate")
+      )
+  ) {
     v07_stop("doc46 fits.tsv must contain default_ai then boundary_candidate")
   }
   for (field in c("cell_id", "seed", "marker_hash", "id_hash", "kernel_hash")) {
@@ -1105,60 +1242,112 @@ v07_holdout_validate_fits <- function(fits, metadata) {
   }
   fits$converged <- logical == "true"
   numeric_fields <- c(
-    "iterations", "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
-    "profile_t_hat", "boundary_epsilon", "profile_loglik",
-    "lower_derivative_per_observation", "upper_derivative_per_observation",
-    "objective", "ai_score_norm", "fd_log_gradient_norm", "runtime_seconds"
+    "iterations",
+    "sigma_g2",
+    "sigma_e2",
+    "numerical_ratio",
+    "profile_ratio",
+    "profile_t_hat",
+    "boundary_epsilon",
+    "profile_loglik",
+    "lower_derivative_per_observation",
+    "upper_derivative_per_observation",
+    "objective",
+    "ai_score_norm",
+    "fd_log_gradient_norm",
+    "runtime_seconds"
   )
-  for (field in numeric_fields) fits[[field]] <- suppressWarnings(as.numeric(fits[[field]]))
-  if (any(!is.finite(fits$iterations)) || any(fits$iterations < -1) ||
+  for (field in numeric_fields) {
+    fits[[field]] <- suppressWarnings(as.numeric(fits[[field]]))
+  }
+  if (
+    any(!is.finite(fits$iterations)) ||
+      any(fits$iterations < -1) ||
       any(fits$iterations != floor(fits$iterations)) ||
-      any(!is.finite(fits$runtime_seconds)) || any(fits$runtime_seconds < 0) ||
+      any(!is.finite(fits$runtime_seconds)) ||
+      any(fits$runtime_seconds < 0) ||
       any(!is.finite(fits$boundary_epsilon)) ||
-      any(fits$boundary_epsilon != v07_holdout_epsilon)) {
+      any(fits$boundary_epsilon != v07_holdout_epsilon)
+  ) {
     v07_stop("doc46 fits.tsv contains an invalid counter, runtime, or epsilon")
   }
   if (!identical(as.character(fits$boundary_status[[1L]]), "not_classified")) {
     v07_stop("doc46 default fit must be not_classified")
   }
   default_missing <- c(
-    "profile_ratio", "profile_t_hat", "profile_loglik",
-    "lower_derivative_per_observation", "upper_derivative_per_observation"
+    "profile_ratio",
+    "profile_t_hat",
+    "profile_loglik",
+    "lower_derivative_per_observation",
+    "upper_derivative_per_observation"
   )
-  if (any(vapply(fits[1L, default_missing, drop = FALSE],
-    function(x) !is.na(x[[1L]]), logical(1L)))) {
+  if (
+    any(vapply(
+      fits[1L, default_missing, drop = FALSE],
+      function(x) !is.na(x[[1L]]),
+      logical(1L)
+    ))
+  ) {
     v07_stop("doc46 default fit contains classified profile fields")
   }
   allowed <- c(
-    "boundary_lower", "boundary_upper", "interior", "interior_rescued",
+    "boundary_lower",
+    "boundary_upper",
+    "interior",
+    "interior_rescued",
     "boundary_unresolved"
   )
   status <- as.character(fits$boundary_status[[2L]])
-  if (!status %in% allowed) v07_stop("doc46 candidate boundary_status is invalid")
+  if (!status %in% allowed) {
+    v07_stop("doc46 candidate boundary_status is invalid")
+  }
   resolved <- status != "boundary_unresolved"
   candidate_fields <- c(
-    "sigma_g2", "sigma_e2", "numerical_ratio", "profile_ratio",
-    "profile_t_hat", "profile_loglik", "lower_derivative_per_observation",
-    "upper_derivative_per_observation", "objective", "ai_score_norm",
+    "sigma_g2",
+    "sigma_e2",
+    "numerical_ratio",
+    "profile_ratio",
+    "profile_t_hat",
+    "profile_loglik",
+    "lower_derivative_per_observation",
+    "upper_derivative_per_observation",
+    "objective",
+    "ai_score_norm",
     "fd_log_gradient_norm"
   )
-  if (resolved && any(!is.finite(unlist(fits[2L, candidate_fields, drop = FALSE])))) {
+  if (
+    resolved &&
+      any(!is.finite(unlist(fits[2L, candidate_fields, drop = FALSE])))
+  ) {
     v07_stop("resolved doc46 candidate contains a non-finite field")
   }
-  if (resolved && (!fits$converged[[2L]] || fits$sigma_g2[[2L]] <= 0 ||
-      fits$sigma_e2[[2L]] <= 0 || fits$numerical_ratio[[2L]] <= 0 ||
-      fits$numerical_ratio[[2L]] >= 1)) {
-    v07_stop("resolved doc46 candidate violates the positive numerical contract")
+  if (
+    resolved &&
+      (!fits$converged[[2L]] ||
+        fits$sigma_g2[[2L]] <= 0 ||
+        fits$sigma_e2[[2L]] <= 0 ||
+        fits$numerical_ratio[[2L]] <= 0 ||
+        fits$numerical_ratio[[2L]] >= 1)
+  ) {
+    v07_stop(
+      "resolved doc46 candidate violates the positive numerical contract"
+    )
   }
   if (status == "boundary_unresolved" && fits$converged[[2L]]) {
     v07_stop("unresolved doc46 candidate cannot be converged")
   }
-  if (status == "boundary_lower" && (fits$profile_ratio[[2L]] != 0 ||
-      abs(fits$numerical_ratio[[2L]] - v07_holdout_epsilon) > 1e-15)) {
+  if (
+    status == "boundary_lower" &&
+      (fits$profile_ratio[[2L]] != 0 ||
+        abs(fits$numerical_ratio[[2L]] - v07_holdout_epsilon) > 1e-15)
+  ) {
     v07_stop("lower-boundary scientific/numerical ratio mismatch")
   }
-  if (status == "boundary_upper" && (fits$profile_ratio[[2L]] != 1 ||
-      abs(fits$numerical_ratio[[2L]] - (1 - v07_holdout_epsilon)) > 1e-15)) {
+  if (
+    status == "boundary_upper" &&
+      (fits$profile_ratio[[2L]] != 1 ||
+        abs(fits$numerical_ratio[[2L]] - (1 - v07_holdout_epsilon)) > 1e-15)
+  ) {
     v07_stop("upper-boundary scientific/numerical ratio mismatch")
   }
   fits
@@ -1172,27 +1361,39 @@ v07_read_holdout_exchange <- function(dataset_dir) {
   v07_assert_names(y_frame, c("row", "y"), "doc46 y.tsv")
   X_frame <- v07_read_tsv(file.path(dataset_dir, "X.tsv"))
   K_frame <- v07_read_tsv(file.path(dataset_dir, "K.tsv"))
-  n <- as.integer(metadata[["n"]]); p <- as.integer(metadata[["p"]])
-  if (!identical(as.integer(y_frame$row), seq_len(nrow(y_frame))) ||
+  n <- as.integer(metadata[["n"]])
+  p <- as.integer(metadata[["p"]])
+  if (
+    !identical(as.integer(y_frame$row), seq_len(nrow(y_frame))) ||
       !identical(as.integer(X_frame$row), seq_len(nrow(X_frame))) ||
-      !identical(as.integer(K_frame$row), seq_len(nrow(K_frame)))) {
+      !identical(as.integer(K_frame$row), seq_len(nrow(K_frame)))
+  ) {
     v07_stop("doc46 y/X/K row index drift")
   }
   y <- suppressWarnings(as.numeric(y_frame$y))
   X <- v07_numeric_matrix(X_frame[-1L], "doc46 X.tsv")
   K <- v07_numeric_matrix(K_frame[-1L], "doc46 K.tsv")
-  if (length(y) != n || any(!is.finite(y)) || nrow(X) != n || ncol(X) != p ||
-      nrow(K) != n || ncol(K) != n ||
+  if (
+    length(y) != n ||
+      any(!is.finite(y)) ||
+      nrow(X) != n ||
+      ncol(X) != p ||
+      nrow(K) != n ||
+      ncol(K) != n ||
       !identical(colnames(X), paste0("x", seq_len(p))) ||
-      !identical(colnames(K), paste0("k", seq_len(n)))) {
+      !identical(colnames(K), paste0("k", seq_len(n)))
+  ) {
     v07_stop("doc46 y/X/K schema or dimension mismatch")
   }
   if (qr(X)$rank != p || max(abs(K - t(K))) > 1e-12) {
     v07_stop("doc46 X rank or K symmetry check failed")
   }
-  tryCatch(chol(K), error = function(e) v07_stop("doc46 K is not positive definite"))
+  tryCatch(chol(K), error = function(e) {
+    v07_stop("doc46 K is not positive definite")
+  })
   fits <- v07_holdout_validate_fits(
-    v07_read_tsv(file.path(dataset_dir, "fits.tsv")), metadata
+    v07_read_tsv(file.path(dataset_dir, "fits.tsv")),
+    metadata
   )
   list(y = y, X = X, K = K, fits = fits, metadata = metadata, seal = seal)
 }
@@ -1200,16 +1401,21 @@ v07_read_holdout_exchange <- function(dataset_dir) {
 v07_build_holdout_oracle <- function(exchange) {
   oracle <- v07_classify_oracle(exchange$y, exchange$X, exchange$K)
   class <- c(
-    lower_boundary = "boundary_lower", upper_boundary = "boundary_upper",
-    interior_oracle = "interior_oracle", oracle_unresolved = "oracle_unresolved"
+    lower_boundary = "boundary_lower",
+    upper_boundary = "boundary_upper",
+    interior_oracle = "interior_oracle",
+    oracle_unresolved = "oracle_unresolved"
   )[[oracle$class]]
   t_hat <- oracle$sigma_g2 + oracle$sigma_e2
   if (class == "boundary_lower") {
-    sg <- v07_holdout_epsilon * t_hat; se <- (1 - v07_holdout_epsilon) * t_hat
+    sg <- v07_holdout_epsilon * t_hat
+    se <- (1 - v07_holdout_epsilon) * t_hat
   } else if (class == "boundary_upper") {
-    sg <- (1 - v07_holdout_epsilon) * t_hat; se <- v07_holdout_epsilon * t_hat
+    sg <- (1 - v07_holdout_epsilon) * t_hat
+    se <- v07_holdout_epsilon * t_hat
   } else {
-    sg <- oracle$sigma_g2; se <- oracle$sigma_e2
+    sg <- oracle$sigma_g2
+    se <- oracle$sigma_e2
   }
   data.frame(
     cell_id = exchange$metadata[["cell_id"]],
@@ -1235,17 +1441,33 @@ v07_write_holdout_oracle <- function(x, output) {
   dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
   tmp <- tempfile(paste0(".", basename(output), "."), tmpdir = dirname(output))
   on.exit(unlink(tmp), add = TRUE)
-  utils::write.table(x, tmp, sep = "\t", quote = FALSE, row.names = FALSE,
-    na = "NaN")
+  utils::write.table(
+    x,
+    tmp,
+    sep = "\t",
+    quote = FALSE,
+    row.names = FALSE,
+    na = "NaN"
+  )
   if (file.exists(output) || !file.rename(tmp, output)) {
     v07_stop("atomic create-once doc46 oracle output failed")
   }
   lock <- data.frame(sha256 = v07_sha256_file(output), file = basename(output))
-  lock_tmp <- tempfile(paste0(".", basename(sidecar), "."), tmpdir = dirname(output))
+  lock_tmp <- tempfile(
+    paste0(".", basename(sidecar), "."),
+    tmpdir = dirname(output)
+  )
   on.exit(unlink(lock_tmp), add = TRUE)
-  utils::write.table(lock, lock_tmp, sep = "\t", quote = FALSE, row.names = FALSE)
+  utils::write.table(
+    lock,
+    lock_tmp,
+    sep = "\t",
+    quote = FALSE,
+    row.names = FALSE
+  )
   if (file.exists(sidecar) || !file.rename(lock_tmp, sidecar)) {
-    unlink(output); v07_stop("atomic create-once doc46 oracle sidecar failed")
+    unlink(output)
+    v07_stop("atomic create-once doc46 oracle sidecar failed")
   }
   invisible(output)
 }
@@ -1253,16 +1475,26 @@ v07_write_holdout_oracle <- function(x, output) {
 v07_verify_holdout_oracle <- function(output, expected, tolerance = 1e-12) {
   v07_verify_output_sidecar(output)
   actual <- v07_read_tsv(output)
-  v07_assert_names(actual, v07_holdout_oracle_columns, "saved doc46 oracle output")
-  if (nrow(actual) != 1L || !identical(as.character(actual$cell_id), expected$cell_id) ||
-      !identical(as.character(actual$oracle_class), expected$oracle_class)) {
+  v07_assert_names(
+    actual,
+    v07_holdout_oracle_columns,
+    "saved doc46 oracle output"
+  )
+  if (
+    nrow(actual) != 1L ||
+      !identical(as.character(actual$cell_id), expected$cell_id) ||
+      !identical(as.character(actual$oracle_class), expected$oracle_class)
+  ) {
     v07_stop("doc46 oracle identity or class mismatch")
   }
   numeric <- setdiff(v07_holdout_oracle_columns, c("cell_id", "oracle_class"))
   for (field in numeric) {
-    a <- suppressWarnings(as.numeric(actual[[field]])); e <- expected[[field]]
-    if (any(is.na(a) != is.na(e)) ||
-        any(abs(a[is.finite(e)] - e[is.finite(e)]) > tolerance)) {
+    a <- suppressWarnings(as.numeric(actual[[field]]))
+    e <- expected[[field]]
+    if (
+      any(is.na(a) != is.na(e)) ||
+        any(abs(a[is.finite(e)] - e[is.finite(e)]) > tolerance)
+    ) {
       v07_stop("doc46 oracle numeric mismatch in ", field)
     }
   }

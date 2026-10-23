@@ -393,10 +393,14 @@ test_that("single-marker GWAS uses each OLS residual mean square", {
   )
 
   actual <- hsquared:::hs_gwas_single_ols_residual_mse(y, X, markers)
-  expected <- vapply(seq_len(ncol(markers)), function(j) {
-    fit <- stats::lm.fit(cbind(X, markers[, j] - mean(markers[, j])), y)
-    sum(fit$residuals^2) / (length(y) - fit$rank)
-  }, numeric(1L))
+  expected <- vapply(
+    seq_len(ncol(markers)),
+    function(j) {
+      fit <- stats::lm.fit(cbind(X, markers[, j] - mean(markers[, j])), y)
+      sum(fit$residuals^2) / (length(y) - fit$rank)
+    },
+    numeric(1L)
+  )
 
   expect_equal(actual, expected)
   expect_false(isTRUE(all.equal(actual, rep(1, ncol(markers)))))
@@ -618,7 +622,10 @@ test_that("genome-wide calibration metadata: permutation_addone allows NA empiri
     package_version = "0.0.0.9000",
     validation_reference = "HSquared.jl REBUILD gate: type-I 0.0504/0.0542 at alpha=0.05"
   )
-  cal <- hsquared:::hs_validate_gwas_calibration_metadata(base, scan_method = "single")
+  cal <- hsquared:::hs_validate_gwas_calibration_metadata(
+    base,
+    scan_method = "single"
+  )
   expect_true(is.na(cal$empirical_type1))
   expect_identical(cal$calibration_method, "permutation_addone")
   expect_true(nzchar(cal$validation_reference))
@@ -627,7 +634,10 @@ test_that("genome-wide calibration metadata: permutation_addone allows NA empiri
   bad <- base
   bad$validation_reference <- NULL
   expect_error(
-    hsquared:::hs_validate_gwas_calibration_metadata(bad, scan_method = "single"),
+    hsquared:::hs_validate_gwas_calibration_metadata(
+      bad,
+      scan_method = "single"
+    ),
     "validation_reference"
   )
 
@@ -636,7 +646,10 @@ test_that("genome-wide calibration metadata: permutation_addone allows NA empiri
   fixed$calibration_method <- "fixed_panel_simulation"
   fixed$empirical_type1 <- NA_real_
   expect_error(
-    hsquared:::hs_validate_gwas_calibration_metadata(fixed, scan_method = "single"),
+    hsquared:::hs_validate_gwas_calibration_metadata(
+      fixed,
+      scan_method = "single"
+    ),
     "empirical_type1"
   )
 })
@@ -704,7 +717,8 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
   )
 
   g <- gwas(
-    fit, M,
+    fit,
+    M,
     marker_ids = paste0("m", 1:4),
     method = "single",
     genome_wide = TRUE,
