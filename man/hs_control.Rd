@@ -288,6 +288,12 @@ surfaces the Julia-owned \code{HSquared.fit_multivariate_reml()} REML-only
 optimizer, and returns G/R covariance matrices, genetic and residual
 correlations, per-trait heritability, and cross-trait breeding values.
 Three or more traits and structured covariance are experimental.
+The multivariate fitter uses \code{iterations = 2000} by default. An
+unstructured model with three or more traits has six or more genetic
+covariance parameters and can stop at that cap with \code{converged = FALSE};
+the heritability is then not an estimate and must not be reported. Retry
+with a larger cap, for example
+\code{engine_control = list(target = "multivariate", iterations = 10000)}.
 \code{genetic_structure} accepts \code{"unstructured"}, \code{"diagonal"}, and a bounded
 \code{"factor_analytic"} opt-in. \code{"diagonal"} fixes off-diagonal genetic
 covariances at zero. FA requires exactly four complete Gaussian traits,
