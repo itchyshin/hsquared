@@ -1,5 +1,7 @@
 # hsquared (development version)
 
+* hsquared#296 (docs): the inheritance-systems article shows the working Julia `HSquared.fit_multi_effect()` call for a twin ACE model (kernel plus pair effect). `relmat()` still cannot combine with `(1 | pair)` or `common_env()` in R; that formula-layer change stays open. No behaviour change.
+
 * hsquared#299: random-regression fits warn when sd(y) is outside 0.1 to 10; the engine half is still open in HSquared.jl, no covered flip.
 
 * **hsquared#266 (performance): pedigree Julia routes carry `1 + F` to the
