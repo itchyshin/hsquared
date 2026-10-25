@@ -170,13 +170,16 @@ variance_components(fit_k)
 heritability(fit_k) # Va / (Va + Ve) on the ridged kernel
 ```
 
-The Julia engine does fit the twin ACE model: `HSquared.fit_multi_effect()`
+The Julia engine can fit a twin ACE model outside R: `HSquared.fit_multi_effect()`
 takes the kernel and the pair effect as two independent random effects, each
-a `(Z, Ainv)` pair. Only the R formula layer is missing (`relmat()` cannot
-yet be combined with `(1 | pair)` or `common_env()`; hsquared#296). The call
-below is the way to get A, C and E from a custom kernel today. It is run from
-Julia, not from R, and is shown unevaluated here. The kernel is ridged for the
-same reason as above, so the printed E again carries the `1e-6 * Va` shift.
+a `(Z, Ainv)` pair. This route is experimental. On the full twinbmi data
+(n = 8,542) it returned `converged = false` (HSquared.jl#426), so treat it as
+unvalidated for real twin data. In R, `relmat()` cannot yet be combined with
+`(1 | pair)` or `common_env()` (hsquared#296), so there is no supported R route
+for ACE from a custom kernel. The snippet below is a smoke test of the call on
+small simulated data (150 pairs). It is run from Julia, not from R, and is
+shown unevaluated here. The kernel is ridged for the same reason as above, so
+the printed E again carries the `1e-6 * Va` shift.
 
 ```julia
 using HSquared, LinearAlgebra, SparseArrays, Random

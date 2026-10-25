@@ -422,14 +422,11 @@ test_that("relmat docs name dimnames, singular MZ kernels, and the live target",
   expect_match(article_text, "Va / (Va + Ve)", fixed = TRUE)
   expect_match(article_text, "ACE twin model", fixed = TRUE)
   expect_match(article_text, "not available from R", fixed = TRUE)
-  # hsquared#296: the article shows the working Julia route for twin ACE.
+  # hsquared#296: the article shows the Julia call for twin ACE, with the
+  # HSquared.jl#426 convergence caveat.
   expect_match(article_text, "HSquared.fit_multi_effect", fixed = TRUE)
   expect_match(article_text, "Zpair", fixed = TRUE)
-  expect_match(article_text, "Only the R formula layer is missing", fixed = TRUE)
-  # hsquared#296: the article shows the working Julia route for twin ACE.
-  expect_match(article_text, "HSquared.fit_multi_effect", fixed = TRUE)
-  expect_match(article_text, "Zpair", fixed = TRUE)
-  expect_match(article_text, "Only the R formula layer is missing", fixed = TRUE)
+  expect_match(article_text, "HSquared.jl#426", fixed = TRUE)
 
   rd <- testthat::test_path("..", "..", "man", "hs_control.Rd")
   skip_if_not(file.exists(rd), "man/hs_control.Rd not present")
