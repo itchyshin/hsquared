@@ -79,8 +79,8 @@ sample-frequency, unweighted VanRaden method
 construction method, allele-frequency base, ridge, and denominator remain
 unknown. The returned coefficient is labelled
 `genomic_variance_ratio` on the declared relationship scale, not ordinary
-pedigree heritability; genomic ratio intervals and standard errors are not
-available.
+pedigree heritability; the genomic ratio SE and interval are experimental,
+`K_lambda`-labelled, coverage-untested, and refused at a boundary fit.
 
 Other later markers also remain opt-in experimental (the supplied-`Hinv` and
 constructed-`Hinv` `single_step()` paths, `permanent()`, `common_env()`, and

@@ -74,7 +74,11 @@ edge): that is an interior-point approximation. The likelihood-ratio
 test of \code{V_A = 0} uses a 50:50 mixture of \verb{chi^2_0} and \verb{chi^2_1}
 (Self and Liang 1987; Stram and Lee 1994). R \code{anova()} does not run it;
 Julia \code{HSquared.nested_lrt(..., df = 1, boundary_df = 1)} already does.
-Genomic fits still error (scale-labelled interval not
-validated). The underlying estimators \code{V3-TWOEFFECT-REML} /
+On the opt-in genomic route (\code{target = "genomic"}) the interval is for the
+genomic variance ratio \code{sigma_g2 / (sigma_g2 + sigma_e2)} on the declared
+relationship scale (\code{K_lambda}); the returned frame carries \code{term},
+\code{component}, and \code{relationship_scale} columns so it cannot be read as a
+pedigree or population heritability. It errors at a genomic boundary fit.
+Its coverage has not been tested. The underlying estimators \code{V3-TWOEFFECT-REML} /
 \code{V3-NEFFECT-REML} are \code{covered}, but this \strong{interval} is not.
 }
