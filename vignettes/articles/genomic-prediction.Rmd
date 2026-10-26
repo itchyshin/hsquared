@@ -139,8 +139,12 @@ compatibility but labels the coefficient `genomic_variance_ratio` on
 the user. It is not generally an average marginal phenotypic-variance fraction
 and is not pedigree-, founder-base-, population-, or universal narrow-sense
 heritability.
-Genomic `heritability_interval()` and `heritability_standard_error()` are
-unavailable until a scale-labelled interval contract is separately validated.
+Genomic `heritability_interval()` and `heritability_standard_error()` return
+the engine's average-information REML standard error and logit-delta interval
+for that ratio, labelled with `component = "genomic_variance_ratio"` and
+`relationship_scale = "K_lambda"`. They are experimental: coverage has not been
+tested, the SE refers to the `K = G + 0.01 I` parametrisation, and both error
+at a genomic boundary fit.
 The covered narrow GREML route remains validation-scale only: the sealed
 boundary candidate failed its runtime gate, the nine-cell campaign did not run,
 and production-scale genomic validation is not complete. Those are remaining

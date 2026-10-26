@@ -809,42 +809,82 @@ test_that("genomic boundary metadata distinguishes endpoint from MME representat
   )
 })
 
-test_that("genomic ratio keeps term compatibility and fences uncertainty", {
-  fit <- structure(
-    list(
-      spec = list(target = "genomic"),
-      result = list(
-        heritability = data.frame(
-          term = "genomic",
-          component = "genomic_variance_ratio",
-          estimate = 0.4,
-          relationship_scale = "K_lambda",
-          relationship_source = "markers",
-          relationship_method = "vanraden1",
-          allele_frequency_source = "sample",
-          ridge = 0.01
-        ),
-        heritability_interval = data.frame(lower = 0.2, upper = 0.6),
-        heritability_se = 0.1
-      )
-    ),
+genomic_ratio_fixture <- function(boundary = NULL, se = TRUE, interval = TRUE) {
+  result <- list(
+    heritability = data.frame(
+      term = "genomic",
+      component = "genomic_variance_ratio",
+      estimate = 0.4,
+      relationship_scale = "K_lambda",
+      relationship_source = "markers",
+      relationship_method = "vanraden1",
+      allele_frequency_source = "sample",
+      ridge = 0.01
+    )
+  )
+  if (interval) {
+    result$heritability_interval <- data.frame(
+      estimate = 0.4,
+      lower = 0.2,
+      upper = 0.6,
+      level = 0.95,
+      se = 0.1,
+      method = "delta_logit"
+    )
+  }
+  if (se) {
+    result$heritability_se <- 0.1
+  }
+  result$genomic_boundary <- boundary
+  structure(
+    list(spec = list(target = "genomic"), result = result),
     class = "hsquared_fit"
   )
+}
+
+test_that("genomic ratio SE and interval carry the relationship-scale label (#294)", {
+  fit <- genomic_ratio_fixture()
 
   out <- heritability(fit)
   expect_equal(out$term, "genomic")
   expect_equal(out$component, "genomic_variance_ratio")
   expect_equal(out$relationship_scale, "K_lambda")
-  expect_error(
-    heritability_interval(fit),
-    "not available for genomic fits",
-    fixed = TRUE
+
+  se <- heritability_standard_error(fit)
+  expect_s3_class(se, "data.frame")
+  expect_equal(se$term, "genomic")
+  expect_equal(se$se, 0.1)
+  expect_equal(se$component, "genomic_variance_ratio")
+  expect_equal(se$relationship_scale, "K_lambda")
+  # still merges with heritability() on `term`
+  expect_equal(nrow(merge(heritability(fit), se, by = "term")), 1L)
+
+  hi <- heritability_interval(fit)
+  expect_equal(c(hi$lower, hi$upper), c(0.2, 0.6))
+  expect_equal(hi$term, "genomic")
+  expect_equal(hi$component, "genomic_variance_ratio")
+  expect_equal(hi$relationship_scale, "K_lambda")
+})
+
+test_that("genomic ratio SE and interval are refused at a boundary fit (#294)", {
+  boundary <- list(
+    status = "boundary_lower",
+    profile_ratio = 0,
+    numerical_ratio = 1e-9
   )
-  expect_error(
-    heritability_standard_error(fit),
-    "not available for genomic fits",
-    fixed = TRUE
-  )
+  fit <- genomic_ratio_fixture(boundary = boundary)
+  expect_error(heritability_standard_error(fit), "boundary", fixed = TRUE)
+  expect_error(heritability_interval(fit), "boundary", fixed = TRUE)
+
+  interior <- genomic_ratio_fixture(boundary = list(status = "interior"))
+  expect_equal(heritability_standard_error(interior)$se, 0.1)
+  expect_equal(heritability_interval(interior)$lower, 0.2)
+})
+
+test_that("genomic ratio SE and interval error plainly when the engine omitted them (#294)", {
+  fit <- genomic_ratio_fixture(se = FALSE, interval = FALSE)
+  expect_error(heritability_standard_error(fit), "does not contain")
+  expect_error(heritability_interval(fit), "does not contain")
 })
 
 test_that("the genomic target fixture pins VanRaden GBLUP and SNP-BLUP routes", {

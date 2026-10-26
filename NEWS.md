@@ -1,5 +1,14 @@
 # hsquared (development version)
 
+* **hsquared#294: genomic ratio SE and interval are no longer fenced.**
+  `heritability_standard_error()` and `heritability_interval()` now return the
+  engine's average-information REML SE and logit-delta interval for the
+  `target = "genomic"` variance ratio, labelled with `component =
+  "genomic_variance_ratio"` and `relationship_scale = "K_lambda"`. They error
+  at a genomic boundary fit (the Wald form does not apply there). Experimental:
+  coverage has not been tested; no covered flip. Still open: an R-level
+  REML log-likelihood at supplied variance components for this route.
+
 * hsquared#299: random-regression fits warn when sd(y) is outside 0.1 to 10; the engine half is still open in HSquared.jl, no covered flip.
 
 * **hsquared#266 (performance): pedigree Julia routes carry `1 + F` to the

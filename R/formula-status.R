@@ -394,8 +394,9 @@ hs_formula_status_behavior <- function() {
       "default `engine = \"fit\"` path: ordinary-call / default-route genomic",
       "activation remains held (design-44 G5; BOUNDARY_HOLDOUT_FAIL). The",
       "explicit model requires engine = \"julia\", target = \"genomic\". The",
-      "coefficient-scale result is labelled `genomic_variance_ratio`; interval",
-      "and SE accessors are unavailable. Covered at validation scale (0.7),",
+      "coefficient-scale result is labelled `genomic_variance_ratio`; the ratio",
+      "SE and interval accessors return it on the `K_lambda` scale (experimental,",
+      "coverage untested). Covered at validation scale (0.7),",
       "experimental; public_covered_count remains 7."
     ),
     paste(
@@ -404,7 +405,8 @@ hs_formula_status_behavior <- function() {
       "NOT on the default `engine = \"fit\"` path: ordinary-call genomic",
       "activation remains held. Use target = \"genomic\"; target = \"snp_blup\"",
       "remains opt-in. The coefficient-scale result is labelled",
-      "`genomic_variance_ratio`; interval and SE accessors are unavailable.",
+      "`genomic_variance_ratio`; the ratio SE and interval accessors return it",
+      "on the `K_lambda` scale (experimental, coverage untested).",
       "Covered at validation scale (0.7), experimental; public_covered_count",
       "remains 7."
     ),
