@@ -4920,6 +4920,8 @@ hs_fit_julia_genomic_payload <- function(
       result$prediction_error_variance <- NULL
       result$reliability <- NULL
       result$variance_component_se <- NULL
+      result$heritability_se <- NULL
+      result$heritability_interval <- NULL
     }
   }
   fit <- hs_new_fit(

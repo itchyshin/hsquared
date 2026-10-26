@@ -1258,8 +1258,12 @@ hs_reject_unused_dots <- function(dots, fn) {
 #' test of `V_A = 0` uses a 50:50 mixture of `chi^2_0` and `chi^2_1`
 #' (Self and Liang 1987; Stram and Lee 1994). R `anova()` does not run it;
 #' Julia `HSquared.nested_lrt(..., df = 1, boundary_df = 1)` already does.
-#' Genomic fits still error (scale-labelled interval not
-#' validated). The underlying estimators `V3-TWOEFFECT-REML` /
+#' On the opt-in genomic route (`target = "genomic"`) the interval is for the
+#' genomic variance ratio `sigma_g2 / (sigma_g2 + sigma_e2)` on the declared
+#' relationship scale (`K_lambda`); the returned frame carries `term`,
+#' `component`, and `relationship_scale` columns so it cannot be read as a
+#' pedigree or population heritability. It errors at a genomic boundary fit.
+#' Its coverage has not been tested. The underlying estimators `V3-TWOEFFECT-REML` /
 #' `V3-NEFFECT-REML` are `covered`, but this **interval** is not.
 #'
 #' @inheritParams variance_components
@@ -1287,19 +1291,58 @@ heritability_interval.default <- function(object, ...) {
 heritability_interval.hsquared_fit <- function(object, ...) {
   hs_reject_unused_dots(list(...), "`heritability_interval()`")
   hs_warn_if_unusable_fit(object, what = "heritability-interval")
-  if (hs_fit_is_genomic(object)) {
-    stop(
-      "`heritability_interval()` is not available for genomic fits. The ",
-      "genomic variance ratio is defined on the declared relationship scale; ",
-      "a scale-labelled, calibrated interval has not been validated.",
-      call. = FALSE
-    )
+  genomic <- hs_fit_is_genomic(object)
+  if (genomic) {
+    hs_stop_if_genomic_boundary(object, "heritability_interval")
   }
-  hs_fit_result(
+  out <- hs_fit_result(
     object,
     "heritability_interval",
     "an experimental heritability confidence interval"
   )
+  if (genomic) {
+    out <- hs_label_genomic_ratio(object, out)
+  }
+  out
+}
+
+# Genomic ratio uncertainty (hsquared#294). The engine's AI-REML SE and the
+# logit-delta interval are for sigma_g2 / (sigma_g2 + sigma_e2) on the declared
+# relationship scale (K_lambda), so the returned frame names that scale. At a
+# genomic variance-component boundary the Wald form does not apply: refuse.
+hs_stop_if_genomic_boundary <- function(object, what) {
+  status <- object$result$genomic_boundary$status
+  if (
+    is.character(status) &&
+      length(status) == 1L &&
+      status %in% c("boundary_lower", "boundary_upper")
+  ) {
+    stop(
+      "`", what, "()` is not available for this genomic fit: the ratio is at ",
+      "a variance-component boundary (", status, "), where the Wald ",
+      "standard error and logit-delta interval do not apply. See ",
+      "`fit_diagnostics()` and `summary()` for the boundary classification.",
+      call. = FALSE
+    )
+  }
+  invisible(NULL)
+}
+
+hs_label_genomic_ratio <- function(object, out) {
+  h2 <- object$result$heritability
+  if (!is.data.frame(h2) || nrow(h2) < 1L) {
+    return(out)
+  }
+  row <- h2[1L, , drop = FALSE]
+  if (!"term" %in% names(out) && "term" %in% names(row)) {
+    out$term <- as.character(row$term)
+  }
+  for (nm in c("component", "relationship_scale")) {
+    if (nm %in% names(row) && !nm %in% names(out)) {
+      out[[nm]] <- as.character(row[[nm]])
+    }
+  }
+  out
 }
 
 #' Extract experimental variance-component and heritability standard errors
@@ -1395,19 +1438,20 @@ heritability_standard_error.default <- function(object, ...) {
 #' @export
 heritability_standard_error.hsquared_fit <- function(object, ...) {
   hs_warn_if_unusable_fit(object, what = "heritability standard-error")
-  if (hs_fit_is_genomic(object)) {
-    stop(
-      "`heritability_standard_error()` is not available for genomic fits. ",
-      "A scale-labelled genomic-ratio standard error has not been validated.",
-      call. = FALSE
-    )
+  genomic <- hs_fit_is_genomic(object)
+  if (genomic) {
+    hs_stop_if_genomic_boundary(object, "heritability_standard_error")
   }
   se <- hs_fit_result(
     object,
     "heritability_se",
     "an experimental heritability standard error"
   )
-  hs_as_heritability_se_frame(object, se)
+  out <- hs_as_heritability_se_frame(object, se)
+  if (genomic) {
+    out <- hs_label_genomic_ratio(object, out)
+  }
+  out
 }
 
 # Public SE shape for heritability (hsquared#236): always `data.frame(term, se)`,
@@ -2532,11 +2576,18 @@ NULL
 
 hs_interval_sibling_hint <- function(object) {
   if (hs_fit_is_genomic(object)) {
+    if (!is.null(object$result$heritability_interval)) {
+      return(paste0(
+        "Use the experimental `heritability_interval()` extractor for the ",
+        "genomic variance ratio on the `K_lambda` scale ",
+        "(not coverage-calibrated)."
+      ))
+    }
     return(paste0(
-      "`heritability_interval()` is not available for genomic fits ",
-      "(no scale-labelled, calibrated interval). ",
-      "`variance_component_standard_errors()` is experimental and only ",
-      "present when the engine returned it."
+      "`heritability_interval()` is not available for genomic fits without ",
+      "an engine-returned ratio interval (for example at a genomic ",
+      "boundary). `variance_component_standard_errors()` is experimental ",
+      "and only present when the engine returned it."
     ))
   }
   if (hs_fit_is_random_regression(object)) {

@@ -193,7 +193,8 @@ those the `n ≤ ~1000` stays a recommendation only.
   supplied `Ginv` construction is unknown. `heritability()` returns the
   genomic variance-component ratio `sigma_g2 / (sigma_g2 + sigma_e2)` on
   the declared relationship scale, not generally pedigree or population
-  h². Interval/SE accessors are unavailable. The nine-cell recovery
+  h². Ratio SE/interval accessors are experimental and `K_lambda`-labelled
+  (coverage untested). The nine-cell recovery
   campaign is confirmatory history and is not claimed PASS here.
   Single-step stays **opt-in partial**; SNP-BLUP stays opt-in experimental.
 - Common environment: `animal(1 | id) + common_env(1 | group)`,
