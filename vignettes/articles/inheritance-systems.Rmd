@@ -170,6 +170,49 @@ variance_components(fit_k)
 heritability(fit_k) # Va / (Va + Ve) on the ridged kernel
 ```
 
+The Julia engine can fit a twin ACE model outside R: `HSquared.fit_multi_effect()`
+takes the kernel and the pair effect as two independent random effects, each
+a `(Z, Ainv)` pair. This route is experimental. On the full twinbmi data
+(n = 8,542) it returned `converged = false` (HSquared.jl#426), so treat it as
+unvalidated for real twin data. In R, `relmat()` cannot yet be combined with
+`(1 | pair)` or `common_env()` (hsquared#296), so there is no supported R route
+for ACE from a custom kernel. The snippet below is a smoke test of the call on
+small simulated data (150 pairs). It is run from Julia, not from R, and is
+shown unevaluated here. The kernel is ridged for the same reason as above, so
+the printed E again carries the `1e-6 * Va` shift.
+
+```julia
+using HSquared, LinearAlgebra, SparseArrays, Random
+
+Random.seed!(1)
+npair = 150
+zyg = [i <= 75 ? :MZ : :DZ for i in 1:npair]
+n = 2 * npair
+pair = repeat(1:npair, inner = 2)
+K = Matrix{Float64}(I, n, n)
+for p in 1:npair
+    i = 2p - 1
+    K[i, i+1] = K[i+1, i] = zyg[p] == :MZ ? 1.0 : 0.5
+end
+Kridge = K + 1e-6 * I
+Zpair = sparse(1:n, pair, 1.0, n, npair)
+a = cholesky(Symmetric(Kridge)).L * randn(n) * sqrt(0.6)
+c = Zpair * (randn(npair) * sqrt(0.2))
+y = 1.0 .+ a .+ c .+ randn(n) * sqrt(0.4)
+X = ones(n, 1)
+Ainv_K = sparse(inv(Symmetric(Kridge)))
+effects = [(sparse(1.0I, n, n), Ainv_K), (Zpair, sparse(1.0I, npair, npair))]
+fit = HSquared.fit_multi_effect(y, X, effects; method = :auto, verbose = false)
+println(fit.variance_components)
+println(fit.converged, " ", fit.loglik)
+```
+
+`fit.variance_components.sigmas` holds A and C in the order the effects were
+listed, and `fit.variance_components.sigma_e2` holds E. The data above are
+simulated, so the numbers are only a smoke test of the call, not a twin
+analysis. In a real MZ/DZ study `K` has 1 between MZ co-twins and 0.5 between
+DZ co-twins, and `Zpair` indexes the shared pair environment.
+
 ## Planned inheritance systems
 
 Other systems are roadmap examples rather than exported syntax:

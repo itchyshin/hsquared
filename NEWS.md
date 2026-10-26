@@ -8,6 +8,7 @@
   at a genomic boundary fit (the Wald form does not apply there). Experimental:
   coverage has not been tested; no covered flip. Still open: an R-level
   REML log-likelihood at supplied variance components for this route.
+* hsquared#296 (docs): the inheritance-systems article shows the Julia `HSquared.fit_multi_effect()` call for a twin ACE model (kernel plus pair effect) as an experimental smoke test, with the HSquared.jl#426 convergence caveat. `relmat()` still cannot combine with `(1 | pair)` or `common_env()` in R; that formula-layer change stays open. No behaviour change.
 
 * hsquared#299: random-regression fits warn when sd(y) is outside 0.1 to 10; the engine half is still open in HSquared.jl, no covered flip.
 
