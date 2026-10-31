@@ -114,6 +114,41 @@ test_that("skip_pev_reliability must be a single TRUE/FALSE (#266)", {
   expect_true(hsquared:::hs_validate_skip_pev_reliability(TRUE))
 })
 
+test_that("a skipped payload normalizes to NULL PEV/reliability, not an error (#266)", {
+  # The shape a lean engine payload has: no prediction_error_variance or
+  # reliability field at all.
+  raw <- list(
+    variance_components = list(sigma_a2 = 0.5, sigma_e2 = 0.5),
+    heritability = 0.5,
+    breeding_values = list(ids = c("a", "b"), values = c(0.1, -0.1)),
+    random_effects = list(
+      animal = list(ids = c("a", "b"), values = c(0.1, -0.1))
+    ),
+    fixed_effects = 10,
+    loglik = -3,
+    df = 1L,
+    nobs = 2L,
+    predictions = c(10.1, 9.9),
+    diagnostics = list(),
+    converged = TRUE
+  )
+  payload <- list(metadata = list(fixed_colnames = "(Intercept)"))
+  result <- expect_no_error(
+    hsquared:::hs_normalize_julia_result(raw, payload)
+  )
+  result <- hsquared:::hs_mark_skipped_pev_reliability(result, TRUE)
+  expect_null(result$prediction_error_variance)
+  expect_null(result$reliability)
+  expect_null(result$breeding_values_plot_data)
+  expect_true(result$diagnostics$skip_pev_reliability)
+  expect_identical(result$breeding_values$value, c(0.1, -0.1))
+
+  # A default fit is never marked.
+  expect_null(
+    hsquared:::hs_mark_skipped_pev_reliability(list(), FALSE)$diagnostics
+  )
+})
+
 test_that("skip_pev_reliability is honoured only by the pedigree routes (#266)", {
   ctrl <- hs_control(
     engine = "julia",
