@@ -1,0 +1,13 @@
+key,value
+engine,HSquared.jl
+engine_commit,8f58b13a616ef27a982bff4f2eff8f9558b39b86
+engine_version,0.9.0
+julia_version,1.12.6
+route,fit_ai_reml
+h2,0.5786504738865665
+h2_se,0.34849100053485615
+loglik,-48.98028358429103
+converged,true
+n_records,30
+n_animals,30
+n_inbred,4
