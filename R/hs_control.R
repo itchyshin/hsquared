@@ -24,18 +24,20 @@
 #' @param engine_control A named list for engine-specific controls. The current
 #'   experimental Julia bridge recognizes `julia_project`, `initial`,
 #'   `iterations`, `em_warmup`, `target`, `variance_components`, `marginal`,
-#'   `max_dense_cells`, `scale_method`, `genetic_structure`, `rank`, and
-#'   `experimental_gllvm`.
+#'   `max_dense_cells`, `scale_method`, `genetic_structure`, `rank`,
+#'   `experimental_gllvm`, and `skip_pev_reliability`.
 #'   `julia_project` is honoured by every `target`; supplying a key a given
 #'   `target` does not honour errors (hsquared#212) rather than being
 #'   silently ignored. Per-target honoured keys (besides `julia_project`):
-#'   * `fit_animal_model` (default): `initial`, `max_dense_cells`.
+#'   * `fit_animal_model` (default): `initial`, `max_dense_cells`,
+#'     `skip_pev_reliability`.
 #'   * `henderson_mme`, `metafounder`, `snp_blup`: `variance_components`.
-#'   * `ai_reml`: `initial`, `iterations`, `em_warmup`.
+#'   * `ai_reml`: `initial`, `iterations`, `em_warmup`,
+#'     `skip_pev_reliability`.
 #'   * `sparse_reml`, `two_effect`, `direct_maternal`,
 #'     `genomic`, `single_step`, `single_step_construct`,
 #'     `metafounder_single_step`, `relmat`, `precision`: `initial`,
-#'     `iterations`.
+#'     `iterations` (`sparse_reml` also `skip_pev_reliability`).
 #'   * `repeatability`: `initial`, `iterations`, `max_dense_cells`,
 #'     `scale_method`.
 #'   * `multi_effect`: `initial`, `iterations`, `scale_method`. Both the
@@ -147,6 +149,16 @@
 #'   default) is byte-identical to the previous behaviour. A small positive value
 #'   (e.g. `3`) can rescue convergence from poor starting variances; on an
 #'   identified fit it converges to the same optimum.
+#'   `skip_pev_reliability` (a single `TRUE`/`FALSE`, default `FALSE`) is an
+#'   opt-in for large pedigrees on the default `engine = "fit"` path and the
+#'   `fit_animal_model`, `sparse_reml`, and `ai_reml` targets: with `TRUE` the
+#'   engine skips prediction error variances and reliability (and the
+#'   breeding-value plot data, which needs PEV), so `prediction_error_variance()`,
+#'   `reliability()`, and `accuracy()` error with a hint to refit. Estimates,
+#'   breeding values, and standard errors are unchanged. It needs an HSquared.jl
+#'   whose `result_payload()` has the `skip_pev_reliability` keyword; an older
+#'   engine errors rather than fitting eagerly. `FALSE` (the default) sends the
+#'   same engine call as before.
 #'   `target = "repeatability"` is an experimental, opt-in path for the
 #'   repeatability (permanent-environment) model. It requires
 #'   `animal(1 | id, pedigree = ped) + permanent(1 | id)` in the formula and

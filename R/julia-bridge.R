@@ -40,6 +40,49 @@ hs_julia_pedigree_diag_cmd <- paste(
   "else NamedTuple(); end;"
 )
 
+# #266 (option 1): `engine_control$skip_pev_reliability = TRUE` asks the
+# engine's `result_payload` to skip PEV and reliability, the costliest
+# post-fit step on large pedigrees. The default (FALSE) sends the unchanged
+# eager command. An engine without the keyword is an error, never a silent
+# eager fit.
+hs_julia_result_payload_cmd <- function(skip_pev_reliability = FALSE) {
+  if (!skip_pev_reliability) {
+    return("hsq_result = HSquared.result_payload(hsq_fit);")
+  }
+  paste(
+    "any(m -> :skip_pev_reliability in Base.kwarg_decl(m),",
+    "methods(HSquared.result_payload)) ||",
+    "error(\"`skip_pev_reliability = TRUE` needs an HSquared.jl whose",
+    "`result_payload` has the `skip_pev_reliability` keyword. Update the",
+    "HSquared.jl checkout, or drop `skip_pev_reliability` from",
+    "`engine_control`.\");",
+    "hsq_result = HSquared.result_payload(hsq_fit; skip_pev_reliability = true);"
+  )
+}
+
+# Record the opt-out so `reliability()` / `prediction_error_variance()` can say
+# why the slot is empty. A default fit is left untouched.
+hs_mark_skipped_pev_reliability <- function(result, skip_pev_reliability) {
+  if (skip_pev_reliability) {
+    result$diagnostics$skip_pev_reliability <- TRUE
+  }
+  result
+}
+
+hs_validate_skip_pev_reliability <- function(skip_pev_reliability) {
+  if (
+    !is.logical(skip_pev_reliability) ||
+      length(skip_pev_reliability) != 1L ||
+      is.na(skip_pev_reliability)
+  ) {
+    stop(
+      "`engine_control$skip_pev_reliability` must be a single TRUE/FALSE value.",
+      call. = FALSE
+    )
+  }
+  skip_pev_reliability
+}
+
 # The recording `catch` of one guarded post-fit call; `name` is the engine
 # function that threw, as the warning reports it:
 #   catch err; hsq_bridge_errors["<name>"] = sprint(showerror, err); nothing; end;
@@ -73,7 +116,9 @@ hs_julia_surface_bridge_errors <- function(fit) {
   hs_attach_bridge_errors(fit, hs_julia_read_bridge_errors())
 }
 
-hs_julia_attach_standard_plot_data <- function() {
+# `breeding_values = FALSE` (skip_pev_reliability, #266) leaves out the
+# breeding-value plot data, which computes PEV.
+hs_julia_attach_standard_plot_data <- function(breeding_values = TRUE) {
   JuliaCall::julia_command(paste(
     "if isdefined(HSquared, :variance_components_plot_data);",
     hs_julia_try_slot(
@@ -86,16 +131,20 @@ hs_julia_attach_standard_plot_data <- function() {
     "variance_components_plot_data = hsq_vcpd,));",
     "end;",
     "end;",
-    "if isdefined(HSquared, :breeding_values_plot_data);",
-    hs_julia_try_slot(
-      "hsq_bvpd",
-      "HSquared.breeding_values_plot_data(hsq_fit)",
-      "breeding_values_plot_data"
-    ),
-    "if hsq_bvpd !== nothing;",
-    "hsq_result = merge(hsq_result, (breeding_values_plot_data = hsq_bvpd,));",
-    "end;",
-    "end;"
+    if (breeding_values) {
+      paste(
+        "if isdefined(HSquared, :breeding_values_plot_data);",
+        hs_julia_try_slot(
+          "hsq_bvpd",
+          "HSquared.breeding_values_plot_data(hsq_fit)",
+          "breeding_values_plot_data"
+        ),
+        "if hsq_bvpd !== nothing;",
+        "hsq_result = merge(hsq_result, (breeding_values_plot_data = hsq_bvpd,));",
+        "end;",
+        "end;"
+      )
+    }
   ))
   invisible(TRUE)
 }
@@ -154,7 +203,8 @@ hs_fit_julia_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
-  max_dense_cells = 1e6
+  max_dense_cells = 1e6,
+  skip_pev_reliability = FALSE
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -169,6 +219,7 @@ hs_fit_julia_payload <- function(
 
   hs_julia_setup(project)
   initial <- hs_validate_initial_variances(initial)
+  skip_pev_reliability <- hs_validate_skip_pev_reliability(skip_pev_reliability)
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign(
     "hsq_mdc",
@@ -187,27 +238,33 @@ hs_fit_julia_payload <- function(
       "sigma_e2 = hsq_initial_sigma_e2),",
       "max_dense_cells = Int(hsq_mdc)",
       ");",
-      "hsq_result = HSquared.result_payload(hsq_fit);",
+      hs_julia_result_payload_cmd(skip_pev_reliability),
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
       # re-merging would clobber that standard field with a redundant :auto solve.
-      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-      "isdefined(HSquared, :prediction_error_variance) &&",
-      "isdefined(HSquared, :reliability);",
-      "hsq_result = merge(hsq_result, (",
-      "prediction_error_variance =",
-      "HSquared.prediction_error_variance(hsq_fit),",
-      "reliability = HSquared.reliability(hsq_fit)));",
-      "end;"
+      # skip_pev_reliability (#266) leaves them out on purpose.
+      if (!skip_pev_reliability) {
+        paste(
+          "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+          "isdefined(HSquared, :prediction_error_variance) &&",
+          "isdefined(HSquared, :reliability);",
+          "hsq_result = merge(hsq_result, (",
+          "prediction_error_variance =",
+          "HSquared.prediction_error_variance(hsq_fit),",
+          "reliability = HSquared.reliability(hsq_fit)));",
+          "end;"
+        )
+      }
     )),
     hint = hs_dense_route_hint
   )
-  hs_julia_attach_standard_plot_data()
+  hs_julia_attach_standard_plot_data(breeding_values = !skip_pev_reliability)
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
   result <- hs_normalize_julia_result(raw, payload)
+  result <- hs_mark_skipped_pev_reliability(result, skip_pev_reliability)
   fit <- hs_new_fit(
     spec = list(
       method = payload$method,
@@ -397,7 +454,8 @@ hs_fit_julia_sparse_reml_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
-  iterations = 1000L
+  iterations = 1000L,
+  skip_pev_reliability = FALSE
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -411,6 +469,7 @@ hs_fit_julia_sparse_reml_payload <- function(
   }
 
   initial <- hs_validate_initial_variances(initial)
+  skip_pev_reliability <- hs_validate_skip_pev_reliability(skip_pev_reliability)
   iterations <- hs_validate_iterations(iterations)
   hs_julia_setup(project)
   hs_julia_assign_payload(payload, initial)
@@ -429,31 +488,37 @@ hs_fit_julia_sparse_reml_payload <- function(
       "initial = (sigma_a2 = hsq_initial_sigma_a2,",
       "sigma_e2 = hsq_initial_sigma_e2),",
       "iterations = hsq_iterations);",
-      "hsq_result = HSquared.result_payload(hsq_fit);",
+      hs_julia_result_payload_cmd(skip_pev_reliability),
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
       # re-merging would clobber that standard field with a redundant :auto solve.
-      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-      "isdefined(HSquared, :prediction_error_variance) &&",
-      "isdefined(HSquared, :reliability) &&",
-      "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
-      "applicable(HSquared.reliability, hsq_fit);",
-      "hsq_result = merge(hsq_result, (",
-      "prediction_error_variance =",
-      "HSquared.prediction_error_variance(hsq_fit),",
-      "reliability = HSquared.reliability(hsq_fit)));",
-      "end;",
+      # skip_pev_reliability (#266) leaves them out on purpose.
+      if (!skip_pev_reliability) {
+        paste(
+          "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+          "isdefined(HSquared, :prediction_error_variance) &&",
+          "isdefined(HSquared, :reliability) &&",
+          "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
+          "applicable(HSquared.reliability, hsq_fit);",
+          "hsq_result = merge(hsq_result, (",
+          "prediction_error_variance =",
+          "HSquared.prediction_error_variance(hsq_fit),",
+          "reliability = HSquared.reliability(hsq_fit)));",
+          "end;"
+        )
+      },
       hs_julia_merge_inference_slots()
     )),
     hint = hs_dense_scale_hint
   )
-  hs_julia_attach_standard_plot_data()
+  hs_julia_attach_standard_plot_data(breeding_values = !skip_pev_reliability)
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
   result <- hs_normalize_julia_result(raw, payload)
   result$diagnostics$variance_components <- "estimated_sparse_reml"
+  result <- hs_mark_skipped_pev_reliability(result, skip_pev_reliability)
   fit <- hs_new_fit(
     spec = list(
       # fit_sparse_reml is a REML-only optimizer; stamp what was computed
@@ -474,7 +539,8 @@ hs_fit_julia_ai_reml_payload <- function(
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
   iterations = 100L,
-  em_warmup = 0L
+  em_warmup = 0L,
+  skip_pev_reliability = FALSE
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -488,6 +554,7 @@ hs_fit_julia_ai_reml_payload <- function(
   }
 
   initial <- hs_validate_initial_variances(initial)
+  skip_pev_reliability <- hs_validate_skip_pev_reliability(skip_pev_reliability)
   iterations <- hs_validate_iterations(iterations)
   em_warmup <- hs_validate_em_warmup(em_warmup)
   hs_julia_setup(project)
@@ -510,31 +577,37 @@ hs_fit_julia_ai_reml_payload <- function(
       # em_warmup (engine V1-AI-REML): opt-in EM-REML warm-start before the AI step;
       # default 0 = byte-identical to the pre-warm-start engine call.
       "iterations = hsq_iterations, em_warmup = hsq_em_warmup);",
-      "hsq_result = HSquared.result_payload(hsq_fit);",
+      hs_julia_result_payload_cmd(skip_pev_reliability),
       # Enrich with PEV/reliability only for older engines whose result_payload
       # does not already carry them; current engines emit them via :selinv, and
       # re-merging would clobber that standard field with a redundant :auto solve.
-      "if !hasproperty(hsq_result, :prediction_error_variance) &&",
-      "isdefined(HSquared, :prediction_error_variance) &&",
-      "isdefined(HSquared, :reliability) &&",
-      "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
-      "applicable(HSquared.reliability, hsq_fit);",
-      "hsq_result = merge(hsq_result, (",
-      "prediction_error_variance =",
-      "HSquared.prediction_error_variance(hsq_fit),",
-      "reliability = HSquared.reliability(hsq_fit)));",
-      "end;",
+      # skip_pev_reliability (#266) leaves them out on purpose.
+      if (!skip_pev_reliability) {
+        paste(
+          "if !hasproperty(hsq_result, :prediction_error_variance) &&",
+          "isdefined(HSquared, :prediction_error_variance) &&",
+          "isdefined(HSquared, :reliability) &&",
+          "applicable(HSquared.prediction_error_variance, hsq_fit) &&",
+          "applicable(HSquared.reliability, hsq_fit);",
+          "hsq_result = merge(hsq_result, (",
+          "prediction_error_variance =",
+          "HSquared.prediction_error_variance(hsq_fit),",
+          "reliability = HSquared.reliability(hsq_fit)));",
+          "end;"
+        )
+      },
       hs_julia_merge_inference_slots()
     )),
     hint = hs_dense_scale_hint
   )
-  hs_julia_attach_standard_plot_data()
+  hs_julia_attach_standard_plot_data(breeding_values = !skip_pev_reliability)
 
   raw <- JuliaCall::julia_eval(
     "Dict(String(k) => getfield(hsq_result, k) for k in keys(hsq_result))"
   )
   result <- hs_normalize_julia_result(raw, payload)
   result$diagnostics$variance_components <- "estimated_ai_reml"
+  result <- hs_mark_skipped_pev_reliability(result, skip_pev_reliability)
   fit <- hs_new_fit(
     spec = list(
       # fit_ai_reml is a REML-only (average-information) optimizer; stamp what
@@ -5934,11 +6007,11 @@ hs_validate_direct_maternal_initial <- function(initial) {
 # are not repeated in the table below. Call once per `hsquared()` Julia
 # dispatch, before any `hs_fit_julia_*_payload` builder runs.
 hs_engine_control_honoured_keys <- list(
-  fit_animal_model = c("initial", "max_dense_cells"),
+  fit_animal_model = c("initial", "max_dense_cells", "skip_pev_reliability"),
   henderson_mme = "variance_components",
   metafounder = "variance_components",
-  sparse_reml = c("initial", "iterations"),
-  ai_reml = c("initial", "iterations", "em_warmup"),
+  sparse_reml = c("initial", "iterations", "skip_pev_reliability"),
+  ai_reml = c("initial", "iterations", "em_warmup", "skip_pev_reliability"),
   repeatability = c("initial", "iterations", "max_dense_cells", "scale_method"),
   two_effect = c("initial", "iterations"),
   # multi_effect forwards initial/iterations on both dense and auto routes.

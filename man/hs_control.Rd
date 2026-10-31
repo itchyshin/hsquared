@@ -36,19 +36,21 @@ the advanced opt-in bridge with explicit \code{target} control.}
 \item{engine_control}{A named list for engine-specific controls. The current
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
-\code{max_dense_cells}, \code{scale_method}, \code{genetic_structure}, \code{rank}, and
-\code{experimental_gllvm}.
+\code{max_dense_cells}, \code{scale_method}, \code{genetic_structure}, \code{rank},
+\code{experimental_gllvm}, and \code{skip_pev_reliability}.
 \code{julia_project} is honoured by every \code{target}; supplying a key a given
 \code{target} does not honour errors (hsquared#212) rather than being
 silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \itemize{
-\item \code{fit_animal_model} (default): \code{initial}, \code{max_dense_cells}.
+\item \code{fit_animal_model} (default): \code{initial}, \code{max_dense_cells},
+\code{skip_pev_reliability}.
 \item \code{henderson_mme}, \code{metafounder}, \code{snp_blup}: \code{variance_components}.
-\item \code{ai_reml}: \code{initial}, \code{iterations}, \code{em_warmup}.
+\item \code{ai_reml}: \code{initial}, \code{iterations}, \code{em_warmup},
+\code{skip_pev_reliability}.
 \item \code{sparse_reml}, \code{two_effect}, \code{direct_maternal},
 \code{genomic}, \code{single_step}, \code{single_step_construct},
 \code{metafounder_single_step}, \code{relmat}, \code{precision}: \code{initial},
-\code{iterations}.
+\code{iterations} (\code{sparse_reml} also \code{skip_pev_reliability}).
 \item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells},
 \code{scale_method}.
 \item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method}. Both the
@@ -160,6 +162,16 @@ default \code{engine = "fit"} path and \code{target = "ai_reml"}. \code{em_warmu
 default) is byte-identical to the previous behaviour. A small positive value
 (e.g. \code{3}) can rescue convergence from poor starting variances; on an
 identified fit it converges to the same optimum.
+\code{skip_pev_reliability} (a single \code{TRUE}/\code{FALSE}, default \code{FALSE}) is an
+opt-in for large pedigrees on the default \code{engine = "fit"} path and the
+\code{fit_animal_model}, \code{sparse_reml}, and \code{ai_reml} targets: with \code{TRUE} the
+engine skips prediction error variances and reliability (and the
+breeding-value plot data, which needs PEV), so \code{prediction_error_variance()},
+\code{reliability()}, and \code{accuracy()} error with a hint to refit. Estimates,
+breeding values, and standard errors are unchanged. It needs an HSquared.jl
+whose \code{result_payload()} has the \code{skip_pev_reliability} keyword; an older
+engine errors rather than fitting eagerly. \code{FALSE} (the default) sends the
+same engine call as before.
 \code{target = "repeatability"} is an experimental, opt-in path for the
 repeatability (permanent-environment) model. It requires
 \code{animal(1 | id, pedigree = ped) + permanent(1 | id)} in the formula and
