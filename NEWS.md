@@ -1,5 +1,12 @@
 # hsquared (development version)
 
+* **hsquared#266 (performance): the dense and supplied-variance pedigree
+  routes also carry `1 + F`.** `engine = "julia"` with no target
+  (`fit_animal_model`) and `target = "henderson_mme"` now pass the inbreeding
+  diagonal too, so their `reliability()` no longer runs a selected inverse of
+  `Ainv`. Reliability is unchanged. Making PEV/reliability opt-in is still open
+  (it would change the default fit object). No covered flip.
+
 * **hsquared#294: genomic ratio SE and interval are no longer fenced.**
   `heritability_standard_error()` and `heritability_interval()` now return the
   engine's average-information REML SE and logit-delta interval for the
