@@ -50,7 +50,7 @@ hs_julia_result_payload_cmd <- function(skip_pev_reliability = FALSE) {
     return("hsq_result = HSquared.result_payload(hsq_fit);")
   }
   paste(
-    "hasmethod(HSquared.result_payload, Tuple{Any},",
+    "hasmethod(HSquared.result_payload, Tuple{HSquared.AnimalModelFit},",
     "(:skip_pev_reliability,)) ||",
     "error(\"`skip_pev_reliability = TRUE` needs an HSquared.jl whose",
     "`result_payload` has the `skip_pev_reliability` keyword. Update the",

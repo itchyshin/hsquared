@@ -79,7 +79,7 @@ test_that("skip_pev_reliability = TRUE asks the engine to skip PEV/reliability (
     )
     # An engine without the keyword is an error, never a silent eager fit.
     expect_true(
-      grepl("hasmethod(HSquared.result_payload, Tuple{Any}, (:skip_pev_reliability,))", cmd, fixed = TRUE),
+      grepl("hasmethod(HSquared.result_payload, Tuple{HSquared.AnimalModelFit}, (:skip_pev_reliability,))", cmd, fixed = TRUE),
       info = name
     )
     # No bridge-side recomputation: neither the older-engine PEV/reliability
@@ -219,7 +219,7 @@ hs_266opt_skip_without_engine_keyword <- function() {
   )
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   has_kw <- JuliaCall::julia_eval(paste(
-    "hasmethod(HSquared.result_payload, Tuple{Any},",
+    "hasmethod(HSquared.result_payload, Tuple{HSquared.AnimalModelFit},",
     "(:skip_pev_reliability,))"
   ))
   testthat::skip_if_not(
@@ -305,7 +305,7 @@ test_that("an engine without the keyword errors instead of fitting eagerly (#266
   )
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   has_kw <- JuliaCall::julia_eval(paste(
-    "hasmethod(HSquared.result_payload, Tuple{Any},",
+    "hasmethod(HSquared.result_payload, Tuple{HSquared.AnimalModelFit},",
     "(:skip_pev_reliability,))"
   ))
   testthat::skip_if(isTRUE(has_kw), "HSquared.jl already has the keyword.")
@@ -320,4 +320,38 @@ test_that("an engine without the keyword errors instead of fitting eagerly (#266
     "skip_pev_reliability",
     class = "hsquared_julia_error"
   )
+})
+
+test_that("live skip_pev_reliability = TRUE runs end to end (#352 guard)", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live bridge smoke."
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  # Detect the keyword independently of the guard under test, so a broken
+  # guard fails here instead of skipping.
+  has_kw <- JuliaCall::julia_eval(paste(
+    "any(m -> :skip_pev_reliability in Base.kwarg_decl(m),",
+    "methods(HSquared.result_payload))"
+  ))
+  testthat::skip_if_not(
+    isTRUE(has_kw),
+    "HSquared.jl lacks result_payload(...; skip_pev_reliability)."
+  )
+  expect_true(isTRUE(JuliaCall::julia_eval(paste(
+    "hasmethod(HSquared.result_payload, Tuple{HSquared.AnimalModelFit},",
+    "(:skip_pev_reliability,))"
+  ))))
+  d <- hs_266opt_live_data()
+  ped <- d$ped
+  lean <- hsquared(
+    y ~ animal(1 | id, pedigree = ped),
+    data = d$dat,
+    control = hs_control(engine_control = list(skip_pev_reliability = TRUE))
+  )
+  expect_s3_class(lean, "hsquared_fit")
+  expect_null(lean$result$prediction_error_variance)
+  expect_null(lean$result$reliability)
+  expect_true(isTRUE(lean$result$diagnostics$skip_pev_reliability))
 })
