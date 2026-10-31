@@ -50,8 +50,8 @@ hs_julia_result_payload_cmd <- function(skip_pev_reliability = FALSE) {
     return("hsq_result = HSquared.result_payload(hsq_fit);")
   }
   paste(
-    "any(m -> :skip_pev_reliability in Base.kwarg_decl(m),",
-    "methods(HSquared.result_payload)) ||",
+    "hasmethod(HSquared.result_payload, Tuple{Any},",
+    "(:skip_pev_reliability,)) ||",
     "error(\"`skip_pev_reliability = TRUE` needs an HSquared.jl whose",
     "`result_payload` has the `skip_pev_reliability` keyword. Update the",
     "HSquared.jl checkout, or drop `skip_pev_reliability` from",
@@ -217,9 +217,9 @@ hs_fit_julia_payload <- function(
     )
   }
 
-  hs_julia_setup(project)
   initial <- hs_validate_initial_variances(initial)
   skip_pev_reliability <- hs_validate_skip_pev_reliability(skip_pev_reliability)
+  hs_julia_setup(project)
   hs_julia_assign_payload(payload, initial)
   JuliaCall::julia_assign(
     "hsq_mdc",

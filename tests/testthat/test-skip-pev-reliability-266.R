@@ -79,7 +79,7 @@ test_that("skip_pev_reliability = TRUE asks the engine to skip PEV/reliability (
     )
     # An engine without the keyword is an error, never a silent eager fit.
     expect_true(
-      grepl(":skip_pev_reliability in Base.kwarg_decl(m)", cmd, fixed = TRUE),
+      grepl("hasmethod(HSquared.result_payload, Tuple{Any}, (:skip_pev_reliability,))", cmd, fixed = TRUE),
       info = name
     )
     # No bridge-side recomputation: neither the older-engine PEV/reliability
@@ -219,8 +219,8 @@ hs_266opt_skip_without_engine_keyword <- function() {
   )
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   has_kw <- JuliaCall::julia_eval(paste(
-    "any(m -> :skip_pev_reliability in Base.kwarg_decl(m),",
-    "methods(HSquared.result_payload))"
+    "hasmethod(HSquared.result_payload, Tuple{Any},",
+    "(:skip_pev_reliability,))"
   ))
   testthat::skip_if_not(
     isTRUE(has_kw),
@@ -305,8 +305,8 @@ test_that("an engine without the keyword errors instead of fitting eagerly (#266
   )
   hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
   has_kw <- JuliaCall::julia_eval(paste(
-    "any(m -> :skip_pev_reliability in Base.kwarg_decl(m),",
-    "methods(HSquared.result_payload))"
+    "hasmethod(HSquared.result_payload, Tuple{Any},",
+    "(:skip_pev_reliability,))"
   ))
   testthat::skip_if(isTRUE(has_kw), "HSquared.jl already has the keyword.")
   d <- hs_266opt_live_data()
