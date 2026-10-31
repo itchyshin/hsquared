@@ -1,5 +1,12 @@
 # Check Log
 
+## 2026-10-31 (hsquared#266 sibling pedigree routes carry 1 + F)
+
+- Red: new pure-R `test-pedigree-diag-266.R` (captures the Julia command each pedigree route sends) failed 4 expectations on `fix/hsq266-snak` at 1693aa0: the dense `fit_animal_model` route and the `henderson_mme` supplied-variance route sent no `relationship_diag`. The `ai_reml` and `sparse_reml` routes (PR #335) passed.
+- Fix: both routes now run `hs_julia_pedigree_diag_cmd` and splat `hsq_diag_kw...`. Metafounder and supplied-`Ginv`/genomic routes untouched (their diag is not 1 + F).
+- Green: `test-pedigree-diag-266.R` 18 passed (12 pure-R, 6 live) against HSquared.jl main 8f58b13 (Julia 1.12.6, `HSQUARED_JULIA_PROJECT` = a scratch clone, `NOT_CRAN=true`); live reliability matches the `:selinv` oracle to 1e-8. Live `test-julia-bridge.R`: 145 passed, 0 failed, 0 skipped. Full `devtools::test()` with no Julia on PATH: 0 failures (live tests skipped). `air format` clean.
+- Not done: lazy PEV/reliability. It would change the default fit object; question for Engine A in `NOTES.md` and the PR body.
+
 ## 2026-10-18 (hsquared#272 claims-vs-behaviour labels)
 
 - Red: new `summary() prints the univariate calibration claim only on the univariate route` test failed 9 expectations on `main` (c48bd26): repeatability / two_effect / multivariate summaries printed "directional-conservative" and the 0.897 figure.
