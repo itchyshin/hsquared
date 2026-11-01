@@ -275,6 +275,9 @@ test_that("hsquared fits the opt-in repeatability model on repeated records", {
   # Seed 14: all three variances are interior, so the engine's REML
   # information is positive definite and repeatability_interval() is finite
   # (hsquared#357; seed 11 is the boundary case, tested below).
+  # Only seeds 3 and 14 give an interior fit on this fixture. If a future
+  # engine change moves seed 14 to the boundary, update this test on purpose;
+  # do not search for another seed.
   expect_no_warning(fit <- hs_rep_tiny_fit(hs_rep_tiny_fixture(14)))
 
   expect_s3_class(fit, "hsquared_fit")
