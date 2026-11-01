@@ -685,7 +685,10 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
     "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
   )
 
-  set.seed(11)
+  # The seed must give an interior REML optimum: with seed 11 the realised
+  # data put V_A on the zero boundary (h2 ~ 1e-19), which the engine reports as
+  # converged = FALSE and gwas() correctly refuses (hsquared#355).
+  set.seed(4)
   ped <- data.frame(
     id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
     sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),

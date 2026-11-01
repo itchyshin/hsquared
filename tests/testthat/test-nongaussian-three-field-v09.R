@@ -575,7 +575,10 @@ test_that("the v0.9 Poisson route carries the three-field result through the liv
       engine_control = list(
         target = "nongaussian",
         julia_project = project,
-        iterations = 20L
+        # 20 is a knife-edge budget on this fixture: the Nelder-Mead search
+        # needs 24 iterations to reach its tolerance, so 20 is refused as
+        # non-converged (hsquared#356). 100 leaves a wide margin.
+        iterations = 100L
       )
     )
   )
