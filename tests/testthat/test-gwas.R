@@ -678,17 +678,10 @@ test_that("gwas(genome_wide = TRUE) refuses a non-intercept-only design", {
   )
 })
 
-test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
-  hs_skip_live_julia()
-  testthat::skip_if_not(
-    hsquared:::hs_julia_bridge_available(),
-    "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
-  )
-
-  # The seed must give an interior REML optimum: with seed 11 the realised
-  # data put V_A on the zero boundary (h2 ~ 1e-19), which the engine reports as
-  # converged = FALSE and gwas() correctly refuses (hsquared#355).
-  set.seed(4)
+# Live genome-wide-scan fixture. The seed decides whether the REML optimum for
+# V_A is interior or on the zero boundary, so the two live tests below pin it.
+hs_live_gwas_fixture <- function(seed) {
+  set.seed(seed)
   ped <- data.frame(
     id = c("s1", "s2", "d1", "d2", paste0("a", 1:16)),
     sire = c(NA, NA, NA, NA, rep(c("s1", "s2"), 8)),
@@ -718,6 +711,21 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
     family = stats::gaussian(),
     REML = TRUE
   )
+  list(fit = fit, M = M)
+}
+
+test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
+  )
+
+  # Seed 4 gives an interior REML optimum (h2 ~ 0.31). Seed 11 does not; see
+  # the refusal test below (hsquared#355).
+  fx <- hs_live_gwas_fixture(4)
+  fit <- fx$fit
+  M <- fx$M
 
   g <- gwas(
     fit,
@@ -753,4 +761,31 @@ test_that("gwas(genome_wide = TRUE) runs a live genome-wide-calibrated scan", {
     "collect(Float64, HSquared.genome_wide_marker_scan(hsq_y, hsq_X, hsq_markers; n_permutations = hsq_nperm, alpha = hsq_alpha, sigma_e2 = hsq_sigma_e2, marker_ids = hsq_marker_ids, rng = Random.MersenneTwister(hsq_seed)).genome_wide_p_values)"
   )
   expect_equal(g$genome_wide_p, direct_gw, tolerance = 1e-10)
+})
+
+test_that("gwas() refuses a live fit whose V_A optimum is on the zero boundary", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live gwas scan."
+  )
+
+  # Seed 11 puts the REML optimum for V_A on the zero boundary (h2 ~ 1e-19).
+  # The engine cannot certify that optimum and reports converged = FALSE, so
+  # gwas() must refuse the fit rather than scan with unusable variance
+  # components (hsquared#355).
+  fx <- hs_live_gwas_fixture(11)
+
+  expect_error(
+    gwas(
+      fx$fit,
+      fx$M,
+      marker_ids = paste0("m", 1:4),
+      method = "single",
+      genome_wide = TRUE,
+      n_permutations = 300L,
+      seed = 42L
+    ),
+    regexp = "did not converge"
+  )
 })
