@@ -1,5 +1,15 @@
 # hsquared (development version)
 
+* **hsquared#354 (bug fix): multivariate Julia fits no longer fail on
+  `max_dense_cells` typing.** The `cbind()` multivariate and
+  `cbind() + permanent()` routes passed the validated `max_dense_cells`
+  (a double, default `1e6`) straight to `HSquared.fit_multivariate_reml()` /
+  `fit_multivariate_repeatability_reml()`. Engines that type the keyword as
+  `Integer` (HSquared.jl#494) rejected it with `TypeError: in keyword argument
+  max_dense_cells, expected Integer, got Float64`. Both routes now cast with
+  `Int()`, as the animal-model and repeatability routes already did. No default
+  or API change.
+
 * **hsquared#294: genomic ratio SE and interval are no longer fenced.**
   `heritability_standard_error()` and `heritability_interval()` now return the
   engine's average-information REML SE and logit-delta interval for the
