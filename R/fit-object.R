@@ -61,6 +61,21 @@ hs_fit_result_sibling <- function(name) {
   )
 }
 
+# #266: a fit made with `skip_pev_reliability = TRUE` has no PEV/reliability
+# by request; say so and how to get them.
+hs_fit_result_skipped_hint <- function(object, name) {
+  if (
+    !name %in% c("prediction_error_variance", "reliability") ||
+      !isTRUE(object$result$diagnostics$skip_pev_reliability)
+  ) {
+    return("")
+  }
+  paste0(
+    " This fit used `engine_control = list(skip_pev_reliability = TRUE)`; ",
+    "refit without it to get prediction error variances and reliability."
+  )
+}
+
 hs_fit_result <- function(object, name, label) {
   if (!inherits(object, "hsquared_fit")) {
     stop("`object` must be an `hsquared_fit` object.", call. = FALSE)
@@ -75,6 +90,7 @@ hs_fit_result <- function(object, name, label) {
       label,
       ". The current result payload did not provide this field.",
       hs_fit_result_sibling(name),
+      hs_fit_result_skipped_hint(object, name),
       call. = FALSE
     )
   }
