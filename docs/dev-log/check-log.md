@@ -1,5 +1,11 @@
 # Check Log
 
+## 2026-10-31 (hsquared#354 max_dense_cells Int cast)
+
+- Red: on `main` (1693aa0) against HSquared.jl#494 head `280e718e` (Julia 1.12.6), `test-multivariate-permanent-237.R:154` and nine other live multivariate tests errored with `TypeError: in keyword argument max_dense_cells, expected Integer, got a value of type Float64`. New `test-max-dense-cells-int-354.R`: 4 expectations failed before the fix (two mocked command-string checks, one source-level guard, one live fit).
+- Fix: `R/julia-bridge.R` multivariate and multivariate-repeatability fit commands now pass `max_dense_cells = Int(hsq_max_dense_cells)`, matching the animal-model and repeatability routes. Sweep of every `julia_assign`/kwarg in the bridge and `R/gwas.R`: `iterations`, `em_warmup`, `rank`, `n_trials`, `order`, `n_permutations`, `seed` are already `as.integer()`; no other double reaches an integer-typed engine keyword.
+- Green: `test-max-dense-cells-int-354.R` 0 failures. Full `testthat::test_dir()` with live Julia (HSQUARED_JULIA_PROJECT=HSquared.jl@280e718e): main 13 errors + 1 failure, PR 3 errors + 2 failures; the 10 cited errors are gone. Residuals are outside this change (see PR body).
+
 ## 2026-10-18 (hsquared#272 claims-vs-behaviour labels)
 
 - Red: new `summary() prints the univariate calibration claim only on the univariate route` test failed 9 expectations on `main` (c48bd26): repeatability / two_effect / multivariate summaries printed "directional-conservative" and the 0.897 figure.

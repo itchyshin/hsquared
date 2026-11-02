@@ -3311,7 +3311,7 @@ hs_fit_julia_multivariate_payload <- function(
       "hsq_fit = HSquared.fit_multivariate_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
       paste0("initial = ", initial_expr, ","),
-      "iterations = hsq_iterations, max_dense_cells = hsq_max_dense_cells,",
+      "iterations = hsq_iterations, max_dense_cells = Int(hsq_max_dense_cells),",
       "ids = hsq_ped.ids, traits = hsq_traits,",
       paste0(
         "genetic_structure = Symbol(hsq_genetic_structure)",
@@ -3500,7 +3500,7 @@ hs_fit_julia_multivariate_repeatability_payload <- function(
       "hsq_fit = HSquared.fit_multivariate_repeatability_reml(",
       "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
       initial_kw,
-      "iterations = hsq_iterations, max_dense_cells = hsq_max_dense_cells,",
+      "iterations = hsq_iterations, max_dense_cells = Int(hsq_max_dense_cells),",
       "ids = hsq_ped.ids, traits = hsq_traits);",
       "hsq_mvpe_raw = Dict(",
       "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
