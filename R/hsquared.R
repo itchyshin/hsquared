@@ -255,7 +255,12 @@ hsquared <- function(
         c(sigma_a2 = 1, sigma_e2 = 1)
       ),
       iterations = hs_engine_control_value(control, "iterations", 100L),
-      em_warmup = hs_engine_control_value(control, "em_warmup", 0L)
+      em_warmup = hs_engine_control_value(control, "em_warmup", 0L),
+      skip_pev_reliability = hs_engine_control_value(
+        control,
+        "skip_pev_reliability",
+        FALSE
+      )
     ))
   }
 
@@ -553,6 +558,11 @@ hsquared <- function(
           control,
           "iterations",
           1000L
+        ),
+        skip_pev_reliability = hs_engine_control_value(
+          control,
+          "skip_pev_reliability",
+          FALSE
         )
       ))
     }
@@ -575,7 +585,12 @@ hsquared <- function(
           "iterations",
           100L
         ),
-        em_warmup = hs_engine_control_value(control, "em_warmup", 0L)
+        em_warmup = hs_engine_control_value(control, "em_warmup", 0L),
+        skip_pev_reliability = hs_engine_control_value(
+          control,
+          "skip_pev_reliability",
+          FALSE
+        )
       ))
     }
 
@@ -940,6 +955,11 @@ hsquared <- function(
         control,
         "max_dense_cells",
         1e6
+      ),
+      skip_pev_reliability = hs_engine_control_value(
+        control,
+        "skip_pev_reliability",
+        FALSE
       )
     ))
   }

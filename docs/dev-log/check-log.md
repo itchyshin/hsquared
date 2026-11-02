@@ -6,6 +6,11 @@
 - Fix: both routes now run `hs_julia_pedigree_diag_cmd` and splat `hsq_diag_kw...`. Metafounder and supplied-`Ginv`/genomic routes untouched (their diag is not 1 + F).
 - Green: `test-pedigree-diag-266.R` 18 passed (12 pure-R, 6 live) against HSquared.jl main 8f58b13 (Julia 1.12.6, `HSQUARED_JULIA_PROJECT` = a scratch clone, `NOT_CRAN=true`); live reliability matches the `:selinv` oracle to 1e-8. Live `test-julia-bridge.R`: 145 passed, 0 failed, 0 skipped. Full `devtools::test()` with no Julia on PATH: 0 failures (live tests skipped). `air format` clean.
 - Not done: lazy PEV/reliability. It would change the default fit object; question for Engine A in `NOTES.md` and the PR body.
+## 2026-10-31 (hsquared#354 max_dense_cells Int cast)
+
+- Red: on `main` (1693aa0) against HSquared.jl#494 head `280e718e` (Julia 1.12.6), `test-multivariate-permanent-237.R:154` and nine other live multivariate tests errored with `TypeError: in keyword argument max_dense_cells, expected Integer, got a value of type Float64`. New `test-max-dense-cells-int-354.R`: 4 expectations failed before the fix (two mocked command-string checks, one source-level guard, one live fit).
+- Fix: `R/julia-bridge.R` multivariate and multivariate-repeatability fit commands now pass `max_dense_cells = Int(hsq_max_dense_cells)`, matching the animal-model and repeatability routes. Sweep of every `julia_assign`/kwarg in the bridge and `R/gwas.R`: `iterations`, `em_warmup`, `rank`, `n_trials`, `order`, `n_permutations`, `seed` are already `as.integer()`; no other double reaches an integer-typed engine keyword.
+- Green: `test-max-dense-cells-int-354.R` 0 failures. Full `testthat::test_dir()` with live Julia (HSQUARED_JULIA_PROJECT=HSquared.jl@280e718e): main 13 errors + 1 failure, PR 3 errors + 2 failures; the 10 cited errors are gone. Residuals are outside this change (see PR body).
 
 ## 2026-10-18 (hsquared#272 claims-vs-behaviour labels)
 

@@ -232,6 +232,39 @@ test_that("the repeatability initial validator enforces three named components",
   )
 })
 
+# A related pedigree (d, e are offspring of the founders, so A != I) with
+# repeated records (each animal measured three times). Relatedness plus
+# repeated records is what lets the additive (Va) and permanent-environment
+# (Vpe) variances be separated. The seed picks the data: on a 5-animal
+# fixture most seeds put one variance on the zero boundary (hsquared#357).
+hs_rep_tiny_fixture <- function(seed) {
+  ped <- data.frame(
+    id = c("a", "b", "c", "d", "e"),
+    sire = c(NA, NA, NA, "a", "a"),
+    dam = c(NA, NA, NA, "b", "c")
+  )
+  set.seed(seed)
+  ids <- rep(c("a", "b", "c", "d", "e"), each = 3)
+  pe <- stats::setNames(stats::rnorm(5, 0, 1.0), c("a", "b", "c", "d", "e"))
+  dat <- data.frame(
+    y = 2 + pe[ids] + stats::rnorm(15, 0, 0.7),
+    id = ids
+  )
+  list(ped = ped, dat = dat)
+}
+
+hs_rep_tiny_fit <- function(fx) {
+  hsquared(
+    y ~ animal(1 | id, pedigree = fx$ped) + permanent(1 | id),
+    data = fx$dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "repeatability")
+    )
+  )
+}
+
 test_that("hsquared fits the opt-in repeatability model on repeated records", {
   hs_skip_live_julia()
   testthat::skip_if_not(
@@ -239,41 +272,13 @@ test_that("hsquared fits the opt-in repeatability model on repeated records", {
     "JuliaCall, Julia, and local HSquared.jl are required for live repeatability."
   )
 
-  # A related pedigree (d, e are offspring of the founders, so A != I) with
-  # repeated records (each animal measured three times). Relatedness plus
-  # repeated records is what lets the additive (Va) and permanent-environment
-  # (Vpe) variances be separated.
-  ped <- data.frame(
-    id = c("a", "b", "c", "d", "e"),
-    sire = c(NA, NA, NA, "a", "a"),
-    dam = c(NA, NA, NA, "b", "c")
-  )
-  set.seed(11)
-  ids <- rep(c("a", "b", "c", "d", "e"), each = 3)
-  pe <- stats::setNames(stats::rnorm(5, 0, 1.0), c("a", "b", "c", "d", "e"))
-  dat <- data.frame(
-    y = 2 + pe[ids] + stats::rnorm(15, 0, 0.7),
-    id = ids
-  )
-
-  # PINNED (hsquared#235): on this tiny fixture the engine's REML information
-  # is not positive definite, so repeatability_interval() refuses and the
-  # bridge surfaces it as one warning instead of a silent NA. Asserting it
-  # means the surfacing cannot regress to silence unnoticed. If the engine
-  # later makes this interval computable, this expectation FAILS -- that is
-  # the intent: update it deliberately, do not muffle it.
-  expect_warning(
-    fit <- hsquared(
-      y ~ animal(1 | id, pedigree = ped) + permanent(1 | id),
-      data = dat,
-      family = stats::gaussian(),
-      control = hs_control(
-        engine = "julia",
-        engine_control = list(target = "repeatability")
-      )
-    ),
-    "repeatability_interval\\(\\).*REML information is not positive definite"
-  )
+  # Seed 14: all three variances are interior, so the engine's REML
+  # information is positive definite and repeatability_interval() is finite
+  # (hsquared#357; seed 11 is the boundary case, tested below).
+  # Only seeds 3 and 14 give an interior fit on this fixture. If a future
+  # engine change moves seed 14 to the boundary, update this test on purpose;
+  # do not search for another seed.
+  expect_no_warning(fit <- hs_rep_tiny_fit(hs_rep_tiny_fixture(14)))
 
   expect_s3_class(fit, "hsquared_fit")
   expect_equal(fit$spec$target, "repeatability")
@@ -284,6 +289,9 @@ test_that("hsquared fits the opt-in repeatability model on repeated records", {
   expect_true(is.finite(r) && r > 0 && r < 1)
   h2 <- heritability(fit)$estimate
   expect_true(is.finite(h2) && h2 >= 0 && h2 < 1)
+  ri <- repeatability_interval(fit)
+  expect_true(all(is.finite(c(ri$lower, ri$upper, ri$se))))
+  expect_true(ri$lower < ri$estimate && ri$estimate < ri$upper)
   expect_equal(nrow(permanent_effects(fit)), 5L)
   expect_equal(
     fit_diagnostics(fit)$value[
@@ -291,4 +299,37 @@ test_that("hsquared fits the opt-in repeatability model on repeated records", {
     ],
     "estimated_repeatability_reml"
   )
+})
+
+test_that("a live repeatability fit on the zero boundary returns a flagged NA interval (#357)", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live repeatability."
+  )
+
+  # Seed 11: the REML optimum for Va is the zero boundary (about 6e-8). Up to
+  # HSquared.jl eb1d8e8c (2026-10-04) the engine's repeatability_interval()
+  # THREW "REML information is not positive definite" here and the bridge
+  # surfaced that as a fit-time warning (hsquared#235). It now returns a
+  # boundary-flagged interval with NaN bounds instead, so nothing is thrown
+  # and nothing is warned at fit time. What must not regress is silence at
+  # the point of use: the NA interval is returned for inspection, and every
+  # extractor warns that the fit is at a variance-component boundary.
+  expect_no_warning(fit <- hs_rep_tiny_fit(hs_rep_tiny_fixture(11)))
+
+  expect_s3_class(fit, "hsquared_fit")
+  expect_true(
+    fit_diagnostics(fit)$value[
+      fit_diagnostics(fit)$metric == "at_boundary"
+    ] %in%
+      c("TRUE", TRUE)
+  )
+  expect_warning(
+    ri <- repeatability_interval(fit),
+    "variance-component boundary"
+  )
+  expect_true(is.finite(ri$estimate) && ri$estimate > 0 && ri$estimate < 1)
+  expect_true(all(is.na(c(ri$lower, ri$upper, ri$se))))
+  expect_warning(repeatability(fit), "variance-component boundary")
 })
