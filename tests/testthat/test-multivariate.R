@@ -537,7 +537,10 @@ test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
       REML = TRUE,
       control = hs_control(
         engine = "julia",
-        engine_control = list(target = "multivariate", iterations = 400L)
+        # 400 iterations did not converge on this fixture (converged =
+        # FALSE), so the engine's SE refusal says "requires a fit with
+        # converged = true" instead of the pinned positive-definite text.
+        engine_control = list(target = "multivariate", iterations = 2000L)
       )
     ),
     "multivariate_covariance_standard_errors\\(\\).*observed information is not finite positive-definite"
