@@ -19,12 +19,19 @@ ASReml: `fixed = <trait> ~ year_f + round_f + exp_manip + female.age`,
 estimator is capped at `nobs² + nanimals² ≤ max_dense_cells` (default 1e6) and
 these problems need ~2.6e8 cells.
 
-Pedigree prepared with `nadiv::prepPed()` and pruned to the analysis animals
-plus all known ancestors, exactly as the notebook does.
+Pedigree prepared with `nadiv::prepPed()`. The two engines did not get the same
+pedigree: hsquared was given the pedigree pruned to the analysis animals plus all
+known ancestors (10,937 rows for clutch size, 10,914 for laying date;
+`great_tit_hsquared_model.qmd`), whereas ASReml built `ainverse(ped)` from the
+full prepped pedigree (111,645 rows; `great_tit_asreml_model.qmd`). ASReml on the
+pruned pedigree gives the identical log-likelihood (-10779.54, 7 iterations) in
+0.57 s versus 1.82 s on the full pedigree, so the estimate agreement below is
+unaffected; only runtime comparisons are. The notebooks and saved results were
+not re-run or edited.
 
 ## Results
 
-### Clutch size — 11,856 records, 7,340 females, 10,937 pedigree rows
+### Clutch size — 11,856 records, 7,340 females, hsquared 10,937 / ASReml 111,645 pedigree rows
 
 | component | hsquared | SE | ASReml |
 | --- | --- | --- | --- |
@@ -34,7 +41,7 @@ plus all known ancestors, exactly as the notebook does.
 
 h² = 0.2388 ± 0.0269, repeatability = 0.4494, converged.
 
-### Laying date — 11,642 records, 7,288 females, 10,914 pedigree rows
+### Laying date — 11,642 records, 7,288 females, hsquared 10,914 / ASReml 111,645 pedigree rows
 
 | component | hsquared | SE | ASReml |
 | --- | --- | --- | --- |
