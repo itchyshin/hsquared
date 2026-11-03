@@ -1,5 +1,11 @@
 # hsquared (development version)
 
+* **hsquared#266 (performance): the dense and supplied-variance pedigree
+  routes also carry `1 + F`.** `engine = "julia"` with no target
+  (`fit_animal_model`) and `target = "henderson_mme"` now pass the inbreeding
+  diagonal too, so their `reliability()` no longer runs a selected inverse of
+  `Ainv`. Reliability is unchanged. Making PEV/reliability opt-in is still open
+  (it would change the default fit object). No covered flip.
 * **hsquared#354 (bug fix): multivariate Julia fits no longer fail on
   `max_dense_cells` typing.** The `cbind()` multivariate and
   `cbind() + permanent()` routes passed the validated `max_dense_cells`
