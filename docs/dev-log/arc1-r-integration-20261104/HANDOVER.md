@@ -104,3 +104,10 @@ fast-forwarded into PR #498 at commit
 249 assertions on Julia 1.10 and 1.13. The user authorized fit-bearing package
 checks and the PR CI; the new CI result must be checked for that exact head.
 The PR remains a draft and no scientific gate status changed.
+
+A separate read-only CI review identified two additional Windows cross-drive
+cases for review: the package-content symlink guard may fail to reject a
+symlink to another drive, and the attempt runner may reject a legitimate
+output directory on another drive. These are not confirmed causes of the
+current CI failures. Native Windows symlink and cross-drive tests are still
+needed before claiming complete Windows path containment.
