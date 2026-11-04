@@ -81,8 +81,9 @@ and scientific gates remain open. The local evidence ZIP has not been sent.
 A historical receipt can be intact while later tracked text makes a strict
 single-occurrence audit fail. Preserve the positive and negative controls, then
 review the provenance rule instead of altering records to obtain a pass.
-Active lenses: Ada, Shannon, Hopper, Curie, Rose. Two read-only reviewers
-were dispatched. Memory receipt: the hsquared route and lane preflight governed source identity and ownership.
+Active lenses: Ada, Shannon, Hopper, Curie, Rose. Three read-only reviewers
+were dispatched. Rose independently checked the archive hashes and handover
+claims, and identified the replay script's local-path requirement. Memory receipt: the hsquared route and lane preflight governed source identity and ownership.
 Golden Set: not run; no hub guard was changed.
 
 ## 12. Cross-Product Coverage

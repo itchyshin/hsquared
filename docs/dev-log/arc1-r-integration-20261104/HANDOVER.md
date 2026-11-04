@@ -42,7 +42,10 @@ rule permits one source occurrence, but the current trial source has five
 seed-context mentions. The pinned check-log line itself still matches. A
 minimal positive control accepted the seven receipts and the pinned single
 line, and the altered and duplicate controls were rejected. A replay script
-and its receipt are included in the local evidence starter. The current-source
+and its receipt are included in the local evidence starter. The replay uses
+owner-specific absolute paths and requires a local Julia Git repository with
+commit `927b8f11`; adjust those paths before running it on another machine.
+The current-source
 guard therefore remains fail-closed.
 
 The manifest validator also rejects a separate outer32 historical seed
