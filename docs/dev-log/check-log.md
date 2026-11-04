@@ -1,5 +1,13 @@
 # Check Log
 
+## 2026-11-04 (Arc 1 handover back to Shinichi: R-lineage search, both arms)
+
+- Doc-only on this repo; no R code changed. Lane reassigned to R+Julia for this session by Szymek.
+- R lineage: `python3 -I tools/arc1_r_lineage_git_search.py <HSquared.jl@a4677305> <hsquared@82d8d20> out.json` (script on HSquared.jl `claude/arc1-handover-merge-main-20261104`). v10/v11 maps: 249/274 paths match `5efe0ec4` (PR #259); 25 Arc 1 R paths never in any pushed ref. Output SHA-256 `96be741c7f50b8b572d7ab1ebd84a1bb8301ed2a98f3c4fb7f4eb490e8db0f7e`.
+- Julia (HSquared.jl, not this repo): handover `a4677305` fails `test_auto_fa_rank.jl:756` on Julia 1.12.6 (also at `7eca0286`), passes on 1.10.13. The merge trial with `main` passes the full `Pkg.test()` on 1.10.13 (410 testsets, 19m48s). Python `test_arc1*.py` 162/174, all failures from missing `LOOP/` evidence or a `/private/tmp` path. Draft PR HSquared.jl#498.
+- `bash tools/preamble_cap.sh`: CAP OK. `devtools::check()` not run (no R source change).
+- Unchanged: `public_covered_count = 7`, v7 HOLD, G2–G8 open; no fits.
+
 ## 2026-10-31 (hsquared#266 sibling pedigree routes carry 1 + F)
 
 - Red: new pure-R `test-pedigree-diag-266.R` (captures the Julia command each pedigree route sends) failed 4 expectations on `fix/hsq266-snak` at 1693aa0: the dense `fit_animal_model` route and the `henderson_mme` supplied-variance route sent no `relationship_diag`. The `ai_reml` and `sparse_reml` routes (PR #335) passed.
