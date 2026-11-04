@@ -24,3 +24,9 @@ reconciling the Julia engine and its missing text evidence, running the full
 bridge checks against the chosen engine identity, and rerunning G6/G7 on the
 resulting source identities before making any gate claim. This checkpoint does
 not ask you to merge or take over the work.
+
+## Additional no-fit checks
+
+`HSQUARED_JULIA_PROJECT=/nonexistent HSQUARED_AUTO_FA_REQUIRE_LIVE=false Rscript -e 'testthat::test_local(filter = "^arc1-uncertainty-controls$|^auto-fa-rank-optin$", reporter = "summary")'` passed after updating stale mocked profile evidence and expected error text. Three live Julia tests were skipped. The earlier run failed because the mocks targeted an older sink helper and used an incomplete profile record.
+
+The original Julia checkpoint and its v29 Julia test log and receipt were found on the owner's Mac. Their archived bytes match their recorded SHA-256 values. This three-file local subset is not the complete LOOP evidence, and the historical receipt does not validate this R branch. The original Arc 1 `.unlazy` gate file was not found at the expected path.
