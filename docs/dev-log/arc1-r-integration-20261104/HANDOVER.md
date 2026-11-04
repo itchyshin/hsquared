@@ -97,3 +97,10 @@ source-identity correction is pushed on
 `db48d9754af1a6f9b06b304925a2022778e01174`. It passed no-fit source-identity
 checks on macOS with Julia 1.10, 1.12 and 1.13 and still needs Windows CI.
 The Julia 1.13 pass used a freshly resolved, version-matched manifest. The FA fixture and full fit-bearing checks remain open.
+
+The reviewed source-identity and FA fixture corrections were subsequently
+fast-forwarded into PR #498 at commit
+`466053d24aa143f30caad97938eaea542de01a33`. The focused FA test file passed
+249 assertions on Julia 1.10 and 1.13. The user authorized fit-bearing package
+checks and the PR CI; the new CI result must be checked for that exact head.
+The PR remains a draft and no scientific gate status changed.
