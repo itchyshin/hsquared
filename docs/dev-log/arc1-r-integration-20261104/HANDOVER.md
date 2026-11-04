@@ -17,15 +17,17 @@ G2–G8 remain open for these identities.
 ## Evidence available
 
 The owner has a local portable evidence starter named
-`arc1-szymek-evidence-starter-v4-20261104.zip` under `~/local-scratch`.
-Its SHA-256 is `06f06366ade5189001f2ce3e492927718a4863b479d4b311504ad43efd204b6b`.
+`arc1-szymek-evidence-20261104-v8.zip` under `~/local-scratch`.
+Its SHA-256 is `63c951cb1b999eb21d57f3f0da96fbda9c340703f5091cbda357e9947f6ea229`.
 It contains the retained checkpoint and v29 Julia receipt, seven outer33 files
 that match the trial branch's pinned hashes, and an archive of the source
 files listed by the historical seed audit. The archive was verified on readback
 against the candidate's SHA-256 `0efa941c2a6ae177012a03282bbeea03cd8bdd7dc8760165bcf23e7534324cd0`.
-It contains 999 of 1,001 exact audit-listed files; the original whole-file
-bytes of `docs/dev-log/check-log.md` and `docs/dev-log/coordination-board.md`
-remain unresolved. The original Arc 1 `.unlazy` gate file is also missing.
+It contains 1,000 of 1,001 exact audit-listed files; the original whole-file
+bytes of `docs/dev-log/check-log.md` remain unresolved. The original outer32
+retained receipt and raw result were also recovered from Totoro. The copied
+run-admission file has the canonical JSON hash named in the receipt; its
+raw-byte hash is different because the encoding differs. The original Arc 1 `.unlazy` gate file is also missing.
 The local ZIP has not been sent or published; it may contain machine paths.
 The full LOOP evidence is not included.
 
@@ -42,9 +44,9 @@ rule permits one source occurrence, but the current trial source has five
 seed-context mentions. The pinned check-log line itself still matches. A
 minimal positive control accepted the seven receipts and the pinned single
 line, and the altered and duplicate controls were rejected. A replay script
-and its receipt are included in the local evidence starter. The replay uses
-owner-specific absolute paths and requires a local Julia Git repository with
-commit `927b8f11`; adjust those paths before running it on another machine.
+and its receipt are included in the local evidence starter. The portable replay accepts a repository path and evidence archive path; it
+requires a local Julia Git repository containing commit `927b8f11`. The
+README in the bundle gives the command.
 The current-source
 guard therefore remains fail-closed.
 
@@ -84,3 +86,11 @@ conflicts are recorded in this handover and the branch checkpoint.
    fixture, then run authorized fit and full package checks on pinned sources.
 4. Re-run any scientific gates only under their own approved protocol. Decide
    at the meeting whether Shinichi or Szymek continues each remaining part.
+
+## PR #498 status
+
+At trial head `927b8f11`, the Julia 1.10 Ubuntu and docs checks passed.
+Julia 1.10 Windows failed in source-identity path handling, and the latest
+Julia jobs on Ubuntu and Windows failed in the FA retry fixture. A focused
+source-identity correction is being prepared on a separate Julia branch. It
+still needs Windows CI. The FA fixture and full fit-bearing checks remain open.

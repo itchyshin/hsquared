@@ -102,3 +102,17 @@ rejects those inputs before fitting. The bootstrap result contains one
 `not_run_after_outer_selection_failure` record and zero usable bootstraps.
 A review also observed `__HSQ_NONE__` values in nested attempt data; their
 public presentation needs review before changing the transport encoding.
+
+## Further recovery and guard review
+
+The original outer32 retained receipt was recovered from Totoro and matches
+SHA-256 `2a9e51019b10c1d72a3bbd642ec821a37abb40627f5b2f7f62d889edc1188cf4`.
+The retained result and three other run files were also verified. The
+historical coordination board was recovered, giving 1,000 of 1,001 exact
+audit-listed files; the old whole check log remains missing. The updated
+private evidence bundle is `arc1-szymek-evidence-20261104-v8.zip`, SHA-256
+`63c951cb1b999eb21d57f3f0da96fbda9c340703f5091cbda357e9947f6ea229`.
+`SEED-GUARD-REVIEW.md` records the evidence and narrowly scoped correction
+options. The portable replay reproduced the 8/9 guard result and positive
+control without fits. Its negative controls rejected a tampered pinned receipt
+and an existing output path. No guard policy was changed.
