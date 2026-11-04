@@ -95,4 +95,5 @@ Julia jobs on Ubuntu and Windows failed in the FA retry fixture. A focused
 source-identity correction is pushed on
 `codex/pr498-windows-identity-20261104`; its code change is commit
 `db48d9754af1a6f9b06b304925a2022778e01174`. It passed no-fit source-identity
-checks on macOS with Julia 1.10 and 1.12 and still needs Windows CI. The FA fixture and full fit-bearing checks remain open.
+checks on macOS with Julia 1.10, 1.12 and 1.13 and still needs Windows CI.
+The Julia 1.13 pass used a freshly resolved, version-matched manifest. The FA fixture and full fit-bearing checks remain open.
