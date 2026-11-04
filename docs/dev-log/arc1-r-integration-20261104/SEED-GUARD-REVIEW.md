@@ -60,3 +60,10 @@ process's successful receipt-writing exit. Inspect its JSON receipt; a written
 receipt is not a passing suite. The bundle contains machine-specific paths in
 historical originals, so use a private transfer after review. Redacting those
 originals would change their hashes.
+
+A later read-only search hashed the `docs/dev-log/check-log.md` blob at all
+266 commits touching that path across local Julia Git refs. None matched the
+historical audit hash
+`1e985e003f9a210a79fdbf816df5b957ea966411700b4e2f83f142f6b412a82e`.
+This does not cover unreachable Git objects, other machines, or unsearched
+backups. The historical whole-file gap remains open.
