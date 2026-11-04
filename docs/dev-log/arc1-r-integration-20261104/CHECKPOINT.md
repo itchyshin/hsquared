@@ -67,3 +67,15 @@ Four paths had no match within that bounded search: `docs/dev-log/check-log.md`,
 `docs/dev-log/coordination-board.md`, `test/arc1_simulation_executor.jl`, and
 `test/runtests.jl`. No claim is made about unsearched history or whether any
 other local copy exists.
+
+The same two no-fit test groups also passed under Julia 1.12.6 with the same
+exported source and copied manifest. Julia reported that one dependency was
+precompiled while a different version was loaded; the test process completed
+successfully. This does not resolve the separate Julia 1.12 fit-fixture failure
+reported in the handover.
+
+A local portable evidence starter combines the verified subsets and search
+reports. Its SHA-256 is
+`41f9d59589502a71f8a801dc4f2cc18afb2002a25351bf70c2438d03f627c005`.
+The complete LOOP records, original Arc 1 gate file, historical source gaps,
+and current-source scientific checks remain open.
