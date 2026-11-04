@@ -79,3 +79,26 @@ reports. Its SHA-256 is
 `41f9d59589502a71f8a801dc4f2cc18afb2002a25351bf70c2438d03f627c005`.
 The complete LOOP records, original Arc 1 gate file, historical source gaps,
 and current-source scientific checks remain open.
+
+## Subsequent evidence and preflight checks
+
+An additional source-archive search recovered the original `test/runtests.jl`
+and `test/arc1_simulation_executor.jl`. The latest audit-source archive has
+999 of 1,001 exact hashes; the remaining whole-file gaps are the historical
+check log and coordination board. Its SHA-256 is
+`061da2fa1c8be0d83b594e5b6fbcd097c2b74b178aa7e241eac713a4ee87fd07`.
+The verifier and negative controls are in this directory.
+
+The current Julia trial with seven matching outer33 receipts still fails one
+of nine manifest-amendment tests because the pinned single seed occurrence is
+now mentioned in five tracked contexts. An isolated positive control passed;
+the validator independently refused an outer32 historical collision. The
+replay and receipt are in the local v4 evidence starter. These findings leave
+both guard policies open for review; no historical records were changed.
+
+A no-fit live selector test exercises two policy refusals and the bootstrap
+outer-selection failure under Julia 1.10.12 and 1.12.6. The Julia preflight
+rejects those inputs before fitting. The bootstrap result contains one
+`not_run_after_outer_selection_failure` record and zero usable bootstraps.
+A review also observed `__HSQ_NONE__` values in nested attempt data; their
+public presentation needs review before changing the transport encoding.
