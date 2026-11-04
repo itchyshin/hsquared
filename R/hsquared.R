@@ -25,8 +25,12 @@
 #' @param control An object created by [hs_control()].
 #' @param ... Reserved for future arguments.
 #'
-#' @return A `"hsquared_fit"` object from a successful default-path fit.
-#'   Missing Julia produces an install-guidance error. When
+#' @return A `"hsquared_fit"` object from a successful default-path fit. The
+#'   explicit experimental automatic FA-rank control returns an
+#'   `"hsquared_fa_rank_selection"` object with both candidate rows and actual
+#'   optimizer attempts; its `selected_fit` is an ordinary `"hsquared_fit"`
+#'   when selection succeeds and `NULL` otherwise.
+#'   Missing Julia on the default path produces an install-guidance error. When
 #'   `engine = "validate"`, the validated model spec is returned invisibly
 #'   as a named list (not the classed object from [model_spec()]).
 #' @export
@@ -38,6 +42,7 @@ hsquared <- function(
   control = hs_control(),
   ...
 ) {
+  user_call <- match.call()
   if (missing(formula)) {
     stop("`formula` is required.", call. = FALSE)
   }
@@ -79,9 +84,13 @@ hsquared <- function(
       call. = FALSE
     )
   }
-  if (identical(control$engine_control$target, "genetic_gllvm") &&
-      !identical(control$engine, "julia")) {
-    hs_abort_unsupported_syntax("Genetic GLLVM requires explicit engine = \"julia\".")
+  if (
+    identical(control$engine_control$target, "genetic_gllvm") &&
+      !identical(control$engine, "julia")
+  ) {
+    hs_abort_unsupported_syntax(
+      "Genetic GLLVM requires explicit engine = \"julia\"."
+    )
   }
   allow_families <- if (identical(julia_target, "genetic_gllvm")) {
     "poisson"
@@ -99,16 +108,68 @@ hsquared <- function(
     allow_families = allow_families
   )
   payload <- hs_build_bridge_payload(spec)
+  auto_fa <- hs_validate_auto_fa_rank_control(
+    control,
+    julia_target,
+    spec,
+    payload
+  )
+  uncertainty <- hs_validate_arc1_uncertainty_control(
+    control,
+    julia_target,
+    spec,
+    payload,
+    automatic_fa = auto_fa
+  )
   if (identical(julia_target, "genetic_gllvm")) {
     row_order <- hs_validate_gllvm_optin_spec(control, spec, payload)
     payload$method <- "Laplace integrated fixed-effects objective"
     payload$metadata$julia_spec_target <- NULL
     payload$metadata$julia_fit_target <- paste0(
       "HSquared.fit_gllvm_laplace_reml(Y, Ainv, PoissonResponse(); ",
-      "rank = 2, structure = :lowrank, X = X)")
-    return(hs_fit_julia_gllvm_payload(payload,
-      project = control$engine_control$julia_project, row_order = row_order,
-      iterations = hs_engine_control_value(control, "iterations", 1000L)))
+      "rank = 2, structure = :lowrank, X = X)"
+    )
+    return(hs_fit_julia_gllvm_payload(
+      payload,
+      project = control$engine_control$julia_project,
+      row_order = row_order,
+      iterations = hs_engine_control_value(control, "iterations", 1000L)
+    ))
+  }
+  if (auto_fa) {
+    if (
+      !identical(control$engine, "julia") ||
+        !identical(julia_target, "multivariate")
+    ) {
+      hs_abort_unsupported_syntax(
+        "Automatic FA-rank selection requires explicit `engine = \"julia\"` and `target = \"multivariate\"`."
+      )
+    }
+    hs_engine_control_forwarding(control, "multivariate")
+    project <- hs_engine_control_value(
+      control,
+      "julia_project",
+      hs_default_julia_project()
+    )
+    if (!hs_julia_bridge_available(project)) {
+      stop(
+        "Automatic FA-rank selection requires Julia, `JuliaCall`, and a local `HSquared.jl` project.",
+        call. = FALSE
+      )
+    }
+    return(hs_fit_julia_fa_rank_selection_payload(
+      payload,
+      project = project,
+      iterations = hs_engine_control_value(control, "iterations", 2000L),
+      optimizer_policy = hs_engine_control_value(
+        control,
+        "optimizer_policy",
+        NULL
+      ),
+      uncertainty = uncertainty,
+      spec = utils::modifyList(spec, list(target = "multivariate")),
+      call = user_call
+    ))
   }
   hs_validate_fa_optin_spec(control, julia_target, spec, payload)
   hs_warn_unmodelled_repeated_records(spec)
@@ -238,6 +299,12 @@ hsquared <- function(
         genetic_structure = hs_validate_genetic_structure_control(
           control,
           "multivariate"
+        ),
+        rank = hs_engine_control_value(control, "rank", NULL),
+        optimizer_policy = hs_engine_control_value(
+          control,
+          "optimizer_policy",
+          NULL
         ),
         max_dense_cells = hs_engine_control_value(
           control,
@@ -435,6 +502,11 @@ hsquared <- function(
         ),
         genetic_structure = genetic_structure,
         rank = hs_engine_control_value(control, "rank", NULL),
+        optimizer_policy = hs_engine_control_value(
+          control,
+          "optimizer_policy",
+          NULL
+        ),
         max_dense_cells = hs_engine_control_value(
           control,
           "max_dense_cells",
@@ -659,7 +731,12 @@ hsquared <- function(
           control,
           "scale_method",
           "dense"
-        )
+        ),
+        uncertainty_method = if (!is.null(uncertainty)) {
+          uncertainty$method
+        } else {
+          NULL
+        }
       ))
     }
 

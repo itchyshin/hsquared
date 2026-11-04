@@ -8,7 +8,7 @@
 \alias{anova.hsquared_fit}
 \title{Block unsupported likelihood-inference helpers}
 \usage{
-\method{confint}{hsquared_fit}(object, parm, level = 0.95, ...)
+\method{confint}{hsquared_fit}(object, parm, level = 0.95, method = NULL, ...)
 
 \method{vcov}{hsquared_fit}(object, ...)
 
@@ -19,19 +19,34 @@
 \arguments{
 \item{object}{An \code{hsquared_fit} object.}
 
-\item{parm, level}{Included for compatibility with \code{\link[stats:confint]{stats::confint()}}.}
+\item{parm}{Included for compatibility with \code{\link[stats:confint]{stats::confint()}}.}
+
+\item{level}{Arc 1 profile methods require \code{0.95} and use
+its fixed nominal 95 percent likelihood-ratio cutoff.}
+
+\item{method}{Optional explicit method. For \code{hsquared_fit}, the supported
+values are \code{"arc1_profile_v1"}, \code{"arc1_profile_v2"}, \code{"arc1_profile_v3"}, and experimental \code{"arc1_profile_v4"}; the value must
+match the uncertainty
+method selected when fitting. The default \code{NULL} retains the unsupported
+validated-interval behavior.}
 
 \item{...}{Reserved for future arguments.}
 
 \item{fitted}{An \code{hsquared_fit} object for \code{\link[stats:profile]{stats::profile()}}.}
 }
 \value{
-These functions always error.
+With a matching profile method, \code{confint.hsquared_fit()} returns
+the Arc 1 interval table. Without that explicit method, \code{confint()} and
+the grouped unsupported inference helpers error with scope messages.
 }
 \description{
-These methods intentionally fail with explicit scope messages. Validated
-\code{confint()} / \code{vcov()} / \code{profile()} / \code{anova()} surfaces are not
-implemented. Experimental interval extractors
+\code{vcov()}, \code{profile()}, and \code{anova()} intentionally fail with explicit scope
+messages. \code{confint()} without an explicit method also errors: validated
+confidence intervals are not implemented. The bounded experimental
+\code{method = "arc1_profile_v1"}, \code{method = "arc1_profile_v2"}, explicit opt-in \code{method = "arc1_profile_v3"}, and experimental
+\code{method = "arc1_profile_v4"} routes return interval tables, but interval
+formation does not establish coverage or calibration. Experimental interval
+extractors
 (\code{\link[=heritability_interval]{heritability_interval()}}, \code{\link[=variance_component_standard_errors]{variance_component_standard_errors()}}) exist
 when the engine returned those fields; they are not coverage-calibrated.
 Point estimates remain \code{\link[=variance_components]{variance_components()}}, \code{\link[=heritability]{heritability()}}, and

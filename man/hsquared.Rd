@@ -35,8 +35,12 @@ bounded genetic GLLVM route accepts three complete Poisson traits. See
 \item{...}{Reserved for future arguments.}
 }
 \value{
-A \code{"hsquared_fit"} object from a successful default-path fit.
-Missing Julia produces an install-guidance error. When
+A \code{"hsquared_fit"} object from a successful default-path fit. The
+explicit experimental automatic FA-rank control returns an
+\code{"hsquared_fa_rank_selection"} object with both candidate rows and actual
+optimizer attempts; its \code{selected_fit} is an ordinary \code{"hsquared_fit"}
+when selection succeeds and \code{NULL} otherwise.
+Missing Julia on the default path produces an install-guidance error. When
 \code{engine = "validate"}, the validated model spec is returned invisibly
 as a named list (not the classed object from \code{\link[=model_spec]{model_spec()}}).
 }

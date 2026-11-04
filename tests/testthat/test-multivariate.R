@@ -522,13 +522,11 @@ test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
     id = ped$id
   )
 
-  # PINNED (hsquared#235): this fixture's optimum is flat/boundary, so the
-  # engine's observed information is not positive definite and
-  # multivariate_covariance_standard_errors() refuses. The bridge surfaces
-  # that as one warning rather than a silent NA -- asserting it keeps the
-  # surfacing from regressing to silence. One record per animal here, so the
-  # repeated-records warning does NOT apply. If the engine later makes these
-  # SEs computable this FAILS on purpose: update it deliberately.
+  # PINNED (hsquared#235): at this fixed 400-iteration budget the fit does not
+  # converge, so uncertainty is refused at the convergence guard before the
+  # observed-information check. If a fit converges but its observed information
+  # is not positive definite, that is the other valid refusal. Keep this
+  # warning visible and narrow; do not force convergence or invent SEs here.
   expect_warning(
     fit <- hsquared(
       cbind(y1, y2) ~ animal(1 | id, pedigree = ped),
@@ -543,10 +541,18 @@ test_that("hsquared can use the opt-in experimental multivariate REML bridge", {
         engine_control = list(target = "multivariate", iterations = 2000L)
       )
     ),
-    "multivariate_covariance_standard_errors\\(\\).*observed information is not finite positive-definite"
+    "multivariate uncertainty requires a fit with converged = true|multivariate_covariance_standard_errors\\(\\).*observed information is not finite positive-definite"
   )
 
   expect_s3_class(fit, "hsquared_fit")
+  expect_false(fit$result$converged)
+  expect_null(fit$result$covariance_standard_errors)
+  bridge_errors <- attr(fit, "bridge_errors")
+  expect_true("multivariate_covariance_standard_errors" %in% names(bridge_errors))
+  expect_match(
+    unname(bridge_errors[["multivariate_covariance_standard_errors"]]),
+    "multivariate uncertainty requires a fit with converged = true"
+  )
   expect_equal(fit$spec$target, "multivariate")
   expect_equal(dim(genetic_covariance(fit)), c(2L, 2L))
   expect_equal(dim(residual_covariance(fit)), c(2L, 2L))

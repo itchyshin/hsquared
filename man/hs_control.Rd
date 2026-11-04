@@ -37,7 +37,10 @@ the advanced opt-in bridge with explicit \code{target} control.}
 experimental Julia bridge recognizes \code{julia_project}, \code{initial},
 \code{iterations}, \code{em_warmup}, \code{target}, \code{variance_components}, \code{marginal},
 \code{max_dense_cells}, \code{scale_method}, \code{genetic_structure}, \code{rank},
-\code{experimental_gllvm}, and \code{skip_pev_reliability}.
+\code{rank_selection}, \code{optimizer_policy}, \code{uncertainty_method},
+\code{bootstrap_B}, \code{bootstrap_seeds}, \code{bootstrap_seed}, and
+\code{experimental_gllvm}, and \code{skip_pev_reliability}. The scalar \code{bootstrap_seed} is recognized only to
+return a clear refusal; seed-stream derivation is not available.
 \code{julia_project} is honoured by every \code{target}; supplying a key a given
 \code{target} does not honour errors (hsquared#212) rather than being
 silently ignored. Per-target honoured keys (besides \code{julia_project}):
@@ -52,12 +55,19 @@ silently ignored. Per-target honoured keys (besides \code{julia_project}):
 \code{metafounder_single_step}, \code{relmat}, \code{precision}: \code{initial},
 \code{iterations} (\code{sparse_reml} also \code{skip_pev_reliability}).
 \item \code{repeatability}: \code{initial}, \code{iterations}, \code{max_dense_cells},
-\code{scale_method}.
+\code{scale_method}, \code{uncertainty_method}. \code{max_dense_cells} remains honored
+by the legacy repeatability point fitter; Arc 1 profile methods refuse it
+because those paths cannot apply the cap. Bootstrap controls are
+unsupported for this target.
 \item \code{multi_effect}: \code{initial}, \code{iterations}, \code{scale_method}. Both the
 default dense route and the opt-in \code{scale_method = "auto"} route
 forward \code{initial} and \code{iterations} to the Julia fitter.
 \item \code{multivariate}: \code{initial}, \code{iterations}, \code{genetic_structure}, \code{rank},
-\code{max_dense_cells}.
+\code{max_dense_cells}, \code{rank_selection}, \code{optimizer_policy}, \code{uncertainty_method},
+\code{bootstrap_B}, \code{bootstrap_seeds}. Arc 1 FA rank selection refuses an
+explicit \code{max_dense_cells} override. The bootstrap controls require
+\code{uncertainty_method = "arc1_bootstrap_v1"};
+otherwise they are refused.
 \item \code{genetic_gllvm}: \code{iterations}, \code{genetic_structure}, \code{rank},
 \code{experimental_gllvm} (\code{initial} is not exposed on this route).
 \item \code{multivariate_repeatability}: \code{initial}, \code{iterations},
@@ -68,7 +78,8 @@ forward \code{initial} and \code{iterations} to the Julia fitter.
 \code{max_dense_cells} bounds \code{nobs^2 + nanimals^2} on
 the engine's dense-validation fitters (hsquared#214, #217): the default Julia
 target \code{target = "fit_animal_model"} (via \code{HSquared.fit_animal_model()} /
-\code{fit_variance_components()}) and \code{target = "repeatability"}. Those two
+\code{fit_variance_components()}) and \code{target = "repeatability"}. Arc 1 profile paths refuse explicit
+\code{max_dense_cells} overrides. Those two
 require \code{engine = "julia"}. The default univariate \code{engine = "fit"} path
 routes to sparse-capable \code{HSquared.fit_ai_reml()} and does not use this
 cap. No dense-cell cap is not a size-free claim: when additive variance
@@ -89,8 +100,10 @@ problem at the cost of memory and time, or switch to a sparse route
 (\code{target = "ai_reml"}/\code{"sparse_reml"}) instead of raising it indefinitely.
 Exceeding the cap now raises an \code{hsquared_error} naming the observed cell
 count and the effective cap, rather than a raw Julia trace.
-On \code{target = "repeatability"}, \code{max_dense_cells} reaches the point fit only.
-The opt-in repeatability-coefficient interval is computed by a separate engine
+On the legacy \code{target = "repeatability"} path without either profile
+method, \code{max_dense_cells} reaches the
+point fit only.
+The legacy opt-in repeatability-coefficient interval is computed by a separate engine
 entry point that exposes no such control and runs at the engine default
 (\code{1e6}), so \strong{raising the cap above \code{1e6} returns the point fit with the
 interval silently absent} (\code{NULL}) rather than with an error. Tracked on the
@@ -319,6 +332,57 @@ uses Julia's phenotype-scale start; a supplied \code{initial} may contain only
 validated \code{G0} and \code{R0} matrices. FA \code{loadings} and \code{uniqueness} starts
 are rejected rather than silently dropped. This does not activate
 \code{cov = fa()} formula grammar, a default route, or a covered status.
+Experimental automatic selection is separately opt-in with
+\code{rank_selection = "auto"} and the existing multivariate animal formula:
+\code{hs_control(engine = "julia", engine_control = list(target = "multivariate", rank_selection = "auto"))}. It compares shared-factor
+counts zero and one for four complete Gaussian traits with pedigree
+relationships, one record per observed animal, trait intercepts, and an
+unstructured residual covariance. Do not supply \code{rank}, \code{initial}, or
+\code{genetic_structure} with automatic selection. The result is a dedicated
+\code{hsquared_fa_rank_selection} object with both candidate rows and actual
+optimizer attempts. A successful object carries an ordinary fit as
+\code{selected_fit}; unavailable selection has \code{selected_fit = NULL}. This
+comparison is experimental and uncertainty is conditional on selected
+rank; it does not activate \code{cov = fa()} syntax or a default.
+The separate expert controls \code{optimizer_policy = "arc1_v1"} and
+\code{optimizer_policy = "arc1_v2"} select versioned bounded Gaussian optimizer
+policies for automatic selection or a fixed rank-one FA fit. They require
+a validated pedigree and use the frozen 2,000-iteration budget; omit
+\code{initial}. Fixed rank one also requires
+\code{genetic_structure = "factor_analytic"} and \code{rank = 1L}. Results retain
+policy version, actual policy per attempt, loaded-source identity,
+scheduled and attempted starts, gradient diagnostics, and failure status.
+Version 2 represents the FA covariance with retained factors and does not
+certify downstream GLS/BLUP operations. Both policies remain experimental
+and do not imply calibration.
+\code{uncertainty_method = "arc1_bootstrap_v1"} is a separate expert request
+that requires this automatic selector, \code{optimizer_policy = "arc1_v1"},
+fixed \code{bootstrap_B}, and exactly \code{bootstrap_B} distinct UInt64 seeds in
+\code{bootstrap_seeds}. Supply seeds as decimal strings to preserve all UInt64
+values exactly; numeric seeds are accepted only through \code{2^53 - 1}. The
+bridge retains every attempt and keeps the selected point estimates. The
+current seed-stream option is not supported on this route.
+\code{uncertainty_method = "arc1_profile_v1"} selects the bounded univariate
+Gaussian repeatability profile with the existing method. The explicit
+opt-in \code{uncertainty_method = "arc1_profile_v2"} selects the versioned
+bounded refinement for a narrowly eligible nuisance-profile case under
+the same model scope; existing v1 requests
+retain their meaning. Both require a pedigree model with a permanent effect and exactly
+two records per observed animal. They profile additive
+variance, permanent-environment variance, residual variance, heritability,
+and repeatability. The R route requires
+\code{scale_method = "dense"} and does not accept \code{initial} or \code{iterations}.
+The explicit opt-in \code{uncertainty_method = "arc1_profile_v3"} adds only a
+narrowly eligible fixed-residual, two-genetic-zero corner certificate;
+experimental \code{"arc1_profile_v4"} is a distinct method version with the
+same model scope and matching \code{confint()} method requirement. Neither has
+validated coverage. Error diagnostics may retain partial profile
+evaluations without forming a fit or interval.
+Results are available through \code{arc1_uncertainty()} as a long interval
+table and in the fit's separate \code{arc1_uncertainty} metadata component.
+\code{confint()} requires the matching explicit method name. Profile and
+bootstrap bounds use fixed nominal 95\% rules; interval formation does not
+establish coverage or calibration. Legacy interval fields are unchanged.
 \code{"lowrank"} remains refused on this Gaussian multivariate target.
 \code{target = "multivariate_repeatability"} is the experimental
 \code{cbind(...) + permanent(1 | id)} route (hsquared#237). Naming it is

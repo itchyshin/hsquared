@@ -1318,8 +1318,12 @@ hs_stop_if_genomic_boundary <- function(object, what) {
       status %in% c("boundary_lower", "boundary_upper")
   ) {
     stop(
-      "`", what, "()` is not available for this genomic fit: the ratio is at ",
-      "a variance-component boundary (", status, "), where the Wald ",
+      "`",
+      what,
+      "()` is not available for this genomic fit: the ratio is at ",
+      "a variance-component boundary (",
+      status,
+      "), where the Wald ",
       "standard error and logit-delta interval do not apply. See ",
       "`fit_diagnostics()` and `summary()` for the boundary classification.",
       call. = FALSE
@@ -2549,9 +2553,13 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 
 #' Block unsupported likelihood-inference helpers
 #'
-#' These methods intentionally fail with explicit scope messages. Validated
-#' `confint()` / `vcov()` / `profile()` / `anova()` surfaces are not
-#' implemented. Experimental interval extractors
+#' `vcov()`, `profile()`, and `anova()` intentionally fail with explicit scope
+#' messages. `confint()` without an explicit method also errors: validated
+#' confidence intervals are not implemented. The bounded experimental
+#' `method = "arc1_profile_v1"`, `method = "arc1_profile_v2"`, explicit opt-in `method = "arc1_profile_v3"`, and experimental
+#' `method = "arc1_profile_v4"` routes return interval tables, but interval
+#' formation does not establish coverage or calibration. Experimental interval
+#' extractors
 #' ([heritability_interval()], [variance_component_standard_errors()]) exist
 #' when the engine returned those fields; they are not coverage-calibrated.
 #' Point estimates remain [variance_components()], [heritability()], and
@@ -2568,9 +2576,18 @@ AIC.hsquared_fit <- function(object, ..., k = 2) {
 #' @param object An `hsquared_fit` object.
 #' @param fitted An `hsquared_fit` object for [stats::profile()].
 #' @param ... Reserved for future arguments.
-#' @param parm,level Included for compatibility with [stats::confint()].
+#' @param parm Included for compatibility with [stats::confint()].
+#' @param level Arc 1 profile methods require `0.95` and use
+#'   its fixed nominal 95 percent likelihood-ratio cutoff.
+#' @param method Optional explicit method. For `hsquared_fit`, the supported
+#'   values are `"arc1_profile_v1"`, `"arc1_profile_v2"`, `"arc1_profile_v3"`, and experimental `"arc1_profile_v4"`; the value must
+#'   match the uncertainty
+#'   method selected when fitting. The default `NULL` retains the unsupported
+#'   validated-interval behavior.
 #'
-#' @return These functions always error.
+#' @return With a matching profile method, `confint.hsquared_fit()` returns
+#'   the Arc 1 interval table. Without that explicit method, `confint()` and
+#'   the grouped unsupported inference helpers error with scope messages.
 #' @name inference_blocks
 NULL
 
@@ -2626,7 +2643,42 @@ hs_interval_sibling_hint <- function(object) {
 
 #' @rdname inference_blocks
 #' @export
-confint.hsquared_fit <- function(object, parm, level = 0.95, ...) {
+confint.hsquared_fit <- function(
+  object,
+  parm,
+  level = 0.95,
+  method = NULL,
+  ...
+) {
+  if (!is.null(method)) {
+    stored_method <- object$result$arc1_uncertainty$method
+    supported_method <- is.character(method) &&
+      length(method) == 1L &&
+      !is.na(method) &&
+      method %in%
+        c(
+          "arc1_profile_v1",
+          "arc1_profile_v2",
+          "arc1_profile_v3",
+          "arc1_profile_v4"
+        )
+    if (
+      !isTRUE(supported_method) ||
+        !identical(method, stored_method)
+    ) {
+      stop(
+        "The explicit `method` must match the method selected when fitting (`arc1_profile_v1`, `arc1_profile_v2`, `arc1_profile_v3`, or `arc1_profile_v4`).",
+        call. = FALSE
+      )
+    }
+    if (!identical(level, 0.95)) {
+      stop(
+        "Arc 1 profile methods use a fixed 95% likelihood-ratio cutoff.",
+        call. = FALSE
+      )
+    }
+    return(hs_arc1_confint_table(object))
+  }
   stop(
     "Validated confidence intervals for `hsquared_fit` quantities are not ",
     "implemented. ",

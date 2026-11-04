@@ -1472,13 +1472,127 @@ hs_validate_nongaussian_three_field_v09_dots <- function(dots) {
 # (the engine carries an identity relationship for it), so the existing payload
 # is sufficient. Variance components sigma^2_a and sigma^2_pe are only identifiable with
 # repeated records per individual.
+hs_julia_arc1_profile_method_argument <- function(
+  method,
+  v3_evidence_sink = "hsq_arc1_v3_evidence_sink"
+) {
+  if (
+    !is.character(method) ||
+      length(method) != 1L ||
+      is.na(method) ||
+      !method %in%
+        c(
+          "arc1_profile_v1",
+          "arc1_profile_v2",
+          "arc1_profile_v3",
+          "arc1_profile_v4"
+        )
+  ) {
+    stop(
+      "Unsupported Arc 1 profile method for the Julia bridge.",
+      call. = FALSE
+    )
+  }
+  argument <- paste0('method="', method, '"')
+  if (method %in% c("arc1_profile_v3", "arc1_profile_v4")) {
+    if (
+      !is.character(v3_evidence_sink) ||
+        length(v3_evidence_sink) != 1L ||
+        !grepl("^[A-Za-z_][A-Za-z0-9_]*$", v3_evidence_sink)
+    ) {
+      stop("Invalid invocation-local Julia sink name.", call. = FALSE)
+    }
+    argument <- paste0(
+      argument,
+      ", v3_evidence_sink=",
+      v3_evidence_sink
+    )
+  }
+  argument
+}
+
+hs_arc1_materialize_target_details <- function(
+  x,
+  converter = hs_arc1_plain_to_list
+) {
+  # Detach the nested result from JuliaCall's conversion buffers before any
+  # later Julia evaluation can reuse storage backing strings and names.
+  unserialize(serialize(
+    converter(x),
+    NULL,
+    version = 3L
+  ))
+}
+
+hs_julia_arc1_profile_targets_command <- function(method) {
+  if (!identical(method, "arc1_profile_v4")) {
+    return("")
+  }
+  paste(
+    "hsq_arc1_targets_r = Dict(string(k)=>(estimate=v.estimate,",
+    "status=string(v.status), search_status=string(v.search_status), domain=v.domain,",
+    "max_gap=v.max_gap, refinements=v.refinements, evaluated=v.evaluated, formed=v.formed,",
+    "profile_status_counts=Dict(string(s)=>n for (s,n) in pairs(v.profile_status_counts)),",
+    "nuisance_statuses=[(counts=Dict(string(s)=>n for (s,n) in pairs(x.counts)), examples=Dict(string(s)=>Tuple(hsq_arc1_plain.(records)) for (s,records) in pairs(x.examples)), omitted=x.omitted) for x in v.nuisance_statuses],",
+    "tail_screen=v.tail_screen===nothing ? nothing : (method=get(v.tail_screen,:method,nothing)===nothing ? nothing : string(get(v.tail_screen,:method,nothing)),",
+    "points=Tuple(hsq_arc1_plain.(v.tail_screen.points)), consecutive=v.tail_screen.consecutive,",
+    "cap=v.tail_screen.cap, passed=v.tail_screen.passed, cap_reached=v.tail_screen.cap_reached,",
+    "certificate=get(v.tail_screen,:certificate,nothing)===nothing ? nothing : let c=v.tail_screen.certificate;",
+    "(status=string(c.status), reason=c.reason===nothing ? nothing : string(c.reason), certified=c.certified, E=c.E,",
+    "upper_bound=string(c.upper_bound), threshold_lower=string(c.threshold_lower), gap_lower=string(c.gap_lower),",
+    "precision=c.precision, rounding=string(c.rounding),",
+    "rounding_semantics=(precision_bits=c.precision, determinant=\"exact_rational\", upper_bound=\"upward\", threshold_lower=\"downward\", gap_lower=\"downward\", comparison_tolerance=\"1e-8\"),",
+    "determinant=c.determinant===nothing ? nothing : (numerator=string(numerator(c.determinant)), denominator=string(denominator(c.determinant))),",
+    "residual_df=c.residual_df, design_identity=c.design_identity, convention=string(c.convention),",
+    "determinant_identity=get(c,:determinant_identity,nothing)===nothing ? nothing : string(c.determinant_identity)) end),",
+    "profile_diagnostics=Tuple(hsq_arc1_plain.(v.profile_diagnostics)), caveat=v.caveat) for (k,v) in pairs(hsq_arc1.targets));"
+  )
+}
+
+hs_julia_arc1_v4_evidence_projection_expression <- function(sink_name) {
+  if (
+    !is.character(sink_name) ||
+      length(sink_name) != 1L ||
+      !grepl("^[A-Za-z_][A-Za-z0-9_]*$", sink_name)
+  ) {
+    stop("Invalid Arc 1 v4 evidence sink name.", call. = FALSE)
+  }
+  paste0(
+    "let source=",
+    sink_name,
+    "; v3=:arc1_profile_v3_evaluations; v4=:arc1_profile_v4_evaluations;",
+    "verified=string(get(source,:requested_method_version,\"\"))==\"arc1_profile_v4\" && ",
+    "string(get(source,:actual_method_version,\"\"))==\"arc1_profile_v4\" && ",
+    "haskey(source,v3) && haskey(source,v4) && source[v3] === source[v4];",
+    "projection=copy(source); verified && delete!(projection,v4);",
+    "(evidence=projection, v4_alias_verified=verified) end"
+  )
+}
+
+hs_arc1_debug_progress <- function(stage) {
+  if (
+    identical(
+      tolower(Sys.getenv("HSQUARED_ARC1_DEBUG_PROGRESS", unset = "false")),
+      "true"
+    )
+  ) {
+    message(sprintf(
+      "HSQUARED_ARC1_DEBUG_PROGRESS %s elapsed=%.1f",
+      stage,
+      unname(proc.time()[["elapsed"]])
+    ))
+  }
+  invisible(NULL)
+}
+
 hs_fit_julia_repeatability_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1),
   iterations = 200L,
   max_dense_cells = 1e6,
-  scale_method = c("dense", "auto")
+  scale_method = c("dense", "auto"),
+  uncertainty_method = NULL
 ) {
   scale_method <- match.arg(scale_method)
   if (!inherits(payload, "hs_bridge_payload")) {
@@ -1505,6 +1619,315 @@ hs_fit_julia_repeatability_payload <- function(
     "hsq_mdc",
     hs_validate_max_dense_cells(max_dense_cells)
   )
+  if (
+    identical(uncertainty_method, "arc1_profile_v1") ||
+      identical(uncertainty_method, "arc1_profile_v2") ||
+      identical(uncertainty_method, "arc1_profile_v3") ||
+      identical(uncertainty_method, "arc1_profile_v4")
+  ) {
+    if (!identical(scale_method, "dense")) {
+      stop(
+        "Arc 1 profile methods currently require `scale_method = \"dense\"`.",
+        call. = FALSE
+      )
+    }
+    v3_profile <- identical(uncertainty_method, "arc1_profile_v3")
+    profile_evidence_profile <- uncertainty_method %in%
+      c("arc1_profile_v3", "arc1_profile_v4")
+    profile_sink_name <- if (profile_evidence_profile) {
+      hs_arc1_new_v3_sink_name(uncertainty_method)
+    } else {
+      NULL
+    }
+    profile_call <- function() {
+      hs_arc1_debug_progress("engine-call-start")
+      result <- hs_julia_fit(
+        JuliaCall::julia_command(paste(
+          hs_julia_bridge_errors_reset,
+          hs_julia_arc1_plain_command(),
+          if (profile_evidence_profile) {
+            paste0(profile_sink_name, " = Dict{Symbol,Any}();")
+          } else {
+            ""
+          },
+          "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+          paste0(
+            "hsq_arc1 = HSquared.arc1_profile_repeatability(hsq_y, hsq_X, hsq_Z, hsq_ped; ",
+            "ids=hsq_ped.ids, ",
+            hs_julia_arc1_profile_method_argument(
+              uncertainty_method,
+              v3_evidence_sink = if (profile_evidence_profile) {
+                profile_sink_name
+              } else {
+                "hsq_arc1_v3_evidence_sink"
+              }
+            ),
+            ");"
+          ),
+          hs_julia_arc1_profile_targets_command(uncertainty_method),
+          "hsq_arc1_ci = HSquared.arc1_confint(hsq_arc1);",
+          "hsq_arc1_point = hsq_arc1.point_fit;"
+        )),
+        hint = hs_repeatability_dense_route_hint
+      )
+      hs_arc1_debug_progress("engine-call-complete")
+      result
+    }
+    sink_expression <- if (profile_evidence_profile) {
+      "nothing"
+    } else {
+      "nothing"
+    }
+    profile_and_convert <- function() {
+      profile_call()
+      hs_arc1_debug_progress("result-extraction-start")
+      raw <- JuliaCall::julia_eval(paste(
+        "let p=hsq_arc1_point, v=p===nothing ? nothing : p.variance_components,",
+        "ci=hsq_arc1_ci, targets=hsq_arc1.targets;",
+        "Dict(\"point_ok\" => p!==nothing && p.status==:ok,",
+        "\"sigma_a2\" => v===nothing ? NaN : v.sigma_a2,",
+        "\"sigma_pe2\" => v===nothing ? NaN : v.sigma_pe2,",
+        "\"sigma_e2\" => v===nothing ? NaN : v.sigma_e2,",
+        "\"loglik\" => p===nothing ? NaN : p.loglik,",
+        "\"method\" => hsq_arc1.method,",
+        "\"method_version\" => string(hsq_arc1.method_version),",
+        "\"point_fit_status\" => string(hsq_arc1.point_fit_status),",
+        "\"estimand_definition\" => string(hsq_arc1.estimand),",
+        "\"loglik_convention\" => string(hsq_arc1.loglik_convention),",
+        "\"loglik_full_constant_offset\" => get(hsq_arc1, :loglik_full_constant_offset, NaN),",
+        "\"loglik_comparable_across_routes\" => hsq_arc1.loglik_comparable_across_routes,",
+        "\"level\" => hsq_arc1.level, \"cutoff\" => hsq_arc1.cutoff, \"s0\" => hsq_arc1.s0,",
+        "\"max_constrained_loglik\" => hsq_arc1.max_constrained_loglik,",
+        "\"point_fit_not_optimal\" => get(hsq_arc1, :point_fit_not_optimal, false),",
+        "\"nuisance_statuses\" => hsq_arc1_plain(get(hsq_arc1, :nuisance_statuses, Dict{Symbol,Any}())),",
+        "\"source_identity\" => hsq_arc1.source_identity,",
+        "\"reference_source_identity\" => hsq_arc1.reference_source_identity,",
+        "\"point_identity\" => something(get(hsq_arc1, :point_identity, nothing), \"\"),",
+        "\"estimand\" => string.([r.estimand for r in ci]),",
+        "\"trait\" => fill(\"\", length(ci)),",
+        "\"segment\" => Int[r.segment for r in ci],",
+        "\"estimate\" => Float64[ismissing(r.estimate) ? NaN : r.estimate for r in ci],",
+        "\"lower\" => Float64[ismissing(r.lower) ? NaN : r.lower for r in ci],",
+        "\"upper\" => Float64[ismissing(r.upper) ? NaN : r.upper for r in ci],",
+        "\"formed\" => Bool[r.formed for r in ci],",
+        "\"status\" => [r.status for r in ci],",
+        "\"target_status\" => Dict(string(k)=>string(v.status) for (k,v) in pairs(targets)),",
+        "\"target_formed\" => Dict(string(k)=>v.formed for (k,v) in pairs(targets)),",
+        "\"target_evaluated\" => Dict(string(k)=>v.evaluated for (k,v) in pairs(targets)),",
+        "\"v3_profile_evidence\" => ",
+        sink_expression,
+        ") |> hsq_arc1_plain end"
+      ))
+      target_details_expression <- if (
+        identical(
+          uncertainty_method,
+          "arc1_profile_v4"
+        )
+      ) {
+        "hsq_arc1_plain(hsq_arc1_targets_r)"
+      } else {
+        "hsq_arc1_plain(hsq_arc1.targets)"
+      }
+      hs_arc1_debug_progress("target-details-extraction-start")
+      raw$targets <- JuliaCall::julia_eval(target_details_expression)
+      hs_arc1_debug_progress("target-details-extraction-complete")
+      # Detach JuliaCall's nested conversion before the next Julia evaluation
+      # can reuse storage backing tuple values, names, or strings.
+      hs_arc1_debug_progress("target-details-detach-start")
+      raw$targets <- hs_arc1_materialize_target_details(
+        raw$targets,
+        converter = hs_arc1_plain_to_list
+      )
+      hs_arc1_debug_progress("target-details-detach-complete")
+      if (profile_evidence_profile) {
+        hs_arc1_debug_progress("evidence-projection-start")
+        evidence_expression <- if (
+          identical(
+            uncertainty_method,
+            "arc1_profile_v4"
+          )
+        ) {
+          hs_julia_arc1_v4_evidence_projection_expression(profile_sink_name)
+        } else {
+          profile_sink_name
+        }
+        raw$v3_profile_evidence <- JuliaCall::julia_eval(paste0(
+          "hsq_arc1_plain(",
+          evidence_expression,
+          ")"
+        ))
+        hs_arc1_debug_progress("evidence-projection-complete")
+      }
+      hs_arc1_debug_progress("result-extraction-complete")
+      if (
+        !identical(raw$method, uncertainty_method) ||
+          !identical(raw$method_version, uncertainty_method)
+      ) {
+        stop(
+          "The Julia Arc 1 profile method identity does not match the requested uncertainty method.",
+          call. = FALSE
+        )
+      }
+      raw
+    }
+    profile_and_materialize <- function() {
+      raw <- profile_and_convert()
+      hs_arc1_debug_progress("r-conversion-start")
+      hs_arc1_debug_progress("nuisance-statuses-start")
+      nuisance_statuses <- hs_arc1_plain_to_list(raw$nuisance_statuses)
+      hs_arc1_debug_progress("nuisance-statuses-complete")
+      hs_arc1_debug_progress("target-details-start")
+      target_details <- raw$targets
+      hs_arc1_debug_progress("target-details-complete")
+      hs_arc1_debug_progress("profile-evidence-start")
+      v3_profile_evidence <- if (v3_profile) {
+        hs_arc1_debug_progress("profile-evidence-v3-materialize-start")
+        if (identical(uncertainty_method, "arc1_profile_v4")) {
+          hs_arc1_materialize_profile_evidence_projection(
+            raw$v3_profile_evidence
+          )
+        } else {
+          hs_arc1_plain_to_list(raw$v3_profile_evidence)
+        }
+      } else {
+        NULL
+      }
+      if (v3_profile) {
+        hs_arc1_debug_progress("profile-evidence-v3-materialize-complete")
+      }
+      profile_evidence <- if (profile_evidence_profile) {
+        hs_arc1_debug_progress("profile-evidence-materialize-start")
+        profile_evidence_plain <- if (
+          identical(uncertainty_method, "arc1_profile_v4")
+        ) {
+          hs_arc1_materialize_profile_evidence_projection(
+            raw$v3_profile_evidence
+          )
+        } else {
+          hs_arc1_plain_to_list(raw$v3_profile_evidence)
+        }
+        profile_evidence_plain <- hs_arc1_bind_profile_evidence_source(
+          profile_evidence_plain,
+          raw$source_identity
+        )
+        hs_arc1_debug_progress("profile-evidence-materialize-complete")
+        hs_arc1_debug_progress("profile-evidence-validate-start")
+        validated <- hs_arc1_validate_profile_evidence(
+          profile_evidence_plain,
+          uncertainty_method,
+          require_identity = TRUE,
+          expected_source_identity = raw$source_identity,
+          verified_bridge_alias = isTRUE(attr(
+            profile_evidence_plain,
+            "hs_arc1_verified_bridge_alias"
+          ))
+        )
+        attr(validated, "hs_arc1_verified_bridge_alias") <- NULL
+        hs_arc1_debug_progress("profile-evidence-validate-complete")
+        validated
+      } else {
+        NULL
+      }
+      hs_arc1_debug_progress("profile-evidence-complete")
+      hs_arc1_debug_progress("r-conversion-complete")
+      intervals <- data.frame(
+        estimand = as.character(raw$estimand),
+        trait = as.character(raw$trait),
+        segment = as.integer(raw$segment),
+        estimate = as.numeric(raw$estimate),
+        lower = as.numeric(raw$lower),
+        upper = as.numeric(raw$upper),
+        formed = as.logical(raw$formed),
+        status = as.character(raw$status),
+        stringsAsFactors = FALSE
+      )
+      intervals[!is.finite(intervals$estimate), "estimate"] <- NA_real_
+      intervals[!is.finite(intervals$lower), "lower"] <- NA_real_
+      intervals[!is.finite(intervals$upper), "upper"] <- NA_real_
+      uncertainty <- list(
+        method = raw$method,
+        method_version = raw$method_version,
+        point_fit_status = raw$point_fit_status,
+        estimand_definition = raw$estimand_definition,
+        loglik_convention = raw$loglik_convention,
+        loglik_full_constant_offset = raw$loglik_full_constant_offset,
+        loglik_comparable_across_routes = raw$loglik_comparable_across_routes,
+        level = raw$level,
+        cutoff = raw$cutoff,
+        scale_reference = raw$s0,
+        max_constrained_loglik = raw$max_constrained_loglik,
+        point_fit_not_optimal = isTRUE(raw$point_fit_not_optimal),
+        nuisance_statuses = nuisance_statuses,
+        target_details = target_details,
+        source_identity = raw$source_identity,
+        reference_source_identity = raw$reference_source_identity,
+        point_identity = raw$point_identity,
+        intervals = intervals,
+        target_status = raw$target_status,
+        target_formed = raw$target_formed,
+        target_evaluated = raw$target_evaluated,
+        v3_profile_evidence = v3_profile_evidence,
+        profile_evidence = profile_evidence,
+        calibration_status = "unverified",
+        formation_claim = "computational_formation_only"
+      )
+      point_status <- hs_arc1_profile_point_status(
+        raw$point_fit_status,
+        raw$point_fit_not_optimal
+      )
+      result <- list(
+        variance_components = data.frame(
+          component = c("animal", "permanent", "residual"),
+          estimate = c(raw$sigma_a2, raw$sigma_pe2, raw$sigma_e2),
+          stringsAsFactors = FALSE
+        ),
+        heritability = raw$sigma_a2 /
+          (raw$sigma_a2 + raw$sigma_pe2 + raw$sigma_e2),
+        repeatability = (raw$sigma_a2 + raw$sigma_pe2) /
+          (raw$sigma_a2 + raw$sigma_pe2 + raw$sigma_e2),
+        loglik = raw$loglik,
+        converged = point_status$converged,
+        arc1_uncertainty = uncertainty,
+        diagnostics = list(
+          uncertainty_method = raw$method,
+          point_fit_status = point_status$point_fit_status,
+          point_fit_not_optimal = point_status$point_fit_not_optimal,
+          point_identity = raw$point_identity,
+          point_source_identity = raw$reference_source_identity,
+          unavailable_postfit = c(
+            "animal and permanent BLUPs",
+            "standard errors",
+            "reliability"
+          )
+        )
+      )
+      hs_new_fit(
+        spec = list(
+          method = "REML",
+          family = list(family = payload$family, link = "identity"),
+          target = "repeatability"
+        ),
+        payload = payload,
+        result = result
+      )
+    }
+    profile_result <- if (profile_evidence_profile) {
+      hs_arc1_run_v3_profile_operation(
+        profile_and_materialize,
+        uncertainty_method,
+        function() {
+          hs_arc1_read_profile_julia_sink(
+            profile_sink_name,
+            uncertainty_method
+          )
+        },
+        function() hs_arc1_julia_clear_v3_binding_checked(profile_sink_name)
+      )
+    } else {
+      profile_and_materialize()
+    }
+    return(profile_result)
+  }
   if (identical(scale_method, "dense")) {
     # Covered validation-scale route, unchanged: the dense three-component
     # optimizer, gated by the engine on nobs^2 + nanimals^2 <= max_dense_cells.
@@ -3298,7 +3721,8 @@ hs_fit_julia_multivariate_payload <- function(
   iterations = 2000L,
   genetic_structure = "unstructured",
   rank = NULL,
-  max_dense_cells = 1e6
+  max_dense_cells = 1e6,
+  optimizer_policy = NULL
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -3361,12 +3785,34 @@ hs_fit_julia_multivariate_payload <- function(
   }
   JuliaCall::julia_assign("hsq_iterations", iterations)
   JuliaCall::julia_assign("hsq_max_dense_cells", max_dense_cells)
+  if (!is.null(optimizer_policy)) {
+    JuliaCall::julia_assign("hsq_optimizer_policy", optimizer_policy)
+  }
   JuliaCall::julia_assign(
     "hsq_genetic_structure",
     as.character(genetic_structure)
   )
   if (identical(genetic_structure, "factor_analytic")) {
     JuliaCall::julia_assign("hsq_rank", as.integer(rank))
+  }
+  ledger_name <- NULL
+  ledger_sink_expr <- ""
+  if (
+    !is.null(optimizer_policy) && optimizer_policy %in% c("arc1_v1", "arc1_v2")
+  ) {
+    ledger_name <- paste0(
+      "hsq_arc1_ledger_",
+      gsub("[^A-Za-z0-9_]", "_", basename(tempfile("request_")))
+    )
+    JuliaCall::julia_command(paste0(ledger_name, " = Ref{Any}(nothing);"))
+    on.exit(
+      try(
+        JuliaCall::julia_command(paste0(ledger_name, "[] = nothing;")),
+        silent = TRUE
+      ),
+      add = TRUE
+    )
+    ledger_sink_expr <- paste0(", ledger_sink = ", ledger_name)
   }
   initial_expr <- if (is.null(initial)) {
     "nothing"
@@ -3378,92 +3824,140 @@ hs_fit_julia_multivariate_payload <- function(
   } else {
     ""
   }
-  hs_julia_fit(
-    JuliaCall::julia_command(paste(
-      hs_julia_bridge_errors_reset,
-      "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
-      "string.(hsq_ped.ids) == hsq_mv_ids || error(\"Multivariate pedigree ID order changed across bridge\");",
-      "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
-      "hsq_fit = HSquared.fit_multivariate_reml(",
-      "hsq_Y, hsq_X, hsq_Z, hsq_Ainv;",
-      paste0("initial = ", initial_expr, ","),
-      "iterations = hsq_iterations, max_dense_cells = Int(hsq_max_dense_cells),",
-      "ids = hsq_ped.ids, traits = hsq_traits,",
-      paste0(
-        "genetic_structure = Symbol(hsq_genetic_structure)",
-        rank_expr,
-        ");"
-      ),
-      "hsq_mv_raw = Dict(",
-      "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
-      "\"residual_covariance\" => Matrix{Float64}(hsq_fit.residual_covariance),",
-      "\"genetic_correlation\" => Matrix{Float64}(hsq_fit.genetic_correlation),",
-      "\"residual_correlation\" => Matrix{Float64}(hsq_fit.residual_correlation),",
-      "\"heritability\" => collect(Float64, hsq_fit.heritability),",
-      "\"beta\" => Matrix{Float64}(hsq_fit.beta),",
-      "\"breeding_ids\" => string.(collect(hsq_fit.breeding_values.ids)),",
-      "\"breeding_traits\" => string.(collect(hsq_fit.breeding_values.traits)),",
-      "\"breeding_values\" => Matrix{Float64}(hsq_fit.breeding_values.values),",
-      "\"loglik\" => hsq_fit.loglik,",
-      "\"converged\" => hsq_fit.converged,",
-      "\"iterations\" => hsq_fit.iterations,",
-      "\"traits\" => string.(collect(hsq_fit.traits)),",
-      "\"genetic_structure\" => string(hsq_fit.genetic_structure)",
-      ");",
-      "if hsq_fit.genetic_structure == :factor_analytic;",
-      "hsq_mv_structured = HSquared.structured_genetic_payload(hsq_fit);",
-      "hsq_mv_raw[\"genetic_rank\"] = hsq_mv_structured.genetic_rank;",
-      "hsq_mv_raw[\"genetic_uniqueness\"] = collect(Float64, hsq_mv_structured.genetic_uniqueness);",
-      "hsq_mv_raw[\"genetic_uniqueness_identification\"] = string(hsq_mv_structured.genetic_uniqueness_identification);",
-      "fa = hsq_fit.fa_start_diagnostics;",
-      "hsq_mv_raw[\"fa_start_strategy\"] = string(fa.strategy);",
-      "hsq_mv_raw[\"fa_start_starts_attempted\"] = fa.starts_attempted;",
-      "hsq_mv_raw[\"fa_start_selected_start\"] = string(fa.selected_start);",
-      "hsq_mv_raw[\"fa_start_objective_range\"] = something(fa.objective_range, NaN);",
-      "hsq_mv_raw[\"fa_start_g_relative_disagreement\"] = something(fa.g_relative_disagreement, NaN);",
-      "hsq_mv_raw[\"fa_start_r_relative_disagreement\"] = something(fa.r_relative_disagreement, NaN);",
-      "hsq_mv_raw[\"fa_start_better_nonconverged_start\"] = fa.better_nonconverged_start;",
-      "hsq_mv_raw[\"fa_start_minimum_uniqueness\"] = fa.minimum_uniqueness;",
-      "hsq_mv_raw[\"fa_start_uniqueness_floor_distance\"] = fa.uniqueness_floor_distance;",
-      "hsq_mv_raw[\"fa_start_near_uniqueness_floor\"] = fa.near_uniqueness_floor;",
-      "hsq_mv_raw[\"fa_start_names\"] = string.([s.name for s in fa.starts]);",
-      "hsq_mv_raw[\"fa_start_loglik\"] = [something(s.loglik, NaN) for s in fa.starts];",
-      "hsq_mv_raw[\"fa_start_valid\"] = [s.valid for s in fa.starts];",
-      "hsq_mv_raw[\"fa_start_converged\"] = [s.converged for s in fa.starts];",
-      "hsq_mv_raw[\"fa_start_iterations\"] = [s.iterations for s in fa.starts];",
-      "hsq_mv_raw[\"fa_start_minimum_uniqueness_by_start\"] = [something(s.minimum_uniqueness, NaN) for s in fa.starts];",
-      "hsq_mv_raw[\"fa_start_uniqueness_floor_distance_by_start\"] = [something(s.uniqueness_floor_distance, NaN) for s in fa.starts];",
-      "end;",
-      # Number of genetic covariance parameters (contract field for the
-      # structure LRT). Read from the engine payload when present; the R
-      # normalizer falls back to deriving it from genetic_structure + n_traits.
-      "if hasproperty(hsq_fit, :n_genetic_params);",
-      "hsq_mv_raw[\"n_genetic_params\"] = hsq_fit.n_genetic_params;",
-      "end;",
-      # Experimental covariance standard errors (engine row V4-MV-REML, partial;
-      # :unstructured only -- the engine throws for structured / factor-analytic
-      # fits, and the observed information can be non-positive-definite at a
-      # flat/boundary optimum, hence the try guard).
-      "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
-      "hsq_fit.genetic_structure == :unstructured;",
-      "hsq_mvse = try; HSquared.multivariate_covariance_standard_errors(",
-      "hsq_fit, hsq_Y, hsq_X, hsq_Z, hsq_Ainv);",
-      hs_julia_catch_record("multivariate_covariance_standard_errors"),
-      "if hsq_mvse !== nothing;",
-      "hsq_mv_raw[\"se_genetic_covariance\"] = Matrix{Float64}(hsq_mvse.genetic_covariance);",
-      "hsq_mv_raw[\"se_residual_covariance\"] = Matrix{Float64}(hsq_mvse.residual_covariance);",
-      "hsq_mv_raw[\"se_genetic_correlation\"] = Matrix{Float64}(hsq_mvse.genetic_correlation);",
-      "hsq_mv_raw[\"se_residual_correlation\"] = Matrix{Float64}(hsq_mvse.residual_correlation);",
-      "hsq_mv_raw[\"se_heritability\"] = collect(Float64, hsq_mvse.heritability);",
-      "end;",
-      "end;"
-    )),
-    hint = hs_dense_scale_hint
+  relationship_arg <- if (
+    !is.null(optimizer_policy) && optimizer_policy %in% c("arc1_v1", "arc1_v2")
+  ) {
+    "hsq_ped"
+  } else {
+    "hsq_Ainv"
+  }
+  optimizer_policy_expr <- if (is.null(optimizer_policy)) {
+    ""
+  } else {
+    ", optimizer_policy = hsq_optimizer_policy"
+  }
+  fit_command <- paste(
+    hs_julia_fa_rank_rows_serialization_command(),
+    hs_julia_bridge_errors_reset,
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "string.(hsq_ped.ids) == hsq_mv_ids || error(\"Multivariate pedigree ID order changed across bridge\");",
+    "hsq_Ainv = HSquared.pedigree_inverse(hsq_ped);",
+    "hsq_fit = HSquared.fit_multivariate_reml(",
+    "hsq_Y, hsq_X, hsq_Z, ",
+    relationship_arg,
+    ";",
+    paste0("initial = ", initial_expr, ","),
+    "iterations = hsq_iterations, ids = hsq_ped.ids, traits = hsq_traits,",
+    "max_dense_cells = Int(hsq_max_dense_cells),",
+    paste0(
+      "genetic_structure = Symbol(hsq_genetic_structure)",
+      rank_expr,
+      optimizer_policy_expr,
+      ledger_sink_expr,
+      ");"
+    ),
+    "hsq_mv_raw = Dict(",
+    "\"genetic_covariance\" => Matrix{Float64}(hsq_fit.genetic_covariance),",
+    "\"residual_covariance\" => Matrix{Float64}(hsq_fit.residual_covariance),",
+    "\"genetic_correlation\" => Matrix{Float64}(hsq_fit.genetic_correlation),",
+    "\"residual_correlation\" => Matrix{Float64}(hsq_fit.residual_correlation),",
+    "\"heritability\" => collect(Float64, hsq_fit.heritability),",
+    "\"beta\" => hsq_fit.beta === nothing ? nothing : Matrix{Float64}(hsq_fit.beta),",
+    "\"breeding_ids\" => hsq_fit.breeding_values === nothing ? string.(hsq_ped.ids) : string.(collect(hsq_fit.breeding_values.ids)),",
+    "\"breeding_traits\" => hsq_fit.breeding_values === nothing ? string.(collect(hsq_fit.traits)) : string.(collect(hsq_fit.breeding_values.traits)),",
+    "\"breeding_values\" => hsq_fit.breeding_values === nothing ? nothing : Matrix{Float64}(hsq_fit.breeding_values.values),",
+    "\"loglik\" => hsq_fit.loglik,",
+    "\"converged\" => hsq_fit.converged,",
+    "\"iterations\" => hsq_fit.iterations,",
+    "\"traits\" => string.(collect(hsq_fit.traits)),",
+    "\"genetic_structure\" => string(hsq_fit.genetic_structure)",
+    ");",
+    "if hsq_fit.genetic_structure == :factor_analytic;",
+    "hsq_mv_structured = HSquared.structured_genetic_payload(hsq_fit);",
+    "hsq_mv_raw[\"genetic_rank\"] = hsq_mv_structured.genetic_rank;",
+    "hsq_mv_raw[\"genetic_uniqueness\"] = collect(Float64, hsq_mv_structured.genetic_uniqueness);",
+    "hsq_mv_raw[\"genetic_uniqueness_identification\"] = string(hsq_mv_structured.genetic_uniqueness_identification);",
+    "fa = hsq_fit.fa_start_diagnostics;",
+    "if hasproperty(fa, :optimizer_policy); hsq_mv_raw[\"optimizer_policy\"] = fa.optimizer_policy; hsq_mv_raw[\"optimizer_policy_version\"] = fa.optimizer_policy_version; hsq_mv_raw[\"source_identity\"] = fa.source_identity; hsq_mv_raw[\"optimizer_algorithm\"] = string(fa.algorithm); hsq_mv_raw[\"optimizer_iterations\"] = fa.optimizer_iterations; hsq_mv_raw[\"optimizer_tolerance\"] = fa.optimizer_tolerance; hsq_mv_raw[\"final_scaled_gradient_tolerance\"] = fa.final_scaled_gradient_tolerance; hsq_mv_raw[\"numerical_gradient_steps\"] = collect(fa.numerical_gradient_steps); hsq_mv_raw[\"numerical_gradient_tolerance\"] = fa.numerical_gradient_tolerance; hsq_mv_raw[\"starts_scheduled\"] = fa.starts_planned; hsq_mv_raw[\"starts_attempted\"] = fa.starts_attempted; end;",
+    "if hasproperty(fa, :final_gradient_inf_norm); hsq_mv_raw[\"final_gradient_inf_norm\"] = fa.final_gradient_inf_norm; hsq_mv_raw[\"numerical_gradient_inf_norms\"] = collect(fa.numerical_gradient_inf_norms); hsq_mv_raw[\"numerical_gradient_discrepancies\"] = collect(fa.numerical_gradient_discrepancies); hsq_mv_raw[\"numerical_gradient_status\"] = string(fa.numerical_gradient_status); end;",
+    "if hasproperty(fa, :optimizer_policy); hsq_mv_raw[\"arc1_attempts\"] = hsq_selection_rows(fa.starts); end;",
+    "if hasproperty(fa, :covariance_representation); hsq_mv_raw[\"covariance_representation\"] = string(fa.covariance_representation); hsq_mv_raw[\"requested_optimizer_policy\"] = fa.requested_optimizer_policy; hsq_mv_raw[\"actual_optimizer_policy\"] = fa.actual_optimizer_policy === nothing ? \"__HSQ_NONE__\" : string(fa.actual_optimizer_policy); end;",
+    "if hasproperty(hsq_fit, :covariance_representation); hsq_mv_raw[\"factor_valid\"] = hsq_fit.factor_valid; hsq_mv_raw[\"rounded_matrix_pd\"] = string(hsq_fit.rounded_matrix_pd); hsq_mv_raw[\"matrix_operations_status\"] = string(hsq_fit.matrix_operations_status); hsq_mv_raw[\"matrix_operations_reason\"] = hsq_fit.matrix_operations_reason; hsq_mv_raw[\"downstream_diagnostics\"] = Dict(String(k) => string(v) for (k,v) in pairs(hsq_fit.downstream_diagnostics)); end;",
+    "if !hasproperty(fa, :optimizer_policy);",
+    "hsq_mv_raw[\"fa_start_strategy\"] = string(fa.strategy);",
+    "hsq_mv_raw[\"fa_start_starts_attempted\"] = fa.starts_attempted;",
+    "hsq_mv_raw[\"fa_start_selected_start\"] = string(fa.selected_start);",
+    "hsq_mv_raw[\"fa_start_objective_range\"] = something(fa.objective_range, NaN);",
+    "hsq_mv_raw[\"fa_start_g_relative_disagreement\"] = something(fa.g_relative_disagreement, NaN);",
+    "hsq_mv_raw[\"fa_start_r_relative_disagreement\"] = something(fa.r_relative_disagreement, NaN);",
+    "hsq_mv_raw[\"fa_start_better_nonconverged_start\"] = fa.better_nonconverged_start;",
+    "hsq_mv_raw[\"fa_start_minimum_uniqueness\"] = fa.minimum_uniqueness;",
+    "hsq_mv_raw[\"fa_start_uniqueness_floor_distance\"] = fa.uniqueness_floor_distance;",
+    "hsq_mv_raw[\"fa_start_near_uniqueness_floor\"] = fa.near_uniqueness_floor;",
+    "hsq_mv_raw[\"fa_start_names\"] = string.([s.name for s in fa.starts]);",
+    "hsq_mv_raw[\"fa_start_loglik\"] = [something(s.loglik, NaN) for s in fa.starts];",
+    "hsq_mv_raw[\"fa_start_valid\"] = [s.valid for s in fa.starts];",
+    "hsq_mv_raw[\"fa_start_converged\"] = [s.converged for s in fa.starts];",
+    "hsq_mv_raw[\"fa_start_iterations\"] = [s.iterations for s in fa.starts];",
+    "hsq_mv_raw[\"fa_start_minimum_uniqueness_by_start\"] = [something(s.minimum_uniqueness, NaN) for s in fa.starts];",
+    "hsq_mv_raw[\"fa_start_uniqueness_floor_distance_by_start\"] = [something(s.uniqueness_floor_distance, NaN) for s in fa.starts];",
+    "end;",
+    "end;",
+    # Number of genetic covariance parameters (contract field for the
+    # structure LRT). Read from the engine payload when present; the R
+    # normalizer falls back to deriving it from genetic_structure + n_traits.
+    "if hasproperty(hsq_fit, :n_genetic_params);",
+    "hsq_mv_raw[\"n_genetic_params\"] = hsq_fit.n_genetic_params;",
+    "end;",
+    # Experimental covariance standard errors (engine row V4-MV-REML, partial;
+    # :unstructured only -- the engine throws for structured / factor-analytic
+    # fits, and the observed information can be non-positive-definite at a
+    # flat/boundary optimum, hence the try guard).
+    "if isdefined(HSquared, :multivariate_covariance_standard_errors) &&",
+    "hsq_fit.genetic_structure == :unstructured;",
+    "hsq_mvse = try; HSquared.multivariate_covariance_standard_errors(",
+    "hsq_fit, hsq_Y, hsq_X, hsq_Z, hsq_Ainv);",
+    hs_julia_catch_record("multivariate_covariance_standard_errors"),
+    "if hsq_mvse !== nothing;",
+    "hsq_mv_raw[\"se_genetic_covariance\"] = Matrix{Float64}(hsq_mvse.genetic_covariance);",
+    "hsq_mv_raw[\"se_residual_covariance\"] = Matrix{Float64}(hsq_mvse.residual_covariance);",
+    "hsq_mv_raw[\"se_genetic_correlation\"] = Matrix{Float64}(hsq_mvse.genetic_correlation);",
+    "hsq_mv_raw[\"se_residual_correlation\"] = Matrix{Float64}(hsq_mvse.residual_correlation);",
+    "hsq_mv_raw[\"se_heritability\"] = collect(Float64, hsq_mvse.heritability);",
+    "end;",
+    "end;"
   )
+  if (is.null(ledger_name)) {
+    # Keep evaluation inside hs_julia_fit() so Julia errors retain the
+    # established R condition classes on the legacy route.
+    hs_julia_fit(
+      JuliaCall::julia_command(fit_command),
+      hint = hs_dense_scale_hint
+    )
+  } else {
+    hs_julia_run_fa_rank_command(
+      fit_command,
+      ledger_name,
+      runner = function(command) {
+        hs_julia_fit(
+          JuliaCall::julia_command(command),
+          hint = hs_dense_scale_hint
+        )
+      },
+      ledger_reader = function() {
+        hs_julia_read_fa_rank_partial_ledger(ledger_name, payload)
+      }
+    )
+  }
   hs_julia_attach_multivariate_plot_data()
 
   raw <- JuliaCall::julia_eval("hsq_mv_raw")
-  result <- hs_normalize_multivariate_result(raw, payload)
+  result <- hs_normalize_multivariate_result(
+    raw,
+    payload,
+    allow_missing_fa_start_metadata = raw$optimizer_policy %in%
+      c("arc1_v1", "arc1_v2")
+  )
   fit <- hs_new_fit(
     spec = list(
       method = "REML",
@@ -3475,6 +3969,190 @@ hs_fit_julia_multivariate_payload <- function(
     engine = "HSquared.jl"
   )
   hs_julia_surface_bridge_errors(fit)
+}
+
+hs_julia_fa_rank_rows_serialization_command <- function() {
+  paste(
+    "hsq_selection_cell = (k, v) -> v === nothing ? \"__HSQ_NONE__\" : v isa Symbol ? string(v) : v isa AbstractMatrix ? string(size(v, 1), \"x\", size(v, 2), \":\", join(string.(vec(v)), \",\")) : v isa AbstractVector || v isa Tuple ? join([x === nothing || x === missing ? \"__HSQ_MISSING__\" : string(x) for x in v], \",\") : string(v);",
+    "hsq_selection_rows = rows -> Dict(String(k) => [hsq_selection_cell(k, hasproperty(row, k) ? getfield(row, k) : nothing) for row in rows] for k in (isempty(rows) ? () : unique(reduce(vcat, [collect(keys(row)) for row in rows]))));"
+  )
+}
+
+hs_julia_fa_rank_serialization_command <- function() {
+  paste(
+    hs_julia_arc1_plain_command(),
+    hs_julia_fa_rank_rows_serialization_command(),
+    "hsq_selected_fit = hsq_selection.selected_fit;",
+    "hsq_selected_plain = hsq_selected_fit === nothing ? nothing : Dict(",
+    "\"genetic_covariance\" => Matrix(hsq_selected_fit.genetic_covariance),",
+    "\"residual_covariance\" => Matrix(hsq_selected_fit.residual_covariance),",
+    "\"genetic_correlation\" => Matrix(hsq_selected_fit.genetic_correlation),",
+    "\"residual_correlation\" => Matrix(hsq_selected_fit.residual_correlation),",
+    "\"heritability\" => collect(Float64, hsq_selected_fit.heritability),",
+    "\"beta\" => hsq_selected_fit.beta === nothing ? nothing : Matrix(hsq_selected_fit.beta),",
+    "\"breeding_ids\" => hsq_selected_fit.breeding_values === nothing ? string.(hsq_mv_ids) : string.(collect(hsq_selected_fit.breeding_values.ids)),",
+    "\"breeding_traits\" => hsq_selected_fit.breeding_values === nothing ? string.(collect(hsq_selected_fit.traits)) : string.(collect(hsq_selected_fit.breeding_values.traits)),",
+    "\"breeding_values\" => hsq_selected_fit.breeding_values === nothing ? nothing : Matrix(hsq_selected_fit.breeding_values.values),",
+    "\"loglik\" => hsq_selected_fit.loglik, \"converged\" => hsq_selected_fit.converged,",
+    "\"iterations\" => hsq_selected_fit.iterations, \"traits\" => string.(collect(hsq_selected_fit.traits)),",
+    "\"genetic_structure\" => string(hsq_selected_fit.genetic_structure));",
+    "if hsq_selected_fit !== nothing && hsq_selected_fit.genetic_structure == :factor_analytic;",
+    "structured = HSquared.structured_genetic_payload(hsq_selected_fit);",
+    "hsq_selected_plain[\"genetic_rank\"] = structured.genetic_rank;",
+    "hsq_selected_plain[\"genetic_uniqueness\"] = collect(Float64, structured.genetic_uniqueness);",
+    "hsq_selected_plain[\"genetic_uniqueness_identification\"] = string(structured.genetic_uniqueness_identification);",
+    "fa = hsq_selected_fit.fa_start_diagnostics;",
+    "if hasproperty(fa, :optimizer_policy); hsq_selected_plain[\"optimizer_policy\"] = fa.optimizer_policy; hsq_selected_plain[\"optimizer_policy_version\"] = fa.optimizer_policy_version; hsq_selected_plain[\"source_identity\"] = fa.source_identity; hsq_selected_plain[\"optimizer_algorithm\"] = string(fa.algorithm); hsq_selected_plain[\"optimizer_iterations\"] = fa.optimizer_iterations; hsq_selected_plain[\"optimizer_tolerance\"] = fa.optimizer_tolerance; hsq_selected_plain[\"final_scaled_gradient_tolerance\"] = fa.final_scaled_gradient_tolerance; hsq_selected_plain[\"numerical_gradient_steps\"] = collect(fa.numerical_gradient_steps); hsq_selected_plain[\"numerical_gradient_tolerance\"] = fa.numerical_gradient_tolerance; hsq_selected_plain[\"starts_scheduled\"] = fa.starts_planned; hsq_selected_plain[\"starts_attempted\"] = fa.starts_attempted; hsq_selected_plain[\"final_gradient_inf_norm\"] = fa.final_gradient_inf_norm; hsq_selected_plain[\"numerical_gradient_inf_norms\"] = collect(fa.numerical_gradient_inf_norms); hsq_selected_plain[\"numerical_gradient_discrepancies\"] = collect(fa.numerical_gradient_discrepancies); hsq_selected_plain[\"numerical_gradient_status\"] = string(fa.numerical_gradient_status); end;",
+    "if hasproperty(fa, :optimizer_policy); hsq_selected_plain[\"arc1_attempts\"] = hsq_selection_rows(fa.starts); end;",
+    "if hasproperty(hsq_selected_fit, :covariance_representation); hsq_selected_plain[\"covariance_representation\"] = string(hsq_selected_fit.covariance_representation); hsq_selected_plain[\"factor_valid\"] = hsq_selected_fit.factor_valid; hsq_selected_plain[\"rounded_matrix_pd\"] = string(hsq_selected_fit.rounded_matrix_pd); hsq_selected_plain[\"matrix_operations_status\"] = string(hsq_selected_fit.matrix_operations_status); hsq_selected_plain[\"matrix_operations_reason\"] = hsq_selected_fit.matrix_operations_reason; hsq_selected_plain[\"downstream_diagnostics\"] = Dict(String(k) => string(v) for (k,v) in pairs(hsq_selected_fit.downstream_diagnostics)); end;",
+    "if !hasproperty(fa, :optimizer_policy);",
+    "hsq_selected_plain[\"fa_start_strategy\"] = string(fa.strategy);",
+    "hsq_selected_plain[\"fa_start_starts_attempted\"] = fa.starts_attempted;",
+    "hsq_selected_plain[\"fa_start_selected_start\"] = string(fa.selected_start);",
+    "hsq_selected_plain[\"fa_start_objective_range\"] = something(fa.objective_range, NaN);",
+    "hsq_selected_plain[\"fa_start_g_relative_disagreement\"] = something(fa.g_relative_disagreement, NaN);",
+    "hsq_selected_plain[\"fa_start_r_relative_disagreement\"] = something(fa.r_relative_disagreement, NaN);",
+    "hsq_selected_plain[\"fa_start_better_nonconverged_start\"] = fa.better_nonconverged_start;",
+    "hsq_selected_plain[\"fa_start_minimum_uniqueness\"] = something(fa.minimum_uniqueness, NaN);",
+    "hsq_selected_plain[\"fa_start_uniqueness_floor_distance\"] = something(fa.uniqueness_floor_distance, NaN);",
+    "hsq_selected_plain[\"fa_start_near_uniqueness_floor\"] = fa.near_uniqueness_floor;",
+    "hsq_selected_plain[\"fa_start_names\"] = string.([s.name for s in fa.starts]);",
+    "hsq_selected_plain[\"fa_start_loglik\"] = [something(s.loglik, NaN) for s in fa.starts];",
+    "hsq_selected_plain[\"fa_start_valid\"] = [s.valid for s in fa.starts];",
+    "hsq_selected_plain[\"fa_start_converged\"] = [s.converged === nothing ? \"__HSQ_NONE__\" : string(s.converged) for s in fa.starts];",
+    "hsq_selected_plain[\"fa_start_iterations\"] = [s.iterations === nothing ? \"__HSQ_NONE__\" : string(s.iterations) for s in fa.starts];",
+    "hsq_selected_plain[\"fa_start_minimum_uniqueness_by_start\"] = [something(s.minimum_uniqueness, NaN) for s in fa.starts];",
+    "hsq_selected_plain[\"fa_start_uniqueness_floor_distance_by_start\"] = [something(s.uniqueness_floor_distance, NaN) for s in fa.starts];",
+    "end;",
+    "end;",
+    "if hsq_selected_plain !== nothing && hasproperty(hsq_selection, :optimizer_policy) && hsq_selection.optimizer_policy == \"arc1_v2\"; hsq_selected_plain[\"optimizer_policy\"] = \"arc1_v2\"; hsq_selected_plain[\"optimizer_policy_version\"] = 2; hsq_selected_plain[\"source_identity\"] = hsq_selection.source_identity; hsq_selected_plain[\"requested_optimizer_policy\"] = hsq_selection.requested_optimizer_policy; hsq_selected_plain[\"actual_optimizer_policy\"] = hsq_selection.actual_optimizer_policy === nothing ? \"__HSQ_NONE__\" : string(hsq_selection.actual_optimizer_policy); hsq_selected_plain[\"covariance_representation\"] = string(hsq_selected_fit.covariance_representation); hsq_selected_plain[\"factor_valid\"] = hsq_selected_fit.factor_valid; hsq_selected_plain[\"rounded_matrix_pd\"] = string(hsq_selected_fit.rounded_matrix_pd); hsq_selected_plain[\"matrix_operations_status\"] = string(hsq_selected_fit.matrix_operations_status); hsq_selected_plain[\"matrix_operations_reason\"] = hsq_selected_fit.matrix_operations_reason; hsq_selected_plain[\"downstream_diagnostics\"] = Dict(String(k) => string(v) for (k,v) in pairs(hsq_selected_fit.downstream_diagnostics)); end;",
+    "hsq_selection_raw = Dict(String(k) => getfield(hsq_selection, k) for k in keys(hsq_selection));",
+    "hsq_selection_raw[\"selection_status\"] = string(hsq_selection.selection_status);",
+    "hsq_selection_raw[\"criterion\"] = string(hsq_selection.criterion);",
+    "hsq_selection_raw[\"criterion_status\"] = string(hsq_selection.criterion_status);",
+    "hasproperty(hsq_selection, :optimizer_algorithm) && (hsq_selection_raw[\"optimizer_algorithm\"] = string(hsq_selection.optimizer_algorithm));",
+    "hsq_selection_raw[\"uncertainty_scope\"] = string(hsq_selection.uncertainty_scope);",
+    "hsq_selection_raw[\"guard_results\"] = hsq_arc1_plain(hasproperty(hsq_selection, :guard_results) ? hsq_selection.guard_results : nothing);",
+    "hsq_selection_raw[\"candidate_summary\"] = hsq_selection_rows(hsq_selection.candidate_summary);",
+    "hsq_selection_raw[\"attempts\"] = hsq_selection_rows(hsq_selection.attempts);",
+    "if hasproperty(hsq_selection, :actual_optimizer_policy); hsq_selection_raw[\"actual_optimizer_policy\"] = hsq_selection.actual_optimizer_policy === nothing ? \"__HSQ_NONE__\" : string(hsq_selection.actual_optimizer_policy); end;",
+    "hsq_selection_raw[\"selected_fit\"] = hsq_selected_plain;"
+  )
+}
+
+hs_julia_fa_rank_partial_ledger_command <- function(ledger_name) {
+  paste(
+    hs_julia_fa_rank_rows_serialization_command(),
+    paste0("hsq_fa_interrupt_snapshot = ", ledger_name, "[];"),
+    "hsq_fa_interrupt_raw = hsq_fa_interrupt_snapshot === nothing ? nothing : Dict(String(k) => getfield(hsq_fa_interrupt_snapshot, k) for k in keys(hsq_fa_interrupt_snapshot));",
+    "if hsq_fa_interrupt_snapshot !== nothing;",
+    "for key in keys(hsq_fa_interrupt_raw); value = hsq_fa_interrupt_raw[key]; value === nothing && (hsq_fa_interrupt_raw[key] = \"__HSQ_NONE__\"); value isa Symbol && (hsq_fa_interrupt_raw[key] = string(value)); end;",
+    "hsq_fa_interrupt_raw[\"selection_status\"] = string(hsq_fa_interrupt_snapshot.selection_status);",
+    "hsq_fa_interrupt_raw[\"criterion\"] = string(hsq_fa_interrupt_snapshot.criterion);",
+    "hsq_fa_interrupt_raw[\"criterion_status\"] = string(hsq_fa_interrupt_snapshot.criterion_status);",
+    "hsq_fa_interrupt_raw[\"uncertainty_scope\"] = string(hsq_fa_interrupt_snapshot.uncertainty_scope);",
+    "hsq_fa_interrupt_raw[\"reason\"] = hsq_fa_interrupt_snapshot.reason === nothing ? \"__HSQ_NONE__\" : string(hsq_fa_interrupt_snapshot.reason);",
+    "hsq_fa_interrupt_raw[\"guard_results\"] = hsq_arc1_plain(hasproperty(hsq_fa_interrupt_snapshot, :guard_results) ? hsq_fa_interrupt_snapshot.guard_results : nothing);",
+    "hsq_fa_interrupt_raw[\"candidate_summary\"] = hsq_selection_rows(hsq_fa_interrupt_snapshot.candidate_summary);",
+    "hsq_fa_interrupt_raw[\"attempts\"] = hsq_selection_rows(hsq_fa_interrupt_snapshot.attempts);",
+    "end;"
+  )
+}
+
+hs_julia_read_fa_rank_partial_ledger <- function(ledger_name, payload) {
+  JuliaCall::julia_command(hs_julia_fa_rank_partial_ledger_command(ledger_name))
+  raw <- JuliaCall::julia_eval("hsq_fa_interrupt_raw")
+  if (is.null(raw)) {
+    return(NULL)
+  }
+  if (is.environment(raw)) {
+    raw <- as.list(raw)
+  }
+  for (field in names(raw)) {
+    if (identical(raw[[field]], "__HSQ_NONE__")) raw[[field]] <- NULL
+  }
+  hs_normalize_fa_rank_selection(raw, payload)
+}
+
+hs_fit_julia_fa_rank_selection_payload <- function(
+  payload,
+  project = hs_default_julia_project(),
+  iterations = 2000L,
+  spec = NULL,
+  call = NULL,
+  optimizer_policy = NULL,
+  uncertainty = NULL
+) {
+  if (!inherits(payload, "hs_bridge_payload") || is.null(payload$pedigree)) {
+    stop(
+      "Automatic FA-rank selection requires a validated pedigree bridge payload.",
+      call. = FALSE
+    )
+  }
+  iterations <- hs_validate_iterations(iterations)
+  hs_julia_setup(project)
+  JuliaCall::julia_assign("hsq_Y", hs_y_matrix_for_julia(payload$Y))
+  JuliaCall::julia_assign("hsq_X", payload$X)
+  hs_julia_assign_sparse_csc("hsq_Z", payload$Z)
+  JuliaCall::julia_assign("hsq_mv_ids", as.character(payload$ids))
+  JuliaCall::julia_assign("hsq_id", payload$pedigree$id)
+  JuliaCall::julia_assign(
+    "hsq_sire",
+    hs_parent_for_julia(payload$pedigree$sire)
+  )
+  JuliaCall::julia_assign("hsq_dam", hs_parent_for_julia(payload$pedigree$dam))
+  traits <- payload$metadata$trait_names %||%
+    colnames(payload$Y) %||%
+    paste0("trait", seq_len(ncol(payload$Y)))
+  JuliaCall::julia_assign("hsq_traits", as.character(traits))
+  JuliaCall::julia_assign("hsq_iterations", iterations)
+  ledger_name <- paste0(
+    "hsq_fa_ledger_",
+    gsub("[^A-Za-z0-9_]", "_", basename(tempfile("request_")))
+  )
+  JuliaCall::julia_command(paste0(ledger_name, " = Ref{Any}(nothing);"))
+  on.exit(
+    try(
+      JuliaCall::julia_command(paste0(ledger_name, "[] = nothing;")),
+      silent = TRUE
+    ),
+    add = TRUE
+  )
+
+  command <- paste(
+    "hsq_ped = HSquared.normalize_pedigree(hsq_id, hsq_sire, hsq_dam);",
+    "string.(hsq_ped.ids) == hsq_mv_ids || error(\"FA selector pedigree ID order changed across bridge\");",
+    "hsq_selection = HSquared.select_fa_rank(hsq_Y, hsq_X, hsq_Z, hsq_ped;",
+    "ids = hsq_ped.ids, traits = hsq_traits, iterations = hsq_iterations, optimizer_policy = ",
+    if (is.null(optimizer_policy)) {
+      "nothing"
+    } else {
+      paste0("\"", optimizer_policy, "\"")
+    },
+    ", ledger_sink = ",
+    ledger_name,
+    ");"
+  )
+  hs_julia_run_fa_rank_command(
+    paste(command, hs_julia_fa_rank_serialization_command()),
+    ledger_name,
+    ledger_reader = function() {
+      hs_julia_read_fa_rank_partial_ledger(ledger_name, payload)
+    }
+  )
+  raw <- JuliaCall::julia_eval("hsq_selection_raw")
+  result <- hs_normalize_fa_rank_selection(
+    raw,
+    payload,
+    spec = spec,
+    call = call
+  )
+  if (
+    !is.null(uncertainty) && identical(uncertainty$method, "arc1_bootstrap_v1")
+  ) {
+    result$arc1_uncertainty <- hs_arc1_run_bootstrap_bridge(uncertainty, traits)
+  }
+  result
 }
 
 # hsquared#237: cbind() + permanent() is a DISTINCT dispatch from
@@ -3902,7 +4580,65 @@ hs_validate_covariance_correlation <- function(
   invisible(TRUE)
 }
 
-hs_normalize_multivariate_result <- function(raw, payload) {
+hs_normalize_multivariate_result <- function(
+  raw,
+  payload,
+  allow_missing_fa_start_metadata = FALSE
+) {
+  if (
+    isTRUE(allow_missing_fa_start_metadata) &&
+      identical(raw$genetic_structure, "factor_analytic")
+  ) {
+    decode_nullable <- function(x, type) {
+      if (!is.character(x)) {
+        return(x)
+      }
+      missing <- is.na(x) | x == "__HSQ_NONE__"
+      if (identical(type, "logical")) {
+        if (any(!missing & !x %in% c("true", "false"))) {
+          stop(
+            "FA start convergence metadata must be true, false, or missing.",
+            call. = FALSE
+          )
+        }
+        value <- rep(NA, length(x))
+        value[!missing] <- x[!missing] == "true"
+        return(value)
+      }
+      value <- rep(NA_real_, length(x))
+      parsed <- suppressWarnings(as.numeric(x[!missing]))
+      if (anyNA(parsed)) {
+        stop(
+          "FA start iteration metadata must be numeric or missing.",
+          call. = FALSE
+        )
+      }
+      value[!missing] <- parsed
+      value
+    }
+    raw$fa_start_converged <- decode_nullable(raw$fa_start_converged, "logical")
+    raw$fa_start_iterations <- decode_nullable(
+      raw$fa_start_iterations,
+      "integer"
+    )
+  }
+  if (identical(raw$optimizer_policy, "arc1_v2")) {
+    source_identity <- raw$source_identity
+    if (
+      !is.character(source_identity) ||
+        length(source_identity) != 1L ||
+        is.na(source_identity) ||
+        !grepl("^[[:xdigit:]]{64}$", source_identity) ||
+        !identical(as.integer(raw$optimizer_policy_version), 2L) ||
+        !identical(raw$covariance_representation, "retained_factors_v1")
+    ) {
+      stop(
+        "Julia arc1_v2 result is missing or has inconsistent policy, representation, or source identity.",
+        call. = FALSE
+      )
+    }
+  }
+  v2_factor_policy <- identical(raw$optimizer_policy, "arc1_v2")
   gstruct <- raw$genetic_structure %||% "unstructured"
   if (identical(gstruct, "factor_analytic")) {
     required_order_fields <- c("traits", "breeding_traits", "breeding_ids")
@@ -3986,31 +4722,52 @@ hs_normalize_multivariate_result <- function(raw, payload) {
     ntraits,
     "residual correlation"
   )
-  hs_validate_covariance_correlation(G0, Gcor, "genetic")
+  hs_validate_covariance_correlation(
+    G0,
+    Gcor,
+    "genetic",
+    allow_semidefinite = v2_factor_policy
+  )
   hs_validate_covariance_correlation(R0, Rcor, "residual")
   dimnames(G0) <- dimnames(R0) <- dimnames(Gcor) <- dimnames(Rcor) <-
     list(traits, traits)
 
-  beta <- hs_matrix_from_julia(
-    raw$beta,
-    length(fixed_names),
-    ntraits,
-    "fixed effects"
-  )
+  beta <- if (v2_factor_policy && is.null(raw$beta)) {
+    NULL
+  } else {
+    hs_matrix_from_julia(
+      raw$beta,
+      length(fixed_names),
+      ntraits,
+      "fixed effects"
+    )
+  }
   fixed_effects <- data.frame(
     term = rep(fixed_names, times = ntraits),
     trait = rep(traits, each = length(fixed_names)),
-    estimate = as.vector(beta),
+    estimate = if (is.null(beta)) {
+      rep(NA_real_, length(fixed_names) * ntraits)
+    } else {
+      as.vector(beta)
+    },
     stringsAsFactors = FALSE
   )
 
-  bv <- hs_matrix_from_julia(
-    raw$breeding_values,
-    length(ids),
-    ntraits,
-    "breeding values"
-  )
-  breeding_values <- hs_long_matrix(bv, ids = ids, traits = traits)
+  bv <- if (v2_factor_policy && is.null(raw$breeding_values)) {
+    NULL
+  } else {
+    hs_matrix_from_julia(
+      raw$breeding_values,
+      length(ids),
+      ntraits,
+      "breeding values"
+    )
+  }
+  breeding_values <- if (is.null(bv)) {
+    NULL
+  } else {
+    hs_long_matrix(bv, ids = ids, traits = traits)
+  }
 
   converged <- isTRUE(raw$converged)
   p <- ncol(payload$X)
@@ -4044,7 +4801,11 @@ hs_normalize_multivariate_result <- function(raw, payload) {
     residual_correlation = Rcor,
     breeding_values = breeding_values,
     fixed_effects = fixed_effects,
-    random_effects = list(animal = breeding_values),
+    random_effects = if (is.null(breeding_values)) {
+      NULL
+    } else {
+      list(animal = breeding_values)
+    },
     nobs = as.integer(sum(!is.na(payload$Y))),
     converged = converged,
     diagnostics = list(
@@ -4080,6 +4841,83 @@ hs_normalize_multivariate_result <- function(raw, payload) {
       }
     )
   )
+  if (v2_factor_policy) {
+    result$diagnostics$downstream_fit_status <- "not_certified"
+  }
+  for (field in c(
+    "optimizer_policy",
+    "optimizer_policy_version",
+    "source_identity",
+    "optimizer_algorithm",
+    "optimizer_iterations",
+    "optimizer_tolerance",
+    "final_scaled_gradient_tolerance",
+    "numerical_gradient_steps",
+    "numerical_gradient_tolerance",
+    "starts_scheduled",
+    "starts_attempted",
+    "final_gradient_inf_norm",
+    "numerical_gradient_inf_norms",
+    "numerical_gradient_discrepancies",
+    "numerical_gradient_status",
+    "failure_status"
+  )) {
+    if (!is.null(raw[[field]])) result$diagnostics[[field]] <- raw[[field]]
+  }
+  if (!is.null(raw$arc1_attempts)) {
+    result$diagnostics$optimizer_attempts <- hs_fa_rank_rows(
+      raw$arc1_attempts,
+      list(
+        rank = "integer",
+        structure = "character",
+        start_id = "character",
+        retry_index = "integer",
+        attempted = "logical",
+        status = "character",
+        reason = "character",
+        failure_status = "character",
+        converged = "logical",
+        optimizer_converged = "logical",
+        optimizer_assessment_status = "character",
+        optimizer_assessment_reason = "character",
+        optimizer_status = "character",
+        optimizer_iterations = "integer",
+        optimizer_objective = "numeric",
+        finite_objective = "logical",
+        finite_estimates = "logical",
+        pd_genetic = "logical",
+        pd_residual = "logical",
+        loglik = "numeric",
+        reevaluated_loglik = "numeric",
+        objective_discrepancy = "numeric",
+        q = "integer",
+        penalty = "numeric",
+        criterion = "numeric",
+        final_gradient_inf_norm = "numeric",
+        numerical_gradient_inf_norms = "vector",
+        numerical_gradient_discrepancies = "vector",
+        numerical_gradient_status = "character",
+        uniqueness = "vector",
+        numerical_gradient_reason = "character",
+        line_search_success = "logical",
+        algorithm = "character",
+        callback_requests = "integer",
+        objective_evaluations = "integer",
+        rejected_trials = "integer",
+        domain_restarts = "integer",
+        floor_distances = "vector",
+        near_floor = "logical",
+        eligible = "logical",
+        selected_within_rank = "logical",
+        selected = "logical",
+        genetic_covariance = "matrix",
+        residual_covariance = "matrix",
+        genetic_loadings = "matrix",
+        initial_parameters = "vector",
+        estimated_parameters = "vector"
+      )
+    )
+  }
   if (converged) {
     result$loglik <- as.numeric(raw$loglik)
     result$df <- as.integer(p * ntraits + n_covariance_parameters)
@@ -4114,213 +4952,286 @@ hs_normalize_multivariate_result <- function(raw, payload) {
     result$genetic_uniqueness <- stats::setNames(psi, traits)
     result$diagnostics$genetic_uniqueness_identification <- "not_assessed_by_fit"
 
-    fa_start_fields <- c(
-      "strategy",
-      "starts_attempted",
-      "selected_start",
-      "objective_range",
-      "g_relative_disagreement",
-      "r_relative_disagreement",
-      "better_nonconverged_start",
-      "minimum_uniqueness",
-      "uniqueness_floor_distance",
-      "near_uniqueness_floor",
-      "names",
-      "loglik",
-      "valid",
-      "converged",
-      "iterations",
-      "minimum_uniqueness_by_start",
-      "uniqueness_floor_distance_by_start"
-    )
-    fa_start_raw_names <- paste0("fa_start_", fa_start_fields)
-    missing_fa_start <- fa_start_raw_names[vapply(
-      fa_start_raw_names,
-      function(field) is.null(raw[[field]]),
-      logical(1)
-    )]
-    if (length(missing_fa_start) > 0L) {
-      stop(
-        "Julia factor-analytic result is missing required start metadata: ",
-        paste(missing_fa_start, collapse = ", "),
-        ".",
-        call. = FALSE
-      )
-    }
-    starts_attempted <- raw$fa_start_starts_attempted
     if (
-      length(starts_attempted) != 1L ||
-        is.na(starts_attempted) ||
-        !is.finite(starts_attempted) ||
-        starts_attempted < 1 ||
-        starts_attempted != as.integer(starts_attempted)
+      !is.null(raw$optimizer_policy) &&
+        raw$optimizer_policy %in% c("arc1_v1", "arc1_v2")
     ) {
-      stop("FA start count must be a positive integer.", call. = FALSE)
-    }
-    starts_attempted <- as.integer(starts_attempted)
-    start_names <- as.character(raw$fa_start_names)
-    vector_fields <- c(
-      "fa_start_loglik",
-      "fa_start_valid",
-      "fa_start_converged",
-      "fa_start_iterations",
-      "fa_start_minimum_uniqueness_by_start",
-      "fa_start_uniqueness_floor_distance_by_start"
-    )
-    bad_length <- vector_fields[vapply(
-      vector_fields,
-      function(field) length(raw[[field]]) != starts_attempted,
-      logical(1)
-    )]
-    if (length(start_names) != starts_attempted || length(bad_length) > 0L) {
-      stop(
-        "FA start vectors must have the same length as `fa_start_starts_attempted`.",
-        call. = FALSE
+      result$diagnostics$optimizer_policy <- raw$optimizer_policy
+      for (field in c(
+        "optimizer_policy_version",
+        "source_identity",
+        "optimizer_algorithm",
+        "optimizer_iterations",
+        "optimizer_tolerance",
+        "final_scaled_gradient_tolerance",
+        "numerical_gradient_steps",
+        "numerical_gradient_tolerance",
+        "starts_scheduled",
+        "starts_attempted",
+        "final_gradient_inf_norm",
+        "numerical_gradient_inf_norms",
+        "numerical_gradient_discrepancies",
+        "numerical_gradient_status",
+        "requested_optimizer_policy",
+        "actual_optimizer_policy",
+        "covariance_representation",
+        "matrix_operations_status",
+        "matrix_operations_reason",
+        "factor_valid",
+        "rounded_matrix_pd",
+        "downstream_diagnostics"
+      )) {
+        if (!is.null(raw[[field]])) result$diagnostics[[field]] <- raw[[field]]
+      }
+    } else {
+      fa_start_fields <- c(
+        "strategy",
+        "starts_attempted",
+        "selected_start",
+        "objective_range",
+        "g_relative_disagreement",
+        "r_relative_disagreement",
+        "better_nonconverged_start",
+        "minimum_uniqueness",
+        "uniqueness_floor_distance",
+        "near_uniqueness_floor",
+        "names",
+        "loglik",
+        "valid",
+        "converged",
+        "iterations",
+        "minimum_uniqueness_by_start",
+        "uniqueness_floor_distance_by_start"
       )
-    }
-    if (
-      anyNA(start_names) ||
-        any(!nzchar(start_names)) ||
-        anyDuplicated(start_names)
-    ) {
-      stop("FA start names must be non-empty and unique.", call. = FALSE)
-    }
-    selected_start <- as.character(raw$fa_start_selected_start)
-    if (
-      length(selected_start) != 1L ||
-        is.na(selected_start) ||
-        !selected_start %in% start_names
-    ) {
-      stop(
-        "FA selected start must name one of the returned starts.",
-        call. = FALSE
-      )
-    }
-    for (field in c("fa_start_valid", "fa_start_converged")) {
-      if (!is.logical(raw[[field]]) || anyNA(raw[[field]])) {
+      fa_start_raw_names <- paste0("fa_start_", fa_start_fields)
+      missing_fa_start <- fa_start_raw_names[vapply(
+        fa_start_raw_names,
+        function(field) is.null(raw[[field]]),
+        logical(1)
+      )]
+      if (length(missing_fa_start) > 0L) {
         stop(
-          "FA start status vectors must be logical and non-missing.",
+          "Julia factor-analytic result is missing required start metadata: ",
+          paste(missing_fa_start, collapse = ", "),
+          ".",
           call. = FALSE
         )
       }
-    }
-    if (
-      !is.numeric(raw$fa_start_iterations) ||
-        anyNA(raw$fa_start_iterations) ||
-        any(!is.finite(raw$fa_start_iterations)) ||
-        any(raw$fa_start_iterations < 0) ||
-        any(raw$fa_start_iterations != as.integer(raw$fa_start_iterations))
-    ) {
-      stop(
-        "FA start iterations must be finite non-negative integers.",
-        call. = FALSE
-      )
-    }
-    for (field in c(
-      "fa_start_loglik",
-      "fa_start_minimum_uniqueness_by_start",
-      "fa_start_uniqueness_floor_distance_by_start"
-    )) {
-      values <- raw[[field]]
+      starts_attempted <- raw$fa_start_starts_attempted
       if (
-        !is.numeric(values) ||
-          any(is.infinite(values)) ||
-          any(!is.na(values) & !is.finite(values))
+        length(starts_attempted) != 1L ||
+          is.na(starts_attempted) ||
+          !is.finite(starts_attempted) ||
+          starts_attempted < 1 ||
+          starts_attempted != as.integer(starts_attempted)
+      ) {
+        stop("FA start count must be a positive integer.", call. = FALSE)
+      }
+      starts_attempted <- as.integer(starts_attempted)
+      start_names <- as.character(raw$fa_start_names)
+      vector_fields <- c(
+        "fa_start_loglik",
+        "fa_start_valid",
+        "fa_start_converged",
+        "fa_start_iterations",
+        "fa_start_minimum_uniqueness_by_start",
+        "fa_start_uniqueness_floor_distance_by_start"
+      )
+      bad_length <- vector_fields[vapply(
+        vector_fields,
+        function(field) length(raw[[field]]) != starts_attempted,
+        logical(1)
+      )]
+      if (length(start_names) != starts_attempted || length(bad_length) > 0L) {
+        stop(
+          "FA start vectors must have the same length as `fa_start_starts_attempted`.",
+          call. = FALSE
+        )
+      }
+      if (
+        anyNA(start_names) ||
+          any(!nzchar(start_names)) ||
+          anyDuplicated(start_names)
+      ) {
+        stop("FA start names must be non-empty and unique.", call. = FALSE)
+      }
+      selected_start <- as.character(raw$fa_start_selected_start)
+      if (
+        length(selected_start) != 1L ||
+          is.na(selected_start) ||
+          !selected_start %in% start_names
       ) {
         stop(
-          "FA start numeric vectors must be finite or missing.",
+          "FA selected start must name one of the returned starts.",
           call. = FALSE
         )
       }
-      if (any(raw$fa_start_valid & is.na(values))) {
-        stop(
-          "Valid FA starts must have finite numeric diagnostics.",
-          call. = FALSE
-        )
+      for (field in c("fa_start_valid", "fa_start_converged")) {
+        nullable_convergence <- identical(field, "fa_start_converged") &&
+          isTRUE(allow_missing_fa_start_metadata)
+        if (
+          !is.logical(raw[[field]]) ||
+            (!nullable_convergence && anyNA(raw[[field]]))
+        ) {
+          stop(
+            "FA start status vectors must be logical and non-missing.",
+            call. = FALSE
+          )
+        }
       }
-    }
-    scalar_numeric <- c(
-      "fa_start_objective_range",
-      "fa_start_g_relative_disagreement",
-      "fa_start_r_relative_disagreement",
-      "fa_start_minimum_uniqueness",
-      "fa_start_uniqueness_floor_distance"
-    )
-    for (field in scalar_numeric) {
-      value <- raw[[field]]
       if (
-        !is.numeric(value) ||
-          length(value) != 1L ||
-          is.infinite(value) ||
-          (!is.na(value) && !is.finite(value))
+        !is.numeric(raw$fa_start_iterations) ||
+          (!isTRUE(allow_missing_fa_start_metadata) &&
+            anyNA(raw$fa_start_iterations)) ||
+          any(
+            !is.na(raw$fa_start_iterations) &
+              !is.finite(raw$fa_start_iterations)
+          ) ||
+          any(!is.na(raw$fa_start_iterations) & raw$fa_start_iterations < 0) ||
+          any(
+            !is.na(raw$fa_start_iterations) &
+              raw$fa_start_iterations != as.integer(raw$fa_start_iterations)
+          )
       ) {
         stop(
-          "FA scalar numeric diagnostics must be finite or missing.",
+          "FA start iterations must be finite non-negative integers.",
           call. = FALSE
         )
       }
-    }
-    for (field in c(
-      "fa_start_better_nonconverged_start",
-      "fa_start_near_uniqueness_floor"
-    )) {
-      if (
-        !is.logical(raw[[field]]) ||
-          length(raw[[field]]) != 1L ||
-          is.na(raw[[field]])
-      ) {
-        stop(
-          "FA scalar status diagnostics must be one non-missing logical value.",
-          call. = FALSE
-        )
+      if (isTRUE(allow_missing_fa_start_metadata)) {
+        missing_status <- is.na(raw$fa_start_converged)
+        missing_iterations <- is.na(raw$fa_start_iterations)
+        if (
+          any(missing_status & raw$fa_start_valid) ||
+            any(missing_iterations & raw$fa_start_valid)
+        ) {
+          stop(
+            "Valid FA starts must have non-missing convergence and iteration metadata.",
+            call. = FALSE
+          )
+        }
+        chosen <- match(selected_start, start_names)
+        if (
+          is.na(raw$fa_start_converged[[chosen]]) ||
+            !raw$fa_start_converged[[chosen]] ||
+            is.na(raw$fa_start_iterations[[chosen]])
+        ) {
+          stop(
+            "The selected FA start must have a non-missing converged status and iteration count.",
+            call. = FALSE
+          )
+        }
       }
+      for (field in c(
+        "fa_start_loglik",
+        "fa_start_minimum_uniqueness_by_start",
+        "fa_start_uniqueness_floor_distance_by_start"
+      )) {
+        values <- raw[[field]]
+        if (
+          !is.numeric(values) ||
+            any(is.infinite(values)) ||
+            any(!is.na(values) & !is.finite(values))
+        ) {
+          stop(
+            "FA start numeric vectors must be finite or missing.",
+            call. = FALSE
+          )
+        }
+        if (any(raw$fa_start_valid & is.na(values))) {
+          stop(
+            "Valid FA starts must have finite numeric diagnostics.",
+            call. = FALSE
+          )
+        }
+      }
+      scalar_numeric <- c(
+        "fa_start_objective_range",
+        "fa_start_g_relative_disagreement",
+        "fa_start_r_relative_disagreement",
+        "fa_start_minimum_uniqueness",
+        "fa_start_uniqueness_floor_distance"
+      )
+      for (field in scalar_numeric) {
+        value <- raw[[field]]
+        if (
+          !is.numeric(value) ||
+            length(value) != 1L ||
+            is.infinite(value) ||
+            (!is.na(value) && !is.finite(value))
+        ) {
+          stop(
+            "FA scalar numeric diagnostics must be finite or missing.",
+            call. = FALSE
+          )
+        }
+      }
+      for (field in c(
+        "fa_start_better_nonconverged_start",
+        "fa_start_near_uniqueness_floor"
+      )) {
+        if (
+          !is.logical(raw[[field]]) ||
+            length(raw[[field]]) != 1L ||
+            is.na(raw[[field]])
+        ) {
+          stop(
+            "FA scalar status diagnostics must be one non-missing logical value.",
+            call. = FALSE
+          )
+        }
+      }
+      selected_index <- match(selected_start, start_names)
+      if (!raw$fa_start_valid[[selected_index]]) {
+        stop("FA selected start must be valid.", call. = FALSE)
+      }
+      result$diagnostics$fa_start_strategy <- as.character(
+        raw$fa_start_strategy
+      )
+      result$diagnostics$fa_start_starts_attempted <- starts_attempted
+      result$diagnostics$fa_start_selected_start <- selected_start
+      result$diagnostics$fa_start_objective_range <- as.numeric(
+        raw$fa_start_objective_range
+      )
+      result$diagnostics$fa_start_g_relative_disagreement <- as.numeric(
+        raw$fa_start_g_relative_disagreement
+      )
+      result$diagnostics$fa_start_r_relative_disagreement <- as.numeric(
+        raw$fa_start_r_relative_disagreement
+      )
+      result$diagnostics$fa_start_better_nonconverged_start <- raw$fa_start_better_nonconverged_start
+      result$diagnostics$fa_start_minimum_uniqueness <- as.numeric(
+        raw$fa_start_minimum_uniqueness
+      )
+      result$diagnostics$fa_start_uniqueness_floor_distance <- as.numeric(
+        raw$fa_start_uniqueness_floor_distance
+      )
+      result$diagnostics$fa_start_near_uniqueness_floor <- raw$fa_start_near_uniqueness_floor
+      result$diagnostics$fa_start_loglik <- as.numeric(raw$fa_start_loglik)
+      result$diagnostics$fa_start_valid <- raw$fa_start_valid
+      result$diagnostics$fa_start_converged <- raw$fa_start_converged
+      result$diagnostics$fa_start_iterations <- as.integer(
+        raw$fa_start_iterations
+      )
+      result$diagnostics$fa_start_minimum_uniqueness_by_start <-
+        as.numeric(raw$fa_start_minimum_uniqueness_by_start)
+      result$diagnostics$fa_start_uniqueness_floor_distance_by_start <-
+        as.numeric(raw$fa_start_uniqueness_floor_distance_by_start)
+      result$diagnostics$fa_start_starts <- data.frame(
+        name = start_names,
+        loglik = as.numeric(raw$fa_start_loglik),
+        valid = raw$fa_start_valid,
+        converged = raw$fa_start_converged,
+        iterations = as.integer(raw$fa_start_iterations),
+        minimum_uniqueness = as.numeric(
+          raw$fa_start_minimum_uniqueness_by_start
+        ),
+        uniqueness_floor_distance = as.numeric(
+          raw$fa_start_uniqueness_floor_distance_by_start
+        ),
+        stringsAsFactors = FALSE
+      )
     }
-    selected_index <- match(selected_start, start_names)
-    if (!raw$fa_start_valid[[selected_index]]) {
-      stop("FA selected start must be valid.", call. = FALSE)
-    }
-    result$diagnostics$fa_start_strategy <- as.character(raw$fa_start_strategy)
-    result$diagnostics$fa_start_starts_attempted <- starts_attempted
-    result$diagnostics$fa_start_selected_start <- selected_start
-    result$diagnostics$fa_start_objective_range <- as.numeric(
-      raw$fa_start_objective_range
-    )
-    result$diagnostics$fa_start_g_relative_disagreement <- as.numeric(
-      raw$fa_start_g_relative_disagreement
-    )
-    result$diagnostics$fa_start_r_relative_disagreement <- as.numeric(
-      raw$fa_start_r_relative_disagreement
-    )
-    result$diagnostics$fa_start_better_nonconverged_start <- raw$fa_start_better_nonconverged_start
-    result$diagnostics$fa_start_minimum_uniqueness <- as.numeric(
-      raw$fa_start_minimum_uniqueness
-    )
-    result$diagnostics$fa_start_uniqueness_floor_distance <- as.numeric(
-      raw$fa_start_uniqueness_floor_distance
-    )
-    result$diagnostics$fa_start_near_uniqueness_floor <- raw$fa_start_near_uniqueness_floor
-    result$diagnostics$fa_start_loglik <- as.numeric(raw$fa_start_loglik)
-    result$diagnostics$fa_start_valid <- raw$fa_start_valid
-    result$diagnostics$fa_start_converged <- raw$fa_start_converged
-    result$diagnostics$fa_start_iterations <- as.integer(
-      raw$fa_start_iterations
-    )
-    result$diagnostics$fa_start_minimum_uniqueness_by_start <-
-      as.numeric(raw$fa_start_minimum_uniqueness_by_start)
-    result$diagnostics$fa_start_uniqueness_floor_distance_by_start <-
-      as.numeric(raw$fa_start_uniqueness_floor_distance_by_start)
-    result$diagnostics$fa_start_starts <- data.frame(
-      name = start_names,
-      loglik = as.numeric(raw$fa_start_loglik),
-      valid = raw$fa_start_valid,
-      converged = raw$fa_start_converged,
-      iterations = as.integer(raw$fa_start_iterations),
-      minimum_uniqueness = as.numeric(raw$fa_start_minimum_uniqueness_by_start),
-      uniqueness_floor_distance = as.numeric(
-        raw$fa_start_uniqueness_floor_distance_by_start
-      ),
-      stringsAsFactors = FALSE
-    )
   }
   if (
     !identical(gstruct, "factor_analytic") &&
@@ -6015,7 +6926,13 @@ hs_engine_control_honoured_keys <- list(
   metafounder = "variance_components",
   sparse_reml = c("initial", "iterations", "skip_pev_reliability"),
   ai_reml = c("initial", "iterations", "em_warmup", "skip_pev_reliability"),
-  repeatability = c("initial", "iterations", "max_dense_cells", "scale_method"),
+  repeatability = c(
+    "initial",
+    "iterations",
+    "max_dense_cells",
+    "scale_method",
+    "uncertainty_method"
+  ),
   two_effect = c("initial", "iterations"),
   # multi_effect forwards initial/iterations on both dense and auto routes.
   multi_effect = c("initial", "iterations", "scale_method"),
@@ -6038,7 +6955,13 @@ hs_engine_control_honoured_keys <- list(
     "iterations",
     "genetic_structure",
     "rank",
-    "max_dense_cells"
+    "max_dense_cells",
+    "rank_selection",
+    "optimizer_policy",
+    "uncertainty_method",
+    "bootstrap_B",
+    "bootstrap_seeds",
+    "bootstrap_seed"
   ),
   multivariate_repeatability = c("initial", "iterations", "max_dense_cells"),
   random_regression = "iterations",
