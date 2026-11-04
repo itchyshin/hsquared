@@ -92,5 +92,7 @@ conflicts are recorded in this handover and the branch checkpoint.
 At trial head `927b8f11`, the Julia 1.10 Ubuntu and docs checks passed.
 Julia 1.10 Windows failed in source-identity path handling, and the latest
 Julia jobs on Ubuntu and Windows failed in the FA retry fixture. A focused
-source-identity correction is being prepared on a separate Julia branch. It
-still needs Windows CI. The FA fixture and full fit-bearing checks remain open.
+source-identity correction is pushed on
+`codex/pr498-windows-identity-20261104` at
+`db48d9754af1a6f9b06b304925a2022778e01174`. It passed no-fit source-identity
+checks on macOS with Julia 1.10 and 1.12 and still needs Windows CI. The FA fixture and full fit-bearing checks remain open.
