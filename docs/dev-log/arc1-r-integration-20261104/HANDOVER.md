@@ -196,3 +196,10 @@ both parents. Fresh CI is running on that head. The original source maps,
 ignored Arc 1 gate ledger and authoritative spent-key mechanism remain open;
 the earlier CI results do not establish the outcome for this new head.
 Neither these updates nor the historical receipts grant scientific gate credit.
+
+Julia #496 subsequently passed all four package checks and documentation at
+`5d21963a`, and merged as `7f1d141e`. The latest-Julia Windows job tested
+that exact PR head against main `c36c4f42`. Main's post-merge package checks
+are running. Julia #498 then incorporated `7f1d141e` without a conflict; its
+new head is `49027dc50f01002303a47d323c2b75c6412a58f7` and fresh checks are
+running. Its scientific and evidence limitations above remain unchanged.
