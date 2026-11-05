@@ -288,3 +288,10 @@ A record of known attempts can be held in quarantine with no launch authority.
 Enabling new allocations still needs a reviewed complete history or a proven
 disjoint key and seed scope, plus separate study authorization. The available
 unknown historical seeds do not establish universal disjointness.
+
+The corrected Julia PR head `d903ad9911abb4fd261692ab816fde4f2472a45e` has
+now passed all four package jobs and documentation against main `7f1d141e`.
+Both Windows jobs passed the corrected test-copy check. The previous timing
+and line-ending failures remain in the CI history. This is a package-check
+result; it does not complete the attempt record or grant scientific gate
+credit. The PR remains draft and studies remain paused on the reviewed paths.
