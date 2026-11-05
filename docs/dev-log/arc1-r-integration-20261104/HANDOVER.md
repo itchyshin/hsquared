@@ -211,3 +211,10 @@ timed source and test files match main, but other Arc 1 changes are present;
 the cause has not been established. The two Julia 1.10 jobs and main's
 post-merge checks were still running when this note was written. The timing
 threshold remains unchanged and #498 remains draft.
+
+Main's post-merge package matrix and documentation subsequently passed at
+`7f1d141e`. A local Julia 1.13.3 paired check of main and #498 source trees,
+using coverage, bounds checks and a common historical dependency environment,
+measured 2.72–2.80 seconds over two runs per tree with matching objectives.
+This Mac check was outside the hosted package-test sandbox and does not
+explain the #498 timing failures. The remaining #498 CI jobs are still running.
