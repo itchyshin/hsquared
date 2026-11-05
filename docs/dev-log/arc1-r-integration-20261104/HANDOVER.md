@@ -218,3 +218,8 @@ using coverage, bounds checks and a common historical dependency environment,
 measured 2.72–2.80 seconds over two runs per tree with matching objectives.
 This Mac check was outside the hosted package-test sandbox and does not
 explain the #498 timing failures. The remaining #498 CI jobs are still running.
+
+The two Julia 1.10 jobs on #498 subsequently passed. The latest-Julia Linux
+and Windows failures are retained in attempt 1 of CI run 41965154363; a single
+retry of those two jobs is running on the same head. A passing retry would not
+explain the first failures or settle the remaining Arc 1 evidence questions.
