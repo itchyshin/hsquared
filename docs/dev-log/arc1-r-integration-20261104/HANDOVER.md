@@ -267,3 +267,11 @@ and reservation remain disabled, and complete-history and rollback checks
 remain open. Historical receipts and scientific gate credit do not transfer to
 the new source identity. See the Julia PR description and after-task report for
 exact test boundaries and local fixture gaps.
+
+On pause commit `d6d31ae3`, latest-Julia Linux CI again failed the unchanged
+10-second timing assertion at 12.47 seconds. Windows Julia 1.10 also exposed
+a CRLF-only error in the fake-engine test harness. Follow-up `d903ad99`
+corrects the test-only line match and passed local LF, CRLF and duplicate-line
+checks plus a fake-engine smoke test. The production pause is unchanged. The
+other two jobs on the superseded run were cancelled when the corrected commit
+was pushed; their results are unavailable. Fresh CI is running on `d903ad99`.
