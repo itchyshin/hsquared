@@ -17,8 +17,8 @@ G2–G8 remain open for these identities.
 ## Evidence available
 
 The owner has a local portable evidence starter named
-`arc1-szymek-evidence-20261104-v8.zip` under `~/local-scratch`.
-Its SHA-256 is `63c951cb1b999eb21d57f3f0da96fbda9c340703f5091cbda357e9947f6ea229`.
+`arc1-szymek-evidence-20261104-v9.zip` under `~/local-scratch`.
+Its SHA-256 is `2be3a8b2c88007c4b189309a8fc132085c4d44dd02ef0a7d77e03c1bb3534fe9`.
 It contains the retained checkpoint and v29 Julia receipt, seven outer33 files
 that match the trial branch's pinned hashes, and an archive of the source
 files listed by the historical seed audit. The archive was verified on readback
@@ -124,3 +124,19 @@ A read-only Git comparison found no changes in `src/` or `Project.toml`
 between the Julia source used for the earlier R transport checks
 (`927b8f11`) and the current trial head (`976647b9`). Test and pipeline files
 have changed; this comparison is not a rerun of the bridge or a gate pass.
+
+The v9 bundle also contains the retained N80 profile input from Totoro and
+the original export script. Independent readback verified all 14 bundle
+manifest entries and the exported response, pedigree, design and row mappings
+against the retained input. The input SHA-256 is
+`95167a1e92d7dcadfa4b3fb5107d2ba6237e0cb85906091db7db89d263152377`.
+This supports a portable test fixture, not a historical execution or gate claim.
+
+PR #498 head `61d8a112de1d2e7f723017fe4718be4dbc449687` adds a
+portable retained N80 profile fixture and a Windows line-ending fix in the
+fake-engine test. The full profile test file passed 1,295 assertions on each
+of Julia 1.10.12 and 1.13.3. Six line-ending and hook checks passed on Julia
+1.10.12. Full executor testing and PR CI were running at this checkpoint;
+check the current exact head for their outcomes. Windows symlinks and real
+second-drive paths remain unverified. The PR is draft and scientific gates
+remain open.
