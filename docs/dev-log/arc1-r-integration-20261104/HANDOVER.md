@@ -232,3 +232,23 @@ The first attempt's two timing failures remain evidence, and their cause is
 unresolved. #498 remains draft because the Arc 1 source and attempt-safeguard
 questions are still open; passing package checks confer no scientific gate
 credit.
+
+## Totoro attempt-record decision
+
+On 2026-11-05 Shinichi selected Totoro as the proposed single-host authority.
+A synthetic SQLite reservation prototype passed four tests on the Mac and on
+Totoro's ZFS filesystem, including competing processes and simulated process
+crashes. Its public initialization and reservation functions always refuse.
+No production registry was initialized and no study was run. The full attempt
+history remains incomplete, and a local database alone cannot detect rollback
+to an older valid snapshot. The design and test identities are in the local
+`arc1-totoro-design-20261105/DECISION.md`.
+
+This is not yet an operational safeguard. The Python runner, direct Julia
+entry point, pilot launcher and diagnostic launcher need coordinated protection
+before the record can be used. In particular, the diagnostic launcher can
+write a start record before invoking Julia, so denial at Julia alone is too
+late. The existing fake-engine end-to-end tests also need a safe redesign;
+a caller-controlled test-mode bypass would be unsafe. Further history and
+rollback verification remain necessary before authorizing studies. #498 remains
+draft, and #488 remains with Shinichi for a decision.
