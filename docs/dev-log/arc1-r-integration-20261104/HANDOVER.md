@@ -119,3 +119,8 @@ Julia 1.10 and 1.13 locally. It also adds reviewed cross-drive path guards and
 Windows CI regressions. The prior CI run had already failed on the optimizer
 fixture and was superseded. Check CI for this new exact head before deciding
 what remains. Native Windows symlink and real second-drive cases remain open.
+
+A read-only Git comparison found no changes in `src/` or `Project.toml`
+between the Julia source used for the earlier R transport checks
+(`927b8f11`) and the current trial head (`976647b9`). Test and pipeline files
+have changed; this comparison is not a rerun of the bridge or a gate pass.
