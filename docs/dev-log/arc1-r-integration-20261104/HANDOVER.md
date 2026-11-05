@@ -141,3 +141,24 @@ without a result. PR CI was running at this checkpoint; check the current
 exact head for its outcome. Windows symlinks and real
 second-drive paths remain unverified. The PR is draft and scientific gates
 remain open.
+
+## Later PR and evidence update
+
+Julia #494 and #485 have merged after focused checks and green PR CI. The
+post-merge main checks passed for #494 and are running for #485. For #498,
+CI passed at `61d8a112`, then preservation commit
+`93fa199d64e8ceeec9160c5d29c9e07b3b961118` restored four original main
+LOOP records, archived the exact original main gate index, corrected the gate
+pointer, and made the Cursor hook path project-relative. The restored records
+match their original Git blobs; new-head CI is pending. The original ignored
+Arc 1 ledger and v10/v11 R maps remain unavailable. The historical LOOP files
+are not proof of the present Arc 1 state.
+
+A synthetic no-fit probe also found that a prevalidated consumed key could be
+started from two empty output roots. It mocked admission checks, so it does not
+show that a historical candidate can run on the current source. See the local
+`pr498-consumption-probe-20261104/REVIEW.md`; a shared, atomic spent-key fence
+needs review before allowing further attempts. No historical identities, gates,
+seeds or attempt counts were changed.
+
+The local private evidence starter and the draft message have not been sent.
