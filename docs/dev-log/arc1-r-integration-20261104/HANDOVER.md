@@ -252,3 +252,18 @@ late. The existing fake-engine end-to-end tests also need a safe redesign;
 a caller-controlled test-mode bypass would be unsafe. Further history and
 rollback verification remain necessary before authorizing studies. #498 remains
 draft, and #488 remains with Shinichi for a decision.
+
+A temporary launch pause is now on Julia PR #498 at `d6d31ae3`. The reviewed
+Python cell, pilot and diagnostic launchers and Julia command refuse before
+starting an attempt. This includes the direct pilot and diagnostic workers.
+No mode or environment exception is provided. Focused no-fit tests and an
+independent review passed; new-head CI is running. Direct engine calls,
+custom launchers, old checkouts and direct per-cell store calls remain outside
+the pause. This is not a production Totoro record or host-wide enforcement.
+
+The prototype was extended to test different keys competing for the same
+UInt64 seed. Five synthetic tests passed locally and on Totoro. Initialization
+and reservation remain disabled, and complete-history and rollback checks
+remain open. Historical receipts and scientific gate credit do not transfer to
+the new source identity. See the Julia PR description and after-task report for
+exact test boundaries and local fixture gaps.
