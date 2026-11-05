@@ -203,3 +203,11 @@ that exact PR head against main `c36c4f42`. Main's post-merge package checks
 are running. Julia #498 then incorporated `7f1d141e` without a conflict; its
 new head is `49027dc50f01002303a47d323c2b75c6412a58f7` and fresh checks are
 running. Its scientific and evidence limitations above remain unchanged.
+
+Update: on #498 head `49027dc5`, the latest-Julia CI jobs failed the existing
+10-second fit-time assertion: 15.45 seconds on Linux and 12.08 seconds on
+Windows. The accompanying allocation and numerical assertions passed. The
+timed source and test files match main, but other Arc 1 changes are present;
+the cause has not been established. The two Julia 1.10 jobs and main's
+post-merge checks were still running when this note was written. The timing
+threshold remains unchanged and #498 remains draft.
