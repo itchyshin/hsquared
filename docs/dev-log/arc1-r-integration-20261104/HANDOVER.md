@@ -237,8 +237,9 @@ credit.
 
 On 2026-11-05 Shinichi selected Totoro as the proposed single-host authority.
 A synthetic SQLite reservation prototype passed four tests on the Mac and on
-Totoro's ZFS filesystem, including competing processes and simulated process
-crashes. Its public initialization and reservation functions always refuse.
+Totoro, including competing processes and simulated process crashes. The
+Totoro test database used the default `/tmp` filesystem (ext4); the source
+files were stored under `~/hsq_work` on ZFS. Its public initialization and reservation functions always refuse.
 No production registry was initialized and no study was run. The full attempt
 history remains incomplete, and a local database alone cannot detect rollback
 to an older valid snapshot. The design and test identities are in the local
@@ -295,3 +296,10 @@ Both Windows jobs passed the corrected test-copy check. The previous timing
 and line-ending failures remain in the CI history. This is a package-check
 result; it does not complete the attempt record or grant scientific gate
 credit. The PR remains draft and studies remain paused on the reviewed paths.
+
+A later synthetic database-and-witness model ran 13 no-fit tests on Totoro
+with its temporary data explicitly placed on ZFS. Synchronized process races
+covered one network namespace and used fake callbacks. The test does not
+verify an independent witness, rollback recovery, complete history, production
+authority or scientific execution. A protected authority and independent
+recovery checks remain needed.
