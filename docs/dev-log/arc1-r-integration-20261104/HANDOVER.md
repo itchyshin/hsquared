@@ -136,7 +136,8 @@ PR #498 head `61d8a112de1d2e7f723017fe4718be4dbc449687` adds a
 portable retained N80 profile fixture and a Windows line-ending fix in the
 fake-engine test. The full profile test file passed 1,295 assertions on each
 of Julia 1.10.12 and 1.13.3. Six line-ending and hook checks passed on Julia
-1.10.12. Full executor testing and PR CI were running at this checkpoint;
-check the current exact head for their outcomes. Windows symlinks and real
+1.10.12. The full local executor run exceeded its revised estimate and was stopped
+without a result. PR CI was running at this checkpoint; check the current
+exact head for its outcome. Windows symlinks and real
 second-drive paths remain unverified. The PR is draft and scientific gates
 remain open.
