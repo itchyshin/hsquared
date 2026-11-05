@@ -176,3 +176,23 @@ on fresh hosted runners. This establishes variability, not the cause of the
 difference. The limit remains unchanged. Julia #488 remains reserved for
 Shinichi's decision; its separate local decision brief records claim and
 finite-objective review findings.
+
+## Current Julia checks
+
+Julia #496 now includes main through `c36c4f42` at PR head `5d21963a`.
+A controlled Windows comparison with coverage and bounds checks took about
+six seconds for both the original and corrected source, with one BLAS thread
+and two Julia threads. It used direct project execution, not the full package
+check, and does not establish why earlier Windows runs exceeded ten seconds.
+The CI matrix now specifies those thread limits without changing the timing or
+allocation assertions. Default Julia threads and multithreaded BLAS are not
+covered by that matrix. Full CI is running on the updated PR. A small live
+R–Julia Poisson bridge check passed on this head; this checks transport on one
+fixture, not statistical calibration.
+
+Julia #498 now includes the same main revision at `6e359c02`. Its package
+configuration conflict was resolved by retaining the test dependencies from
+both parents. Fresh CI is running on that head. The original source maps,
+ignored Arc 1 gate ledger and authoritative spent-key mechanism remain open;
+the earlier CI results do not establish the outcome for this new head.
+Neither these updates nor the historical receipts grant scientific gate credit.
