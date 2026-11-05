@@ -111,3 +111,11 @@ symlink to another drive, and the attempt runner may reject a legitimate
 output directory on another drive. These are not confirmed causes of the
 current CI failures. Native Windows symlink and cross-drive tests are still
 needed before claiming complete Windows path containment.
+
+The later trial head `976647b9ab7a666027a77f02e8f11aee838d9727` adds fixed
+input data to the two version-sensitive optimizer tests, without changing
+their assertions or thresholds. The full optimizer test file passed 668/668 on
+Julia 1.10 and 1.13 locally. It also adds reviewed cross-drive path guards and
+Windows CI regressions. The prior CI run had already failed on the optimizer
+fixture and was superseded. Check CI for this new exact head before deciding
+what remains. Native Windows symlink and real second-drive cases remain open.
