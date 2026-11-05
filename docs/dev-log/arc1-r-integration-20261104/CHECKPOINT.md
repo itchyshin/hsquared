@@ -136,9 +136,8 @@ remain open.
 
 ## Later PR and evidence update
 
-#494 and #485 merged. #494 post-merge main CI passed; #485 post-merge CI is
-running. #498 CI passed at `61d8a112`; its later preservation head is
-`93fa199d64e8ceeec9160c5d29c9e07b3b961118`, whose CI is pending. It restores
+#494 and #485 merged. #494 post-merge main CI passed; #485 post-merge CI passed. #498 CI passed at `61d8a112`; its later preservation head is
+`93fa199d64e8ceeec9160c5d29c9e07b3b961118`, whose CI passed. It restores
 four main LOOP files and archives the prior main gate index byte for byte.
 The original ignored Arc 1 ledger remains missing. A synthetic, mocked-admission
 no-fit probe showed that the same key can be started from distinct empty output
