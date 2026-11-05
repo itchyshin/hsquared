@@ -151,3 +151,8 @@ review, with the mocked-admission limitation stated. Independent readback
 verified all 16 members and archive paths. Its SHA-256 is
 `3f39974db59873c1d6accc32fefe68d8b56b3b39e3ed9d6e6d5cecb39d120603`.
 The bundle has not been sent.
+
+R #353 and Julia #495 have since merged and passed their post-merge package
+checks. Julia #496 remains draft with its unchanged Windows timing check red;
+the pre-fix source also failed that check on a fresh hosted runner. Julia
+#488 remains held for Shinichi's decision.
