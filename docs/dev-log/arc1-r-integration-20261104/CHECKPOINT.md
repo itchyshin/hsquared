@@ -110,15 +110,15 @@ SHA-256 `2a9e51019b10c1d72a3bbd642ec821a37abb40627f5b2f7f62d889edc1188cf4`.
 The retained result and three other run files were also verified. The
 historical coordination board was recovered, giving 1,000 of 1,001 exact
 audit-listed files; the old whole check log remains missing. The updated
-private evidence bundle is `arc1-szymek-evidence-20261104-v9.zip`, SHA-256
-`2be3a8b2c88007c4b189309a8fc132085c4d44dd02ef0a7d77e03c1bb3534fe9`.
+private evidence bundle is `arc1-szymek-evidence-20261104-v10.zip`, SHA-256
+`3f39974db59873c1d6accc32fefe68d8b56b3b39e3ed9d6e6d5cecb39d120603`.
 `SEED-GUARD-REVIEW.md` records the evidence and narrowly scoped correction
 options. The portable replay reproduced the 8/9 guard result and positive
 control without fits. Its negative controls rejected a tampered pinned receipt
 and an existing output path. No guard policy was changed.
 
-The v9 bundle also contains the retained N80 profile input from Totoro and
-the original export script. Independent readback verified all 14 bundle
+The v10 bundle also contains the retained N80 profile input from Totoro and
+the original export script. Independent readback verified all 16 bundle
 manifest entries and the exported response, pedigree, design and row mappings
 against the retained input. The input SHA-256 is
 `95167a1e92d7dcadfa4b3fb5107d2ba6237e0cb85906091db7db89d263152377`.
@@ -145,3 +145,9 @@ no-fit probe showed that the same key can be started from distinct empty output
 roots; it does not establish historical re-execution. The local probe review
 records the proposed fail-closed requirements. No gate, seed or attempt count
 was changed.
+
+The v10 private bundle includes the synthetic consumed-key probe and its
+review, with the mocked-admission limitation stated. Independent readback
+verified all 16 members and archive paths. Its SHA-256 is
+`3f39974db59873c1d6accc32fefe68d8b56b3b39e3ed9d6e6d5cecb39d120603`.
+The bundle has not been sent.

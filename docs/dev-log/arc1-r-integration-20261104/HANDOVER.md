@@ -17,8 +17,8 @@ G2–G8 remain open for these identities.
 ## Evidence available
 
 The owner has a local portable evidence starter named
-`arc1-szymek-evidence-20261104-v9.zip` under `~/local-scratch`.
-Its SHA-256 is `2be3a8b2c88007c4b189309a8fc132085c4d44dd02ef0a7d77e03c1bb3534fe9`.
+`arc1-szymek-evidence-20261104-v10.zip` under `~/local-scratch`.
+Its SHA-256 is `3f39974db59873c1d6accc32fefe68d8b56b3b39e3ed9d6e6d5cecb39d120603`.
 It contains the retained checkpoint and v29 Julia receipt, seven outer33 files
 that match the trial branch's pinned hashes, and an archive of the source
 files listed by the historical seed audit. The archive was verified on readback
@@ -125,8 +125,8 @@ between the Julia source used for the earlier R transport checks
 (`927b8f11`) and the current trial head (`976647b9`). Test and pipeline files
 have changed; this comparison is not a rerun of the bridge or a gate pass.
 
-The v9 bundle also contains the retained N80 profile input from Totoro and
-the original export script. Independent readback verified all 14 bundle
+The v10 bundle also contains the retained N80 profile input from Totoro and
+the original export script. Independent readback verified all 16 bundle
 manifest entries and the exported response, pedigree, design and row mappings
 against the retained input. The input SHA-256 is
 `95167a1e92d7dcadfa4b3fb5107d2ba6237e0cb85906091db7db89d263152377`.
@@ -162,3 +162,9 @@ needs review before allowing further attempts. No historical identities, gates,
 seeds or attempt counts were changed.
 
 The local private evidence starter and the draft message have not been sent.
+
+The v10 private bundle includes the synthetic consumed-key probe and its
+review, with the mocked-admission limitation stated. Independent readback
+verified all 16 members and archive paths. Its SHA-256 is
+`3f39974db59873c1d6accc32fefe68d8b56b3b39e3ed9d6e6d5cecb39d120603`.
+The bundle has not been sent.
