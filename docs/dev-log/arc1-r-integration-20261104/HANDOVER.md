@@ -275,3 +275,16 @@ corrects the test-only line match and passed local LF, CRLF and duplicate-line
 checks plus a fake-engine smoke test. The production pause is unchanged. The
 other two jobs on the superseded run were cancelled when the corrected commit
 was pushed; their results are unavailable. Fresh CI is running on `d903ad99`.
+
+An independent challenge of the proposed Totoro restore design found that a
+counter alone is insufficient. A witness must identify each reservation and
+its predecessor, live in a separate failure domain, and allow missing records
+to be reconstructed as consumed. Any disagreement or interrupted commit must
+stop dispatch until reconciled. Process-crash tests do not establish recovery
+from power loss or restoration of an old snapshot. This remains a design,
+without a deployed witness or production database.
+
+A record of known attempts can be held in quarantine with no launch authority.
+Enabling new allocations still needs a reviewed complete history or a proven
+disjoint key and seed scope, plus separate study authorization. The available
+unknown historical seeds do not establish universal disjointness.
