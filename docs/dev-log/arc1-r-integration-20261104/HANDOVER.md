@@ -223,3 +223,12 @@ The two Julia 1.10 jobs on #498 subsequently passed. The latest-Julia Linux
 and Windows failures are retained in attempt 1 of CI run 41965154363; a single
 retry of those two jobs is running on the same head. A passing retry would not
 explain the first failures or settle the remaining Arc 1 evidence questions.
+
+The retry has now passed on both latest-Julia platforms: Linux in 59 minutes
+and Windows in 75 minutes. CI logs identify PR head `49027dc5` merged for
+checking into main `7f1d141e`. Together with the first attempt's Julia 1.10
+passes and the documentation pass, all current checks have passing results.
+The first attempt's two timing failures remain evidence, and their cause is
+unresolved. #498 remains draft because the Arc 1 source and attempt-safeguard
+questions are still open; passing package checks confer no scientific gate
+credit.
