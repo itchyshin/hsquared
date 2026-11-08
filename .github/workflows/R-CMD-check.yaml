@@ -18,6 +18,9 @@ concurrency:
 
 jobs:
   R-CMD-check:
+    # Coverage collection lives in test-coverage.yaml (ubuntu-only, one
+    # Codecov upload). Do not add covr to this OS matrix: both shards run
+    # the same Julia-absent tests and a second upload would double-count.
     strategy:
       fail-fast: false
       matrix:
