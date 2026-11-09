@@ -47,6 +47,14 @@ C3): `status = covered` on a `no_smoke` row read as a covered bridge surface.
 python3 tools/validate-bridge-dashboard.py
 ```
 
+## Test coverage / Codecov (infrastructure, not scientific coverage)
+
+`test-coverage.md` records the covr + Codecov pipeline and the five evidence
+stages (local covr, CI coverage finish, upload executed, accepted commit
+report, main dashboard). That pipeline does not change
+`validation_status()`, `public_covered_count`, or interval calibration.
+R-CMD-check OS shards stay check-only; one ubuntu job uploads.
+
 ## Tier 0 CI (A16 — no live Julia)
 
 Fixture-first bridge contracts run in default `R-CMD-check`. See
