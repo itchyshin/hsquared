@@ -117,6 +117,8 @@ jobs:
       HSQUARED_REQUIRE_BRIDGE: true
       HSQUARED_JULIA_PROJECT: ${{ github.workspace }}/HSquared.jl
       OPENBLAS_NUM_THREADS: 1
+      JULIA_NUM_THREADS: 1
+      JULIA_PKG_PRECOMPILE_AUTO: "0"
 
     steps:
       - uses: actions/checkout@v6
@@ -137,6 +139,16 @@ jobs:
       - name: Instantiate the engine project
         run: julia --project=HSquared.jl -e 'using Pkg; Pkg.instantiate(); using HSquared'
 
+      - name: Preload Julia libunwind (Ubuntu 24.04 JuliaCall)
+        run: |
+          julia_home=$(julia -e 'print(Sys.BINDIR)')
+          libunwind="${julia_home}/../lib/julia/libunwind.so.8"
+          if [[ -f "${libunwind}" ]]; then
+            echo "LD_PRELOAD=${libunwind}" >> "${GITHUB_ENV}"
+          else
+            echo "libunwind preload not found at ${libunwind}; continuing without LD_PRELOAD"
+          fi
+
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
@@ -145,6 +157,18 @@ jobs:
         with:
           extra-packages: any::covr, any::xml2, any::JuliaCall, any::nadiv
           needs: coverage
+
+      - name: Warm JuliaCall before covr instrumentation
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: "0"
+        run: |
+          Rscript -e '
+            suppressPackageStartupMessages({
+              library(JuliaCall)
+              JuliaCall::julia_setup(installJulia = FALSE, verbose = FALSE)
+              JuliaCall::julia_command("using RCall")
+            })
+          '
 
       - name: Test coverage (Julia-enabled suite)
         run: |
