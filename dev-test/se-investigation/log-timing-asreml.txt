@@ -1,0 +1,11 @@
+Online License checked out Mon Nov  9 11:38:13 2026
+                engine       trait            step median_s min_s max_s reps
+clutch_size.1 ASReml-R clutch_size            Ainv    0.294 0.293 0.296    7
+clutch_size.2 ASReml-R clutch_size fit (incl. SEs)    0.417 0.415 0.488    7
+laydate.1     ASReml-R     laydate            Ainv    0.287 0.285 0.303    7
+laydate.2     ASReml-R     laydate fit (incl. SEs)    0.360 0.358 0.380    7
+              loglik   version
+clutch_size.1     NA 4.2.0.482
+clutch_size.2 -10780 4.2.0.482
+laydate.1         NA 4.2.0.482
+laydate.2     -26760 4.2.0.482

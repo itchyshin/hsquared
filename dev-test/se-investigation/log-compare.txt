@@ -1,0 +1,54 @@
+
+===== clutch_size ===== 6 chains, 7200 draws
+ESS: 1580 1563 7011 1513   Rhat: 1.0043 1.0031 1.0002 1.0042 
+
+Estimates
+                animal permanent residual       h2
+ASReml        0.595400  0.525231  1.37276 0.238791
+hsquared      0.595400  0.525231  1.37276 0.238791
+MCMCglmm mean 0.596973  0.523106  1.37422 0.239233
+MCMCglmm mode 0.605798  0.508264  1.37546 0.242983
+
+Standard errors / posterior SDs
+                           animal permanent  residual        h2
+ASReml (reported)       0.0663300 0.0647700 0.0282200 0.0255800
+R ref: inverse AI       0.0663300 0.0647700 0.0282200 0.0255800
+hsquared (reported)     0.0698000 0.0678800 0.0284800 0.0269500
+R ref: inverse observed 0.0697800 0.0678700 0.0284800 0.0269400
+R ref: inverse expected 0.0633600 0.0621000 0.0279700 0.0244000
+MCMCglmm posterior SD   0.0711500 0.0681400 0.0284700 0.0273900
+  MCSE of posterior SD  0.0009417 0.0009335 0.0002405 0.0003735
+  MCSE (between chains) 0.0006880 0.0005135 0.0001585 0.0002527
+
+(posterior SD - SE) / MCSE:
+            animal permanent residual   h2
+vs_AI         5.12      3.61     1.05 4.85
+vs_observed   1.45      0.29    -0.03 1.20
+vs_expected   8.27      6.47     2.07 8.00
+
+===== laydate ===== 6 chains, 7200 draws
+ESS:  500  404 4163  496   Rhat: 1.0219 1.0297 1.0006 1.0236 
+
+Estimates
+               animal permanent residual       h2
+ASReml        6.26533   3.01539  28.4227 0.166174
+hsquared      6.26533   3.01539  28.4227 0.166174
+MCMCglmm mean 6.38369   2.84755  28.4868 0.169188
+MCMCglmm mode 6.46131   2.72009  28.4414 0.172281
+
+Standard errors / posterior SDs
+                         animal permanent residual        h2
+ASReml (reported)       0.83230   0.85610 0.560500 0.0215500
+R ref: inverse AI       0.83230   0.85610 0.560500 0.0215500
+hsquared (reported)     0.84400   0.85500 0.557700 0.0218500
+R ref: inverse observed 0.84530   0.85670 0.557800 0.0218800
+R ref: inverse expected 0.82000   0.85620 0.563500 0.0212300
+MCMCglmm posterior SD   0.89590   0.91120 0.550100 0.0232000
+  MCSE of posterior SD  0.01578   0.01955 0.004601 0.0004186
+  MCSE (between chains) 0.02293   0.03143 0.005675 0.0006224
+
+(posterior SD - SE) / MCSE:
+            animal permanent residual   h2
+vs_AI         4.03      2.82    -2.27 3.93
+vs_observed   3.21      2.79    -1.67 3.14
+vs_expected   4.81      2.81    -2.91 4.69

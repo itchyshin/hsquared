@@ -1,0 +1,10 @@
+              engine       trait                              step median_s
+1           hsquared clutch_size fit, cold (Julia start + compile)   13.304
+clutch_size hsquared clutch_size             fit, warm (incl. SEs)    0.959
+laydate     hsquared     laydate             fit, warm (incl. SEs)    1.073
+             min_s  max_s reps loglik julia_threads blas_threads
+1           13.304 13.304    1 -21617             1           12
+clutch_size  0.920  1.027    7 -21617             1           12
+laydate      1.047  1.128    7 -37401             1           12
+Julia exit.
+  Activating project at `~/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl`

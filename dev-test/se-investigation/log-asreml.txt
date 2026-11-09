@@ -1,0 +1,27 @@
+Online License checked out Mon Nov  9 10:37:54 2026
+
+== clutch_size == loglik -10779.54  converge TRUE 
+  component estimate        se bound
+1    animal 0.595400 0.0663271     P
+2 permanent 0.525231 0.0647677     P
+3  residual 1.372760 0.0282198     P
+ estimate        se 
+0.2387914 0.0255754 
+3 x 3 Matrix of class "dspMatrix"
+                 vm(animal, Ainv)   ide(animal)       units!R
+vm(animal, Ainv)     0.0024337756 -0.0016666334 -0.0002829239
+ide(animal)         -0.0016666334  0.0024869641 -0.0005791121
+units!R             -0.0002829239 -0.0005791121  0.0007963563
+
+== laydate == loglik -26760.49  converge TRUE 
+  component estimate       se bound
+1    animal  6.26533 0.832305     P
+2 permanent  3.01539 0.856065     P
+3  residual 28.42270 0.560512     P
+ estimate        se 
+0.1661740 0.0215506 
+3 x 3 Matrix of class "dspMatrix"
+                 vm(animal, Ainv)   ide(animal)      units!R
+vm(animal, Ainv)     0.0008866699 -0.0006293850 -0.003098821
+ide(animal)         -0.0006293850  0.0009544375 -0.006919654
+units!R             -0.0030988205 -0.0069196540  0.314173620

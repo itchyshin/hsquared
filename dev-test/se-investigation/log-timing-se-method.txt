@@ -1,0 +1,19 @@
+cold first call (Julia start + compile): 10.3 s
+
+                        animal permanent  residual        h2
+clutch_size ai       0.0663271 0.0647677 0.0282198 0.0255754
+clutch_size observed 0.0698012 0.0678846 0.0284784 0.0269484
+laydate ai           0.8323050 0.8560650 0.5605120 0.0215506
+laydate observed     0.8439610 0.8550430 0.5576840 0.0218492
+                                                engine       trait median_s
+clutch_size ai             hsquared (se_method = "ai") clutch_size    0.774
+clutch_size observed hsquared (se_method = "observed") clutch_size    0.898
+laydate ai                 hsquared (se_method = "ai")     laydate    0.898
+laydate observed     hsquared (se_method = "observed")     laydate    1.029
+                     min_s max_s reps julia_threads blas_threads
+clutch_size ai       0.768 0.824    7             1           12
+clutch_size observed 0.893 0.910    7             1           12
+laydate ai           0.893 0.901    7             1           12
+laydate observed     1.023 1.128    7             1           12
+Julia exit.
+  Activating project at `~/hsq-wt/hjl-se-info`
