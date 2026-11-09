@@ -5,9 +5,10 @@
 #   * Job-scoped permissions: contents:read + id-token:write only.
 #   * Ubuntu-only. Do not add covr to the R-CMD-check OS matrix:
 #     ubuntu+windows would double-count the same tests.
-#   * Julia + HSquared.jl provisioned so live bridge tests run under covr
-#     (HSQUARED_JULIA_TESTS + HSQUARED_REQUIRE_BRIDGE), same recipe as
-#     bridge-parity-tier1.yaml.
+#   * Julia + HSquared.jl provisioned; live bridge tests run under covr
+#     (HSQUARED_JULIA_TESTS + HSQUARED_REQUIRE_BRIDGE). Coverage uses
+#     type = "none" + testthat::test_dir() (single process) so JuliaCall is
+#     not re-initialised per covr _problems shard (hsquared#374).
 # Config (this file + codecov.yml) does not prove coverage ran, uploaded,
 # or was accepted. See docs/dev-log/dashboard/test-coverage.md.
 on:
@@ -75,33 +76,8 @@ jobs:
           needs: coverage
 
       - name: Test coverage
-        run: |
-          cov <- covr::package_coverage(
-            quiet = FALSE,
-            clean = FALSE,
-            install_path = file.path(
-              normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"),
-              "package"
-            )
-          )
-          print(cov)
-          pct <- round(covr::percent_coverage(cov), 2)
-          summary_file <- Sys.getenv("GITHUB_STEP_SUMMARY")
-          if (nzchar(summary_file)) {
-            writeLines(
-              c(
-                "## covr (CI coverage finish, not Codecov acceptance)",
-                "",
-                paste0("- package coverage: ", pct, "%"),
-                "- suite: Julia-enabled testthat (live bridge legs required)",
-                "- this print is CI coverage finish, not upload or dashboard evidence"
-              ),
-              summary_file
-            )
-          }
-          cat(sprintf("HSQUARED_COVR_PERCENT=%s\n", pct))
-          covr::to_cobertura(cov)
-        shell: Rscript {0}
+        run: Rscript tools/ci-julia-coverage.R
+        shell: bash
 
       - name: Upload coverage to Codecov (OIDC)
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
@@ -118,7 +94,11 @@ jobs:
       - name: Show testthat output
         if: always()
         run: |
-          find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
+          if [ -f coverage-testthat.log ]; then
+            tail -n 120 coverage-testthat.log
+          else
+            find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
+          fi
         shell: bash
 
       - name: Upload coverage-test failures
@@ -126,4 +106,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-test-failures
-          path: ${{ runner.temp }}/package
+          path: |
+            coverage-testthat.log
+            coverage-testthat-results.csv
+            cobertura.xml
+            ${{ runner.temp }}/package
