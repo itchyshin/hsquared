@@ -76,7 +76,7 @@ test_that("hs_attach_bridge_errors() attaches the record and warns exactly once"
 test_that("hs_julia_try_slot() records the error text instead of swallowing it", {
   cmd <- hsquared:::hs_julia_try_slot(
     "hsq_vcse",
-    "HSquared.variance_component_standard_errors(hsq_fit)",
+    "HSquared.variance_component_standard_errors(hsq_fit; hsq_ikw...)",
     "variance_component_standard_errors"
   )
   expect_match(cmd, "^hsq_vcse = try; ")
@@ -128,7 +128,7 @@ hs_collect_bridge_warnings <- function(expr) {
 test_that("a throwing SE call surfaces one warning and attr(fit, 'bridge_errors') [live]", {
   hs_bridge_errors_351_skip()
   hs_local_julia_fault(
-    "HSquared.variance_component_standard_errors(hsq_fit)",
+    "HSquared.variance_component_standard_errors(hsq_fit; hsq_ikw...)",
     "error(\"forced bridge fault 351\")"
   )
   fx <- hsquared:::hs_mrode_supplied_variance_validation_fixture()
@@ -184,11 +184,11 @@ test_that("a throwing plot-data call (OutOfMemoryError) is reported, not dropped
 test_that("two post-fit failures are consolidated into ONE warning [live]", {
   hs_bridge_errors_351_skip()
   hs_local_julia_fault(
-    "HSquared.variance_component_standard_errors(hsq_fit)",
+    "HSquared.variance_component_standard_errors(hsq_fit; hsq_ikw...)",
     "error(\"fault A\")"
   )
   hs_local_julia_fault(
-    "HSquared.heritability_standard_error(hsq_fit)",
+    "HSquared.heritability_standard_error(hsq_fit; hsq_ikw...)",
     "error(\"fault B\")"
   )
   fx <- hsquared:::hs_mrode_supplied_variance_validation_fixture()

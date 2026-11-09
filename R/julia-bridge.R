@@ -149,12 +149,43 @@ hs_julia_attach_standard_plot_data <- function(breeding_values = TRUE) {
   invisible(TRUE)
 }
 
+# Julia snippet: `hsq_ikw` is the `information = :ai | :observed` keyword to splat
+# into an engine SE call, and `hsq_info_kw` says whether this engine accepts it
+# (HSquared.jl defines `_validate_information` exactly when it does). An engine
+# that predates the switch gets no keyword, runs its route-native method, and
+# `hs_julia_se_method_used()` records that method rather than the request.
+hs_julia_information_kw <- function(se_method = "ai") {
+  se_method <- match.arg(se_method, c("ai", "observed"))
+  paste0(
+    "hsq_info_kw = isdefined(HSquared, :_validate_information);",
+    "hsq_ikw = hsq_info_kw ? (information = :", se_method, ",) : NamedTuple();"
+  )
+}
+
+# The information matrix the engine actually used for the SEs.
+hs_julia_se_method_used <- function(se_method, native) {
+  if (isTRUE(JuliaCall::julia_eval("hsq_info_kw"))) se_method else native
+}
+
+# Record `se_method` on a result that carries SEs or a delta interval.
+hs_stamp_se_method <- function(result, se_method, native) {
+  has_se <- !is.null(result$variance_component_se) ||
+    !is.null(result$heritability_se) ||
+    !is.null(result$heritability_interval)
+  if (has_se) {
+    result$se_method <- hs_julia_se_method_used(se_method, native)
+    result$diagnostics$se_method <- result$se_method
+  }
+  result
+}
+
 # Merge engine-owned SE/CI slots into hsq_result. Julia already computes these
 # on AnimalModelFit (~1 ms). Used by both ai_reml and sparse_reml so the
 # documented sparse fallback does not drop uncertainty (#281). Each call is
 # try-guarded so a boundary/singular AI matrix cannot abort the fit (#351).
-hs_julia_merge_inference_slots <- function() {
+hs_julia_merge_inference_slots <- function(se_method = "ai") {
   paste(
+    hs_julia_information_kw(se_method),
     # Experimental, opt-in heritability CI (engine row V1-HERIT-CI, partial).
     # Guarded by a try: the engine throws when h2 is on the (0, 1) boundary,
     # which must not abort the fit (the throw is recorded and warned, #351).
@@ -162,7 +193,7 @@ hs_julia_merge_inference_slots <- function() {
     "applicable(HSquared.heritability_interval, hsq_fit);",
     hs_julia_try_slot(
       "hsq_hi",
-      "HSquared.heritability_interval(hsq_fit)",
+      "HSquared.heritability_interval(hsq_fit; hsq_ikw...)",
       "heritability_interval"
     ),
     "if hsq_hi !== nothing;",
@@ -178,7 +209,7 @@ hs_julia_merge_inference_slots <- function() {
     "applicable(HSquared.variance_component_standard_errors, hsq_fit);",
     hs_julia_try_slot(
       "hsq_vcse",
-      "HSquared.variance_component_standard_errors(hsq_fit)",
+      "HSquared.variance_component_standard_errors(hsq_fit; hsq_ikw...)",
       "variance_component_standard_errors"
     ),
     "if hsq_vcse !== nothing;",
@@ -189,7 +220,7 @@ hs_julia_merge_inference_slots <- function() {
     "applicable(HSquared.heritability_standard_error, hsq_fit);",
     hs_julia_try_slot(
       "hsq_h2se",
-      "HSquared.heritability_standard_error(hsq_fit)",
+      "HSquared.heritability_standard_error(hsq_fit; hsq_ikw...)",
       "heritability_standard_error"
     ),
     "if hsq_h2se !== nothing;",
@@ -458,7 +489,8 @@ hs_fit_julia_sparse_reml_payload <- function(
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
   iterations = 1000L,
-  skip_pev_reliability = FALSE
+  skip_pev_reliability = FALSE,
+  se_method = "ai"
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -510,7 +542,7 @@ hs_fit_julia_sparse_reml_payload <- function(
           "end;"
         )
       },
-      hs_julia_merge_inference_slots()
+      hs_julia_merge_inference_slots(se_method)
     )),
     hint = hs_dense_scale_hint
   )
@@ -521,6 +553,7 @@ hs_fit_julia_sparse_reml_payload <- function(
   )
   result <- hs_normalize_julia_result(raw, payload)
   result$diagnostics$variance_components <- "estimated_sparse_reml"
+  result <- hs_stamp_se_method(result, se_method, native = "ai")
   result <- hs_mark_skipped_pev_reliability(result, skip_pev_reliability)
   fit <- hs_new_fit(
     spec = list(
@@ -543,7 +576,8 @@ hs_fit_julia_ai_reml_payload <- function(
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
   iterations = 100L,
   em_warmup = 0L,
-  skip_pev_reliability = FALSE
+  skip_pev_reliability = FALSE,
+  se_method = "ai"
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -599,7 +633,7 @@ hs_fit_julia_ai_reml_payload <- function(
           "end;"
         )
       },
-      hs_julia_merge_inference_slots()
+      hs_julia_merge_inference_slots(se_method)
     )),
     hint = hs_dense_scale_hint
   )
@@ -610,6 +644,7 @@ hs_fit_julia_ai_reml_payload <- function(
   )
   result <- hs_normalize_julia_result(raw, payload)
   result$diagnostics$variance_components <- "estimated_ai_reml"
+  result <- hs_stamp_se_method(result, se_method, native = "ai")
   result <- hs_mark_skipped_pev_reliability(result, skip_pev_reliability)
   fit <- hs_new_fit(
     spec = list(
@@ -1478,7 +1513,8 @@ hs_fit_julia_repeatability_payload <- function(
   initial = c(sigma_a2 = 1, sigma_pe2 = 1, sigma_e2 = 1),
   iterations = 200L,
   max_dense_cells = 1e6,
-  scale_method = c("dense", "auto")
+  scale_method = c("dense", "auto"),
+  se_method = "ai"
 ) {
   scale_method <- match.arg(scale_method)
   if (!inherits(payload, "hs_bridge_payload")) {
@@ -1577,11 +1613,12 @@ hs_fit_julia_repeatability_payload <- function(
     # optimum makes the covariance itself unavailable), so re-calling the three
     # would re-pay the cost only to record the same failure twice more.
     JuliaCall::julia_command(paste(
+      hs_julia_information_kw(se_method),
       "hsq_unc_avail = isdefined(HSquared, :multi_effect_uncertainty);",
       "hsq_unc = if hsq_unc_avail;",
       "try; HSquared.multi_effect_uncertainty(",
       "hsq_y, hsq_X, hsq_eff, hsq_fit.variance_components.sigmas,",
-      "hsq_fit.variance_components.sigma_e2; which = 1:2);",
+      "hsq_fit.variance_components.sigma_e2; which = 1:2, hsq_ikw...);",
       hs_julia_catch_record("post_fit_uncertainty"),
       "else; nothing; end;",
       "hsq_has_unc = hsq_unc !== nothing;",
@@ -1743,6 +1780,9 @@ hs_fit_julia_repeatability_payload <- function(
       # second row under h2.
       result$permanent_proportion_se <- rse[[2L]]
     }
+    # The K-effect engine functions default to observed information; an engine
+    # that predates the switch therefore used observed whatever was requested.
+    result <- hs_stamp_se_method(result, se_method, native = "observed")
   }
   if (isTRUE(JuliaCall::julia_eval("hsq_has_ri"))) {
     # The two routes' interval objects differ: the dense one names the point
@@ -4799,7 +4839,8 @@ hs_fit_julia_genomic_payload <- function(
   payload,
   project = hs_default_julia_project(),
   initial = c(sigma_a2 = 1, sigma_e2 = 1),
-  iterations = 100L
+  iterations = 100L,
+  se_method = "ai"
 ) {
   if (!inherits(payload, "hs_bridge_payload")) {
     stop("`payload` must be an internal `hs_bridge_payload`.", call. = FALSE)
@@ -4877,7 +4918,7 @@ hs_fit_julia_genomic_payload <- function(
   rel <- payload$relationship
   # Engine-owned AI-REML SEs/intervals: relmat (#295) and genomic (#294).
   inference_cmd <- if (identical(rel, "relmat") || identical(rel, "genomic")) {
-    hs_julia_merge_inference_slots()
+    hs_julia_merge_inference_slots(se_method)
   } else {
     ""
   }
@@ -4948,6 +4989,9 @@ hs_fit_julia_genomic_payload <- function(
     NULL
   }
   result <- hs_normalize_julia_result(raw, payload)
+  if (nzchar(inference_cmd)) {
+    result <- hs_stamp_se_method(result, se_method, native = "ai")
+  }
   result$variance_components$component[
     result$variance_components$component == "animal"
   ] <- rel

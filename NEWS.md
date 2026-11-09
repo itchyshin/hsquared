@@ -1,5 +1,21 @@
 # hsquared (development version)
 
+* **New `hs_control(se_method = c("ai", "observed"))`; standard errors now
+  default to the average-information matrix.** On the great tit animal +
+  permanent-environment model `hsquared` reported SEs 2-7% wider than ASReml-R.
+  Both packages were right; they inverted different matrices: ASReml the
+  average information (AI), `hsquared` the finite-difference observed
+  information. `"ai"` (new default) now matches ASReml-R to every printed digit
+  on both traits. `"observed"` keeps the previous values and is what an MCMCglmm
+  posterior SD tracked on clutch size. Honoured by the default animal model,
+  genomic GREML, and the sparse (`scale_method = "auto"`) animal +
+  permanent-environment route. **Behaviour change on that last route:** its SEs
+  were observed-information before and are AI now; pass `se_method = "observed"`
+  for the old numbers. The method used is in `fit$result$se_method` and
+  `fit_diagnostics()`. Other routes keep their own method. Needs the HSquared.jl
+  `information =` keyword (older engines fall back to their native method and
+  record it). Evidence: `dev-test/se-investigation/RESULTS.md`. No covered flip.
+
 * **hsquared#266 (performance): the dense and supplied-variance pedigree
   routes also carry `1 + F`.** `engine = "julia"` with no target
   (`fit_animal_model`) and `target = "henderson_mme"` now pass the inbreeding

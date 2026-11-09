@@ -120,13 +120,14 @@ hs_rep_fixture <- function(n_per_gen, n_gen, reps, seed = 11,
   list(ped = ped, dat = dat, n_animal = nrow(ped), nobs = nrow(dat))
 }
 
-hs_rep_fit <- function(fx, scale_method) {
+hs_rep_fit <- function(fx, scale_method, se_method = "ai") {
   hsquared(
     y ~ animal(1 | id, pedigree = fx$ped) + permanent(1 | id),
     data = fx$dat,
     family = stats::gaussian(),
     control = hs_control(
       engine = "julia",
+      se_method = se_method,
       engine_control = list(
         target = "repeatability", scale_method = scale_method
       )
@@ -249,8 +250,15 @@ test_that("the sparse route's repeatability interval matches the dense one", {
     "JuliaCall, Julia, and local HSquared.jl are required."
   )
   fx <- hs_rep_fixture(n_per_gen = 60, n_gen = 2, reps = 3)
+  # The dense interval is built from OBSERVED information (it refits and
+  # differentiates), so compare like with like: the sparse route with
+  # se_method = "observed". The sparse default is average information, which
+  # is a different (asymptotically equivalent) matrix -- close, not equal.
   rid <- repeatability_interval(hs_rep_fit(fx, "dense"))
-  ria <- repeatability_interval(hs_rep_fit(fx, "auto"))
+  ria <- repeatability_interval(hs_rep_fit(fx, "auto", se_method = "observed"))
+  rai <- repeatability_interval(hs_rep_fit(fx, "auto"))
+  expect_equal(rai$estimate, rid$estimate, tolerance = 1e-3)
+  expect_lt(abs(log(rai$se / rid$se)), log(1.25))
   expect_equal(ria$estimate, rid$estimate, tolerance = 1e-3)
   expect_equal(ria$se, rid$se, tolerance = 1e-3)
   expect_equal(ria$lower, rid$lower, tolerance = 1e-3)

@@ -248,6 +248,7 @@ hsquared <- function(
     }
     return(hs_fit_julia_ai_reml_payload(
       payload,
+      se_method = control$se_method %||% "ai",
       project = project,
       initial = hs_engine_control_value(
         control,
@@ -544,6 +545,7 @@ hsquared <- function(
     if (identical(target, "sparse_reml")) {
       return(hs_fit_julia_sparse_reml_payload(
         payload,
+        se_method = control$se_method %||% "ai",
         project = hs_engine_control_value(
           control,
           "julia_project",
@@ -570,6 +572,7 @@ hsquared <- function(
     if (identical(target, "ai_reml")) {
       return(hs_fit_julia_ai_reml_payload(
         payload,
+        se_method = control$se_method %||% "ai",
         project = hs_engine_control_value(
           control,
           "julia_project",
@@ -631,6 +634,7 @@ hsquared <- function(
       }
       return(hs_fit_julia_repeatability_payload(
         payload,
+        se_method = control$se_method %||% "ai",
         project = hs_engine_control_value(
           control,
           "julia_project",
@@ -885,6 +889,7 @@ hsquared <- function(
       }
       return(hs_fit_julia_genomic_payload(
         payload,
+        se_method = control$se_method %||% "ai",
         project = hs_engine_control_value(
           control,
           "julia_project",
@@ -921,6 +926,7 @@ hsquared <- function(
       }
       return(hs_fit_julia_genomic_payload(
         payload,
+        se_method = control$se_method %||% "ai",
         project = hs_engine_control_value(
           control,
           "julia_project",

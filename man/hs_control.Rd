@@ -10,7 +10,8 @@ hs_control(
   accelerator = c("auto", "none", "gpu", "cuda", "amdgpu", "metal", "oneapi"),
   precision = c("float64", "float32"),
   save = c("minimal", "full", "tiny"),
-  engine_control = list()
+  engine_control = list(),
+  se_method = c("ai", "observed")
 )
 }
 \arguments{
@@ -391,6 +392,21 @@ levers -- so \code{boundary} on a returned fit is \code{FALSE}. Read it as
 \code{search_boundary_condition} rows (hsquared#230); those rows are
 unrelated to that function's \code{at_boundary} rows, which flag a variance
 component at or near zero.}
+
+\item{se_method}{Which information matrix the asymptotic standard errors
+(and the delta-method heritability interval) are built from. \code{"ai"}
+(default) uses the average-information matrix: the matrix AI-REML
+optimises with, and what ASReml, WOMBAT, BLUPF90 and DMU report, so
+\code{hsquared} SEs match theirs. \code{"observed"} uses the observed information,
+the finite-difference Hessian of the REML log-likelihood: the quantity a
+large-sample Bayesian posterior SD tracks, at the cost of extra
+likelihood evaluations (about 12 for one random effect, 24 for two). Both are
+asymptotically equivalent and differ by a few percent on real data; neither
+is coverage-calibrated. Honoured by the univariate animal model, the
+genomic GREML route, and the sparse (\code{scale_method = "auto"}) animal +
+permanent-environment route; other routes keep their own method. The method
+actually used is recorded in \code{fit$result$se_method} and reported by
+\code{\link[=fit_diagnostics]{fit_diagnostics()}}.}
 }
 \value{
 An object of class \code{"hs_control"}.

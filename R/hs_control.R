@@ -381,6 +381,21 @@
 #'   unrelated to that function's `at_boundary` rows, which flag a variance
 #'   component at or near zero.
 #'
+#' @param se_method Which information matrix the asymptotic standard errors
+#'   (and the delta-method heritability interval) are built from. `"ai"`
+#'   (default) uses the average-information matrix: the matrix AI-REML
+#'   optimises with, and what ASReml, WOMBAT, BLUPF90 and DMU report, so
+#'   `hsquared` SEs match theirs. `"observed"` uses the observed information,
+#'   the finite-difference Hessian of the REML log-likelihood: the quantity a
+#'   large-sample Bayesian posterior SD tracks, at the cost of extra
+#'   likelihood evaluations (about 12 for one random effect, 24 for two). Both are
+#'   asymptotically equivalent and differ by a few percent on real data; neither
+#'   is coverage-calibrated. Honoured by the univariate animal model, the
+#'   genomic GREML route, and the sparse (`scale_method = "auto"`) animal +
+#'   permanent-environment route; other routes keep their own method. The method
+#'   actually used is recorded in `fit$result$se_method` and reported by
+#'   [fit_diagnostics()].
+#'
 #' @return An object of class `"hs_control"`.
 #' @export
 hs_control <- function(
@@ -389,9 +404,11 @@ hs_control <- function(
   accelerator = c("auto", "none", "gpu", "cuda", "amdgpu", "metal", "oneapi"),
   precision = c("float64", "float32"),
   save = c("minimal", "full", "tiny"),
-  engine_control = list()
+  engine_control = list(),
+  se_method = c("ai", "observed")
 ) {
   engine <- match.arg(engine)
+  se_method <- match.arg(se_method)
   backend <- match.arg(backend)
   accelerator <- match.arg(accelerator)
   precision <- match.arg(precision)
@@ -433,7 +450,8 @@ hs_control <- function(
       accelerator = accelerator,
       precision = precision,
       save = save,
-      engine_control = engine_control
+      engine_control = engine_control,
+      se_method = se_method
     ),
     class = "hs_control"
   )
