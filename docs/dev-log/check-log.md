@@ -14,6 +14,7 @@
 - Julia: full `Pkg.test()` on 1.12.6 passed (28 min 43 s); new `test/test_se_information_switch.jl` 19/19.
 - Correction recorded: the 130-140 s genomic fits seen in the simulation runs were BLAS oversubscription (12 BLAS threads per process beside 12 MCMC chains / 4 parallel replicates), not the engine. A warm n = 2,000 × 10,000-marker genomic `hsquared()` call takes ~14 s on a loaded machine (`dev-test/genomic-sim/profile-genomic.R`); evidence added to HSquared.jl#420.
 - Unchanged: `public_covered_count = 7`; no validation_status / capability row change; SEs remain asymptotic and not coverage-calibrated.
+- **CI.** hsquared#365 R-CMD-check ubuntu-latest + windows-latest **pass** (run 42609615222). HSquared.jl#500: Julia 1.10 ubuntu/windows **pass**, Julia 1 windows **pass**, docs + Documenter preview **pass**. Julia 1 ubuntu **fail** on `test_issue_421_sparse_laplace.jl:193`, `fitpath.time < 10.0` evaluated 14.65 s (run 42609477416). That is the pre-existing wall-clock assertion that also fails on HSquared.jl `main` (`15e932f2`, run 42255350096, 14.93 s) and on #499, not this change.
 
 ## 2026-11-04 (Arc 1 handover back to Shinichi: R-lineage search, both arms)
 
