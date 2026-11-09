@@ -5,7 +5,9 @@
 #   * Job-scoped permissions: contents:read + id-token:write only.
 #   * Ubuntu-only. Do not add covr to the R-CMD-check OS matrix:
 #     ubuntu+windows would double-count the same tests.
-#   * Julia-absent suite, same as default R-CMD-check. Live bridge legs skip.
+#   * Julia + HSquared.jl provisioned so live bridge tests run under covr
+#     (HSQUARED_JULIA_TESTS + HSQUARED_REQUIRE_BRIDGE), same recipe as
+#     bridge-parity-tier1.yaml.
 # Config (this file + codecov.yml) does not prove coverage ran, uploaded,
 # or was accepted. See docs/dev-log/dashboard/test-coverage.md.
 on:
@@ -29,15 +31,36 @@ permissions: {}
 jobs:
   test-coverage:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     permissions:
       contents: read
       id-token: write
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOT_CRAN: true
+      HSQUARED_JULIA_TESTS: true
+      # Failed Julia provision must not skip-as-pass under covr.
+      HSQUARED_REQUIRE_BRIDGE: true
+      HSQUARED_JULIA_PROJECT: ${{ github.workspace }}/HSquared.jl
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Checkout the engine twin
+        uses: actions/checkout@v6
+        with:
+          repository: itchyshin/HSquared.jl
+          ref: main
+          path: HSquared.jl
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.10"
+
+      - uses: julia-actions/cache@v2
+
+      - name: Instantiate the engine project
+        run: julia --project=HSquared.jl -e 'using Pkg; Pkg.instantiate(); using HSquared'
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -45,7 +68,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr, any::xml2
+          extra-packages: any::covr, any::xml2, any::JuliaCall, any::nadiv
           needs: coverage
 
       - name: Test coverage
@@ -67,7 +90,7 @@ jobs:
                 "## covr (CI coverage finish, not Codecov acceptance)",
                 "",
                 paste0("- package coverage: ", pct, "%"),
-                "- suite: Julia-absent testthat (live bridge legs skip)",
+                "- suite: Julia-enabled testthat (live bridge legs required)",
                 "- this print is CI coverage finish, not upload or dashboard evidence"
               ),
               summary_file
