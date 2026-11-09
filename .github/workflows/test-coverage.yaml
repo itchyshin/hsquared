@@ -65,9 +65,6 @@ jobs:
       - name: Instantiate the engine project
         run: julia --project=HSquared.jl -e 'using Pkg; Pkg.instantiate(); using HSquared'
 
-      - name: Julia packages required by JuliaCall
-        run: julia -e 'using Pkg; Pkg.add("Suppressor")'
-
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
@@ -76,9 +73,6 @@ jobs:
         with:
           extra-packages: any::covr, any::xml2, any::JuliaCall, any::nadiv
           needs: coverage
-
-      - name: Prebuild JuliaCall R-Julia bridge
-        run: Rscript tools/ci-juliacall-preflight.R
 
       - name: Test coverage
         run: |
