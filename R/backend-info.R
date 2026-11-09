@@ -48,7 +48,9 @@ print.hs_backend_info <- function(x, ...) {
   cat("  requested backend: ", control$backend, "\n", sep = "")
   cat("  requested accelerator: ", control$accelerator, "\n", sep = "")
   cat("  execution: metadata only; no backend dispatch yet\n")
-  print.data.frame(unclass(x), row.names = FALSE)
+  out <- x
+  class(out) <- setdiff(class(out), "hs_backend_info")
+  print.data.frame(out, row.names = FALSE)
   invisible(x)
 }
 
