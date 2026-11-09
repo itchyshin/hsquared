@@ -42,6 +42,8 @@ jobs:
       # Failed Julia provision must not skip-as-pass under covr.
       HSQUARED_REQUIRE_BRIDGE: true
       HSQUARED_JULIA_PROJECT: ${{ github.workspace }}/HSquared.jl
+      JULIA_DEPOT_PATH: ${{ github.workspace }}/.julia-depot
+      JULIA_PKG_PRECOMPILE_AUTO: "0"
       OPENBLAS_NUM_THREADS: 1
       JULIA_NUM_THREADS: 4
 
@@ -60,9 +62,14 @@ jobs:
           version: "1.10"
 
       - uses: julia-actions/cache@v2
+        with:
+          cache-registries: true
 
       - name: Instantiate the engine project
         run: julia --project=HSquared.jl -e 'using Pkg; Pkg.instantiate(); using HSquared'
+
+      - name: Prepare Julia depot directory
+        run: mkdir -p "${{ github.workspace }}/.julia-depot"
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -72,6 +79,9 @@ jobs:
         with:
           extra-packages: any::covr, any::xml2, any::JuliaCall, any::nadiv
           needs: coverage
+
+      - name: Prebuild JuliaCall R-Julia bridge
+        run: Rscript tools/ci-juliacall-preflight.R
 
       - name: Test coverage
         run: |
