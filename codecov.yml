@@ -2,13 +2,13 @@
 # Presence of this file does not prove coverage ran, uploaded, or was accepted.
 # See docs/dev-log/dashboard/test-coverage.md.
 #
-# One CI coverage job uploads one report (`ubuntu-covr`). Do not add a second
-# OS or shard without raising `after_n_builds` and splitting flags, or Codecov
-# will wait for missing uploads or double-count the same tests.
+# Two CI coverage jobs upload two reports (`ubuntu-covr`, `ubuntu-covr-julia`).
+# Codecov merges line coverage across flags on the same commit. Do not add a
+# third upload without raising `after_n_builds` and assigning a distinct flag.
 codecov:
   require_ci_to_pass: false
   notify:
-    after_n_builds: 1
+    after_n_builds: 2
     wait_for_ci: false
 
 comment:

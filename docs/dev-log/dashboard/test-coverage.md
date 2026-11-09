@@ -13,16 +13,18 @@ and not a `public_covered_count` move.
 | Workflow | Role | Shards | Uploads to Codecov? |
 | --- | --- | --- | --- |
 | `R-CMD-check.yaml` | package check (ubuntu + windows) | two OS jobs, unchanged | **no** |
-| `test-coverage.yaml` | `covr::package_coverage()` then one OIDC upload | ubuntu only | **yes, once** (`flags: ubuntu-covr`) |
+| `test-coverage.yaml` | `covr::package_coverage()` then OIDC upload(s) | ubuntu: Julia-absent + Julia-enabled jobs | **yes, twice** (`ubuntu-covr`, `ubuntu-covr-julia`; merged) |
 | `pkgdown.yaml` | site build/deploy | n/a | no |
 | `bridge-parity-tier1.yaml` | optional live Julia, dispatch only | n/a | no |
 
 Do **not** add covr to the R-CMD-check OS matrix. Both OS jobs run the same
 Julia-absent testthat suite; uploading twice would double-count.
 
-The coverage job does **not** provision Julia. Live bridge tests skip, the
-same way they skip on default R-CMD-check. Coverage numbers, when they
-exist, describe that Julia-absent suite.
+The `test-coverage` job does **not** provision Julia; live bridge tests skip
+as on default R-CMD-check. The `test-coverage-julia` job provisions
+HSquared.jl, sets `HSQUARED_JULIA_TESTS=true` and `HSQUARED_REQUIRE_BRIDGE=true`,
+and uploads a second report so Codecov can merge bridge-path coverage with the
+Julia-absent job.
 
 Auth is documented Codecov OIDC (`use_oidc: true`) with job-scoped
 `contents: read` and `id-token: write`. No `CODECOV_TOKEN`, and
