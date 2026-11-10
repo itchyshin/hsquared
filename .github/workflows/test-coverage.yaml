@@ -5,7 +5,9 @@
 #   * Job-scoped permissions: contents:read + id-token:write only.
 #   * Ubuntu-only. Do not add covr to the R-CMD-check OS matrix:
 #     ubuntu+windows would double-count the same tests.
-#   * Julia-absent suite, same as default R-CMD-check. Live bridge legs skip.
+#   * Two jobs: `test-coverage` (Julia-absent, same as default R-CMD-check) and
+#     `test-coverage-julia` (HSQUARED_JULIA_TESTS + HSQUARED_REQUIRE_BRIDGE).
+#     Codecov merges `ubuntu-covr` and `ubuntu-covr-julia` for one commit report.
 # Config (this file + codecov.yml) does not prove coverage ran, uploaded,
 # or was accepted. See docs/dev-log/dashboard/test-coverage.md.
 on:
@@ -100,4 +102,125 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-test-failures
+          path: ${{ runner.temp }}/package
+
+  test-coverage-julia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOT_CRAN: true
+      HSQUARED_JULIA_TESTS: true
+      HSQUARED_REQUIRE_BRIDGE: true
+      HSQUARED_JULIA_PROJECT: ${{ github.workspace }}/HSquared.jl
+      OPENBLAS_NUM_THREADS: 1
+      JULIA_NUM_THREADS: 1
+      JULIA_PKG_PRECOMPILE_AUTO: "0"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Checkout the engine twin
+        uses: actions/checkout@v6
+        with:
+          repository: itchyshin/HSquared.jl
+          ref: main
+          path: HSquared.jl
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.10"
+
+      - uses: julia-actions/cache@v2
+
+      - name: Instantiate the engine project
+        run: julia --project=HSquared.jl -e 'using Pkg; Pkg.instantiate(); using HSquared'
+
+      - name: Preload Julia libunwind (Ubuntu 24.04 JuliaCall)
+        run: |
+          julia_home=$(julia -e 'print(Sys.BINDIR)')
+          libunwind="${julia_home}/../lib/julia/libunwind.so.8"
+          if [[ -f "${libunwind}" ]]; then
+            echo "LD_PRELOAD=${libunwind}" >> "${GITHUB_ENV}"
+          else
+            echo "libunwind preload not found at ${libunwind}; continuing without LD_PRELOAD"
+          fi
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::covr, any::xml2, any::JuliaCall, any::nadiv
+          needs: coverage
+
+      - name: Warm JuliaCall before covr instrumentation
+        env:
+          JULIA_PKG_PRECOMPILE_AUTO: "0"
+        run: |
+          Rscript -e '
+            suppressPackageStartupMessages({
+              library(JuliaCall)
+              JuliaCall::julia_setup(installJulia = FALSE, verbose = FALSE)
+              JuliaCall::julia_command("using RCall")
+            })
+          '
+
+      - name: Test coverage (Julia-enabled suite)
+        run: |
+          cov <- covr::package_coverage(
+            quiet = FALSE,
+            clean = FALSE,
+            install_path = file.path(
+              normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"),
+              "package"
+            )
+          )
+          print(cov)
+          pct <- round(covr::percent_coverage(cov), 2)
+          summary_file <- Sys.getenv("GITHUB_STEP_SUMMARY")
+          if (nzchar(summary_file)) {
+            writeLines(
+              c(
+                "## covr (Julia-enabled CI coverage finish)",
+                "",
+                paste0("- package coverage: ", pct, "%"),
+                "- suite: full testthat with HSQUARED_JULIA_TESTS=true",
+                "- HSQUARED_REQUIRE_BRIDGE=true (missing bridge fails the job)",
+                "- this print is CI coverage finish, not upload or dashboard evidence"
+              ),
+              summary_file
+            )
+          }
+          cat(sprintf("HSQUARED_COVR_JULIA_PERCENT=%s\n", pct))
+          covr::to_cobertura(cov)
+        shell: Rscript {0}
+
+      - name: Upload coverage to Codecov (OIDC)
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        with:
+          fail_ci_if_error: true
+          files: ./cobertura.xml
+          plugins: noop
+          disable_search: true
+          use_oidc: true
+          name: hsquared-ubuntu-covr-julia
+          flags: ubuntu-covr-julia
+          verbose: true
+
+      - name: Show testthat output
+        if: always()
+        run: |
+          find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
+        shell: bash
+
+      - name: Upload coverage-test failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-test-failures-julia
           path: ${{ runner.temp }}/package
