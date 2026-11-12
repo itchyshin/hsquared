@@ -13,8 +13,11 @@ with regression coverage via existing tests.
 ## Change
 
 - `R/julia-bridge.R`: in `hs_validate_gllvm_optin_spec()`, replace
-  `any(!Z %in% c(0, 1))` with `any(!(as.vector(Z) %in% c(0, 1)))` so validation
-  works when `payload$Z` is the `dgCMatrix` from `hs_build_bridge_payload()`.
+  `any(!Z %in% c(0, 1))` with a sparse stored-value check via
+  `methods::as(..., "CsparseMatrix")@x` (no densify). Repro needed R 4.3.3 /
+  Matrix 1.6.5; Matrix 1.7.5 reportedly defines `%in%` for Matrix objects.
+- `tests/testthat/test-gllvm-optin.R`: unit tests for 0.5 stored values and
+  valid `dgCMatrix`.
 
 No API or default change. No new test file (`test-gllvm-optin.R`,
 `test-coverage-hsquared-dispatch.R`).
