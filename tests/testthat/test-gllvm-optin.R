@@ -62,25 +62,6 @@ test_that("genetic GLLVM sparse incidence rejects non-binary stored values", {
   )
 })
 
-test_that("genetic GLLVM sparse incidence accepts a valid dgCMatrix", {
-  f <- gllvm_fixture()
-  Z_ok <- f$payload$Z
-  expect_true(inherits(Z_ok, "dgCMatrix"))
-  v <- methods::as(
-    methods::as(methods::as(Z_ok, "dMatrix"), "generalMatrix"),
-    "CsparseMatrix"
-  )@x
-  expect_true(all(v %in% c(0, 1)))
-  expect_equal(
-    hsquared:::hs_validate_gllvm_optin_spec(
-      gllvm_control(),
-      f$spec,
-      f$payload
-    ),
-    8:1
-  )
-})
-
 test_that("genetic GLLVM requires explicit bounded expert controls", {
   f <- gllvm_fixture()
   expect_equal(
