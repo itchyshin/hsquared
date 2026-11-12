@@ -1,5 +1,11 @@
 # hsquared (development version)
 
+* **New article: Simulated genomic case study.** A gene-drop population with
+  known h² = 0.4 (2,000 phenotyped animals, 10,000 SNPs, 200 causal) fitted
+  with `genomic(1 | id, markers = M)`, the pedigree animal model and `gwas()`.
+  Over 20 replicates genomic GREML recovers h² without detectable bias and its
+  SEs match the replicate spread. Docs only; no covered flip.
+
 * **New `hs_control(se_method = c("ai", "observed"))`; standard errors now
   default to the average-information matrix.** On the great tit animal +
   permanent-environment model `hsquared` reported SEs 2-7% wider than ASReml-R.
