@@ -1,0 +1,8 @@
+  seed true_h2 realised_h2      g_h2    g_h2_se     g_var    g_res g_converged
+1   10     0.4   0.4032241 0.4656437 0.03469812 0.4685618 0.537705        TRUE
+       a_h2    a_h2_se     a_var     a_res acc_gebv   acc_ebv n_sig
+1 0.4875757 0.03964546 0.4978012 0.5231709 0.768724 0.7462173     7
+  n_sig_causal lambda_gc sec_genomic sec_animal sec_gwas
+1            7  1.116387      460.91     87.848  124.858
+Julia exit.
+  Activating project at `~/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl`
