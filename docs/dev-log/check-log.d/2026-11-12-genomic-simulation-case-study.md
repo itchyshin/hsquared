@@ -49,3 +49,9 @@ git diff --check
 Development evidence on one simulation design. No `validation_status` change;
 `public_covered_count` stays 7; the GWAS p-values stay nominal. 20 replicates
 do not calibrate interval coverage.
+
+## CI
+
+hsquared#377 (`0fa808d5`): R-CMD-check ubuntu-latest **pass**, windows-latest
+**pass** (run 43206652169); test-coverage **pass**, test-coverage-julia
+**pass** (run 43206652417).
