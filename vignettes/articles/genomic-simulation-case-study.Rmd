@@ -1,0 +1,365 @@
+---
+title: "Simulated genomic case study"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Simulated genomic case study}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+<p class="hs-banner" role="note"><strong>Simulated data · experimental genomic route · count stays 7.</strong>
+This page fits data whose truth is known, so you can see what the genomic route recovers. It is development evidence on one simulation design. It does not flip a <code>validation_status</code> row, and the GWAS p-values are nominal, not genome-wide calibrated.</p>
+
+This case study simulates a genotyped, pedigreed population with a polygenic
+trait of known heritability. It then asks three questions of `hsquared`:
+
+1. Does genomic GREML, `genomic(1 | id, markers = M)`, recover the simulated
+   heritability, and are its standard errors the right size?
+2. Do genomic breeding values (GEBVs) predict the true genetic values better
+   than pedigree EBVs?
+3. Does a relatedness-corrected marker scan, `gwas()`, find the causal SNPs?
+
+The code is shown but not run when this site is built. Fitting needs a local
+Julia, `JuliaCall` and `HSquared.jl`. The numbers and figures come from running
+the same code once; the scripts are in `dev-test/genomic-sim/` in the source
+repository.
+
+## The simulated population
+
+The simulator is a gene drop through a pedigree, written in base R:
+
+- 200 unrelated founders, with allele frequencies drawn from U(0.05, 0.95);
+- 5 discrete generations of 400 offspring each, from random sires and dams of
+  the previous generation, so half-sibs, full-sibs and cousins arise;
+- 10 chromosomes of 1 Morgan with 1,000 SNPs each, and Haldane meiosis, so
+  linked markers are in linkage disequilibrium within families;
+- 200 causal SNPs with normal effects, scaled so that the genetic variance
+  among the 2,000 phenotyped animals is 0.4;
+- `y = 10 + 0.5 * male + g + e`, with `Var(e) = 0.6`, so the simulated
+  heritability is **h² = 0.4**.
+
+The 200 founders are genotyped but not phenotyped. Markers that are
+monomorphic in the phenotyped animals are dropped.
+
+<details>
+<summary>The simulator, <code>simulate_population()</code> (about 100 lines of base R)</summary>
+
+```{r simulator}
+simulate_population <- function(seed = 1, n_founders = 200, n_gen = 5,
+                                n_per_gen = 400, n_chr = 10,
+                                snps_per_chr = 1000, n_causal = 200,
+                                h2 = 0.4, sex_effect = 0.5) {
+  set.seed(seed)
+  m <- n_chr * snps_per_chr
+  chr <- rep(seq_len(n_chr), each = snps_per_chr)
+  pos <- unlist(lapply(seq_len(n_chr), function(i) sort(runif(snps_per_chr))))
+  chr_idx <- split(seq_len(m), chr)
+
+  n_total <- n_founders + n_gen * n_per_gen
+  hap1 <- matrix(as.raw(0), n_total, m)
+  hap2 <- matrix(as.raw(0), n_total, m)
+  p0 <- runif(m, 0.05, 0.95)
+  hap1[seq_len(n_founders), ] <- as.raw(matrix(
+    runif(n_founders * m) < rep(p0, each = n_founders), n_founders))
+  hap2[seq_len(n_founders), ] <- as.raw(matrix(
+    runif(n_founders * m) < rep(p0, each = n_founders), n_founders))
+
+  id <- character(n_total); sire <- dam <- rep(NA_character_, n_total)
+  sex <- character(n_total); gen <- integer(n_total)
+  id[seq_len(n_founders)] <- sprintf("F%04d", seq_len(n_founders))
+  sex[seq_len(n_founders)] <- rep(c("M", "F"), length.out = n_founders)
+
+  # one gamete: Poisson(1) crossovers per chromosome (Haldane)
+  gamete <- function(parent) {
+    out <- raw(m)
+    for (k in seq_len(n_chr)) {
+      idx <- chr_idx[[k]]
+      ncross <- rpois(1, 1)
+      start_hap <- sample(2L, 1)
+      if (ncross == 0) {
+        out[idx] <- if (start_hap == 1) hap1[parent, idx] else hap2[parent, idx]
+      } else {
+        seg <- findInterval(pos[idx], sort(runif(ncross)))
+        from1 <- (seg %% 2 == 0) == (start_hap == 1)
+        h <- hap2[parent, idx]
+        h[from1] <- hap1[parent, idx][from1]
+        out[idx] <- h
+      }
+    }
+    out
+  }
+
+  prev <- seq_len(n_founders)
+  nxt <- n_founders
+  for (g in seq_len(n_gen)) {
+    sires <- prev[sex[prev] == "M"]; dams <- prev[sex[prev] == "F"]
+    kids <- nxt + seq_len(n_per_gen)
+    for (j in kids) {
+      s <- sires[sample.int(length(sires), 1)]
+      d <- dams[sample.int(length(dams), 1)]
+      hap1[j, ] <- gamete(s)
+      hap2[j, ] <- gamete(d)
+      sire[j] <- id[s]; dam[j] <- id[d]
+    }
+    id[kids] <- sprintf("G%d_%04d", g, seq_len(n_per_gen))
+    sex[kids] <- sample(c("M", "F"), n_per_gen, replace = TRUE)
+    gen[kids] <- g
+    prev <- kids; nxt <- max(kids)
+  }
+
+  M <- matrix(as.integer(hap1) + as.integer(hap2), n_total, m)
+  rownames(M) <- id
+  colnames(M) <- sprintf("chr%d_%04d", chr, ave(chr, chr, FUN = seq_along))
+  rm(hap1, hap2)
+
+  rec <- which(gen > 0)
+  seg <- which(apply(M[rec, , drop = FALSE], 2, function(x) any(x != x[1])))
+  M <- M[, seg, drop = FALSE]; chr <- chr[seg]; pos <- pos[seg]
+
+  causal <- sort(sample(ncol(M), n_causal))
+  beta <- rnorm(n_causal)
+  g_all <- drop(scale(M[, causal, drop = FALSE], scale = FALSE) %*% beta)
+  k <- sqrt(h2 / var(g_all[rec]))
+  beta <- beta * k; g_all <- g_all * k
+  y <- 10 + sex_effect * (sex == "M") + g_all + rnorm(n_total, sd = sqrt(1 - h2))
+
+  pheno <- data.frame(id = id, sex = factor(sex), generation = gen, y = y,
+                      true_g = g_all)[rec, ]
+  rownames(pheno) <- NULL
+  list(
+    pheno = pheno,
+    pedigree = data.frame(id = id, dam = dam, sire = sire),
+    markers = M, # all 2,200 animals, 0/1/2 allele counts
+    map = data.frame(marker = colnames(M), chr = chr, pos = pos,
+                     causal = seq_len(ncol(M)) %in% causal,
+                     effect = replace(numeric(ncol(M)), causal, beta)),
+    truth = list(h2 = h2, var_g = var(g_all[rec]), var_e = 1 - h2)
+  )
+}
+```
+
+</details>
+
+```{r simulate}
+library(hsquared)
+sim <- simulate_population(seed = 1) # a few seconds
+dat <- sim$pheno                     # 2,000 phenotyped animals
+M <- sim$markers[dat$id, ]           # their genotypes: 2,000 x 10,000
+dim(sim$markers)
+#> [1]  2200 10000
+```
+
+The marker matrix holds allele counts `0`/`1`/`2`, one row per animal, with the
+animal IDs as row names. That is the coding `genomic(markers = M)` expects (see
+[Genomic prediction](genomic-prediction.html)).
+
+## Genomic heritability
+
+Fit genomic GREML from the markers. The engine builds the VanRaden genomic
+relationship matrix and estimates the genomic and residual variances by
+AI-REML:
+
+```{r fit-genomic}
+fit_g <- hsquared(
+  y ~ sex + genomic(1 | id, markers = M),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE,
+  control = hs_control(
+    engine = "julia",
+    engine_control = list(target = "genomic")
+  )
+)
+variance_components(fit_g)
+heritability(fit_g)
+heritability_standard_error(fit_g)
+```
+
+For comparison, fit the ordinary pedigree animal model to the same animals:
+
+```{r fit-pedigree}
+fit_a <- hsquared(
+  y ~ sex + animal(1 | id, pedigree = sim$pedigree),
+  data = dat,
+  family = gaussian(),
+  REML = TRUE
+)
+heritability(fit_a)
+heritability_standard_error(fit_a)
+```
+
+On this replicate (seed 1):
+
+| | Genomic GREML | Pedigree animal model |
+| --- | --- | --- |
+| Genetic variance | 0.353 | 0.322 |
+| Residual variance | 0.611 | 0.645 |
+| h² | 0.366 | 0.333 |
+| SE of h² | 0.035 | 0.038 |
+| 95% delta-method interval | 0.301 to 0.436 | 0.264 to 0.410 |
+
+The realised heritability in this sample, the variance of the true genetic
+values over the variance of `y` after removing the sex effect, is 0.414.
+
+`heritability(fit_g)` labels its estimate `genomic_variance_ratio` on the
+`K_lambda` scale: the engine adds a small ridge (0.01) to the genomic
+relationship matrix, and the ratio is defined relative to that matrix.
+
+Both estimates fall below the simulated 0.4 on this replicate. One replicate
+cannot tell you whether an estimator is biased, so the next section repeats
+the whole simulation.
+
+The standard errors are inverse average-information SEs, the convention used by
+ASReml, WOMBAT and BLUPF90 and the `hsquared` default
+(`hs_control(se_method = "ai")`). Pass `se_method = "observed"` for SEs from the
+observed information instead.
+
+## Does it recover h² across replicates?
+
+The simulation and both fits were repeated for seeds 1 to 20. All 20 genomic fits
+converged.
+
+```{r genomic-sim-h2-recovery, echo = FALSE, eval = TRUE, results = "asis"}
+cat(sprintf(
+  '<p><img src="../reference/figures/genomic-sim-h2-recovery.svg" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Heritability estimates for 20 simulated replicates, each shown as a genomic GREML estimate and a pedigree animal-model estimate with 1.96-standard-error bars, against the simulated value of 0.4. Both sets scatter around 0.4; the genomic bars are slightly shorter."
+))
+```
+
+| | Genomic GREML | Pedigree animal model |
+| --- | --- | --- |
+| Mean h² (simulated 0.4) | 0.408 | 0.403 |
+| Bias ± Monte Carlo SE | +0.008 ± 0.008 | +0.003 ± 0.010 |
+| SD of the 20 estimates | 0.035 | 0.043 |
+| Mean reported SE | 0.034 | 0.038 |
+| Estimate ± 1.96 SE covers 0.4 | 19 / 20 | 19 / 20 |
+
+Three things to read from this:
+
+- **No detectable bias.** Both means are within one Monte Carlo SE of 0.4.
+- **The genomic SEs are the right size.** The average reported SE (0.034)
+  matches the spread of the estimates across replicates (0.035). For the
+  pedigree model the reported SE is about 10% smaller than the spread; with 20
+  replicates that difference is within noise.
+- **Genomic estimates are more precise.** Their spread is about 20% smaller than
+  the pedigree estimates', because the markers measure realised relationships,
+  including the Mendelian-sampling deviations a pedigree can only average over.
+
+Twenty replicates are enough to see gross bias or badly sized SEs. They are not
+enough to calibrate interval coverage: 19 / 20 has a binomial SE of about 5
+percentage points.
+
+## Breeding values
+
+Both fits return breeding values for every phenotyped animal. Because the
+simulation knows each animal's true genetic value, you can score them directly:
+
+```{r breeding-values}
+gebv <- breeding_values(fit_g)
+ebv <- breeding_values(fit_a)
+cor(gebv$value[match(dat$id, gebv$id)], dat$true_g)
+cor(ebv$value[match(dat$id, ebv$id)], dat$true_g)
+```
+
+```{r genomic-sim-gebv, echo = FALSE, eval = TRUE, results = "asis"}
+cat(sprintf(
+  '<p><img src="../reference/figures/genomic-sim-gebv.png" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Two scatter plots of predicted breeding value against true genetic value for 2,000 animals in replicate 1: genomic GBLUP on the left and pedigree BLUP on the right, each with a one-to-one line and its correlation in the panel title."
+))
+```
+
+Across the 20 replicates the GEBV accuracy averaged 0.765 and the EBV accuracy
+0.743. GEBVs were more accurate in every replicate, by 0.016 to 0.031. The gain
+is small here because every phenotyped animal also has its own record and a
+deep pedigree; genomic prediction gains most for animals without records.
+
+## Finding the causal SNPs
+
+`gwas()` scans the markers one at a time with a mixed-model (GLS) Wald test.
+It uses the variance components and pedigree relationship matrix of a fitted
+animal model to correct for relatedness, so it takes the pedigree fit `fit_a`.
+The marker matrix must cover every animal in the pedigree, founders included,
+in any row order with IDs as row names:
+
+```{r gwas}
+scan <- gwas(fit_a, sim$markers)
+head(scan[order(scan$p_value), ])
+```
+
+```{r genomic-sim-manhattan, echo = FALSE, eval = TRUE, results = "asis"}
+cat(sprintf(
+  '<p><img src="../reference/figures/genomic-sim-manhattan.png" class="r-plt" alt="%s" width="100%%"></p>\n',
+  "Manhattan plot of minus log10 p-values for 10,000 SNPs on 10 chromosomes in replicate 1. The 200 causal SNPs are highlighted; the handful of SNPs above the Bonferroni line are causal SNPs."
+))
+```
+
+On seed 1, six SNPs pass the Bonferroni line, and all six are causal. The
+twelve smallest p-values all belong to causal SNPs, and so do all nine SNPs
+with a Benjamini-Hochberg q-value below 0.05.
+
+Over the 20 replicates, an average of 5.8 SNPs per replicate passed the
+Bonferroni line, and 114 of those 116 were causal. Power is low because 200 causal SNPs share a heritability of 0.4, so most
+effects are small; this is a polygenic trait, not a major-gene one.
+
+The genomic-control inflation factor λ averaged 1.10 (range 1.05 to 1.14). For
+a polygenic trait with long-range linkage in families some inflation reflects
+real signal, so λ alone is not evidence of miscalibration here. As the
+[GWAS status page](qtl-gwas-eqtl-status.html) says, the scan's p-values and
+Bonferroni line are nominal, not a validated genome-wide threshold.
+
+## Running time
+
+| Step (seed 1) | Seconds |
+| --- | --- |
+| Simulate the population | 2 |
+| Pedigree animal model, 2,000 animals | 0.5 |
+| Genomic GREML, 2,000 animals × 10,000 SNPs | 14 |
+| `gwas()` scan of 10,000 SNPs | 14 |
+
+Times are from one R session on an Apple-silicon laptop, after Julia had
+started. The first `hsquared()` call in a session also starts Julia and
+compiles the engine, which adds about 18 seconds.
+
+If you run replicates in parallel, give each process one BLAS thread. Julia's
+BLAS uses every core by default, and several processes each doing that slowed
+these fits down 5 to 50 times. Set it once per R session, after the first fit
+has started Julia:
+
+```{r blas-threads}
+JuliaCall::julia_command("using LinearAlgebra; BLAS.set_num_threads(1)")
+```
+
+Or set the environment variable `OPENBLAS_NUM_THREADS=1` before R starts.
+
+## What this does and does not show
+
+It shows that, on this design, genomic GREML recovers the simulated
+heritability without detectable bias, that its standard errors match the
+replicate-to-replicate spread, and that the marker scan finds causal SNPs with
+very few false hits.
+
+It does not show:
+
+- **Coverage.** Twenty replicates cannot calibrate interval coverage.
+- **Other designs.** One population structure, one marker density and one
+  genetic architecture were tested. There were no rare variants, no founder LD,
+  no selection and no imputation errors.
+- **Genome-wide significance.** The scan p-values are nominal.
+- **A validation-status change.** The genomic route stays experimental, and
+  `public_covered_count` stays 7.
+
+For the other genomic paths (supplied `Ginv`, SNP-BLUP, single-step), see
+[Genomic prediction](genomic-prediction.html).

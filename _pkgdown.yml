@@ -117,6 +117,8 @@ navbar:
           href: articles/fitting-models.html
         - text: Worked example (gryphon)
           href: articles/gryphon-worked-example.html
+        - text: Simulated genomic case study
+          href: articles/genomic-simulation-case-study.html
         - text: Function map and cheat sheet
           href: articles/function-map-cheatsheet.html
     diagnose:
@@ -306,6 +308,7 @@ articles:
     contents:
       - articles/fitting-models
       - articles/gryphon-worked-example
+      - articles/genomic-simulation-case-study
       - articles/function-map-cheatsheet
 
   - title: Diagnose
