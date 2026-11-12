@@ -31,3 +31,5 @@
 ^\.mcp\.json$
 ^\.ignore$
 ^graft$
+^codecov\.yml$
+^\.codecov\.yml$

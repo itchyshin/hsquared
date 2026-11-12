@@ -16,6 +16,13 @@
 - Unchanged: `public_covered_count = 7`; no validation_status / capability row change; SEs remain asymptotic and not coverage-calibrated.
 - **CI.** hsquared#365 R-CMD-check ubuntu-latest + windows-latest **pass** (run 42609615222). HSquared.jl#500: Julia 1.10 ubuntu/windows **pass**, Julia 1 windows **pass**, docs + Documenter preview **pass**. Julia 1 ubuntu **fail** on `test_issue_421_sparse_laplace.jl:193`, `fitpath.time < 10.0` evaluated 14.65 s (run 42609477416). That is the pre-existing wall-clock assertion that also fails on HSquared.jl `main` (`15e932f2`, run 42255350096, 14.93 s) and on #499, not this change.
 
+## 2026-11-08 (Codecov first coding pass: collection + OIDC upload config)
+
+- CI/coverage/config/docs only. No R, tests, fixtures, science, NEWS, or README badge.
+- Local: no R/`covr` on this host — local coverage **NOT_VERIFIED**. `python3` parsed `codecov.yml` + `test-coverage.yaml`. `bash tools/preamble_cap.sh` CAP OK. `bash tools/build_check_log.sh --check` on the new shard. `git diff --check` clean.
+- Remote: `test-coverage` (covr + Codecov OIDC) and existing R-CMD-check shards must still run. Stages 2–5 (CI coverage finish, upload executed, accepted commit report, main dashboard) are **NOT_VERIFIED** until those jobs and Codecov say so. See `docs/dev-log/check-log.d/2026-11-08-codecov-coverage-oidc.md`.
+- Unchanged: `public_covered_count = 7`, experimental 0.9.0, no covered flip.
+
 ## 2026-11-04 (Arc 1 handover back to Shinichi: R-lineage search, both arms)
 
 - Doc-only on this repo; no R code changed. Lane reassigned to R+Julia for this session by Szymek.
