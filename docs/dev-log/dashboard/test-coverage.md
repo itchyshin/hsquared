@@ -1,6 +1,6 @@
 # Test coverage collection and Codecov upload
 
-**Slice:** first Codecov coding pass (hsquared R lane only)  
+**Slice:** first Codecov coding pass (hsquared R lane only)
 **Approval:** Shinichi approved Codecov rollout; this file records the
 pipeline, not a coverage percentage.
 

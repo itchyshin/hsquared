@@ -1,5 +1,21 @@
 # Check Log
 
+## 2026-11-09 (SE method: AI by default, observed on request; great tit SE investigation) [R + Julia]
+
+- Lanes R and Julia, assigned by Szymek for this slice. R branch `claude/se-asreml-mcmcglmm-investigation`; Julia branch `claude/se-information-switch` (`14fe24ff`, draft HSquared.jl#500).
+- Investigation (`dev-test/se-investigation/`, RESULTS.md): hsquared's wider SEs come from inverse observed information vs ASReml's inverse average information. Independent base-R reference reproduces both; MCMCglmm (6 × 65k) posterior SD on clutch size within 0.0-1.5 MCSE of observed, 3.6-5.1 MCSE from AI. Laying date non-discriminating.
+- Change: `hs_control(se_method = c("ai", "observed"))`, default `"ai"`, on ai_reml / sparse_reml / genomic / sparse repeatability routes; `fit$result$se_method` + `fit_diagnostics()`. With `"ai"` hsquared equals ASReml-R 4.2.0.482 SEs on both great tit traits to every printed digit.
+- Timing (idle 16-core Mac, median of 7 warm): ASReml 0.71 / 0.65 s; hsquared `"ai"` 0.77 / 0.90 s; `"observed"` 0.90 / 1.03 s (clutch size / laying date).
+- `NOT_CRAN=true devtools::test(filter = "se-method")` against the Julia branch: **23/23**. `filter = "repeatability-sparse-352"`: **56/56** (like-for-like dense/sparse interval test now compares sparse `"observed"` to dense, plus an AI-closeness check).
+- Full live `devtools::test()` against the Julia branch (`HSQUARED_REQUIRE_BRIDGE=true`): before the 352 test fix FAIL 2 / ERR 3 / SKIP 11 / PASS 5250; the 2 failures were that test (fixed above); the 3 errors are the absent-`sommer` Suggests gate.
+- Baseline counterfactual: `test-multivariate.R` + `test-multivariate-permanent-comparator-237.R` give identical results with and without this change (`git stash`): 0 fail / 3 err (sommer) / 90 pass.
+- `devtools::check()` (pandoc from Quarto via `RSTUDIO_PANDOC`, empty `R_ENVIRON_USER`, `HSQUARED_JULIA_PROJECT` = Julia branch, `NOT_CRAN=true`, `_R_CHECK_FORCE_SUGGESTS_=false`): **1 error / 0 warnings / 0 notes**. The error is `checking tests`: `[ FAIL 3 | WARN 76 | SKIP 89 | PASS 4465 ]`, all three the `sommer` Suggests gate (MV-PE-1, MV-1b, MV-1).
+- `pkgdown::check_pkgdown()`: **No problems found**. `devtools::document()`: only `man/hs_control.Rd`; the roxygen `NAMESPACE` reformat churn reverted. `air` not installed on this host (not run). `bash tools/preamble_cap.sh`: CAP OK.
+- Julia: full `Pkg.test()` on 1.12.6 passed (28 min 43 s); new `test/test_se_information_switch.jl` 19/19.
+- Correction recorded: the 130-140 s genomic fits seen in the simulation runs were BLAS oversubscription (12 BLAS threads per process beside 12 MCMC chains / 4 parallel replicates), not the engine. A warm n = 2,000 × 10,000-marker genomic `hsquared()` call takes ~14 s on a loaded machine (`dev-test/genomic-sim/profile-genomic.R`); evidence added to HSquared.jl#420.
+- Unchanged: `public_covered_count = 7`; no validation_status / capability row change; SEs remain asymptotic and not coverage-calibrated.
+- **CI.** hsquared#365 R-CMD-check ubuntu-latest + windows-latest **pass** (run 42609615222). HSquared.jl#500: Julia 1.10 ubuntu/windows **pass**, Julia 1 windows **pass**, docs + Documenter preview **pass**. Julia 1 ubuntu **fail** on `test_issue_421_sparse_laplace.jl:193`, `fitpath.time < 10.0` evaluated 14.65 s (run 42609477416). That is the pre-existing wall-clock assertion that also fails on HSquared.jl `main` (`15e932f2`, run 42255350096, 14.93 s) and on #499, not this change.
+
 ## 2026-11-08 (Codecov first coding pass: collection + OIDC upload config)
 
 - CI/coverage/config/docs only. No R, tests, fixtures, science, NEWS, or README badge.
