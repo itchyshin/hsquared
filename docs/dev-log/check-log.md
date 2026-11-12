@@ -7,7 +7,8 @@
 - Bug: `hs_validate_gllvm_optin_spec()` used `any(!Z %in% c(0, 1))` on
   `payload$Z` (`dgCMatrix`) → `match requires vector arguments` before
   validation completed.
-- Fix: `any(!(as.vector(Z) %in% c(0, 1)))` in `R/julia-bridge.R` (one line).
+- Fix: inspect stored `CsparseMatrix@x` (no densify) in `R/julia-bridge.R`; direct
+  unit tests for non-binary 0.5 incidence and valid `dgCMatrix`.
   No API/default change.
 - `NOT_CRAN=true devtools::test(filter = "gllvm-optin|coverage-hsquared-dispatch")`:
   **0 fail**, 1 live-Julia skip (`test-gllvm-optin.R:367`).

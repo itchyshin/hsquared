@@ -35,6 +35,52 @@ gllvm_fixture <- function() {
   )
 }
 
+gllvm_nonbinary_incidence_Z <- function(n_block = 4L) {
+  Reduce(
+    `+`,
+    lapply(seq_len(n_block), function(b) {
+      o <- (b - 1L) * 2L
+      Matrix::sparseMatrix(
+        i = c(o + 1L, o + 1L, o + 2L, o + 2L),
+        j = c(o + 1L, o + 2L, o + 1L, o + 2L),
+        x = rep(0.5, 4),
+        dims = c(n_block * 2L, n_block * 2L)
+      )
+    })
+  )
+}
+
+test_that("genetic GLLVM sparse incidence rejects non-binary stored values", {
+  f <- gllvm_fixture()
+  p <- f$payload
+  Z_bad <- gllvm_nonbinary_incidence_Z(4L)
+  stopifnot(all(Matrix::rowSums(Z_bad) == 1), all(Matrix::colSums(Z_bad) == 1))
+  p$Z <- Z_bad
+  expect_error(
+    hsquared:::hs_validate_gllvm_optin_spec(gllvm_control(), f$spec, p),
+    "one complete row"
+  )
+})
+
+test_that("genetic GLLVM sparse incidence accepts a valid dgCMatrix", {
+  f <- gllvm_fixture()
+  Z_ok <- f$payload$Z
+  expect_true(inherits(Z_ok, "dgCMatrix"))
+  v <- methods::as(
+    methods::as(methods::as(Z_ok, "dMatrix"), "generalMatrix"),
+    "CsparseMatrix"
+  )@x
+  expect_true(all(v %in% c(0, 1)))
+  expect_equal(
+    hsquared:::hs_validate_gllvm_optin_spec(
+      gllvm_control(),
+      f$spec,
+      f$payload
+    ),
+    8:1
+  )
+})
+
 test_that("genetic GLLVM requires explicit bounded expert controls", {
   f <- gllvm_fixture()
   expect_equal(
