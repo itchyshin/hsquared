@@ -7111,7 +7111,7 @@ hs_validate_gllvm_optin_spec <- function(control, spec, payload) {
       ncol(Z) != length(payload$ids) ||
       any(Matrix::colSums(Z) != 1) ||
       any(Matrix::rowSums(Z) != 1) ||
-      any(!Z %in% c(0, 1))
+      any(!(as.vector(Z) %in% c(0, 1)))
   ) {
     hs_abort_unsupported_syntax(
       "Genetic GLLVM requires one complete row per pedigree animal, including ",
