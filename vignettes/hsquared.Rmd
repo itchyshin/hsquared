@@ -11,8 +11,8 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-> **Experimental 0.9.0 release — not production.** CRAN submission, acceptance,
-> and public availability are separate states. Version tracks *covered*
+> **Experimental 0.9.0 release — not production.** Version 0.9.0 is on CRAN
+> (published 2026-10-21). Version tracks *covered*
 > capability (a validation status: the named model type, or **route**, has a
 > recovery gate and an external comparator), not surface area.
 > `public_covered_count` is **7** (multivariate + explicit 0.7 genomic GREML)
@@ -69,11 +69,11 @@ called. Nothing is fitted.
 
 ## Fit (needs the Julia engine)
 
-Installing `hsquared` (`remotes::install_github("itchyshin/hsquared")`;
-`pak::pak("itchyshin/hsquared")` is equivalent) gives you the R
-interface only. Those commands do not build vignettes, so
-`vignette("hsquared")` is empty after install; this page also lives on
-the website. Fitting needs a local
+Install the CRAN release with `install.packages("hsquared")`. The
+development tree on GitHub is `remotes::install_github("itchyshin/hsquared")`
+(`pak::pak("itchyshin/hsquared")` is equivalent). Those GitHub commands
+do not build vignettes, so `vignette("hsquared")` is empty after a
+GitHub install; this page also lives on the website. Fitting needs a local
 [Julia](https://julialang.org/downloads/) 1.10 or later with `julia` on
 `PATH`, the `JuliaCall` R package, and an `HSquared.jl` checkout
 (`git clone https://github.com/itchyshin/HSquared.jl`). After cloning, install

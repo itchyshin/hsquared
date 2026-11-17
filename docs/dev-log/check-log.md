@@ -1,5 +1,33 @@
 # Check Log
 
+## 2026-11-17 (hsquared#380: first-use pages still treated CRAN as not public) [R]
+
+- Lane: Cursor cloud, docs-only. Branch `cursor/docs-cran-availability-380-afff`.
+  Issue #380. CRAN page verified: hsquared **0.9.0**, published **2026-10-21**,
+  https://cran.r-project.org/package=hsquared.
+- Change: README, Getting started, model-status, progression-evidence,
+  twin-boundary, `_pkgdown.yml`, ROADMAP, DESCRIPTION, NEWS, attach message,
+  package help, and capability/public-claim CRAN sentences now say 0.9.0 is on
+  CRAN. Install sections lead with `install.packages("hsquared")` and keep
+  GitHub as the development-tree route. Experimental and Julia-engine warnings
+  unchanged. No fitting, timeout, or tolerance change. `public_covered_count`
+  stays **7**.
+- Honesty fences in `test-d41-experimental-honesty.R` and
+  `test-package-help-honesty.R` now lock `0.9.0 is on CRAN` and
+  `install.packages("hsquared")` instead of "CRAN availability is tracked
+  separately". Those tests pin the public wording; leaving them would fail CI
+  after the docs fix. No scientific test edited.
+- Local: no R/`Rscript` on this host — `devtools::document()` / `test()` /
+  `check()` / `pkgdown::check_pkgdown()` **NOT_VERIFIED**. Python simulation of
+  the README / Getting started / pkgdown / model-status honesty assertions:
+  all required strings present; old "tracked separately" string absent from
+  live surfaces. Attach-message collapsed length 366 < 400. `bash
+  tools/preamble_cap.sh`: CAP OK. `git diff --check`: clean. No `README.Rmd`.
+- Rose: claim update only; CRAN publication is not a production or covered
+  flip. Verdict **clean-with-limitations** (limitation: hosted R-CMD-check).
+- **CI.** Await R-CMD-check + pkgdown on the draft PR. Do not close #380
+  (`refs #380` only).
+
 ## 2026-11-12 (hsquared#379: GLLVM sparse incidence binary check) [R]
 
 - Lane: Cursor bounded testing sweep (owner-approved). Branch

@@ -17,7 +17,7 @@ components, and breeding values on the <strong>routes</strong> that are
 validation evidence (for example the default univariate animal model).
 Covered is a validation status: that evidence passed, so point estimates
 may be reported in that scope. Experimental 0.9.0 release, not
-production. CRAN availability is tracked separately.</p>
+production. Version 0.9.0 is on CRAN.</p>
 
 <p class="hs-cta">
 <a class="hs-btn hs-btn-primary" href="https://itchyshin.github.io/hsquared/articles/hsquared.html">Get started</a>
@@ -31,8 +31,8 @@ production. CRAN availability is tracked separately.</p>
      carries the same weight on GitHub and on the site. -->
 > <span class="hs-note-eyebrow">Before you report anything</span>
 >
-> **Warning — experimental 0.9.0 release.** Not production. CRAN availability
-> is tracked separately. There are **7** R-public covered routes;
+> **Warning — experimental 0.9.0 release.** Not production. Version 0.9.0 is
+> on CRAN (published 2026-10-21). There are **7** R-public covered routes;
 > `public_covered_count` is that ledger total, not a function you can call.
 > Fitting needs local Julia and an `HSquared.jl` checkout. Julia
 > engine-covered ≠ R-public covered (the engine can validate a path that R
@@ -112,15 +112,23 @@ allows for the route you ran.
 
 ## Installation
 
+The CRAN release:
+
+```r
+install.packages("hsquared")
+```
+
+The development tree on GitHub:
+
 ```r
 install.packages("remotes")
 remotes::install_github("itchyshin/hsquared")
 ```
 
-`pak::pak("itchyshin/hsquared")` is equivalent. Neither command builds
-vignettes, so `vignette("hsquared")` is empty after install; use
+`pak::pak("itchyshin/hsquared")` is equivalent. Those GitHub commands do not
+build vignettes, so `vignette("hsquared")` is empty after a GitHub install; use
 [Getting started](https://itchyshin.github.io/hsquared/articles/hsquared.html)
-on the website.
+on the website, or install from CRAN.
 
 Fitting also needs [Julia](https://julialang.org/downloads/) 1.10 or later
 with `julia` on `PATH`, `JuliaCall`, and a local `HSquared.jl` tree.
