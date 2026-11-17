@@ -803,3 +803,69 @@ test_that("the supplied matrix is provenance, never reported as an estimate", {
   expect_equal(nrow(vc), 2L)
   expect_true(is.numeric(vc$estimate) && length(vc$estimate) == 2L)
 })
+
+# --- Live bridge-vs-direct-engine pin (skip-guarded; require Julia) -------------
+
+test_that("relmat bridge fit equals a direct HSquared.jl fit_ai_reml with K", {
+  # Parity cell 18: pins the R bridge to the engine, not only to the R animal
+  # model. Direct fit uses the bridge's start (all variances 1) because the REML
+  # surface is flat and different starts differ ~1e-4 relative.
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live fits."
+  )
+
+  set.seed(18)
+  na <- 12
+  ids <- paste0("a", seq_len(na))
+  K <- hs_test_relmat_K(ids)
+  bv <- as.numeric(t(chol(K)) %*% stats::rnorm(na))
+  n <- 48
+  j <- rep(seq_len(na), length.out = n)
+  dat <- data.frame(
+    y = 3 + bv[j] + stats::rnorm(n, 0, 0.7),
+    id = ids[j],
+    stringsAsFactors = FALSE
+  )
+
+  fit <- hsquared(
+    y ~ relmat(1 | id, K = K),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "relmat")
+    )
+  )
+
+  Z <- methods::as(
+    Matrix::sparseMatrix(i = seq_len(n), j = j, x = 1, dims = c(n, na)),
+    "CsparseMatrix"
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  JuliaCall::julia_assign("ky", dat$y)
+  JuliaCall::julia_assign("kX", matrix(1, n, 1L))
+  hsquared:::hs_julia_assign_sparse_csc("kZ", Z)
+  JuliaCall::julia_assign("kKinv", solve(K))
+  JuliaCall::julia_assign("kids", ids)
+  JuliaCall::julia_command(paste(
+    "kspec = HSquared.animal_model_spec(ky, kX, kZ,",
+    "SparseArrays.sparse(kKinv); ids = string.(kids), method = :REML);"
+  ))
+  JuliaCall::julia_command(paste(
+    "kfit = HSquared.fit_ai_reml(kspec;",
+    "initial = (sigma_a2 = 1.0, sigma_e2 = 1.0), iterations = 2000);"
+  ))
+  vc <- JuliaCall::julia_eval(
+    "[kfit.variance_components.sigma_a2, kfit.variance_components.sigma_e2]"
+  )
+
+  fvc <- variance_components(fit)
+  expect_equal(fvc$estimate[fvc$component == "relmat"], vc[1], tolerance = 1e-6)
+  expect_equal(
+    fvc$estimate[fvc$component == "residual"],
+    vc[2],
+    tolerance = 1e-6
+  )
+})
