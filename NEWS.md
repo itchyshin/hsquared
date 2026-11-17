@@ -1,5 +1,10 @@
 # hsquared (development version)
 
+* **hsquared#380 (docs): 0.9.0 is on CRAN.** README, Getting started, and
+  related first-use pages now lead install with `install.packages("hsquared")`
+  and keep the GitHub command for the development tree. Experimental and
+  Julia-engine warnings are unchanged. No covered flip.
+
 * **hsquared#379 (bug fix): genetic GLLVM validation no longer errors on sparse
   incidence.** `hs_validate_gllvm_optin_spec()` checked binary entries with
   `Z %in% c(0, 1)` while `hs_build_bridge_payload()` supplies `payload$Z` as a
@@ -371,7 +376,8 @@ independent test campaign.
 * **Retained interval evidence, without promotion.** H0, H1, and H3 evidence
   is reported only at its declared route and claim level; no package-wide
   nominal-coverage or covered-status claim is created. The release remains
-  experimental and not production; CRAN availability is tracked separately.
+  experimental and not production. Version 0.9.0 is on CRAN (published
+  2026-10-21).
 
 * **Default genomic route remains deferred.** The covered genomic-GREML
   estimand remains available only through explicit

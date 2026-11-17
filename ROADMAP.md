@@ -11,13 +11,13 @@ order — not the release schedule. See
 [`docs/dev-log/decisions.md`](docs/dev-log/decisions.md) ("2026-07-11: Release
 Model").
 
-> **Current record (2026-09-27):** experimental **0.9.0 was submitted to CRAN
-> on 2026-09-26**. The submitted frozen tarball SHA-256 is
-> `0f94dce39676db1df75ca0d13f00f588b991ed315c7b45408f3626c0d409946a`;
-> CRAN acceptance and public availability remain separate, pending states.
-> `public_covered_count` remains **7**; submission implies no capability flip.
-> The package remains experimental. No 1.0 milestone or further release action
-> is authorized by this status update.
+> **Current record (2026-10-21):** experimental **0.9.0 is on CRAN**
+> (published 2026-10-21; <https://cran.r-project.org/package=hsquared>).
+> The submitted frozen tarball SHA-256 was
+> `0f94dce39676db1df75ca0d13f00f588b991ed315c7b45408f3626c0d409946a`.
+> `public_covered_count` remains **7**; CRAN publication implies no capability
+> flip. The package remains experimental. No 1.0 milestone or further release
+> action is authorized by this status update.
 
 - **First registration is `0.5.0`, not `1.0`**, shipped with a prominent
   **experimental** label — mirroring the sibling packages (drmTMB, gllvmTMB) and

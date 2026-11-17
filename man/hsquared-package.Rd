@@ -30,7 +30,7 @@ see \code{\link[=hs_control]{hs_control()}} for the required explicit controls a
 \section{Current limitations}{
 
 This package is an \strong{experimental 0.9.0 release}; it is not production or
-1.0.0, and CRAN availability is tracked separately. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
+1.0.0. Version 0.9.0 is on CRAN. Default \code{\link[=hsquared]{hsquared()}} fitting requires a local Julia installation
 and HSquared.jl; use \code{\link[=hs_control]{hs_control()}} with \code{engine = "validate"} to check the
 model contract without fitting. Report point estimates only for \code{covered}
 routes; uncertainty intervals are experimental and not coverage-calibrated.

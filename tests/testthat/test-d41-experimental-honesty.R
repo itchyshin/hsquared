@@ -125,7 +125,7 @@ test_that("README and pkgdown lock 0.9 release public honesty fences", {
   )
 
   expect_match(text, "experimental 0.9.0 release", fixed = TRUE)
-  expect_match(text, "CRAN availability is tracked separately", fixed = TRUE)
+  expect_match(text, "0.9.0 is on CRAN", fixed = TRUE)
   expect_match(text, "R-public covered routes", fixed = TRUE)
 
   pkgdown <- testthat::test_path("..", "..", "_pkgdown.yml")
@@ -138,7 +138,7 @@ test_that("README and pkgdown lock 0.9 release public honesty fences", {
     " ",
     paste(readLines(pkgdown, warn = FALSE), collapse = " ")
   )
-  expect_match(ptext, "CRAN availability is tracked separately", fixed = TRUE)
+  expect_match(ptext, "0.9.0 is on CRAN", fixed = TRUE)
   expect_match(ptext, "public_covered_count", fixed = TRUE)
   expect_match(ptext, "**7**", fixed = TRUE)
   expect_match(ptext, "planned", ignore.case = TRUE)
@@ -172,7 +172,7 @@ test_that("model-status article keeps FA planned / SS opt-in partial / count 7",
   expect_match(text, "experimental 0.9.0 release", fixed = TRUE)
   expect_no_match(text, "experimental 0.7.0", fixed = TRUE)
   expect_match(text, "public_covered_count", fixed = TRUE)
-  expect_match(text, "CRAN availability is tracked separately", fixed = TRUE)
+  expect_match(text, "0.9.0 is on CRAN", fixed = TRUE)
   expect_match(text, "opt-in partial", fixed = TRUE)
   expect_match(text, "factor-analytic", ignore.case = TRUE)
   expect_match(text, "planned", ignore.case = TRUE)

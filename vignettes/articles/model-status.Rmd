@@ -11,7 +11,7 @@ vignette: >
 What you may report is on <a href="current-limits.html">Can I fit and report this?</a>.
 Covered-at-validation-scale rows remain experimental packaging
 (<strong>experimental 0.9.0 release</strong>; <code>public_covered_count</code> is <strong>7</strong>;
-CRAN availability is tracked separately).
+0.9.0 is on CRAN).
 Julia engine-covered ≠ R covered: a bounded factor-analytic G route and a bounded
 genetic GLLVM route are <strong>opt-in partial</strong> on R; single-step also
 stays <strong>opt-in partial</strong>.</p>

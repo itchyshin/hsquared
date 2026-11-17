@@ -222,6 +222,12 @@ test_that("README and Getting started agree on install, Julia 1.10, and PATH", {
     text <- paste(readLines(page, warn = FALSE), collapse = "\n")
     expect_match(
       text,
+      'install.packages("hsquared")',
+      fixed = TRUE,
+      info = page
+    )
+    expect_match(
+      text,
       'remotes::install_github("itchyshin/hsquared")',
       fixed = TRUE,
       info = page
