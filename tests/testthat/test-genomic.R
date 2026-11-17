@@ -287,6 +287,65 @@ test_that("the explicit supplied-Ginv route fits [live]", {
   )
 })
 
+test_that("genomic route logLik equals the direct engine REML logLik at its variance components [live] (#361)", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live GREML."
+  )
+
+  set.seed(5)
+  na <- 8
+  ids <- paste0("g", seq_len(na))
+  m <- matrix(stats::rbinom(na * 60, 2, 0.3), na, 60)
+  mc <- scale(m, scale = FALSE)
+  g <- tcrossprod(mc)
+  g <- g / mean(diag(g)) + diag(na) * 0.01
+  Ginv <- solve(g)
+  dimnames(Ginv) <- list(ids, ids)
+
+  n <- 24
+  rec <- rep(ids, length.out = n)
+  dat <- data.frame(y = 3 + stats::rnorm(n, 0, 1), id = rec)
+
+  fit <- hsquared(
+    y ~ genomic(1 | id, Ginv = Ginv),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "genomic")
+    )
+  )
+  vc <- variance_components(fit)
+  vg <- vc$estimate[vc$component == "genomic"]
+  ve <- vc$estimate[vc$component == "residual"]
+  expect_true(is.finite(vg) && vg > 0 && is.finite(ve) && ve > 0)
+
+  # The engine evaluated directly at the R route's own variance components:
+  # same y, X, Z, Ginv, no bridge.
+  X <- matrix(1, n, 1)
+  Z <- matrix(0, n, na)
+  Z[cbind(seq_len(n), match(rec, ids))] <- 1
+  JuliaCall::julia_assign("hsq_g_y", dat$y)
+  JuliaCall::julia_assign("hsq_g_X", X)
+  JuliaCall::julia_assign("hsq_g_Z", Z)
+  JuliaCall::julia_assign("hsq_g_Ginv", unname(Ginv))
+  JuliaCall::julia_assign("hsq_g_vg", vg)
+  JuliaCall::julia_assign("hsq_g_ve", ve)
+  engine_ll <- JuliaCall::julia_eval(paste(
+    "HSquared.sparse_reml_loglik(",
+    "HSquared.animal_model_spec(hsq_g_y, hsq_g_X, hsq_g_Z, hsq_g_Ginv;",
+    "method = :REML), hsq_g_vg, hsq_g_ve).loglik"
+  ))
+
+  expect_equal(
+    as.numeric(stats::logLik(fit)),
+    as.numeric(engine_ll),
+    tolerance = 1e-8
+  )
+})
+
 test_that("one-record genomic bridge surfaces a scientific lower endpoint [live]", {
   hs_skip_live_julia()
   testthat::skip_if_not(
