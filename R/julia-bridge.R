@@ -4623,6 +4623,12 @@ hs_fit_julia_random_regression_payload <- function(
   JuliaCall::julia_assign("hsq_age", as.numeric(rr$values))
   JuliaCall::julia_assign("hsq_order", order)
   JuliaCall::julia_assign("hsq_iterations", iterations)
+  # hsquared#299: the engine's Nelder-Mead log-Cholesky start has an absolute
+  # first step on the zero off-diagonal, so a response far from unit scale
+  # stalls short of the REML optimum with K_g[1, 2] stuck at 0. REML is
+  # scale-equivariant: fit y / sd(y), then map K_g, sigma_e2, beta, the
+  # coefficient BLUPs and the REML log-likelihood back to the original units.
+  JuliaCall::julia_assign("hsq_y_scale", hs_rr_response_scale(payload$y))
   hs_julia_fit(
     JuliaCall::julia_command(paste(
       hs_julia_bridge_errors_reset,
@@ -4633,9 +4639,19 @@ hs_fit_julia_random_regression_payload <- function(
       # Kirkpatrick/Meyer/Schaeffer normalized Legendre on standardized t).
       "hsq_Phi = HSquared.legendre_design(",
       "HSquared.standardize_covariate(hsq_age), hsq_order);",
-      "hsq_fit = HSquared.fit_random_regression_reml(",
-      "hsq_y, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
+      "hsq_fit0 = HSquared.fit_random_regression_reml(",
+      "hsq_y ./ hsq_y_scale, hsq_X, hsq_Phi, hsq_Z, hsq_Ainv;",
       "iterations = hsq_iterations, ids = hsq_ped.ids);",
+      "hsq_fit = merge(hsq_fit0, (",
+      "variance_components = (",
+      "K_g = hsq_fit0.variance_components.K_g .* hsq_y_scale^2,",
+      "sigma_e2 = hsq_fit0.variance_components.sigma_e2 * hsq_y_scale^2),",
+      "beta = hsq_fit0.beta .* hsq_y_scale,",
+      "random_coefficients = (",
+      "ids = hsq_fit0.random_coefficients.ids,",
+      "values = hsq_fit0.random_coefficients.values .* hsq_y_scale),",
+      "loglik = hsq_fit0.loglik -",
+      "(length(hsq_y) - size(hsq_X, 2)) * log(hsq_y_scale)));",
       "hsq_rr_raw = Dict(",
       "\"K_g\" => Matrix{Float64}(hsq_fit.variance_components.K_g),",
       "\"sigma_e2\" => hsq_fit.variance_components.sigma_e2,",
@@ -4665,6 +4681,13 @@ hs_fit_julia_random_regression_payload <- function(
     engine = "HSquared.jl"
   )
   hs_julia_surface_bridge_errors(fit)
+}
+
+# Sample sd of the response used to put the random-regression fit on unit
+# scale; 1 (no rescaling) when it is not a finite positive number.
+hs_rr_response_scale <- function(y) {
+  s <- if (length(y) > 1L) stats::sd(y) else NA_real_
+  if (is.finite(s) && s > 0) s else 1
 }
 
 hs_normalize_random_regression_result <- function(raw, payload) {
