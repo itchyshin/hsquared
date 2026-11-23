@@ -230,21 +230,36 @@ test_that("the maternal opt-in abort names the covered direct-maternal alternati
   expect_match(conditionMessage(rr), "target = \"random_regression\"", fixed = TRUE)
 })
 
-test_that("the public control lookup finds only an hs_control bound as `control` in an hsquared() frame", {
+test_that("the public control lookup finds only an hs_control in the namespace hsquared() frame", {
   lookup <- hsquared:::hs_public_hsquared_control
 
-  hsquared <- function(control) lookup()
-  expect_identical(hsquared(control = hs_control()), hs_control())
-  expect_null(hsquared(control = "not a control"))
-  expect_null(hsquared(control = NULL))
-
-  no_control_binding <- function() {
-    hsquared <- function() lookup()
-    hsquared()
-  }
-  expect_null(no_control_binding())
-
+  # A local stand-in named hsquared is not the public door.
+  local_hsquared <- function(control) lookup()
+  expect_null(local_hsquared(control = hs_control()))
+  expect_null(local_hsquared(control = "not a control"))
   expect_null(lookup())
+
+  # The real namespace function is found. validate stays Julia-free.
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(y = c(1, 2, 3), id = c("a", "b", "c"))
+  err <- expect_error(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      REML = FALSE,
+      control = hs_control(engine = "validate")
+    ),
+    class = "hsquared_unsupported_syntax"
+  )
+  expect_match(
+    conditionMessage(err),
+    "ML estimation (`REML = FALSE`) is not implemented.",
+    fixed = TRUE
+  )
 })
 
 test_that("REML = FALSE on the public path is refused only for the validate and fit engines", {
@@ -252,12 +267,51 @@ test_that("REML = FALSE on the public path is refused only for the validate and 
   expect_false(abort(TRUE))
   expect_false(abort(FALSE))
 
-  hsquared <- function(control, REML) abort(REML)
-  expect_false(hsquared(hs_control(engine = "julia"), REML = FALSE))
-  expect_error(
-    hsquared(hs_control(engine = "validate"), REML = FALSE),
-    "REML",
+  # A local stand-in must not trigger the public-path abort (identity check).
+  local_hsquared <- function(control, REML) abort(REML)
+  expect_false(local_hsquared(hs_control(engine = "julia"), REML = FALSE))
+  expect_false(local_hsquared(hs_control(engine = "validate"), REML = FALSE))
+
+  ped <- data.frame(
+    id = c("a", "b", "c"),
+    sire = c(NA, NA, "a"),
+    dam = c(NA, NA, "b")
+  )
+  dat <- data.frame(y = c(1, 2, 3), id = c("a", "b", "c"))
+
+  err_validate <- expect_error(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      REML = FALSE,
+      control = hs_control(engine = "validate")
+    ),
+    class = "hsquared_unsupported_syntax"
+  )
+  expect_match(
+    conditionMessage(err_validate),
+    "ML estimation (`REML = FALSE`) is not implemented.",
     fixed = TRUE
+  )
+
+  err_fit <- expect_error(
+    hsquared(
+      y ~ animal(1 | id, pedigree = ped),
+      data = dat,
+      REML = FALSE,
+      control = hs_control(engine = "fit")
+    ),
+    class = "hsquared_unsupported_syntax"
+  )
+  expect_match(
+    conditionMessage(err_fit),
+    "ML estimation (`REML = FALSE`) is not implemented.",
+    fixed = TRUE
+  )
+
+  # engine = "julia" keeps its supplied-variance exemptions; no abort here.
+  expect_false(
+    hsquared:::hs_abort_reml_false_on_public_path(FALSE)
   )
 })
 
