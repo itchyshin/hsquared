@@ -63,8 +63,8 @@ r_mirror = true
 capability_rows = ["V4-MV", "V4-MV-REML"]
 estimator_target = "two-trait Gaussian animal model with full unstructured G0 and R0"
 evidence_type = "julia_target_external_one_leg"
-external_status = "R lane reproduced one same-estimand sommer comparator leg; second independent same-estimand comparator remains open."
-required_comparator = "BLUPF90, ASReml, DMU, WOMBAT, JWAS-equivalent REML, or another independent same-estimand comparator"
+external_status = "R lane reproduced a same-estimand sommer comparator leg; the engine blupf90+ 2.60 same-estimand REML comparator is discharged."
+required_comparator = "BLUPF90 family (discharged: blupf90+ 2.60 same-estimand REML comparator); further packages remain optional"
 required_files = [
     "README.md",
     "pedigree.csv",
@@ -76,7 +76,7 @@ required_files = [
     "expected_heritability.csv",
     "expected_metadata.csv",
 ]
-boundary = "One external sommer leg exists; no second independent same-estimand comparator and no covered V4-MV-REML promotion."
+boundary = "Two same-estimand REML comparator legs (sommer and blupf90+ 2.60) and cold-start recovery support the covered (validation-scale) t = 2 unstructured claim; k >= 3 and structured genetic covariances stay outside that claim. No production multivariate claim."
 
 [[target]]
 id = "genomic_gblup_snpblup_target"

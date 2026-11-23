@@ -294,13 +294,14 @@ hs_validation_status_evidence <- function() {
       "payload/extractor parity against serialized Julia targets, and an",
       "optional in-suite sommer comparator checks the same fixture's G0,",
       "diag(R0), and diagonal-target h2. Two reproducible R-lane studies now",
-      "extend that evidence without promoting the row: a 100-replicate",
+      "support the covered (validation-scale) t = 2 unstructured claim: a 100-replicate",
       "cold-start t=2 known-truth recovery study has all six G0/R0 elements,",
       "genetic correlation, and both per-trait h2 within bias +/- 2*MCSE",
       "(100/100 converged; EBV accuracy 0.79/0.74), and a full-unstructured",
       "residual sommer comparator reproduces the serialized phase4_multitrait",
       "target's G0/R0/beta/h2/EBV to <= 8e-5 while recovering the off-diagonal",
-      "R0 residual covariance. A Bayesian MCMCglmm agreement probe puts the",
+      "R0 residual covariance. The engine blupf90+ 2.60 same-estimand REML",
+      "comparator is discharged. A Bayesian MCMCglmm agreement probe puts the",
       "serialized Julia target inside 95% HPD intervals for all 8 covariance",
       "elements, all 4 fixed effects, and both per-trait h2 values, with",
       "posterior-mean EBV correlations > 0.9997; this is explicitly not a",
@@ -316,7 +317,7 @@ hs_validation_status_evidence <- function() {
       "(sommer 4.4.5, blupf90+ 2.60, cold-start recovery), not",
       "textbook-anchored. Any covered flip carries this disclosure, never an",
       "implied Mrode anchor (precedent: docs/design/43-genomic-greml-g0.md).",
-      "Mirrors the twin engine multivariate REML validation row (partial)."
+      "Mirrors the twin engine multivariate REML validation row (covered at validation scale; HSquared.jl#161)."
     ),
     paste(
       "The default `hsquared()` control fits the v0.1 Gaussian animal model by",

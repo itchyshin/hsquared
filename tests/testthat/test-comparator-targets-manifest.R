@@ -57,7 +57,13 @@ test_that("comparator target manifest indexes mirrored R fixtures (#49 coordinat
 
   multivariate <- targets[[match("phase4_multitrait_parity", ids)]]
   expect_match(multivariate$external_status, "sommer")
-  expect_match(multivariate$boundary, "second independent")
+  expect_match(multivariate$external_status, "blupf90+", fixed = TRUE)
+  expect_match(multivariate$boundary, "covered (validation-scale)", fixed = TRUE)
+  expect_no_match(
+    multivariate$boundary,
+    "no second independent same-estimand comparator",
+    fixed = TRUE
+  )
 
   genomic <- targets[[match("genomic_gblup_snpblup_target", ids)]]
   expect_identical(genomic$evidence_type, "julia_target_r_consumed")
