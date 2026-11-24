@@ -674,8 +674,11 @@ test_that("fitting-models later examples define their data and validate", {
   ))
 
   g_dat <- data.frame(id = dat$id, y = dat$weight)
-  Ginv <- diag(nrow(g_dat))
-  dimnames(Ginv) <- list(g_dat$id, g_dat$id)
+  n <- nrow(g_dat)
+  G <- matrix(0.25, n, n)
+  diag(G) <- 1
+  dimnames(G) <- list(g_dat$id, g_dat$id)
+  Ginv <- solve(G)
   expect_no_error(hsquared(
     y ~ genomic(1 | id, Ginv = Ginv),
     data = g_dat,
@@ -702,6 +705,27 @@ test_that("fitting-models later examples define their data and validate", {
     data = mv_dat,
     control = v
   ))
+})
+
+test_that("fitting-models genomic GREML example does not use an unidentified G = I kernel", {
+  vignette <- testthat::test_path(
+    "..",
+    "..",
+    "vignettes",
+    "articles",
+    "fitting-models.Rmd"
+  )
+  skip_if_not(file.exists(vignette), "source vignette not present")
+  text <- paste(readLines(vignette, warn = FALSE), collapse = "\n")
+  start <- regexpr("## Genomic GREML", text, fixed = TRUE)
+  expect_true(start > 0L)
+  rest <- substring(text, start)
+  nxt <- regexpr("\n## ", substring(rest, 16L), fixed = TRUE)
+  section <- if (nxt > 0L) substring(rest, 1L, 15L + nxt) else rest
+
+  expect_no_match(section, "Ginv <- diag", fixed = TRUE)
+  expect_match(section, "only the sum of the two", fixed = TRUE)
+  expect_match(section, "Ginv <- solve(G)", fixed = TRUE)
 })
 
 test_that("hsquared#270: interval and SE pages name warn-and-return, not omission", {
