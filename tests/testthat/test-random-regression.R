@@ -580,6 +580,65 @@ test_that("hsquared can use the opt-in experimental random-regression bridge", {
   expect_true(isTRUE(fit$result$converged))
 })
 
+test_that("rr bridge reaches the REML optimum on un-rescaled milk yield (#299)", {
+  hs_skip_live_julia()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for live random-regression bridge."
+  )
+  testthat::skip_if_not_installed("pedigreemm")
+
+  # 100-cow subset of pedigreemm::milk (seed 20261003), as in #299.
+  utils::data("milk", package = "pedigreemm", envir = environment())
+  utils::data("pedCows", package = "pedigreemm", envir = environment())
+  lab <- pedCows@label
+  ped_all <- data.frame(
+    id = lab,
+    sire = lab[pedCows@sire],
+    dam = lab[pedCows@dam],
+    stringsAsFactors = FALSE
+  )
+  d <- milk[, c("id", "lact", "dim", "milk")]
+  d$id <- as.character(d$id)
+  multi <- names(which(table(d$id) >= 2L))
+  set.seed(20261003L)
+  cows <- sample(sort(multi), 100L)
+  ds <- d[d$id %in% cows, ]
+  ds$lactf <- factor(ds$lact)
+  anc <- unique(ds$id)
+  repeat {
+    p <- ped_all[ped_all$id %in% anc, ]
+    new <- setdiff(stats::na.omit(c(p$sire, p$dam)), anc)
+    if (!length(new)) break
+    anc <- c(anc, new)
+  }
+  ped <- ped_all[ped_all$id %in% anc, ]
+
+  fit <- suppressWarnings(hsquared(
+    milk ~ lactf + animal(rr(dim, order = 2) | id, pedigree = ped),
+    data = ds,
+    family = stats::gaussian(),
+    REML = TRUE,
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "random_regression")
+    )
+  ))
+
+  # Values pinned to the engine fit of y / sd(y), mapped back to milk units
+  # (REML is scale-equivariant); before the fix K_g[1, 2] stuck at ~94 and
+  # converged was FALSE (loglik withheld).
+  expect_true(isTRUE(fit$result$converged))
+  K_g <- unname(rr_covariance(fit))
+  expect_equal(
+    K_g,
+    matrix(c(18435963, -3958013, -3958013, 3968570), 2L, 2L),
+    tolerance = 1e-4
+  )
+  expect_equal(fit$result$residual_variance, 11157693, tolerance = 1e-4)
+  expect_equal(fit$result$loglik, -2736.526255, tolerance = 1e-7)
+})
+
 # A minimal normalized random-regression fit, built through the real result
 # normalizer so the fence is exercised against the payload shape the bridge
 # actually produces rather than a hand-shaped list.
