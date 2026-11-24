@@ -178,3 +178,83 @@ test_that("supplied-Hinv teaching-kernel cell matches the engine [live]", {
     tolerance = 1e-8
   )
 })
+
+test_that("single_step supplied-Hinv bridge fit equals a direct HSquared.jl fit_ai_reml on the same Hinv [live]", {
+  # Parity cell 17. The bridge route (target = "single_step") hands the supplied
+  # Hinv to fit_ai_reml; this pins the R fit to a direct engine fit on the same
+  # Hinv. Start-matched: the REML surface is flat, and the engine default start
+  # differs from the bridge start (all variances 1) by ~1e-4 relative, so the
+  # direct fit uses the bridge's start. Interior optimum only (both variances
+  # well above zero); a boundary fit would not pin anything.
+  hs_skip_live_julia()
+  project <- hs_ss_hinv_julia_project()
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(project),
+    "JuliaCall, Julia, and a local HSquared.jl are required for Hinv-cell parity."
+  )
+
+  hinv <- hs_ss_hinv_read_labeled(
+    file.path(hs_ss_hinv_fixture_dir(), "engine_hinv.csv")
+  )
+  ids <- rownames(hinv)
+  na <- length(ids)
+  nrec <- 8L
+  set.seed(1117L)
+  # u ~ N(0, 0.8 * H) with H = Hinv^-1, so the animal variance is clearly > 0.
+  u <- as.numeric(t(chol(0.8 * solve(hinv))) %*% stats::rnorm(na))
+  rec <- rep(ids, each = nrec)
+  dat <- data.frame(
+    y = 2 + u[match(rec, ids)] + stats::rnorm(na * nrec, 0, 0.7),
+    id = rec,
+    stringsAsFactors = FALSE
+  )
+
+  fit_r <- hsquared(
+    y ~ single_step(1 | id, Hinv = hinv),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(
+        target = "single_step",
+        julia_project = project,
+        initial = c(sigma_a2 = 1, sigma_e2 = 1),
+        iterations = 2000L
+      )
+    )
+  )
+  vc_r <- variance_components(fit_r)
+  sa_r <- vc_r$estimate[vc_r$component == "single_step"]
+  se_r <- vc_r$estimate[vc_r$component == "residual"]
+
+  n <- nrow(dat)
+  Z <- Matrix::sparseMatrix(
+    i = seq_len(n),
+    j = match(dat$id, ids),
+    x = 1,
+    dims = c(n, na)
+  )
+  hsquared:::hs_julia_setup(project)
+  JuliaCall::julia_assign("ssy", dat$y)
+  JuliaCall::julia_assign("ssX", matrix(1, n, 1L))
+  hsquared:::hs_julia_assign_sparse_csc("ssZ", methods::as(Z, "CsparseMatrix"))
+  JuliaCall::julia_assign("ssHinv", hinv)
+  JuliaCall::julia_assign("ssids", ids)
+  JuliaCall::julia_command(paste(
+    "ssspec = HSquared.animal_model_spec(ssy, ssX, ssZ,",
+    "SparseArrays.sparse(ssHinv); ids = string.(ssids), method = :REML);"
+  ))
+  JuliaCall::julia_command(paste(
+    "ssfit = HSquared.fit_ai_reml(ssspec;",
+    "initial = (sigma_a2 = 1.0, sigma_e2 = 1.0), iterations = 2000);"
+  ))
+  vc_j <- JuliaCall::julia_eval(
+    "[ssfit.variance_components.sigma_a2, ssfit.variance_components.sigma_e2]"
+  )
+
+  # Interior optimum guard: both components well away from the zero boundary.
+  expect_gt(vc_j[1], 0.05)
+  expect_gt(vc_j[2], 0.05)
+  expect_equal(as.numeric(sa_r), vc_j[1], tolerance = 1e-6)
+  expect_equal(as.numeric(se_r), vc_j[2], tolerance = 1e-6)
+})
