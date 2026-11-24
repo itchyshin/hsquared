@@ -979,3 +979,70 @@ test_that("the Julia engine recovers the published gryphon estimates via supplie
     expect_lt(abs(vc[1] / sum(vc) - pub[["h2"]]), 0.02)
   }
 })
+
+test_that("the R bridge (relmat, supplied A) matches the direct Julia gryphon fit and the published value", {
+  # Parity cell 38: the bridge result is pinned to the direct engine fit started
+  # at the bridge's start (all variances 1), and to the published REML values at
+  # the same signed-off band as the direct-engine test above.
+  hs_skip_live_julia()
+  testthat::skip_if_not_installed("enhancer")
+  testthat::skip_if_not(
+    hsquared:::hs_julia_bridge_available(),
+    "JuliaCall, Julia, and local HSquared.jl are required for the live bridge gryphon recovery."
+  )
+
+  e <- new.env()
+  utils::data("DT_gryphon", package = "enhancer", envir = e)
+  DT <- get("DT_gryphon", e)
+  A <- get("A_gryphon", e)
+  ids <- rownames(A)
+  dat <- DT[!is.na(DT$BWT), ]
+  dat$ANIMAL <- as.character(dat$ANIMAL)
+  pub <- hsquared:::hs_gryphon_published_reml()
+
+  fit <- hsquared(
+    BWT ~ relmat(1 | ANIMAL, K = A),
+    data = dat,
+    family = stats::gaussian(),
+    control = hs_control(
+      engine = "julia",
+      engine_control = list(target = "relmat")
+    )
+  )
+  fvc <- variance_components(fit)
+  ba <- fvc$estimate[fvc$component == "relmat"]
+  be <- fvc$estimate[fvc$component == "residual"]
+
+  y <- dat$BWT
+  j <- match(dat$ANIMAL, ids)
+  Z <- methods::as(
+    Matrix::sparseMatrix(
+      i = seq_along(j),
+      j = j,
+      x = 1,
+      dims = c(length(y), length(ids))
+    ),
+    "CsparseMatrix"
+  )
+  hsquared:::hs_julia_setup(hsquared:::hs_default_julia_project())
+  JuliaCall::julia_assign("gy", y)
+  JuliaCall::julia_assign("gX", matrix(1, length(y), 1L))
+  hsquared:::hs_julia_assign_sparse_csc("gZ", Z)
+  JuliaCall::julia_assign("gAinv", as.matrix(solve(A)))
+  JuliaCall::julia_assign("gids", ids)
+  JuliaCall::julia_command(paste(
+    "gspec = HSquared.animal_model_spec(gy, gX, gZ,",
+    "SparseArrays.sparse(gAinv); ids = string.(gids), method = :REML);",
+    "gfit = HSquared.fit_ai_reml(gspec;",
+    "initial = (sigma_a2 = 1.0, sigma_e2 = 1.0), iterations = 2000);"
+  ))
+  vc <- JuliaCall::julia_eval(
+    "[gfit.variance_components.sigma_a2, gfit.variance_components.sigma_e2]"
+  )
+
+  expect_equal(ba, vc[1], tolerance = 1e-6)
+  expect_equal(be, vc[2], tolerance = 1e-6)
+  expect_equal(ba, pub[["sigma_a2"]], tolerance = 0.02)
+  expect_equal(be, pub[["sigma_e2"]], tolerance = 0.02)
+  expect_lt(abs(ba / (ba + be) - pub[["h2"]]), 0.02)
+})
