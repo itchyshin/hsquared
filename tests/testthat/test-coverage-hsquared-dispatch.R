@@ -174,12 +174,12 @@ test_that("the fit path refuses REML = FALSE itself when called through a qualif
   )
   expect_match(
     conditionMessage(err),
-    "The v0.1 default fit path estimates variance components by REML",
+    "ML estimation (`REML = FALSE`) is not implemented.",
     fixed = TRUE
   )
   expect_match(
     conditionMessage(err),
-    "use `REML = TRUE` (the default)",
+    "Closest working call: `REML = TRUE` (the default)",
     fixed = TRUE
   )
 })
