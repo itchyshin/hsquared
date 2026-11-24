@@ -5,6 +5,13 @@
   with `genomic(1 | id, markers = M)`, the pedigree animal model and `gwas()`.
   Over 20 replicates genomic GREML recovers h² without detectable bias and its
   SEs match the replicate spread. Docs only; no covered flip.
+* **hsquared#379 (bug fix): genetic GLLVM validation no longer errors on sparse
+  incidence.** `hs_validate_gllvm_optin_spec()` checked binary entries with
+  `Z %in% c(0, 1)` while `hs_build_bridge_payload()` supplies `payload$Z` as a
+  `dgCMatrix`; base `%in%` calls `match()` on Matrix 1.6.x (R 4.3 CI) and can
+  fail before validation completes. The check now inspects stored sparse values via
+  `CsparseMatrix@x` without densifying `Z`. No default or API change; GLLVM stays
+  partial.
 
 * **New `hs_control(se_method = c("ai", "observed"))`; standard errors now
   default to the average-information matrix.** On the great tit animal +

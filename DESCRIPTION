@@ -51,6 +51,7 @@ Imports:
     ggplot2,
     lifecycle,
     Matrix,
+    methods,
     stats
 Suggests:
     enhancer,

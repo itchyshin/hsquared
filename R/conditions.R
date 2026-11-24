@@ -360,15 +360,18 @@ hs_abort_reml_false <- function() {
 }
 
 hs_public_hsquared_control <- function() {
-  calls <- sys.calls()
+  hsquared_fn <- get0("hsquared", envir = asNamespace("hsquared"), inherits = FALSE)
+  if (is.null(hsquared_fn)) {
+    return(NULL)
+  }
   frames <- sys.frames()
-  n <- min(length(calls), length(frames))
+  n <- length(frames)
   if (n < 1L) {
     return(NULL)
   }
   for (i in seq_len(n)) {
-    fn <- calls[[i]][[1L]]
-    if (!identical(fn, quote(hsquared))) {
+    active <- tryCatch(sys.function(i), error = function(e) NULL)
+    if (!identical(active, hsquared_fn)) {
       next
     }
     env <- frames[[i]]
