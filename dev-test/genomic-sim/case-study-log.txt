@@ -1,0 +1,95 @@
+<hsquared_fit>
+  target: genomic
+  engine: HSquared.jl
+  family: gaussian
+  method: REML
+  converged: TRUE
+  heritability: genomic=0.3659
+  genomic boundary status: interior
+<hsquared_fit>
+  target: ai_reml
+  engine: HSquared.jl
+  family: gaussian
+  method: REML
+  converged: TRUE
+  heritability: animal=0.3329
+  component  estimate
+1   genomic 0.3526906
+2  residual 0.6111274
+  component  estimate
+1    animal 0.3216974
+2  residual 0.6446904
+     term  estimate              component relationship_scale
+1 genomic 0.3659307 genomic_variance_ratio           K_lambda
+  relationship_source relationship_method allele_frequency_source ridge
+1             markers           vanraden1                  sample  0.01
+  numerical_estimate
+1          0.3659307
+    term  estimate
+1 animal 0.3328864
+     term         se              component relationship_scale
+1 genomic 0.03452651 genomic_variance_ratio           K_lambda
+    term         se
+1 animal 0.03763054
+   estimate     lower     upper level         se method    term
+1 0.3659307 0.3012471 0.4358401  0.95 0.03452651  delta genomic
+               component relationship_scale
+1 genomic_variance_ratio           K_lambda
+   estimate     lower     upper level         se method
+1 0.3328864 0.2636123 0.4102237  0.95 0.03763054  delta
+<hs_fit_diagnostics>
+                     metric                     value
+                     engine               HSquared.jl
+                     method                      REML
+                     family                  gaussian
+                     target                   genomic
+                  converged                      TRUE
+           optimizer_status                 converged
+                 iterations                         8
+                     loglik                -2710.7219
+                         df                         4
+                       nobs                      2000
+      dense_validation_path                     FALSE
+ variance_components_source estimated_genomic_ai_reml
+                at_boundary                     FALSE
+                  se_method                        ai
+         marker     effect         se         z    chisq      p_value
+345   chr1_0345  0.2498794 0.03950855  6.324692 40.00173 2.548627e-10
+3885  chr4_0885  0.1826024 0.03583905  5.095067 25.95971 3.492216e-07
+6243  chr7_0243 -0.1885280 0.03705005 -5.088469 25.89252 3.615872e-07
+4002  chr5_0002 -0.1809651 0.03593331 -5.036138 25.36268 4.757974e-07
+7207  chr8_0207  0.1987444 0.04140228  4.800325 23.04312 1.586128e-06
+5341  chr6_0341  0.1687554 0.03664982  4.604534 21.20173 4.138208e-06
+6859  chr7_0859  0.1841560 0.04122498  4.467098 19.95496 7.935802e-06
+5130  chr6_0130 -0.1629322 0.03722303 -4.377189 19.15978 1.203148e-05
+6750  chr7_0750  0.2046878 0.04887064  4.188360 17.54236 2.811507e-05
+9761 chr10_0761  0.1446564 0.03570577  4.051345 16.41339 5.094983e-05
+2071  chr3_0071  0.1602239 0.04002811  4.002785 16.02229 6.263053e-05
+6547  chr7_0547 -0.1490589 0.03750432 -3.974445 15.79621 7.057516e-05
+     bonferroni_p    bh_qvalue      lod chr        pos causal      effect
+345  2.548627e-06 2.548627e-06 8.686264   1 0.34855035   TRUE  0.20948929
+3885 3.492216e-03 1.189493e-03 5.637079   4 0.89080380   TRUE  0.12886630
+6243 3.615872e-03 1.189493e-03 5.622489   7 0.25702579   TRUE -0.18687142
+4002 4.757974e-03 1.189493e-03 5.507436   5 0.00119535   TRUE -0.09114395
+7207 1.586128e-02 3.172257e-03 5.003750   8 0.21061371   TRUE  0.13125127
+5341 4.138208e-02 6.897014e-03 4.603898   6 0.38142716   TRUE  0.09574174
+6859 7.935802e-02 1.133686e-02 4.333165   7 0.87220130   TRUE  0.17723006
+5130 1.203148e-01 1.503935e-02 4.160494   6 0.14749362   TRUE -0.12348817
+6750 2.811507e-01 3.123897e-02 3.809275   7 0.76794334   TRUE  0.13687522
+9761 5.094983e-01 5.094983e-02 3.564123  10 0.75659821   TRUE  0.17290903
+2071 6.263053e-01 5.474658e-02 3.479196   3 0.06874244   TRUE  0.12321091
+6547 7.057516e-01 5.474658e-02 3.430105   7 0.56598311   TRUE -0.11187183
+      simulate   genomic_cold        genomic pedigree_first       pedigree 
+         2.067         32.388         14.002          0.743          0.539 
+          gwas 
+        14.225 
+     gebv       ebv 
+0.7553892 0.7305606 
+[1] 1.14219
+julia  blas 
+    1    12 
+Julia exit.
+  Activating project at `~/Library/CloudStorage/OneDrive-UniwersytetJagielloński/Science/Julia/HSquared.jl`
+Precompiling packages...
+   3062.9 ms  ✓ HSquared
+  1 dependency successfully precompiled in 3 seconds. 64 already precompiled.

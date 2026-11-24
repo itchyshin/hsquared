@@ -1,5 +1,10 @@
 # hsquared (development version)
 
+* **New article: Simulated genomic case study.** A gene-drop population with
+  known h² = 0.4 (2,000 phenotyped animals, 10,000 SNPs, 200 causal) fitted
+  with `genomic(1 | id, markers = M)`, the pedigree animal model and `gwas()`.
+  Over 20 replicates genomic GREML recovers h² without detectable bias and its
+  SEs match the replicate spread. Docs only; no covered flip.
 * **hsquared#379 (bug fix): genetic GLLVM validation no longer errors on sparse
   incidence.** `hs_validate_gllvm_optin_spec()` checked binary entries with
   `Z %in% c(0, 1)` while `hs_build_bridge_payload()` supplies `payload$Z` as a
